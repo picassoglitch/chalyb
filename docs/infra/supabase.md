@@ -19,10 +19,18 @@ never in a client component, never in a `NEXT_PUBLIC_` var.
 
 ## Standing up the schema
 
+The Supabase CLI is a pinned dev dependency, so nothing needs installing:
+
 ```sh
-supabase link --project-ref uqcbziwdgbnzehipzjxp
-supabase db push
+pnpm install
+pnpm supabase login      # opens a browser for an access token, once
+pnpm db:link             # asks for the DATABASE password — Project Settings → Database
+pnpm db:push
 ```
+
+The password prompt at `db:link` wants the Postgres password, not your
+dashboard login. They are different, and the error for the wrong one does not
+say which it wanted.
 
 The migrations apply in filename order and end in the correct state on an
 empty database. Two things about them that look wrong but are not:
