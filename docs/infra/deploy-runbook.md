@@ -138,9 +138,41 @@ terraform output
 
 ## 4. Secrets
 
-Terraform creates the secret containers empty. It never writes values —
-putting them in Terraform would record them in the state file, in plaintext,
-in that bucket.
+**These do not exist until step 3 has applied.** Terraform creates the secret
+containers; this step only fills them in. If Secret Manager looks empty, that
+is the expected state before `terraform apply` — there is nothing to find yet,
+and nothing is wrong.
+
+Check what actually exists:
+
+```sh
+gcloud secrets list --project=chalyb
+```
+
+Three outcomes, and each means something different:
+
+- **Lists the secrets** → they exist. If the console looks empty, you are
+  almost certainly in the wrong project: check the picker in the top bar, or
+  go straight to
+  `https://console.cloud.google.com/security/secret-manager?project=chalyb`.
+  In the console it lives under **Security → Secret Manager**, which is not
+  where most people look first.
+- **Prints nothing** → the API is on but nothing was created. Run
+  `terraform apply` and check it completed without error.
+- **`API [secretmanager.googleapis.com] not enabled`** → `terraform apply`
+  has not run at all. Enabling that API is part of what it does.
+
+You can also ask Terraform what it believes it created:
+
+```sh
+terraform state list | grep secret
+```
+
+An empty answer there means the apply did not reach the secrets, whatever the
+console shows.
+
+Terraform never writes the values themselves — putting them in Terraform
+would record them in the state file, in plaintext, in that bucket.
 
 ```sh
 terraform output secrets_needing_values
