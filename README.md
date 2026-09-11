@@ -51,6 +51,8 @@ Full path, including the new repo and going live:
 
 ## Docs
 
+- [`docs/infra/supabase.md`](docs/infra/supabase.md) — which project, standing
+  up the schema, and the auth settings that have to match
 - [`docs/infra/gcp-migration.md`](docs/infra/gcp-migration.md) — the GCP
   architecture and why each piece is shaped the way it is
 - [`docs/infra/adding-an-engine.md`](docs/infra/adding-an-engine.md)
