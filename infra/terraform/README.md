@@ -72,6 +72,12 @@ Supabase migration and prints the blocks to paste. The end-to-end path,
 including the new repo, is in
 [`../../docs/infra/adding-an-engine.md`](../../docs/infra/adding-an-engine.md).
 
+## Deploying
+
+Follow [`../../docs/infra/deploy-runbook.md`](../../docs/infra/deploy-runbook.md)
+— it covers the project, billing, logins, this directory, secrets, the first
+build and DNS, in order. The bootstrap below is step 2 of it.
+
 ## Bootstrap
 
 State must not live on a laptop — that is the failure mode that caused this

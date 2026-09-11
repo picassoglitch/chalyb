@@ -51,6 +51,8 @@ Full path, including the new repo and going live:
 
 ## Docs
 
+- [`docs/infra/deploy-runbook.md`](docs/infra/deploy-runbook.md) — **start
+  here to deploy**: zero to running on GCP, in order
 - [`docs/infra/supabase.md`](docs/infra/supabase.md) — which project, standing
   up the schema, and the auth settings that have to match
 - [`docs/infra/gcp-migration.md`](docs/infra/gcp-migration.md) — the GCP

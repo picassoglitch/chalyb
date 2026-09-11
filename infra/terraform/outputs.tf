@@ -29,3 +29,8 @@ output "jobs" {
   description = "Cloud Run Jobs per engine. Run one on demand with `gcloud run jobs execute <name>`."
   value       = { for k, m in module.engine : k => m.job_names if length(m.job_names) > 0 }
 }
+
+output "cloud_build_service_account" {
+  description = "Pass to `gcloud builds submit --service-account=projects/<project>/serviceAccounts/<this>`."
+  value       = google_service_account.deployer.email
+}
