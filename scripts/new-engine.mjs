@@ -41,9 +41,13 @@ if (!/^[a-z][a-z0-9]*$/.test(slug)) {
   // intersection of what all four accept.
   fail(`slug must be lowercase alphanumeric, got "${slug}"`);
 }
-if (slug.length < 3 || slug.length > 26) {
-  // GCP service account ids are 6-30 chars; the module appends "-<job>-sched".
-  fail(`slug must be 3-26 characters, got ${slug.length}`);
+if (slug.length < 6 || slug.length > 26) {
+  // The engine's service account uses account_id = slug, and GCP requires
+  // 6-30 characters there. A shorter slug passes every other check and then
+  // fails at `terraform apply` on the service account, which does not
+  // obviously point back to the name you chose. Upper bound leaves room for
+  // the "-<job>-sched" suffix the module appends for scheduler identities.
+  fail(`slug must be 6-26 characters, got ${slug.length}`);
 }
 
 const icon = flags.icon ?? '🤖';

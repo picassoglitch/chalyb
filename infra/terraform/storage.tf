@@ -1,6 +1,6 @@
 # Source VODs and rendered clips. Replaces the dead machine's local disk.
 resource "google_storage_bucket" "media" {
-  name     = "${var.project_id}-media"
+  name     = var.media_bucket_name != "" ? var.media_bucket_name : "${var.project_id}-media"
   location = var.region
 
   # Uniform access: permissions come from IAM only, no per-object ACLs. The

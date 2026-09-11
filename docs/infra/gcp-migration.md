@@ -126,7 +126,7 @@ support L4 GPUs with scale-to-zero if that changes.
 
 ## Rebuild order
 
-1. **Project + guardrails.** One project (`chalyb-prod`), billing account
+1. **Project + guardrails.** One project (`chalyb`), billing account
    attached, **budget alert at $50/mo** on day one. This is the single most
    valuable ten minutes in the whole migration.
 2. **Artifact Registry + Secret Manager.** Push images, load secrets. The SSO

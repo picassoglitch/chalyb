@@ -40,20 +40,25 @@ like a Terraform bug and is not.
 
 ## 1. Project and billing
 
+The project already exists: **`chalyb`** (number `536423097690`). Point
+gcloud at it and confirm billing is linked:
+
 ```sh
-gcloud projects create chalyb-prod --name="Chalyb"
-gcloud billing accounts list          # note the ACCOUNT_ID
-gcloud billing projects link chalyb-prod --billing-account=0X0X0X-0X0X0X-0X0X0X
-gcloud config set project chalyb-prod
+gcloud config set project chalyb
+gcloud billing projects describe chalyb
 ```
 
-Project IDs are globally unique across all of GCP, not just your account. If
-`chalyb-prod` is taken, pick `chalyb-prod-mx` or similar and use that
-everywhere below.
+If that last command reports `billingEnabled: false`, link it before going
+further:
 
-Billing must be linked before anything else. Most APIs refuse to enable on an
-unlinked project, and the error says the API is unavailable rather than that
-billing is missing.
+```sh
+gcloud billing accounts list          # note the ACCOUNT_ID
+gcloud billing projects link chalyb --billing-account=0X0X0X-0X0X0X-0X0X0X
+```
+
+Billing has to be linked first. Most APIs refuse to enable on an unlinked
+project, and the error says the API is unavailable rather than that billing is
+missing — which sends you looking in the wrong place.
 
 ## 2. State bucket
 
@@ -63,7 +68,7 @@ from.
 
 ```sh
 gcloud storage buckets create gs://chalyb-tfstate \
-  --project=chalyb-prod --location=us-central1 --uniform-bucket-level-access
+  --project=chalyb --location=us-central1 --uniform-bucket-level-access
 gcloud storage buckets update gs://chalyb-tfstate --versioning
 ```
 
@@ -129,10 +134,10 @@ Generate the shared secrets:
 
 ```sh
 printf '%s' "$(openssl rand -hex 32)" | \
-  gcloud secrets versions add chalybclip-sso-secret --data-file=- --project=chalyb-prod
+  gcloud secrets versions add chalybclip-sso-secret --data-file=- --project=chalyb
 
 printf '%s' "$(openssl rand -hex 32)" | \
-  gcloud secrets versions add chalybclip-admin-token --data-file=- --project=chalyb-prod
+  gcloud secrets versions add chalybclip-admin-token --data-file=- --project=chalyb
 ```
 
 `--data-file=-` reads stdin so the secret never lands in your shell history.
@@ -163,15 +168,15 @@ Get the build identity once, from this repo:
 
 ```sh
 terraform -chdir=infra/terraform output -raw cloud_build_service_account
-# chalyb-deployer@chalyb-prod.iam.gserviceaccount.com
+# chalyb-deployer@chalyb.iam.gserviceaccount.com
 ```
 
 Then from the engine's own repo (for example `picassoglitch/nexoclip`):
 
 ```sh
 gcloud builds submit --config=cloudbuild.yaml \
-  --service-account=projects/chalyb-prod/serviceAccounts/chalyb-deployer@chalyb-prod.iam.gserviceaccount.com \
-  --substitutions=_PROJECT=chalyb-prod,_SERVICE=chalybclip,_HAS_WORKER=true
+  --service-account=projects/chalyb/serviceAccounts/chalyb-deployer@chalyb.iam.gserviceaccount.com \
+  --substitutions=_PROJECT=chalyb,_SERVICE=chalybclip,_HAS_WORKER=true
 ```
 
 Terraform created that service account and granted it exactly four roles:

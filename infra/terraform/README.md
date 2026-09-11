@@ -86,7 +86,7 @@ block in `versions.tf`:
 
 ```sh
 gcloud storage buckets create gs://chalyb-tfstate \
-  --project=chalyb-prod --location=us-central1 \
+  --project=chalyb --location=us-central1 \
   --uniform-bucket-level-access
 gcloud storage buckets update gs://chalyb-tfstate --versioning
 ```
@@ -111,7 +111,7 @@ secrets_needing_values` lists them.
 
    ```sh
    printf '%s' "$VALUE" | gcloud secrets versions add chalybclip-sso-secret \
-     --data-file=- --project=chalyb-prod
+     --data-file=- --project=chalyb
    ```
 
    `chalybclip-sso-secret` must equal `CHALYBCLIP_SSO_SECRET` in Vercel — the

@@ -2,7 +2,7 @@
 # change _SERVICE to the engine's slug.
 #
 #   gcloud builds submit --config=cloudbuild.yaml \
-#     --substitutions=_PROJECT=chalyb-prod,_SERVICE=<slug>
+#     --substitutions=_PROJECT=chalyb,_SERVICE=<slug>
 #
 # Deploys with --image only. Everything else about the service — service
 # account, secrets, scaling, memory — belongs to Terraform, and `gcloud run
@@ -10,7 +10,7 @@
 
 substitutions:
   _REGION: us-central1
-  _PROJECT: chalyb-prod
+  _PROJECT: chalyb
   _REPO: engines
   _SERVICE: CHANGE-ME
   # Set to "true" if this engine has a worker service.

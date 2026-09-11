@@ -1,6 +1,6 @@
 # Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
 
-project_id = "chalyb-prod"
+project_id = "chalyb"
 region     = "us-central1"
 domain     = "chalyb.com"
 
@@ -30,7 +30,7 @@ enable_domain_mappings = false
 # engines = {
 #   chalybclip = {
 #     display_name = "ChalybClip"
-#     image        = "us-central1-docker.pkg.dev/chalyb-prod/engines/chalybclip:v1"
+#     image        = "us-central1-docker.pkg.dev/chalyb/engines/chalybclip:v1"
 #     secret_env_names = {
 #       admin_token  = "NEXO_AI_ADMIN_TOKEN"
 #       sso_secret   = "NEXO_AI_SSO_SECRET"

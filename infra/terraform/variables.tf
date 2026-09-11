@@ -1,6 +1,10 @@
 variable "project_id" {
-  description = "GCP project id, e.g. chalyb-prod."
+  description = <<-EOT
+    GCP project id. Not the project NUMBER (536423097690) — that is derived
+    where it is needed, for the billing budget filter.
+  EOT
   type        = string
+  default     = "chalyb"
 }
 
 variable "region" {
@@ -181,3 +185,15 @@ variable "enable_domain_mappings" {
   default     = false
 }
 
+
+variable "media_bucket_name" {
+  description = <<-EOT
+    Name for the media bucket. Cloud Storage names are globally unique across
+    all of GCS, not per project, so the default "<project>-media" can collide
+    with a bucket someone else already owns — more likely with a short project
+    id like "chalyb". If apply fails with 409 / "bucket already exists", set
+    this to something distinctive and re-apply.
+  EOT
+  type        = string
+  default     = ""
+}
