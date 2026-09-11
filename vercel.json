@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/:locale(es|en)/terms", "destination": "/:locale/legal/terms", "permanent": true },
+    { "source": "/:locale(es|en)/privacy", "destination": "/:locale/legal/privacy", "permanent": true },
+    { "source": "/terms", "destination": "/legal/terms", "permanent": true },
+    { "source": "/privacy", "destination": "/legal/privacy", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/:locale(es|en)/legal/(terms|privacy)",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-cache, no-store, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}

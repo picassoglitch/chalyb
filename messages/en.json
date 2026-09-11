@@ -1,0 +1,682 @@
+{
+  "meta": {
+    "title": "Chalyb — A technology team and AI automation platform",
+    "description": "We build products for clients, partner with founders, and operate intelligent systems."
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign in to Chalyb",
+      "subtitle": "Continue with your Google account to access the platform.",
+      "googleButton": "Continue with Google",
+      "googleFastNote": "Fastest way to start",
+      "errorGeneric": "Something went wrong signing you in. Try again.",
+      "errorMissingCode": "Sign-in flow incomplete. Try again.",
+      "fine": "By continuing you agree to the Terms and Privacy Policy.",
+      "liveStatus": "Platform live · systems in production",
+      "newTitle": "New here?",
+      "newSubtitle": "Create your operator workspace in seconds.",
+      "newCta": "Start free",
+      "returningTitle": "Welcome back.",
+      "returningSubtitle": "Pick up where you left off — bots, AI agents, execution history.",
+      "returningCta": "Continue →",
+      "benefits": {
+        "1": "Run any system in simulation",
+        "2": "Live monitoring & execution history",
+        "3": "Pay only for what you use"
+      },
+      "socialProof": "Built by operators running real systems in production.",
+      "tabSignIn": "Sign in",
+      "tabSignUp": "Create account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "submitSignIn": "Sign in →",
+      "submitSignUp": "Create free account →",
+      "noAccount": "Don't have an account?",
+      "hasAccount": "Already have an account?",
+      "switchToSignIn": "Sign in →",
+      "switchToSignUp": "Create one →",
+      "orDivider": "or continue with",
+      "errorInvalidCredentials": "Invalid email or password.",
+      "errorEmailExists": "An account with this email already exists. Try signing in instead.",
+      "errorWeakPassword": "Password must be at least 6 characters.",
+      "errorEmailNotConfirmed": "Please confirm your email first — check your inbox for the link.",
+      "errorRateLimit": "Too many attempts. Wait a minute and try again.",
+      "checkInboxTitle": "Check your inbox.",
+      "checkInboxBody": "We sent a confirmation link to {email}. Click it to finish creating your account.",
+      "forgotPassword": "Forgot password?",
+      "resetSuccess": "Password updated. Sign in with your new password."
+    },
+    "forgotPassword": {
+      "liveStatus": "Platform live · systems in production",
+      "title": "Reset your password",
+      "intro": "Enter your account email and we'll send you a link to set a new password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send reset link →",
+      "backToSignIn": "← Back to sign in",
+      "checkInboxTitle": "Check your inbox.",
+      "checkInboxBody": "If an account exists for {email}, we sent a link to reset your password.",
+      "errorRateLimit": "Too many attempts. Wait a minute and try again."
+    },
+    "resetPassword": {
+      "liveStatus": "Platform live · systems in production",
+      "title": "Set a new password",
+      "intro": "Choose a new password for your account.",
+      "passwordLabel": "New password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmLabel": "Confirm password",
+      "submit": "Update password →",
+      "successTitle": "Password updated.",
+      "successBody": "Your password has been changed. Redirecting you to sign in…",
+      "invalidTitle": "Link expired or invalid.",
+      "invalidBody": "This password reset link is no longer valid. Request a new one to continue.",
+      "requestNew": "Request a new link →",
+      "cancel": "Not resetting? Cancel and sign in",
+      "errorWeakPassword": "Password must be at least 6 characters.",
+      "errorMismatch": "Passwords don't match.",
+      "errorSamePassword": "New password must be different from your current one.",
+      "errorGeneric": "Something went wrong. Try again."
+    },
+    "account": {
+      "title": "Account",
+      "signedInAs": "Signed in as",
+      "signOut": "Sign out"
+    }
+  },
+  "nav": {
+    "proof": "Work",
+    "client": "Studio",
+    "partner": "Partnerships",
+    "earn": "Platform",
+    "cta": "Log in / Register"
+  },
+  "hero": {
+    "kicker": "Technology team — HQ Mexico City",
+    "scroll": "Or scroll — there's more below",
+    "cta": {
+      "primary": "Start a project",
+      "secondary": "See the work"
+    }
+  },
+  "trust": {
+    "label": "Tech stack"
+  },
+  "door": {
+    "client": {
+      "num": "/01 — Studio",
+      "title": "Build my product",
+      "body": "You have a business and something to ship. We design, develop and deploy apps, platforms and technology systems for you.",
+      "go": "Start a project"
+    },
+    "partner": {
+      "num": "/02 — Partnerships",
+      "title": "Technical partnership",
+      "body": "You have a real idea but no tech team. We become your technical partner with equity arrangements defined by scope and each side's participation.",
+      "go": "Apply for partnership"
+    },
+    "earn": {
+      "num": "/03 — Platform",
+      "title": "Operate the systems",
+      "body": "Run bots and AI agents from the Chalyb library — trading, content, scraping, ops automation — with live monitoring and a community of operators alongside you. Free to start.",
+      "go": "Open the platform"
+    }
+  },
+  "banner": {
+    "viewing": "Viewing as",
+    "switch": "switch view"
+  },
+  "proof": {
+    "num": "The foundation",
+    "title": "One team. <em>Three ways</em> to work with us.",
+    "desc": "Chalyb is a technology team and an AI automation platform. Founder-led, built by a real team. The numbers below are what we run today.",
+    "stat1": "AWS accounts under architecture",
+    "stat2": "DSS governance at enterprise scale",
+    "stat3": "Production systems shipped",
+    "stat4": "Studio, partnerships, platform",
+    "stat5": "Uptime targets",
+    "stat6": "Monitored production systems",
+    "stat7": "LATAM + North America operations",
+    "stat8": "Infrastructure as code · deploys across every environment",
+    "line": "Production systems on AWS · Apps &amp; platforms shipped · Architecture built to scale · Bots &amp; AI agents in operation · International client base",
+    "units": {
+      "verticals": "verticals"
+    }
+  },
+  "client": {
+    "tag": "For clients",
+    "num": "Build it for me",
+    "title": "You bring the brief. <em>We ship the build.</em>",
+    "desc": "For businesses with a clear need and a budget. The Chalyb team designs, builds and launches platforms, apps and AI-driven systems — ready to run and grow."
+  },
+  "process": {
+    "1": {
+      "num": "01",
+      "title": "Validation",
+      "body": "We stress-test the plan — scope, audience, constraints — before writing any code."
+    },
+    "2": {
+      "num": "02",
+      "title": "Architecture",
+      "body": "Stack, infrastructure, data model and security foundation locked in from the start."
+    },
+    "3": {
+      "num": "03",
+      "title": "MVP",
+      "body": "A real working build in weeks — not months. Live in a real environment."
+    },
+    "4": {
+      "num": "04",
+      "title": "Iteration",
+      "body": "Feedback loops, real users, measured improvements. We ship continuously."
+    },
+    "5": {
+      "num": "05",
+      "title": "Scale &amp; hand-off",
+      "body": "Production-ready architecture, fully documented, with a clean hand-off or ongoing support."
+    },
+    "num": "How we work",
+    "title": "From idea to production — a clear path."
+  },
+  "svc": {
+    "1": {
+      "name": "Web &amp; mobile platforms",
+      "meta": "From the spec to a live launch and a clean hand-off"
+    },
+    "2": {
+      "name": "Sensor &amp; detection systems",
+      "meta": "Presence-sensing and vision tech for activations and marketing events"
+    },
+    "3": {
+      "name": "Multi-tenant SaaS",
+      "meta": "Architecture, sign-in, billing and tenancy — built to scale"
+    },
+    "4": {
+      "name": "Bots &amp; AI agents",
+      "meta": "Trading, content, scraping, operations — engineered, deployed and monitored"
+    },
+    "5": {
+      "name": "Cloud architecture",
+      "meta": "Multi-account AWS, governance and security foundations"
+    }
+  },
+  "cpc": {
+    "1": {
+      "tag": "Client · Event tech",
+      "title": "Interactive activation system",
+      "body": "An on-site, presence-sensing interactive experience for a consumer-brand activation — built for high-traffic events, deployed and supported right on location.",
+      "scale": "High-traffic events · several days running on-site",
+      "timeline": "Built + deployed in weeks"
+    },
+    "2": {
+      "tag": "Client · Healthcare",
+      "title": "Pharmaceutical web platform",
+      "body": "Multi-user healthcare platform with role-based access, two-factor sign-in and architecture built for privacy and scale — delivered end to end with a structured hand-off to the client's team.",
+      "scale": "Multi-user roles · two-factor sign-in · privacy-ready foundation",
+      "timeline": "End-to-end build · structured hand-off to the client"
+    },
+    "3": {
+      "tag": "Enterprise · Cloud",
+      "title": "Payments-grade infrastructure",
+      "body": "Cloud architecture for a major global payments processor — a multi-account AWS organization under PCI DSS 4.0 governance, with hands-on incident response on critical live systems.",
+      "scale": "Multi-account AWS · PCI DSS 4.0 governance",
+      "timeline": "Multi-year engagement · live incident response"
+    }
+  },
+  "partner": {
+    "tag": "For partners",
+    "num": "Partner up with me",
+    "title": "Got the idea, <em>not the tech?</em>",
+    "desc": "Plenty of smart people have good ideas and no way to build them. The Chalyb partnership hub closes that gap — you bring the vision, we bring the team and the engineering.",
+    "hero": {
+      "title": "You don't need a budget. <em>You need a builder.</em>",
+      "p1": "This isn't a client job — it's a partnership. If you have a real idea and the drive to push it, but not the budget to hire a dev team, this is the door. We look at it together, and if it's a fit, we build it together.",
+      "p2": "Chalyb becomes your technical partner for the project — design, architecture, build and launch — and we share in what it becomes."
+    }
+  },
+  "pv": {
+    "1": {
+      "title": "You bring",
+      "body": "The idea, the market insight, the drive, the domain knowledge."
+    },
+    "2": {
+      "title": "We bring",
+      "body": "Architecture, full-stack build, cloud infrastructure, launch and iteration."
+    },
+    "3": {
+      "title": "We share",
+      "body": "Equity aligned to the level of work, risk and participation on each side."
+    }
+  },
+  "how": {
+    "1": {
+      "num": "STEP 01",
+      "title": "Pitch the idea",
+      "body": "A real conversation first. Then we decide together whether it's worth moving forward formally."
+    },
+    "2": {
+      "num": "STEP 02",
+      "title": "Scope & fit",
+      "body": "We weigh up the build, the workload, and whether it's a partnership that makes sense for both sides."
+    },
+    "3": {
+      "num": "STEP 03",
+      "title": "Structure the deal",
+      "body": "Equity split agreed up front — based on the work involved and each person's input. Clear, fair, written down."
+    },
+    "4": {
+      "num": "STEP 04",
+      "title": "Build & launch",
+      "body": "We engineer it, launch it, and keep improving it — as partners in the outcome, not a vendor on the clock."
+    }
+  },
+  "equity": {
+    "note": "<b>On equity:</b> the split matches the work, risk and effort each side puts in. No two deals are the same — bring the idea and we work out what's fair, together, before anything starts."
+  },
+  "earn": {
+    "tag": "For earners",
+    "num": "Use the bots",
+    "title": "Sign in. Deploy a system. <em>Scale on demand.</em>",
+    "desc": "Automate operations, content and workflows through AI-driven agents. The Chalyb platform hosts a growing library of bots and intelligent systems, with a community of operators running them alongside you.",
+    "cta": "Create your account"
+  },
+  "bots": {
+    "title": "A library of intelligent systems. <em>One platform.</em>",
+    "p": "Create a free account with Google and access the full library — trading, content, scraping, ops automation, AI agents. Test any system in simulation before going live. New tools ship continuously.",
+    "feat1": {
+      "b": "Free to start.",
+      "t": "Connect with Google and run any system in simulation mode."
+    },
+    "feat2": {
+      "b": "Live monitoring.",
+      "t": "Dashboards, metrics and execution history — the same tools we build for ourselves."
+    },
+    "feat3": {
+      "b": "Pay for what you use.",
+      "t": "Unlock one system or full access through a secure gateway."
+    },
+    "feat4": {
+      "b": "Always shipping.",
+      "t": "New systems and capabilities land as we deploy them."
+    }
+  },
+  "dash": {
+    "pnl": "Shadow P&L",
+    "trades": "Trades",
+    "winrate": "Win rate",
+    "bot1": "Polybot — Scalping lane",
+    "bot2": "Pattern Scout — EMA 35/50",
+    "bot3": "Longshot lane",
+    "running": "● running",
+    "locked": "○ locked · upgrade"
+  },
+  "pricing": {
+    "num": "Access",
+    "title": "Start free. <em>Scale when it pays.</em>",
+    "desc": "No contracts, no unnecessary sales calls. Pick a tier, connect with Google, running in under a minute."
+  },
+  "price": {
+    "free": {
+      "name": "Free",
+      "amt": "$0",
+      "per": " /forever",
+      "tag": "Create an account and explore the whole platform.",
+      "f1": "ChalybClip free for 7 days",
+      "f2": "50,000 free AI tokens",
+      "f3": "Community access",
+      "f4": "Watermarked clips · manual download",
+      "btn": "Get started"
+    },
+    "pro": {
+      "name": "Pro",
+      "amt": "MXN $749",
+      "per": " /month",
+      "badge": "Most chosen",
+      "tag": "One engine live, your choice.",
+      "f1": "Everything in Free",
+      "f2": "1 engine live · you pick which",
+      "f3": "1,000,000 tokens / month (refilled monthly)",
+      "f4": "ChalybClip Pro: no watermark · ~12 streams/mo · 1 brand kit",
+      "f5": "Premium community",
+      "btn": "Go Pro"
+    },
+    "vip": {
+      "name": "VIP",
+      "amt": "MXN $2,499",
+      "per": " /month",
+      "tag": "All of Chalyb unlocked — AI + Clip, no limits.",
+      "f1": "Everything in Pro",
+      "f2": "All engines live",
+      "f3": "5× Pro's tokens",
+      "f4": "ChalybClip full streamer package",
+      "f5": "Priority support · the Chalyb team helps build your idea",
+      "btn": "Get VIP"
+    }
+  },
+  "tour": {
+    "step": "{current} of {total}",
+    "later": "See later",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "done": "Got it",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Chalyb",
+        "body": "This is your workspace. Here's the essentials in a minute — you can see it later or close it anytime."
+      },
+      "nav": {
+        "title": "Your menu",
+        "body": "Navigate everything from here, grouped into Your account, Platform and Settings. Switch sections in one click."
+      },
+      "engines": {
+        "title": "Your engines",
+        "body": "Under “My engines” you view, open and activate engines (ChalybClip, ChalybCrypto and more). “Live” = running; “Available” = ready to use on your plan."
+      },
+      "tokens": {
+        "title": "Your token balance",
+        "body": "Under “Usage” you check how many AI tokens you have left this month and your consumption. Out of tokens? Top up or upgrade."
+      },
+      "plan": {
+        "title": "Your plan",
+        "body": "Under “Subscription” you compare Free, Pro and VIP and switch plans. “Billing” has your payments and receipts."
+      },
+      "account": {
+        "title": "Your info",
+        "body": "Under “Profile & security” you update your details, change your password and enable two-factor auth."
+      },
+      "help": {
+        "title": "Need help?",
+        "body": "“Messages” is a direct line to the Chalyb team, and “Help” has guides and support. We've got you."
+      }
+    }
+  },
+  "academy": {
+    "title": "The operator network — <em>Chalyb Academy</em>",
+    "p": "The platform isn't just tools — it's an operator network. Chalyb Academy is the community where builders and operators learn the systems, share what works, and run alongside each other. Free, Premium and VIP tiers, hosted on Skool. Deeper integration into this platform is on the roadmap.",
+    "btn": "Visit Chalyb Academy →"
+  },
+  "contact": {
+    "num": "Get started",
+    "tab": {
+      "client": "Hire us",
+      "partner": "Partner up",
+      "earn": "Use the bots"
+    }
+  },
+  "form": {
+    "name": {
+      "label": "Name",
+      "ph": "Your name"
+    },
+    "company": {
+      "label": "Company",
+      "ph": "Company name"
+    },
+    "email": "Email",
+    "need": {
+      "label": "What do you need built?",
+      "ph": "A platform, an app, a sensor system..."
+    },
+    "budget": "Budget range",
+    "idea": {
+      "label": "Your idea — what do you want to build?",
+      "ph": "Describe the idea and the opportunity you see..."
+    },
+    "bring": {
+      "label": "What do you bring to the partnership?",
+      "ph": "Domain knowledge, market access, drive, time..."
+    },
+    "password": "Password",
+    "google": "Continue with Google",
+    "or": "OR",
+    "client": {
+      "submit": "Send project brief",
+      "fine": "We reply within one business day."
+    },
+    "partner": {
+      "submit": "Pitch the partnership",
+      "fine": "No NDA needed to start a conversation. Equity terms are worked out together, up front."
+    },
+    "earn": {
+      "submit": "Create free account",
+      "fine": "Free account, no card required."
+    }
+  },
+  "budget": {
+    "0": "Select a range",
+    "1": "Under $10k",
+    "2": "$10k – $30k",
+    "3": "$30k – $75k",
+    "4": "$75k+",
+    "5": "Not sure yet"
+  },
+  "cta": {
+    "btn": "Get started",
+    "big": "Build it <em>real.</em>"
+  },
+  "footer": {
+    "brand": "A technology team and AI automation platform. HQ in Mexico City. We build products for clients, partner with founders, and operate intelligent systems with a community of operators.",
+    "build": "Build",
+    "earn": "Platform",
+    "connect": "Connect",
+    "track": "Track record",
+    "contact": "Contact",
+    "bots": "AI tools",
+    "pricing": "Pricing",
+    "signin": "Sign in",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "status": "Status"
+  },
+  "marquee": [
+    "The team",
+    "Partnerships",
+    "The platform",
+    "Operator network",
+    "AI agents",
+    "Automation at scale",
+    "Production systems",
+    "Intelligent infrastructure"
+  ],
+  "path": {
+    "client": {
+      "name": "Client",
+      "kicker": "For businesses that need a build team",
+      "h1": [
+        "You have a project.",
+        "We have the",
+        "<em>team that ships.</em>"
+      ],
+      "lead": "You need real technology built for your business — platforms, apps, intelligent systems. Designed, deployed, ready to operate.",
+      "contactH3": "Tell us what you <em>need built.</em>",
+      "contactP": "A defined brief, a real budget, a team that delivers. Send the project details and we come back with a way forward.",
+      "ctaSub": "A defined project and a team that ships it. That's the client path."
+    },
+    "partner": {
+      "name": "Partner",
+      "kicker": "For founders with an idea and no tech team",
+      "h1": [
+        "You have an idea.",
+        "We become your",
+        "<em>technical partner.</em>"
+      ],
+      "lead": "Smart idea, real drive, limited resources. You don't need a budget — you need a builder. Bring it here and we build it together, as partners in the upside.",
+      "contactH3": "Pitch us the <em>partnership.</em>",
+      "contactP": "Bring the idea and what you put on the table. If it's a fit, we structure the equity together — up front, fair, written down.",
+      "ctaSub": "Your idea, our engineering, shared upside. That's the partner path."
+    },
+    "earn": {
+      "name": "Operator",
+      "kicker": "For operators running intelligent systems",
+      "h1": [
+        "Intelligent systems,",
+        "running for you.",
+        "<em>Live.</em>"
+      ],
+      "lead": "Sign in, browse the library, deploy a system — trading, content, scraping, ops automation. Simulation mode is free. The operator community runs alongside.",
+      "contactH3": "Create your <em>free account.</em>",
+      "contactP": "Connect with Google and you're in — every system available in simulation mode, unlock live execution whenever you're ready.",
+      "ctaSub": "Run the systems, join the operators, scale on demand. That's the platform path."
+    }
+  },
+  "neutral": {
+    "h1": [
+      "Apps, platforms,",
+      "AI systems —",
+      "<em>built for real businesses.</em>"
+    ],
+    "lead": "Chalyb is a technology team and an AI-driven automation platform. We build products for clients, partner with founders who have ideas but no tech team, and operate a growing library of bots and intelligent agents.",
+    "contactH3": "Choose how you want to <em>work with us.</em>",
+    "contactP": "Pick the path that fits — and we start the right conversation from the first message.",
+    "ctaSub": "Hire the team, partner on an idea, or operate the platform — start where it fits."
+  },
+  "position": {
+    "line": "We build real systems that have to run, scale, and stay live in production."
+  },
+  "operate": {
+    "num": "How we operate",
+    "title": "We deliver like a team that runs real systems, <em>not freelancers.</em>",
+    "desc": "Every project runs on the same practices we use on our own live systems. That's what sets a serious technical partner apart from a typical agency.",
+    "items": {
+      "1": { "title": "Automated deploys", "body": "Every release automated, tested and repeatable. Nothing pushed by hand." },
+      "2": { "title": "Infrastructure as code", "body": "AWS managed with Terraform. Nothing set up by clicking around the console." },
+      "3": { "title": "Live monitoring", "body": "Dashboards, alerts and execution history — the same tools we build for clients." },
+      "4": { "title": "Separate environments", "body": "Dev, staging and production kept apart, with checks before anything goes live. No surprises." },
+      "5": { "title": "Easy rollbacks", "body": "Gradual rollouts by default. A bad release never takes the live site down." },
+      "6": { "title": "Security reviews", "body": "Role-based access, two-factor sign-in, rotating secrets, least-privilege access. Built in, not added later." },
+      "7": { "title": "Documented hand-off", "body": "Runbooks, architecture diagrams and decision logs. Your team can take it over cleanly." },
+      "8": { "title": "Weekly demos", "body": "Working software every week. Always something you can try, never just talk." },
+      "9": { "title": "Cloud cost monitoring", "body": "AWS budgets, alerts on odd spend, tagged resources. We don't burn your money." }
+    },
+    "why": {
+      "title": "Not a traditional agency.",
+      "items": {
+        "1": "We run real systems in production",
+        "2": "Cloud architecture experience at enterprise scale",
+        "3": "Talk straight to the engineers — no sales middlemen",
+        "4": "Fewer meetings, more getting things done",
+        "5": "Built to last, delivered like a real product",
+        "6": "Fintech and production-grade backgrounds"
+      }
+    }
+  },
+  "building": {
+    "num": "Currently building",
+    "title": "Live work in <em>progress.</em>",
+    "desc": "Systems we're running or launching right now. Public builds, live in production.",
+    "items": {
+      "1": { "tag": "Trading", "title": "Quantor Polybot", "body": "A Polymarket trading system — Ollama-driven signals, a FastAPI dashboard and a SQLite trade log, live in production." },
+      "2": { "tag": "Platform", "title": "Chalyb operator dashboard", "body": "The platform you're looking at right now. Operators run bots and AI agents from a shared library." },
+      "3": { "tag": "Content automation", "title": "AI clipping infrastructure", "body": "Real-time stream clipping with AI scoring, posting across platforms and dashboards built for creators." },
+      "4": { "tag": "Sensor systems", "title": "Real-time sensor analytics", "body": "Presence-sensing and vision pipelines for activations — results in under a second, from sensor to dashboard." },
+      "5": { "tag": "Telegram + SaaS", "title": "ChalybPicks sports platform", "body": "A local sports picks and Telegram bot platform on a Node/TS monorepo, with Postgres, Redis and an Ollama reasoner." }
+    }
+  },
+  "founder": {
+    "num": "Built by operators",
+    "title": "Not a brand. <em>A team.</em>",
+    "body": "Founder-led, with cloud architecture leadership at a major global payments processor, hands-on PCI DSS 4.0 experience across multi-account AWS organizations, and a track record of delivering multi-tenant SaaS, sensor systems and trading infrastructure. We work the way we build — direct, technical, and reachable when it matters."
+  },
+  "engines": {
+    "title": "My engines",
+    "hero": {
+      "badgeLive": "{count} live now",
+      "badgeIdle": "Your engine hub",
+      "headingContinue": "Pick up where you left off",
+      "headingStart": "Start with ChalybClip",
+      "subContinue": "{name} is running live. Jump back in whenever you want.",
+      "subStart": "Turn your streams into viral clips — the one engine ready to use right now.",
+      "ctaContinue": "Continue →",
+      "ctaOpen": "Open ChalybClip →",
+      "ctaDemo": "View demo"
+    },
+    "sections": {
+      "available": "Available now",
+      "availableSub": "Ready to use on your current plan.",
+      "pro": "Unlock with Pro",
+      "proSub": "Activate these engines by upgrading your plan.",
+      "soon": "Coming soon",
+      "soonSub": "In the works — we'll let you know at launch.",
+      "soonShow": "View upcoming engines ({count})",
+      "soonHide": "Hide upcoming engines"
+    },
+    "card": {
+      "ribbon": "Available now",
+      "statusLive": "Live",
+      "statusTrial": "Live trial",
+      "statusSimulation": "Available",
+      "statusLocked": "Requires {plan}",
+      "statusSoon": "Coming soon",
+      "open": "Open engine →",
+      "openNamed": "Open {name} →",
+      "unlock": "Unlock with Pro",
+      "notify": "Notify me",
+      "details": "View details",
+      "ownerChalyb": "by Chalyb",
+      "ownerBy": "by {owner}",
+      "ownerMine": "Your engine",
+      "notifyDone": "Done — we'll let you know when {name} launches."
+    },
+    "filters": {
+      "aria": "Filter engines",
+      "all": "All",
+      "live": "Live",
+      "simulation": "Available",
+      "coming_soon": "Coming soon",
+      "locked": "Requires Pro",
+      "emptyTitle": "No engines in this filter",
+      "emptyCta": "View all"
+    },
+    "upsell": {
+      "title": "Unlock more engines with Pro",
+      "sub": "Run ChalybCrypto, ChalybOBS and more live with a Pro plan.",
+      "cta": "Upgrade to Pro →"
+    },
+    "caps": {
+      "heading": "Your plan capabilities · {plan}",
+      "headingPriced": "Your plan capabilities · {plan} · {price}/{per}",
+      "liveEngines": "Live engines",
+      "tokens": "AI tokens / mo",
+      "storage": "Storage",
+      "history": "History",
+      "historyYear": "1 year+",
+      "historyDays": "{days} days",
+      "support": "Support",
+      "supportPriority": "Priority",
+      "supportEmail": "Email",
+      "supportCommunity": "Community"
+    },
+    "empty": {
+      "title": "No engines available",
+      "hint": "If you're an admin: run 0010_rename_bots_to_engines.sql in Supabase and refresh."
+    },
+    "marketing": {
+      "chalybclip": {
+        "tagline": "Turn your streams into viral clips, automatically.",
+        "bullets": [
+          "AI finds your best moments",
+          "Vertical 9:16 render ready to post",
+          "Export to TikTok, Reels and Shorts"
+        ]
+      },
+      "chalybcrypto": {
+        "tagline": "24/7 crypto trading signals and automation.",
+        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+      },
+      "chalybobs": {
+        "tagline": "Control your live broadcast from a single panel.",
+        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Connects with ChalybClip"]
+      }
+    },
+    "marketingCat": {
+      "STREAMING": "Automate your live streaming workflow.",
+      "CONTENT": "Generate content at scale with AI.",
+      "TRADING": "Trade with AI signals and automation.",
+      "AGENTS": "AI agents that run tasks for you.",
+      "RESEARCH": "Automated research with AI.",
+      "INTERNAL": "Internal Chalyb platform tool."
+    }
+  }
+}

@@ -1,0 +1,92 @@
+<!--
+  Supabase Auth template: Change email address
+  Paste into: Supabase Dashboard → Authentication → Emails → Change Email Address → Message (HTML)
+  Subject: Confirma tu nuevo correo en Chalyb
+
+  Variables Supabase substitutes here:
+    {{ .ConfirmationURL }} — confirmation link
+    {{ .Email }}            — OLD email (the one currently on the account)
+    {{ .NewEmail }}         — NEW email (what they want to switch to)
+    {{ .Token }}            — OTP if not using link flow
+-->
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="supported-color-schemes" content="dark light" />
+    <title>Confirma tu nuevo correo</title>
+  </head>
+  <body style="margin:0;padding:0;background:#06070b;color:#f4f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+    <div style="display:none;font-size:0;line-height:0;max-height:0;max-width:0;overflow:hidden;opacity:0;color:#06070b;">
+      Confirma el cambio de correo en tu cuenta de Chalyb.
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#06070b;">
+      <tr>
+        <td align="center" style="padding:36px 16px 16px;">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;">
+            <tr>
+              <td style="padding:0 28px 24px;">
+                <div style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#f4f3ee;">
+                  CHALYB
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0f1218;border:1px solid #1f2230;border-radius:14px;padding:32px 28px;">
+                <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.015em;color:#f4f3ee;">
+                  Confirma tu nuevo correo
+                </h1>
+                <p style="margin:0 0 20px;font-size:14px;color:#b9b9c4;line-height:1.55;">
+                  Pediste cambiar el correo de tu cuenta Chalyb:
+                </p>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#06070b;border-radius:8px;margin-bottom:24px;border-collapse:separate;">
+                  <tr>
+                    <td style="padding:12px 16px;border-bottom:1px solid #1f2230;">
+                      <div style="font-size:10.5px;color:#6c6d7c;font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Anterior</div>
+                      <div style="font-size:13.5px;color:#b9b9c4;">{{ .Email }}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px;">
+                      <div style="font-size:10.5px;color:#6c6d7c;font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Nuevo</div>
+                      <div style="font-size:14px;color:#c6f24e;font-weight:600;">{{ .NewEmail }}</div>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 24px;font-size:14px;color:#b9b9c4;line-height:1.55;">
+                  Confirma el cambio haciendo click. Después de eso vas a entrar
+                  con el nuevo correo:
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 24px;">
+                  <tr>
+                    <td style="background:#c6f24e;border-radius:9px;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 28px;color:#070809;text-decoration:none;font-weight:600;font-size:14px;">
+                        Confirmar nuevo correo →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:24px 0 0;padding:12px 14px;background:rgba(255,107,61,0.06);border:1px solid #ff6b3d;border-radius:7px;font-size:12.5px;color:#ff9c7c;line-height:1.55;">
+                  <strong>¿No fuiste tú?</strong> Tu correo NO cambió. Tu sesión
+                  sigue ligada al correo anterior. Escríbenos respondiendo
+                  este correo para reportar el intento.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 28px 40px;font-size:11.5px;color:#6c6d7c;line-height:1.55;font-family:'SF Mono',Menlo,Consolas,monospace;">
+                Chalyb · <a href="https://chalyb.com" style="color:#6c6d7c;text-decoration:underline;">chalyb.com</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

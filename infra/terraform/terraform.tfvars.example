@@ -1,0 +1,56 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+
+project_id = "chalyb-prod"
+region     = "us-central1"
+domain     = "chalyb.com"
+
+# From `gcloud billing accounts list`. Leave empty to skip the budget alert,
+# but set it if you can — video egress is the one line item here that can run
+# away unnoticed.
+billing_account   = "" # e.g. "01ABCD-2345EF-6789GH"
+budget_amount_usd = 50
+
+budget_alert_emails = ["picassoglitch@gmail.com"]
+
+# Rendered clips are re-derivable; keeping them forever is pure cost.
+media_retention_days = 30
+
+# Leave false and put Cloudflare in front of the run.app URLs unless the
+# domain is already verified for this account in Google Search Console.
+enable_domain_mappings = false
+
+# ADDING AN AGENT IS ONE ENTRY HERE. `{}` is a valid entry: it gives a public
+# Cloud Run service that scales to zero, a service account, three secrets and
+# a domain mapping. See docs/infra/adding-an-engine.md, or run
+# `node scripts/new-engine.mjs <slug> "<Name>"` which prints the block to paste.
+#
+# The defaults in variables.tf already describe the three live engines, so
+# this only needs overriding to pin images or add an agent.
+#
+# engines = {
+#   chalybclip = {
+#     display_name = "ChalybClip"
+#     image        = "us-central1-docker.pkg.dev/chalyb-prod/engines/chalybclip:v1"
+#     secret_env_names = {
+#       admin_token  = "NEXO_AI_ADMIN_TOKEN"
+#       sso_secret   = "NEXO_AI_SSO_SECRET"
+#       database_url = "DATABASE_URL"
+#     }
+#     shared_secrets = { NEXOCLIP_ZERNIO_API_KEY = "zernio-api-key" }
+#     worker = {
+#       env              = { NEXOCLIP_ROLE = "worker" }
+#       endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+#     }
+#     jobs = {
+#       drive-poll = {
+#         command  = ["nexoclip"]
+#         args     = ["drive", "poll"]
+#         schedule = "* * * * *"
+#         paused   = true
+#       }
+#     }
+#   }
+#
+#   chalybobs    = { display_name = "ChalybOBS" }
+#   chalybcrypto = { display_name = "ChalybCrypto" }
+# }

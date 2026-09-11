@@ -1,0 +1,78 @@
+<!--
+  Supabase Auth template: Confirm signup
+  Paste into: Supabase Dashboard → Authentication → Emails → Confirm signup → Message (HTML)
+  Subject: Confirma tu cuenta en Chalyb
+
+  Variables Supabase substitutes:
+    {{ .ConfirmationURL }} — full confirm link (already includes site_url + token)
+    {{ .Email }}            — recipient
+    {{ .Token }}            — 6-digit OTP (we don't show it; link-based flow)
+    {{ .SiteURL }}          — your chalyb.com
+
+  Style mirrors src/lib/email/templates.ts (dark navy bg, acid-green accent,
+  system fonts, inline styles only — Gmail strips <style>).
+-->
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="supported-color-schemes" content="dark light" />
+    <title>Confirma tu cuenta en Chalyb</title>
+  </head>
+  <body style="margin:0;padding:0;background:#06070b;color:#f4f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+    <div style="display:none;font-size:0;line-height:0;max-height:0;max-width:0;overflow:hidden;opacity:0;color:#06070b;">
+      Confirma tu correo para terminar de crear tu cuenta en Chalyb.
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#06070b;">
+      <tr>
+        <td align="center" style="padding:36px 16px 16px;">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;">
+            <tr>
+              <td style="padding:0 28px 24px;">
+                <div style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#f4f3ee;">
+                  CHALYB
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0f1218;border:1px solid #1f2230;border-radius:14px;padding:32px 28px;">
+                <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.015em;color:#f4f3ee;">
+                  Confirma tu cuenta
+                </h1>
+                <p style="margin:0 0 24px;font-size:14px;color:#b9b9c4;line-height:1.55;">
+                  Gracias por crear tu cuenta en Chalyb. Confirma tu correo
+                  haciendo click en el botón para activarla:
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 28px;">
+                  <tr>
+                    <td style="background:#c6f24e;border-radius:9px;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 28px;color:#070809;text-decoration:none;font-weight:600;font-size:14px;">
+                        Confirmar mi correo →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid #1f2230;font-size:12px;color:#6c6d7c;line-height:1.55;">
+                  El link expira en 24 horas por seguridad. Si tú no creaste
+                  esta cuenta, puedes ignorar este correo — nadie obtiene
+                  acceso sin confirmar.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 28px 40px;font-size:11.5px;color:#6c6d7c;line-height:1.55;font-family:'SF Mono',Menlo,Consolas,monospace;">
+                Chalyb · operación AI autónoma · <a href="https://chalyb.com" style="color:#6c6d7c;text-decoration:underline;">chalyb.com</a>
+                <br />
+                Te enviamos este correo a {{ .Email }} porque te registraste hace unos segundos.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

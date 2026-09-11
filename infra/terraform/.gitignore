@@ -1,0 +1,10 @@
+.terraform/
+# .terraform.lock.hcl is NOT ignored — it is committed on purpose, so every
+# machine and CI run resolves the same provider version instead of silently
+# picking up a new one that satisfies ~> 6.0.
+*.tfstate
+*.tfstate.*
+*.tfplan
+# Real values live here — never commit. terraform.tfvars.example is the template.
+terraform.tfvars
+*.auto.tfvars
