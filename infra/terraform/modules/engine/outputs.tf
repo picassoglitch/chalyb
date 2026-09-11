@@ -18,7 +18,13 @@ output "service_name" {
 
 output "secret_ids" {
   description = "The three secrets this module created. Each needs a version before the engine starts."
-  value       = [for s in google_secret_manager_secret.own : s.secret_id]
+
+  # Derived from `name` (computed: projects/<p>/secrets/<id>) rather than
+  # `secret_id` (configured). With secret_id, Terraform knows the value from
+  # the config alone, so the output happily listed secrets a partial apply had
+  # never created — which made `terraform output` look like proof of existence
+  # when it was only an echo of the config.
+  value = [for s in google_secret_manager_secret.own : element(split("/", s.name), 3)]
 }
 
 output "job_names" {

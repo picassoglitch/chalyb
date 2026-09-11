@@ -143,11 +143,17 @@ containers; this step only fills them in. If Secret Manager looks empty, that
 is the expected state before `terraform apply` — there is nothing to find yet,
 and nothing is wrong.
 
-Check what actually exists:
+Check what actually exists. Trust this over the console, and over
+`terraform output`:
 
 ```sh
 gcloud secrets list --project=chalyb
 ```
+
+If it lists fewer than eleven, the apply did not finish. **Run `terraform
+apply` again** — it is idempotent and creates only what is missing — and read
+the error from the run that stopped. A first apply that dies partway is
+common; API enablement is usually why.
 
 Three outcomes, and each means something different:
 

@@ -13,10 +13,13 @@ output "artifact_registry" {
 }
 
 output "secrets_needing_values" {
-  description = "Secrets Terraform created empty. Each needs a version before the engines start."
+  description = <<-EOT
+    Secrets that EXIST and hold no value yet. Read from each secret's computed
+    name, so a secret a partial apply never created cannot appear here.
+  EOT
   value = sort(concat(
     flatten([for m in module.engine : m.secret_ids]),
-    [for s in google_secret_manager_secret.shared : s.secret_id],
+    [for s in google_secret_manager_secret.shared : element(split("/", s.name), 3)],
   ))
 }
 
