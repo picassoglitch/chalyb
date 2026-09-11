@@ -1,8 +1,9 @@
 # Supabase
 
 Chalyb runs on project **`uqcbziwdgbnzehipzjxp`**
-(`https://uqcbziwdgbnzehipzjxp.supabase.co`) — a fresh project, separate from
-anything the old deployment used.
+(`https://uqcbziwdgbnzehipzjxp.supabase.co`). This is the **original
+production database** — the Nexo AI project under Quantor's Org — with its
+users, subscriptions and payments intact. It was never a fresh project.
 
 Nothing in the code names a project. Every reference goes through
 `NEXT_PUBLIC_SUPABASE_URL`, so pointing at a different project is config in
@@ -17,42 +18,32 @@ three places and no code change at all:
 `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS completely. It is server-side only:
 never in a client component, never in a `NEXT_PUBLIC_` var.
 
-## Standing up the schema
+## Migrations
 
-The Supabase CLI is a pinned dev dependency, so nothing needs installing:
+The database had 0001–0027 applied through the dashboard, never through the
+CLI, so the CLI's ledger started empty. The first `db push` therefore re-ran
+0001–0009 against a live schema: the `if not exists` guards made most of it a
+no-op, but 0002 and 0005 recreated `bots`, `bot_health`, `bot_personas` and
+`profiles.selected_bot_id` — tables that had long since been renamed — and
+0010 then failed trying to rename `bots` onto the real `engines`.
+
+The one-time repair, already done:
+
+1. `supabase migration repair --status applied 0010 … 0027` (there is no 0021) — tell the ledger what was already there.
+2. Drop the four stray objects 0002/0005 recreated.
+3. `db push` — applies only 0028 onward.
+
+From here it is normal:
 
 ```sh
 pnpm install
-pnpm supabase login      # opens a browser for an access token, once
+pnpm supabase login      # once
 pnpm db:link             # asks for the DATABASE password — Project Settings → Database
 pnpm db:push
 ```
 
-The password prompt at `db:link` wants the Postgres password, not your
-dashboard login. They are different, and the error for the wrong one does not
-say which it wanted.
-
-The migrations apply in filename order and end in the correct state on an
-empty database. Two things about them that look wrong but are not:
-
-- **Several are named `nexoclip` / `nexoobs` / `nexocrypto`.** That is what
-  those rows were called when the migrations ran. `0030` renames them to the
-  Chalyb slugs. Filenames are Supabase's applied-migration ledger — renaming
-  one makes the ledger disagree with the files, so they stay.
-- **The engines land as `coming_soon`, not `active`** (`0028`). That is the
-  desired end state right now: their backends are still being rebuilt on GCP,
-  and the launch guard in `src/app/auth/launch/[slug]/route.ts` keeps users
-  out of an engine that is not serving.
-
-### Squashing
-
-Because this project is new, `0001`–`0031` could be collapsed into a single
-baseline that creates the final state directly, instead of creating
-Nexo-named rows and renaming them two migrations later. Worth doing — but only
-while the project is empty. Once `supabase db push` has run, the ledger
-records those 31 versions and replacing them means reconciling by hand.
-
-So: squash **before** the first push, or not at all.
+Filenames are Supabase's applied-migration ledger. Never rename one, and never
+squash them: this database has a real history.
 
 ## Auth settings that must match
 
