@@ -178,19 +178,51 @@ would record them in the state file, in plaintext, in that bucket.
 terraform output secrets_needing_values
 ```
 
-Generate the shared secrets:
+There are eleven, and they split into two kinds.
+
+**Seven you generate.** Six per-engine tokens plus the Drive encryption key —
+nothing outside decides these values, so make them random and long:
 
 ```sh
-printf '%s' "$(openssl rand -hex 32)" | \
-  gcloud secrets versions add chalybclip-sso-secret --data-file=- --project=chalyb
+for s in chalybclip-admin-token   chalybclip-sso-secret \
+         chalybobs-admin-token    chalybobs-sso-secret \
+         chalybcrypto-admin-token chalybcrypto-sso-secret \
+         drive-token-key; do
+  printf '%s' "$(openssl rand -hex 32)" | \
+    gcloud secrets versions add "$s" --data-file=- --project=chalyb
+done
+```
 
-printf '%s' "$(openssl rand -hex 32)" | \
-  gcloud secrets versions add chalybclip-admin-token --data-file=- --project=chalyb
+**Four come from somewhere else.** The three database URLs are the same
+Supabase connection string — all engines share that Postgres — from Supabase
+→ Project Settings → Database. The Zernio key is issued by Zernio.
+
+```sh
+read -rs DSN   # paste the Supabase DSN; -s keeps it off the screen
+for s in chalybclip-database-url chalybobs-database-url chalybcrypto-database-url; do
+  printf '%s' "$DSN" | gcloud secrets versions add "$s" --data-file=- --project=chalyb
+done
+unset DSN
+
+printf '%s' "sk_..." | \
+  gcloud secrets versions add zernio-api-key --data-file=- --project=chalyb
+```
+
+Confirm every one has a version — a secret with none makes its Cloud Run
+service fail to start, and the error names the mount, not the secret:
+
+```sh
+for s in $(gcloud secrets list --project=chalyb --format='value(name)'); do
+  n=$(gcloud secrets versions list "$s" --project=chalyb --format='value(name)' | wc -l)
+  printf '%-28s %s version(s)\n' "$s" "$n"
+done
 ```
 
 `--data-file=-` reads stdin so the secret never lands in your shell history.
-`printf` rather than `echo` because `echo` appends a newline, and a trailing
-newline in an HMAC secret is a mismatch that is genuinely painful to debug.
+
+`printf` rather than `echo` throughout, because `echo` appends a newline, and
+a trailing newline in an HMAC secret is a mismatch that is genuinely painful
+to debug — the signature simply never matches and nothing says why.
 
 **The pairing rule.** Each value has to be identical on both sides:
 
