@@ -18,11 +18,25 @@ enablement and the first container build.
 | Clips and VODs          | **Cloud Storage**  | Cloud Run has no persistent disk at all                               |
 | RTMP relay (ChalybOBS)  | **Not GCP**        | Cloud Run cannot accept RTMP, and GCP egress on video is brutal       |
 
-## 0. Tools and login
+## 0. The repo, tools, and login
+
+Every path in this runbook is relative to the repo root, so clone it first and
+work from there:
+
+```sh
+cd ~
+git clone https://github.com/picassoglitch/chalyb.git
+cd chalyb
+```
+
+If you are already set up, `cd` to wherever you cloned it. Every later `cd
+infra/terraform` means `<repo>/infra/terraform` — running it from your home
+directory is the "No such file or directory" you get otherwise.
 
 ```sh
 # gcloud: https://cloud.google.com/sdk/docs/install
 gcloud version
+# terraform: https://developer.hashicorp.com/terraform/install
 terraform version   # >= 1.9
 ```
 
@@ -79,6 +93,8 @@ Then uncomment the `backend "gcs"` block in `infra/terraform/versions.tf`. If
 the bucket name differs, change it there too.
 
 ## 3. Terraform
+
+From the repo root:
 
 ```sh
 cd infra/terraform
