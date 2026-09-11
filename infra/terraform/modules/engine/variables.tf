@@ -68,6 +68,11 @@ variable "worker" {
     env             extra environment for the worker, e.g. NEXOCLIP_ROLE=worker
     endpoint_env_var if set, the API service gets this var pointing at the
                     worker's URL, which is how the API learns to dispatch.
+    token_env_var   if set, a random bearer token is generated and injected
+                    under this name into BOTH the API and the worker. The
+                    worker is reachable on its public URL and this token is
+                    what gates it, so leave it unset only for a worker that
+                    does its own authentication some other way.
   EOT
   type = object({
     cpu              = optional(string, "2")
@@ -76,6 +81,7 @@ variable "worker" {
     timeout          = optional(string, "3600s")
     env              = optional(map(string), {})
     endpoint_env_var = optional(string)
+    token_env_var    = optional(string)
   })
   default = null
 }

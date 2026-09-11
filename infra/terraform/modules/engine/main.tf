@@ -1,30 +1,69 @@
 # One agent, end to end.
 #
 # Everything an engine needs lives here so that adding one is a single entry
-# in var.engines: service account, its three secrets, the API service, an
-# optional worker service, optional scheduled jobs, and the domain mapping.
+# in var.engines: service account, its secrets, the API service, an optional
+# worker service, optional scheduled jobs, and the domain mapping.
 #
 # Per-agent service account rather than one shared identity — a compromised
 # engine cannot read another's secrets. The worker shares the API's account:
 # same trust domain, same engine, and one fewer thing to reason about.
 
 locals {
-  # Conventional secret ids. The hub reads the same values from
-  # CHALYB<SLUG>_ADMIN_TOKEN / _SSO_SECRET; the names differ by side, only the
-  # values must match.
-  secrets = {
-    admin_token  = "${var.slug}-admin-token"
-    sso_secret   = "${var.slug}-sso-secret"
+  worker_enabled       = var.worker != null
+  worker_token_enabled = local.worker_enabled && var.worker.token_env_var != null
+
+  # Secrets Terraform GENERATES. Nothing outside decides these values, so a
+  # random one is as good as any. They land in state — the state bucket is
+  # the trust boundary for this whole estate anyway — and this is what lets a
+  # single apply finish: Cloud Run refuses to create a revision whose secret
+  # has no version, so every referenced secret must hold something first.
+  generated = merge(
+    {
+      admin_token = "${var.slug}-admin-token"
+      sso_secret  = "${var.slug}-sso-secret"
+    },
+    local.worker_token_enabled ? { worker_token = "${var.slug}-worker-token" } : {},
+  )
+
+  # Secrets whose real value comes from elsewhere. Created with a placeholder
+  # version so the services can deploy; the runbook has you add the real one.
+  placeholders = {
     database_url = "${var.slug}-database-url"
   }
 
-  worker_enabled = var.worker != null
+  secrets = merge(local.generated, local.placeholders)
 
   # Wire the API to its worker, if the engine wants to know the URL.
   worker_endpoint_env = (
     local.worker_enabled && var.worker.endpoint_env_var != null
     ? { (var.worker.endpoint_env_var) = google_cloud_run_v2_service.worker[0].uri }
     : {}
+  )
+
+  # The shared bearer token the API presents to the worker, injected under the
+  # same name on both sides.
+  worker_token_env = (
+    local.worker_token_enabled
+    ? { (var.worker.token_env_var) = google_secret_manager_secret.own["worker_token"].secret_id }
+    : {}
+  )
+
+  api_secret_env = merge(
+    {
+      (var.secret_env_names.admin_token)  = google_secret_manager_secret.own["admin_token"].secret_id
+      (var.secret_env_names.sso_secret)   = google_secret_manager_secret.own["sso_secret"].secret_id
+      (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
+    },
+    local.worker_token_env,
+    var.shared_secret_env,
+  )
+
+  worker_secret_env = merge(
+    {
+      (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
+    },
+    local.worker_token_env,
+    var.shared_secret_env,
   )
 }
 
@@ -40,9 +79,7 @@ resource "google_storage_bucket_iam_member" "media" {
 }
 
 # ---------------------------------------------------------------------------
-# Secrets. Containers only — values are added out of band with
-# `gcloud secrets versions add`, never through Terraform, which would write
-# the material into state in plaintext.
+# Secrets.
 # ---------------------------------------------------------------------------
 
 resource "google_secret_manager_secret" "own" {
@@ -57,6 +94,31 @@ resource "google_secret_manager_secret" "own" {
   replication {
     auto {}
   }
+}
+
+resource "random_password" "generated" {
+  for_each = local.generated
+
+  length  = 48
+  special = false
+}
+
+resource "google_secret_manager_secret_version" "generated" {
+  for_each = random_password.generated
+
+  secret      = google_secret_manager_secret.own[each.key].id
+  secret_data = each.value.result
+}
+
+# A real value is added out of band as a NEW version; this one stays as
+# version 1 and "latest" moves on. Cloud Run pins "latest" when a revision is
+# created, so adding the real value must be followed by a redeploy — the
+# Cloud Build pipeline does that on every push.
+resource "google_secret_manager_secret_version" "placeholder" {
+  for_each = local.placeholders
+
+  secret      = google_secret_manager_secret.own[each.key].id
+  secret_data = "REPLACE_ME"
 }
 
 resource "google_secret_manager_secret_iam_member" "own" {
@@ -117,24 +179,7 @@ resource "google_cloud_run_v2_service" "engine" {
       }
 
       dynamic "env" {
-        for_each = {
-          (var.secret_env_names.admin_token)  = google_secret_manager_secret.own["admin_token"].secret_id
-          (var.secret_env_names.sso_secret)   = google_secret_manager_secret.own["sso_secret"].secret_id
-          (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-        }
-        content {
-          name = env.key
-          value_source {
-            secret_key_ref {
-              secret  = env.value
-              version = "latest"
-            }
-          }
-        }
-      }
-
-      dynamic "env" {
-        for_each = var.shared_secret_env
+        for_each = local.api_secret_env
         content {
           name = env.key
           value_source {
@@ -158,7 +203,11 @@ resource "google_cloud_run_v2_service" "engine" {
     ]
   }
 
+  # Cloud Run validates every referenced secret version at revision creation.
+  # The versions, and the accessor grants, must exist first.
   depends_on = [
+    google_secret_manager_secret_version.generated,
+    google_secret_manager_secret_version.placeholder,
     google_secret_manager_secret_iam_member.own,
     google_secret_manager_secret_iam_member.shared,
   ]
@@ -187,8 +236,13 @@ resource "google_cloud_run_v2_service" "worker" {
   name     = "${var.slug}-worker"
   location = var.region
 
-  # Only the API dispatches to it.
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  # Reachable over the public URL, on purpose. "Internal" ingress only admits
+  # traffic that arrives through a VPC — a Cloud Run service calling another
+  # Cloud Run service's run.app URL is NOT internal without VPC egress, so
+  # INTERNAL_ONLY would silently block the API. Access is gated by the bearer
+  # token the app itself checks (token_env_var), which is exactly the posture
+  # the Modal worker this emulates had.
+  ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 
   template {
@@ -227,22 +281,7 @@ resource "google_cloud_run_v2_service" "worker" {
       }
 
       dynamic "env" {
-        for_each = {
-          (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-        }
-        content {
-          name = env.key
-          value_source {
-            secret_key_ref {
-              secret  = env.value
-              version = "latest"
-            }
-          }
-        }
-      }
-
-      dynamic "env" {
-        for_each = var.shared_secret_env
+        for_each = local.worker_secret_env
         content {
           name = env.key
           value_source {
@@ -265,11 +304,17 @@ resource "google_cloud_run_v2_service" "worker" {
   }
 
   depends_on = [
+    google_secret_manager_secret_version.generated,
+    google_secret_manager_secret_version.placeholder,
     google_secret_manager_secret_iam_member.own,
     google_secret_manager_secret_iam_member.shared,
   ]
 }
 
+# The API authenticates to the worker with the app-level bearer token, not a
+# Google identity, so Cloud Run's own IAM check has to let the request through.
+# With IAM-restricted invoke, the API's calls would be rejected at the platform
+# layer before the app ever saw the token.
 resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
   count = local.worker_enabled ? 1 : 0
 
@@ -277,7 +322,7 @@ resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
   location = var.region
   name     = google_cloud_run_v2_service.worker[0].name
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.engine.email}"
+  member   = "allUsers"
 }
 
 # ---------------------------------------------------------------------------
@@ -344,7 +389,10 @@ resource "google_cloud_run_v2_job" "job" {
     ]
   }
 
-  depends_on = [google_secret_manager_secret_iam_member.own]
+  depends_on = [
+    google_secret_manager_secret_version.placeholder,
+    google_secret_manager_secret_iam_member.own,
+  ]
 }
 
 resource "google_service_account" "scheduler" {

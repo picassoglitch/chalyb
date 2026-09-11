@@ -30,3 +30,8 @@ output "secret_ids" {
 output "job_names" {
   value = [for j in google_cloud_run_v2_job.job : j.name]
 }
+
+output "placeholder_secret_ids" {
+  description = "Secrets created with a REPLACE_ME version; a human adds the real value."
+  value       = [for k, _ in local.placeholders : element(split("/", google_secret_manager_secret.own[k].name), 3)]
+}

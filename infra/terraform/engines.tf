@@ -45,4 +45,10 @@ module "engine" {
   jobs   = each.value.jobs
 
   enable_domain_mapping = var.enable_domain_mappings
+
+  # Without this the module's resources race API enablement. On a fresh
+  # project the root-level secrets (which do wait) got created and nothing in
+  # the module did — the first apply died on "API not enabled" errors that
+  # read like a broken config.
+  depends_on = [google_project_service.enabled]
 }

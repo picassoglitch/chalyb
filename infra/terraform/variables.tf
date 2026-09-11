@@ -110,6 +110,7 @@ variable "engines" {
       timeout          = optional(string, "3600s")
       env              = optional(map(string), {})
       endpoint_env_var = optional(string)
+      token_env_var    = optional(string)
     }))
 
     jobs = optional(map(object({
@@ -133,6 +134,10 @@ variable "engines" {
         # Cloud Run's filesystem is tmpfs and counts against memory. Scratch
         # only — durable artifacts go to the media bucket.
         NEXOCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
+        # The dispatcher DEFAULTS to in_process, which runs the pipeline
+        # inside the API request and never touches the worker. This is what
+        # makes it dispatch.
+        NEXOCLIP_JOB_DISPATCHER = "modal"
       }
 
       # ChalybClip reads all three WITHOUT its usual NEXOCLIP_ prefix:
@@ -152,6 +157,9 @@ variable "engines" {
       worker = {
         env              = { NEXOCLIP_ROLE = "worker" }
         endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+        # The API sends settings.modal_token as its bearer; the worker accepts
+        # NEXOCLIP_WORKER_TOKEN or NEXOCLIP_MODAL_TOKEN. One name satisfies both.
+        token_env_var = "NEXOCLIP_MODAL_TOKEN"
       }
 
       jobs = {
