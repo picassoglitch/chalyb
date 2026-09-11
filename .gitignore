@@ -51,3 +51,6 @@ next-env.d.ts
 /0?-*.md
 /reference-*.json
 /reference-*.html
+
+# Supabase CLI scratch — created by every `supabase` invocation, never source.
+supabase/.temp/
