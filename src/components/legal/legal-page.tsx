@@ -5,6 +5,7 @@
 // Server pages pass `title`, `lastUpdated`, and the document body as
 // children. The body uses `.legal-prose` markup defined in globals.css.
 
+import { useTranslations } from 'next-intl';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Props) {
+  const t = useTranslations('legal');
+
   return (
     <div className="lp">
       <LandingNav isAuthenticated={isAuthenticated} />
@@ -45,7 +48,7 @@ export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Pro
                 marginBottom: 12,
               }}
             >
-              · Legal ·
+              · {t('kicker')} ·
             </p>
             <h1
               style={{
@@ -68,7 +71,7 @@ export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Pro
                 letterSpacing: '0.04em',
               }}
             >
-              Última actualización · {lastUpdated}
+              {t('updated')} · {lastUpdated}
             </p>
           </div>
 

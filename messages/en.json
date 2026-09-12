@@ -166,7 +166,8 @@
       "rights": "© {year} Chalyb · Mexico City",
       "terms": "Terms",
       "privacy": "Privacy",
-      "status": "Status"
+      "status": "Status",
+      "contact": "Contact"
     }
   },
   "auth": {
@@ -388,5 +389,591 @@
       "RESEARCH": "Automated research with AI.",
       "INTERNAL": "Internal Chalyb platform tool."
     }
+  },
+  "legal": {
+    "kicker": "Legal",
+    "toc": "Contents",
+    "updated": "Last updated",
+    "privacy": {
+      "metaTitle": "Privacy notice",
+      "metaDescription": "How Chalyb collects, uses and protects your personal data. Compliant with the LFPDPPP (Mexico).",
+      "title": "Privacy notice",
+      "updated": "June 17, 2026",
+      "intro": "This privacy notice describes how <b>Chalyb</b> collects, uses, stores and protects your personal data, in compliance with the <b>Mexican Federal Law on the Protection of Personal Data Held by Private Parties (LFPDPPP)</b>, its Regulations, and the INAI guidelines.",
+      "outro": "<b>About this document:</b> this version meets the minimum LFPDPPP requirements for a multi-engine SaaS in Mexico. If you are going to handle health data, sensitive financial data, or data about minors directly, hire a Privacy Officer and run an impact assessment for those cases.",
+      "sections": [
+        {
+          "id": "responsable",
+          "t": "Data controller",
+          "blocks": [
+            {
+              "p": "<b>Chalyb</b>, operating from Mexico, is the controller of your personal data. To exercise any right or ask questions about this notice, write to us through <contact>/contacto</contact>."
+            }
+          ]
+        },
+        {
+          "id": "datos",
+          "t": "Data we collect",
+          "blocks": [
+            {
+              "p": "We collect strictly what the service needs in order to run:"
+            },
+            {
+              "h3": "2.1. Account data"
+            },
+            {
+              "ul": [
+                "Full name",
+                "Email address",
+                "Profile picture (if you sign up with Google)",
+                "Password hashed with bcrypt — we never store the plain text"
+              ]
+            },
+            {
+              "h3": "2.2. Payment data"
+            },
+            {
+              "ul": [
+                "Transaction ID and amounts processed by <b>Mercado Pago</b>. We do NOT store your card details — Mercado Pago handles those directly under its own privacy notice.",
+                "Tier history (Free / Pro / VIP) and the date of each change."
+              ]
+            },
+            {
+              "h3": "2.3. Usage data"
+            },
+            {
+              "ul": [
+                "AI token consumption events per engine — when, how many, and which engine used them.",
+                "Sign-in records (date and time, IP, browser) — kept for 90 days to detect fraud.",
+                "Active engine selection, bot configuration, execution preferences."
+              ]
+            },
+            {
+              "h3": "2.4. Content you generate in the Engines"
+            },
+            {
+              "ul": [
+                "VODs you upload to ChalybClip, generated clips, transcripts, caption variants.",
+                "Streams routed through ChalybStreamManager, saved layouts, OAuth connections to destination platforms (TikTok, YouTube, Twitch, Kick).",
+                "Prompts, AI persona configurations, saved contexts."
+              ]
+            },
+            {
+              "p": "We store your content encrypted and only process it when you ask us to. We do not use it to train public models and we do not share it with third parties without your permission."
+            }
+          ]
+        },
+        {
+          "id": "finalidades",
+          "t": "Purposes of processing",
+          "blocks": [
+            {
+              "p": "We process your data to:"
+            },
+            {
+              "ul": [
+                "<b>Run the service</b> you signed up for (subscription, engine execution, payments).",
+                "<b>Transactional communication</b>: payment confirmations, quota alerts, security notifications.",
+                "<b>Technical support</b>: answering your requests via <contact>/contacto</contact>.",
+                "<b>Tax invoicing</b>: issuing a CFDI when you request one with your RFC.",
+                "<b>Legal compliance</b>: responding to legally valid requests from authorities.",
+                "<b>Fraud detection</b>: analyzing payment and usage patterns to prevent abuse.",
+                "<b>Product improvement</b>: aggregated, anonymous statistics — never with data that identifies you."
+              ]
+            },
+            {
+              "p": "<b>We do NOT use your data for:</b> third-party advertising, selling databases, training public AI models, or building profiles for purposes unrelated to the service."
+            }
+          ]
+        },
+        {
+          "id": "terceros",
+          "t": "Third parties we share data with",
+          "blocks": [
+            {
+              "p": "We share strictly what is necessary with providers that help us run the service. All of them are bound by contractual confidentiality and limited-processing obligations:"
+            },
+            {
+              "ul": [
+                "<b>Supabase</b> (USA) — database, authentication, storage. Hosts your account and content. SOC2 Type II compliant.",
+                "<b>Mercado Pago</b> (Argentina/Mexico) — payment processing. Receives your email and the amount in order to charge it.",
+                "<b>Vercel</b> (USA) — hosting for the web platform. Receives anonymized access logs.",
+                "<b>Resend</b> (USA) — transactional email delivery. Receives your email and name.",
+                "<b>Anthropic</b> (USA) — provider of the Claude model. Receives the prompts you send through the engines, with no account metadata attached. Anthropic does not train on this data.",
+                "<b>Integrated engines</b> (ChalybClip, ChalybStreamManager): see section 5."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "engines",
+          "t": "Data sent to the Engines",
+          "blocks": [
+            {
+              "p": "When you activate an Engine, Chalyb creates an account for you in it. We send:"
+            },
+            {
+              "ul": [
+                "Your Chalyb user_id (an opaque identifier).",
+                "Your email address.",
+                "Your display name.",
+                "Your current tier (free / pro / vip) — so the engine knows which features to enable."
+              ]
+            },
+            {
+              "p": "That information lets the Engine create your workspace and validate your access. Any additional content you generate <b>inside</b> the Engine (VODs, clips, configurations) is governed by that Engine’s own privacy notice, which you accept the first time you activate it."
+            }
+          ]
+        },
+        {
+          "id": "cookies",
+          "t": "Cookies and similar technologies",
+          "blocks": [
+            {
+              "p": "We use cookies to:"
+            },
+            {
+              "ul": [
+                "<b>Session</b>: keep you signed in (HTTP-only, secure, SameSite=Lax cookie). Required to use the platform.",
+                "<b>Preferences</b>: remember your language (es/en) and the tier selected in the picker. Expires after 12 months.",
+                "<b>Anonymous analytics</b> (Vercel Analytics): pageview counts without identifying you personally. No third-party cookies, no cross-site tracking."
+              ]
+            },
+            {
+              "p": "We do not use advertising cookies, cross-site tracking, or browser fingerprinting."
+            }
+          ]
+        },
+        {
+          "id": "retencion",
+          "t": "Data retention",
+          "blocks": [
+            {
+              "ul": [
+                "<b>Active account</b>: your data is kept for as long as your account is open.",
+                "<b>After you close your account</b>: we delete identifiable personal data within 30 calendar days.",
+                "<b>Legal exceptions</b>: tax invoices (5 years, required by the SAT), fraud/security logs (90 days after closure), technical backups (up to 90 days after the main deletion).",
+                "<b>Aggregated/anonymized data</b>: may be kept indefinitely for statistics and service improvement. This data cannot re-identify you."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "derechos",
+          "t": "Your ARCO rights",
+          "blocks": [
+            {
+              "p": "Under the LFPDPPP, you have the right to:"
+            },
+            {
+              "ul": [
+                "<b>Access</b>: request a copy of the data we hold about you.",
+                "<b>Rectification</b>: correct inaccurate or incomplete data.",
+                "<b>Cancellation</b>: request deletion of your data (subject to the legal exceptions above).",
+                "<b>Objection</b>: object to a specific use of your data."
+              ]
+            },
+            {
+              "p": "You can also:"
+            },
+            {
+              "ul": [
+                "<b>Withdraw your consent</b> at any time, which ends your use of the service.",
+                "<b>Limit use</b> to the purposes strictly necessary for the service you contracted.",
+                "<b>Port your data</b>: export it as structured JSON to take it to another provider."
+              ]
+            },
+            {
+              "p": "To exercise any of these rights, write to us through <contact>/contacto</contact> with the subject «ARCO rights». We answer within <b>20 business days</b>, the deadline set by the LFPDPPP. If you are not satisfied with our response, you can file a complaint with <b>INAI</b> (Mexico’s National Institute for Transparency, Access to Information and Personal Data Protection)."
+            }
+          ]
+        },
+        {
+          "id": "transferencias",
+          "t": "International transfers",
+          "blocks": [
+            {
+              "p": "Some of our providers (Supabase, Vercel, Resend, Anthropic) operate from the United States. By using Chalyb you <b>authorize the international transfers required</b> for the service to work."
+            },
+            {
+              "p": "These providers meet standards equivalent to or higher than the LFPDPPP requires. We keep contractual clauses that oblige them to protect your data under international standards (SOC2, ISO 27001, GDPR where applicable)."
+            }
+          ]
+        },
+        {
+          "id": "seguridad",
+          "t": "Security measures",
+          "blocks": [
+            {
+              "p": "We implement reasonable technical and administrative measures to protect your data:"
+            },
+            {
+              "ul": [
+                "Encryption in transit (HTTPS/TLS 1.3) on every connection.",
+                "Encryption at rest for sensitive data in the database.",
+                "Irreversible hashing for passwords (bcrypt).",
+                "Optional two-factor authentication (2FA) for accounts.",
+                "Row-Level Security in Supabase to isolate data between users.",
+                "Service-role keys never exposed to the client.",
+                "Audit logs for administrative actions (tier and role changes, access to other users’ data).",
+                "Automatic daily backups with 7-day retention.",
+                "Production access restricted to authorized staff with MFA."
+              ]
+            },
+            {
+              "p": "No security measure is perfect. If a breach puts your personal data at risk, we will tell you within <b>72 hours</b>, following international best practice."
+            }
+          ]
+        },
+        {
+          "id": "menores",
+          "t": "Minors",
+          "blocks": [
+            {
+              "p": "Chalyb is not directed at people under 18. We do not knowingly collect data from minors. If we discover we hold data about a minor without parental or guardian authorization, we delete it immediately. If you are a parent or guardian and believe a minor in your care gave us data, contact us via <contact>/contacto</contact> so we can resolve it."
+            }
+          ]
+        },
+        {
+          "id": "cambios",
+          "t": "Changes to this notice",
+          "blocks": [
+            {
+              "p": "We may update this notice when our practices or the applicable regulation change. For substantial changes (new providers, new purposes, changes to international transfers):"
+            },
+            {
+              "ul": [
+                "We notify you by email at least 14 calendar days in advance.",
+                "We publish the new version on this page with an updated date.",
+                "If the changes affect secondary purposes, you will be able to object before they take effect."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contacto",
+          "t": "Contact",
+          "blocks": [
+            {
+              "p": "For any question, to exercise ARCO rights, or to report a privacy incident:"
+            },
+            {
+              "ul": [
+                "Form: <contact>/contacto</contact>",
+                "Suggested subject: «Privacy — [your reason]»"
+              ]
+            },
+            {
+              "p": "We answer within <b>20 business days</b> for formal ARCO requests and in under 24 business hours for general questions."
+            }
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Terms of service",
+      "metaDescription": "Terms and conditions for using Chalyb and its engines (ChalybClip, ChalybStreamManager and future products).",
+      "title": "Terms of service",
+      "updated": "June 17, 2026",
+      "intro": "Welcome to Chalyb. These terms of service (the «Terms») are an agreement between you (the «User») and <b>Chalyb</b>, operated from Mexico. By creating an account, buying a subscription or using any of our products, you accept these Terms in full. If you do not agree, do not use the service.",
+      "outro": "<b>About this document:</b> this version is a reasonable operating baseline for a multi-engine SaaS in Mexico. For real disputes, enterprise contracts, or expansion into other jurisdictions, have a specialized lawyer review and adapt it to your specific situation.",
+      "sections": [
+        {
+          "id": "aceptacion",
+          "t": "Acceptance of the terms",
+          "blocks": [
+            {
+              "p": "Access to Chalyb and the Engines is conditional on your acceptance of these Terms. Whenever we make a substantial change, we notify you by email and publish the updated version on this page at least <b>14 calendar days</b> before it takes effect. If you keep using the service after that date, you accept the changes."
+            }
+          ]
+        },
+        {
+          "id": "definiciones",
+          "t": "Definitions",
+          "blocks": [
+            {
+              "ul": [
+                "<b>Platform</b>: the <code>chalyb.com</code> website, including the operator panel (<code>/app</code>), the admin dashboard (<code>/dashboard</code>), the public APIs, and the marketing pages.",
+                "<b>Engine</b>: each independent product integrated into the Platform. As of this version: <b>ChalybClip</b> (clip generator for streams/VODs) and <b>ChalybStreamManager</b> (central control for live broadcasts). Each Engine runs on its own infrastructure under its own license and usage policy.",
+                "<b>Subscription</b>: recurring monthly access to the Platform and to one or more Engines according to the plan you contracted.",
+                "<b>Tier</b>: access level. Current tiers: <code>FREE</code>, <code>PRO</code>, <code>VIP</code>. What each one includes is published at <sub>/app/subscription</sub>.",
+                "<b>Content</b>: any data you upload, generate through an Engine, or enter into the Platform (VODs, prompts, configurations, third-party OAuth credentials, etc.)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cuenta",
+          "t": "Your account",
+          "blocks": [
+            {
+              "p": "You need an account to use the Engines. When you register:"
+            },
+            {
+              "ul": [
+                "You must be 18 or older, or have authorization from your legal guardian.",
+                "You agree to provide accurate information and keep it up to date.",
+                "You are responsible for your account’s security — password, active sessions and, if you enabled it, the second factor (2FA).",
+                "An account is individual. Do not share it. For team access use the <team>/dashboard/team</team> panel with the configured roles."
+              ]
+            },
+            {
+              "p": "We reserve the right to suspend accounts created with false information, accounts that abuse the Free tier (multiple accounts for the same person), or accounts that break the acceptable-use rules."
+            }
+          ]
+        },
+        {
+          "id": "planes",
+          "t": "Plans and subscriptions",
+          "blocks": [
+            {
+              "p": "We currently offer three tiers:"
+            },
+            {
+              "ul": [
+                "<b>Free</b>: $0 MXN. Access to every Engine in simulation mode. No live execution. Reduced quotas.",
+                "<b>Pro</b>: $749 MXN / month. Live execution of ONE Engine of your choice, extended quotas, email support.",
+                "<b>VIP</b>: $2,499 MXN / month. Live execution of every active Engine, maximum quotas, priority support."
+              ]
+            },
+            {
+              "p": "Prices can change — we notify you by email at least 30 calendar days before applying a new price to your active subscription. If you do not agree, you can cancel before the change date at no extra cost."
+            }
+          ]
+        },
+        {
+          "id": "pagos",
+          "t": "Payments, renewal and cancellation",
+          "blocks": [
+            {
+              "p": "Payments are processed through <b>Mercado Pago</b>. By activating a paid subscription you authorize the recurring monthly charge to the payment method you registered. Renewal is automatic until you cancel."
+            },
+            {
+              "p": "<b>Cancelling</b>: from <sub>/app/subscription</sub> → «Cancel plan». Cancellation is <b>immediate</b> in the sense that it stops renewal, but <b>you keep access to your current plan until the end of the period you already paid for</b>. After that you drop to Free automatically."
+            },
+            {
+              "p": "If a recurring charge fails (expired card, insufficient funds, bank rejection), we notify you by email and retry three times over the following 7 days. If all three attempts fail, we temporarily suspend live execution until you resolve the payment. Your data is not deleted during this period."
+            }
+          ]
+        },
+        {
+          "id": "reembolsos",
+          "t": "Refund policy",
+          "blocks": [
+            {
+              "p": "We refund <b>100% of the first charge</b> if you request it within <b>7 calendar days</b> of it. After that window, charges are non-refundable, but you can cancel renewal at any time."
+            },
+            {
+              "p": "To request a refund, write to us through <contact>/contacto</contact> with the subject «Refund» and include the payment ID. We process eligible refunds within 5 to 10 business days, subject to Mercado Pago’s timelines."
+            }
+          ]
+        },
+        {
+          "id": "engines",
+          "t": "Engines and integrated products",
+          "blocks": [
+            {
+              "p": "Each Engine is an independent product operating under its own license and technical rules. When you activate an Engine from Chalyb:"
+            },
+            {
+              "ul": [
+                "You also accept that Engine’s specific terms, if it publishes any. We show them to you the first time you activate it.",
+                "Chalyb provisions an account for you in the Engine and keeps your tier (Free / Pro / VIP) in sync.",
+                "Job execution (clips, broadcasts, AI calls) runs on the Engine’s infrastructure. Logs, failures or technical disputes about that execution are handled through Chalyb, which coordinates with the Engine operator."
+              ]
+            },
+            {
+              "p": "<b>ChalybClip</b> in particular processes video content that you upload or download from external sources. You are responsible for holding the rights to that content (see Section 9)."
+            }
+          ]
+        },
+        {
+          "id": "uso",
+          "t": "Acceptable use",
+          "blocks": [
+            {
+              "p": "You may NOT use Chalyb or the Engines to:"
+            },
+            {
+              "ul": [
+                "Carry out activities that are illegal under Mexican law or the law of your jurisdiction.",
+                "Process content that infringes third-party copyright, trademarks or image rights without authorization.",
+                "Generate or distribute content that promotes hate, violence, abuse or deliberate disinformation.",
+                "Run mass scraping, brute-force attacks, or attempt to evade quotas and technical limits.",
+                "Resell access to Chalyb or to an Engine without prior written authorization.",
+                "Use the Platform to train competing AI models without a written agreement."
+              ]
+            },
+            {
+              "p": "Detected violations can result in temporary suspension, account termination without refund, and/or a report to the relevant authorities."
+            }
+          ]
+        },
+        {
+          "id": "contenido",
+          "t": "Your content and licenses",
+          "blocks": [
+            {
+              "p": "<b>You own your content.</b> We claim no ownership over the VODs you upload, the clips ChalybClip generates for you, the prompts you write, or the streams you route through ChalybStreamManager."
+            },
+            {
+              "p": "To run the service, however, you grant us a <b>limited, non-exclusive, royalty-free license</b> to:"
+            },
+            {
+              "ul": [
+                "Store, process and transmit your content on the infrastructure needed to run the Engines (our own servers, Supabase, GPU compute providers).",
+                "Generate technical derivatives (clips, transcripts, thumbnails, caption variants, vector embeddings) when you request them through an Engine.",
+                "Use aggregated, anonymized metadata (not your content itself) to improve our products."
+              ]
+            },
+            {
+              "p": "This license ends when you delete the content or close your account, with a reasonable margin to purge technical copies from backups (up to 90 days)."
+            }
+          ]
+        },
+        {
+          "id": "propiedad",
+          "t": "Chalyb’s intellectual property",
+          "blocks": [
+            {
+              "p": "The name, logo, source code, design and logic of Chalyb and the Engines belong to their respective owners. Your subscription grants you the right to <b>use</b> the service, not to copy, redistribute, decompile or create derivative works from it."
+            }
+          ]
+        },
+        {
+          "id": "disponibilidad",
+          "t": "Service availability",
+          "blocks": [
+            {
+              "p": "We do our best to keep Chalyb and the Engines available 24/7, but <b>we do not guarantee contractual uptime</b>. There can be:"
+            },
+            {
+              "ul": [
+                "Scheduled maintenance (we notify you by email at least 24 hours in advance).",
+                "Outages from causes outside our control (cloud provider incidents, DDoS attacks, network failures).",
+                "Changes to features, APIs or engines as the platform evolves. We keep reasonable backward compatibility and announce changes that break existing integrations at least 60 days ahead."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "responsabilidad",
+          "t": "Limitation of liability",
+          "blocks": [
+            {
+              "callout": "<b>This section limits what you can legally claim from us.</b> Read it carefully."
+            },
+            {
+              "p": "To the maximum extent permitted by applicable law:"
+            },
+            {
+              "ul": [
+                "Chalyb provides the service «as is» (<em>as-is</em>), with no express or implied warranties beyond those the law requires.",
+                "We are not liable for indirect, incidental or consequential damages (lost profits, data loss, reputational harm, etc.) arising from the use of, or inability to use, the service.",
+                "Our total cumulative liability for any claim is limited to the amount you paid Chalyb during the <b>12 months immediately before</b> the event giving rise to the claim.",
+                "Nothing in these Terms limits liabilities that Mexican law declares non-waivable (for example, consumer rights under the LFPC)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "terminacion",
+          "t": "Suspension and termination",
+          "blocks": [
+            {
+              "p": "<b>You can terminate</b> your account at any time. Cancel the subscription from <sub>/app/subscription</sub>, then request account deletion through <contact>/contacto</contact>. We delete your personal data within 30 calendar days, keeping only what the law requires (tax invoices, anti-fraud logs)."
+            },
+            {
+              "p": "<b>We can terminate</b> your account immediately, without refund, if:"
+            },
+            {
+              "ul": [
+                "You break the acceptable-use rules (Section 8).",
+                "You miss two consecutive payment cycles after the notices.",
+                "We detect fraudulent or malicious use of the service."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cambios",
+          "t": "Changes to these terms",
+          "blocks": [
+            {
+              "p": "We may modify these Terms to reflect legal changes, new products, price adjustments or operational clarifications. For substantial changes:"
+            },
+            {
+              "ul": [
+                "We publish the new version on this page with the «Last updated» date.",
+                "We email you at least 14 calendar days before it takes effect.",
+                "If you keep using the service after that date, you accept the new version.",
+                "If you do not agree, you can cancel before that date with no penalty."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ley",
+          "t": "Governing law and jurisdiction",
+          "blocks": [
+            {
+              "p": "These Terms are governed by the laws of the <b>United Mexican States</b>, without regard to conflict-of-law rules. For any dispute that cannot be resolved amicably, the parties submit to the competent courts of <b>Mexico City</b>, expressly waiving any other venue that might apply to them."
+            },
+            {
+              "p": "If you are a consumer under the Mexican Federal Consumer Protection Law (LFPC), you keep every right that law grants you, including the right to file complaints with PROFECO."
+            }
+          ]
+        },
+        {
+          "id": "contacto",
+          "t": "Contact",
+          "blocks": [
+            {
+              "p": "For any question about these Terms, write to us through <contact>/contacto</contact>. We answer in under 24 business hours."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Let’s talk. Write to us about integrations, partnerships, demos or any question about the platform.",
+    "kicker": "Contact",
+    "title": "Let’s talk.",
+    "lead": "Want a demo, need to integrate something, thinking about partnering, or wondering how Chalyb can bring order to your operation? Write to us and we answer in under 24 business hours.",
+    "notes": {
+      "1": "We answer in under 24 business hours",
+      "2": "Your email is never published",
+      "3": "We will not add you to any newsletter"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "What is this about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us what you are trying to solve with Chalyb.",
+      "submit": "Send message →",
+      "sending": "Sending…",
+      "doneTitle": "● Message received",
+      "doneBody": "Thanks for writing. We answer to the address you left in under 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation.",
+      "errors": {
+        "name": "Name required (2–120 characters).",
+        "email": "Invalid email address.",
+        "subject": "Subject required (3–200 characters).",
+        "message": "Message required (10–5000 characters).",
+        "rateLimited": "We received a lot of messages from your connection. Wait a few minutes and try again.",
+        "sendFailed": "We could not send your message. Try again in a few minutes.",
+        "generic": "The message could not be sent."
+      }
+    }
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English"
   }
 }

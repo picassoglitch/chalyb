@@ -26,12 +26,23 @@ import { headers } from 'next/headers';
 type ContactPane = 'client' | 'partner' | 'earn';
 const VALID_PANES: ContactPane[] = ['client', 'partner', 'earn'];
 
+/** What went wrong, as a key under `contact.form.errors` in messages/*.json.
+ *  The action stays locale-agnostic — the form renders the message in the
+ *  visitor's language, so /en never shows a Spanish error. */
+export type ContactErrorCode =
+  | 'name'
+  | 'email'
+  | 'subject'
+  | 'message'
+  | 'rateLimited'
+  | 'sendFailed';
+
 export interface ContactResult {
   ok: boolean;
   /** Field name that failed validation, if any. */
   fieldError?: 'name' | 'email' | 'subject' | 'message';
-  /** General error for toast display. */
-  error?: string;
+  /** Which message to show. Translated client-side. */
+  errorCode?: ContactErrorCode;
 }
 
 // In-memory rate-limit bucket. Key = IP, value = array of timestamps within window.
@@ -71,16 +82,16 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     : 'client';
 
   if (name.length < 2 || name.length > 120) {
-    return { ok: false, fieldError: 'name', error: 'Nombre requerido (2–120 caracteres).' };
+    return { ok: false, fieldError: 'name', errorCode: 'name' };
   }
   if (!EMAIL_RE.test(email) || email.length > 200) {
-    return { ok: false, fieldError: 'email', error: 'Correo inválido.' };
+    return { ok: false, fieldError: 'email', errorCode: 'email' };
   }
   if (subject.length < 3 || subject.length > 200) {
-    return { ok: false, fieldError: 'subject', error: 'Asunto requerido (3–200 caracteres).' };
+    return { ok: false, fieldError: 'subject', errorCode: 'subject' };
   }
   if (message.length < 10 || message.length > 5000) {
-    return { ok: false, fieldError: 'message', error: 'Mensaje requerido (10–5000 caracteres).' };
+    return { ok: false, fieldError: 'message', errorCode: 'message' };
   }
 
   // Rate limit by best-guess IP. x-forwarded-for is what Vercel/most proxies set;
@@ -92,10 +103,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     'local';
   const userAgent = h.get('user-agent') ?? null;
   if (!checkRate(ip)) {
-    return {
-      ok: false,
-      error: 'Recibimos muchos mensajes desde tu conexión. Espera unos minutos y vuelve a intentarlo.',
-    };
+    return { ok: false, errorCode: 'rateLimited' };
   }
 
   // Templates live in src/lib/email/templates.ts — branded shell with dark
@@ -121,7 +129,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   });
 
   if (!inboxResult.ok && inboxResult.reason !== 'not_configured') {
-    return { ok: false, error: 'No pudimos enviar tu mensaje. Vuelve a intentarlo en unos minutos.' };
+    return { ok: false, errorCode: 'sendFailed' };
   }
 
   // Persist to partner_inquiries so the admin inbox shows it even if the

@@ -1,7 +1,8 @@
-import { type NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { createServerClient } from '@supabase/ssr';
 import { routing } from '@/i18n/routing';
+import { PATHNAME_HEADER } from '@/lib/auth/pathname';
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -29,7 +30,15 @@ function needsAuthRefresh(pathname: string): boolean {
 const AUTH_REFRESH_TIMEOUT_MS = 4000;
 
 export async function middleware(request: NextRequest) {
-  const response = intlMiddleware(request);
+  // Stamp the path the browser actually asked for (locale prefix and query
+  // included) so server components can read it back. next-intl rewrites
+  // /app/billing to /es/app/billing and copies the incoming headers onto the
+  // rewritten request, so the header survives the hop. requireUser() uses it
+  // to build ?next= — without it, every protected page under /app shared the
+  // layout's hardcoded '/app' and sign-in dropped the real destination.
+  const forwardedHeaders = new Headers(request.headers);
+  forwardedHeaders.set(PATHNAME_HEADER, request.nextUrl.pathname + request.nextUrl.search);
+  const response = intlMiddleware(new NextRequest(request, { headers: forwardedHeaders }));
 
   // Public route — skip the Supabase round-trip entirely. ~99% of requests.
   if (!needsAuthRefresh(request.nextUrl.pathname)) {

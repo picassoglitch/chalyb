@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 import { ContactForm } from './contact-form';
@@ -5,6 +6,8 @@ import { ContactForm } from './contact-form';
 // Shares the landing's minimal sticky nav + footer so /contacto keeps the
 // same visual identity as the public site.
 export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const t = useTranslations('contact');
+
   return (
     <div className="lp">
       <LandingNav isAuthenticated={isAuthenticated} />
@@ -34,7 +37,7 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
                 marginBottom: 12,
               }}
             >
-              · Contacto ·
+              · {t('kicker')} ·
             </p>
             <h1
               style={{
@@ -47,7 +50,7 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
                 color: 'var(--ink)',
               }}
             >
-              Hablemos.
+              {t('title')}
             </h1>
             <p
               style={{
@@ -57,8 +60,7 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
                 maxWidth: '56ch',
               }}
             >
-              ¿Quieres una demo, integrar algo, sumarte como partner o saber cómo Chalyb puede poner
-              orden en tu operación? Escríbenos y te respondemos en menos de 24 horas hábiles.
+              {t('lead')}
             </p>
           </div>
 
@@ -86,9 +88,9 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
               fontFamily: 'var(--font-mono), monospace',
             }}
           >
-            <span>· Te respondemos en menos de 24h hábiles</span>
-            <span>· Tu correo no se publica</span>
-            <span>· No te metemos a ningún newsletter</span>
+            <span>· {t('notes.1')}</span>
+            <span>· {t('notes.2')}</span>
+            <span>· {t('notes.3')}</span>
           </div>
         </div>
       </main>

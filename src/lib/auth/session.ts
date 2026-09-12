@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import type { Route } from 'next';
 import type { User } from '@supabase/supabase-js';
+import { signInHref } from '@/lib/auth/pathname';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'OPERATOR' | 'EDITOR' | 'VIEWER' | 'CLIENT';
 // PARTNER landed in migration 0014 as a 4th tier. Same access as PRO plus
@@ -82,20 +84,23 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   };
 }
 
-export async function requireUser(currentPath?: string): Promise<User> {
+/**
+ * `fallbackPath` is only used when the middleware-stamped path is missing —
+ * signInHref() prefers the real request path, so a guard on a shared layout
+ * still returns the visitor to the exact page they asked for.
+ */
+export async function requireUser(fallbackPath = '/app'): Promise<User> {
   const user = await getCurrentUser();
   if (!user) {
-    const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    redirect(`/sign-in${next}`);
+    redirect((await signInHref(fallbackPath)) as Route);
   }
   return user;
 }
 
-export async function requireRole(min: UserRole, currentPath?: string): Promise<SessionUser> {
+export async function requireRole(min: UserRole, fallbackPath = '/app'): Promise<SessionUser> {
   const session = await getSessionUser();
   if (!session) {
-    const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    redirect(`/sign-in${next}`);
+    redirect((await signInHref(fallbackPath)) as Route);
   }
   if (ROLE_TIER[session.role] < ROLE_TIER[min]) {
     redirect('/account?error=insufficient_role');

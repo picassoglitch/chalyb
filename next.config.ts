@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
       { source: '/:locale(en|es)/login', destination: '/:locale/sign-in', permanent: true },
       { source: '/:locale(en|es)/register', destination: '/:locale/sign-in?mode=signup', permanent: true },
       { source: '/:locale(en|es)/signup', destination: '/:locale/sign-in?mode=signup', permanent: true },
+      // The contact page has always lived at /contacto in both locales.
+      // /contact is what English readers (and old links) type — send them to
+      // the real page instead of a 404.
+      { source: '/contact', destination: '/contacto', permanent: true },
+      { source: '/:locale(en|es)/contact', destination: '/:locale/contacto', permanent: true },
+      // Pricing is a section of the landing, not a page of its own.
+      { source: '/pricing', destination: '/#pricing', permanent: true },
+      { source: '/:locale(en|es)/pricing', destination: '/:locale/#pricing', permanent: true },
     ];
   },
 };

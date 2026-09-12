@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { submitContactForm } from '@/lib/contact/contact-actions';
+import { useTranslations } from 'next-intl';
+import { submitContactForm, type ContactErrorCode } from '@/lib/contact/contact-actions';
 
 type FieldError = 'name' | 'email' | 'subject' | 'message' | null;
 type Pane = 'client' | 'partner' | 'earn';
@@ -15,9 +16,12 @@ interface Props {
 }
 
 export function ContactForm({ pane = 'client' }: Props = {}) {
+  const t = useTranslations('contact.form');
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // The server action returns a code, never a sentence — the copy is picked
+  // here so the form speaks the locale the visitor is reading.
+  const [error, setError] = useState<ContactErrorCode | 'generic' | null>(null);
   const [fieldError, setFieldError] = useState<FieldError>(null);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -28,7 +32,7 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
     startTransition(async () => {
       const res = await submitContactForm(fd);
       if (!res.ok) {
-        setError(res.error ?? 'No se pudo enviar el mensaje.');
+        setError(res.errorCode ?? 'generic');
         setFieldError(res.fieldError ?? null);
         return;
       }
@@ -57,10 +61,9 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
             marginBottom: 8,
           }}
         >
-          ● Mensaje recibido
+          {t('doneTitle')}
         </div>
-        Gracias por escribirnos. Te respondemos al correo que dejaste en menos de 24 horas
-        hábiles. Revisa tu bandeja de entrada (y la carpeta de spam, por si acaso) para la confirmación.
+        {t('doneBody')}
       </div>
     );
   }
@@ -101,43 +104,43 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
       <input type="hidden" name="pane" value={pane} />
 
       <div className={fieldClass('name')}>
-        <label htmlFor="contact-name">Nombre</label>
+        <label htmlFor="contact-name">{t('name')}</label>
         <input
           id="contact-name"
           name="name"
           type="text"
           required
           maxLength={120}
-          placeholder="Tu nombre completo"
+          placeholder={t('namePlaceholder')}
         />
       </div>
 
       <div className={fieldClass('email')}>
-        <label htmlFor="contact-email">Correo</label>
+        <label htmlFor="contact-email">{t('email')}</label>
         <input
           id="contact-email"
           name="email"
           type="email"
           required
           maxLength={200}
-          placeholder="tu@correo.com"
+          placeholder={t('emailPlaceholder')}
         />
       </div>
 
       <div className={fieldClass('subject')}>
-        <label htmlFor="contact-subject">Asunto</label>
+        <label htmlFor="contact-subject">{t('subject')}</label>
         <input
           id="contact-subject"
           name="subject"
           type="text"
           required
           maxLength={200}
-          placeholder="¿De qué se trata?"
+          placeholder={t('subjectPlaceholder')}
         />
       </div>
 
       <div className={fieldClass('message')}>
-        <label htmlFor="contact-message">Mensaje</label>
+        <label htmlFor="contact-message">{t('message')}</label>
         <textarea
           id="contact-message"
           name="message"
@@ -145,18 +148,18 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
           minLength={10}
           maxLength={5000}
           rows={6}
-          placeholder="Cuéntanos qué buscas resolver con Chalyb."
+          placeholder={t('messagePlaceholder')}
         />
       </div>
 
       {error && (
         <div role="alert" className="auth-error">
-          {error}
+          {t(`errors.${error}`)}
         </div>
       )}
 
       <button type="submit" disabled={pending} className="auth-submit">
-        {pending ? 'Enviando…' : 'Enviar mensaje →'}
+        {pending ? t('sending') : t('submit')}
       </button>
     </form>
   );

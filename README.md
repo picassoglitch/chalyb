@@ -11,7 +11,7 @@ The engines themselves live in their own repos and deploy to GCP.
 - Next.js 16 (App Router) + TypeScript, Tailwind v4
 - Supabase (Auth + Postgres)
 - Mercado Pago (payments), Resend (transactional email)
-- next-intl (ES default, EN)
+- next-intl (ES default, EN under `/en`)
 - Vercel hosts the hub; the engines run on Cloud Run
 
 ## Local dev
@@ -23,6 +23,16 @@ pnpm dev
 ```
 
 `http://localhost:3000` (ES) and `http://localhost:3000/en` (EN).
+
+## Locales
+
+The URL decides the language, and nothing else. `/` is Spanish for every
+visitor and `/en/…` is English for every visitor — `Accept-Language` and the
+locale cookie are not consulted (`localeDetection: false` in
+`src/i18n/routing.ts`), so the same URL cannot answer in two languages.
+Spanish is the default locale and serves unprefixed; English lives under
+`/en`. Readers change language with the switcher in the public footer, which
+keeps them on the page they were reading.
 
 ## How the pieces fit
 
