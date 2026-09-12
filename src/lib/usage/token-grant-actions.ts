@@ -62,21 +62,38 @@ export async function grantTokensToUser(
 
   const admin = createAdminClient();
 
-  // Read current balance + email (for audit) in one round-trip.
+  // Email for the audit log. The balance is NOT read here — see below.
   const { data: before, error: readErr } = await admin
     .from('profiles')
-    .select('email, token_bonus_balance')
+    .select('email')
     .eq('id', targetUserId)
     .maybeSingle();
   if (readErr) return { ok: false, error: readErr.message };
   if (!before) return { ok: false, error: 'Usuario no encontrado' };
 
-  const previousBalance = (before.token_bonus_balance as number | null) ?? 0;
-  // Clamp at 0: revoking 500k from a user with 200k leaves them at 0, not -300k.
-  const nextBalance = Math.max(0, previousBalance + intDelta);
-  // Actual delta after clamping (useful for the audit log so we don't claim
-  // we removed 500k when we actually only removed 200k).
-  const effectiveDelta = nextBalance - previousBalance;
+  // One statement does the read, the clamp and the write under a row lock
+  // (migration 0033). Doing it here in JS meant a grant issued while a paid
+  // token pack was being credited wrote back a stale balance and erased the
+  // pack. The function hands back both balances so the audit log below still
+  // records the real before/after, and the effective delta after clamping —
+  // revoking 500k from a user holding 200k reports -200k, not -500k.
+  const { data: adjusted, error: updErr } = await admin.rpc('adjust_token_bonus_balance', {
+    p_user_id: targetUserId,
+    p_delta: intDelta,
+  });
+  if (updErr) return { ok: false, error: updErr.message };
+
+  const result = (adjusted ?? {}) as {
+    ok?: boolean;
+    previous_balance?: number;
+    balance?: number;
+    effective_delta?: number;
+  };
+  if (!result.ok) return { ok: false, error: 'Usuario no encontrado' };
+
+  const previousBalance = result.previous_balance ?? 0;
+  const nextBalance = result.balance ?? previousBalance;
+  const effectiveDelta = result.effective_delta ?? 0;
 
   if (effectiveDelta === 0) {
     return {
@@ -84,12 +101,6 @@ export async function grantTokensToUser(
       error: 'El balance no cambió (ya estaba en 0).',
     };
   }
-
-  const { error: updErr } = await admin
-    .from('profiles')
-    .update({ token_bonus_balance: nextBalance })
-    .eq('id', targetUserId);
-  if (updErr) return { ok: false, error: updErr.message };
 
   // For positive grants we ALSO write a token_pack_purchases row so the
   // user's /app/usage history shows where the bonus came from. We skip

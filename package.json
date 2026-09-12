@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test \"tests/*.test.ts\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:link": "supabase link --project-ref uqcbziwdgbnzehipzjxp",

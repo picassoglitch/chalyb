@@ -10,7 +10,7 @@ domain     = "chalyb.com"
 billing_account   = "" # e.g. "01ABCD-2345EF-6789GH"
 budget_amount_usd = 50
 
-budget_alert_emails = ["picassoglitch@gmail.com"]
+budget_alert_emails = ["you@example.com"]
 
 # Rendered clips are re-derivable; keeping them forever is pure cost.
 media_retention_days = 30

@@ -5,11 +5,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getSessionUser, type SubscriptionTier } from './session';
+import { decideTierChange } from './tier-policy';
 
-// PARTNER is admin-grant only — there's no MP checkout for it, so the
-// VALID_TIERS allowlist DOES include it (admins can promote) while the
-// self-change branch below blocks non-admins from picking it.
-const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'PARTNER', 'VIP'];
 
 interface ChangeResult {
   ok: boolean;
@@ -21,47 +18,39 @@ interface ChangeResult {
   paymentRequired?: boolean;
 }
 
-/** Tiers a user may put themselves on without paying or being an admin.
- *  FREE only: it is the cancel/downgrade path and costs nothing. PRO, VIP and
- *  PARTNER are granted by the verified MP webhook or by an admin, never here. */
-const SELF_SERVICE_TIERS: SubscriptionTier[] = ['FREE'];
-
 export async function changeUserTier(
   targetUserId: string,
   newTier: SubscriptionTier,
 ): Promise<ChangeResult> {
-  if (!VALID_TIERS.includes(newTier)) {
-    return { ok: false, error: 'Ese plan no existe.' };
-  }
-
   const session = await getSessionUser();
   if (!session) return { ok: false, error: 'Inicia sesión para continuar.' };
 
   const isSelf = targetUserId === session.user.id;
   const isAdmin = session.role === 'SUPER_ADMIN' || session.role === 'ADMIN';
 
-  // Permission gate at the Next.js layer (authoritative — includes env-locked admins).
-  if (!isSelf && !isAdmin) {
-    return { ok: false, error: 'Solo un admin puede cambiar el plan de otra persona.' };
-  }
-
-  // Self-service is FREE and nothing else.
-  //
-  // This action writes with the service-role client, so it is the ONLY thing
-  // standing between a user and any tier they name — the UI routing paid tiers
-  // through Mercado Pago is not a control, it is a convenience. A paid tier
-  // becomes real in exactly two places: the MP webhook after it has verified
-  // the signature AND the amount (src/app/api/mp/webhook/route.ts), or an
-  // admin acting here. PARTNER has no checkout at all: admin-grant only.
-  if (!isAdmin && !SELF_SERVICE_TIERS.includes(newTier)) {
-    if (newTier === 'PARTNER') {
-      return { ok: false, error: 'El plan Partner solo lo asigna un admin.' };
+  // The gate. This action writes with the service-role client, so it is the
+  // ONLY thing standing between a user and any tier they name — the UI routing
+  // paid tiers through Mercado Pago is a convenience, not a control. A paid
+  // tier becomes real in exactly two places: the MP webhook, once it has
+  // verified the signature AND the amount (src/app/api/mp/webhook/route.ts),
+  // or an admin acting here. The rule itself lives in tier-policy.ts so it can
+  // be read and tested on its own.
+  const decision = decideTierChange({ newTier, isSelf, isAdmin });
+  if (!decision.allow) {
+    switch (decision.reason) {
+      case 'unknown_tier':
+        return { ok: false, error: 'Ese plan no existe.' };
+      case 'not_admin':
+        return { ok: false, error: 'Solo un admin puede cambiar el plan de otra persona.' };
+      case 'partner_is_admin_grant':
+        return { ok: false, error: 'El plan Partner solo lo asigna un admin.' };
+      case 'payment_required':
+        return {
+          ok: false,
+          paymentRequired: true,
+          error: 'Los planes de paga se activan al completar el pago en Mercado Pago.',
+        };
     }
-    return {
-      ok: false,
-      paymentRequired: true,
-      error: 'Los planes de paga se activan al completar el pago en Mercado Pago.',
-    };
   }
 
   // Use the service-role client so the write bypasses RLS. This is the only

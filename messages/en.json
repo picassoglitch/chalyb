@@ -749,7 +749,7 @@
               "p": "Payments are processed through <b>Mercado Pago</b>. By activating a paid subscription you authorize the recurring monthly charge to the payment method you registered. Renewal is automatic until you cancel."
             },
             {
-              "p": "<b>Cancelling</b>: from <sub>/app/subscription</sub> → «Cancel plan». Cancellation is <b>immediate</b> in the sense that it stops renewal, but <b>you keep access to your current plan until the end of the period you already paid for</b>. After that you drop to Free automatically."
+              "p": "<b>Cancelling</b>: from <sub>/app/subscription</sub> → «Cancel plan». Cancellation is <b>immediate</b>: your account moves to Free at that moment and you lose the paid plan's access, with no refund for the period in progress. Cancel when you are done using the plan."
             },
             {
               "p": "If a recurring charge fails (expired card, insufficient funds, bank rejection), we notify you by email and retry three times over the following 7 days. If all three attempts fail, we temporarily suspend live execution until you resolve the payment. Your data is not deleted during this period."

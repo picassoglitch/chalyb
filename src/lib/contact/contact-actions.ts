@@ -10,9 +10,11 @@
 //   - Honeypot field "company" — bots fill every input; humans never see this one.
 //     If non-empty, we silently return ok=true (so the bot thinks it worked)
 //     and never send anything.
-//   - Soft rate limit: max 5 submissions per IP per 10 minutes, in-memory.
-//     Reset on server restart — enough for v1 to deter casual abuse without
-//     a Redis dependency.
+//   - Rate limit: max 5 submissions per IP per 10 minutes, counted in Postgres
+//     (check_contact_rate_limit, migration 0034) so every serverless instance
+//     shares one counter. The in-memory bucket below is kept only as the
+//     fallback for when that call itself fails — on its own it was per-instance
+//     and reset on every cold start, which on Vercel is barely a limit at all.
 //
 // VALIDATION: simple string length checks. No external schema lib to keep the
 // dependency surface tight. If a field is missing, return a field-specific
@@ -45,18 +47,43 @@ export interface ContactResult {
   errorCode?: ContactErrorCode;
 }
 
-// In-memory rate-limit bucket. Key = IP, value = array of timestamps within window.
-const rateBucket = new Map<string, number[]>();
 const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 min
 const RATE_MAX = 5;
 
-function checkRate(ip: string): boolean {
+// Fallback bucket, per instance. Only consulted when the durable check can't
+// answer (migration not applied, DB unreachable) — losing the contact form
+// entirely because the counter is down would be a worse outcome than a limit
+// that is briefly per-instance again.
+const rateBucket = new Map<string, number[]>();
+
+function checkRateInMemory(ip: string): boolean {
   const now = Date.now();
   const hist = (rateBucket.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
   if (hist.length >= RATE_MAX) return false;
   hist.push(now);
   rateBucket.set(ip, hist);
   return true;
+}
+
+/** Durable per-IP limit, shared by every instance. The IP is hashed inside the
+ *  function — it is never stored in the clear. */
+async function checkRate(ip: string): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc('check_contact_rate_limit', {
+      p_ip: ip,
+      p_window_seconds: RATE_WINDOW_MS / 1000,
+      p_max_attempts: RATE_MAX,
+    });
+    if (error) throw new Error(error.message);
+    return ((data ?? {}) as { allowed?: boolean }).allowed !== false;
+  } catch (err) {
+    console.warn(
+      '[contact] durable rate limit unavailable, falling back to in-memory:',
+      err instanceof Error ? err.message : String(err),
+    );
+    return checkRateInMemory(ip);
+  }
 }
 
 // Basic email shape check — not full RFC, but rejects obvious garbage.
@@ -102,7 +129,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     h.get('x-real-ip') ||
     'local';
   const userAgent = h.get('user-agent') ?? null;
-  if (!checkRate(ip)) {
+  if (!(await checkRate(ip))) {
     return { ok: false, errorCode: 'rateLimited' };
   }
 

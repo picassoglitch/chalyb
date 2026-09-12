@@ -311,10 +311,26 @@ resource "google_cloud_run_v2_service" "worker" {
   ]
 }
 
-# The API authenticates to the worker with the app-level bearer token, not a
-# Google identity, so Cloud Run's own IAM check has to let the request through.
-# With IAM-restricted invoke, the API's calls would be rejected at the platform
-# layer before the app ever saw the token.
+# Who may invoke the worker AT THE PLATFORM LAYER.
+#
+# This used to be `allUsers`: the worker sat on the public internet and the
+# only thing in front of it was the app's own bearer check — one logging
+# mistake or one path that answers before checking the header, and anyone on
+# the internet is driving the pipeline. It also meant every unauthenticated
+# probe spun up a container on our bill.
+#
+# Default now: only the engine's own service account, which is the identity
+# the API runs as. For that to work the API must send a Google ID token for
+# the worker's audience alongside its bearer token — on Cloud Run that is one
+# request to the metadata server:
+#   GET http://metadata.google.internal/computeMetadata/v1/instance/
+#       service-accounts/default/identity?audience=<worker URL>
+#   Metadata-Flavor: Google
+#  → Authorization: Bearer <id_token>  (the app token moves to its own header)
+#
+# An engine whose API does not do that yet sets worker.allow_unauthenticated =
+# true in its engines entry, which restores the old posture explicitly instead
+# of by default.
 resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
   count = local.worker_enabled ? 1 : 0
 
@@ -322,7 +338,11 @@ resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
   location = var.region
   name     = google_cloud_run_v2_service.worker[0].name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member = (
+    var.worker.allow_unauthenticated
+    ? "allUsers"
+    : "serviceAccount:${google_service_account.engine.email}"
+  )
 }
 
 # ---------------------------------------------------------------------------

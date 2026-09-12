@@ -162,9 +162,15 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
       showToast('Ya tienes el plan Free.');
       return;
     }
+    // Say what actually happens. The write below is immediate: changeUserTier
+    // sets tier = FREE now, there is no stored period end and nothing
+    // re-grants the plan afterwards. Promising access "until the period you
+    // paid for ends" was copy describing a feature that does not exist.
     if (
       !confirm(
-        '¿Cancelar tu suscripción? Conservas el plan hasta que termine el período que ya pagaste.',
+        `¿Cancelar tu suscripción? Tu plan cambia a Free de inmediato y pierdes el ` +
+          `acceso de ${TIER_LABELS[tier]} en el momento. No te cobramos nada adicional ` +
+          `y no reembolsamos el período en curso.`,
       )
     ) {
       return;
@@ -378,7 +384,8 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
             <div className="cc-mod-toggle-text">
               <span className="t">Cancelar suscripción</span>
               <span className="s">
-                Conservas tu acceso a {TIER_LABELS[tier]} hasta que termine el período que ya pagaste.
+                Tu plan cambia a Free de inmediato: pierdes el acceso de {TIER_LABELS[tier]} en
+                ese momento y el período en curso no se reembolsa.
               </span>
             </div>
             <button

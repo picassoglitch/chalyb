@@ -78,7 +78,7 @@ Honest engineering log for the Chalyb Command Center build at `/dashboard`. One 
 ## What you need to do before testing
 
 1. Run `supabase/migrations/0002_command_center.sql` in your Supabase dashboard → SQL Editor → New query → paste → Run.
-2. Confirm `SUPER_ADMIN_EMAILS=picassoglitch@gmail.com` is in `.env.local` (already in `.env.local.example`).
+2. Confirm `SUPER_ADMIN_EMAILS=<your address>` is in `.env.local` (the committed example ships a placeholder).
 3. Restart `pnpm dev`.
 4. Visit `/dashboard` (you should already be signed in from earlier session).
 

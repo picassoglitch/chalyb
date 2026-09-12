@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useWorkspace } from '@/lib/workspace/store';
+import { saveProfileSettings } from '@/lib/auth/profile-actions';
 
 interface Props {
   defaultName: string;
@@ -32,6 +33,7 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
   const showToast = useWorkspace((s) => s.showToast);
 
   const [name, setName] = useState(defaultName);
+  const [saving, startSaving] = useTransition();
   const [prefs, setPrefs] = useState<Prefs>({ ...DEFAULT_PREFS, locale: defaultLocale });
   const [hydrated, setHydrated] = useState(false);
 
@@ -65,10 +67,21 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
     persist(next);
   }
 
+  // Name and language are real columns on `profiles` and are saved server-side.
+  // The write goes through the user-scoped client, so the column GRANTs from
+  // migration 0032 are what allow it — an edit to this action that reached for
+  // `tier` or `role` would be refused by the database.
   function saveProfile(e: React.FormEvent) {
     e.preventDefault();
-    showToast(`Perfil actualizado — <b>${name}</b>`);
-    // TODO: persist to profiles.full_name via Supabase update in step 04.
+    if (saving) return;
+    startSaving(async () => {
+      const res = await saveProfileSettings({ fullName: name, locale: prefs.locale });
+      if (!res.ok) {
+        showToast(`<b>Error</b> · ${res.error ?? 'No pudimos guardar tu perfil.'}`);
+        return;
+      }
+      showToast(`Perfil actualizado — <b>${name}</b>`);
+    });
   }
 
   if (!hydrated) {
@@ -107,14 +120,19 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
+            disabled={saving}
           >
-            Guardar cambios
+            {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </form>
       </div>
 
       <div className="cc-mod-section">
         <div className="cc-mod-sl">Preferencias</div>
+        <p style={{ fontSize: 12, color: 'var(--cc-txt-4)', margin: '0 0 10px' }}>
+          El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona
+          horaria y los interruptores de abajo se guardan solo en este navegador.
+        </p>
         <div className="cc-mod-form">
           <div className="cc-mod-field">
             <label htmlFor="set-locale">Idioma</label>

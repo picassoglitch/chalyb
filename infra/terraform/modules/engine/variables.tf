@@ -69,19 +69,29 @@ variable "worker" {
     endpoint_env_var if set, the API service gets this var pointing at the
                     worker's URL, which is how the API learns to dispatch.
     token_env_var   if set, a random bearer token is generated and injected
-                    under this name into BOTH the API and the worker. The
-                    worker is reachable on its public URL and this token is
-                    what gates it, so leave it unset only for a worker that
-                    does its own authentication some other way.
+                    under this name into BOTH the API and the worker. This is
+                    the APPLICATION-level gate and it is not the only one: the
+                    platform-level gate below decides who may reach the service
+                    at all.
+    allow_unauthenticated
+                    false (default) restricts Cloud Run invoke to the engine's
+                    own service account, so an unauthenticated request is
+                    rejected by the platform before the container starts. The
+                    API must then attach a Google ID token for the worker's URL
+                    (fetch it from the metadata server) IN ADDITION to the
+                    bearer token. Set true only for an engine whose API does
+                    not do that yet — it puts the worker back on the public
+                    internet with nothing but the app token in front of it.
   EOT
   type = object({
     cpu              = optional(string, "2")
     memory           = optional(string, "4Gi")
     max_instances    = optional(number, 3)
     timeout          = optional(string, "3600s")
-    env              = optional(map(string), {})
-    endpoint_env_var = optional(string)
-    token_env_var    = optional(string)
+    env                   = optional(map(string), {})
+    endpoint_env_var      = optional(string)
+    token_env_var         = optional(string)
+    allow_unauthenticated = optional(bool, false)
   })
   default = null
 }

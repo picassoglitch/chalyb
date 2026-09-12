@@ -104,13 +104,16 @@ variable "engines" {
     }), {})
 
     worker = optional(object({
-      cpu              = optional(string, "2")
-      memory           = optional(string, "4Gi")
-      max_instances    = optional(number, 3)
-      timeout          = optional(string, "3600s")
-      env              = optional(map(string), {})
-      endpoint_env_var = optional(string)
-      token_env_var    = optional(string)
+      cpu                   = optional(string, "2")
+      memory                = optional(string, "4Gi")
+      max_instances         = optional(number, 3)
+      timeout               = optional(string, "3600s")
+      env                   = optional(map(string), {})
+      endpoint_env_var      = optional(string)
+      token_env_var         = optional(string)
+      # Defaults to false: only the engine's service account may invoke the
+      # worker. See modules/engine/variables.tf for what the API has to send.
+      allow_unauthenticated = optional(bool, false)
     }))
 
     jobs = optional(map(object({

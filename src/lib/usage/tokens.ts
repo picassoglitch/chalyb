@@ -226,8 +226,13 @@ export async function recordUsageEvents(
 }
 
 /** Grant top-up tokens. Increments profiles.token_bonus_balance and records
- *  the purchase in token_pack_purchases for audit. Idempotent on mpPaymentId
- *  when supplied. */
+ *  the purchase in token_pack_purchases for audit.
+ *
+ *  Both writes happen inside the grant_token_pack() SQL function (migration
+ *  0033) so they land in one transaction: the previous version read the
+ *  balance, added to it and wrote it back from JS, which loses a grant
+ *  whenever two run at once — an MP retry arriving while the first delivery is
+ *  still in flight is exactly that. Idempotent on mpPaymentId. */
 export async function grantTokenPack(opts: {
   userId: string;
   tokens: number;
@@ -237,46 +242,18 @@ export async function grantTokenPack(opts: {
   if (opts.tokens <= 0) return { ok: false };
   const admin = createAdminClient();
 
-  // De-dupe MP webhook retries before touching the balance.
-  if (opts.mpPaymentId) {
-    const { data: existing } = await admin
-      .from('token_pack_purchases')
-      .select('id')
-      .eq('mp_payment_id', opts.mpPaymentId)
-      .maybeSingle();
-    if (existing) return { ok: true, alreadyGranted: true };
-  }
-
-  // Insert pack purchase row + bump balance. Not atomic at the SQL level
-  // (no transaction wrapper in the supabase-js client), but the
-  // mp_payment_id UNIQUE handles the retry case correctly even if one of
-  // the two writes fails: re-running succeeds at whichever step didn't
-  // complete previously.
-  const { error: insertErr } = await admin.from('token_pack_purchases').insert({
-    user_id: opts.userId,
-    tokens_granted: opts.tokens,
-    source: opts.source,
-    mp_payment_id: opts.mpPaymentId ?? null,
+  const { data, error } = await admin.rpc('grant_token_pack', {
+    p_user_id: opts.userId,
+    p_tokens: opts.tokens,
+    p_source: opts.source,
+    p_mp_payment_id: opts.mpPaymentId ?? null,
   });
-  if (insertErr) {
-    console.error('[usage] pack insert failed', insertErr.message);
+
+  if (error) {
+    console.error('[usage] grant_token_pack failed', error.message);
     return { ok: false };
   }
 
-  // Increment the balance using an RPC-equivalent UPDATE expression.
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('token_bonus_balance')
-    .eq('id', opts.userId)
-    .maybeSingle();
-  const next = ((profile?.token_bonus_balance as number | undefined) ?? 0) + opts.tokens;
-  const { error: updErr } = await admin
-    .from('profiles')
-    .update({ token_bonus_balance: next })
-    .eq('id', opts.userId);
-  if (updErr) {
-    console.error('[usage] balance bump failed', updErr.message);
-    return { ok: false };
-  }
-  return { ok: true };
+  const result = (data ?? {}) as { ok?: boolean; already_granted?: boolean };
+  return { ok: result.ok !== false, alreadyGranted: result.already_granted ?? false };
 }

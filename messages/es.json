@@ -757,7 +757,7 @@
               "p": "Los pagos se procesan a través de <b>Mercado Pago</b>. Al activar una suscripción pagada autorizas el cargo recurrente mensual al método de pago que registraste. La renovación es automática hasta que canceles."
             },
             {
-              "p": "<b>Cancelar</b>: desde <sub>/app/subscription</sub> → «Cancelar plan». La cancelación es <b>inmediata</b> para efectos de no renovación, pero <b>mantienes acceso al plan vigente hasta el final del período ya pagado</b>. Después bajas automáticamente a Free."
+              "p": "<b>Cancelar</b>: desde <sub>/app/subscription</sub> → «Cancelar plan». La cancelación es <b>inmediata</b>: tu cuenta pasa a Free en ese momento y pierdes el acceso del plan de paga, sin reembolso del período en curso. Cancela cuando ya no vayas a usar el plan."
             },
             {
               "p": "Si el cargo recurrente falla (tarjeta vencida, fondos insuficientes, rechazo del banco), te notificamos por correo e intentamos cobrar tres veces durante los siguientes 7 días. Si los tres intentos fallan, suspendemos temporalmente la ejecución en vivo hasta que resuelvas el pago. Tus datos no se borran durante este período."

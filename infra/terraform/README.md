@@ -73,6 +73,26 @@ image must read the new names** (a `validation_alias` per field, or an alias
 list accepting both during the transition). Apply the engine-side rename first,
 or the API comes up without its admin token and every provisioning call 401s.
 
+### The worker is no longer open to the internet
+
+`worker.allow_unauthenticated` defaults to **false**, so only the engine's own
+service account may invoke `<slug>-worker`. Previously the binding was
+`allUsers` and the app's bearer token was the only thing in front of the
+pipeline.
+
+The API therefore has to send a Google ID token for the worker's URL in
+addition to that bearer token — one metadata-server call, see the comment on
+`google_cloud_run_v2_service_iam_member.worker_invoker` in
+`modules/engine/main.tf`. **Ship that in the engine first.** An engine that
+cannot do it yet opts out explicitly, and says so in review:
+
+```hcl
+worker = {
+  # TODO: send an ID token from the API, then drop this line.
+  allow_unauthenticated = true
+}
+```
+
 ## Adding an agent
 
 One entry in the `engines` map. The module creates the service account, the
