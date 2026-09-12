@@ -51,8 +51,9 @@ In the dashboard, under Authentication:
 
 - **Site URL** → `https://chalyb.com` (`http://localhost:3000` for local).
 - **Redirect allowlist** → the same, plus any preview domains. Auth email
-  links are built from these, not from `NEXT_PUBLIC_SITE_URL` — that one is
-  only used for absolute links in email the app sends itself.
+  links are built from these, not from `NEXT_PUBLIC_APP_URL` — that one is
+  the app's own public origin (Mercado Pago back_urls, absolute links in email
+  the app sends itself, robots and sitemap).
 - **Custom SMTP** → Resend, with the sender identical to `RESEND_FROM_EMAIL`.
   If they differ, auth email arrives under one name and app email under
   another. See [`../email/supabase-auth-setup.md`](../email/supabase-auth-setup.md).

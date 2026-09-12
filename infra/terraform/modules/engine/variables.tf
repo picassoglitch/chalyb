@@ -43,7 +43,7 @@ variable "secret_env_names" {
   description = <<-EOT
     What the ENGINE calls its own three secrets. Names differ per engine and
     are not always the hub's names — ChalybClip reads DATABASE_URL,
-    NEXO_AI_ADMIN_TOKEN and NEXO_AI_SSO_SECRET with no prefix, because
+    CHALYB_ADMIN_TOKEN and CHALYB_SSO_SECRET with no prefix, because
     settings.py gives them an explicit validation_alias. Only the VALUES have
     to match the hub's CHALYB<SLUG>_* vars.
   EOT
@@ -65,7 +65,7 @@ variable "worker" {
     Under Cloud Run's default throttling that background task is frozen the
     moment the response is sent — silently, with no error.
 
-    env             extra environment for the worker, e.g. NEXOCLIP_ROLE=worker
+    env             extra environment for the worker, e.g. CHALYBCLIP_ROLE=worker
     endpoint_env_var if set, the API service gets this var pointing at the
                     worker's URL, which is how the API learns to dispatch.
     token_env_var   if set, a random bearer token is generated and injected

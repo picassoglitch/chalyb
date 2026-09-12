@@ -21,7 +21,7 @@
 
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { TOKEN_PACKS, getTokenPack } from './pricing';
+import { TOKEN_PACKS, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
 import { getMercadoPago, getAppUrl, isMercadoPagoConfigured } from './mercadopago';
 
 export interface PackCheckoutResult {
@@ -81,7 +81,7 @@ export async function createTokenPackCheckout(
           title: `Chalyb · ${pack.label}`,
           quantity: 1,
           unit_price: pack.amountCents / 100,
-          currency_id: 'MXN',
+          currency_id: TOKEN_PACK_CURRENCY,
         },
       ],
       external_reference: `pack|${session.user.id}|${pack.id}`,

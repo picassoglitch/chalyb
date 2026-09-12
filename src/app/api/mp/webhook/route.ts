@@ -1,19 +1,21 @@
 // Mercado Pago webhook receiver.
 //
 // MP posts here after a payment changes state. We:
-//   1. Validate the signature (if MP_WEBHOOK_SECRET is set)
+//   1. Validate the signature. NO SECRET = NO ENTRY (see checkMpSignature).
 //   2. Pull the full payment details from MP (the webhook body is just a pointer)
 //   3. If approved + external_reference parses as <userId>|<tier>:
 //        - upsert the row in `payments` (UNIQUE on mp_payment_id → idempotent on retries)
 //        - update profiles.tier for the user
+//   3b. Verify the amount + currency MP reports against what that tier or
+//       token pack actually costs. A mismatch grants nothing.
 //   4. Always respond 200 so MP doesn't keep retrying — except on signature
-//      mismatch (401) and our own DB errors (500) which we WANT MP to retry.
+//      mismatch (401), a missing webhook secret (500) and our own DB errors
+//      (500), which we WANT MP to retry once the config is fixed.
 //
 // MP retries failed webhooks with exponential backoff for ~3 days. Our
 // idempotency key (mp_payment_id UNIQUE) makes duplicate deliveries safe.
 
 import { NextResponse } from 'next/server';
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import {
@@ -29,6 +31,13 @@ import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from '@/lib/payments/pricing';
+import {
+  checkMpSignature,
+  checkCharge,
+  expectedChargeForPack,
+  expectedChargeForTier,
+  type ExpectedCharge,
+} from '@/lib/payments/webhook-verify';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -36,44 +45,15 @@ export const runtime = 'nodejs';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
 
-/**
- * MP signs the webhook with HMAC-SHA256 over the string:
- *   `id:${data.id};request-id:${x-request-id};ts:${ts}`
- * where ts comes from the x-signature header itself (split by commas).
- * We use timingSafeEqual to avoid leaking length differences via timing.
- * See: https://www.mercadopago.com/developers/en/docs/your-integrations/notifications/webhooks
- */
-function verifySignature(req: Request, paymentId: string): boolean {
-  const secret = getWebhookSecret();
-  if (!secret) {
-    // Not configured = skip verification. Log a warning so it's obvious in dev.
-    console.warn(
-      '[mp/webhook] MERCADOPAGO_WEBHOOK_SECRET not set — accepting unsigned payload.',
-    );
-    return true;
-  }
-  const sigHeader = req.headers.get('x-signature');
-  const requestId = req.headers.get('x-request-id');
-  if (!sigHeader || !requestId) return false;
-
-  // x-signature looks like: "ts=1733520000,v1=abc123..."
-  const parts = Object.fromEntries(
-    sigHeader.split(',').map((s) => {
-      const [k, v] = s.split('=').map((x) => x.trim());
-      return [k, v];
-    }),
-  );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  if (!ts || !v1) return false;
-
-  const manifest = `id:${paymentId};request-id:${requestId};ts:${ts};`;
-  const expected = createHmac('sha256', secret).update(manifest).digest('hex');
-  try {
-    return timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(v1, 'hex'));
-  } catch {
-    return false;
-  }
+/** Thin wrapper: pull the pieces off the Request and hand them to the pure
+ *  checker in webhook-verify.ts (which is what the tests exercise). */
+function verifySignature(req: Request, paymentId: string) {
+  return checkMpSignature({
+    secret: getWebhookSecret(),
+    paymentId,
+    requestId: req.headers.get('x-request-id'),
+    signatureHeader: req.headers.get('x-signature'),
+  });
 }
 
 interface MPWebhookBody {
@@ -106,8 +86,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'missing data.id' }, { status: 400 });
   }
 
-  if (!verifySignature(req, String(paymentId))) {
-    // Invalid signature = caller is not MP. Don't accept the payload.
+  const signature = verifySignature(req, String(paymentId));
+  if (!signature.ok) {
+    if (signature.reason === 'not_configured') {
+      // Fail CLOSED. Without the secret we cannot distinguish MP from any
+      // other caller, and this endpoint grants paid entitlements. 500 so MP
+      // keeps retrying and the payment lands once the secret is set.
+      console.error(
+        '[mp/webhook] MERCADOPAGO_WEBHOOK_SECRET is not set — rejecting the ' +
+          'notification. Set it here and in the MP dashboard; payments will ' +
+          'not be credited until then.',
+      );
+      return NextResponse.json({ error: 'webhook secret not configured' }, { status: 500 });
+    }
+    // Anything else = the caller is not MP (or the header is junk).
+    console.error('[mp/webhook] signature rejected:', signature.reason);
     return NextResponse.json({ error: 'invalid signature' }, { status: 401 });
   }
 
@@ -202,6 +195,91 @@ export async function POST(req: Request) {
       href: '/dashboard/billing',
       source: 'mp.webhook',
     });
+  }
+
+  // ── Amount + currency gate ───────────────────────────────────────────
+  // Everything past this point GRANTS something. external_reference says what
+  // was bought; this checks that what was actually paid is that thing's price.
+  //
+  // Without it, external_reference is the only input deciding entitlements and
+  // it is attacker-chosen: pay for the $149 token pack, then have the webhook
+  // processed against "<myUserId>|VIP" and walk away with a $2,499 plan. The
+  // payment row above is already written either way, so a mismatch is visible
+  // in /dashboard/billing and the audit log.
+  //
+  // A mismatch returns 200: MP retrying the same payment can never make the
+  // amount right, and we do not want a retry storm on a payment we refuse.
+  if (status === 'approved') {
+    const expected: ExpectedCharge | null = isPackPurchase
+      ? expectedChargeForPack(packIdRaw!)
+      : expectedChargeForTier(tier!);
+
+    if (!expected) {
+      // FREE and PARTNER have no price (TIER_PRICING null): no payment can
+      // ever grant them, so an approved payment claiming one is bogus.
+      console.error(
+        '[mp/webhook] REFUSING grant — nothing is for sale at this reference:',
+        { externalRef, mpPaymentId: String(mpPayment.id ?? paymentId) },
+      );
+      await notify({
+        severity: 'warning',
+        title: 'Pago aprobado sin producto — no se otorgó nada',
+        body: `MP #${String(mpPayment.id ?? paymentId)} · ref ${externalRef}`,
+        href: '/dashboard/billing',
+        source: 'mp.webhook',
+      });
+      return NextResponse.json({ error: 'reference is not purchasable' }, { status: 200 });
+    }
+
+    const charge = checkCharge(expected, {
+      amountMajor: mpPayment.transaction_amount,
+      currency: mpPayment.currency_id,
+    });
+
+    if (!charge.ok) {
+      console.error('[mp/webhook] REFUSING grant — payment does not match the price', {
+        reason: charge.reason,
+        expected: `${expected.amountCents} ${expected.currency} (${expected.label})`,
+        paid: `${charge.paidCents} ${charge.paidCurrency}`,
+        externalRef,
+        mpPaymentId: String(mpPayment.id ?? paymentId),
+        userId,
+      });
+      await logAudit({
+        action: 'tier.payment',
+        actorId: null,
+        actorEmail: null,
+        targetUserId: userId,
+        targetEmail: null,
+        before: null,
+        after: null,
+        metadata: {
+          mp_payment_id: String(mpPayment.id ?? paymentId),
+          kind: 'payment.amount_mismatch',
+          rejected: true,
+          mismatch: charge.reason,
+          expected_amount_cents: expected.amountCents,
+          expected_currency: expected.currency,
+          paid_amount_cents: charge.paidCents,
+          paid_currency: charge.paidCurrency,
+          external_reference: externalRef,
+        },
+      });
+      await notify({
+        severity: 'critical',
+        title: 'Pago con monto que no corresponde — no se otorgó nada',
+        body:
+          `MP #${String(mpPayment.id ?? paymentId)} · pagó $${(charge.paidCents / 100).toFixed(2)} ` +
+          `${charge.paidCurrency}, ${expected.label} cuesta $${(expected.amountCents / 100).toFixed(2)} ` +
+          `${expected.currency}`,
+        href: '/dashboard/billing',
+        source: 'mp.webhook',
+      });
+      return NextResponse.json(
+        { error: 'amount mismatch', expected: expected.amountCents, paid: charge.paidCents },
+        { status: 200 },
+      );
+    }
   }
 
   // ── PACK PURCHASE branch: grant tokens + audit, then exit. ────────────

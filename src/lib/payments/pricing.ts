@@ -85,6 +85,10 @@ export const TOKEN_PACKS: TokenPack[] = [
   },
 ];
 
+/** Packs are priced in MXN like the tiers. One constant so the checkout
+ *  preference and the webhook's amount check can't drift apart. */
+export const TOKEN_PACK_CURRENCY = 'MXN';
+
 export function getTokenPack(id: string): TokenPack | undefined {
   return TOKEN_PACKS.find((p) => p.id === id);
 }

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getSessionUser } from './session';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
@@ -27,8 +27,12 @@ export async function setSelectedLiveEngine(
     };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase
+  // Service-role write: profiles.selected_engine_id is a privileged column
+  // (migration 0032 revoked UPDATE on it from `authenticated`) precisely so a
+  // FREE user can't hand-write a live-engine selection past the tier check
+  // above. The gate is this function; the DB only accepts the result of it.
+  const admin = createAdminClient();
+  const { error } = await admin
     .from('profiles')
     .update({ selected_engine_id: engineId })
     .eq('id', session.user.id);

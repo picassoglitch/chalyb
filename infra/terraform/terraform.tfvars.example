@@ -32,14 +32,14 @@ enable_domain_mappings = false
 #     display_name = "ChalybClip"
 #     image        = "us-central1-docker.pkg.dev/chalyb/engines/chalybclip:v1"
 #     secret_env_names = {
-#       admin_token  = "NEXO_AI_ADMIN_TOKEN"
-#       sso_secret   = "NEXO_AI_SSO_SECRET"
+#       admin_token  = "CHALYB_ADMIN_TOKEN"
+#       sso_secret   = "CHALYB_SSO_SECRET"
 #       database_url = "DATABASE_URL"
 #     }
-#     shared_secrets = { NEXOCLIP_ZERNIO_API_KEY = "zernio-api-key" }
+#     shared_secrets = { CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key" }
 #     worker = {
-#       env              = { NEXOCLIP_ROLE = "worker" }
-#       endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+#       env              = { CHALYBCLIP_ROLE = "worker" }
+#       endpoint_env_var = "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL"
 #     }
 #     jobs = {
 #       drive-poll = {

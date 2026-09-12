@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { siteUrl } from '@/lib/site-url';
+import { appUrl } from '@/lib/app-url';
 
 // Served at /robots.txt. Lives outside [locale] so it isn't matched by the
 // locale segment (and the middleware skips it — the matcher excludes paths
@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/app', '/dashboard', '/account', '/api/', '/auth/'],
       },
     ],
-    sitemap: `${siteUrl()}/sitemap.xml`,
-    host: siteUrl(),
+    sitemap: `${appUrl()}/sitemap.xml`,
+    host: appUrl(),
   };
 }

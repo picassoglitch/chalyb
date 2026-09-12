@@ -14,11 +14,17 @@ const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'PARTNER', 'VIP'];
 interface ChangeResult {
   ok: boolean;
   error?: string;
-  /** True when the call needs a real payment flow before the change actually applies.
-   *  In v1 we persist the change immediately and flag this so the UI can hint at it.
-   *  Step 05-PAYMENTS will gate the write behind a Mercado Pago checkout completion. */
+  /** True when the caller asked for a paid tier they cannot grant themselves.
+   *  The write did NOT happen — the UI must send them through Mercado Pago
+   *  (createTierCheckout), and the tier lands when the webhook confirms the
+   *  payment. */
   paymentRequired?: boolean;
 }
+
+/** Tiers a user may put themselves on without paying or being an admin.
+ *  FREE only: it is the cancel/downgrade path and costs nothing. PRO, VIP and
+ *  PARTNER are granted by the verified MP webhook or by an admin, never here. */
+const SELF_SERVICE_TIERS: SubscriptionTier[] = ['FREE'];
 
 export async function changeUserTier(
   targetUserId: string,
@@ -39,11 +45,23 @@ export async function changeUserTier(
     return { ok: false, error: 'Solo un admin puede cambiar el plan de otra persona.' };
   }
 
-  // PARTNER is admin-grant only. A self-promote to PARTNER would bypass the
-  // intent (it's a relationship, not a SKU). Block it explicitly so the
-  // dropdown can't be hand-rolled by a non-admin to claim partner perks.
-  if (newTier === 'PARTNER' && !isAdmin) {
-    return { ok: false, error: 'El plan Partner solo lo asigna un admin.' };
+  // Self-service is FREE and nothing else.
+  //
+  // This action writes with the service-role client, so it is the ONLY thing
+  // standing between a user and any tier they name — the UI routing paid tiers
+  // through Mercado Pago is not a control, it is a convenience. A paid tier
+  // becomes real in exactly two places: the MP webhook after it has verified
+  // the signature AND the amount (src/app/api/mp/webhook/route.ts), or an
+  // admin acting here. PARTNER has no checkout at all: admin-grant only.
+  if (!isAdmin && !SELF_SERVICE_TIERS.includes(newTier)) {
+    if (newTier === 'PARTNER') {
+      return { ok: false, error: 'El plan Partner solo lo asigna un admin.' };
+    }
+    return {
+      ok: false,
+      paymentRequired: true,
+      error: 'Los planes de paga se activan al completar el pago en Mercado Pago.',
+    };
   }
 
   // Use the service-role client so the write bypasses RLS. This is the only
@@ -97,7 +115,9 @@ export async function changeUserTier(
   //     downgrade so re-upgrades are seamless; deactivation is a separate
   //     manual flow.
   if (newTier === 'VIP') {
-    await provisionAllAccessEngines(targetUserId, isAdmin ? 'admin_grant' : 'mp_payment');
+    // Only an admin can reach VIP through this action now (a paid self-upgrade
+    // returns above), so the grant source is always the admin.
+    await provisionAllAccessEngines(targetUserId, 'admin_grant');
   }
 
   // IMPORTANT: revalidatePath needs the FILE path (with bracketed dynamic
@@ -108,9 +128,7 @@ export async function changeUserTier(
   // [locale] in one call, which is overkill but bulletproof for a small app.
   revalidatePath('/[locale]', 'layout');
 
-  // For a self-change that costs money, flag that real payment would be required
-  // in production — UI shows a "demo mode" note. Admin-led changes bypass this.
-  const paymentRequired = isSelf && !isAdmin && newTier !== 'FREE';
-
-  return { ok: true, paymentRequired };
+  // Anything that reaches here was either an admin action or a self-downgrade
+  // to FREE, so there is no payment pending.
+  return { ok: true };
 }

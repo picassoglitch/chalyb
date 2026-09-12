@@ -133,37 +133,42 @@ variable "engines" {
       env = {
         # Cloud Run's filesystem is tmpfs and counts against memory. Scratch
         # only — durable artifacts go to the media bucket.
-        NEXOCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
+        CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
         # The dispatcher DEFAULTS to in_process, which runs the pipeline
         # inside the API request and never touches the worker. This is what
         # makes it dispatch.
-        NEXOCLIP_JOB_DISPATCHER = "modal"
+        CHALYBCLIP_JOB_DISPATCHER = "modal"
       }
 
-      # ChalybClip reads all three WITHOUT its usual NEXOCLIP_ prefix:
-      # settings.py gives each an explicit validation_alias. Only the values
-      # need to match the hub's CHALYBCLIP_* vars.
+      # ChalybClip reads all three WITHOUT its usual CHALYBCLIP_ prefix:
+      # settings.py gives each an explicit validation_alias. These are the
+      # post-rebrand names — the engine image must be one that reads
+      # CHALYB_ADMIN_TOKEN / CHALYB_SSO_SECRET (the contract the hub documents
+      # in .env.local.example), not the old NEXO_AI_* pair.
       secret_env_names = {
-        admin_token  = "NEXO_AI_ADMIN_TOKEN"
-        sso_secret   = "NEXO_AI_SSO_SECRET"
+        admin_token  = "CHALYB_ADMIN_TOKEN"
+        sso_secret   = "CHALYB_SSO_SECRET"
         database_url = "DATABASE_URL"
       }
 
       shared_secrets = {
-        NEXOCLIP_ZERNIO_API_KEY = "zernio-api-key"
+        CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key"
       }
 
       # `nexoclip worker` — the kickoff/poll pipeline service.
       worker = {
-        env              = { NEXOCLIP_ROLE = "worker" }
-        endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+        env              = { CHALYBCLIP_ROLE = "worker" }
+        endpoint_env_var = "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL"
         # The API sends settings.modal_token as its bearer; the worker accepts
-        # NEXOCLIP_WORKER_TOKEN or NEXOCLIP_MODAL_TOKEN. One name satisfies both.
-        token_env_var = "NEXOCLIP_MODAL_TOKEN"
+        # CHALYBCLIP_WORKER_TOKEN or CHALYBCLIP_MODAL_TOKEN. One name satisfies both.
+        token_env_var = "CHALYBCLIP_MODAL_TOKEN"
       }
 
       jobs = {
-        # `nexoclip drive poll` is a Typer command, not an HTTP route.
+        # `drive poll` is a Typer command, not an HTTP route. `command` is the
+        # image's console-script name, not an env var, so it follows whatever
+        # the engine repo ships rather than the CHALYB* env rename. The
+        # schedule is paused, so a stale name here cannot break a deploy.
         # Scheduled every minute per the ingest SLA, but PAUSED: without
         # --source-dir the command builds the real GoogleDriveClient, which is
         # not implemented yet and exits 1. Un-pause when it ships.
@@ -172,7 +177,7 @@ variable "engines" {
           args     = ["drive", "poll"]
           schedule = "* * * * *"
           paused   = true
-          env      = { NEXOCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
+          env      = { CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
         }
       }
     }

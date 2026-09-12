@@ -43,7 +43,7 @@ loudly:
   kickoff POST immediately and does the work in an asyncio task, so with
   Cloud Run's default throttling CPU is withdrawn the instant that response is
   sent and the pipeline freezes mid-job with no error at all.
-- **The Drive poll is a job, not an endpoint.** `nexoclip drive poll` is a
+- **The Drive poll is a job, not an endpoint.** The engine's `drive poll` is a
   Typer command with no route in front of it.
 
 The poll's **schedule is paused** (`enable_drive_poll = false`). Without
@@ -52,10 +52,26 @@ implemented yet and exits 1 — a one-minute schedule would produce 1,440
 failures a day and bury real alerts. Flip the variable once the client ships.
 
 Engine secret env vars are named for what the engine reads, not what the hub
-calls them: `DATABASE_URL`, `NEXO_AI_ADMIN_TOKEN` and `NEXO_AI_SSO_SECRET` all
-carry an explicit `validation_alias` in `nexoclip/settings.py`, so they take
-**no** `NEXOCLIP_` prefix. Only the values need to match the hub's
+calls them: `DATABASE_URL`, `CHALYB_ADMIN_TOKEN` and `CHALYB_SSO_SECRET` all
+carry an explicit `validation_alias` in the engine's `settings.py`, so they
+take **no** `CHALYBCLIP_` prefix. Only the values need to match the hub's
 `CHALYBCLIP_*` vars.
+
+### Rebrand: the engine image has to speak CHALYB\*
+
+Terraform used to inject the pre-rebrand names. Everything here now injects the
+chalyb names, which is what the hub documents in `.env.local.example`:
+
+| was | is |
+| --- | --- |
+| `NEXO_AI_ADMIN_TOKEN` | `CHALYB_ADMIN_TOKEN` |
+| `NEXO_AI_SSO_SECRET` | `CHALYB_SSO_SECRET` |
+| `NEXOCLIP_*` (role, dispatcher, output dir, modal token, endpoint, Zernio key) | `CHALYBCLIP_*` |
+
+The values are unchanged, so nothing in Secret Manager moves. **The engine
+image must read the new names** (a `validation_alias` per field, or an alias
+list accepting both during the transition). Apply the engine-side rename first,
+or the API comes up without its admin token and every provisioning call 401s.
 
 ## Adding an agent
 

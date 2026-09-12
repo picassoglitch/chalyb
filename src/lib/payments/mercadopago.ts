@@ -15,6 +15,8 @@
 //   NEXT_PUBLIC_APP_URL        — the publicly reachable origin (https://chalyb.com
 //                                or http://localhost:3000 for local). Used in
 //                                back_urls and notification_url on the preference.
+//                                Read through src/lib/app-url.ts, which is the
+//                                one reader for this value across the app.
 //
 // LEGACY ALIAS: We also accept `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` as
 // fallbacks so this works with either naming convention.
@@ -26,6 +28,7 @@
 
 import 'server-only';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { appUrl } from '@/lib/app-url';
 
 let cached: { config: MercadoPagoConfig; preference: Preference; payment: Payment } | null = null;
 
@@ -69,9 +72,11 @@ export function getMercadoPago() {
   return cached;
 }
 
-/** Build the absolute origin for back_urls / notification_url.
- *  Falls back to localhost for dev so the dev workflow still creates valid
- *  preferences (though the webhook won't actually fire — use ngrok for that). */
+/** Absolute origin for back_urls / notification_url.
+ *  Thin alias over appUrl() so payment callers keep their familiar name while
+ *  there is exactly one place that reads the environment. Falls back to
+ *  localhost for dev so the dev workflow still creates valid preferences
+ *  (though the webhook won't actually fire — use ngrok for that). */
 export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  return appUrl();
 }

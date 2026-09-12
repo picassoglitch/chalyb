@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
-import { siteUrl } from '@/lib/site-url';
+import { appUrl } from '@/lib/app-url';
 
 // Served at /sitemap.xml — the public hub only. Signed-in surfaces (/app,
 // /dashboard, /account) are excluded here and in robots.txt.
@@ -17,7 +17,7 @@ const PUBLIC_PATHS = [
 
 function href(locale: string, path: string): string {
   const prefix = locale === routing.defaultLocale ? '' : `/${locale}`;
-  const url = `${siteUrl()}${prefix}${path}`;
+  const url = `${appUrl()}${prefix}${path}`;
   // The default locale's home page is the bare origin — give it a path.
   return prefix === '' && path === '' ? `${url}/` : url;
 }
