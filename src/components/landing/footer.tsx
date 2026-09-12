@@ -1,61 +1,33 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
-import { FusionLogo } from './fusion-logo';
+import { BrandMark } from './brand-mark';
 
+const YEAR = 2026;
+
+/** Minimal footer: brand, copyright, and the legal/status links only. */
 export function LandingFooter() {
-  const tFooter = useTranslations('footer');
-  const tNav = useTranslations('nav');
+  const t = useTranslations('landing.footer');
 
   return (
-    <footer>
-      <div className="footer-top">
-        <div className="footer-brand">
-          <div className="logo">
-            <FusionLogo id="footMark" />
-            CHALYB
-          </div>
-          <p>{tFooter('brand')}</p>
+    <footer className="lp-footer">
+      <div className="lp-container lp-footer-inner">
+        <div className="lp-footer-brand">
+          <span className="lp-brand">
+            <BrandMark size={20} />
+            <span>CHALYB</span>
+          </span>
+          <span className="lp-footer-copy">{t('rights', { year: YEAR })}</span>
         </div>
-        <div className="footer-col">
-          <h6>{tFooter('build')}</h6>
-          <a href="#client-world">{tNav('client')}</a>
-          <a href="#partner-world">{tNav('partner')}</a>
-          <a href="#proof">{tFooter('track')}</a>
-          {/* Dedicated contact form page — separate from the inline section
-              on the landing, useful as a shareable link. */}
-          <Link href={'/contacto' as Route}>{tFooter('contact')}</Link>
-        </div>
-        <div className="footer-col">
-          <h6>{tFooter('earn')}</h6>
-          <a href="#earn-world">{tFooter('bots')}</a>
-          <a href="#earn-world">{tFooter('pricing')}</a>
-          <a href="#contact">{tFooter('signin')}</a>
-          <a href="#earn-world">Chalyb Academy</a>
-        </div>
-        <div className="footer-col">
-          <h6>{tFooter('connect')}</h6>
-          <a href="#">Kick</a>
-          <a href="#">Instagram</a>
-          <a href="#">TikTok</a>
-          <a href="#">LinkedIn</a>
-        </div>
-      </div>
-      <div className="footer-bottom">
-        <p>© 2026 Chalyb — chalyb.com</p>
-        <div className="socials">
+        <nav className="lp-footer-links" aria-label="Legal">
           {/* Real legal pages — required public URLs for OAuth provider apps
-              (Google, Mercado Pago, etc.) and consumer-law compliance in MX.
-              Routes live under /legal/ because the CDN-cached 404 on /terms
-              and /privacy from before the routes existed never cleared even
-              after manual purge — the /legal/ prefix gives them fresh cache
-              keys that Vercel's edge has never seen. */}
-          <Link href={'/legal/privacy' as Route}>{tFooter('privacy')}</Link>
-          <Link href={'/legal/terms' as Route}>{tFooter('terms')}</Link>
-          <a href="#">{tFooter('status')}</a>
-        </div>
+              (Google, Mercado Pago) and consumer-law compliance in MX. */}
+          <Link href={'/legal/terms' as Route}>{t('terms')}</Link>
+          <Link href={'/legal/privacy' as Route}>{t('privacy')}</Link>
+          <a href="/api/health" target="_blank" rel="noreferrer">
+            {t('status')}
+          </a>
+        </nav>
       </div>
     </footer>
   );

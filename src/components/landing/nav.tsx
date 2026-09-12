@@ -1,71 +1,39 @@
-'use client';
-
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { FusionLogo } from './fusion-logo';
-import { usePath, type Path } from './use-path';
+import type { Route } from 'next';
+import { Link } from '@/i18n/routing';
+import { BrandMark } from './brand-mark';
+import { APP_HREF, LOGIN_HREF, signupHref } from './links';
 
-function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
-
+/**
+ * Sticky, minimal header shared by the landing, /contacto and the legal
+ * pages. Left: brand (→ home). Right: a subtle "Log in" link and the single
+ * high-contrast conversion button. No section links, no menus.
+ */
 export function LandingNav({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const t = useTranslations('nav');
-  const tAccount = useTranslations('auth.account');
-  const { setPath } = usePath();
-
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navKey: string | null) => {
-    e.preventDefault();
-    if (navKey && navKey !== 'proof') {
-      setPath(navKey as Path, { scroll: false });
-    }
-    const target =
-      navKey === 'proof'
-        ? 'proof'
-        : navKey === 'client'
-          ? 'client-world'
-          : navKey === 'partner'
-            ? 'partner-world'
-            : navKey === 'earn'
-              ? 'earn-world'
-              : 'contact';
-    // Defer scroll until after React + Next.js has committed the reordered DOM.
-    // rAF alone isn't enough — the URL-driven re-render takes 100-150ms in dev.
-    setTimeout(() => scrollToId(target), 180);
-  };
+  const t = useTranslations('landing.nav');
 
   return (
-    <nav>
-      <div className="logo">
-        <FusionLogo id="navMark" triggerHover />
-        CHALYB
-      </div>
-      <div className="nav-right">
-        <div className="nav-links">
-          <a href="#proof" onClick={(e) => handleNavClick(e, 'proof')}>
-            {t('proof')}
-          </a>
-          <a href="#client-world" onClick={(e) => handleNavClick(e, 'client')}>
-            {t('client')}
-          </a>
-          <a href="#partner-world" onClick={(e) => handleNavClick(e, 'partner')}>
-            {t('partner')}
-          </a>
-          <a href="#earn-world" onClick={(e) => handleNavClick(e, 'earn')}>
-            {t('earn')}
-          </a>
-        </div>
+    <header className="lp-nav">
+      <Link href={'/' as Route} className="lp-brand" aria-label="Chalyb">
+        <BrandMark />
+        <span>CHALYB</span>
+      </Link>
+      <nav className="lp-nav-actions" aria-label="Account">
         {isAuthenticated ? (
-          <Link href="/dashboard" className="nav-cta">
-            {tAccount('title')}
+          <Link href={APP_HREF} className="lp-btn lp-btn-primary lp-btn-sm">
+            {t('app')}
           </Link>
         ) : (
-          <Link href="/sign-in" className="nav-cta">
-            {t('cta')}
-          </Link>
+          <>
+            <Link href={LOGIN_HREF} className="lp-nav-login">
+              {t('login')}
+            </Link>
+            <Link href={signupHref()} className="lp-btn lp-btn-primary lp-btn-sm">
+              {t('signup')}
+            </Link>
+          </>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

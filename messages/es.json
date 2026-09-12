@@ -1,7 +1,173 @@
 {
   "meta": {
-    "title": "Chalyb — Equipo de tecnología y plataforma de automatización con IA",
-    "description": "Construimos productos para clientes, nos asociamos con founders, y operamos sistemas inteligentes."
+    "title": "Chalyb — Engines de IA listos para usar, en un solo dashboard",
+    "description": "Clipea tus streams, corre señales de trading y automatiza tu operación con engines de IA. Empieza gratis, prueba en simulación y pasa a vivo cuando rinda."
+  },
+  "landing": {
+    "nav": {
+      "login": "Iniciar sesión",
+      "signup": "Empezar",
+      "app": "Abrir app"
+    },
+    "hero": {
+      "kicker": "Plataforma de automatización con IA",
+      "h1": "Pon engines de IA a trabajar. En vivo en menos de un minuto.",
+      "lead": "Chalyb es un solo dashboard para engines de IA listos para usar: clipea tus streams, corre señales de trading, automatiza tu operación. Empieza gratis, prueba en simulación y pasa a vivo cuando rinda.",
+      "cta": "Empezar gratis",
+      "micro": "Plan gratis · Sin tarjeta de crédito · Regístrate con Google o correo",
+      "preview": {
+        "title": "Tus engines",
+        "live": "En vivo",
+        "stat1": "Engines en vivo",
+        "stat2": "Clips esta semana",
+        "stat3": "Tokens usados",
+        "chart": "Clips generados · últimos 14 días",
+        "statusLive": "En vivo",
+        "statusSim": "Simulación",
+        "statusSoon": "Próximamente"
+      }
+    },
+    "proof": {
+      "label": "Corre sobre infraestructura de producción",
+      "metrics": {
+        "1": "objetivo de uptime",
+        "2": "sistemas monitoreados",
+        "3": "del registro a la primera corrida",
+        "4": "operando en LATAM y Norteamérica"
+      },
+      "stack": "Construido con"
+    },
+    "pillars": {
+      "title": "Todo lo que necesitas para operar IA. Nada que no.",
+      "subtitle": "Tres cosas que la plataforma hace bien, para que tú no tengas que construir ninguna.",
+      "items": {
+        "1": {
+          "kicker": "Librería de engines",
+          "title": "Engines de IA listos, sin construir nada",
+          "body": "Elige de una librería creciente de engines que el equipo de Chalyb opera en producción. Cada uno resuelve un trabajo concreto desde el día uno.",
+          "bullets": {
+            "1": "ChalybClip convierte tus streams en clips verticales listos para publicar",
+            "2": "ChalybCrypto entrega señales cripto con backtesting y alertas 24/7",
+            "3": "Nuevos engines salen continuamente y van incluidos en tu plan"
+          }
+        },
+        "2": {
+          "kicker": "De simulación a vivo",
+          "title": "Prueba todo gratis. Pasa a vivo cuando estés listo",
+          "body": "Todos los engines corren en simulación en el plan gratis. Cuando los resultados te convenzan, actívalo en vivo con un clic.",
+          "bullets": {
+            "1": "Corridas en simulación ilimitadas en todos los engines",
+            "2": "Pro pone un engine en vivo, VIP los pone todos",
+            "3": "Cambia de engine o pausa cuando quieras, sin ataduras"
+          }
+        },
+        "3": {
+          "kicker": "Monitoreo y cobro",
+          "title": "Ve cada corrida. Paga solo lo que usas",
+          "body": "Dashboards, historial de ejecución y medidor de tokens vienen integrados. Son las mismas herramientas que el equipo de Chalyb usa en sus propios sistemas.",
+          "bullets": {
+            "1": "Dashboards en vivo e historial completo de ejecución",
+            "2": "Tokens mensuales incluidos, las recargas nunca caducan",
+            "3": "Pago seguro con Mercado Pago, cancela cuando quieras"
+          }
+        }
+      },
+      "visuals": {
+        "libraryTitle": "Librería de engines",
+        "libraryClip": "Clips de streams",
+        "libraryCrypto": "Señales de trading",
+        "libraryObs": "Control de transmisión",
+        "ready": "Listo",
+        "soon": "Próximamente",
+        "modeTitle": "Modo de ejecución",
+        "modeSim": "Simulación · gratis",
+        "modeLive": "En vivo · Pro",
+        "modeFoot": "Un clic para cambiar. Sin redeploy, sin caídas.",
+        "usageTitle": "Uso este mes",
+        "usageTokens": "Tokens IA",
+        "usageRun": "corrida",
+        "usageOk": "Completada"
+      }
+    },
+    "how": {
+      "title": "Operando en tres pasos",
+      "subtitle": "Sin llamada comercial, sin proyecto de onboarding.",
+      "steps": {
+        "1": {
+          "title": "Regístrate y conecta",
+          "body": "Crea tu cuenta con Google o correo. Tu espacio queda listo en menos de un minuto."
+        },
+        "2": {
+          "title": "Elige y configura un engine",
+          "body": "Escoge un engine, conecta tu canal o exchange y define las reglas. Córrelo primero en simulación."
+        },
+        "3": {
+          "title": "Obtén resultados",
+          "body": "Los clips se publican solos, las señales llegan en tiempo real y cada corrida queda registrada. Pasa a vivo con Pro cuando rinda."
+        }
+      }
+    },
+    "pricing": {
+      "title": "Empieza gratis. Escala cuando rinda.",
+      "subtitle": "Sin contratos ni llamadas comerciales. Elige un plan y estás operando en menos de un minuto.",
+      "badge": "El más elegido",
+      "note": "Precios en MXN. Pro y VIP se cobran mensualmente vía Mercado Pago y se cancelan cuando quieras.",
+      "tiers": {
+        "free": {
+          "name": "Gratis",
+          "amount": "$0",
+          "per": " /siempre",
+          "tagline": "Crea una cuenta y explora toda la plataforma.",
+          "features": {
+            "1": "ChalybClip gratis 7 días",
+            "2": "50,000 tokens IA de regalo",
+            "3": "Acceso a la comunidad",
+            "4": "Clips con marca de agua · descarga manual"
+          },
+          "cta": "Empezar gratis"
+        },
+        "pro": {
+          "name": "Pro",
+          "amount": "MXN $749",
+          "per": " /mes",
+          "tagline": "Un engine en vivo a tu elección.",
+          "features": {
+            "1": "Todo lo de Gratis",
+            "2": "1 engine en vivo · tú eliges cuál",
+            "3": "1,000,000 de tokens / mes, se regeneran",
+            "4": "ChalybClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit",
+            "5": "Comunidad premium"
+          },
+          "cta": "Empezar con Pro"
+        },
+        "vip": {
+          "name": "VIP",
+          "amount": "MXN $2,499",
+          "per": " /mes",
+          "tagline": "Todo Chalyb desbloqueado. IA + Clip, sin límites.",
+          "features": {
+            "1": "Todo lo de Pro",
+            "2": "Todos los engines en vivo",
+            "3": "5× los tokens de Pro",
+            "4": "Paquete completo de streamer de ChalybClip",
+            "5": "Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea"
+          },
+          "cta": "Empezar con VIP"
+        }
+      }
+    },
+    "cta": {
+      "title": "Empieza hoy. Tu primer engine es gratis.",
+      "body": "Crea tu cuenta, corre un engine en simulación y ve resultados antes de pagar nada.",
+      "btn": "Empezar hoy",
+      "micro": "Plan gratis · Sin tarjeta de crédito"
+    },
+    "footer": {
+      "rights": "© {year} Chalyb · Ciudad de México",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "status": "Estado"
+    }
   },
   "auth": {
     "signIn": {
@@ -85,275 +251,6 @@
       "signOut": "Cerrar sesión"
     }
   },
-  "nav": {
-    "proof": "Trayectoria",
-    "client": "Equipo",
-    "partner": "Partnerships",
-    "earn": "Plataforma IA",
-    "cta": "Login / Registrar"
-  },
-  "hero": {
-    "kicker": "Equipo de tecnología — Sede en Ciudad de México",
-    "scroll": "O desplázate — hay más abajo",
-    "cta": {
-      "primary": "Iniciar proyecto",
-      "secondary": "Ver trayectoria"
-    }
-  },
-  "trust": {
-    "label": "Stack tecnológico"
-  },
-  "door": {
-    "client": {
-      "num": "/01 — Equipo",
-      "title": "Construyamos tu producto",
-      "body": "Tienes un negocio y algo que lanzar. Diseñamos, desarrollamos y desplegamos plataformas, apps y sistemas impulsados por IA — listos para operar y escalar.",
-      "go": "Iniciar proyecto"
-    },
-    "partner": {
-      "num": "/02 — Partnerships",
-      "title": "Partnership técnico",
-      "body": "Tienes una idea real pero no equipo técnico. Nos volvemos tu socio técnico, con acuerdos basados en equity definidos según el alcance y la participación de cada lado.",
-      "go": "Aplicar a partnership"
-    },
-    "earn": {
-      "num": "/03 — Plataforma IA",
-      "title": "Opera sistemas autónomos",
-      "body": "Automatiza operaciones, contenido y flujos de trabajo mediante agentes impulsados por IA. Accede a herramientas con monitoreo en vivo y una comunidad de operadores ejecutando junto a ti.",
-      "go": "Abrir la plataforma"
-    }
-  },
-  "banner": {
-    "viewing": "Viendo como",
-    "switch": "cambiar vista"
-  },
-  "proof": {
-    "num": "La base",
-    "title": "Un equipo. <em>Tres formas</em> de trabajar con nosotros.",
-    "desc": "Chalyb es un equipo de tecnología y una plataforma de automatización con IA. Dirigida por su fundador y construida por un equipo. Los números de abajo son lo que operamos hoy.",
-    "stat1": "Cuentas AWS que diseñamos",
-    "stat2": "Gobernanza DSS a escala empresarial",
-    "stat3": "Sistemas en producción entregados",
-    "stat4": "Equipo, partnerships, plataforma",
-    "stat5": "Objetivos de uptime",
-    "stat6": "Sistemas en producción monitoreados",
-    "stat7": "Operaciones LATAM + Norteamérica",
-    "stat8": "Infraestructura como código · despliegues multi-entorno",
-    "line": "Sistemas en producción sobre AWS · Apps y plataformas desplegadas · Arquitectura lista para escalar · Bots y agentes de IA en operación · Base de clientes internacional",
-    "units": {
-      "verticals": "verticales"
-    }
-  },
-  "client": {
-    "tag": "Para clientes",
-    "num": "Constrúyelo por mí",
-    "title": "Tú traes el brief. <em>Nosotros entregamos.</em>",
-    "desc": "Para negocios con una necesidad definida y presupuesto. El equipo Chalyb diseña, desarrolla y despliega plataformas, apps y sistemas impulsados por IA — listos para operar y escalar."
-  },
-  "process": {
-    "1": {
-      "num": "01",
-      "title": "Validación",
-      "body": "Ponemos a prueba el plan — alcance, público, límites — antes de escribir una línea de código."
-    },
-    "2": {
-      "num": "02",
-      "title": "Arquitectura",
-      "body": "Stack, infraestructura, modelo de datos y la base de seguridad, todo definido desde el inicio."
-    },
-    "3": {
-      "num": "03",
-      "title": "MVP",
-      "body": "Un build real funcionando en semanas — no meses. Desplegado en un entorno real."
-    },
-    "4": {
-      "num": "04",
-      "title": "Iteración",
-      "body": "Ciclos de feedback, usuarios reales, mejoras medibles. Lanzamos continuamente."
-    },
-    "5": {
-      "num": "05",
-      "title": "Escalamiento y hand-off",
-      "body": "Arquitectura lista para producción y documentada, con un hand-off limpio o soporte continuo."
-    },
-    "num": "Cómo trabajamos",
-    "title": "De la idea a producción — un camino claro."
-  },
-  "svc": {
-    "1": {
-      "name": "Plataformas web y móviles",
-      "meta": "De la especificación funcional al despliegue en producción y el hand-off"
-    },
-    "2": {
-      "name": "Sistemas de sensores y detección",
-      "meta": "Tecnología de presencia y visión para activaciones y eventos de marketing"
-    },
-    "3": {
-      "name": "SaaS multi-tenant",
-      "meta": "Arquitectura, autenticación, cobros, tenancy — listo para escalar"
-    },
-    "4": {
-      "name": "Bots y agentes de IA",
-      "meta": "Trading, contenido, scraping, automatización de operaciones — diseñados, desplegados, monitoreados"
-    },
-    "5": {
-      "name": "Arquitectura en la nube",
-      "meta": "AWS de varias cuentas, gobernanza y bases de seguridad"
-    }
-  },
-  "cpc": {
-    "1": {
-      "tag": "Cliente · Tecnología para eventos",
-      "title": "Sistema interactivo de activación",
-      "body": "Experiencia interactiva con detección de personas y sensores para la activación de una marca de consumo — diseñada para eventos con mucha gente, desplegada y atendida en el lugar.",
-      "scale": "Eventos con mucha gente · operación de varios días en el lugar",
-      "timeline": "Construido y desplegado en semanas"
-    },
-    "2": {
-      "tag": "Cliente · Salud",
-      "title": "Plataforma web farmacéutica",
-      "body": "Plataforma multiusuario para salud con RBAC, 2FA y una arquitectura alineada a los requisitos de privacidad y escalabilidad — construida de extremo a extremo, con un hand-off ordenado al equipo del cliente.",
-      "scale": "RBAC multiusuario · 2FA · base alineada a privacidad",
-      "timeline": "Construcción de extremo a extremo · hand-off ordenado"
-    },
-    "3": {
-      "tag": "Empresarial · Cloud",
-      "title": "Infraestructura nivel pagos",
-      "body": "Arquitectura en la nube para un procesador de pagos global de primer nivel — organización AWS de varias cuentas bajo gobernanza PCI DSS 4.0, con respuesta a incidentes en sistemas críticos en producción.",
-      "scale": "AWS de varias cuentas · gobernanza PCI DSS 4.0",
-      "timeline": "Trabajo de varios años · respuesta a incidentes en producción"
-    }
-  },
-  "partner": {
-    "tag": "Para socios",
-    "num": "Asóciate conmigo",
-    "title": "¿Tienes la idea <em>y no la tecnología?</em>",
-    "desc": "Hay mucha gente inteligente con buenas ideas y sin forma de construirlas. Chalyb cierra esa brecha — tú traes la visión, el equipo trae la ingeniería.",
-    "hero": {
-      "title": "No necesitas presupuesto. <em>Necesitas a quien lo construya.</em>",
-      "p1": "Esto no es un contrato de cliente — es una sociedad. Si tienes una idea real y el empuje para impulsarla, pero recursos limitados para contratar un equipo, esta es la puerta. La evaluamos juntos, y si encaja, la construimos juntos.",
-      "p2": "Chalyb se convierte en tu socio técnico para el proyecto — diseño, arquitectura, construcción, despliegue — y compartimos en lo que llegue a ser."
-    }
-  },
-  "pv": {
-    "1": {
-      "title": "Tú aportas",
-      "body": "La idea, la visión de mercado, el empuje, el conocimiento del dominio."
-    },
-    "2": {
-      "title": "Nosotros aportamos",
-      "body": "Arquitectura, desarrollo full-stack, infraestructura cloud, despliegue, iteración."
-    },
-    "3": {
-      "title": "Compartimos",
-      "body": "Equity alineado al nivel de trabajo, riesgo y participación de cada lado."
-    }
-  },
-  "how": {
-    "1": {
-      "num": "PASO 01",
-      "title": "Presenta la idea",
-      "body": "Primero una conversación real. Luego decidimos juntos si vale la pena avanzar formalmente."
-    },
-    "2": {
-      "num": "PASO 02",
-      "title": "Alcance y encaje",
-      "body": "Evaluamos la construcción, la carga de trabajo y si es una sociedad que tiene sentido para ambos."
-    },
-    "3": {
-      "num": "PASO 03",
-      "title": "Estructurar el trato",
-      "body": "Reparto de equity acordado por adelantado — según el trabajo y el aporte de cada persona. Claro, justo, por escrito."
-    },
-    "4": {
-      "num": "PASO 04",
-      "title": "Construir y lanzar",
-      "body": "Lo diseñamos, lo lanzamos e iteramos — como socios en el resultado, no como proveedor a sueldo."
-    }
-  },
-  "equity": {
-    "note": "<b>Sobre el equity:</b> los acuerdos se alinean al nivel de trabajo, riesgo y participación de cada lado. No hay dos tratos iguales — trae la idea y estructuramos juntos qué es justo, antes de empezar."
-  },
-  "earn": {
-    "tag": "Para quienes buscan ganar",
-    "num": "Usa los bots",
-    "title": "Inicia sesión. Despliega un sistema. <em>Escala según lo necesites.</em>",
-    "desc": "Automatiza operaciones, contenido y flujos de trabajo mediante agentes impulsados por IA. La plataforma Chalyb hospeda una librería creciente de bots y sistemas inteligentes, con una comunidad de operadores ejecutando junto a ti.",
-    "cta": "Crea tu cuenta"
-  },
-  "bots": {
-    "title": "Una librería de sistemas inteligentes. <em>Una plataforma.</em>",
-    "p": "Crea una cuenta gratis con Google y accede a toda la librería — trading, contenido, scraping, automatización de operaciones, agentes de IA. Prueba cualquier sistema en modo simulación antes de activarlo en vivo. Nuevas herramientas se publican continuamente.",
-    "feat1": {
-      "b": "Gratis para empezar.",
-      "t": "Conéctate con Google y opera cualquier sistema en modo simulación."
-    },
-    "feat2": {
-      "b": "Monitoreo en vivo.",
-      "t": "Dashboards, métricas e historial de ejecución — las mismas herramientas que construimos para nosotros."
-    },
-    "feat3": {
-      "b": "Paga solo por uso.",
-      "t": "Desbloquea un sistema o acceso completo mediante una pasarela segura."
-    },
-    "feat4": {
-      "b": "Siempre lanzando.",
-      "t": "Nuevos sistemas y capacidades llegan conforme los desplegamos."
-    }
-  },
-  "dash": {
-    "pnl": "P&L sombra",
-    "trades": "Operaciones",
-    "winrate": "Tasa de acierto",
-    "bot1": "Polybot — Línea scalping",
-    "bot2": "Pattern Scout — EMA 35/50",
-    "bot3": "Línea longshot",
-    "running": "● activo",
-    "locked": "○ bloqueado · mejora"
-  },
-  "pricing": {
-    "num": "Acceso",
-    "title": "Empieza gratis. <em>Escala cuando rinda.</em>",
-    "desc": "Sin contratos, sin llamadas comerciales innecesarias. Elige un plan, conéctate con Google, operando en menos de un minuto."
-  },
-  "price": {
-    "free": {
-      "name": "Gratis",
-      "amt": "$0",
-      "per": " /siempre",
-      "tag": "Crea una cuenta y explora toda la plataforma.",
-      "f1": "ChalybClip gratis 7 días",
-      "f2": "50,000 tokens IA de regalo",
-      "f3": "Acceso a la comunidad",
-      "f4": "Clips con marca de agua · descarga manual",
-      "btn": "Empezar"
-    },
-    "pro": {
-      "name": "Pro",
-      "amt": "MXN $749",
-      "per": " /mes",
-      "badge": "El más elegido",
-      "tag": "Un engine en vivo a tu elección.",
-      "f1": "Todo lo de Gratis",
-      "f2": "1 engine en vivo · tú eliges cuál",
-      "f3": "1,000,000 de tokens / mes (se regeneran)",
-      "f4": "ChalybClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit",
-      "f5": "Comunidad premium",
-      "btn": "Pasar a Pro"
-    },
-    "vip": {
-      "name": "VIP",
-      "amt": "MXN $2,499",
-      "per": " /mes",
-      "tag": "Todo Chalyb desbloqueado — IA + Clip, sin límites.",
-      "f1": "Todo lo de Pro",
-      "f2": "Todos los engines en vivo",
-      "f3": "5× los tokens de Pro",
-      "f4": "Paquete completo de streamer de ChalybClip",
-      "f5": "Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea",
-      "btn": "Obtener VIP"
-    }
-  },
   "tour": {
     "step": "{current} de {total}",
     "later": "Ver más tarde",
@@ -391,193 +288,6 @@
         "body": "En «Mensajes» hablas directo con el equipo Chalyb, y en «Ayuda» encuentras guías y soporte. Estamos para ayudarte."
       }
     }
-  },
-  "academy": {
-    "title": "La red de operadores — <em>Chalyb Academy</em>",
-    "p": "La plataforma no son solo herramientas — es una red de operadores. Chalyb Academy es la comunidad donde quienes construyen y operan aprenden los sistemas, comparten lo que funciona y ejecutan junto a otros. Niveles Gratis, Premium y VIP, en Skool. Una integración más profunda con esta plataforma ya está en planes.",
-    "btn": "Visitar Chalyb Academy →"
-  },
-  "contact": {
-    "num": "Empezar",
-    "tab": {
-      "client": "Contrátanos",
-      "partner": "Asóciate",
-      "earn": "Usa los bots"
-    }
-  },
-  "form": {
-    "name": {
-      "label": "Nombre",
-      "ph": "Tu nombre"
-    },
-    "company": {
-      "label": "Empresa",
-      "ph": "Nombre de la empresa"
-    },
-    "email": "Correo",
-    "need": {
-      "label": "¿Qué necesitas construir?",
-      "ph": "Una plataforma, una app, un sistema de sensores..."
-    },
-    "budget": "Rango de presupuesto",
-    "idea": {
-      "label": "Tu idea — ¿qué quieres construir?",
-      "ph": "Describe la idea y la oportunidad que ves..."
-    },
-    "bring": {
-      "label": "¿Qué aportas a la sociedad?",
-      "ph": "Conocimiento del dominio, acceso a mercado, empuje, tiempo..."
-    },
-    "password": "Contraseña",
-    "google": "Continuar con Google",
-    "or": "O",
-    "client": {
-      "submit": "Enviar brief del proyecto",
-      "fine": "Te respondemos en un día hábil."
-    },
-    "partner": {
-      "submit": "Presentar la sociedad",
-      "fine": "No se necesita NDA para iniciar una conversación. Los términos de equity se definen juntos, por adelantado."
-    },
-    "earn": {
-      "submit": "Crear cuenta gratis",
-      "fine": "Cuenta gratis, sin tarjeta requerida."
-    }
-  },
-  "budget": {
-    "0": "Elige un rango",
-    "1": "Menos de $10k",
-    "2": "$10k – $30k",
-    "3": "$30k – $75k",
-    "4": "$75k+",
-    "5": "Aún no estoy seguro"
-  },
-  "cta": {
-    "btn": "Empezar",
-    "big": "Constrúyelo <em>real.</em>"
-  },
-  "footer": {
-    "brand": "Un equipo de tecnología y plataforma de automatización con IA. Sede en Ciudad de México. Construimos productos para clientes, nos asociamos con founders, y operamos sistemas inteligentes con una comunidad de operadores.",
-    "build": "Construir",
-    "earn": "Plataforma IA",
-    "connect": "Conectar",
-    "track": "Trayectoria",
-    "contact": "Contacto",
-    "bots": "Herramientas IA",
-    "pricing": "Precios",
-    "signin": "Iniciar sesión",
-    "privacy": "Privacidad",
-    "terms": "Términos",
-    "status": "Estado"
-  },
-  "marquee": [
-    "El equipo",
-    "Partnerships",
-    "La plataforma",
-    "Red de operadores",
-    "Agentes de IA",
-    "Automatización a escala",
-    "Sistemas en producción",
-    "Infraestructura inteligente"
-  ],
-  "path": {
-    "client": {
-      "name": "Cliente",
-      "kicker": "Para negocios que necesitan un equipo de desarrollo",
-      "h1": [
-        "Tienes un proyecto.",
-        "Tenemos el",
-        "<em>equipo que entrega.</em>"
-      ],
-      "lead": "Necesitas tecnología real construida para tu negocio — plataformas, apps, sistemas inteligentes. Diseñada, desplegada, lista para operar.",
-      "contactH3": "Cuéntanos qué <em>necesitas construir.</em>",
-      "contactP": "Un brief definido, un presupuesto real, un equipo que entrega. Envía los detalles del proyecto y regresamos con un camino a seguir.",
-      "ctaSub": "Un proyecto definido y un equipo que lo entrega. Ese es el camino del cliente."
-    },
-    "partner": {
-      "name": "Socio",
-      "kicker": "Para founders con una idea y sin equipo técnico",
-      "h1": [
-        "Tienes una idea.",
-        "Nos volvemos tu",
-        "<em>socio técnico.</em>"
-      ],
-      "lead": "Idea inteligente, empuje real, recursos limitados. No necesitas presupuesto — necesitas a quien lo construya. Tráela aquí y la construimos juntos, como socios en el resultado.",
-      "contactH3": "Preséntanos la <em>sociedad.</em>",
-      "contactP": "Trae la idea y lo que pones sobre la mesa. Si encaja, estructuramos el equity juntos — por adelantado, justo, por escrito.",
-      "ctaSub": "Tu idea, nuestra ingeniería, resultado compartido. Ese es el camino del socio."
-    },
-    "earn": {
-      "name": "Operador",
-      "kicker": "Para operadores de sistemas inteligentes",
-      "h1": [
-        "Sistemas inteligentes,",
-        "ejecutando para ti.",
-        "<em>En vivo.</em>"
-      ],
-      "lead": "Inicia sesión, explora la librería, despliega un sistema — trading, contenido, scraping, automatización de operaciones. El modo simulación es gratis. La comunidad de operadores ejecuta junto a ti.",
-      "contactH3": "Crea tu <em>cuenta gratis.</em>",
-      "contactP": "Conéctate con Google y estás dentro — cada sistema disponible en modo simulación, desbloquea la ejecución en vivo cuando estés listo.",
-      "ctaSub": "Opera los sistemas, únete a los operadores, escala según lo necesites. Ese es el camino de la plataforma."
-    }
-  },
-  "neutral": {
-    "h1": [
-      "Apps, plataformas",
-      "y sistemas de IA",
-      "<em>para empresas reales.</em>"
-    ],
-    "lead": "Chalyb es un equipo de tecnología y una plataforma de automatización impulsada por IA. Construimos productos para clientes, nos asociamos con founders sin equipo técnico y operamos una librería de bots y agentes inteligentes.",
-    "contactH3": "Elige cómo <em>trabajar con nosotros.</em>",
-    "contactP": "Elige cómo quieres trabajar con Chalyb y empecemos la conversación correcta desde el inicio.",
-    "ctaSub": "Contrata al equipo, asóciate en una idea, u opera la plataforma — empieza donde tenga sentido."
-  },
-  "position": {
-    "line": "Construimos sistemas reales que deben operar, escalar y mantenerse en producción."
-  },
-  "operate": {
-    "num": "Cómo operamos",
-    "title": "Entregamos como un equipo que opera sistemas reales, <em>no como freelancers.</em>",
-    "desc": "Cada proyecto corre con las mismas prácticas que usamos en nuestros propios sistemas en producción. Eso es lo que separa a un socio técnico serio de una agencia.",
-    "items": {
-      "1": { "title": "Pipelines CI/CD", "body": "Cada despliegue es automático, probado y repetible. Nada se sube a mano." },
-      "2": { "title": "Infraestructura como código", "body": "AWS gestionado con Terraform. Nada de andar haciendo clics en la consola en producción." },
-      "3": { "title": "Monitoreo en producción", "body": "Dashboards, alertas e historial de ejecución. Las mismas herramientas que construimos para nuestros clientes." },
-      "4": { "title": "Despliegues por entornos", "body": "Dev, staging y producción separados. Reglas claras para pasar de uno a otro. Sin sorpresas." },
-      "5": { "title": "Plan de reversa", "body": "Despliegues graduales por defecto. Un mal despliegue nunca tumba producción." },
-      "6": { "title": "Revisiones de seguridad", "body": "RBAC, 2FA, rotación de secretos y acceso con el mínimo de permisos. Va incluido desde el inicio, no se agrega después." },
-      "7": { "title": "Documentación y hand-off", "body": "Runbooks, diagramas de arquitectura y registro de decisiones. Tu equipo puede tomar el control sin enredos." },
-      "8": { "title": "Demos semanales", "body": "Software funcionando cada sprint. Siempre se puede probar, nunca queda en teoría." },
-      "9": { "title": "Monitoreo de costos en la nube", "body": "Presupuestos de AWS, alertas de gastos raros y recursos etiquetados. No quemamos tu dinero." }
-    },
-    "why": {
-      "title": "No somos una agencia tradicional.",
-      "items": {
-        "1": "Operamos sistemas reales en producción",
-        "2": "Experiencia en arquitectura cloud a escala empresarial",
-        "3": "Hablas directo con el equipo técnico — sin intermediarios de ventas",
-        "4": "Menos juntas, más trabajo hecho",
-        "5": "Construido como infraestructura, lanzado como producto",
-        "6": "Experiencia en fintech y en sistemas de producción"
-      }
-    }
-  },
-  "building": {
-    "num": "Construyendo ahora",
-    "title": "Trabajo en curso, <em>en vivo.</em>",
-    "desc": "Sistemas que estamos operando o lanzando ahora mismo. Construcciones públicas, producción real.",
-    "items": {
-      "1": { "tag": "Trading", "title": "Quantor Polybot", "body": "Sistema de trading sobre Polymarket — señales con Ollama, dashboard en FastAPI, registro de ejecución en SQLite, en producción y en vivo." },
-      "2": { "tag": "Plataforma", "title": "Dashboard operador Chalyb", "body": "La plataforma multi-tenant que estás viendo ahora. Operadores despliegan bots y agentes IA desde una librería compartida." },
-      "3": { "tag": "Automatización de contenido", "title": "Infraestructura AI clipping", "body": "Clipping de stream en tiempo real con scoring IA, distribución multi-plataforma, dashboards para creadores." },
-      "4": { "tag": "Sistemas de sensores", "title": "Analítica de sensores en tiempo real", "body": "Pipelines de visión y presencia para activaciones — del sensor al dashboard en menos de un segundo." },
-      "5": { "tag": "Telegram + SaaS", "title": "Plataforma ChalybPicks", "body": "Plataforma de picks deportivos + bot de Telegram en monorepo Node/TS, Postgres, Redis y razonador con Ollama." }
-    }
-  },
-  "founder": {
-    "num": "Construido por operadores",
-    "title": "No una marca. <em>Un equipo.</em>",
-    "body": "Liderado por su fundador, con experiencia dirigiendo arquitectura en la nube para un procesador de pagos global de primer nivel, producción bajo PCI DSS 4.0 en organizaciones AWS de varias cuentas, y un historial entregando SaaS multi-tenant, sistemas de sensores e infraestructura de trading. Trabajamos como construimos — directo, técnico y disponibles cuando importa."
   },
   "engines": {
     "title": "Mis engines",
@@ -663,11 +373,19 @@
       },
       "chalybcrypto": {
         "tagline": "Señales y automatización de trading cripto 24/7.",
-        "bullets": ["Estrategias backtesteadas", "Alertas en tiempo real", "Ejecución sin emociones"]
+        "bullets": [
+          "Estrategias backtesteadas",
+          "Alertas en tiempo real",
+          "Ejecución sin emociones"
+        ]
       },
       "chalybobs": {
         "tagline": "Controla tu transmisión en vivo desde un solo panel.",
-        "bullets": ["Escenas y overlays dinámicos", "Automatización del stream", "Conecta con ChalybClip"]
+        "bullets": [
+          "Escenas y overlays dinámicos",
+          "Automatización del stream",
+          "Conecta con ChalybClip"
+        ]
       }
     },
     "marketingCat": {
