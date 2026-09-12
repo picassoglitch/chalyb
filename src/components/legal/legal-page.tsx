@@ -1,17 +1,10 @@
-'use client';
-
 // Shared shell for /terms and /privacy. Renders the marketing nav + footer
 // around the document content, so legal pages have the same visual identity
-// as the public landing. Uses the existing PathProvider so the path-color
-// engine + cursor + grain effects work consistently.
+// as the public landing.
 //
 // Server pages pass `title`, `lastUpdated`, and the document body as
 // children. The body uses `.legal-prose` markup defined in globals.css.
 
-import { Suspense, useEffect, useState } from 'react';
-import { PathProvider } from '@/components/landing/use-path';
-import { Cursor } from '@/components/landing/cursor';
-import { ProgressBar } from '@/components/landing/progress-bar';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 
@@ -22,22 +15,9 @@ interface Props {
   children: React.ReactNode;
 }
 
-function LegalInner({ title, lastUpdated, isAuthenticated, children }: Props) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
+export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Props) {
   return (
-    <>
-      {mounted && (
-        <>
-          <Cursor />
-          <div className="grain" />
-          <ProgressBar />
-        </>
-      )}
+    <div className="lp">
       <LandingNav isAuthenticated={isAuthenticated} />
 
       <main
@@ -99,16 +79,6 @@ function LegalInner({ title, lastUpdated, isAuthenticated, children }: Props) {
       </main>
 
       <LandingFooter />
-    </>
-  );
-}
-
-export function LegalPage(props: Props) {
-  return (
-    <Suspense fallback={null}>
-      <PathProvider>
-        <LegalInner {...props} />
-      </PathProvider>
-    </Suspense>
+    </div>
   );
 }

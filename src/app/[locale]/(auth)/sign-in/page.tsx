@@ -5,16 +5,33 @@ import { redirect } from 'next/navigation';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
 
+// Landing pricing cards link to /sign-in?mode=signup&plan=<tier>. Map the
+// chosen plan to where the user needs to BE after auth: Free lands in the
+// workspace, paid tiers land on billing where Mercado Pago checkout lives.
+// An explicit ?next= always wins over the plan-derived default.
+const PLAN_NEXT: Record<string, string> = {
+  free: '/app',
+  pro: '/app/billing',
+  vip: '/app/billing',
+};
+
 export default async function SignInPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; next?: string; mode?: string; reset?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    next?: string;
+    mode?: string;
+    reset?: string;
+    plan?: string;
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { error, next, mode, reset } = await searchParams;
+  const { error, next: rawNext, mode, reset, plan } = await searchParams;
+  const next = rawNext ?? (plan ? PLAN_NEXT[plan.toLowerCase()] : undefined);
   const t = await getTranslations('auth.signIn');
 
   const supabase = await createClient();
