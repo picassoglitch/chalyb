@@ -5,16 +5,32 @@ import { redirect } from 'next/navigation';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
 
+const PAID_PLAN_NEXT: Record<string, string | undefined> = {
+  pro: '/app/subscription',
+  vip: '/app/subscription',
+};
+
 export default async function SignInPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; next?: string; mode?: string; reset?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    next?: string;
+    mode?: string;
+    reset?: string;
+    plan?: string;
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { error, next, mode, reset } = await searchParams;
+  const { error, next: requestedNext, mode, reset, plan } = await searchParams;
+  // Landing pricing cards arrive as /sign-in?mode=signup&plan=<tier>. A paid
+  // tier should land on the subscription page after auth so the upgrade can be
+  // completed in one motion; `free` (or no plan) keeps the /account default.
+  // An explicit ?next= always wins.
+  const next = requestedNext ?? (plan ? PAID_PLAN_NEXT[plan] : undefined);
   const t = await getTranslations('auth.signIn');
 
   const supabase = await createClient();

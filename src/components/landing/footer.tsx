@@ -1,61 +1,26 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
-import { FusionLogo } from './fusion-logo';
+import { FusionMark } from '@/components/dashboard/fusion-mark';
 
+// Minimal footer: copyright + the three links a SaaS landing actually needs.
+// The legal pages live under /legal/ (see the comment history in git for the
+// CDN-cache reason); /health is the public status endpoint.
 export function LandingFooter() {
-  const tFooter = useTranslations('footer');
-  const tNav = useTranslations('nav');
+  const t = useTranslations('landing.footer');
 
   return (
-    <footer>
-      <div className="footer-top">
-        <div className="footer-brand">
-          <div className="logo">
-            <FusionLogo id="footMark" />
-            CHALYB
-          </div>
-          <p>{tFooter('brand')}</p>
-        </div>
-        <div className="footer-col">
-          <h6>{tFooter('build')}</h6>
-          <a href="#client-world">{tNav('client')}</a>
-          <a href="#partner-world">{tNav('partner')}</a>
-          <a href="#proof">{tFooter('track')}</a>
-          {/* Dedicated contact form page — separate from the inline section
-              on the landing, useful as a shareable link. */}
-          <Link href={'/contacto' as Route}>{tFooter('contact')}</Link>
-        </div>
-        <div className="footer-col">
-          <h6>{tFooter('earn')}</h6>
-          <a href="#earn-world">{tFooter('bots')}</a>
-          <a href="#earn-world">{tFooter('pricing')}</a>
-          <a href="#contact">{tFooter('signin')}</a>
-          <a href="#earn-world">Chalyb Academy</a>
-        </div>
-        <div className="footer-col">
-          <h6>{tFooter('connect')}</h6>
-          <a href="#">Kick</a>
-          <a href="#">Instagram</a>
-          <a href="#">TikTok</a>
-          <a href="#">LinkedIn</a>
-        </div>
-      </div>
-      <div className="footer-bottom">
-        <p>© 2026 Chalyb — chalyb.com</p>
-        <div className="socials">
-          {/* Real legal pages — required public URLs for OAuth provider apps
-              (Google, Mercado Pago, etc.) and consumer-law compliance in MX.
-              Routes live under /legal/ because the CDN-cached 404 on /terms
-              and /privacy from before the routes existed never cleared even
-              after manual purge — the /legal/ prefix gives them fresh cache
-              keys that Vercel's edge has never seen. */}
-          <Link href={'/legal/privacy' as Route}>{tFooter('privacy')}</Link>
-          <Link href={'/legal/terms' as Route}>{tFooter('terms')}</Link>
-          <a href="#">{tFooter('status')}</a>
-        </div>
+    <footer className="lp-footer">
+      <div className="lp-wrap lp-footer-inner">
+        <p className="lp-footer-copy">
+          <FusionMark size={18} />
+          {t('copyright', { year: new Date().getFullYear() })}
+        </p>
+        <nav className="lp-footer-links">
+          <Link href={'/legal/terms' as Route}>{t('terms')}</Link>
+          <Link href={'/legal/privacy' as Route}>{t('privacy')}</Link>
+          <Link href={'/health' as Route}>{t('status')}</Link>
+        </nav>
       </div>
     </footer>
   );

@@ -1,35 +1,16 @@
-'use client';
-
-import { Suspense, useEffect, useState } from 'react';
-import { PathProvider } from '@/components/landing/use-path';
-import { Cursor } from '@/components/landing/cursor';
-import { ProgressBar } from '@/components/landing/progress-bar';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 import { ContactForm } from './contact-form';
 
-function ContactInner({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
+export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <>
-      {mounted && (
-        <>
-          <Cursor />
-          <div className="grain" />
-          <ProgressBar />
-        </>
-      )}
       <LandingNav isAuthenticated={isAuthenticated} />
 
       <main
         style={{
           minHeight: '100vh',
-          padding: 'clamp(100px, 14vh, 160px) 24px 80px',
+          padding: 'clamp(48px, 8vh, 96px) 24px 80px',
           position: 'relative',
           zIndex: 1,
         }}
@@ -47,7 +28,7 @@ function ContactInner({ isAuthenticated }: { isAuthenticated: boolean }) {
                 fontSize: 11,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
-                color: 'var(--path)',
+                color: 'var(--acid)',
                 marginBottom: 12,
               }}
             >
@@ -74,8 +55,8 @@ function ContactInner({ isAuthenticated }: { isAuthenticated: boolean }) {
                 maxWidth: '56ch',
               }}
             >
-              ¿Quieres una demo, integrar algo, sumarte como partner o saber cómo Chalyb puede
-              poner orden en tu operación? Escríbenos y te respondemos en menos de 24 horas hábiles.
+              ¿Quieres una demo, integrar algo, sumarte como partner o saber cómo Chalyb puede poner
+              orden en tu operación? Escríbenos y te respondemos en menos de 24 horas hábiles.
             </p>
           </div>
 
@@ -112,15 +93,5 @@ function ContactInner({ isAuthenticated }: { isAuthenticated: boolean }) {
 
       <LandingFooter />
     </>
-  );
-}
-
-export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
-  return (
-    <Suspense fallback={null}>
-      <PathProvider>
-        <ContactInner isAuthenticated={isAuthenticated} />
-      </PathProvider>
-    </Suspense>
   );
 }
