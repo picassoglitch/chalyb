@@ -10,9 +10,10 @@
 //   - Honeypot field "company" — bots fill every input; humans never see this one.
 //     If non-empty, we silently return ok=true (so the bot thinks it worked)
 //     and never send anything.
-//   - Soft rate limit: max 5 submissions per IP per 10 minutes, in-memory.
-//     Reset on server restart — enough for v1 to deter casual abuse without
-//     a Redis dependency.
+//   - Rate limit: max 5 submissions per IP per 10 minutes, shared across
+//     instances via Upstash Redis when it is configured (see
+//     src/lib/rate-limit.ts). Falls back to a per-instance in-memory bucket
+//     locally and on deployments without the two UPSTASH_* env vars.
 //
 // VALIDATION: simple string length checks. No external schema lib to keep the
 // dependency surface tight. If a field is missing, return a field-specific
@@ -21,6 +22,7 @@
 import { sendEmail, getContactInbox, isResendConfigured } from '@/lib/email/resend';
 import { contactInboxTemplate, contactConfirmTemplate } from '@/lib/email/templates';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 
 type ContactPane = 'client' | 'partner' | 'earn';
@@ -34,19 +36,8 @@ export interface ContactResult {
   error?: string;
 }
 
-// In-memory rate-limit bucket. Key = IP, value = array of timestamps within window.
-const rateBucket = new Map<string, number[]>();
 const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 min
 const RATE_MAX = 5;
-
-function checkRate(ip: string): boolean {
-  const now = Date.now();
-  const hist = (rateBucket.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (hist.length >= RATE_MAX) return false;
-  hist.push(now);
-  rateBucket.set(ip, hist);
-  return true;
-}
 
 // Basic email shape check — not full RFC, but rejects obvious garbage.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -91,7 +82,13 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     h.get('x-real-ip') ||
     'local';
   const userAgent = h.get('user-agent') ?? null;
-  if (!checkRate(ip)) {
+  const limit = await rateLimit({
+    key: ip,
+    scope: 'contact',
+    windowMs: RATE_WINDOW_MS,
+    max: RATE_MAX,
+  });
+  if (!limit.allowed) {
     return {
       ok: false,
       error: 'Recibimos muchos mensajes desde tu conexión. Espera unos minutos y vuelve a intentarlo.',

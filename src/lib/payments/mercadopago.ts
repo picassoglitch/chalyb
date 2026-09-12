@@ -15,6 +15,8 @@
 //   NEXT_PUBLIC_APP_URL        — the publicly reachable origin (https://chalyb.com
 //                                or http://localhost:3000 for local). Used in
 //                                back_urls and notification_url on the preference.
+//                                NEXT_PUBLIC_SITE_URL is accepted as a legacy
+//                                alias; prefer the APP_URL name everywhere.
 //
 // LEGACY ALIAS: We also accept `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` as
 // fallbacks so this works with either naming convention.
@@ -69,9 +71,21 @@ export function getMercadoPago() {
   return cached;
 }
 
-/** Build the absolute origin for back_urls / notification_url.
- *  Falls back to localhost for dev so the dev workflow still creates valid
- *  preferences (though the webhook won't actually fire — use ngrok for that). */
+/** The absolute public origin, for MP back_urls / notification_url and for
+ *  the links in server-sent email.
+ *
+ *  ONE canonical name: NEXT_PUBLIC_APP_URL. NEXT_PUBLIC_SITE_URL is read as a
+ *  fallback only because .env.local.example shipped that name for a while and
+ *  deployments configured from it would otherwise silently fall through to
+ *  localhost — which is not a visible error, it is a production checkout whose
+ *  back_urls point at the customer's own machine and whose notification_url MP
+ *  can never reach. New setups should set NEXT_PUBLIC_APP_URL only.
+ *
+ *  Trailing slashes are trimmed so `${getAppUrl()}/app/billing` cannot produce
+ *  a double slash. */
 export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const configured =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() || process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!configured) return 'http://localhost:3000';
+  return configured.replace(/\/+$/, '');
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useWorkspace } from '@/lib/workspace/store';
+import { saveProfileSettings } from '@/lib/workspace/settings-actions';
 
 interface Props {
   defaultName: string;
@@ -26,6 +27,8 @@ const DEFAULT_PREFS: Omit<Prefs, 'locale'> = {
   timezone: 'America/Mexico_City',
 };
 
+// Notification toggles and timezone have no column yet, so they stay
+// per-browser for now. Name and language DO persist — see saveProfile below.
 const STORAGE_KEY = 'chalyb:settings:prefs';
 
 export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props) {
@@ -34,6 +37,7 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
   const [name, setName] = useState(defaultName);
   const [prefs, setPrefs] = useState<Prefs>({ ...DEFAULT_PREFS, locale: defaultLocale });
   const [hydrated, setHydrated] = useState(false);
+  const [isSaving, startSaving] = useTransition();
 
   // Hydrate saved prefs from localStorage on mount (no SSR mismatch).
   useEffect(() => {
@@ -67,8 +71,14 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
 
   function saveProfile(e: React.FormEvent) {
     e.preventDefault();
-    showToast(`Perfil actualizado — <b>${name}</b>`);
-    // TODO: persist to profiles.full_name via Supabase update in step 04.
+    startSaving(async () => {
+      const res = await saveProfileSettings({ fullName: name, locale: prefs.locale });
+      if (!res.ok) {
+        showToast(`<b>Error</b> · ${res.error ?? 'No pudimos guardar tus cambios.'}`);
+        return;
+      }
+      showToast(`Perfil actualizado — <b>${res.fullName ?? name}</b>`);
+    });
   }
 
   if (!hydrated) {
@@ -95,6 +105,7 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
           </div>
           <button
             type="submit"
+            disabled={isSaving}
             style={{
               alignSelf: 'flex-start',
               background: 'var(--cc-green)',
@@ -104,11 +115,12 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
               borderRadius: 8,
               fontWeight: 600,
               fontSize: 13,
-              cursor: 'pointer',
+              cursor: isSaving ? 'default' : 'pointer',
+              opacity: isSaving ? 0.6 : 1,
               fontFamily: 'inherit',
             }}
           >
-            Guardar cambios
+            {isSaving ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </form>
       </div>
@@ -117,7 +129,7 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
         <div className="cc-mod-sl">Preferencias</div>
         <div className="cc-mod-form">
           <div className="cc-mod-field">
-            <label htmlFor="set-locale">Idioma</label>
+            <label htmlFor="set-locale">Idioma · se guarda con «Guardar cambios»</label>
             <select
               id="set-locale"
               value={prefs.locale}

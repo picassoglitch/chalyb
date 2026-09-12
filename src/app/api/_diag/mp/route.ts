@@ -9,10 +9,16 @@
 // APP_USR (production). Lets the operator confirm at a glance which mode
 // they're in without exposing the whole secret.
 //
-// `mpReachable` is a real 7s ping to MP's preference endpoint with a
-// minimum-shape body. We discard the result if MP returns 4xx (still
-// counts as "reachable"); we only flag false for timeout / network
-// errors so the operator knows where the problem actually is.
+// `mpReachable` is a READ-ONLY probe: it asks MP to search our own recent
+// payments. It used to create a real Preference on every call, which left a
+// trail of junk checkout links in the MP dashboard — indistinguishable from
+// real ones at a glance, and each one a live payable URL. A search exercises
+// the same things (network path, token validity, account state) and creates
+// nothing.
+//
+// A 4xx from MP still counts as "reachable" for network purposes, but an
+// auth failure is reported through mpResponseStatus so the operator can tell
+// "MP is down" from "our token is wrong".
 
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
@@ -71,33 +77,24 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   const appUrl = getAppUrl();
   const isHttps = appUrl.startsWith('https://');
 
-  // Real ping. Build the smallest valid preference body possible and try
-  // to create it. We don't actually use the result — we just want to
-  // know if MP is reachable and if our token works.
+  // Real ping, no side effects: a one-row payment search. Tells us whether MP
+  // is reachable AND whether our token is accepted, without leaving anything
+  // behind in the account.
   const started = Date.now();
   let mpReachable = false;
   let mpResponseStatus: number | null = null;
   let mpResponseExcerpt: string | null = null;
 
   try {
-    const { preference } = getMercadoPago();
-    const result = await preference.create({
-      body: {
-        items: [
-          {
-            id: 'diag-ping',
-            title: 'Diag · ping',
-            quantity: 1,
-            unit_price: 1,
-            currency_id: 'MXN',
-          },
-        ],
-        external_reference: `diag-ping-${Date.now()}`,
-      },
-    });
+    const { payment } = getMercadoPago();
+    // Search, not create. Limit 1 because we care whether MP answers, not
+    // what it says.
+    const result = await payment.search({ options: { limit: 1 } });
     mpReachable = true;
     mpResponseStatus = 200;
-    mpResponseExcerpt = result.id ? `created preference id=${result.id}` : null;
+    const total = result?.paging?.total;
+    mpResponseExcerpt =
+      typeof total === 'number' ? `token OK · ${total} payment(s) visible` : 'token OK';
   } catch (err) {
     const e = err as {
       message?: string;
@@ -105,10 +102,8 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
       cause?: { error?: { message?: string }; status?: number };
     };
     mpReachable = false;
-    mpResponseStatus =
-      e?.cause?.status ?? e?.status ?? null;
-    mpResponseExcerpt =
-      e?.cause?.error?.message ?? e?.message ?? 'unknown error';
+    mpResponseStatus = e?.cause?.status ?? e?.status ?? null;
+    mpResponseExcerpt = e?.cause?.error?.message ?? e?.message ?? 'unknown error';
   }
 
   return NextResponse.json({

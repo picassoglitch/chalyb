@@ -41,18 +41,36 @@ variable "shared_secret_env" {
 
 variable "secret_env_names" {
   description = <<-EOT
-    What the ENGINE calls its own three secrets. Names differ per engine and
-    are not always the hub's names — ChalybClip reads DATABASE_URL,
-    NEXO_AI_ADMIN_TOKEN and NEXO_AI_SSO_SECRET with no prefix, because
-    settings.py gives them an explicit validation_alias. Only the VALUES have
-    to match the hub's CHALYB<SLUG>_* vars.
+    What the ENGINE calls its own three secrets — a LIST of names per secret,
+    all pointing at the same secret version.
+
+    Names differ per engine and are not the hub's names: ChalybClip reads them
+    with no product prefix because settings.py gives each an explicit
+    validation_alias. Only the VALUES have to match the hub's CHALYB<SLUG>_*
+    vars.
+
+    WHY A LIST. The rename from Nexo AI to Chalyb crosses two repos that do not
+    deploy together. If Cloud Run injected only CHALYB_ADMIN_TOKEN, every engine
+    image still reading NEXO_AI_ADMIN_TOKEN would come up with no admin token —
+    a silent 401 on every hub call, not a startup error. Listing both names
+    injects one secret under both, so either build works and the old name can be
+    dropped from here once the image no longer reads it.
   EOT
   type = object({
-    admin_token  = optional(string, "ADMIN_TOKEN")
-    sso_secret   = optional(string, "SSO_SECRET")
-    database_url = optional(string, "DATABASE_URL")
+    admin_token  = optional(list(string), ["ADMIN_TOKEN"])
+    sso_secret   = optional(list(string), ["SSO_SECRET"])
+    database_url = optional(list(string), ["DATABASE_URL"])
   })
   default = {}
+
+  validation {
+    condition = alltrue([
+      length(var.secret_env_names.admin_token) > 0,
+      length(var.secret_env_names.sso_secret) > 0,
+      length(var.secret_env_names.database_url) > 0,
+    ])
+    error_message = "Each secret needs at least one env-var name — an empty list means the engine gets no value at all."
+  }
 }
 
 variable "worker" {
@@ -65,23 +83,33 @@ variable "worker" {
     Under Cloud Run's default throttling that background task is frozen the
     moment the response is sent — silently, with no error.
 
-    env             extra environment for the worker, e.g. NEXOCLIP_ROLE=worker
-    endpoint_env_var if set, the API service gets this var pointing at the
-                    worker's URL, which is how the API learns to dispatch.
-    token_env_var   if set, a random bearer token is generated and injected
-                    under this name into BOTH the API and the worker. The
-                    worker is reachable on its public URL and this token is
-                    what gates it, so leave it unset only for a worker that
-                    does its own authentication some other way.
+    env               extra environment for the worker, e.g. CHALYBCLIP_ROLE=worker
+    endpoint_env_vars the API service gets each of these vars pointing at the
+                      worker's URL, which is how the API learns to dispatch.
+                      A list for the same reason secret_env_names is one.
+    token_env_vars    when non-empty, a random bearer token is generated and
+                      injected under every one of these names into BOTH the API
+                      and the worker. The worker is reachable on its public URL
+                      and this token is what gates it, so leave it empty only
+                      for a worker that authenticates some other way.
+    public            whether Cloud Run's own IAM lets anyone invoke the worker.
+                      TRUE is the default and matches how the app works today:
+                      the API presents the app-level bearer token above, not a
+                      Google OIDC token, and Cloud Run would reject the call at
+                      the platform layer before the app ever saw that header.
+                      Set FALSE once the engine signs its worker calls with an
+                      OIDC identity token — then Cloud Run checks IAM and only
+                      the engine's own service account can reach it.
   EOT
   type = object({
-    cpu              = optional(string, "2")
-    memory           = optional(string, "4Gi")
-    max_instances    = optional(number, 3)
-    timeout          = optional(string, "3600s")
-    env              = optional(map(string), {})
-    endpoint_env_var = optional(string)
-    token_env_var    = optional(string)
+    cpu               = optional(string, "2")
+    memory            = optional(string, "4Gi")
+    max_instances     = optional(number, 3)
+    timeout           = optional(string, "3600s")
+    env               = optional(map(string), {})
+    endpoint_env_vars = optional(list(string), [])
+    token_env_vars    = optional(list(string), [])
+    public            = optional(bool, true)
   })
   default = null
 }

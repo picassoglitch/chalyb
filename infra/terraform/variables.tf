@@ -95,22 +95,27 @@ variable "engines" {
     # Project-wide secrets to inject: VAR_NAME => key in local.shared_secrets.
     shared_secrets = optional(map(string), {})
 
-    # What the engine calls its own three secrets. Defaults are the
+    # What the engine calls its own three secrets. A LIST per secret: every
+    # name gets the same secret injected, which is how an engine mid-rename
+    # can answer to both its old and new var names. Defaults are the
     # convention; override for engines that read different names.
     secret_env_names = optional(object({
-      admin_token  = optional(string, "ADMIN_TOKEN")
-      sso_secret   = optional(string, "SSO_SECRET")
-      database_url = optional(string, "DATABASE_URL")
+      admin_token  = optional(list(string), ["ADMIN_TOKEN"])
+      sso_secret   = optional(list(string), ["SSO_SECRET"])
+      database_url = optional(list(string), ["DATABASE_URL"])
     }), {})
 
     worker = optional(object({
-      cpu              = optional(string, "2")
-      memory           = optional(string, "4Gi")
-      max_instances    = optional(number, 3)
-      timeout          = optional(string, "3600s")
-      env              = optional(map(string), {})
-      endpoint_env_var = optional(string)
-      token_env_var    = optional(string)
+      cpu               = optional(string, "2")
+      memory            = optional(string, "4Gi")
+      max_instances     = optional(number, 3)
+      timeout           = optional(string, "3600s")
+      env               = optional(map(string), {})
+      endpoint_env_vars = optional(list(string), [])
+      token_env_vars    = optional(list(string), [])
+      # allUsers invoke. See the module's variables.tf for why this is the
+      # default and what has to change in the engine before locking it.
+      public = optional(bool, true)
     }))
 
     jobs = optional(map(object({
@@ -130,49 +135,77 @@ variable "engines" {
       display_name = "ChalybClip"
       memory       = "2Gi"
 
+      # EVERY VAR IS SET UNDER BOTH NAMES, on purpose.
+      #
+      # The hub is Chalyb; the engine image is still built from the nexoclip
+      # package and its pydantic settings still carry the NEXOCLIP_ prefix and
+      # the NEXO_AI_ aliases. The two repos do not deploy together, so picking
+      # one set of names breaks whichever side is behind — and it breaks it
+      # SILENTLY: an unread env var is not a startup error, it is a default
+      # value and a 401 later.
+      #
+      # Setting both costs nothing (same value, same secret) and makes the
+      # cutover ordered instead of simultaneous: rename in the engine, deploy
+      # it, then delete the NEXO* lines here.
       env = {
         # Cloud Run's filesystem is tmpfs and counts against memory. Scratch
         # only — durable artifacts go to the media bucket.
-        NEXOCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
+        CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
+        NEXOCLIP_DEFAULT_OUTPUT_DIR   = "/tmp/out"
         # The dispatcher DEFAULTS to in_process, which runs the pipeline
         # inside the API request and never touches the worker. This is what
         # makes it dispatch.
-        NEXOCLIP_JOB_DISPATCHER = "modal"
+        CHALYBCLIP_JOB_DISPATCHER = "modal"
+        NEXOCLIP_JOB_DISPATCHER   = "modal"
       }
 
-      # ChalybClip reads all three WITHOUT its usual NEXOCLIP_ prefix:
+      # ChalybClip reads all three WITHOUT its usual product prefix:
       # settings.py gives each an explicit validation_alias. Only the values
       # need to match the hub's CHALYBCLIP_* vars.
       secret_env_names = {
-        admin_token  = "NEXO_AI_ADMIN_TOKEN"
-        sso_secret   = "NEXO_AI_SSO_SECRET"
-        database_url = "DATABASE_URL"
+        admin_token  = ["CHALYB_ADMIN_TOKEN", "NEXO_AI_ADMIN_TOKEN"]
+        sso_secret   = ["CHALYB_SSO_SECRET", "NEXO_AI_SSO_SECRET"]
+        database_url = ["DATABASE_URL"]
       }
 
       shared_secrets = {
-        NEXOCLIP_ZERNIO_API_KEY = "zernio-api-key"
+        CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key"
+        NEXOCLIP_ZERNIO_API_KEY   = "zernio-api-key"
       }
 
-      # `nexoclip worker` — the kickoff/poll pipeline service.
+      # The kickoff/poll pipeline service.
       worker = {
-        env              = { NEXOCLIP_ROLE = "worker" }
-        endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+        env = {
+          CHALYBCLIP_ROLE = "worker"
+          NEXOCLIP_ROLE   = "worker"
+        }
+        endpoint_env_vars = [
+          "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL",
+          "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL",
+        ]
         # The API sends settings.modal_token as its bearer; the worker accepts
-        # NEXOCLIP_WORKER_TOKEN or NEXOCLIP_MODAL_TOKEN. One name satisfies both.
-        token_env_var = "NEXOCLIP_MODAL_TOKEN"
+        # either the WORKER_TOKEN or the MODAL_TOKEN name.
+        token_env_vars = ["CHALYBCLIP_MODAL_TOKEN", "NEXOCLIP_MODAL_TOKEN"]
       }
 
       jobs = {
-        # `nexoclip drive poll` is a Typer command, not an HTTP route.
-        # Scheduled every minute per the ingest SLA, but PAUSED: without
-        # --source-dir the command builds the real GoogleDriveClient, which is
-        # not implemented yet and exits 1. Un-pause when it ships.
+        # `drive poll` is a Typer command, not an HTTP route. Scheduled every
+        # minute per the ingest SLA, but PAUSED: without --source-dir the
+        # command builds the real GoogleDriveClient, which is not implemented
+        # yet and exits 1. Un-pause when it ships.
+        #
+        # `command` is the CLI entrypoint baked into the IMAGE, so it follows
+        # the engine repo's package name, not the hub's brand. It changes when
+        # the image is rebuilt under a new name, not before.
         drive-poll = {
           command  = ["nexoclip"]
           args     = ["drive", "poll"]
           schedule = "* * * * *"
           paused   = true
-          env      = { NEXOCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
+          env = {
+            CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out"
+            NEXOCLIP_DEFAULT_OUTPUT_DIR   = "/tmp/out"
+          }
         }
       }
     }

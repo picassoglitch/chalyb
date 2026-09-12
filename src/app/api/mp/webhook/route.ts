@@ -1,19 +1,22 @@
 // Mercado Pago webhook receiver.
 //
 // MP posts here after a payment changes state. We:
-//   1. Validate the signature (if MP_WEBHOOK_SECRET is set)
-//   2. Pull the full payment details from MP (the webhook body is just a pointer)
-//   3. If approved + external_reference parses as <userId>|<tier>:
-//        - upsert the row in `payments` (UNIQUE on mp_payment_id → idempotent on retries)
-//        - update profiles.tier for the user
-//   4. Always respond 200 so MP doesn't keep retrying — except on signature
-//      mismatch (401) and our own DB errors (500) which we WANT MP to retry.
+//   1. Verify the signature — FAIL CLOSED. No secret configured means no
+//      request is accepted (see lib/payments/webhook-signature.ts).
+//   2. Pull the full payment details from MP (the webhook body is just a
+//      pointer; MP's REST API is the source of truth for status + amount).
+//   3. Check the amount actually paid against our own catalog, so a
+//      hand-rolled Preference cannot buy VIP for five pesos.
+//   4. If approved + external_reference parses:
+//        - upsert the row in `payments` (UNIQUE on mp_payment_id → idempotent)
+//        - grant the tier (or credit the token pack, atomically via RPC)
+//   5. Respond 200 so MP stops retrying — except on signature mismatch (401)
+//      and our own DB errors (500), which we WANT MP to retry.
 //
 // MP retries failed webhooks with exponential backoff for ~3 days. Our
 // idempotency key (mp_payment_id UNIQUE) makes duplicate deliveries safe.
 
 import { NextResponse } from 'next/server';
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import {
@@ -22,13 +25,15 @@ import {
   getWebhookSecret,
   isMercadoPagoConfigured,
 } from '@/lib/payments/mercadopago';
+import { verifyMercadoPagoSignature } from '@/lib/payments/webhook-signature';
 import { sendEmail } from '@/lib/email/resend';
 import { notify } from '@/lib/notifications/notify';
 import { paymentSuccessTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
+import { addOneMonth } from '@/lib/billing/subscription-state';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { grantTokenPack } from '@/lib/usage/tokens';
-import { getTokenPack } from '@/lib/payments/pricing';
+import { getTokenPack, checkTierPayment, checkTokenPackPayment } from '@/lib/payments/pricing';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -36,44 +41,29 @@ export const runtime = 'nodejs';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
 
-/**
- * MP signs the webhook with HMAC-SHA256 over the string:
- *   `id:${data.id};request-id:${x-request-id};ts:${ts}`
- * where ts comes from the x-signature header itself (split by commas).
- * We use timingSafeEqual to avoid leaking length differences via timing.
- * See: https://www.mercadopago.com/developers/en/docs/your-integrations/notifications/webhooks
- */
+/** Thin wrapper: pulls the env + headers together and hands them to the
+ *  pure verifier. The verdict is logged (never the signature itself) so a
+ *  misconfigured secret is visible in the function logs rather than being
+ *  a silent 401 storm. */
 function verifySignature(req: Request, paymentId: string): boolean {
-  const secret = getWebhookSecret();
-  if (!secret) {
-    // Not configured = skip verification. Log a warning so it's obvious in dev.
-    console.warn(
-      '[mp/webhook] MERCADOPAGO_WEBHOOK_SECRET not set — accepting unsigned payload.',
-    );
-    return true;
-  }
-  const sigHeader = req.headers.get('x-signature');
-  const requestId = req.headers.get('x-request-id');
-  if (!sigHeader || !requestId) return false;
-
-  // x-signature looks like: "ts=1733520000,v1=abc123..."
-  const parts = Object.fromEntries(
-    sigHeader.split(',').map((s) => {
-      const [k, v] = s.split('=').map((x) => x.trim());
-      return [k, v];
-    }),
-  );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  if (!ts || !v1) return false;
-
-  const manifest = `id:${paymentId};request-id:${requestId};ts:${ts};`;
-  const expected = createHmac('sha256', secret).update(manifest).digest('hex');
-  try {
-    return timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(v1, 'hex'));
-  } catch {
+  const verdict = verifyMercadoPagoSignature({
+    secret: getWebhookSecret(),
+    signatureHeader: req.headers.get('x-signature'),
+    requestId: req.headers.get('x-request-id'),
+    paymentId,
+    nodeEnv: process.env.NODE_ENV,
+    allowUnsignedFlag: process.env.MP_ALLOW_UNSIGNED_WEBHOOK,
+  });
+  if (!verdict.ok) {
+    console.error('[mp/webhook] signature rejected:', verdict.reason, '—', verdict.detail);
     return false;
   }
+  if (verdict.reason === 'dev_unsigned_allowed') {
+    console.warn(
+      '[mp/webhook] MP_ALLOW_UNSIGNED_WEBHOOK=true — accepting an UNSIGNED payload. Development only.',
+    );
+  }
+  return true;
 }
 
 interface MPWebhookBody {
@@ -167,6 +157,12 @@ export async function POST(req: Request) {
     paymentRowTier = tier!; // validated above
   }
 
+  // What MP says actually moved. Used by the payments row, the amount check
+  // below, and every notification/audit entry, so it is computed once.
+  const amountMajor = (mpPayment.transaction_amount ?? 0).toFixed(2);
+  const currency = mpPayment.currency_id ?? 'USD';
+  const amountCents = Math.round((mpPayment.transaction_amount ?? 0) * 100);
+
   // Always record the payment regardless of status — pending/rejected payments
   // are useful audit data. UNIQUE on mp_payment_id makes this idempotent.
   const { error: paymentErr } = await admin
@@ -176,8 +172,8 @@ export async function POST(req: Request) {
         user_id: userId,
         tier: paymentRowTier,
         mp_payment_id: String(mpPayment.id ?? paymentId),
-        amount_cents: Math.round((mpPayment.transaction_amount ?? 0) * 100),
-        currency: mpPayment.currency_id ?? 'USD',
+        amount_cents: amountCents,
+        currency,
         status,
         raw: mpPayment as unknown as Record<string, unknown>,
       },
@@ -189,11 +185,60 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'db payments insert failed' }, { status: 500 });
   }
 
+
+  // Does the money that actually moved cover what this sku costs? MP told us
+  // the amount; our own catalog says the price. external_reference is just a
+  // string we put on the Preference, so without this check a Preference built
+  // by hand — same external_reference, one peso — would buy a real tier.
+  // A shortfall records the payment (already done above) and grants nothing.
+  const amountVerdict = isPackPurchase
+    ? checkTokenPackPayment(packIdRaw!, amountCents, currency)
+    : checkTierPayment(tier!, amountCents, currency);
+  if (!amountVerdict.ok && status === 'approved') {
+    console.error(
+      '[mp/webhook] amount check failed',
+      amountVerdict.reason,
+      `paid=${amountCents} ${currency}`,
+      `expected=${amountVerdict.expectedCents ?? '?'} ${amountVerdict.expectedCurrency ?? '?'}`,
+      `ref=${externalRef}`,
+    );
+    await notify({
+      severity: 'critical',
+      title: `Pago aprobado NO acreditado — ${amountVerdict.reason}`,
+      body:
+        `MP #${String(mpPayment.id ?? paymentId)} · pagó $${amountMajor} ${currency}, ` +
+        `esperábamos $${((amountVerdict.expectedCents ?? 0) / 100).toFixed(2)} ` +
+        `${amountVerdict.expectedCurrency ?? ''} · ref ${externalRef}`,
+      href: '/dashboard/billing',
+      source: 'mp.webhook',
+    });
+    await logAudit({
+      action: 'tier.payment',
+      actorId: null,
+      actorEmail: null,
+      targetUserId: userId,
+      targetEmail: null,
+      before: null,
+      after: null,
+      metadata: {
+        mp_payment_id: String(mpPayment.id ?? paymentId),
+        amount_cents: amountCents,
+        currency,
+        kind: 'payment.amount_rejected',
+        reason: amountVerdict.reason,
+        expected_cents: amountVerdict.expectedCents ?? null,
+        external_reference: externalRef,
+      },
+    });
+    // 200: the payload was genuinely from MP, so retrying changes nothing.
+    return NextResponse.json(
+      { ok: false, error: 'amount check failed', reason: amountVerdict.reason },
+      { status: 200 },
+    );
+  }
   // Feed the command-center notifications. Best-effort (notify never throws);
   // a rejected/cancelled payment is worth an admin's attention, an approved
   // one is informational.
-  const amountMajor = (mpPayment.transaction_amount ?? 0).toFixed(2);
-  const currency = mpPayment.currency_id ?? 'USD';
   if (status === 'rejected' || status === 'cancelled') {
     await notify({
       severity: 'warning',
@@ -230,8 +275,8 @@ export async function POST(req: Request) {
       after: { tokens_granted: pack.tokens },
       metadata: {
         mp_payment_id: String(mpPayment.id ?? paymentId),
-        amount_cents: Math.round((mpPayment.transaction_amount ?? 0) * 100),
-        currency: mpPayment.currency_id ?? 'MXN',
+        amount_cents: amountCents,
+        currency,
         pack_id: pack.id,
         kind: 'tokens.pack_purchase',
         already_granted: grantRes.alreadyGranted ?? false,
@@ -265,9 +310,22 @@ export async function POST(req: Request) {
       .eq('id', userId)
       .maybeSingle();
 
+    // A payment buys one month (these are one-off Preferences, not an MP
+    // preapproval subscription). tier_period_end is what "cancel at period
+    // end" later reads; clearing tier_cancel_at means paying again after a
+    // cancellation resumes the plan.
+    const paidAt = mpPayment.date_approved
+      ? new Date(mpPayment.date_approved)
+      : new Date();
+    const periodEnd = addOneMonth(Number.isNaN(paidAt.getTime()) ? new Date() : paidAt);
+
     const { error: tierErr } = await admin
       .from('profiles')
-      .update({ tier })
+      .update({
+        tier,
+        tier_period_end: periodEnd.toISOString(),
+        tier_cancel_at: null,
+      })
       .eq('id', userId);
     // Auto-provision engine access on VIP upgrades. PRO upgrades wait
     // until the user picks their live engine (setSelectedLiveEngine handles
@@ -292,8 +350,9 @@ export async function POST(req: Request) {
       after: { tier },
       metadata: {
         mp_payment_id: String(mpPayment.id ?? paymentId),
-        amount_cents: Math.round((mpPayment.transaction_amount ?? 0) * 100),
-        currency: mpPayment.currency_id ?? 'USD',
+        amount_cents: amountCents,
+        currency,
+        period_end: periodEnd.toISOString(),
       },
     });
 

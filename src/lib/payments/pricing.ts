@@ -53,8 +53,10 @@ export interface TokenPack {
   id: 'tokens_100k' | 'tokens_500k' | 'tokens_2m';
   /** Tokens granted. Combined input+output, same units as TIER_CAPS. */
   tokens: number;
-  /** Price in MXN minor units (centavos). */
+  /** Price in minor units (centavos) of `currency`. */
   amountCents: number;
+  /** ISO 4217 code MP charges in. Same country lock as TIER_PRICING. */
+  currency: string;
   /** Display label for the buy button. */
   label: string;
   /** Marketing tagline. */
@@ -66,6 +68,7 @@ export const TOKEN_PACKS: TokenPack[] = [
     id: 'tokens_100k',
     tokens: 100_000,
     amountCents: 14900, // MXN $149
+    currency: 'MXN',
     label: '+100k tokens',
     tagline: 'Top-up rápido · alcanza para varios trabajos pequeños',
   },
@@ -73,6 +76,7 @@ export const TOKEN_PACKS: TokenPack[] = [
     id: 'tokens_500k',
     tokens: 500_000,
     amountCents: 59900, // MXN $599 (5.5x más por 4x el precio)
+    currency: 'MXN',
     label: '+500k tokens',
     tagline: 'Mejor relación · ~30% descuento por token vs el pack chico',
   },
@@ -80,6 +84,7 @@ export const TOKEN_PACKS: TokenPack[] = [
     id: 'tokens_2m',
     tokens: 2_000_000,
     amountCents: 199900, // MXN $1,999 (20x por 13x el precio)
+    currency: 'MXN',
     label: '+2M tokens',
     tagline: 'Mejor relación · pensado para usuarios PRO con uso pesado',
   },
@@ -87,4 +92,73 @@ export const TOKEN_PACKS: TokenPack[] = [
 
 export function getTokenPack(id: string): TokenPack | undefined {
   return TOKEN_PACKS.find((p) => p.id === id);
+}
+
+// ── Amount verification ───────────────────────────────────────────────────
+// The webhook learns WHICH sku a payment is for from external_reference,
+// and external_reference is a plain string we put on the Preference. The
+// AMOUNT, though, comes back from MP's own API, so comparing the two is
+// what stops a hand-rolled Preference (or a tampered one) from buying VIP
+// for five pesos. A payment that does not cover the catalog price records
+// itself in `payments` but grants nothing.
+//
+// Overpaying is fine — currency conversion and MP's own rounding can land a
+// few centavos high, and refusing to deliver something the user overpaid
+// for would be the worse failure. Underpaying is not.
+
+export type AmountVerdict =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: 'unknown_sku' | 'currency_mismatch' | 'underpaid';
+      expectedCents?: number;
+      expectedCurrency?: string;
+    };
+
+function compare(
+  expected: { amountCents: number; currency: string } | null | undefined,
+  paidCents: number,
+  paidCurrency: string,
+): AmountVerdict {
+  if (!expected) return { ok: false, reason: 'unknown_sku' };
+  if (paidCurrency.toUpperCase() !== expected.currency.toUpperCase()) {
+    return {
+      ok: false,
+      reason: 'currency_mismatch',
+      expectedCents: expected.amountCents,
+      expectedCurrency: expected.currency,
+    };
+  }
+  if (paidCents < expected.amountCents) {
+    return {
+      ok: false,
+      reason: 'underpaid',
+      expectedCents: expected.amountCents,
+      expectedCurrency: expected.currency,
+    };
+  }
+  return { ok: true };
+}
+
+/** Does this payment cover the catalog price of `tier`? */
+export function checkTierPayment(
+  tier: SubscriptionTier,
+  paidCents: number,
+  paidCurrency: string,
+): AmountVerdict {
+  return compare(TIER_PRICING[tier], paidCents, paidCurrency);
+}
+
+/** Does this payment cover the catalog price of the token pack `packId`? */
+export function checkTokenPackPayment(
+  packId: string,
+  paidCents: number,
+  paidCurrency: string,
+): AmountVerdict {
+  const pack = getTokenPack(packId);
+  return compare(
+    pack ? { amountCents: pack.amountCents, currency: pack.currency } : null,
+    paidCents,
+    paidCurrency,
+  );
 }

@@ -20,7 +20,7 @@ this is the executable half.
 | ---------------------------- | ------------------------------------------------------------------------------------ |
 | Cloud Run service per engine | `chalybclip`, `chalybobs`, `chalybcrypto` — scale to zero, so idle cost is $0        |
 | Cloud Run service            | `chalybclip-worker` — the pipeline worker, internal-only, **CPU always allocated**   |
-| Cloud Run Job                | `drive-poll`, running `nexoclip drive poll`                                          |
+| Cloud Run Job                | `drive-poll`, running the engine image's `drive poll` command                        |
 | Cloud Scheduler              | triggers the poll job every minute — **paused by default**, see below                |
 | Cloud Storage                | one media bucket, private, with lifecycle pruning                                    |
 | Artifact Registry            | one Docker repo with a cleanup policy                                                |
@@ -33,7 +33,8 @@ secrets, so a compromise of one engine does not expose another's.
 
 ## Shapes verified against the application
 
-`worker.tf` was corrected after reading picassoglitch/nexoclip. Both halves
+`worker.tf` was corrected after reading the engine repository (`picassoglitch/nexoclip`
+— the image's package name, still pre-rebrand). Both halves
 were originally inverted, and both would have failed silently rather than
 loudly:
 
@@ -51,11 +52,31 @@ The poll's **schedule is paused** (`enable_drive_poll = false`). Without
 implemented yet and exits 1 — a one-minute schedule would produce 1,440
 failures a day and bury real alerts. Flip the variable once the client ships.
 
-Engine secret env vars are named for what the engine reads, not what the hub
-calls them: `DATABASE_URL`, `NEXO_AI_ADMIN_TOKEN` and `NEXO_AI_SSO_SECRET` all
-carry an explicit `validation_alias` in `nexoclip/settings.py`, so they take
-**no** `NEXOCLIP_` prefix. Only the values need to match the hub's
-`CHALYBCLIP_*` vars.
+### Engine env-var names, and why each one is set twice
+
+Engine secret env vars are named for what the ENGINE reads, not what the hub
+calls them: the admin token, the SSO secret and the database URL all carry an
+explicit `validation_alias` in the engine's `settings.py`, so they take **no**
+product prefix. Only the VALUES have to match the hub's `CHALYBCLIP_*` vars.
+
+The rebrand from Nexo AI to Chalyb crosses two repositories that do not deploy
+together, so `secret_env_names` takes a **list** per secret and every var is
+set under both the new and the old name:
+
+| Secret       | Injected as                                  |
+| ------------ | -------------------------------------------- |
+| admin token  | `CHALYB_ADMIN_TOKEN` + `NEXO_AI_ADMIN_TOKEN` |
+| SSO secret   | `CHALYB_SSO_SECRET` + `NEXO_AI_SSO_SECRET`   |
+| database URL | `DATABASE_URL`                               |
+
+Same for the plain vars: `CHALYBCLIP_*` alongside the `NEXOCLIP_*` name the
+image still reads. It costs nothing — one secret, two names — and it makes the
+cutover ordered rather than simultaneous. **An unread env var is not a startup
+error**, it is a default value and a 401 an hour later, which is exactly the
+failure a big-bang rename would produce.
+
+Drop the `NEXO*` entries from `var.engines` once the engine image no longer
+reads them.
 
 ## Adding an agent
 
@@ -159,6 +180,22 @@ is only decided at apply time — whether an org policy rejects the `allUsers`
 binding on the Cloud Run services, whether API enablement finishes before the
 resources that depend on it, or IAM propagation delays. Expect to iterate once
 on the first apply.
+
+## Who can invoke what
+
+Both the API service and the worker carry an `allUsers` invoker binding, which
+is what makes the engine reachable at all: users are redirected into the API
+from the hub's `/auth/launch/<slug>`, and the API calls the worker with the
+**app-level bearer token** rather than a Google OIDC token. Cloud Run's IAM
+check runs before the container sees the request, so restricting invoke on the
+worker today would reject the API's own calls — the pipeline would go quiet
+with no error anywhere.
+
+That token is real authentication, but it is app-layer: the service answers a
+TCP connection from anyone, and only then rejects the request. To close that,
+teach the engine to send an OIDC identity token on its worker calls, then set
+`public = false` inside that engine's `worker` block. The module swaps the
+`allUsers` binding for one scoped to the engine's own service account.
 
 ## Cost
 

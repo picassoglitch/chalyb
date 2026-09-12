@@ -10,7 +10,7 @@ domain     = "chalyb.com"
 billing_account   = "" # e.g. "01ABCD-2345EF-6789GH"
 budget_amount_usd = 50
 
-budget_alert_emails = ["picassoglitch@gmail.com"]
+budget_alert_emails = ["you@example.com"]
 
 # Rendered clips are re-derivable; keeping them forever is pure cost.
 media_retention_days = 30
@@ -31,18 +31,30 @@ enable_domain_mappings = false
 #   chalybclip = {
 #     display_name = "ChalybClip"
 #     image        = "us-central1-docker.pkg.dev/chalyb/engines/chalybclip:v1"
+#     # A list per secret: the same secret is injected under every name, so an
+#     # engine image that still reads the pre-rebrand name keeps working.
 #     secret_env_names = {
-#       admin_token  = "NEXO_AI_ADMIN_TOKEN"
-#       sso_secret   = "NEXO_AI_SSO_SECRET"
-#       database_url = "DATABASE_URL"
+#       admin_token  = ["CHALYB_ADMIN_TOKEN", "NEXO_AI_ADMIN_TOKEN"]
+#       sso_secret   = ["CHALYB_SSO_SECRET", "NEXO_AI_SSO_SECRET"]
+#       database_url = ["DATABASE_URL"]
 #     }
-#     shared_secrets = { NEXOCLIP_ZERNIO_API_KEY = "zernio-api-key" }
+#     shared_secrets = {
+#       CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key"
+#       NEXOCLIP_ZERNIO_API_KEY   = "zernio-api-key"
+#     }
 #     worker = {
-#       env              = { NEXOCLIP_ROLE = "worker" }
-#       endpoint_env_var = "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL"
+#       env = { CHALYBCLIP_ROLE = "worker", NEXOCLIP_ROLE = "worker" }
+#       endpoint_env_vars = [
+#         "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL",
+#         "NEXOCLIP_MODAL_PIPELINE_ENDPOINT_URL",
+#       ]
+#       # false once the engine calls its worker with an OIDC identity token.
+#       public = true
 #     }
 #     jobs = {
 #       drive-poll = {
+#         # The CLI entrypoint baked into the image — follows the engine repo's
+#         # package name, not the hub brand.
 #         command  = ["nexoclip"]
 #         args     = ["drive", "poll"]
 #         schedule = "* * * * *"

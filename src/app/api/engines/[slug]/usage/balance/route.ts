@@ -20,51 +20,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTokenBalance } from '@/lib/usage/tokens';
+import { checkEngineBearer } from '@/lib/engines/bearer';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-// Mirror of ENGINE_BEARER_ENV in ../route.ts. Kept duplicated here rather
-// than imported because: (a) Next.js route files don't co-locate cleanly
-// for shared exports; (b) the list is tiny and changes rarely; (c) using
-// a shared `lib/engines/bearer.ts` helper is fine if it grows past 3
-// engines but premature today.
-const ENGINE_BEARER_ENV: Record<string, string> = {
-  chalybclip: 'CHALYBCLIP_ADMIN_TOKEN',
-  // chalybstream: 'CHALYBSTREAM_ADMIN_TOKEN',   // when it ships
-};
-
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-}
-
-function checkEngineBearer(
-  req: Request,
-  slug: string,
-): { ok: true } | { ok: false; status: number; error: string } {
-  const envName = ENGINE_BEARER_ENV[slug];
-  if (!envName) {
-    return { ok: false, status: 404, error: `unknown engine: ${slug}` };
-  }
-  const expected = process.env[envName];
-  if (!expected) {
-    return { ok: false, status: 503, error: `${envName} not configured` };
-  }
-  const header = req.headers.get('authorization') ?? '';
-  if (!header.toLowerCase().startsWith('bearer ')) {
-    return { ok: false, status: 401, error: 'missing bearer token' };
-  }
-  const presented = header.slice('bearer '.length).trim();
-  if (!constantTimeEqual(presented, expected)) {
-    return { ok: false, status: 403, error: 'invalid bearer token' };
-  }
-  return { ok: true };
-}
 
 export async function GET(
   req: Request,

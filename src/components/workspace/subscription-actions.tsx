@@ -3,6 +3,10 @@
 import { useState, useTransition } from 'react';
 import { useWorkspace } from '@/lib/workspace/store';
 import { changeUserTier } from '@/lib/auth/tier-actions';
+import {
+  cancelSubscriptionAtPeriodEnd,
+  resumeSubscription,
+} from '@/lib/billing/cancel-actions';
 import { createTierCheckout } from '@/lib/payments/checkout-actions';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import type { SubscriptionTier } from '@/lib/auth/session';
@@ -72,10 +76,26 @@ interface Props {
   initialTier: SubscriptionTier;
   userId: string;
   isAdmin: boolean;
+  /** ISO date a requested cancellation takes effect, or null. While this is
+   *  set the user still HAS the paid plan — they just stop renewing. */
+  pendingCancelAt?: string | null;
 }
 
-export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
+/** "12 de marzo de 2026" — the date a cancellation lands. */
+function formatCancelDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+export function SubscriptionActions({
+  initialTier,
+  userId,
+  isAdmin,
+  pendingCancelAt = null,
+}: Props) {
   const [tier, setTier] = useState<SubscriptionTier>(initialTier);
+  const [cancelAt, setCancelAt] = useState<string | null>(pendingCancelAt);
   const [pendingTier, setPendingTier] = useState<SubscriptionTier | null>(null);
   const [isPending, startTransition] = useTransition();
   // Sticky error banner for the checkout failure path. The toast only
@@ -90,9 +110,18 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
     setPendingTier(next);
     setStickyError(null);
 
-    // Branch 1: Downgrades and admins go through direct tier-actions write.
-    //  - Downgrade to FREE: no money changes hands, direct write.
-    //  - Admin: their changes bypass MP (admin override).
+    // Branch 0: a subscriber choosing FREE is cancelling, not downgrading.
+    // They already paid for this period, so it ends when the period does —
+    // same thing the "Cancelar plan" button below does, same promise the copy
+    // makes. Admins keep the instant path (branch 1) for comps and fixes.
+    if (next === 'FREE' && !isAdmin) {
+      setPendingTier(null);
+      cancelPlan();
+      return;
+    }
+
+    // Branch 1: Admin changes, and an admin's own downgrade, write directly —
+    // their tier moves bypass MP entirely (admin override).
     if (next === 'FREE' || isAdmin) {
       startTransition(async () => {
         const prev = tier;
@@ -157,7 +186,10 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
     });
   }
 
-  function cancelSubscription() {
+  // Cancelling is NOT a downgrade. It schedules the plan to stop renewing and
+  // leaves the tier exactly where it is until the paid period runs out —
+  // which is what the copy beside the button has always promised.
+  function cancelPlan() {
     if (tier === 'FREE') {
       showToast('Ya tienes el plan Free.');
       return;
@@ -169,7 +201,35 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
     ) {
       return;
     }
-    void changeTier('FREE');
+    startTransition(async () => {
+      const res = await cancelSubscriptionAtPeriodEnd();
+      if (!res.ok) {
+        const msg = res.error ?? 'No pudimos cancelar tu plan.';
+        showToast(`<b>Error</b> · ${msg}`);
+        setStickyError(msg);
+        return;
+      }
+      setCancelAt(res.effectiveAt ?? null);
+      showToast(
+        res.immediate
+          ? 'Tu plan quedó cancelado.'
+          : `Cancelado. Conservas <b>${TIER_LABELS[tier]}</b> hasta el ${formatCancelDate(res.effectiveAt!)}.`,
+      );
+    });
+  }
+
+  function resumePlan() {
+    startTransition(async () => {
+      const res = await resumeSubscription();
+      if (!res.ok) {
+        const msg = res.error ?? 'No pudimos reactivar tu plan.';
+        showToast(`<b>Error</b> · ${msg}`);
+        setStickyError(msg);
+        return;
+      }
+      setCancelAt(null);
+      showToast(`Listo, tu plan <b>${TIER_LABELS[tier]}</b> sigue activo.`);
+    });
   }
 
   // Build cards by composing TIER_CAPS (name + price + per) with TIER_MARKETING
@@ -376,27 +436,34 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
         <div className="cc-mod-section">
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Cancelar suscripción</span>
+              <span className="t">
+                {cancelAt ? 'Cancelación programada' : 'Cancelar suscripción'}
+              </span>
               <span className="s">
-                Conservas tu acceso a {TIER_LABELS[tier]} hasta que termine el período que ya pagaste.
+                {cancelAt
+                  ? `Tu plan ${TIER_LABELS[tier]} sigue activo hasta el ${formatCancelDate(cancelAt)}. Ese día pasas a Free.`
+                  : `Conservas tu acceso a ${TIER_LABELS[tier]} hasta que termine el período que ya pagaste.`}
               </span>
             </div>
             <button
               type="button"
-              onClick={cancelSubscription}
+              onClick={cancelAt ? resumePlan : cancelPlan}
+              disabled={isPending}
               style={{
                 background: 'transparent',
-                border: '1px solid var(--cc-red)',
-                color: 'var(--cc-red)',
+                border: `1px solid ${cancelAt ? 'var(--cc-green)' : 'var(--cc-red)'}`,
+                color: cancelAt ? 'var(--cc-green)' : 'var(--cc-red)',
                 padding: '8px 14px',
                 borderRadius: 8,
                 fontFamily: 'inherit',
                 fontSize: 12.5,
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: isPending ? 'default' : 'pointer',
+                opacity: isPending ? 0.5 : 1,
+                whiteSpace: 'nowrap',
               }}
             >
-              Cancelar plan
+              {cancelAt ? 'Reactivar plan' : 'Cancelar plan'}
             </button>
           </div>
         </div>

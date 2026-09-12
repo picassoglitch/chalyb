@@ -81,7 +81,7 @@ export async function createTokenPackCheckout(
           title: `Chalyb · ${pack.label}`,
           quantity: 1,
           unit_price: pack.amountCents / 100,
-          currency_id: 'MXN',
+          currency_id: pack.currency,
         },
       ],
       external_reference: `pack|${session.user.id}|${pack.id}`,

@@ -4,19 +4,16 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
+import { decideTierChange } from '@/lib/billing/tier-change-policy';
 import { getSessionUser, type SubscriptionTier } from './session';
-
-// PARTNER is admin-grant only — there's no MP checkout for it, so the
-// VALID_TIERS allowlist DOES include it (admins can promote) while the
-// self-change branch below blocks non-admins from picking it.
-const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'PARTNER', 'VIP'];
 
 interface ChangeResult {
   ok: boolean;
   error?: string;
-  /** True when the call needs a real payment flow before the change actually applies.
-   *  In v1 we persist the change immediately and flag this so the UI can hint at it.
-   *  Step 05-PAYMENTS will gate the write behind a Mercado Pago checkout completion. */
+  /** Set when the request was refused because the tier has to be PAID for.
+   *  The UI reads this to send the user to the Mercado Pago checkout instead
+   *  of showing a bare error. It is never a "we wrote it anyway" flag — a
+   *  refusal writes nothing. */
   paymentRequired?: boolean;
 }
 
@@ -24,26 +21,22 @@ export async function changeUserTier(
   targetUserId: string,
   newTier: SubscriptionTier,
 ): Promise<ChangeResult> {
-  if (!VALID_TIERS.includes(newTier)) {
-    return { ok: false, error: 'Ese plan no existe.' };
-  }
-
   const session = await getSessionUser();
   if (!session) return { ok: false, error: 'Inicia sesión para continuar.' };
 
   const isSelf = targetUserId === session.user.id;
   const isAdmin = session.role === 'SUPER_ADMIN' || session.role === 'ADMIN';
 
-  // Permission gate at the Next.js layer (authoritative — includes env-locked admins).
-  if (!isSelf && !isAdmin) {
-    return { ok: false, error: 'Solo un admin puede cambiar el plan de otra persona.' };
-  }
-
-  // PARTNER is admin-grant only. A self-promote to PARTNER would bypass the
-  // intent (it's a relationship, not a SKU). Block it explicitly so the
-  // dropdown can't be hand-rolled by a non-admin to claim partner perks.
-  if (newTier === 'PARTNER' && !isAdmin) {
-    return { ok: false, error: 'El plan Partner solo lo asigna un admin.' };
+  // THE gate. A non-admin may only ever move their own row to FREE; every
+  // paid tier is written by the Mercado Pago webhook once the payment is
+  // confirmed. See src/lib/billing/tier-change-policy.ts for the table.
+  const decision = decideTierChange({ isSelf, isAdmin, newTier });
+  if (!decision.allowed) {
+    return {
+      ok: false,
+      error: decision.error,
+      paymentRequired: decision.reason === 'payment_required',
+    };
   }
 
   // Use the service-role client so the write bypasses RLS. This is the only
@@ -96,8 +89,11 @@ export async function changeUserTier(
   //   - FREE: no provisioning. We DON'T deactivate existing rows on a
   //     downgrade so re-upgrades are seamless; deactivation is a separate
   //     manual flow.
+  // Only an admin can reach VIP through this action now (a self-upgrade is
+  // refused above and lands via the webhook instead), so the grant source is
+  // unambiguous.
   if (newTier === 'VIP') {
-    await provisionAllAccessEngines(targetUserId, isAdmin ? 'admin_grant' : 'mp_payment');
+    await provisionAllAccessEngines(targetUserId, 'admin_grant');
   }
 
   // IMPORTANT: revalidatePath needs the FILE path (with bracketed dynamic
@@ -108,9 +104,7 @@ export async function changeUserTier(
   // [locale] in one call, which is overkill but bulletproof for a small app.
   revalidatePath('/[locale]', 'layout');
 
-  // For a self-change that costs money, flag that real payment would be required
-  // in production — UI shows a "demo mode" note. Admin-led changes bypass this.
-  const paymentRequired = isSelf && !isAdmin && newTier !== 'FREE';
-
-  return { ok: true, paymentRequired };
+  // Nothing here is ever a paid self-grant — the policy above refused those
+  // before we reached the write.
+  return { ok: true };
 }

@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
+import { resolveSubscription } from '@/lib/billing/subscription-state';
+import { applyElapsedCancellation } from '@/lib/billing/subscription-sync';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'OPERATOR' | 'EDITOR' | 'VIEWER' | 'CLIENT';
 // PARTNER landed in migration 0014 as a 4th tier. Same access as PRO plus
@@ -42,6 +44,11 @@ export interface SessionUser {
   /** When the user accepted the first-time welcome banner, or null (banner
    *  still pending). Backed by profiles.welcome_gift_claimed_at (migration 0025). */
   welcomeGiftClaimedAt: string | null;
+  /** End of the period the user has already paid for, or null. */
+  tierPeriodEnd: string | null;
+  /** A cancellation that has been requested but has not taken effect yet.
+   *  `tier` above still reports the paid plan until this date passes. */
+  pendingCancelAt: string | null;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -64,17 +71,35 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'role, tier, org_id, selected_engine_id, chalybclip_trial_started_at, welcome_gift_claimed_at',
+      'role, tier, org_id, selected_engine_id, chalybclip_trial_started_at, welcome_gift_claimed_at, tier_period_end, tier_cancel_at',
     )
     .eq('id', user.id)
     .maybeSingle();
   const storedRole = (profile?.role as UserRole | undefined) ?? 'VIEWER';
   const role: UserRole = isSuperAdminEmail(user.email) ? 'SUPER_ADMIN' : storedRole;
-  const tier = (profile?.tier as SubscriptionTier | undefined) ?? 'FREE';
+
+  // A cancellation is applied lazily, here, rather than by a scheduled job:
+  // the user keeps the plan they paid for until tier_cancel_at, and the first
+  // read after that date reports FREE and writes it back. See
+  // lib/billing/subscription-state.ts for why there is no cron.
+  const subscription = resolveSubscription({
+    storedTier: (profile?.tier as SubscriptionTier | undefined) ?? 'FREE',
+    periodEnd: (profile?.tier_period_end as string | null) ?? null,
+    cancelAt: (profile?.tier_cancel_at as string | null) ?? null,
+  });
+  if (subscription.elapsed) {
+    // Fire-and-forget: this session already reports FREE, so the write is
+    // only about making the stored row agree.
+    void applyElapsedCancellation(user.id);
+  }
+  const tier = subscription.tier;
+
   return {
     user,
     role,
     tier,
+    tierPeriodEnd: subscription.periodEnd,
+    pendingCancelAt: subscription.pendingCancelAt,
     orgId: (profile?.org_id as string | null) ?? null,
     selectedEngineId: (profile?.selected_engine_id as string | null) ?? null,
     chalybclipTrialStartedAt: (profile?.chalybclip_trial_started_at as string | null) ?? null,

@@ -106,7 +106,12 @@ export default async function SubscriptionPage({
 
       <div className="cc-mod-section">
         <div className="cc-mod-sl">Cambia tu plan</div>
-        <SubscriptionActions initialTier={tier} userId={session.user.id} isAdmin={isAdmin} />
+        <SubscriptionActions
+          initialTier={tier}
+          userId={session.user.id}
+          isAdmin={isAdmin}
+          pendingCancelAt={session.pendingCancelAt}
+        />
       </div>
 
       <div className="cc-mod-section">

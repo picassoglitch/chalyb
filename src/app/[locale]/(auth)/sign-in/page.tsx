@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { safeInternalPath } from '@/lib/auth/safe-path';
 import { redirect } from 'next/navigation';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
@@ -41,17 +42,9 @@ export default async function SignInPage({
   if (user) {
     // Honor `?next=` so the landing-page pricing CTA flow works:
     // anon clicks "Pasar a Pro" → /sign-in?next=/app/billing → user signs in →
-    // lands on /app/billing instead of the generic /account. Only accept
-    // same-origin relative paths so we don't get used as an open redirect —
-    // including the `/\evil.com` variant (browsers normalize `\` to `/`,
-    // turning it protocol-relative).
-    const safeNext =
-      typeof next === 'string' &&
-      next.startsWith('/') &&
-      !next.startsWith('//') &&
-      !next.includes('\\')
-        ? next
-        : '/account';
+    // lands on /app/billing instead of the generic /account. The open-redirect
+    // rule lives in one place now — see src/lib/auth/safe-path.ts.
+    const safeNext = safeInternalPath(next);
     // typedRoutes can't statically know what `next` is — cast through
     // Route since we've already validated it's a same-origin path.
     redirect(safeNext as Route);

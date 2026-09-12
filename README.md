@@ -24,6 +24,20 @@ pnpm dev
 
 `http://localhost:3000` (ES) and `http://localhost:3000/en` (EN).
 
+## Tests
+
+```sh
+pnpm test        # Vitest — the rules that decide access and money
+pnpm test:rls    # psql — the Postgres half of those rules (needs psql)
+```
+
+`pnpm test` covers the pure decision code: who may change whose tier, whether a
+Mercado Pago webhook signature verifies, whether a payment covers the catalog
+price, whether a `?next=` redirect target is same-origin, and the
+cancel-at-period-end date arithmetic. `pnpm test:rls` runs the row-level
+security and token-grant assertions against a throwaway database — see
+[`docs/infra/supabase.md`](docs/infra/supabase.md#testing-the-database-rules).
+
 ## How the pieces fit
 
 The hub owns identity, tiers and tokens. An **engine** is a separate product

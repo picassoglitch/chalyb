@@ -10,7 +10,7 @@
 
 locals {
   worker_enabled       = var.worker != null
-  worker_token_enabled = local.worker_enabled && var.worker.token_env_var != null
+  worker_token_enabled = local.worker_enabled && length(var.worker.token_env_vars) > 0
 
   # Secrets Terraform GENERATES. Nothing outside decides these values, so a
   # random one is as good as any. They land in state — the state bucket is
@@ -33,38 +33,44 @@ locals {
 
   secrets = merge(local.generated, local.placeholders)
 
-  # Wire the API to its worker, if the engine wants to know the URL.
+  # Wire the API to its worker, if the engine wants to know the URL. A list
+  # because an engine mid-rename reads one name and the rebranded image reads
+  # another; setting both is free and makes the cutover a no-downtime step.
   worker_endpoint_env = (
-    local.worker_enabled && var.worker.endpoint_env_var != null
-    ? { (var.worker.endpoint_env_var) = google_cloud_run_v2_service.worker[0].uri }
+    local.worker_enabled
+    ? { for name in var.worker.endpoint_env_vars : name => google_cloud_run_v2_service.worker[0].uri }
     : {}
   )
 
-  # The shared bearer token the API presents to the worker, injected under the
-  # same name on both sides.
+  # The shared bearer token the API presents to the worker, injected under
+  # every configured name on BOTH sides — same secret, so the API and the
+  # worker agree no matter which name each half happens to read.
   worker_token_env = (
     local.worker_token_enabled
-    ? { (var.worker.token_env_var) = google_secret_manager_secret.own["worker_token"].secret_id }
+    ? { for name in var.worker.token_env_vars : name => google_secret_manager_secret.own["worker_token"].secret_id }
     : {}
   )
 
+  # Each of the engine's three secrets, under every name it is configured to
+  # answer to. See var.secret_env_names for why this is a list.
   api_secret_env = merge(
-    {
-      (var.secret_env_names.admin_token)  = google_secret_manager_secret.own["admin_token"].secret_id
-      (var.secret_env_names.sso_secret)   = google_secret_manager_secret.own["sso_secret"].secret_id
-      (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-    },
+    { for name in var.secret_env_names.admin_token : name => google_secret_manager_secret.own["admin_token"].secret_id },
+    { for name in var.secret_env_names.sso_secret : name => google_secret_manager_secret.own["sso_secret"].secret_id },
+    { for name in var.secret_env_names.database_url : name => google_secret_manager_secret.own["database_url"].secret_id },
     local.worker_token_env,
     var.shared_secret_env,
   )
 
   worker_secret_env = merge(
-    {
-      (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-    },
+    { for name in var.secret_env_names.database_url : name => google_secret_manager_secret.own["database_url"].secret_id },
     local.worker_token_env,
     var.shared_secret_env,
   )
+
+  job_secret_env = {
+    for name in var.secret_env_names.database_url :
+    name => google_secret_manager_secret.own["database_url"].secret_id
+  }
 }
 
 resource "google_service_account" "engine" {
@@ -311,18 +317,39 @@ resource "google_cloud_run_v2_service" "worker" {
   ]
 }
 
-# The API authenticates to the worker with the app-level bearer token, not a
-# Google identity, so Cloud Run's own IAM check has to let the request through.
-# With IAM-restricted invoke, the API's calls would be rejected at the platform
-# layer before the app ever saw the token.
+# Who may invoke the worker.
+#
+# Default (worker.public = true): allUsers, because the API authenticates to
+# the worker with the app-level bearer token rather than a Google identity.
+# Cloud Run's IAM check runs BEFORE the app sees anything, so restricting
+# invoke here would reject the API's own calls at the platform layer — the
+# worker would simply stop receiving work.
+#
+# The token is real authentication, not none: the worker rejects an unsigned
+# request. But it is app-layer, so the service does answer the TCP connection
+# for anyone on the internet. Set worker.public = false once the engine sends
+# an OIDC identity token alongside (or instead of) the bearer, and the block
+# below switches to the engine's own service account.
 resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
-  count = local.worker_enabled ? 1 : 0
+  count = local.worker_enabled && var.worker.public ? 1 : 0
 
   project  = var.project_id
   location = var.region
   name     = google_cloud_run_v2_service.worker[0].name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# The locked-down counterpart. Only the engine's own service account — which
+# is what both the API and the worker run as — may invoke.
+resource "google_cloud_run_v2_service_iam_member" "worker_invoker_private" {
+  count = local.worker_enabled && !var.worker.public ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.worker[0].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.engine.email}"
 }
 
 # ---------------------------------------------------------------------------
@@ -364,9 +391,7 @@ resource "google_cloud_run_v2_job" "job" {
         }
 
         dynamic "env" {
-          for_each = {
-            (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-          }
+          for_each = local.job_secret_env
           content {
             name = env.key
             value_source {
