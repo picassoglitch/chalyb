@@ -1,10 +1,14 @@
-// Shared shell for /terms and /privacy. Renders the marketing nav + footer
-// around the document content, so legal pages have the same visual identity
-// as the public landing.
+// Shared shell for /legal/terms and /legal/privacy. Renders the marketing nav
+// + footer around the document content, so legal pages have the same visual
+// identity as the public landing.
 //
-// Server pages pass `title`, `lastUpdated`, and the document body as
-// children. The body uses `.legal-prose` markup defined in globals.css.
+// Server pages pass `title`, `lastUpdated`, and the document body as children.
+// The body comes from src/content/legal/<doc>.<locale>.tsx and uses the
+// `.legal-prose` markup defined in globals.css. The chrome around it (eyebrow,
+// "last updated" label) is translated here — it used to be hardcoded Spanish,
+// which showed through on /en/legal/*.
 
+import { useTranslations } from 'next-intl';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 
@@ -16,6 +20,8 @@ interface Props {
 }
 
 export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Props) {
+  const t = useTranslations('legal');
+
   return (
     <div className="lp">
       <LandingNav isAuthenticated={isAuthenticated} />
@@ -45,7 +51,7 @@ export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Pro
                 marginBottom: 12,
               }}
             >
-              · Legal ·
+              · {t('eyebrow')} ·
             </p>
             <h1
               style={{
@@ -68,7 +74,7 @@ export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Pro
                 letterSpacing: '0.04em',
               }}
             >
-              Última actualización · {lastUpdated}
+              {t('lastUpdated')} · {lastUpdated}
             </p>
           </div>
 

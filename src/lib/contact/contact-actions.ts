@@ -26,12 +26,26 @@ import { headers } from 'next/headers';
 type ContactPane = 'client' | 'partner' | 'earn';
 const VALID_PANES: ContactPane[] = ['client', 'partner', 'earn'];
 
+/**
+ * Key under the `contact.errors` message namespace. The action returns a KEY
+ * rather than a sentence so the form renders the failure in the reader's
+ * locale — it used to hand back hardcoded Spanish, which an English visitor
+ * saw verbatim.
+ */
+export type ContactErrorKey =
+  | 'name'
+  | 'email'
+  | 'subject'
+  | 'message'
+  | 'rateLimited'
+  | 'sendFailed';
+
 export interface ContactResult {
   ok: boolean;
   /** Field name that failed validation, if any. */
   fieldError?: 'name' | 'email' | 'subject' | 'message';
-  /** General error for toast display. */
-  error?: string;
+  /** `contact.errors.*` key the form renders. */
+  errorKey?: ContactErrorKey;
 }
 
 // In-memory rate-limit bucket. Key = IP, value = array of timestamps within window.
@@ -58,44 +72,42 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   }
 
   const name = String(formData.get('name') ?? '').trim();
-  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const email = String(formData.get('email') ?? '')
+    .trim()
+    .toLowerCase();
   const subject = String(formData.get('subject') ?? '').trim();
   const message = String(formData.get('message') ?? '').trim();
   // Pane tags the lead source (client / partner / earn). The contact form
   // can include a hidden <input name="pane"> set from the URL or the
   // currently-active landing tab. Default to 'client' for forms that don't
   // specify so behavior stays backward-compatible.
-  const paneRaw = String(formData.get('pane') ?? 'client').trim().toLowerCase();
+  const paneRaw = String(formData.get('pane') ?? 'client')
+    .trim()
+    .toLowerCase();
   const pane: ContactPane = VALID_PANES.includes(paneRaw as ContactPane)
     ? (paneRaw as ContactPane)
     : 'client';
 
   if (name.length < 2 || name.length > 120) {
-    return { ok: false, fieldError: 'name', error: 'Nombre requerido (2–120 caracteres).' };
+    return { ok: false, fieldError: 'name', errorKey: 'name' };
   }
   if (!EMAIL_RE.test(email) || email.length > 200) {
-    return { ok: false, fieldError: 'email', error: 'Correo inválido.' };
+    return { ok: false, fieldError: 'email', errorKey: 'email' };
   }
   if (subject.length < 3 || subject.length > 200) {
-    return { ok: false, fieldError: 'subject', error: 'Asunto requerido (3–200 caracteres).' };
+    return { ok: false, fieldError: 'subject', errorKey: 'subject' };
   }
   if (message.length < 10 || message.length > 5000) {
-    return { ok: false, fieldError: 'message', error: 'Mensaje requerido (10–5000 caracteres).' };
+    return { ok: false, fieldError: 'message', errorKey: 'message' };
   }
 
   // Rate limit by best-guess IP. x-forwarded-for is what Vercel/most proxies set;
   // fall back to a literal so dev (no proxy) doesn't return undefined.
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'local';
+  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'local';
   const userAgent = h.get('user-agent') ?? null;
   if (!checkRate(ip)) {
-    return {
-      ok: false,
-      error: 'Recibimos muchos mensajes desde tu conexión. Espera unos minutos y vuelve a intentarlo.',
-    };
+    return { ok: false, errorKey: 'rateLimited' };
   }
 
   // Templates live in src/lib/email/templates.ts — branded shell with dark
@@ -121,7 +133,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   });
 
   if (!inboxResult.ok && inboxResult.reason !== 'not_configured') {
-    return { ok: false, error: 'No pudimos enviar tu mensaje. Vuelve a intentarlo en unos minutos.' };
+    return { ok: false, errorKey: 'sendFailed' };
   }
 
   // Persist to partner_inquiries so the admin inbox shows it even if the

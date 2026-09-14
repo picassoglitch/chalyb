@@ -166,7 +166,8 @@
       "rights": "© {year} Chalyb · Mexico City",
       "terms": "Terms",
       "privacy": "Privacy",
-      "status": "Status"
+      "status": "Status",
+      "contact": "Contact"
     }
   },
   "auth": {
@@ -387,6 +388,60 @@
       "AGENTS": "AI agents that run tasks for you.",
       "RESEARCH": "Automated research with AI.",
       "INTERNAL": "Internal Chalyb platform tool."
+    }
+  },
+  "language": {
+    "label": "Language"
+  },
+  "contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Let's talk. Write to us about integrations, partnerships, demos or anything else about the platform.",
+    "eyebrow": "Contact",
+    "title": "Let's talk.",
+    "lead": "Want a demo, an integration, to join as a partner, or to know how Chalyb can put your operation in order? Write to us and we answer within 24 business hours.",
+    "assurances": {
+      "1": "We answer within 24 business hours",
+      "2": "Your email is never published",
+      "3": "We won't add you to any newsletter"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "What's this about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us what you are trying to solve with Chalyb.",
+      "submit": "Send message →",
+      "submitting": "Sending…",
+      "genericError": "The message could not be sent.",
+      "successTitle": "● Message received",
+      "successBody": "Thanks for writing. We will reply to the address you left within 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation."
+    },
+    "errors": {
+      "name": "Name is required (2–120 characters).",
+      "email": "Invalid email address.",
+      "subject": "Subject is required (3–200 characters).",
+      "message": "Message is required (10–5000 characters).",
+      "rateLimited": "We have received a lot of messages from your connection. Wait a few minutes and try again.",
+      "sendFailed": "We couldn't send your message. Try again in a few minutes."
+    }
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "lastUpdated": "Last updated",
+    "privacy": {
+      "metaTitle": "Privacy notice",
+      "metaDescription": "How Chalyb collects, uses and protects your personal data. Compliant with the LFPDPPP (Mexico).",
+      "title": "Privacy notice",
+      "lastUpdated": "17 June 2026"
+    },
+    "terms": {
+      "metaTitle": "Terms of service",
+      "metaDescription": "Terms and conditions for using Chalyb and its engines (ChalybClip, ChalybStreamManager and future products).",
+      "title": "Terms of service",
+      "lastUpdated": "17 June 2026"
     }
   }
 }

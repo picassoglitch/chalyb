@@ -11,7 +11,7 @@ import { useEffect } from 'react';
  *
  * `event.persisted` is true only on a genuine bfcache restore, so a logged-in
  * user navigating back just gets a fast warm reload; an unauthenticated one
- * gets bounced. Pairs with `Cache-Control: no-store` set in middleware.
+ * gets bounced. Pairs with `Cache-Control: no-store` set in the proxy.
  */
 export function BfcacheGuard() {
   useEffect(() => {

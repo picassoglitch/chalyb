@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
+import { requestedDestination } from '@/lib/auth/pathname';
 import type { User } from '@supabase/supabase-js';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'OPERATOR' | 'EDITOR' | 'VIEWER' | 'CLIENT';
@@ -82,23 +84,37 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   };
 }
 
-export async function requireUser(currentPath?: string): Promise<User> {
-  const user = await getCurrentUser();
-  if (!user) {
-    const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    redirect(`/sign-in${next}`);
-  }
-  return user;
+/**
+ * Sends an unauthenticated visitor to /sign-in with `?next=` pointing at the
+ * page they actually asked for, so signing in returns them there.
+ *
+ * `fallback` is only used when the proxy header is absent (see
+ * `requestedDestination`) — pass the section root so a missing header degrades
+ * to the old behavior instead of dropping the user on /account.
+ *
+ * Uses next-intl's `redirect` rather than `next/navigation`'s so an English
+ * visitor on /en/app/billing lands on /en/sign-in, not the Spanish default.
+ */
+async function redirectToSignIn(fallback: string): Promise<never> {
+  const next = await requestedDestination(fallback);
+  const locale = await getLocale();
+  return redirect({ href: { pathname: '/sign-in', query: { next } }, locale });
 }
 
-export async function requireRole(min: UserRole, currentPath?: string): Promise<SessionUser> {
+export async function requireUser(fallbackPath = '/app'): Promise<User> {
+  const user = await getCurrentUser();
+  if (user) return user;
+  return redirectToSignIn(fallbackPath);
+}
+
+export async function requireRole(min: UserRole, fallbackPath = '/app'): Promise<SessionUser> {
   const session = await getSessionUser();
-  if (!session) {
-    const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    redirect(`/sign-in${next}`);
-  }
+  if (!session) return redirectToSignIn(fallbackPath);
   if (ROLE_TIER[session.role] < ROLE_TIER[min]) {
-    redirect('/account?error=insufficient_role');
+    redirect({
+      href: { pathname: '/account', query: { error: 'insufficient_role' } },
+      locale: await getLocale(),
+    });
   }
   return session;
 }

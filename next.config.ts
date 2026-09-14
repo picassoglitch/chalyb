@@ -19,8 +19,41 @@ const nextConfig: NextConfig = {
       // Locale-prefixed variants — next-intl middleware doesn't rewrite
       // these for us, so mirror them explicitly for /en and /es.
       { source: '/:locale(en|es)/login', destination: '/:locale/sign-in', permanent: true },
-      { source: '/:locale(en|es)/register', destination: '/:locale/sign-in?mode=signup', permanent: true },
-      { source: '/:locale(en|es)/signup', destination: '/:locale/sign-in?mode=signup', permanent: true },
+      {
+        source: '/:locale(en|es)/register',
+        destination: '/:locale/sign-in?mode=signup',
+        permanent: true,
+      },
+      {
+        source: '/:locale(en|es)/signup',
+        destination: '/:locale/sign-in?mode=signup',
+        permanent: true,
+      },
+
+      // The landing is a single page; pricing is the `#pricing` section of it,
+      // not a route. /pricing (and the Spanish /precios) used to 404 — people
+      // type them, and they are the obvious guess from a pricing CTA.
+      { source: '/pricing', destination: '/#pricing', permanent: false },
+      { source: '/precios', destination: '/#pricing', permanent: false },
+      {
+        source: '/:locale(en|es)/pricing',
+        destination: '/:locale/#pricing',
+        permanent: false,
+      },
+      {
+        source: '/:locale(en|es)/precios',
+        destination: '/:locale/#pricing',
+        permanent: false,
+      },
+
+      // The contact page is ES-canonical at /contacto. English visitors (and
+      // anyone linking from English copy) reach for /contact, which 404'd.
+      { source: '/contact', destination: '/contacto', permanent: true },
+      {
+        source: '/:locale(en|es)/contact',
+        destination: '/:locale/contacto',
+        permanent: true,
+      },
     ];
   },
 };

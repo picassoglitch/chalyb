@@ -16,7 +16,7 @@
 // welcome gift / 7-day trial claimed silently, and ChalybClip enforces its
 // own tier perks once inside.
 //
-// Under /auth/* so it's excluded from the i18n middleware matcher (no locale
+// Under /auth/* so it's excluded from the i18n proxy matcher (no locale
 // prefix rewriting on a redirect-only endpoint).
 
 import { NextRequest, NextResponse } from 'next/server';
