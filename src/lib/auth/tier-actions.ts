@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit/log';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getSessionUser, type SubscriptionTier } from './session';
 import { decideTierChange } from './tier-policy';
+import { cancellationOutcome } from '@/lib/billing/subscription-period';
 
 
 interface ChangeResult {
@@ -16,6 +17,10 @@ interface ChangeResult {
    *  (createTierCheckout), and the tier lands when the webhook confirms the
    *  payment. */
   paymentRequired?: boolean;
+  /** ISO date the cancelled plan stops working. Present when the user
+   *  cancelled a paid plan with time left on the period they paid for: the
+   *  plan keeps working until then and lapses to FREE by itself. */
+  endsAt?: string;
 }
 
 export async function changeUserTier(
@@ -65,10 +70,64 @@ export async function changeUserTier(
     .select('email, tier')
     .eq('id', targetUserId)
     .maybeSingle();
+  const currentTier = (targetBefore?.tier as SubscriptionTier | undefined) ?? 'FREE';
+
+  // ── Cancelling a paid plan ────────────────────────────────────────────
+  // The user paid for a month. Taking the plan away the moment they click
+  // cancel keeps the money and withdraws the service, which the LFPC does not
+  // allow us to do (and PROFECO reads Art. 90 the same way). So a cancellation
+  // stops the renewal and schedules the end: the plan runs to the end of the
+  // period already paid for, then lapses to FREE on its own — enforced on
+  // read in getSessionUser(), not by a job that could fail.
+  //
+  // An admin setting FREE is an override, not a cancellation, and applies now.
+  // A tier with no payment behind it (an admin grant, a comp account) has no
+  // paid period to honour, so that is immediate too.
+  if (newTier === 'FREE' && isSelf && !isAdmin) {
+    const { data: lastPayment } = await admin
+      .from('payments')
+      .select('created_at')
+      .eq('user_id', targetUserId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const outcome = cancellationOutcome({
+      currentTier,
+      lastApprovedPaymentAt: (lastPayment?.created_at as string | null) ?? null,
+    });
+
+    if (outcome.kind === 'scheduled') {
+      const endsAtIso = outcome.endsAt.toISOString();
+      const { error: scheduleErr } = await admin
+        .from('profiles')
+        // tier stays as it is — this schedules the end, it does not apply it.
+        .update({ tier_ends_at: endsAtIso })
+        .eq('id', targetUserId);
+      if (scheduleErr) return { ok: false, error: scheduleErr.message };
+
+      await logAudit({
+        action: 'tier.downgrade',
+        actorId: session.user.id,
+        actorEmail: session.user.email ?? null,
+        targetUserId,
+        targetEmail: (targetBefore?.email as string | null) ?? null,
+        before: { tier: currentTier, tier_ends_at: null },
+        after: { tier: currentTier, tier_ends_at: endsAtIso },
+        metadata: { via: 'subscription_page', kind: 'cancel_scheduled', is_admin_actor: false },
+      });
+
+      revalidatePath('/[locale]', 'layout');
+      return { ok: true, endsAt: endsAtIso };
+    }
+  }
 
   const { data, error } = await admin
     .from('profiles')
-    .update({ tier: newTier })
+    // Any tier that is applied now clears a pending cancellation: paying again
+    // (or an admin moving the plan) replaces whatever was scheduled.
+    .update({ tier: newTier, tier_ends_at: null })
     .eq('id', targetUserId)
     .select('id, tier'); // .select() returns affected rows so we can verify
 
@@ -82,7 +141,7 @@ export async function changeUserTier(
 
   // Audit log — distinguishes self-downgrade vs admin-driven change so
   // dispute resolution can tell "this was the user's own choice" apart.
-  const prevTier = (targetBefore?.tier as SubscriptionTier | undefined) ?? null;
+  const prevTier = currentTier;
   const isSelfDowngrade = isSelf && !isAdmin && newTier === 'FREE';
   await logAudit({
     action: isSelfDowngrade ? 'tier.downgrade' : 'tier.change',

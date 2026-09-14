@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import type { User } from '@supabase/supabase-js';
 import { signInHref } from '@/lib/auth/pathname';
+import { tierAfterExpiry } from '@/lib/billing/subscription-period';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'OPERATOR' | 'EDITOR' | 'VIEWER' | 'CLIENT';
 // PARTNER landed in migration 0014 as a 4th tier. Same access as PRO plus
@@ -44,6 +45,10 @@ export interface SessionUser {
   /** When the user accepted the first-time welcome banner, or null (banner
    *  still pending). Backed by profiles.welcome_gift_claimed_at (migration 0025). */
   welcomeGiftClaimedAt: string | null;
+  /** When the paid tier lapses to FREE, or null for no scheduled end. Set by
+   *  cancelling: the plan runs to the end of the period already paid for.
+   *  Backed by profiles.tier_ends_at (migration 0035). */
+  tierEndsAt: string | null;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -52,6 +57,26 @@ export async function getCurrentUser(): Promise<User | null> {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
+}
+
+/** Write the lapse back to the row. Service-role because tier is a privileged
+ *  column (migration 0032), and fire-and-forget because the caller has already
+ *  decided the tier for this request — a failure here just means the next read
+ *  tries again. */
+async function expirePaidTier(userId: string): Promise<void> {
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const admin = createAdminClient();
+    await admin
+      .from('profiles')
+      .update({ tier: 'FREE', tier_ends_at: null })
+      .eq('id', userId)
+      // Only if it is still the lapsed state we read — never stomp on a
+      // payment that landed in between.
+      .lte('tier_ends_at', new Date().toISOString());
+  } catch (err) {
+    console.warn('[session] could not converge a lapsed tier:', err);
+  }
 }
 
 /**
@@ -66,17 +91,32 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'role, tier, org_id, selected_engine_id, chalybclip_trial_started_at, welcome_gift_claimed_at',
+      'role, tier, tier_ends_at, org_id, selected_engine_id, chalybclip_trial_started_at, welcome_gift_claimed_at',
     )
     .eq('id', user.id)
     .maybeSingle();
   const storedRole = (profile?.role as UserRole | undefined) ?? 'VIEWER';
   const role: UserRole = isSuperAdminEmail(user.email) ? 'SUPER_ADMIN' : storedRole;
-  const tier = (profile?.tier as SubscriptionTier | undefined) ?? 'FREE';
+  const storedTier = (profile?.tier as SubscriptionTier | undefined) ?? 'FREE';
+  const tierEndsAt = (profile?.tier_ends_at as string | null) ?? null;
+
+  // A cancelled plan keeps working until the period the user paid for runs
+  // out, and stops the moment it does. Deciding that HERE, on every session
+  // read, is what makes the lapse real: there is no scheduled job that could
+  // fail and quietly leave someone on a paid plan forever.
+  const tier = tierAfterExpiry(storedTier, tierEndsAt);
+  if (tier !== storedTier) {
+    // Converge the row so the admin team page and the billing history agree
+    // with what the user actually has. Best-effort: the value above already
+    // governs this request either way.
+    void expirePaidTier(user.id);
+  }
+
   return {
     user,
     role,
     tier,
+    tierEndsAt,
     orgId: (profile?.org_id as string | null) ?? null,
     selectedEngineId: (profile?.selected_engine_id as string | null) ?? null,
     chalybclipTrialStartedAt: (profile?.chalybclip_trial_started_at as string | null) ?? null,

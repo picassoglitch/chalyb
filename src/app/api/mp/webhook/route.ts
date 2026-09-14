@@ -345,7 +345,9 @@ export async function POST(req: Request) {
 
     const { error: tierErr } = await admin
       .from('profiles')
-      .update({ tier })
+      // tier_ends_at cleared: paying again withdraws a pending cancellation
+      // and starts a fresh period, so the plan must not lapse on the old date.
+      .update({ tier, tier_ends_at: null })
       .eq('id', userId);
     // Auto-provision engine access on VIP upgrades. PRO upgrades wait
     // until the user picks their live engine (setSelectedLiveEngine handles

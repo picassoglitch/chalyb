@@ -34,8 +34,8 @@ const FAQ: FaqGroup[] = [
           <>
             Desde <b>/app/subscription</b>, haz clic en el botón del plan al que quieres
             cambiar. Si subes (Free → Pro o Pro → VIP), te redirigimos a Mercado Pago
-            para procesar el pago. Si bajas a Free, el cambio se aplica inmediato y sin cargo:
-            el acceso del plan anterior termina en ese momento.
+            para procesar el pago. Si bajas a Free, no se te cobra nada y conservas el plan
+            anterior hasta que termine el período que ya pagaste.
           </>
         ),
       },
@@ -44,9 +44,9 @@ const FAQ: FaqGroup[] = [
         a: (
           <>
             Sí. Desde <b>/app/subscription</b>, abajo de las tarjetas de plan hay un botón
-            &laquo;Cancelar suscripción&raquo;. El cambio a Free es inmediato, así que cancela
-            cuando ya no quieras usar el plan. No te cobramos nada adicional y no hay
-            reembolso del período en curso.
+            &laquo;Cancelar suscripción&raquo;. La cancelación detiene la renovación y
+            conservas tu plan hasta que termine el período que ya pagaste; ese día bajas
+            automáticamente a Free. No te cobramos nada adicional.
           </>
         ),
       },

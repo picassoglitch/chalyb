@@ -72,10 +72,23 @@ interface Props {
   initialTier: SubscriptionTier;
   userId: string;
   isAdmin: boolean;
+  /** ISO date the plan lapses to FREE after a cancellation, or null when
+   *  nothing is scheduled. */
+  initialEndsAt: string | null;
 }
 
-export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
+/** "14 de octubre de 2026" — the date someone loses access, spelled out. */
+function formatEndDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+export function SubscriptionActions({ initialTier, userId, isAdmin, initialEndsAt }: Props) {
   const [tier, setTier] = useState<SubscriptionTier>(initialTier);
+  const [endsAt, setEndsAt] = useState<string | null>(initialEndsAt);
   const [pendingTier, setPendingTier] = useState<SubscriptionTier | null>(null);
   const [isPending, startTransition] = useTransition();
   // Sticky error banner for the checkout failure path. The toast only
@@ -106,6 +119,18 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
           setStickyError(msg);
           return;
         }
+        if (res.endsAt) {
+          // Cancellation scheduled: the plan is still the paid one until the
+          // period ends, so don't show them as FREE yet.
+          setTier(prev);
+          setEndsAt(res.endsAt);
+          showToast(
+            `Cancelado. Conservas <b>${TIER_LABELS[prev]}</b> hasta el ` +
+              `<b>${formatEndDate(res.endsAt)}</b>, y después pasas a Free.`,
+          );
+          return;
+        }
+        setEndsAt(null);
         showToast(
           next === 'FREE'
             ? `Listo, tu plan ahora es <b>${TIER_LABELS[next]}</b>.`
@@ -162,15 +187,19 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
       showToast('Ya tienes el plan Free.');
       return;
     }
-    // Say what actually happens. The write below is immediate: changeUserTier
-    // sets tier = FREE now, there is no stored period end and nothing
-    // re-grants the plan afterwards. Promising access "until the period you
-    // paid for ends" was copy describing a feature that does not exist.
+    if (endsAt) {
+      showToast(
+        `Tu plan ya está cancelado — sigue activo hasta el <b>${formatEndDate(endsAt)}</b>.`,
+      );
+      return;
+    }
+    // Cancelling stops the renewal; the plan keeps working until the period
+    // already paid for runs out (see cancellationOutcome on the server). The
+    // exact date comes back in the result.
     if (
       !confirm(
-        `¿Cancelar tu suscripción? Tu plan cambia a Free de inmediato y pierdes el ` +
-          `acceso de ${TIER_LABELS[tier]} en el momento. No te cobramos nada adicional ` +
-          `y no reembolsamos el período en curso.`,
+        '¿Cancelar tu suscripción? No se renueva y conservas el plan hasta que termine ' +
+          'el período que ya pagaste.',
       )
     ) {
       return;
@@ -382,10 +411,13 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
         <div className="cc-mod-section">
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Cancelar suscripción</span>
+              <span className="t">
+                {endsAt ? 'Suscripción cancelada' : 'Cancelar suscripción'}
+              </span>
               <span className="s">
-                Tu plan cambia a Free de inmediato: pierdes el acceso de {TIER_LABELS[tier]} en
-                ese momento y el período en curso no se reembolsa.
+                {endsAt
+                  ? `No se renueva. Conservas ${TIER_LABELS[tier]} hasta el ${formatEndDate(endsAt)}; ese día pasas a Free.`
+                  : `No se renueva y conservas tu acceso a ${TIER_LABELS[tier]} hasta que termine el período que ya pagaste.`}
               </span>
             </div>
             <button
@@ -403,7 +435,7 @@ export function SubscriptionActions({ initialTier, userId, isAdmin }: Props) {
                 cursor: 'pointer',
               }}
             >
-              Cancelar plan
+              {endsAt ? 'Ya cancelado' : 'Cancelar plan'}
             </button>
           </div>
         </div>
