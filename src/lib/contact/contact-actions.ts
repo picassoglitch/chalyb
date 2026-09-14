@@ -12,9 +12,9 @@
 //     and never send anything.
 //   - Rate limit: max 5 submissions per IP per 10 minutes, counted in Postgres
 //     (check_contact_rate_limit, migration 0034) so every serverless instance
-//     shares one counter. The in-memory bucket below is kept only as the
-//     fallback for when that call itself fails — on its own it was per-instance
-//     and reset on every cold start, which on Vercel is barely a limit at all.
+//     shares one counter. The in-memory bucket below is only the fallback for
+//     when that call itself fails — on its own it was per-instance and reset on
+//     every cold start, which on Vercel is barely a limit at all.
 //
 // VALIDATION: simple string length checks. No external schema lib to keep the
 // dependency surface tight. If a field is missing, return a field-specific
@@ -28,10 +28,13 @@ import { headers } from 'next/headers';
 type ContactPane = 'client' | 'partner' | 'earn';
 const VALID_PANES: ContactPane[] = ['client', 'partner', 'earn'];
 
-/** What went wrong, as a key under `contact.form.errors` in messages/*.json.
- *  The action stays locale-agnostic — the form renders the message in the
- *  visitor's language, so /en never shows a Spanish error. */
-export type ContactErrorCode =
+/**
+ * Key under the `contact.errors` message namespace. The action returns a KEY
+ * rather than a sentence so the form renders the failure in the reader's
+ * locale — it used to hand back hardcoded Spanish, which an English visitor
+ * saw verbatim.
+ */
+export type ContactErrorKey =
   | 'name'
   | 'email'
   | 'subject'
@@ -43,8 +46,8 @@ export interface ContactResult {
   ok: boolean;
   /** Field name that failed validation, if any. */
   fieldError?: 'name' | 'email' | 'subject' | 'message';
-  /** Which message to show. Translated client-side. */
-  errorCode?: ContactErrorCode;
+  /** `contact.errors.*` key the form renders. */
+  errorKey?: ContactErrorKey;
 }
 
 const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 min
@@ -96,41 +99,42 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   }
 
   const name = String(formData.get('name') ?? '').trim();
-  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const email = String(formData.get('email') ?? '')
+    .trim()
+    .toLowerCase();
   const subject = String(formData.get('subject') ?? '').trim();
   const message = String(formData.get('message') ?? '').trim();
   // Pane tags the lead source (client / partner / earn). The contact form
   // can include a hidden <input name="pane"> set from the URL or the
   // currently-active landing tab. Default to 'client' for forms that don't
   // specify so behavior stays backward-compatible.
-  const paneRaw = String(formData.get('pane') ?? 'client').trim().toLowerCase();
+  const paneRaw = String(formData.get('pane') ?? 'client')
+    .trim()
+    .toLowerCase();
   const pane: ContactPane = VALID_PANES.includes(paneRaw as ContactPane)
     ? (paneRaw as ContactPane)
     : 'client';
 
   if (name.length < 2 || name.length > 120) {
-    return { ok: false, fieldError: 'name', errorCode: 'name' };
+    return { ok: false, fieldError: 'name', errorKey: 'name' };
   }
   if (!EMAIL_RE.test(email) || email.length > 200) {
-    return { ok: false, fieldError: 'email', errorCode: 'email' };
+    return { ok: false, fieldError: 'email', errorKey: 'email' };
   }
   if (subject.length < 3 || subject.length > 200) {
-    return { ok: false, fieldError: 'subject', errorCode: 'subject' };
+    return { ok: false, fieldError: 'subject', errorKey: 'subject' };
   }
   if (message.length < 10 || message.length > 5000) {
-    return { ok: false, fieldError: 'message', errorCode: 'message' };
+    return { ok: false, fieldError: 'message', errorKey: 'message' };
   }
 
   // Rate limit by best-guess IP. x-forwarded-for is what Vercel/most proxies set;
   // fall back to a literal so dev (no proxy) doesn't return undefined.
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'local';
+  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'local';
   const userAgent = h.get('user-agent') ?? null;
   if (!(await checkRate(ip))) {
-    return { ok: false, errorCode: 'rateLimited' };
+    return { ok: false, errorKey: 'rateLimited' };
   }
 
   // Templates live in src/lib/email/templates.ts — branded shell with dark
@@ -156,7 +160,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   });
 
   if (!inboxResult.ok && inboxResult.reason !== 'not_configured') {
-    return { ok: false, errorCode: 'sendFailed' };
+    return { ok: false, errorKey: 'sendFailed' };
   }
 
   // Persist to partner_inquiries so the admin inbox shows it even if the

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { createServerClient } from '@supabase/ssr';
 import { routing } from '@/i18n/routing';
@@ -10,8 +10,12 @@ const intlMiddleware = createIntlMiddleware(routing);
 // The landing, /contacto, /sign-in, etc. are all public — making them wait on
 // Supabase round-trips just to render is what caused the production 504s.
 // We strip the locale prefix first so /es/app and /app both match.
+function stripLocale(pathname: string): string {
+  return pathname.replace(/^\/(es|en)(?=\/|$)/, '');
+}
+
 function needsAuthRefresh(pathname: string): boolean {
-  const stripped = pathname.replace(/^\/(es|en)(?=\/|$)/, '');
+  const stripped = stripLocale(pathname);
   return (
     stripped.startsWith('/app') ||
     stripped.startsWith('/dashboard') ||
@@ -19,8 +23,18 @@ function needsAuthRefresh(pathname: string): boolean {
   );
 }
 
+// The post-sign-in destination for this request: the pathname with the locale
+// prefix removed (so /en/app/billing and /app/billing both resolve to
+// /app/billing — `next=` is fed to next-intl's own `redirect()`, which re-adds
+// the prefix for the active locale) plus any query string, which carries
+// things like /app/engines?filter=live through the round-trip.
+function destinationFromRequest(request: NextRequest): string {
+  const stripped = stripLocale(request.nextUrl.pathname) || '/';
+  return `${stripped}${request.nextUrl.search}`;
+}
+
 // Hard wall on how long the Supabase token-refresh round-trip is allowed to
-// block the middleware. Vercel's middleware invocation timeout is 25s. If we
+// block the proxy. Vercel's proxy invocation timeout is 25s. If we
 // hit that, the WHOLE site 504s — including the unauthenticated landing.
 // 4s is generous for a healthy Supabase + leaves headroom for the rest of
 // the function (intl resolution + cookie writes). If Supabase is slow on a
@@ -29,16 +43,24 @@ function needsAuthRefresh(pathname: string): boolean {
 // either return a fresh session or redirect to /sign-in.
 const AUTH_REFRESH_TIMEOUT_MS = 4000;
 
-export async function middleware(request: NextRequest) {
-  // Stamp the path the browser actually asked for (locale prefix and query
-  // included) so server components can read it back. next-intl rewrites
-  // /app/billing to /es/app/billing and copies the incoming headers onto the
-  // rewritten request, so the header survives the hop. requireUser() uses it
-  // to build ?next= — without it, every protected page under /app shared the
-  // layout's hardcoded '/app' and sign-in dropped the real destination.
-  const forwardedHeaders = new Headers(request.headers);
-  forwardedHeaders.set(PATHNAME_HEADER, request.nextUrl.pathname + request.nextUrl.search);
-  const response = intlMiddleware(new NextRequest(request, { headers: forwardedHeaders }));
+export async function proxy(request: NextRequest) {
+  // Server Components can't read the current URL, so the auth gate in the
+  // protected layouts has no way to build an accurate `?next=` on its own —
+  // it used to hardcode `/app`, which collapsed every deep link (/app/billing,
+  // /app/engines, /dashboard/revenue) to the workspace root after sign-in.
+  // Stamp the locale-stripped path + query on the REQUEST headers here, before
+  // next-intl builds its response: next-intl clones `request.headers` into the
+  // rewritten request, so the header survives all the way to `requireUser()`.
+  try {
+    request.headers.set(PATHNAME_HEADER, destinationFromRequest(request));
+  } catch (err) {
+    // Incoming request headers are mutable in both the Edge and Node runtimes
+    // today. If that ever stops being true, degrade to the auth gate's
+    // section-root fallback rather than 500-ing every page on the site.
+    console.error('[proxy] could not stamp the pathname header', err);
+  }
+
+  const response = intlMiddleware(request);
 
   // Public route — skip the Supabase round-trip entirely. ~99% of requests.
   if (!needsAuthRefresh(request.nextUrl.pathname)) {
@@ -75,7 +97,7 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // Bounded race — middleware never blocks past AUTH_REFRESH_TIMEOUT_MS.
+  // Bounded race — the proxy never blocks past AUTH_REFRESH_TIMEOUT_MS.
   // We don't surface the timeout to the user; the server component layer
   // will handle missing sessions correctly on its own.
   try {
@@ -91,7 +113,7 @@ export async function middleware(request: NextRequest) {
   } catch (err) {
     // Log loudly so we see Supabase slowness in Vercel logs, but DON'T 500
     // the request — the page itself decides what to do with no session.
-    console.error('[middleware] auth refresh failed', err);
+    console.error('[proxy] auth refresh failed', err);
   }
 
   return response;

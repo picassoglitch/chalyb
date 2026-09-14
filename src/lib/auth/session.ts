@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import type { Route } from 'next';
-import type { User } from '@supabase/supabase-js';
-import { signInHref } from '@/lib/auth/pathname';
+import { getLocale } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
+import { requestedDestination } from '@/lib/auth/pathname';
 import { tierAfterExpiry } from '@/lib/billing/subscription-period';
+import type { User } from '@supabase/supabase-js';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'OPERATOR' | 'EDITOR' | 'VIEWER' | 'CLIENT';
 // PARTNER landed in migration 0014 as a 4th tier. Same access as PRO plus
@@ -51,15 +51,7 @@ export interface SessionUser {
   tierEndsAt: string | null;
 }
 
-export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
-}
-
-/** Write the lapse back to the row. Service-role because tier is a privileged
+/** Write a lapse back to the row. Service-role because tier is a privileged
  *  column (migration 0032), and fire-and-forget because the caller has already
  *  decided the tier for this request — a failure here just means the next read
  *  tries again. */
@@ -77,6 +69,14 @@ async function expirePaidTier(userId: string): Promise<void> {
   } catch (err) {
     console.warn('[session] could not converge a lapsed tier:', err);
   }
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
 }
 
 /**
@@ -125,25 +125,36 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 }
 
 /**
- * `fallbackPath` is only used when the middleware-stamped path is missing —
- * signInHref() prefers the real request path, so a guard on a shared layout
- * still returns the visitor to the exact page they asked for.
+ * Sends an unauthenticated visitor to /sign-in with `?next=` pointing at the
+ * page they actually asked for, so signing in returns them there.
+ *
+ * `fallback` is only used when the proxy header is absent (see
+ * `requestedDestination`) — pass the section root so a missing header degrades
+ * to the old behavior instead of dropping the user on /account.
+ *
+ * Uses next-intl's `redirect` rather than `next/navigation`'s so an English
+ * visitor on /en/app/billing lands on /en/sign-in, not the Spanish default.
  */
+async function redirectToSignIn(fallback: string): Promise<never> {
+  const next = await requestedDestination(fallback);
+  const locale = await getLocale();
+  return redirect({ href: { pathname: '/sign-in', query: { next } }, locale });
+}
+
 export async function requireUser(fallbackPath = '/app'): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) {
-    redirect((await signInHref(fallbackPath)) as Route);
-  }
-  return user;
+  if (user) return user;
+  return redirectToSignIn(fallbackPath);
 }
 
 export async function requireRole(min: UserRole, fallbackPath = '/app'): Promise<SessionUser> {
   const session = await getSessionUser();
-  if (!session) {
-    redirect((await signInHref(fallbackPath)) as Route);
-  }
+  if (!session) return redirectToSignIn(fallbackPath);
   if (ROLE_TIER[session.role] < ROLE_TIER[min]) {
-    redirect('/account?error=insufficient_role');
+    redirect({
+      href: { pathname: '/account', query: { error: 'insufficient_role' } },
+      locale: await getLocale(),
+    });
   }
   return session;
 }

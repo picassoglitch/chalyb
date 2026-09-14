@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { submitContactForm, type ContactErrorCode } from '@/lib/contact/contact-actions';
+import { submitContactForm, type ContactErrorKey } from '@/lib/contact/contact-actions';
 
 type FieldError = 'name' | 'email' | 'subject' | 'message' | null;
 type Pane = 'client' | 'partner' | 'earn';
@@ -17,22 +17,23 @@ interface Props {
 
 export function ContactForm({ pane = 'client' }: Props = {}) {
   const t = useTranslations('contact.form');
+  const tError = useTranslations('contact.errors');
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
-  // The server action returns a code, never a sentence — the copy is picked
-  // here so the form speaks the locale the visitor is reading.
-  const [error, setError] = useState<ContactErrorCode | 'generic' | null>(null);
+  // The server action returns a message KEY (see ContactResult.errorKey), not a
+  // rendered sentence, so the copy resolves in the reader's locale here.
+  const [errorKey, setErrorKey] = useState<ContactErrorKey | null>(null);
   const [fieldError, setFieldError] = useState<FieldError>(null);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    setError(null);
+    setErrorKey(null);
     setFieldError(null);
     startTransition(async () => {
       const res = await submitContactForm(fd);
       if (!res.ok) {
-        setError(res.errorCode ?? 'generic');
+        setErrorKey(res.errorKey ?? null);
         setFieldError(res.fieldError ?? null);
         return;
       }
@@ -61,9 +62,9 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
             marginBottom: 8,
           }}
         >
-          {t('doneTitle')}
+          {t('successTitle')}
         </div>
-        {t('doneBody')}
+        {t('successBody')}
       </div>
     );
   }
@@ -72,8 +73,7 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
   // consistently with sign-in/sign-up (the only other place these inputs
   // appear). dashboard.css's cc-mod-* classes aren't loaded outside the
   // /dashboard and /app route groups, so we can't use them here.
-  const fieldClass = (key: FieldError) =>
-    `auth-field${fieldError === key ? ' err' : ''}`;
+  const fieldClass = (key: FieldError) => `auth-field${fieldError === key ? ' err' : ''}`;
 
   return (
     <form
@@ -152,14 +152,14 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
         />
       </div>
 
-      {error && (
+      {errorKey && (
         <div role="alert" className="auth-error">
-          {t(`errors.${error}`)}
+          {tError(errorKey)}
         </div>
       )}
 
       <button type="submit" disabled={pending} className="auth-submit">
-        {pending ? t('sending') : t('submit')}
+        {pending ? t('submitting') : t('submit')}
       </button>
     </form>
   );

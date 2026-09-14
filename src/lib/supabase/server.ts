@@ -15,7 +15,7 @@ export async function createClient() {
           try {
             items.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
-            // Server Component context — middleware will refresh sessions.
+            // Server Component context — the proxy will refresh sessions.
           }
         },
       },

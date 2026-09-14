@@ -1,14 +1,12 @@
-import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
 import { getCurrentUser } from '@/lib/auth/session';
 import { LegalPage } from '@/components/legal/legal-page';
-import { LegalDoc } from '@/components/legal/legal-doc';
+import { privacyDocument } from '@/content/legal';
 
-// force-dynamic so Vercel's CDN never serves a stale 404 from before the
-// route existed. The page is cheap (no DB, just getCurrentUser for nav
-// state), so per-request rendering has no real cost.
-export const dynamic = 'force-dynamic';
-
+// The root layout's title template is '%s · Chalyb', so the title here is the
+// bare document name. Both title and description are per-locale, which a
+// static `metadata` export can't express.
 export async function generateMetadata({
   params,
 }: {
@@ -16,10 +14,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'legal.privacy' });
-  // `title` is the bare page name — the `%s · Chalyb` template in the locale
-  // layout appends the brand, so spelling it out here would double it.
-  return { title: t('metaTitle'), description: t('metaDescription') };
+  return {
+    title: t('metaTitle'),
+    description: t('metaDescription'),
+  };
 }
+
+// force-dynamic so Vercel's CDN never serves a stale 404 from before the
+// route existed. The page is cheap (no DB, just getCurrentUser for nav
+// state), so per-request rendering has no real cost.
+export const dynamic = 'force-dynamic';
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -27,8 +31,8 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   const t = await getTranslations({ locale, namespace: 'legal.privacy' });
   const user = await getCurrentUser();
   return (
-    <LegalPage title={t('title')} lastUpdated={t('updated')} isAuthenticated={user !== null}>
-      <LegalDoc doc="privacy" />
+    <LegalPage title={t('title')} lastUpdated={t('lastUpdated')} isAuthenticated={user !== null}>
+      {privacyDocument(locale)}
     </LegalPage>
   );
 }

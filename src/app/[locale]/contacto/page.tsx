@@ -1,8 +1,12 @@
-import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
 import { getCurrentUser } from '@/lib/auth/session';
 import { ContactPage } from '@/components/contact/contact-page';
 
+// The root layout's title template is '%s · Chalyb', so the title here is the
+// bare page name — the previous static 'Contacto · Chalyb' rendered as
+// "Contacto · Chalyb · Chalyb". It also has to be per-locale, which a static
+// `metadata` export can't be.
 export async function generateMetadata({
   params,
 }: {
@@ -10,17 +14,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'contact' });
-  // Bare page name only. The locale layout's `%s · Chalyb` template appends
-  // the brand — spelling it out here is what produced "Contacto · Chalyb ·
-  // Chalyb" in the tab.
-  return { title: t('metaTitle'), description: t('metaDescription') };
+  return {
+    title: t('metaTitle'),
+    description: t('metaDescription'),
+  };
 }
 
-export default async function ContactRoute({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function ContactRoute({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await getCurrentUser();

@@ -37,7 +37,7 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
                 marginBottom: 12,
               }}
             >
-              · {t('kicker')} ·
+              · {t('eyebrow')} ·
             </p>
             <h1
               style={{
@@ -88,9 +88,9 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
               fontFamily: 'var(--font-mono), monospace',
             }}
           >
-            <span>· {t('notes.1')}</span>
-            <span>· {t('notes.2')}</span>
-            <span>· {t('notes.3')}</span>
+            <span>· {t('assurances.1')}</span>
+            <span>· {t('assurances.2')}</span>
+            <span>· {t('assurances.3')}</span>
           </div>
         </div>
       </main>

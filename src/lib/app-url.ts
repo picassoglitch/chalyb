@@ -9,6 +9,9 @@
 // CANONICAL: NEXT_PUBLIC_APP_URL.
 // NEXT_PUBLIC_SITE_URL is still read as a deprecated alias so a deployment that
 // only has the old name keeps working; set the canonical one and drop it.
+//
+// src/lib/site.ts (robots, sitemap, the language switcher) delegates here, so
+// there is exactly one place that reads the environment for an origin.
 
 /** Absolute origin, no trailing slash, e.g. `https://chalyb.com`. */
 export function appUrl(): string {

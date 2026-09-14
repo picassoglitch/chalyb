@@ -1,21 +1,36 @@
 import type { MetadataRoute } from 'next';
-import { appUrl } from '@/lib/app-url';
+import { siteUrl } from '@/lib/site';
 
-// Served at /robots.txt. Lives outside [locale] so it isn't matched by the
-// locale segment (and the middleware skips it — the matcher excludes paths
-// with a dot).
+/**
+ * `/robots.txt` — previously a 404, which left crawlers guessing and gave them
+ * no pointer to the sitemap.
+ *
+ * Everything behind auth is disallowed: those routes redirect to /sign-in for
+ * an anonymous crawler anyway, so indexing them only burns crawl budget and
+ * surfaces sign-in pages in results.
+ */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        // Everything behind auth. Crawling these only ever yields a redirect
-        // to /sign-in, and /api/* is machine surface, not content.
-        disallow: ['/app', '/dashboard', '/account', '/api/', '/auth/'],
-      },
-    ],
-    sitemap: `${appUrl()}/sitemap.xml`,
-    host: appUrl(),
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: [
+        '/api/',
+        '/auth/',
+        '/app',
+        '/dashboard',
+        '/account',
+        '/sign-in',
+        '/forgot-password',
+        '/reset-password',
+        '/en/app',
+        '/en/dashboard',
+        '/en/account',
+        '/en/sign-in',
+        '/en/forgot-password',
+        '/en/reset-password',
+      ],
+    },
+    sitemap: `${siteUrl()}/sitemap.xml`,
   };
 }

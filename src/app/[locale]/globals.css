@@ -1013,6 +1013,39 @@ a {
   color: var(--ink);
 }
 
+/* Locale switcher — footer-only, so it never competes with the nav's single
+   conversion CTA. Reads as one segmented control, active option highlighted. */
+.lp-lang {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 2px;
+}
+.lp-lang-opt {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+.lp-lang-opt:hover {
+  color: var(--ink);
+}
+.lp-lang-opt.is-active {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+}
+.lp-lang-opt:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 2px;
+}
+
 /* Entrance — hero only, respects reduced motion */
 .lp-rise {
   opacity: 0;
