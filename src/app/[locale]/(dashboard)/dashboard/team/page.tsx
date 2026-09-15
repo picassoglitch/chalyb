@@ -12,6 +12,7 @@ import { isChalybclipTrialActive, chalybclipTrialDaysLeft } from '@/lib/billing/
 import { TeamReconcileEngine } from '@/components/dashboard/team-reconcile-engine';
 import { PartnerEngineSelect, type EngineOption } from '@/components/dashboard/partner-engine-select';
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
+import { pendingInvitesFrom, type PendingInvite } from '@/lib/auth/invites';
 
 export const metadata = { title: 'Equipo y roles' };
 
@@ -49,6 +50,19 @@ export default async function TeamPage({
   const nowMs = new Date().getTime();
 
   const canEdit = session?.role === 'SUPER_ADMIN' || session?.role === 'ADMIN';
+
+  // Invited-but-never-signed-in users, from Auth itself, so the invite form's
+  // pending list reflects real sends. Best-effort: an Auth API hiccup must not
+  // take the team page down.
+  let pendingInvites: PendingInvite[] = [];
+  if (canEdit) {
+    try {
+      const { data } = await createAdminClient().auth.admin.listUsers({ page: 1, perPage: 200 });
+      pendingInvites = pendingInvitesFrom(data?.users ?? []);
+    } catch (err) {
+      console.error('[team] listUsers failed; pending invites hidden', err);
+    }
+  }
   const paidCount = profiles.filter((p) => p.tier !== 'FREE').length;
   const partnerCount = profiles.filter((p) => p.tier === 'PARTNER').length;
 
@@ -240,7 +254,7 @@ export default async function TeamPage({
 
       <div className="cc-mod-section">
         <div className="cc-mod-sl">Invitar miembro</div>
-        <TeamInviteForm />
+        <TeamInviteForm pending={pendingInvites} />
       </div>
     </div>
   );

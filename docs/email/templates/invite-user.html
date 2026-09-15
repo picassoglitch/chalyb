@@ -4,12 +4,18 @@
   Subject: Te invitaron a Chalyb
 
   Variables:
-    {{ .ConfirmationURL }} — accept-invite link
+    {{ .TokenHash }}        — the invite token, verified by OUR /auth/callback
     {{ .Email }}            — invited address
-    {{ .Token }}            — OTP if applicable
     {{ .SiteURL }}          — production origin
-    {{ .Data.invited_by }}  — custom metadata if the invite was sent server-side
-                              with extra fields (not always present)
+    {{ .Data.invited_by }}  — set by the team page's invite action (may be absent)
+
+  WHY NOT {{ .ConfirmationURL }}: that link goes through Supabase's hosted
+  verify page, which hands the session back in a URL fragment. Our callback is
+  a server route and never sees fragments, so the invitee would land on
+  /sign-in with "missing_code". Linking straight to /auth/callback with the
+  token hash lets the route verify it server-side and set the session cookies.
+  The route accepts ONLY type=invite this way (recovery is handled by
+  /reset-password, everything else by the code exchange).
 -->
 <!DOCTYPE html>
 <html lang="es">
@@ -47,15 +53,17 @@
                   Te invitaron a Chalyb
                 </h1>
                 <p style="margin:0 0 28px;font-size:14px;color:#b9b9c4;line-height:1.55;text-align:center;">
-                  Tu acceso a la plataforma Chalyb está listo. Crea tu
-                  contraseña para activar la cuenta de
+                  Tu acceso a la plataforma Chalyb está listo para
                   <strong style="color:#f4f3ee;">{{ .Email }}</strong>.
+                  Acepta para entrar; después puedes iniciar sesión con
+                  Google usando ese mismo correo, o crear una contraseña
+                  desde «Olvidé mi contraseña».
                 </p>
 
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 28px;">
                   <tr>
                     <td style="background:#c6f24e;border-radius:9px;">
-                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 28px;color:#070809;text-decoration:none;font-weight:600;font-size:14px;">
+                      <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=%2Fapp" style="display:inline-block;padding:13px 28px;color:#070809;text-decoration:none;font-weight:600;font-size:14px;">
                         Aceptar invitación →
                       </a>
                     </td>

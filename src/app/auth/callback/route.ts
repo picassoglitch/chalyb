@@ -30,6 +30,27 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${url.origin}${next}`);
   }
 
+  // Team invites. The "Invite user" template (docs/email/templates/invite-user.html)
+  // links here with the token hash instead of Supabase's hosted verify page:
+  // that page hands the session back in a URL fragment, which a server route
+  // never sees. Verifying the hash here is the same thing done server-side, and
+  // it mints the cookies the same way the OAuth code exchange below does.
+  // ONLY the invite type: recovery is refused above by design, and signup /
+  // magic link keep using the code exchange.
+  const tokenHash = url.searchParams.get('token_hash');
+  const otpType = url.searchParams.get('type');
+  if (tokenHash && otpType === 'invite') {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({ type: 'invite', token_hash: tokenHash });
+    if (!error) {
+      return NextResponse.redirect(`${url.origin}${next}`);
+    }
+    console.error('Auth callback invite error:', error.message);
+    return NextResponse.redirect(
+      `${url.origin}/sign-in?error=${encodeURIComponent(error.message)}`,
+    );
+  }
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
