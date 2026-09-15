@@ -10,14 +10,21 @@
 // Used by the subscription checkout (the token becomes card_token_id on a
 // preapproval) and the token pack checkout (the token pays an order).
 //
-// MOUNT ONCE. The SDK's <CardPayment> re-creates the Brick whenever the
-// identity of `initialization`, `customization` or any callback changes
-// (they are its effect dependencies). Passing fresh object literals on every
-// render meant every state change here tore the form down and mounted it
-// again, and the iframes of the destroyed instance threw
-// "Cannot read properties of null (reading 'addEventListener')" while the
-// new one never reached onReady. Everything handed to <CardPayment> below is
-// therefore memoised, and the latest onSubmit lives in a ref.
+// MOUNT ONCE. Two things tore the form down after it loaded, and both show
+// up as "Cannot read properties of null (reading 'addEventListener')" from
+// cardPayment.js while the skeleton never resolves:
+//
+//   1. The SDK's <CardPayment> re-creates the Brick whenever the identity of
+//      `initialization`, `customization` or any callback changes (they are
+//      its effect dependencies). Everything handed to it is memoised and the
+//      latest onSubmit lives in a ref.
+//   2. React reconciles unkeyed siblings by position and type. A status
+//      <p> rendered BEFORE the Brick's wrapper, then removed on onReady, put
+//      a <div> where a <p> had been: React unmounted the wrapper and mounted
+//      a new one, remounting the Brick at the exact moment it became ready.
+//      The layout below is therefore fixed: the status block is always
+//      present (empty or not) and the Brick's wrapper is keyed and never
+//      moves.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
@@ -65,6 +72,10 @@ export function MpCardBrick({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const busy = useRef(false);
+  const phaseRef = useRef<Phase>('loading');
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   // The caller's onSubmit may change identity on its renders; the Brick
   // must not care. Always call the latest one through the ref.
@@ -195,61 +206,77 @@ export function MpCardBrick({
     [payerEmail],
   );
 
-  if (phase === 'done') {
-    return (
-      <div>
-        {success}
-        {notice && (
-          <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginTop: 8 }}>{notice}</p>
-        )}
-      </div>
-    );
-  }
+  const statusText =
+    phase === 'loading' && !error
+      ? 'Preparando el formulario de pago…'
+      : phase === 'processing'
+        ? 'Procesando el pago con Mercado Pago…'
+        : null;
 
   return (
-    <div style={{ position: 'relative' }}>
-      {phase === 'loading' && !error && (
-        <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginBottom: 10 }}>
-          Preparando el formulario de pago…
-        </p>
-      )}
-      {phase === 'processing' && (
-        <p style={{ fontSize: 12.5, color: 'var(--cc-txt-2)', marginBottom: 10 }}>
-          Procesando el pago con Mercado Pago…
-        </p>
-      )}
-      {error && (
+    <div>
+      {/* Always rendered, so the Brick's wrapper below never changes position. */}
+      <div key="status" style={{ minHeight: phase === 'done' ? 0 : 22 }}>
+        {phase === 'done' ? (
+          <>
+            {success}
+            {notice && (
+              <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginTop: 8 }}>{notice}</p>
+            )}
+          </>
+        ) : (
+          <>
+            {statusText && (
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: phase === 'processing' ? 'var(--cc-txt-2)' : 'var(--cc-txt-3)',
+                  marginBottom: 10,
+                }}
+              >
+                {statusText}
+              </p>
+            )}
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  padding: '10px 14px',
+                  border: '1px solid var(--cc-red)',
+                  background: 'var(--cc-red-g)',
+                  borderRadius: 9,
+                  fontSize: 12.5,
+                  color: 'var(--cc-red)',
+                  marginBottom: 12,
+                  lineHeight: 1.5,
+                }}
+              >
+                ▸ {error}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {/* The Brick lives here from first render until the payment is done.
+          Hidden (not unmounted) while processing; unmounted only on done. */}
+      {phase !== 'done' && (
         <div
-          role="alert"
+          key="brick"
           style={{
-            padding: '10px 14px',
-            border: '1px solid var(--cc-red)',
-            background: 'var(--cc-red-g)',
-            borderRadius: 9,
-            fontSize: 12.5,
-            color: 'var(--cc-red)',
-            marginBottom: 12,
-            lineHeight: 1.5,
+            opacity: phase === 'processing' ? 0.6 : 1,
+            pointerEvents: phase === 'processing' ? 'none' : 'auto',
           }}
         >
-          ▸ {error}
+          <CardPayment
+            locale="es-MX"
+            initialization={initialization}
+            customization={customization}
+            onReady={handleReady}
+            onError={handleError}
+            onSubmit={handleSubmit}
+          />
         </div>
       )}
-      <div
-        style={{
-          opacity: phase === 'processing' ? 0.6 : 1,
-          pointerEvents: phase === 'processing' ? 'none' : 'auto',
-        }}
-      >
-        <CardPayment
-          locale="es-MX"
-          initialization={initialization}
-          customization={customization}
-          onReady={handleReady}
-          onError={handleError}
-          onSubmit={handleSubmit}
-        />
-      </div>
     </div>
   );
 }
