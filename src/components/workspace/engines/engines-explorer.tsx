@@ -83,7 +83,6 @@ export function EnginesExplorer({
 }) {
   const t = useTranslations('engines');
   const [filter, setFilter] = useState<EngineFilterKey>('all');
-  const [soonOpen, setSoonOpen] = useState(false);
 
   const counts = useMemo(() => {
     const c = Object.fromEntries(ENGINE_FILTER_KEYS.map((k) => [k, 0])) as Record<
@@ -104,6 +103,13 @@ export function EnginesExplorer({
     }
     return { available, pro, soon };
   }, [engines]);
+
+  // The upcoming section is collapsed by default so the actionable cards lead.
+  // When NOTHING is actionable yet (every engine still upcoming, the state of
+  // the catalog at launch) collapsing it leaves the page with no cards at all —
+  // just a "view upcoming (8)" button — so it opens by itself in that case.
+  const nothingActionable = groups.available.length === 0 && groups.pro.length === 0;
+  const [soonOpen, setSoonOpen] = useState(nothingActionable);
 
   const filtered = useMemo(
     () => engines.filter((e) => e.filterKeys.includes(filter)),
