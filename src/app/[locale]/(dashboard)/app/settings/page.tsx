@@ -4,11 +4,14 @@ import { SettingsForm } from '@/components/workspace/settings-form';
 
 export default async function WorkspaceSettingsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { saved } = await searchParams;
   const session = await getSessionUser();
   const meta = session?.user.user_metadata ?? {};
   const fullName =
@@ -24,6 +27,7 @@ export default async function WorkspaceSettingsPage({
         defaultName={fullName}
         defaultEmail={email}
         defaultLocale={locale === 'es' ? 'es' : 'en'}
+        justSaved={saved === '1'}
       />
     </div>
   );

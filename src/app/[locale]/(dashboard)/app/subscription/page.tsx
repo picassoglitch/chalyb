@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { SubscriptionActions } from '@/components/workspace/subscription-actions';
 import { TIER_CAPS, buildQuotaRows, effectiveTier, isAdminRole } from '@/lib/billing/tiers';
+import { checkoutNotReadyError, missingCheckoutVars } from '@/lib/payments/mercadopago';
 
 export const metadata = { title: 'Suscripción' };
 
@@ -26,6 +27,10 @@ export default async function SubscriptionPage({
   const caps = TIER_CAPS[tier];
   const storedCaps = TIER_CAPS[storedTier];
   const quotaRows = buildQuotaRows(tier);
+  // Decided here, on the server, so the client can fail soft before calling
+  // the checkout action at all. Only names are sent down, never values.
+  const missingPaymentVars = missingCheckoutVars();
+  const paymentsNotReadyMessage = missingPaymentVars.length ? checkoutNotReadyError() : null;
 
   return (
     <div className="cc-scroll">
@@ -111,6 +116,8 @@ export default async function SubscriptionPage({
           userId={session.user.id}
           isAdmin={isAdmin}
           initialEndsAt={session.tierEndsAt}
+          missingPaymentVars={missingPaymentVars}
+          paymentsNotReadyMessage={paymentsNotReadyMessage}
         />
       </div>
 

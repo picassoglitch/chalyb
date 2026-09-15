@@ -8,6 +8,9 @@ interface Props {
   defaultName: string;
   defaultEmail: string;
   defaultLocale: 'en' | 'es';
+  /** True when the page was reached by the redirect that follows a successful
+   *  save (`?saved=1`), so the form can confirm it once. */
+  justSaved?: boolean;
 }
 
 interface Prefs {
@@ -29,7 +32,12 @@ const DEFAULT_PREFS: Omit<Prefs, 'locale'> = {
 
 const STORAGE_KEY = 'chalyb:settings:prefs';
 
-export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props) {
+export function SettingsForm({
+  defaultName,
+  defaultEmail,
+  defaultLocale,
+  justSaved = false,
+}: Props) {
   const showToast = useWorkspace((s) => s.showToast);
 
   const [name, setName] = useState(defaultName);
@@ -53,6 +61,15 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
     setHydrated(true);
   }, []);
 
+  // The save action redirects here (in the newly chosen language) instead of
+  // returning to the form, so the confirmation is shown on arrival. The URL
+  // parameter is dropped again so a reload does not repeat the toast.
+  useEffect(() => {
+    if (!justSaved) return;
+    showToast(`Perfil actualizado — <b>${defaultName}</b>`);
+    window.history.replaceState(null, '', window.location.pathname);
+  }, [justSaved, defaultName, showToast]);
+
   function persist(next: Prefs) {
     setPrefs(next);
     try {
@@ -71,6 +88,11 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
   // The write goes through the user-scoped client, so the column GRANTs from
   // migration 0032 are what allow it — an edit to this action that reached for
   // `tier` or `role` would be refused by the database.
+  //
+  // On success the action redirects to the settings page in the chosen
+  // language (so /en/app/settings for English) and never resolves here; the
+  // toast for that case fires from the `justSaved` effect above. Only the
+  // failure path returns a result.
   function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (saving) return;
@@ -78,9 +100,7 @@ export function SettingsForm({ defaultName, defaultEmail, defaultLocale }: Props
       const res = await saveProfileSettings({ fullName: name, locale: prefs.locale });
       if (!res.ok) {
         showToast(`<b>Error</b> · ${res.error ?? 'No pudimos guardar tu perfil.'}`);
-        return;
       }
-      showToast(`Perfil actualizado — <b>${name}</b>`);
     });
   }
 

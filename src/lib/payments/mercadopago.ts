@@ -18,30 +18,57 @@
 //                                Read through src/lib/app-url.ts, which is the
 //                                one reader for this value across the app.
 //
-// LEGACY ALIAS: We also accept `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` as
-// fallbacks so this works with either naming convention.
+// LEGACY ALIAS: `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` are still read as
+// fallbacks so an older Vercel setup keeps working. Every message names the
+// canonical MERCADOPAGO_* variable. The lookup lives in ./mp-config.ts.
 //
-// DEMO-MODE FALLBACK:
-// If no access token is set, `getMercadoPago()` throws. Callers (the checkout
-// server action) catch this and return a graceful error so the admin-direct
-// path keeps working without MP configured.
+// NOT-CONFIGURED FALLBACK:
+// The checkout actions ask `isCheckoutReady()` BEFORE touching the SDK and
+// return a clear { ok: false, reason: 'not_configured' } naming the missing
+// variables, so nothing is created on the Mercado Pago side. `getMercadoPago()`
+// throwing is the backstop for a caller that skipped that check.
 
 import 'server-only';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { appUrl } from '@/lib/app-url';
+import {
+  MP_ACCESS_TOKEN_VAR,
+  checkoutNotReadyMessage,
+  missingCheckoutConfig,
+  readAccessToken,
+  readWebhookSecret,
+} from './mp-config';
 
 let cached: { config: MercadoPagoConfig; preference: Preference; payment: Payment } | null = null;
 
 function getAccessToken(): string | undefined {
-  return process.env.MERCADOPAGO_ACCESS_TOKEN ?? process.env.MP_ACCESS_TOKEN;
+  return readAccessToken(process.env);
 }
 
 export function getWebhookSecret(): string | undefined {
-  return process.env.MERCADOPAGO_WEBHOOK_SECRET ?? process.env.MP_WEBHOOK_SECRET;
+  return readWebhookSecret(process.env);
 }
 
+/** The access token is present. Enough to READ from Mercado Pago (the webhook
+ *  fetching a payment, the admin diagnostic); not enough to start a checkout —
+ *  see `isCheckoutReady`. */
 export function isMercadoPagoConfigured(): boolean {
   return Boolean(getAccessToken());
+}
+
+/** Canonical names of the variables a checkout still needs. Empty = ready. */
+export function missingCheckoutVars(): string[] {
+  return missingCheckoutConfig(process.env);
+}
+
+/** Everything a checkout needs to both start AND be credited afterwards. */
+export function isCheckoutReady(): boolean {
+  return missingCheckoutVars().length === 0;
+}
+
+/** The message a caller returns instead of starting a checkout. */
+export function checkoutNotReadyError(): string {
+  return checkoutNotReadyMessage(missingCheckoutVars());
 }
 
 export function getMercadoPago() {
@@ -49,7 +76,7 @@ export function getMercadoPago() {
   const token = getAccessToken();
   if (!token) {
     throw new Error(
-      'MERCADOPAGO_ACCESS_TOKEN missing — Mercado Pago checkout disabled. Set it in .env.local to enable real payments.',
+      `${MP_ACCESS_TOKEN_VAR} missing — Mercado Pago checkout disabled. Set it in .env.local to enable real payments.`,
     );
   }
   const config = new MercadoPagoConfig({

@@ -22,7 +22,7 @@
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { TOKEN_PACKS, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
-import { getMercadoPago, getAppUrl, isMercadoPagoConfigured } from './mercadopago';
+import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
 
 export interface PackCheckoutResult {
   ok: boolean;
@@ -60,12 +60,11 @@ export async function createTokenPackCheckout(
       return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${packId}` };
     }
 
-    if (!isMercadoPagoConfigured()) {
-      return {
-        ok: false,
-        reason: 'not_configured',
-        error: 'Mercado Pago no está configurado. Pide a un admin que active tu pack.',
-      };
+    // Same rule as the tier checkout: decided before the SDK is touched, so
+    // nothing is created on the Mercado Pago side and no charge is attempted.
+    if (!isCheckoutReady()) {
+      console.error('[mp/token-checkout] refusing to start checkout:', checkoutNotReadyError());
+      return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
 
     const { preference } = getMercadoPago();

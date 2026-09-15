@@ -81,10 +81,15 @@ them automatically at send time.
 
 In **Authentication → URL Configuration**:
 
-- **Site URL**: `https://chalyb.com`
-- **Redirect URLs** (add both):
+- **Site URL**: `https://www.chalyb.com` (the host the site actually serves
+  on; the bare domain redirects there). Every `{{ .SiteURL }}` in the
+  templates, including the invite link, is built from this.
+- **Redirect URLs** (add all of these):
+  - `https://www.chalyb.com/auth/callback`
   - `https://chalyb.com/auth/callback`
   - `http://localhost:3000/auth/callback` (for local testing)
+  - a wildcard for Vercel previews if you sign in on them, e.g.
+    `https://*-picassoglitch.vercel.app/auth/callback`
 
 These are used by **Google OAuth and signup confirmation**, which legitimately
 mint a session via `/auth/callback`.
@@ -105,6 +110,46 @@ silent login into the app. So the reset link does NOT need a redirect-allowlist
 entry (it points at the Site URL itself), and it must NOT be left as the default
 `{{ .ConfirmationURL }}`, which would route through `/auth/callback` and create
 a roaming session.
+
+### The invite template does NOT use `{{ .ConfirmationURL }}` either
+
+`templates/invite-user.html` links straight to
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite&next=/app`.
+The hosted verify page behind `{{ .ConfirmationURL }}` returns the session in
+a URL fragment, which a server route can never read, so the invitee would
+land on `/sign-in?error=missing_code`. `/auth/callback` verifies the hash
+server-side (invite type only) and sets the session cookies. Invites are sent
+from `/dashboard/team`; Supabase creates the user, the trigger creates the
+profile, and the action applies the chosen role.
+
+## Rebrand checklist — Nexo AI → Chalyb (dashboard-only)
+
+Everything in this repo already says Chalyb. What still says Nexo lives in
+the Supabase and Resend dashboards, and only a human with dashboard access
+can change it. Symptom until then: auth email arrives as
+`Nexo-AI <noreply@nexo-ai.world>`, the body says "Nexo AI", and links point at
+nexo-ai.world, even though the redirect itself already goes to
+`https://www.chalyb.com/auth/callback`.
+
+1. **Resend → Domains**: `chalyb.com` verified (SPF, DKIM, DMARC all green).
+   Keep `nexo-ai.world` only if something else still sends from it.
+2. **Supabase → Authentication → Emails → SMTP Settings**: sender email
+   `noreply@chalyb.com`, sender name `Chalyb`, host `smtp.resend.com`, port
+   `465`, user `resend`, password = a Resend key scoped to `chalyb.com`
+   (Step 1 and 2 above). The sender is where "Nexo-AI" comes from.
+3. **Supabase → Authentication → Emails → Templates**: for each of the six
+   slots, set the Subject from `subjects.md` and paste the matching
+   `templates/*.html`. Do the Reset password and Invite user ones with care:
+   both use `{{ .TokenHash }}` links to our own pages, never
+   `{{ .ConfirmationURL }}`.
+4. **Supabase → Authentication → URL Configuration**: Site URL and redirect
+   list exactly as in Step 3.5. `{{ .SiteURL }}` in every template comes from
+   this, which is where "links mention nexo-ai.world" comes from.
+5. **Vercel**: `RESEND_FROM_EMAIL=Chalyb <noreply@chalyb.com>` (or leave it
+   unset: that is the code default), so the app's own email matches the
+   auth email.
+6. Send yourself a password reset and a team invite from an incognito window
+   and check From, body and links.
 
 ## Step 4 — Test
 

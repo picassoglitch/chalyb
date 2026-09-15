@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
@@ -15,6 +16,7 @@ import {
   CHALYBCLIP_TRIAL_SLUG,
 } from '@/lib/billing/tiers';
 import { WelcomeGiftBanner } from '@/components/workspace/welcome-gift-banner';
+import { WELCOME_DISMISSED_COOKIE, isWelcomeDismissedFor } from '@/lib/usage/welcome-dismissal';
 import { ChalybclipGraceBanner } from '@/components/workspace/chalybclip-grace-banner';
 import { EngineGlyph } from '@/components/workspace/engines/engine-glyph';
 
@@ -42,6 +44,14 @@ export default async function WorkspaceHomePage({
   const tier = effectiveTier(role, storedTier);
   const isAdmin = isAdminRole(role);
   const caps = TIER_CAPS[tier];
+
+  // Welcome banner state: accepted lives in the profile row; "Ahora no" lives
+  // in a per-user cookie (see welcome-dismissal.ts) read here so the banner
+  // never mounts open again after a dismissal.
+  const welcomeClaimed = session?.welcomeGiftClaimedAt != null;
+  const welcomeDismissed = session
+    ? isWelcomeDismissedFor((await cookies()).get(WELCOME_DISMISSED_COOKIE)?.value, session.user.id)
+    : false;
 
   // Real token balance + engine catalog. Both tolerate failure (balance falls
   // back to a zeroed shape; engines to an empty list) so the home never 500s.
@@ -146,8 +156,14 @@ export default async function WorkspaceHomePage({
   return (
     <div className="cc-scroll">
       {/* First-time welcome gift — banner + confetti on accept. Renders nothing
-          once the user has claimed (server passes the claimed flag). */}
-      <WelcomeGiftBanner claimed={session?.welcomeGiftClaimedAt != null} />
+          once the user has claimed (profile row) or dismissed it (cookie). */}
+      {session && (
+        <WelcomeGiftBanner
+          claimed={welcomeClaimed}
+          initiallyDismissed={welcomeDismissed}
+          userId={session.user.id}
+        />
+      )}
 
       {/* Post-trial grace: ChalybClip trial expired but tokens remain — keep them
           going (and nudge toward Pro). Server-gated on graceActive. */}

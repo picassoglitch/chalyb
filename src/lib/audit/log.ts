@@ -17,6 +17,7 @@ export type AuditAction =
   | 'tier.payment' // MP webhook activated tier after approved payment
   | 'tier.downgrade' // subscriber self-downgraded
   | 'role.change' // admin changed a subscriber's role
+  | 'team.invite' // admin invited someone from /dashboard/team (Supabase Auth invite email)
   | 'selected_bot.change' // PRO subscriber swapped their live bot
   | 'partner.engine_assign' // admin set / cleared which engine a partner owns
   | 'tokens.grant' // admin manually granted bonus tokens (vs. MP payment / promo)

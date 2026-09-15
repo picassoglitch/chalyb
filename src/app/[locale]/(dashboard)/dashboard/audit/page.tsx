@@ -23,6 +23,7 @@ const ACTION_LABEL: Record<string, { label: string; cls: string }> = {
   'tier.payment': { label: 'Plan activado con el pago', cls: 'gr' },
   'tier.downgrade': { label: 'El usuario bajó su propio plan', cls: 'am' },
   'role.change': { label: 'Rol cambiado', cls: 'pu' },
+  'team.invite': { label: 'Invitación enviada', cls: 'pu' },
   'selected_bot.change': { label: 'Bot en vivo cambiado', cls: 'cy' },
 };
 

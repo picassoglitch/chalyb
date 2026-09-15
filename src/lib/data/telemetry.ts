@@ -316,6 +316,8 @@ function labelForAudit(action: string): string | null {
       return 'Downgrade de tier';
     case 'role.change':
       return 'Rol cambiado';
+    case 'team.invite':
+      return 'Invitación al equipo enviada';
     case 'selected_bot.change':
       return 'Engine en vivo cambiado';
     case 'partner.engine_assign':

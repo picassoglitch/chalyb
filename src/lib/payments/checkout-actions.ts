@@ -19,7 +19,7 @@
 import { getSessionUser, type SubscriptionTier } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { TIER_PRICING } from './pricing';
-import { getMercadoPago, getAppUrl, isMercadoPagoConfigured } from './mercadopago';
+import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
 
 export interface CheckoutResult {
   ok: boolean;
@@ -55,13 +55,12 @@ export async function createTierCheckout(targetTier: SubscriptionTier): Promise<
       return { ok: false, reason: 'free_tier', error: 'El plan Free es gratis, no necesitas pasar por el checkout.' };
     }
 
-    if (!isMercadoPagoConfigured()) {
-      return {
-        ok: false,
-        reason: 'not_configured',
-        error:
-          'Mercado Pago todavía no está listo. Pídele a un admin que active tu plan, o configura MP_ACCESS_TOKEN.',
-      };
+    // Checked before the SDK is touched: nothing is created on the Mercado
+    // Pago side, no redirect happens, no charge is attempted. The message
+    // names the MERCADOPAGO_* variables that are missing.
+    if (!isCheckoutReady()) {
+      console.error('[mp/checkout] refusing to start checkout:', checkoutNotReadyError());
+      return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
 
     const { preference } = getMercadoPago();
