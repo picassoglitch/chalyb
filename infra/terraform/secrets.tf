@@ -12,16 +12,18 @@
 
 locals {
   shared_secrets = {
-    "zernio-api-key"  = "Zernio publishing API key."
-    "drive-token-key" = "Encryption key for Google Drive refresh tokens at rest."
+    "zernio-api-key"     = "Zernio publishing API key."
+    "drive-token-key"    = "Encryption key for Google Drive refresh tokens at rest."
+    "assemblyai-api-key" = "AssemblyAI key — ChalyClip transcription (metered, no GPU)."
+    "anthropic-api-key"  = "Anthropic API key — ChalyClip's LLM router (hooks, viral detection, vision)."
   }
 
   # drive-token-key is an encryption key nothing outside decides — generate it.
-  # zernio-api-key is issued by Zernio, so it gets a placeholder the runbook
-  # has you replace. Both need SOME version: Cloud Run refuses to create a
-  # revision whose referenced secret is empty.
+  # The API keys are issued by their vendors, so they get a placeholder the
+  # runbook has you replace. Every secret needs SOME version: Cloud Run
+  # refuses to create a revision whose referenced secret is empty.
   shared_generated   = ["drive-token-key"]
-  shared_placeholder = ["zernio-api-key"]
+  shared_placeholder = ["zernio-api-key", "assemblyai-api-key", "anthropic-api-key"]
 }
 
 resource "google_secret_manager_secret" "shared" {

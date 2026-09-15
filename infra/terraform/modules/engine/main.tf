@@ -56,6 +56,7 @@ locals {
     },
     local.worker_token_env,
     var.shared_secret_env,
+    local.object_storage_secret_env,
   )
 
   worker_secret_env = merge(
@@ -64,6 +65,30 @@ locals {
     },
     local.worker_token_env,
     var.shared_secret_env,
+    local.object_storage_secret_env,
+  )
+
+  # S3-API access to the media bucket (see var.object_storage_env_prefix).
+  # `one()` keeps these expressions valid when the HMAC key is not created.
+  object_storage_enabled = var.object_storage_env_prefix != null
+  object_storage_env = {
+    for k, v in {
+      "${var.object_storage_env_prefix}_BUCKET"        = var.media_bucket
+      "${var.object_storage_env_prefix}_ENDPOINT"      = "https://storage.googleapis.com"
+      "${var.object_storage_env_prefix}_REGION"        = var.region
+      "${var.object_storage_env_prefix}_ACCESS_KEY_ID" = one(google_storage_hmac_key.media[*].access_id)
+    } : k => v if local.object_storage_enabled
+  }
+  object_storage_secret_env = {
+    for k, v in {
+      "${var.object_storage_env_prefix}_SECRET_ACCESS_KEY" = one(google_secret_manager_secret.media_hmac[*].secret_id)
+    } : k => v if local.object_storage_enabled
+  }
+  job_secret_env = merge(
+    {
+      (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
+    },
+    local.object_storage_secret_env,
   )
 }
 
@@ -76,6 +101,46 @@ resource "google_storage_bucket_iam_member" "media" {
   bucket = var.media_bucket
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.engine.email}"
+}
+
+# S3-interoperability credentials for engines whose storage client is boto3.
+# The key is bound to the engine's service account, so it can reach exactly
+# what the IAM grant above allows and nothing else. The secret half goes to
+# Secret Manager like every other credential; the access id is not secret.
+resource "google_storage_hmac_key" "media" {
+  count = local.object_storage_enabled ? 1 : 0
+
+  service_account_email = google_service_account.engine.email
+}
+
+resource "google_secret_manager_secret" "media_hmac" {
+  count = local.object_storage_enabled ? 1 : 0
+
+  secret_id = "${var.slug}-media-hmac-secret"
+
+  labels = {
+    engine = var.slug
+  }
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "media_hmac" {
+  count = local.object_storage_enabled ? 1 : 0
+
+  secret      = google_secret_manager_secret.media_hmac[0].id
+  secret_data = google_storage_hmac_key.media[0].secret
+}
+
+resource "google_secret_manager_secret_iam_member" "media_hmac" {
+  count = local.object_storage_enabled ? 1 : 0
+
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.media_hmac[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.engine.email}"
 }
 
 # ---------------------------------------------------------------------------
@@ -171,7 +236,7 @@ resource "google_cloud_run_v2_service" "engine" {
       }
 
       dynamic "env" {
-        for_each = merge(var.env, local.worker_endpoint_env)
+        for_each = merge(var.env, local.worker_endpoint_env, local.object_storage_env)
         content {
           name  = env.key
           value = env.value
@@ -273,7 +338,7 @@ resource "google_cloud_run_v2_service" "worker" {
       }
 
       dynamic "env" {
-        for_each = merge(var.env, var.worker.env)
+        for_each = merge(var.env, var.worker.env, local.object_storage_env)
         content {
           name  = env.key
           value = env.value
@@ -376,7 +441,7 @@ resource "google_cloud_run_v2_job" "job" {
         }
 
         dynamic "env" {
-          for_each = merge(var.env, each.value.env)
+          for_each = merge(var.env, each.value.env, local.object_storage_env)
           content {
             name  = env.key
             value = env.value
@@ -384,9 +449,7 @@ resource "google_cloud_run_v2_job" "job" {
         }
 
         dynamic "env" {
-          for_each = {
-            (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
-          }
+          for_each = local.job_secret_env
           content {
             name = env.key
             value_source {
