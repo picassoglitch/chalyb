@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useWorkspace } from '@/lib/workspace/store';
 import { changeUserTier } from '@/lib/auth/tier-actions';
-import { createTierCheckout } from '@/lib/payments/checkout-actions';
+import { createTierSubscription } from '@/lib/payments/subscription-actions';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
@@ -68,10 +68,20 @@ const TIER_MARKETING: Record<
   },
 };
 
+export interface ActiveSubscription {
+  /** Mercado Pago's status: pending | authorized | paused | cancelled. */
+  status: string;
+  /** ISO date of the next monthly charge, or null when MP gave none. */
+  nextPaymentDate: string | null;
+}
+
 interface Props {
   initialTier: SubscriptionTier;
   userId: string;
   isAdmin: boolean;
+  /** The live Mercado Pago subscription behind the tier, or null (FREE, an
+   *  admin grant, or a legacy one-off purchase). */
+  subscription: ActiveSubscription | null;
   /** ISO date the plan lapses to FREE after a cancellation, or null when
    *  nothing is scheduled. */
   initialEndsAt: string | null;
@@ -96,6 +106,7 @@ export function SubscriptionActions({
   initialTier,
   userId,
   isAdmin,
+  subscription,
   initialEndsAt,
   missingPaymentVars,
   paymentsNotReadyMessage,
@@ -154,10 +165,10 @@ export function SubscriptionActions({
       return;
     }
 
-    // Branch 2: Non-admin upgrading → Mercado Pago checkout.
-    //  Returns a URL we redirect the browser to. After payment, MP fires the
-    //  webhook which writes profiles.tier asynchronously; this user lands on
-    //  /app/billing?status=success.
+    // Branch 2: Non-admin upgrading → Mercado Pago subscription.
+    //  Returns the preapproval's init_point; the user authorises the monthly
+    //  charge there. MP then fires the webhook which writes profiles.tier
+    //  asynchronously; this user lands on /app/billing?status=success.
     //
     //  Fail soft when the server told us checkout is not configured: say so
     //  and stop. No action call, no preference, no redirect, no charge.
@@ -186,7 +197,7 @@ export function SubscriptionActions({
           });
         }, CLIENT_TIMEOUT_MS);
       });
-      const res = await Promise.race([createTierCheckout(next), timeoutPromise]);
+      const res = await Promise.race([createTierSubscription(next), timeoutPromise]);
       if (!res.ok || !('url' in res) || !res.url) {
         setPendingTier(null);
         const msg =
@@ -201,7 +212,7 @@ export function SubscriptionActions({
         return;
       }
       // Don't reset pendingTier — the browser is about to navigate away.
-      showToast(`Te llevamos a Mercado Pago…`);
+      showToast(`Te llevamos a Mercado Pago para autorizar el cobro mensual…`);
       window.location.href = res.url;
     });
   }
@@ -217,13 +228,18 @@ export function SubscriptionActions({
       );
       return;
     }
-    // Cancelling stops the renewal; the plan keeps working until the period
-    // already paid for runs out (see cancellationOutcome on the server). The
-    // exact date comes back in the result.
+    // Cancelling stops the monthly charge at Mercado Pago; the plan keeps
+    // working until the period already paid for runs out (the next charge
+    // date, see changeUserTier on the server). The exact date comes back in
+    // the result.
+    const until =
+      subscription?.nextPaymentDate && subscription.status === 'authorized'
+        ? ` (hasta el ${formatEndDate(subscription.nextPaymentDate)})`
+        : '';
     if (
       !confirm(
-        '¿Cancelar tu suscripción? No se renueva y conservas el plan hasta que termine ' +
-          'el período que ya pagaste.',
+        `¿Cancelar tu suscripción? Mercado Pago deja de cobrarte y conservas el plan hasta ` +
+          `que termine el período que ya pagaste${until}.`,
       )
     ) {
       return;

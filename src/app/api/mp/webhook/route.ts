@@ -1,19 +1,28 @@
 // Mercado Pago webhook receiver.
 //
-// MP posts here after a payment changes state. We:
+// MP posts here when something changes. Three topics matter:
+//
+//   subscription_preapproval          a Pro/VIP subscription changed state
+//                                     (authorised, paused, cancelled) →
+//                                     subscription-sync.ts applies it to the tier
+//   subscription_authorized_payment   a monthly charge of a subscription was
+//                                     attempted → lands in `payments`, then the
+//                                     subscription is re-synced
+//   payment                           a one-off payment: a token pack, or a
+//                                     legacy one-off tier purchase
+//
+// For every one of them:
 //   1. Validate the signature. NO SECRET = NO ENTRY (see checkMpSignature).
-//   2. Pull the full payment details from MP (the webhook body is just a pointer)
-//   3. If approved + external_reference parses as <userId>|<tier>:
-//        - upsert the row in `payments` (UNIQUE on mp_payment_id → idempotent on retries)
-//        - update profiles.tier for the user
-//   3b. Verify the amount + currency MP reports against what that tier or
-//       token pack actually costs. A mismatch grants nothing.
+//   2. Pull the full resource from MP (the webhook body is just a pointer)
+//   3. Verify what was paid against what the thing costs. A mismatch grants
+//      nothing.
 //   4. Always respond 200 so MP doesn't keep retrying — except on signature
 //      mismatch (401), a missing webhook secret (500) and our own DB errors
 //      (500), which we WANT MP to retry once the config is fixed.
 //
 // MP retries failed webhooks with exponential backoff for ~3 days. Our
-// idempotency key (mp_payment_id UNIQUE) makes duplicate deliveries safe.
+// idempotency keys (mp_payment_id and mp_preapproval_id UNIQUE) make
+// duplicate deliveries safe.
 
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -38,6 +47,8 @@ import {
   expectedChargeForTier,
   type ExpectedCharge,
 } from '@/lib/payments/webhook-verify';
+import { manifestId, parseSubscriptionReference } from '@/lib/payments/subscription-reference';
+import { recordAuthorizedPayment, syncSubscription } from '@/lib/payments/subscription-sync';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -47,10 +58,10 @@ const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
 
 /** Thin wrapper: pull the pieces off the Request and hand them to the pure
  *  checker in webhook-verify.ts (which is what the tests exercise). */
-function verifySignature(req: Request, paymentId: string) {
+function verifySignature(req: Request, dataId: string) {
   return checkMpSignature({
     secret: getWebhookSecret(),
-    paymentId,
+    paymentId: manifestId(dataId),
     requestId: req.headers.get('x-request-id'),
     signatureHeader: req.headers.get('x-signature'),
   });
@@ -74,19 +85,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'bad json' }, { status: 400 });
   }
 
-  // MP sends several event types — we only care about payment events for now.
-  // Other types (merchant_order, plan, subscription_preapproval) are ignored
-  // with a 200 so MP stops retrying them.
-  if (body.type !== 'payment') {
-    return NextResponse.json({ ignored: body.type }, { status: 200 });
+  // Anything else MP sends (merchant_order, subscription_preapproval_plan,
+  // chargebacks) is acknowledged with a 200 so it stops retrying.
+  const type = body.type;
+  if (
+    type !== 'payment' &&
+    type !== 'subscription_preapproval' &&
+    type !== 'subscription_authorized_payment'
+  ) {
+    return NextResponse.json({ ignored: type }, { status: 200 });
   }
 
-  const paymentId = body.data?.id;
-  if (!paymentId) {
+  const dataId = body.data?.id;
+  if (!dataId) {
     return NextResponse.json({ error: 'missing data.id' }, { status: 400 });
   }
 
-  const signature = verifySignature(req, String(paymentId));
+  const signature = verifySignature(req, String(dataId));
   if (!signature.ok) {
     if (signature.reason === 'not_configured') {
       // Fail CLOSED. Without the secret we cannot distinguish MP from any
@@ -104,6 +119,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid signature' }, { status: 401 });
   }
 
+  // ── Subscriptions ────────────────────────────────────────────────────
+  // Both topics end in syncSubscription(), which is idempotent and the only
+  // place a subscription touches profiles.tier. A failure on our side (db,
+  // MP unreachable) is a 500 so MP retries; a preapproval that is not ours
+  // is a 200 because no retry can change that.
+  if (type === 'subscription_preapproval' || type === 'subscription_authorized_payment') {
+    try {
+      const outcome =
+        type === 'subscription_preapproval'
+          ? await syncSubscription(String(dataId))
+          : await recordAuthorizedPayment(String(dataId));
+      if (!outcome.ok && outcome.retry) {
+        return NextResponse.json({ error: 'subscription sync failed' }, { status: 500 });
+      }
+      return NextResponse.json({ topic: type, ...outcome }, { status: 200 });
+    } catch (err) {
+      console.error(`[mp/webhook] ${type} ${String(dataId)} failed`, err);
+      // Likely MP's API not answering. 500 → MP retries.
+      return NextResponse.json({ error: 'subscription fetch failed' }, { status: 500 });
+    }
+  }
+
+  // ── One-off payments ─────────────────────────────────────────────────
+  const paymentId = dataId;
   // Pull the full payment from MP. The webhook body is just a notification
   // pointer; the source of truth is always MP's REST API.
   const { payment } = getMercadoPago();
@@ -118,9 +157,55 @@ export async function POST(req: Request) {
 
   const status = String(mpPayment.status ?? 'unknown');
   const externalRef = mpPayment.external_reference ?? '';
+
+  // A subscription's monthly charge can also arrive on the `payment` topic
+  // with the preapproval's reference on it. The ledger row is the same one
+  // recordAuthorizedPayment writes (UNIQUE mp_payment_id), and the tier is
+  // decided by the preapproval's state, never by this payment alone.
+  const subRef = parseSubscriptionReference(externalRef);
+  if (subRef) {
+    const admin = createAdminClient();
+    const { data: sub } = await admin
+      .from('subscriptions')
+      .select('mp_preapproval_id')
+      .eq('external_reference', externalRef)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const { error: ledgerErr } = await admin.from('payments').upsert(
+      {
+        user_id: subRef.userId,
+        tier: subRef.tier,
+        mp_payment_id: String(mpPayment.id ?? paymentId),
+        mp_preapproval_id: (sub?.mp_preapproval_id as string | undefined) ?? null,
+        amount_cents: Math.round((mpPayment.transaction_amount ?? 0) * 100),
+        currency: mpPayment.currency_id ?? 'MXN',
+        status,
+        raw: mpPayment as unknown as Record<string, unknown>,
+      },
+      { onConflict: 'mp_payment_id' },
+    );
+    if (ledgerErr) {
+      console.error('[mp/webhook] payments upsert failed', ledgerErr);
+      return NextResponse.json({ error: 'db payments insert failed' }, { status: 500 });
+    }
+    if (sub?.mp_preapproval_id) {
+      try {
+        const outcome = await syncSubscription(sub.mp_preapproval_id as string);
+        if (!outcome.ok && outcome.retry) {
+          return NextResponse.json({ error: 'subscription sync failed' }, { status: 500 });
+        }
+      } catch (err) {
+        console.error('[mp/webhook] subscription sync after payment failed', err);
+        return NextResponse.json({ error: 'subscription fetch failed' }, { status: 500 });
+      }
+    }
+    return NextResponse.json({ ok: true, kind: 'subscription_payment', status }, { status: 200 });
+  }
+
   // external_reference is one of two shapes:
-  //   1. Tier upgrade:   "<userId>|<TIER>"            (e.g. "abc|PRO")
-  //   2. Token pack:     "pack|<userId>|<packId>"     (e.g. "pack|abc|tokens_500k")
+  //   1. Legacy one-off tier purchase: "<userId>|<TIER>"  (e.g. "abc|PRO")
+  //   2. Token pack:                   "pack|<userId>|<packId>"
   const refParts = externalRef.split('|');
   const isPackPurchase = refParts[0] === 'pack';
   const userId = isPackPurchase ? refParts[1] : refParts[0];

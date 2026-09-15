@@ -29,7 +29,7 @@
 // throwing is the backstop for a caller that skipped that check.
 
 import 'server-only';
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment, PreApproval } from 'mercadopago';
 import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
@@ -39,7 +39,13 @@ import {
   readWebhookSecret,
 } from './mp-config';
 
-let cached: { config: MercadoPagoConfig; preference: Preference; payment: Payment } | null = null;
+let cached: {
+  config: MercadoPagoConfig;
+  preference: Preference;
+  payment: Payment;
+  /** Subscriptions (the /preapproval API): one per paying Pro/VIP user. */
+  preapproval: PreApproval;
+} | null = null;
 
 function getAccessToken(): string | undefined {
   return readAccessToken(process.env);
@@ -95,8 +101,36 @@ export function getMercadoPago() {
     config,
     preference: new Preference(config),
     payment: new Payment(config),
+    preapproval: new PreApproval(config),
   };
   return cached;
+}
+
+/** Same cap as the SDK client above, for the calls that go around it. */
+const MP_FETCH_TIMEOUT_MS = 7000;
+
+/**
+ * A GET against the Mercado Pago REST API for the resources the SDK has no
+ * client for — today that is /authorized_payments/{id}, the recurring charge
+ * of a subscription. Same token, same timeout as the SDK; throws with the
+ * status code on anything but 2xx so the webhook can decide whether to let
+ * Mercado Pago retry.
+ */
+export async function mpGet<T>(path: string): Promise<T> {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error(`${MP_ACCESS_TOKEN_VAR} missing — cannot call Mercado Pago ${path}.`);
+  }
+  const res = await fetch(`https://api.mercadopago.com${path}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    signal: AbortSignal.timeout(MP_FETCH_TIMEOUT_MS),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const excerpt = (await res.text().catch(() => '')).slice(0, 300);
+    throw new Error(`Mercado Pago GET ${path} → ${res.status}: ${excerpt}`);
+  }
+  return (await res.json()) as T;
 }
 
 /** Absolute origin for back_urls / notification_url.

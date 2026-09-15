@@ -272,3 +272,90 @@ Ver mi cuenta: ${opts.appUrl}/app/billing
     text,
   };
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTION ACTIVE — sent from the MP webhook when a preapproval is
+// authorised (the monthly charge is now on). Different from the one-off
+// payment mail above: this one says what will be charged, when, and how to
+// stop it.
+// ──────────────────────────────────────────────────────────────────────────
+export function subscriptionActiveTemplate(opts: {
+  tier: string; // 'Pro' | 'VIP' (pretty label)
+  amountMajor: string; // monthly charge, e.g. '749.00'
+  currency: string; // 'MXN'
+  /** "15 de octubre de 2026" — already formatted, or null when MP gave none. */
+  nextChargeLabel: string | null;
+  preapprovalId: string;
+  appUrl: string;
+}): { html: string; text: string } {
+  const next = opts.nextChargeLabel ?? 'en un mes';
+  const body = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;padding:6px 14px;background:rgba(198,242,78,0.12);border:1px solid ${BRAND_ACCENT};border-radius:100px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND_ACCENT};">
+        ● Suscripción activa
+      </div>
+    </div>
+
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:600;letter-spacing:-0.015em;color:${INK_PRIMARY};text-align:center;">
+      Tu plan <span style="color:${BRAND_ACCENT};">${escapeHtml(opts.tier)}</span> ya está activo
+    </h1>
+
+    <p style="margin:0 0 28px;font-size:14px;color:${INK_DIM};line-height:1.55;text-align:center;">
+      Mercado Pago autorizó el cobro mensual. Se renueva solo; puedes cancelarlo cuando quieras desde tu cuenta y conservas el plan hasta el final del período que ya pagaste.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:${BG_DARK};border-radius:10px;margin-bottom:28px;">
+      <tr>
+        <td style="padding:14px 18px;border-bottom:1px solid ${LINE};">
+          <div style="font-size:11px;color:${INK_FAINT};font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Cobro mensual</div>
+          <div style="font-size:18px;color:${INK_PRIMARY};font-weight:600;">$${escapeHtml(opts.amountMajor)} ${escapeHtml(opts.currency)}</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:14px 18px;border-bottom:1px solid ${LINE};">
+          <div style="font-size:11px;color:${INK_FAINT};font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Próximo cobro</div>
+          <div style="font-size:13px;color:${INK_DIM};">${escapeHtml(next)}</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:14px 18px;">
+          <div style="font-size:11px;color:${INK_FAINT};font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">ID de suscripción Mercado Pago</div>
+          <div style="font-size:13px;color:${INK_DIM};font-family:'SF Mono',Menlo,Consolas,monospace;">${escapeHtml(opts.preapprovalId)}</div>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 24px;">
+      <tr>
+        <td style="background:${BRAND_ACCENT};border-radius:9px;">
+          <a href="${escapeHtml(opts.appUrl)}/app/subscription" style="display:inline-block;padding:13px 28px;color:#070809;text-decoration:none;font-weight:600;font-size:14px;">
+            Ver mi suscripción →
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${LINE};font-size:12px;color:${INK_FAINT};line-height:1.55;text-align:center;">
+      ¿Necesitas factura fiscal o tienes una duda sobre el cobro? Escríbenos respondiendo este correo o desde <a href="${escapeHtml(opts.appUrl)}/contacto" style="color:${INK_DIM};text-decoration:underline;">/contacto</a>.
+    </p>
+  `;
+
+  const text = `Tu plan ${opts.tier} ya está activo.
+
+Mercado Pago autorizó el cobro mensual de $${opts.amountMajor} ${opts.currency}.
+Próximo cobro: ${next}
+ID de suscripción: ${opts.preapprovalId}
+
+Se renueva solo; cancela cuando quieras desde ${opts.appUrl}/app/subscription y conservas el plan hasta el final del período pagado.
+
+— Chalyb`;
+
+  return {
+    html: wrap({
+      title: `Tu plan ${opts.tier} está activo · Chalyb`,
+      preview: `Mercado Pago autorizó el cobro mensual. Plan ${opts.tier} activado.`,
+      body,
+    }),
+    text,
+  };
+}

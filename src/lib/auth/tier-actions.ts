@@ -7,14 +7,15 @@ import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getSessionUser, type SubscriptionTier } from './session';
 import { decideTierChange } from './tier-policy';
 import { cancellationOutcome } from '@/lib/billing/subscription-period';
-
+import { cancelPreapproval } from '@/lib/payments/subscription-sync';
+import { normalizePreapprovalStatus } from '@/lib/payments/subscription-reference';
 
 interface ChangeResult {
   ok: boolean;
   error?: string;
   /** True when the caller asked for a paid tier they cannot grant themselves.
    *  The write did NOT happen — the UI must send them through Mercado Pago
-   *  (createTierCheckout), and the tier lands when the webhook confirms the
+   *  (createTierSubscription), and the tier lands when the webhook confirms the
    *  payment. */
   paymentRequired?: boolean;
   /** ISO date the cancelled plan stops working. Present when the user
@@ -84,6 +85,46 @@ export async function changeUserTier(
   // A tier with no payment behind it (an admin grant, a comp account) has no
   // paid period to honour, so that is immediate too.
   if (newTier === 'FREE' && isSelf && !isAdmin) {
+    // A Mercado Pago subscription behind the tier has to stop charging
+    // FIRST. If Mercado Pago refuses, nothing is scheduled and the user is
+    // told — reporting a cancellation while the card keeps being charged is
+    // the one outcome this must never produce. The webhook will confirm the
+    // cancelled state shortly after and reach the same tier_ends_at.
+    const { data: live } = await admin
+      .from('subscriptions')
+      .select('mp_preapproval_id, status, next_payment_date')
+      .eq('user_id', targetUserId)
+      .in('status', ['pending', 'authorized', 'paused'])
+      .order('created_at', { ascending: false });
+    let subscriptionEndsAt: string | null = null;
+    for (const sub of live ?? []) {
+      const id = sub.mp_preapproval_id as string;
+      try {
+        await cancelPreapproval(id);
+      } catch (err) {
+        console.error('[tier-actions] Mercado Pago refused to cancel', id, err);
+        return {
+          ok: false,
+          error:
+            'Mercado Pago no pudo cancelar tu suscripción en este momento. Inténtalo de nuevo en unos minutos; no se ha cambiado nada.',
+        };
+      }
+      await admin
+        .from('subscriptions')
+        .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+        .eq('mp_preapproval_id', id);
+      // The paid period runs to the charge Mercado Pago had scheduled next.
+      const next = sub.next_payment_date as string | null;
+      if (
+        normalizePreapprovalStatus(sub.status as string) === 'authorized' &&
+        next &&
+        new Date(next).getTime() > Date.now() &&
+        (!subscriptionEndsAt || new Date(next) > new Date(subscriptionEndsAt))
+      ) {
+        subscriptionEndsAt = next;
+      }
+    }
+
     const { data: lastPayment } = await admin
       .from('payments')
       .select('created_at')
@@ -98,8 +139,13 @@ export async function changeUserTier(
       lastApprovedPaymentAt: (lastPayment?.created_at as string | null) ?? null,
     });
 
-    if (outcome.kind === 'scheduled') {
-      const endsAtIso = outcome.endsAt.toISOString();
+    // The subscription's own renewal date beats the 30-day arithmetic, which
+    // only exists for the legacy one-off purchases.
+    const scheduledEnd =
+      subscriptionEndsAt ?? (outcome.kind === 'scheduled' ? outcome.endsAt.toISOString() : null);
+
+    if (scheduledEnd) {
+      const endsAtIso = scheduledEnd;
       const { error: scheduleErr } = await admin
         .from('profiles')
         // tier stays as it is — this schedules the end, it does not apply it.
