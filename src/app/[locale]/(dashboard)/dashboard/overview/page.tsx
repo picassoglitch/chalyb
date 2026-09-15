@@ -16,20 +16,13 @@ function formatTokens(n: number): string {
   return n.toLocaleString('es-MX');
 }
 
-export default async function OverviewPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function OverviewPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   // Run the engines query and the token-stats query in parallel — both feed
   // independent sections of the page and neither needs the other's output.
-  const [engines, tokenStats] = await Promise.all([
-    listEngines(),
-    getPlatformTokenStats(),
-  ]);
+  const [engines, tokenStats] = await Promise.all([listEngines(), getPlatformTokenStats()]);
   const active = engines.filter(
     (e) => e.status === 'active' && e.stateCode !== 'o' && e.stateCode !== 'r',
   ).length;
@@ -70,9 +63,7 @@ export default async function OverviewPage({
             ${Math.round(totalRev / 100).toLocaleString()}
           </div>
           <div className="cc-mod-stat-sub">
-            {totalRev > 0
-              ? 'suma de todos tus engines'
-              : 'todavía no tienes ingresos'}
+            {totalRev > 0 ? 'suma de todos tus engines' : 'todavía no tienes ingresos'}
           </div>
         </div>
         <div className="cc-mod-stat">
@@ -152,8 +143,8 @@ export default async function OverviewPage({
                 display: 'inline-block',
               }}
             >
-              Cada engine envía datos a <code>/api/engines/[slug]/usage</code> en
-              cada llamada al modelo que se completa bien.
+              Cada engine envía datos a <code>/api/engines/[slug]/usage</code> en cada llamada al
+              modelo que se completa bien.
             </span>
           </div>
         ) : (
@@ -170,15 +161,13 @@ export default async function OverviewPage({
                   className="cc-mod-row"
                   style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}
                 >
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-                  >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div className="cc-mod-ic">⌬</div>
                     <div className="cc-mod-body">
                       <div className="cc-mod-name">{row.engineName}</div>
                       <div className="cc-mod-sub">
-                        slug: <code>{row.engineSlug}</code> · {row.activeUsers}{' '}
-                        usuario{row.activeUsers === 1 ? '' : 's'} activo
+                        slug: <code>{row.engineSlug}</code> · {row.activeUsers} usuario
+                        {row.activeUsers === 1 ? '' : 's'} activo
                         {row.activeUsers === 1 ? '' : 's'} este mes
                       </div>
                     </div>
@@ -258,9 +247,7 @@ export default async function OverviewPage({
                           ? '—'
                           : '$0'}
                     </b>
-                    <span>
-                      {e.state === 'OFFLINE' ? 'offline' : `salud ${e.health}%`}
-                    </span>
+                    <span>{e.state === 'OFFLINE' ? 'offline' : `salud ${e.health}%`}</span>
                   </div>
                 </div>
               );
@@ -283,8 +270,8 @@ export default async function OverviewPage({
               lineHeight: 1.55,
             }}
           >
-            ● <b style={{ color: 'var(--cc-green)' }}>Todo en orden</b> — ningún engine
-            necesita que intervengas.
+            ● <b style={{ color: 'var(--cc-green)' }}>Todo en orden</b> — ningún engine necesita que
+            intervengas.
             <br />
             <span
               style={{
@@ -349,7 +336,7 @@ function EmptyEngines() {
           display: 'inline-block',
         }}
       >
-        Si acabas de correr las migraciones, hay 2 activos (ChalybClip, ChalybStreamManager) y 4
+        Si acabas de correr las migraciones, hay 2 activos (ChalyClip, ChalybStreamManager) y 4
         próximamente — los ves en{' '}
         <Link
           href={'/dashboard/engines' as Route}

@@ -29,7 +29,7 @@ enable_domain_mappings = false
 #
 # engines = {
 #   chalybclip = {
-#     display_name = "ChalybClip"
+#     display_name = "ChalyClip"
 #     image        = "us-central1-docker.pkg.dev/chalyb/engines/chalybclip:v1"
 #     secret_env_names = {
 #       admin_token  = "CHALYB_ADMIN_TOKEN"
@@ -51,6 +51,6 @@ enable_domain_mappings = false
 #     }
 #   }
 #
-#   chalybobs    = { display_name = "ChalybOBS",    secret_env_names = { admin_token = "CHALYBOBS_ADMIN_TOKEN", sso_secret = "CHALYBOBS_SSO_SECRET" } }
-#   chalybcrypto = { display_name = "ChalybCrypto", secret_env_names = { admin_token = "CHALYB_ADMIN_TOKEN",    sso_secret = "CHALYB_SSO_SECRET" } }
+#   chalybobs    = { display_name = "ChalyOBS",    secret_env_names = { admin_token = "CHALYBOBS_ADMIN_TOKEN", sso_secret = "CHALYBOBS_SSO_SECRET" } }
+#   chalybcrypto = { display_name = "ChalyCrypto", secret_env_names = { admin_token = "CHALYB_ADMIN_TOKEN",    sso_secret = "CHALYB_SSO_SECRET" } }
 # }

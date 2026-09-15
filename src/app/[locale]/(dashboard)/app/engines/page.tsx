@@ -39,11 +39,7 @@ const STATE_RANK: Record<EngineLiveState, number> = {
   coming_soon: 4,
 };
 
-export default async function MyEnginesPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function MyEnginesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('engines');
@@ -56,16 +52,14 @@ export default async function MyEnginesPage({
   const selectedEngineId = session?.selectedEngineId ?? null;
   const caps = TIER_CAPS[tier];
 
-  // ChalybClip trial (7-day) + post-trial grace (bonus tokens) — both let a FREE
-  // user run ChalybClip live. Mirror of the home/detail surfaces.
+  // ChalyClip trial (7-day) + post-trial grace (bonus tokens) — both let a FREE
+  // user run ChalyClip live. Mirror of the home/detail surfaces.
   const nowMs = new Date().getTime();
   const trialActive = isChalybclipTrialActive(session?.chalybclipTrialStartedAt ?? null, nowMs);
   // Real token balance for the user — drives the post-trial grace check AND the
   // "Tokens IA" capability card (so it reflects allocation + any bonus, not a
   // hardcoded plan figure).
-  const balance = session
-    ? await getTokenBalance(session.user.id).catch(() => null)
-    : null;
+  const balance = session ? await getTokenBalance(session.user.id).catch(() => null) : null;
   const clipBonusTokens = balance && !balance.unlimited ? balance.bonus : 0;
   const graceActive =
     tier === 'FREE' &&
@@ -94,8 +88,7 @@ export default async function MyEnginesPage({
     .filter((e) => e.status !== 'deprecated')
     .map((engine) => {
       const meetsTier = TIER_ORDER[tier] >= TIER_ORDER[engine.tierRequired];
-      const isOwnedByMe =
-        engine.ownerUserId !== null && engine.ownerUserId === session?.user.id;
+      const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session?.user.id;
       const isPlatformOwned = engine.ownerUserId === null;
       const isLive = engineIsLiveForUser({
         tier,
@@ -165,7 +158,9 @@ export default async function MyEnginesPage({
       <div className="mx-auto max-w-6xl px-6 py-2 md:px-8">
         {vms.length === 0 ? (
           <div className="rounded-[14px] border border-dashed border-[var(--cc-line-2)] p-14 text-center">
-            <div className="text-[14px] font-semibold text-[var(--cc-txt-2)]">{t('empty.title')}</div>
+            <div className="text-[14px] font-semibold text-[var(--cc-txt-2)]">
+              {t('empty.title')}
+            </div>
             <div className="mt-2 text-[12px] text-[var(--cc-txt-4)] [font-family:var(--cc-mono),monospace]">
               {t('empty.hint')}
             </div>
@@ -191,7 +186,7 @@ export default async function MyEnginesPage({
             <div className="flex flex-wrap gap-x-10 gap-y-4">
               {[
                 {
-                  // Real count live right now (includes the ChalybClip trial/grace),
+                  // Real count live right now (includes the ChalyClip trial/grace),
                   // not the static plan cap — matches the hero's "N en vivo ahora".
                   k: t('caps.liveEngines'),
                   v: caps.liveEnginesCount === Infinity ? '∞' : String(liveCount),
@@ -206,11 +201,15 @@ export default async function MyEnginesPage({
                 },
                 {
                   k: t('caps.storage'),
-                  v: caps.storageMB >= 1000 ? `${caps.storageMB / 1000} GB` : `${caps.storageMB} MB`,
+                  v:
+                    caps.storageMB >= 1000 ? `${caps.storageMB / 1000} GB` : `${caps.storageMB} MB`,
                 },
                 {
                   k: t('caps.history'),
-                  v: caps.historyDays >= 365 ? t('caps.historyYear') : t('caps.historyDays', { days: caps.historyDays }),
+                  v:
+                    caps.historyDays >= 365
+                      ? t('caps.historyYear')
+                      : t('caps.historyDays', { days: caps.historyDays }),
                 },
                 {
                   k: t('caps.support'),

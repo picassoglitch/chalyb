@@ -74,7 +74,7 @@ export function Hero() {
             <div className="lp-engine-list">
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">◆</i>ChalybClip
+                  <i className="lp-engine-icon">◆</i>ChalyClip
                 </span>
                 <span className="lp-status lp-status-live">
                   <i />
@@ -83,13 +83,13 @@ export function Hero() {
               </div>
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">▲</i>ChalybCrypto
+                  <i className="lp-engine-icon">▲</i>ChalyCrypto
                 </span>
                 <span className="lp-status lp-status-sim">{tp('statusSim')}</span>
               </div>
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">●</i>ChalybOBS
+                  <i className="lp-engine-icon">●</i>ChalyOBS
                 </span>
                 <span className="lp-status lp-status-soon">{tp('statusSoon')}</span>
               </div>

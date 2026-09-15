@@ -10,7 +10,10 @@ import { TeamPromoControl } from '@/components/dashboard/team-promo-control';
 import { TeamRelinkEngine } from '@/components/dashboard/team-relink-engine';
 import { isChalybclipTrialActive, chalybclipTrialDaysLeft } from '@/lib/billing/tiers';
 import { TeamReconcileEngine } from '@/components/dashboard/team-reconcile-engine';
-import { PartnerEngineSelect, type EngineOption } from '@/components/dashboard/partner-engine-select';
+import {
+  PartnerEngineSelect,
+  type EngineOption,
+} from '@/components/dashboard/partner-engine-select';
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
 import { pendingInvitesFrom, type PendingInvite } from '@/lib/auth/invites';
 
@@ -28,11 +31,7 @@ interface ProfileRow {
   created_at: string;
 }
 
-export default async function TeamPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function TeamPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -83,15 +82,10 @@ export default async function TeamPage({
       name: string;
       owner_user_id: string | null;
     }>;
-    const ownerIds = engines
-      .map((e) => e.owner_user_id)
-      .filter((x): x is string => x !== null);
+    const ownerIds = engines.map((e) => e.owner_user_id).filter((x): x is string => x !== null);
     let ownersById = new Map<string, string | null>();
     if (ownerIds.length > 0) {
-      const { data: owners } = await admin
-        .from('profiles')
-        .select('id, email')
-        .in('id', ownerIds);
+      const { data: owners } = await admin.from('profiles').select('id, email').in('id', ownerIds);
       ownersById = new Map(
         (owners ?? []).map((o) => [o.id as string, (o.email as string | null) ?? null]),
       );
@@ -124,8 +118,7 @@ export default async function TeamPage({
           <div className="cc-mod-stat-l">Suscripciones de pago</div>
           <div className="cc-mod-stat-v gr">{paidCount}</div>
           <div className="cc-mod-stat-sub">
-            {profiles.filter((p) => p.tier === 'PRO').length} Pro ·{' '}
-            {partnerCount} Partner ·{' '}
+            {profiles.filter((p) => p.tier === 'PRO').length} Pro · {partnerCount} Partner ·{' '}
             {profiles.filter((p) => p.tier === 'VIP').length} VIP
           </div>
         </div>
@@ -137,9 +130,7 @@ export default async function TeamPage({
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Roles definidos</div>
           <div className="cc-mod-stat-v">6</div>
-          <div className="cc-mod-stat-sub">
-            SA · Admin · Operator · Editor · Viewer · Client
-          </div>
+          <div className="cc-mod-stat-sub">SA · Admin · Operator · Editor · Viewer · Client</div>
         </div>
       </div>
 
@@ -172,8 +163,7 @@ export default async function TeamPage({
                 <div className="cc-mod-ic">{displayName.charAt(0).toUpperCase()}</div>
                 <div className="cc-mod-body">
                   <div className="cc-mod-name">
-                    {displayName}{' '}
-                    {isSelf && <span className="cc-mod-badge gr">tú</span>}{' '}
+                    {displayName} {isSelf && <span className="cc-mod-badge gr">tú</span>}{' '}
                     {isEnvLocked && (
                       <span className="cc-mod-badge pu" title="SUPER_ADMIN_EMAILS env var">
                         env-locked
@@ -217,27 +207,26 @@ export default async function TeamPage({
                           bonusBalance={p.token_bonus_balance ?? 0}
                         />
                       )}
-                      {/* Promotions: grant/extend/revoke the ChalybClip trial and
+                      {/* Promotions: grant/extend/revoke the ChalyClip trial and
                           reset the welcome banner per user. */}
                       <TeamPromoControl
                         userId={p.id}
                         userName={displayName}
                         trialActive={isChalybclipTrialActive(p.chalybclip_trial_started_at, nowMs)}
-                        trialDaysLeft={chalybclipTrialDaysLeft(p.chalybclip_trial_started_at, nowMs)}
+                        trialDaysLeft={chalybclipTrialDaysLeft(
+                          p.chalybclip_trial_started_at,
+                          nowMs,
+                        )}
                         welcomeClaimed={p.welcome_gift_claimed_at != null}
                       />
                       {/* Re-link control. Forces the integration to
-                          re-provision this user in ChalybClip; combined with
+                          re-provision this user in ChalyClip; combined with
                           the engine-side B2 self-healing this reclaims any
                           orphan tenant by email. Always shown — relinking
                           yourself is the most common case (admin's own
                           tenant from CLI-era never got an external_user_id). */}
                       <TeamRelinkEngine userId={p.id} userName={displayName} />
-                      <TeamRoleSelect
-                        userId={p.id}
-                        current={p.role}
-                        envLocked={isEnvLocked}
-                      />
+                      <TeamRoleSelect userId={p.id} current={p.role} envLocked={isEnvLocked} />
                     </>
                   ) : (
                     <>

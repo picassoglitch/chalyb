@@ -1,9 +1,9 @@
 'use client';
 
-// Per-row "Re-link ChalybClip" button for /dashboard/team (B4 of the
+// Per-row "Re-link ChalyClip" button for /dashboard/team (B4 of the
 // contemplation plan).
 //
-// Use case: an admin sees a user whose token chip in ChalybClip is silent
+// Use case: an admin sees a user whose token chip in ChalyClip is silent
 // (cache empty) or whose engine subscription got out-of-sync. One click
 // forces a re-provision through the integration's idempotent POST
 // /api/admin/tenants, which post-B2 claims any orphan tenant by email

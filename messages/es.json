@@ -46,8 +46,8 @@
           "title": "Engines de IA listos, sin construir nada",
           "body": "Elige de una librería creciente de engines que el equipo de Chalyb opera en producción. Cada uno resuelve un trabajo concreto desde el día uno.",
           "bullets": {
-            "1": "ChalybClip convierte tus streams en clips verticales listos para publicar",
-            "2": "ChalybCrypto entrega señales cripto con backtesting y alertas 24/7",
+            "1": "ChalyClip convierte tus streams en clips verticales listos para publicar",
+            "2": "ChalyCrypto entrega señales cripto con backtesting y alertas 24/7",
             "3": "Nuevos engines salen continuamente y van incluidos en tu plan"
           }
         },
@@ -119,7 +119,7 @@
           "per": " /siempre",
           "tagline": "Crea una cuenta y explora toda la plataforma.",
           "features": {
-            "1": "ChalybClip gratis 7 días",
+            "1": "ChalyClip gratis 7 días",
             "2": "50,000 tokens IA de regalo",
             "3": "Acceso a la comunidad",
             "4": "Clips con marca de agua · descarga manual"
@@ -135,7 +135,7 @@
             "1": "Todo lo de Gratis",
             "2": "1 engine en vivo · tú eliges cuál",
             "3": "1,000,000 de tokens / mes, se regeneran",
-            "4": "ChalybClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit",
+            "4": "ChalyClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit",
             "5": "Comunidad premium"
           },
           "cta": "Empezar con Pro"
@@ -149,7 +149,7 @@
             "1": "Todo lo de Pro",
             "2": "Todos los engines en vivo",
             "3": "5× los tokens de Pro",
-            "4": "Paquete completo de streamer de ChalybClip",
+            "4": "Paquete completo de streamer de ChalyClip",
             "5": "Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea"
           },
           "cta": "Empezar con VIP"
@@ -270,7 +270,7 @@
       },
       "engines": {
         "title": "Tus engines",
-        "body": "En «Mis engines» ves, abres y activas tus engines (ChalybClip, ChalybCrypto y más). «En vivo» = corriendo; «Disponible» = listo para usar con tu plan."
+        "body": "En «Mis engines» ves, abres y activas tus engines (ChalyClip, ChalyCrypto y más). «En vivo» = corriendo; «Disponible» = listo para usar con tu plan."
       },
       "tokens": {
         "title": "Tu balance de tokens",
@@ -296,11 +296,11 @@
       "badgeLive": "{count} en vivo ahora",
       "badgeIdle": "Tu centro de engines",
       "headingContinue": "Continúa donde lo dejaste",
-      "headingStart": "Empieza con ChalybClip",
+      "headingStart": "Empieza con ChalyClip",
       "subContinue": "{name} está corriendo en vivo. Retoma el control cuando quieras.",
       "subStart": "Convierte tus streams en clips virales — el único engine listo para usar ahora mismo.",
       "ctaContinue": "Continuar →",
-      "ctaOpen": "Abrir ChalybClip →",
+      "ctaOpen": "Abrir ChalyClip →",
       "ctaDemo": "Ver demo"
     },
     "sections": {
@@ -342,7 +342,7 @@
     },
     "upsell": {
       "title": "Desbloquea más engines con Pro",
-      "sub": "Corre ChalybCrypto, ChalybOBS y más en vivo con un plan Pro.",
+      "sub": "Corre ChalyCrypto, ChalyOBS y más en vivo con un plan Pro.",
       "cta": "Actualizar a Pro →"
     },
     "caps": {
@@ -385,7 +385,7 @@
         "bullets": [
           "Escenas y overlays dinámicos",
           "Automatización del stream",
-          "Conecta con ChalybClip"
+          "Conecta con ChalyClip"
         ]
       }
     },
@@ -447,7 +447,7 @@
     },
     "terms": {
       "metaTitle": "Términos de servicio",
-      "metaDescription": "Términos y condiciones para usar Chalyb y sus engines (ChalybClip, ChalybStreamManager y futuros productos).",
+      "metaDescription": "Términos y condiciones para usar Chalyb y sus engines (ChalyClip, ChalybStreamManager y futuros productos).",
       "title": "Términos de servicio",
       "lastUpdated": "17 junio 2026"
     }

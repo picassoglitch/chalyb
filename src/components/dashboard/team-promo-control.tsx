@@ -2,7 +2,7 @@
 
 // Inline promotions control for /dashboard/team rows. Lets an admin grant,
 // extend, or revoke the onboarding promos per user:
-//   - ChalybClip 7-day live trial  (grant / reset to fresh 7d / end now)
+//   - ChalyClip 7-day live trial  (grant / reset to fresh 7d / end now)
 //   - first-time welcome banner   (reset so it shows again)
 //
 // Same popover pattern as team-grant-tokens.tsx (absolute div, click-outside /
@@ -21,7 +21,7 @@ import {
 interface Props {
   userId: string;
   userName: string;
-  /** Whether the ChalybClip trial is currently active (computed server-side). */
+  /** Whether the ChalyClip trial is currently active (computed server-side). */
   trialActive: boolean;
   /** Whole days left on the trial (0 when inactive). */
   trialDaysLeft: number;
@@ -84,7 +84,7 @@ export function TeamPromoControl({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title="Gestionar promociones (prueba ChalybClip · bienvenida)"
+        title="Gestionar promociones (prueba ChalyClip · bienvenida)"
         style={{
           padding: '6px 10px',
           borderRadius: 7,
@@ -131,10 +131,10 @@ export function TeamPromoControl({
             Promociones · {firstName}
           </div>
 
-          {/* ChalybClip trial */}
+          {/* ChalyClip trial */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ fontSize: 12, color: 'var(--cc-txt-2)' }}>
-              Prueba ChalybClip ·{' '}
+              Prueba ChalyClip ·{' '}
               {trialActive ? (
                 <b style={{ color: 'var(--cc-cyan)' }}>{trialDaysLeft}d restantes</b>
               ) : (
@@ -147,7 +147,7 @@ export function TeamPromoControl({
                 onClick={() =>
                   run(
                     grantChalybclipTrial,
-                    `Prueba ChalybClip activada (7d) para <b>${firstName}</b>.`,
+                    `Prueba ChalyClip activada (7d) para <b>${firstName}</b>.`,
                   )
                 }
                 disabled={pending}
@@ -161,7 +161,7 @@ export function TeamPromoControl({
                   onClick={() =>
                     run(
                       revokeChalybclipTrial,
-                      `Prueba ChalybClip terminada para <b>${firstName}</b>.`,
+                      `Prueba ChalyClip terminada para <b>${firstName}</b>.`,
                     )
                   }
                   disabled={pending}

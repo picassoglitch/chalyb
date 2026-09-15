@@ -42,7 +42,7 @@ variable "shared_secret_env" {
 variable "secret_env_names" {
   description = <<-EOT
     What the ENGINE calls its own three secrets. Names differ per engine and
-    are not always the hub's names — ChalybClip reads DATABASE_URL,
+    are not always the hub's names — ChalyClip reads DATABASE_URL,
     CHALYB_ADMIN_TOKEN and CHALYB_SSO_SECRET with no prefix, because
     settings.py gives them an explicit validation_alias. Only the VALUES have
     to match the hub's CHALYB<SLUG>_* vars.

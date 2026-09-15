@@ -16,22 +16,22 @@ import type { EngineIntegration } from './types';
 export const ENGINE_INTEGRATIONS: EngineIntegration[] = [
   createEngineIntegration({
     slug: 'chalybclip',
-    displayName: 'ChalybClip',
+    displayName: 'ChalyClip',
     // The landing CTAs funnel straight here via /sign-in?next=/auth/launch/
     // chalybclip, so a fresh SSO login should land on the start screen rather
-    // than ChalybClip's generic root.
+    // than ChalyClip's generic root.
     postSsoPath: '/dashboard/start',
   }),
 
   createEngineIntegration({
     slug: 'chalybobs',
-    displayName: 'ChalybOBS',
-    // No postSsoPath: ChalybOBS's own /auth/sso picks the landing route.
+    displayName: 'ChalyOBS',
+    // No postSsoPath: ChalyOBS's own /auth/sso picks the landing route.
   }),
 
   createEngineIntegration({
     slug: 'chalybcrypto',
-    displayName: 'ChalybCrypto',
+    displayName: 'ChalyCrypto',
   }),
 
   // Next agent goes here. Env vars follow from the slug:

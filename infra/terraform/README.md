@@ -9,7 +9,7 @@ this is the executable half.
 - **The hub** (`chalyb.com` itself) stays on Vercel, and Supabase stays as the
   database for both the hub and the engines. Three Cloud SQL instances would
   cost more than everything in this config combined.
-- **The RTMP relay** for ChalybOBS. Cloud Run cannot accept RTMP on :1935, and
+- **The RTMP relay** for ChalyOBS. Cloud Run cannot accept RTMP on :1935, and
   GCP egress makes multistreaming from a GCE VM cost more than the rest of the
   stack — roughly $1.30 per streaming hour. It belongs on a flat-rate host. See
   the RTMP section of the migration doc.
@@ -33,7 +33,7 @@ secrets, so a compromise of one engine does not expose another's.
 
 ## Shapes verified against the application
 
-`worker.tf` was corrected after reading picassoglitch/chalybclip. Both halves
+`worker.tf` was corrected after reading picassoglitch/ChalyClip. Both halves
 were originally inverted, and both would have failed silently rather than
 loudly:
 
@@ -70,7 +70,7 @@ are the names their images read:
 | chalybobs    | `CHALYBOBS_ADMIN_TOKEN` | `CHALYBOBS_SSO_SECRET` |
 | chalybcrypto | `CHALYB_ADMIN_TOKEN`    | `CHALYB_SSO_SECRET`    |
 
-ChalybClip's other settings are `CHALYBCLIP_*` (role, dispatcher, output dir,
+ChalyClip's other settings are `CHALYBCLIP_*` (role, dispatcher, output dir,
 modal token, endpoint, Zernio key). If an engine's image and this table ever
 disagree, the API comes up without its admin token and every provisioning call
 401s — fix the table, not the engine.

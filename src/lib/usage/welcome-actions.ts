@@ -5,9 +5,9 @@
 // What "accepting" does:
 //   1. Marks profiles.welcome_gift_claimed_at = now() so the banner never
 //      shows again (idempotent — re-accepting is a no-op).
-//   2. Starts the 7-day ChalybClip live trial (chalybclip_trial_started_at) if
+//   2. Starts the 7-day ChalyClip live trial (chalybclip_trial_started_at) if
 //      one isn't already running.
-//   3. Best-effort provisions the user inside ChalybClip so the trial's live
+//   3. Best-effort provisions the user inside ChalyClip so the trial's live
 //      access is usable end-to-end. Non-fatal — mirrors the launch route.
 //
 // The "50,000 token gift" IS the existing Free monthly allocation — there is
@@ -30,13 +30,11 @@ interface ClaimResult {
 
 /** Where the claim originated. 'welcome_banner' is the self-serve banner on
  *  /app; 'chalybclip_landing_launch' is the silent claim the /auth/launch/chalybclip
- *  route runs for users who registered from the ChalybClip landing page — that
- *  value in the audit log IS the "registered via ChalybClip" marker. */
+ *  route runs for users who registered from the ChalyClip landing page — that
+ *  value in the audit log IS the "registered via ChalyClip" marker. */
 type ClaimVia = 'welcome_banner' | 'chalybclip_landing_launch';
 
-export async function claimWelcomeGift(
-  via: ClaimVia = 'welcome_banner',
-): Promise<ClaimResult> {
+export async function claimWelcomeGift(via: ClaimVia = 'welcome_banner'): Promise<ClaimResult> {
   const session = await getSessionUser();
   if (!session) return { ok: false, error: 'Inicia sesión para continuar.' };
 
@@ -70,7 +68,7 @@ export async function claimWelcomeGift(
     .eq('id', userId);
   if (updErr) return { ok: false, error: updErr.message };
 
-  // Best-effort: provision the user in ChalybClip so live access works the moment
+  // Best-effort: provision the user in ChalyClip so live access works the moment
   // they open the engine. Failure here never blocks the claim (the engine page
   // has a manual reprovision affordance as backstop).
   try {
