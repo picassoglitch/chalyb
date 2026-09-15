@@ -40,7 +40,13 @@ export interface CardSubmission {
   paymentTypeId: string | null;
 }
 
-export type CardSubmitResult = { ok: true; message?: string } | { ok: false; error: string };
+export type CardSubmitResult =
+  /** Money moved and the entitlement is granted. */
+  | { ok: true; outcome: 'approved'; message?: string }
+  /** Mercado Pago has not decided yet (pending / in review / action
+   *  required). Nothing is granted; the webhook finishes the job. */
+  | { ok: true; outcome: 'pending'; message: string }
+  | { ok: false; error: string };
 
 interface Props {
   publicKey: string;
@@ -53,11 +59,14 @@ interface Props {
   /** Called with the tokenised card. Resolve ok=true to show the success
    *  state; ok=false keeps the form so the buyer can try another card. */
   onSubmit: (card: CardSubmission) => Promise<CardSubmitResult>;
-  /** Rendered once the submission succeeded. */
+  /** Rendered once the payment is approved. */
   success: React.ReactNode;
+  /** Rendered when Mercado Pago left the payment pending. Never the success
+   *  node: nothing has been granted yet. */
+  pending: React.ReactNode;
 }
 
-type Phase = 'loading' | 'ready' | 'processing' | 'done';
+type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
 
 export function MpCardBrick({
   publicKey,
@@ -67,6 +76,7 @@ export function MpCardBrick({
   submitLabel = 'Pagar',
   onSubmit,
   success,
+  pending,
 }: Props) {
   const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -188,9 +198,13 @@ export function MpCardBrick({
             : null,
           paymentTypeId: extra?.paymentTypeId ?? null,
         });
-        if (result.ok) {
+        if (result.ok && result.outcome === 'approved') {
           setNotice(result.message ?? null);
           setPhase('done');
+        } else if (result.ok) {
+          // Pending is not success: the buyer must not see an unlock.
+          setNotice(result.message);
+          setPhase('pending');
         } else {
           setError(result.error);
           setPhase('ready');
@@ -213,13 +227,15 @@ export function MpCardBrick({
         ? 'Procesando el pago con Mercado Pago…'
         : null;
 
+  const finished = phase === 'done' || phase === 'pending';
+
   return (
     <div>
       {/* Always rendered, so the Brick's wrapper below never changes position. */}
-      <div key="status" style={{ minHeight: phase === 'done' ? 0 : 22 }}>
-        {phase === 'done' ? (
+      <div key="status" style={{ minHeight: finished ? 0 : 22 }}>
+        {finished ? (
           <>
-            {success}
+            {phase === 'done' ? success : pending}
             {notice && (
               <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginTop: 8 }}>{notice}</p>
             )}
@@ -257,9 +273,10 @@ export function MpCardBrick({
           </>
         )}
       </div>
-      {/* The Brick lives here from first render until the payment is done.
-          Hidden (not unmounted) while processing; unmounted only on done. */}
-      {phase !== 'done' && (
+      {/* The Brick lives here from first render until the payment is decided.
+          Hidden (not unmounted) while processing; unmounted only on done or
+          pending. */}
+      {!finished && (
         <div
           key="brick"
           style={{

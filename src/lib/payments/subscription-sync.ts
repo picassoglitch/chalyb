@@ -17,7 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
-import { subscriptionActiveTemplate } from '@/lib/email/templates';
+import { paymentReversedTemplate, subscriptionActiveTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
@@ -28,6 +28,7 @@ import {
   normalizePreapprovalStatus,
   parseSubscriptionReference,
   type PreapprovalStatus,
+  type SubscribableTier,
 } from './subscription-reference';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
@@ -324,6 +325,15 @@ export async function recordAuthorizedPayment(
         .from('subscriptions')
         .update({ last_charge_at: ap.debit_date ?? ap.date_created ?? new Date().toISOString() })
         .eq('mp_preapproval_id', preapprovalId);
+    } else if (paymentStatus === 'refunded' || paymentStatus === 'charged_back') {
+      const revoked = await revokeSubscriptionForReversal({
+        preapprovalId,
+        mpPaymentId: String(paymentId),
+        reason: paymentStatus,
+        amountMajor: ap.transaction_amount ?? null,
+        currency: ap.currency_id ?? null,
+      });
+      if (!revoked.ok) return { ok: false, retry: true };
     } else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
       await notify({
         severity: 'warning',
@@ -337,6 +347,123 @@ export async function recordAuthorizedPayment(
 
   const synced = await syncSubscription(preapprovalId);
   return { ok: synced.ok, retry: !synced.ok && synced.retry, synced };
+}
+
+/**
+ * POLICY — a reversed subscription charge revokes the plan NOW.
+ *
+ * A refund we issued, or a chargeback the buyer's bank granted, means the
+ * month was not paid for after all. Cancelling keeps the plan to the end of
+ * the period because that period WAS paid; a reversal is the opposite case,
+ * so the tier drops to FREE at once and the preapproval is cancelled at
+ * Mercado Pago so it does not charge again. Anything less leaves a paid plan
+ * running on money the user got back.
+ *
+ * Fail closed: only a payment whose preapproval is on file (our copy of a
+ * subscription we created) can revoke anything. Idempotent: a second
+ * delivery finds the subscription already cancelled and the tier already
+ * FREE, and changes nothing.
+ */
+export async function revokeSubscriptionForReversal(input: {
+  preapprovalId: string;
+  mpPaymentId: string;
+  reason: 'refunded' | 'charged_back';
+  amountMajor: number | null;
+  currency: string | null;
+}): Promise<{ ok: boolean }> {
+  const admin = createAdminClient();
+  const { data: sub } = await admin
+    .from('subscriptions')
+    .select('user_id, tier, status')
+    .eq('mp_preapproval_id', input.preapprovalId)
+    .maybeSingle();
+  if (!sub) {
+    console.error(
+      '[mp/subscription] reversal for a preapproval we do not have — nothing revoked',
+      input,
+    );
+    return { ok: true };
+  }
+  const userId = sub.user_id as string;
+  const tier = sub.tier as SubscribableTier;
+  const wasLive = isLiveStatus(normalizePreapprovalStatus(sub.status as string));
+
+  if (wasLive) {
+    try {
+      await cancelPreapproval(input.preapprovalId);
+    } catch (err) {
+      // Mercado Pago may already have cancelled it as part of the dispute.
+      console.warn(
+        '[mp/subscription] cancel after reversal refused (may already be cancelled)',
+        err,
+      );
+    }
+    const { error } = await admin
+      .from('subscriptions')
+      .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+      .eq('mp_preapproval_id', input.preapprovalId);
+    if (error) {
+      console.error('[mp/subscription] could not mark the reversed subscription cancelled', error);
+      return { ok: false };
+    }
+  }
+
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('email, tier, tier_ends_at')
+    .eq('id', userId)
+    .maybeSingle();
+  const email = (profile?.email as string | null) ?? null;
+  if (profile?.tier === tier) {
+    const { error } = await admin
+      .from('profiles')
+      .update({ tier: 'FREE', tier_ends_at: null })
+      .eq('id', userId);
+    if (error) {
+      console.error('[mp/subscription] could not revoke the tier after reversal', error);
+      return { ok: false };
+    }
+    await logAudit({
+      action: 'tier.downgrade',
+      actorId: null,
+      actorEmail: null,
+      targetUserId: userId,
+      targetEmail: email,
+      before: { tier, tier_ends_at: (profile?.tier_ends_at as string | null) ?? null },
+      after: { tier: 'FREE', tier_ends_at: null },
+      metadata: {
+        mp_preapproval_id: input.preapprovalId,
+        mp_payment_id: input.mpPaymentId,
+        kind: `subscription.${input.reason}`,
+        amount_cents: Math.round((input.amountMajor ?? 0) * 100),
+        currency: input.currency,
+      },
+    });
+    await notify({
+      severity: 'warning',
+      title: `Plan ${tier} revocado — pago ${input.reason === 'charged_back' ? 'con contracargo' : 'reembolsado'}`,
+      body: `${email ?? userId} · MP pago #${input.mpPaymentId} · suscripción ${input.preapprovalId}`,
+      href: '/dashboard/billing',
+      source: 'mp.webhook',
+    });
+    if (email) {
+      const tmpl = paymentReversedTemplate({
+        reason: input.reason,
+        what: `tu plan ${TIER_CAPS[tier].label}`,
+        amountMajor: (input.amountMajor ?? 0).toFixed(2),
+        currency: input.currency ?? 'MXN',
+        paymentId: input.mpPaymentId,
+        appUrl: getAppUrl(),
+      });
+      void sendEmail({
+        to: email,
+        subject: `Tu plan ${TIER_CAPS[tier].label} fue retirado · Chalyb`,
+        html: tmpl.html,
+        text: tmpl.text,
+      }).catch((err) => console.error('[mp/subscription] reversal email failed', err));
+    }
+  }
+  return { ok: true };
 }
 
 /**

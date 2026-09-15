@@ -59,12 +59,20 @@ export function PackCheckout({ packId, packLabel, publicKey, amountMajor, payerE
             identification: card.identification,
           });
           if (!res.ok) return { ok: false, error: res.error ?? 'No pudimos procesar el pago.' };
+          if (res.status !== 'approved') {
+            // pending / in_process: honest wait, no toast, no redirect.
+            return {
+              ok: true,
+              outcome: 'pending',
+              message: res.error ?? 'Mercado Pago dejó el pago en revisión.',
+            };
+          }
           showToast(`<b>${packLabel}</b> acreditado.`);
           setTimeout(() => {
             router.push('/app/usage');
             router.refresh();
           }, 1800);
-          return { ok: true, message: res.error };
+          return { ok: true, outcome: 'approved' };
         }}
         success={
           <div
@@ -80,6 +88,23 @@ export function PackCheckout({ packId, packLabel, publicKey, amountMajor, payerE
           >
             ● <b style={{ color: 'var(--cc-green)' }}>Pago aprobado</b> — tus tokens ya están en tu
             balance. Te llevamos a tu uso…
+          </div>
+        }
+        pending={
+          <div
+            style={{
+              padding: '14px 18px',
+              border: '1px solid var(--cc-amber)',
+              background: 'var(--cc-amber-g)',
+              borderRadius: 'var(--cc-r-l)',
+              color: 'var(--cc-txt-2)',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            ● <b style={{ color: 'var(--cc-amber)' }}>Pago en revisión</b> — Mercado Pago todavía no
+            lo aprueba. No se ha activado nada; en cuanto lo confirme los tokens aparecen en
+            /app/usage. Puedes cerrar esta página.
           </div>
         }
       />

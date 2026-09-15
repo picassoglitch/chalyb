@@ -37,10 +37,15 @@ import {
 } from '@/lib/payments/mercadopago';
 import { checkMpSignature } from '@/lib/payments/webhook-verify';
 import { manifestId, parseSubscriptionReference } from '@/lib/payments/subscription-reference';
-import { recordAuthorizedPayment, syncSubscription } from '@/lib/payments/subscription-sync';
+import {
+  recordAuthorizedPayment,
+  revokeSubscriptionForReversal,
+  syncSubscription,
+} from '@/lib/payments/subscription-sync';
 import {
   chargeFromOrder,
   chargeFromPayment,
+  isReversal,
   type NormalizedCharge,
 } from '@/lib/payments/order-charge';
 import { settleOneOffCharge } from '@/lib/payments/one-off-settlement';
@@ -189,6 +194,24 @@ export async function POST(req: Request) {
     if (ledgerErr) {
       console.error('[mp/webhook] payments upsert failed', ledgerErr);
       return NextResponse.json({ error: 'db payments insert failed' }, { status: 500 });
+    }
+    if (sub?.mp_preapproval_id && isReversal(charge.status)) {
+      // Refund / chargeback of a monthly charge: the plan is revoked now
+      // (policy in revokeSubscriptionForReversal).
+      const revoked = await revokeSubscriptionForReversal({
+        preapprovalId: sub.mp_preapproval_id as string,
+        mpPaymentId: charge.mpPaymentId,
+        reason: charge.status as 'refunded' | 'charged_back',
+        amountMajor: charge.amountMajor,
+        currency: charge.currency,
+      });
+      if (!revoked.ok) {
+        return NextResponse.json({ error: 'subscription revoke failed' }, { status: 500 });
+      }
+      return NextResponse.json(
+        { ok: true, kind: 'subscription_payment', status: charge.status, revoked: true },
+        { status: 200 },
+      );
     }
     if (sub?.mp_preapproval_id) {
       try {

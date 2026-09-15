@@ -251,3 +251,56 @@ export async function grantTokenPack(opts: {
   const result = (data ?? {}) as { ok?: boolean; already_granted?: boolean };
   return { ok: result.ok !== false, alreadyGranted: result.already_granted ?? false };
 }
+
+/** Take a pack's tokens back after Mercado Pago reversed the payment that
+ *  bought it (refund or chargeback). One transaction in clawback_token_pack()
+ *  (migration 0038): idempotent per mpPaymentId, balance clamped at zero,
+ *  and it refuses when no purchase is on file for that payment — nothing was
+ *  granted, so nothing is removed. */
+export async function clawbackTokenPack(opts: {
+  mpPaymentId: string;
+  reason: 'refunded' | 'charged_back';
+}): Promise<
+  | { ok: true; alreadyClawedBack: true }
+  | {
+      ok: true;
+      alreadyClawedBack: false;
+      userId: string;
+      tokensGranted: number;
+      tokensRemoved: number;
+      previousBalance: number;
+      balance: number;
+    }
+  | { ok: false; error: string }
+> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc('clawback_token_pack', {
+    p_mp_payment_id: opts.mpPaymentId,
+    p_reason: opts.reason,
+  });
+  if (error) {
+    console.error('[usage] clawback_token_pack failed', error.message);
+    return { ok: false, error: error.message };
+  }
+  const r = (data ?? {}) as {
+    ok?: boolean;
+    error?: string;
+    already_clawed_back?: boolean;
+    user_id?: string;
+    tokens_granted?: number;
+    tokens_removed?: number;
+    previous_balance?: number;
+    balance?: number;
+  };
+  if (r.ok === false) return { ok: false, error: r.error ?? 'unknown' };
+  if (r.already_clawed_back) return { ok: true, alreadyClawedBack: true };
+  return {
+    ok: true,
+    alreadyClawedBack: false,
+    userId: r.user_id ?? '',
+    tokensGranted: Number(r.tokens_granted ?? 0),
+    tokensRemoved: Number(r.tokens_removed ?? 0),
+    previousBalance: Number(r.previous_balance ?? 0),
+    balance: Number(r.balance ?? 0),
+  };
+}
