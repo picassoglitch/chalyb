@@ -18,8 +18,9 @@ import {
 // Mapped by slug, with a neutral fallback for any engine we haven't styled yet.
 // Color comes from the parent via `currentColor`, so the card tints per state.
 //
-// ChalybClip is the exception: it has a real brand mark (public/chalybclip-mark.png),
-// so we render the logo tile filling the parent box instead of a lucide glyph.
+// ChalybClip is the exception: it has a real brand mark (public/chalybclip-mark.png,
+// the one Clip asset in the repo; the engine hero uses the same file), so we
+// render the logo tile filling the parent box instead of a lucide glyph.
 // The mark carries its own dark background, so the parent's tint shows only as a
 // thin frame. The parent box must be `relative` (and is square + overflow-hidden)
 // for the `fill` image to lay out correctly.

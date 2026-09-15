@@ -152,29 +152,56 @@ export default async function EngineWorkspacePage({
         </Link>
       </div>
 
-      {/* ChalybClip brand hero — full lockup. The logo's own dark background
-          (#03040b) matches the banner fill, so the square reads as a floating
-          mark rather than a pasted tile. */}
+      {/* ChalybClip brand hero — the same mark the home card and the engines
+          list use (public/chalybclip-mark.png), with the wordmark set in text.
+          The only full lockup in the repo still carries the pre-rebrand name,
+          so it is not shipped; swap this block for a real ChalybClip lockup
+          when design has one. The mark's own dark background (#03040b) matches
+          the banner fill, so it reads as a floating mark, not a pasted tile. */}
       {isChalybclip && (
         <div
           style={{
             marginBottom: 24,
             display: 'flex',
-            justifyContent: 'center',
-            padding: '22px 20px',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 14,
+            padding: '26px 20px',
             border: '1px solid var(--cc-line-2)',
             borderRadius: 'var(--cc-r-l)',
             background: '#03040b',
           }}
         >
           <Image
-            src="/chalybclip-logo.png"
-            alt="ChalybClip — clips virales para streamers"
-            width={240}
-            height={240}
+            src="/chalybclip-mark.png"
+            alt="ChalybClip"
+            width={160}
+            height={160}
             priority
-            style={{ display: 'block', width: 240, height: 240 }}
+            style={{ display: 'block', width: 160, height: 160 }}
           />
+          <div
+            style={{
+              fontFamily: 'var(--cc-disp), sans-serif',
+              fontSize: 28,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              color: '#f4f6f8',
+            }}
+          >
+            chalyb<span style={{ color: 'var(--cc-green)' }}>clip</span>
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--cc-mono), monospace',
+              fontSize: 11,
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--cc-txt-3)',
+            }}
+          >
+            clips · virales · para <span style={{ color: 'var(--cc-green)' }}>streamers</span>
+          </div>
         </div>
       )}
 
