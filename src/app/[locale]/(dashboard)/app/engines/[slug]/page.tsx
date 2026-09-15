@@ -376,10 +376,27 @@ export default async function EngineWorkspacePage({
             </div>
             <div className="cc-mod-stat-sub">visible para tu plan</div>
           </div>
+          {/* Plan tile, phrased for THIS user. A VIP reading "Tier requerido:
+              Pro" on an upcoming engine took it as a paywall they had not
+              cleared; the gate is only news when the user is below it. */}
           <div className="cc-mod-stat">
-            <div className="cc-mod-stat-l">Tier requerido</div>
-            <div className="cc-mod-stat-v">{TIER_LABEL_SHORT[engine.tierRequired]}</div>
-            <div className="cc-mod-stat-sub">para ejecución en vivo</div>
+            <div className="cc-mod-stat-l">Plan</div>
+            <div className={`cc-mod-stat-v ${meetsTier || clipUnlocked ? 'gr' : ''}`}>
+              {engine.tierRequired === 'FREE'
+                ? 'Incluido en Free'
+                : meetsTier || clipUnlocked
+                  ? `Incluido en tu plan`
+                  : `Requiere ${TIER_LABEL_SHORT[engine.tierRequired]}`}
+            </div>
+            <div className="cc-mod-stat-sub">
+              {isComingSoon
+                ? meetsTier || engine.tierRequired === 'FREE'
+                  ? 'en vivo cuando se lance'
+                  : 'para ejecución en vivo cuando se lance'
+                : meetsTier || clipUnlocked || engine.tierRequired === 'FREE'
+                  ? `ejecución en vivo · ${TIER_LABEL_SHORT[tier]}`
+                  : 'para ejecución en vivo'}
+            </div>
           </div>
           <div className="cc-mod-stat">
             <div className="cc-mod-stat-l">Categoría</div>
