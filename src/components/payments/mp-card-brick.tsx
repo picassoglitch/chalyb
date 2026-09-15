@@ -9,8 +9,17 @@
 //
 // Used by the subscription checkout (the token becomes card_token_id on a
 // preapproval) and the token pack checkout (the token pays an order).
+//
+// MOUNT ONCE. The SDK's <CardPayment> re-creates the Brick whenever the
+// identity of `initialization`, `customization` or any callback changes
+// (they are its effect dependencies). Passing fresh object literals on every
+// render meant every state change here tore the form down and mounted it
+// again, and the iframes of the destroyed instance threw
+// "Cannot read properties of null (reading 'addEventListener')" while the
+// new one never reached onReady. Everything handed to <CardPayment> below is
+// therefore memoised, and the latest onSubmit lives in a ref.
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
 
 export interface CardSubmission {
@@ -41,6 +50,8 @@ interface Props {
   success: React.ReactNode;
 }
 
+type Phase = 'loading' | 'ready' | 'processing' | 'done';
+
 export function MpCardBrick({
   publicKey,
   amount,
@@ -50,10 +61,17 @@ export function MpCardBrick({
   onSubmit,
   success,
 }: Props) {
-  const [phase, setPhase] = useState<'loading' | 'ready' | 'processing' | 'done'>('loading');
+  const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const busy = useRef(false);
+
+  // The caller's onSubmit may change identity on its renders; the Brick
+  // must not care. Always call the latest one through the ref.
+  const onSubmitRef = useRef(onSubmit);
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
 
   // initMercadoPago only records the key and locale on the SDK singleton;
   // the script itself loads when the Brick mounts. Running it in the lazy
@@ -78,6 +96,104 @@ export function MpCardBrick({
     }, 20_000);
     return () => clearTimeout(t);
   }, []);
+
+  const initialization = useMemo(
+    () => ({
+      amount,
+      ...(payerEmail ? { payer: { email: payerEmail } } : {}),
+    }),
+    [amount, payerEmail],
+  );
+
+  const customization = useMemo(
+    () => ({
+      paymentMethods: { minInstallments: 1, maxInstallments },
+      visual: {
+        hideFormTitle: true,
+        texts: { formSubmit: submitLabel },
+        style: {
+          theme: 'dark' as const,
+          customVariables: {
+            baseColor: '#9eea3a',
+            baseColorFirstVariant: '#7bc220',
+            baseColorSecondVariant: '#c6f24e',
+            buttonTextColor: '#070809',
+            formBackgroundColor: '#0c0e11',
+            inputBackgroundColor: '#111418',
+            textPrimaryColor: '#e6e9ee',
+            textSecondaryColor: '#aab2bf',
+            outlinePrimaryColor: '#262c34',
+            outlineSecondaryColor: '#1c2128',
+            errorColor: '#ff5d5d',
+            successColor: '#9eea3a',
+            borderRadiusMedium: '9px',
+            borderRadiusLarge: '13px',
+            formPadding: '0px',
+          },
+        },
+      },
+    }),
+    [maxInstallments, submitLabel],
+  );
+
+  const handleReady = useCallback(() => {
+    setError(null);
+    setPhase('ready');
+  }, []);
+
+  const handleError = useCallback((e: { type: 'critical' | 'non_critical'; message: string }) => {
+    // The Brick reports validation slips as non_critical while the buyer
+    // types; only a critical error (bad key, failed load) is worth a banner.
+    if (e.type === 'critical') {
+      setError(`El formulario de pago falló: ${e.message}`);
+      setPhase('ready');
+    }
+  }, []);
+
+  const handleSubmit = useCallback(
+    async (
+      form: {
+        token: string;
+        issuer_id: string;
+        payment_method_id: string;
+        installments: number;
+        payer: { email?: string; identification?: { type: string; number: string } };
+      },
+      extra?: { paymentTypeId?: string },
+    ) => {
+      if (busy.current) return;
+      busy.current = true;
+      setError(null);
+      setPhase('processing');
+      try {
+        const result = await onSubmitRef.current({
+          token: form.token,
+          paymentMethodId: form.payment_method_id,
+          issuerId: form.issuer_id || null,
+          installments: form.installments || 1,
+          payerEmail: form.payer?.email ?? payerEmail,
+          identification: form.payer?.identification
+            ? { type: form.payer.identification.type, number: form.payer.identification.number }
+            : null,
+          paymentTypeId: extra?.paymentTypeId ?? null,
+        });
+        if (result.ok) {
+          setNotice(result.message ?? null);
+          setPhase('done');
+        } else {
+          setError(result.error);
+          setPhase('ready');
+        }
+      } catch (err) {
+        console.error('[mp-card-brick] submit failed', err);
+        setError('No pudimos completar el pago. Inténtalo de nuevo en un momento.');
+        setPhase('ready');
+      } finally {
+        busy.current = false;
+      }
+    },
+    [payerEmail],
+  );
 
   if (phase === 'done') {
     return (
@@ -127,82 +243,11 @@ export function MpCardBrick({
       >
         <CardPayment
           locale="es-MX"
-          initialization={{
-            amount,
-            ...(payerEmail ? { payer: { email: payerEmail } } : {}),
-          }}
-          customization={{
-            paymentMethods: { minInstallments: 1, maxInstallments },
-            visual: {
-              hideFormTitle: true,
-              texts: { formSubmit: submitLabel },
-              style: {
-                theme: 'dark',
-                customVariables: {
-                  baseColor: '#9eea3a',
-                  baseColorFirstVariant: '#7bc220',
-                  baseColorSecondVariant: '#c6f24e',
-                  buttonTextColor: '#070809',
-                  formBackgroundColor: '#0c0e11',
-                  inputBackgroundColor: '#111418',
-                  textPrimaryColor: '#e6e9ee',
-                  textSecondaryColor: '#aab2bf',
-                  outlinePrimaryColor: '#262c34',
-                  outlineSecondaryColor: '#1c2128',
-                  errorColor: '#ff5d5d',
-                  successColor: '#9eea3a',
-                  borderRadiusMedium: '9px',
-                  borderRadiusLarge: '13px',
-                  formPadding: '0px',
-                },
-              },
-            },
-          }}
-          onReady={() => setPhase('ready')}
-          onError={(e) => {
-            // The Brick reports validation slips as non_critical while the
-            // buyer types; only a critical error (bad key, failed load) is
-            // worth a banner.
-            if (e.type === 'critical') {
-              setError(`El formulario de pago falló: ${e.message}`);
-              setPhase('ready');
-            }
-          }}
-          onSubmit={async (form, extra) => {
-            if (busy.current) return;
-            busy.current = true;
-            setError(null);
-            setPhase('processing');
-            try {
-              const result = await onSubmit({
-                token: form.token,
-                paymentMethodId: form.payment_method_id,
-                issuerId: form.issuer_id || null,
-                installments: form.installments || 1,
-                payerEmail: form.payer?.email ?? payerEmail,
-                identification: form.payer?.identification
-                  ? {
-                      type: form.payer.identification.type,
-                      number: form.payer.identification.number,
-                    }
-                  : null,
-                paymentTypeId: extra?.paymentTypeId ?? null,
-              });
-              if (result.ok) {
-                setNotice(result.message ?? null);
-                setPhase('done');
-              } else {
-                setError(result.error);
-                setPhase('ready');
-              }
-            } catch (err) {
-              console.error('[mp-card-brick] submit failed', err);
-              setError('No pudimos completar el pago. Inténtalo de nuevo en un momento.');
-              setPhase('ready');
-            } finally {
-              busy.current = false;
-            }
-          }}
+          initialization={initialization}
+          customization={customization}
+          onReady={handleReady}
+          onError={handleError}
+          onSubmit={handleSubmit}
         />
       </div>
     </div>
