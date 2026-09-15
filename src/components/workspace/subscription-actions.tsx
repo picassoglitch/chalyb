@@ -75,6 +75,12 @@ interface Props {
   /** ISO date the plan lapses to FREE after a cancellation, or null when
    *  nothing is scheduled. */
   initialEndsAt: string | null;
+  /** Canonical names of the Mercado Pago variables still missing on the
+   *  server (empty when checkout is fully configured). Decided server-side on
+   *  the page so the upgrade path can fail soft here, before any action runs. */
+  missingPaymentVars: string[];
+  /** The operator-facing sentence for that state, built server-side. */
+  paymentsNotReadyMessage: string | null;
 }
 
 /** "14 de octubre de 2026" — the date someone loses access, spelled out. */
@@ -86,17 +92,25 @@ function formatEndDate(iso: string): string {
   });
 }
 
-export function SubscriptionActions({ initialTier, userId, isAdmin, initialEndsAt }: Props) {
+export function SubscriptionActions({
+  initialTier,
+  userId,
+  isAdmin,
+  initialEndsAt,
+  missingPaymentVars,
+  paymentsNotReadyMessage,
+}: Props) {
   const [tier, setTier] = useState<SubscriptionTier>(initialTier);
   const [endsAt, setEndsAt] = useState<string | null>(initialEndsAt);
   const [pendingTier, setPendingTier] = useState<SubscriptionTier | null>(null);
   const [isPending, startTransition] = useTransition();
   // Sticky error banner for the checkout failure path. The toast only
   // shows for ~2.5s and users miss it; this stays until they retry or
-  // refresh. Common reason in production: MP_ACCESS_TOKEN unset on the
-  // server, which returns reason='not_configured'.
+  // refresh. Common reason in production: MERCADOPAGO_ACCESS_TOKEN or
+  // MERCADOPAGO_WEBHOOK_SECRET unset on Vercel (reason='not_configured').
   const [stickyError, setStickyError] = useState<string | null>(null);
   const showToast = useWorkspace((s) => s.showToast);
+  const paymentsReady = missingPaymentVars.length === 0;
 
   async function changeTier(next: SubscriptionTier) {
     if (next === tier || isPending) return;
@@ -144,6 +158,16 @@ export function SubscriptionActions({ initialTier, userId, isAdmin, initialEndsA
     //  Returns a URL we redirect the browser to. After payment, MP fires the
     //  webhook which writes profiles.tier asynchronously; this user lands on
     //  /app/billing?status=success.
+    //
+    //  Fail soft when the server told us checkout is not configured: say so
+    //  and stop. No action call, no preference, no redirect, no charge.
+    if (!paymentsReady) {
+      const msg = paymentsNotReadyMessage ?? 'Los pagos todavía no están activos.';
+      setPendingTier(null);
+      showToast(`<b>Pagos no disponibles</b> · ${msg}`);
+      setStickyError(msg);
+      return;
+    }
     startTransition(async () => {
       // Client-side timeout: if MP hangs and Vercel kills the function
       // (10s Hobby, 60s Pro), the useTransition would stay pending forever.
@@ -158,7 +182,7 @@ export function SubscriptionActions({ initialTier, userId, isAdmin, initialEndsA
             ok: false,
             error:
               'Mercado Pago no respondió en 18s. Posible causa: ' +
-              'MP_ACCESS_TOKEN inválido o no configurado en Vercel.',
+              'MERCADOPAGO_ACCESS_TOKEN inválido en Vercel.',
           });
         }, CLIENT_TIMEOUT_MS);
       });
@@ -239,6 +263,41 @@ export function SubscriptionActions({ initialTier, userId, isAdmin, initialEndsA
         >
           ▸ <b>Modo admin</b> — los cambios de plan se aplican al instante, sin pasar por el
           pago.
+        </div>
+      )}
+
+      {!paymentsReady && (
+        <div
+          style={{
+            padding: '12px 14px',
+            border: '1px solid var(--cc-amber, #f5b942)',
+            background: 'rgba(245, 185, 66, 0.08)',
+            borderRadius: 9,
+            fontSize: 12.5,
+            color: 'var(--cc-txt-2)',
+            marginBottom: 16,
+            lineHeight: 1.5,
+          }}
+        >
+          <b style={{ display: 'block', marginBottom: 3, color: 'var(--cc-amber, #f5b942)' }}>
+            {isAdmin ? 'Mercado Pago no está configurado' : 'Pagos aún no disponibles'}
+          </b>
+          {isAdmin ? (
+            <span>
+              Los suscriptores no pueden pagar hasta que{' '}
+              {missingPaymentVars.map((v, i) => (
+                <span key={v}>
+                  {i > 0 && ' y '}
+                  <code>{v}</code>
+                </span>
+              ))}{' '}
+              {missingPaymentVars.length === 1 ? 'esté' : 'estén'} en Vercel (mismos nombres que
+              en <code>.env.local.example</code>) y el secreto del webhook también en el panel de
+              Mercado Pago. Tus cambios de plan como admin siguen aplicándose directo.
+            </span>
+          ) : (
+            <span>{paymentsNotReadyMessage}</span>
+          )}
         </div>
       )}
 
