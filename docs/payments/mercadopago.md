@@ -6,10 +6,10 @@ code side is already in place; this is the operator's checklist.
 
 ## What is sold, and through what
 
-| Product                 | Mercado Pago product                                                | Where it starts                                          | What activates it                                              |
-| ----------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
-| Plan Pro / VIP, monthly | **Suscripciones** (`/preapproval`)                                  | `createTierSubscription` in `subscription-actions.ts`    | webhook topic `subscription_preapproval` → status `authorized` |
-| Token packs, one-off    | **Checkout Pro via Orders** (`POST /v1/orders`, `type: \"online\"`) | `createTokenPackCheckout` in `token-checkout-actions.ts` | webhook topic `orders` → status `processed`                    |
+| Product                 | Mercado Pago product                                                                                                                                                                                | Where it starts                                                                                                                         | What activates it                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Plan Pro / VIP, monthly | **Suscripciones** (`/preapproval`, authorised with a card token from the in-app **Card Payment Brick**)                                                                                             | `authorizeTierSubscription` in `subscription-actions.ts`, from `/app/subscription/checkout`                                             | the same request; the webhook (`subscription_preapproval`) keeps it in sync |
+| Token packs, one-off    | **Orders API** (`POST /v1/orders`, `type: "online"`, `processing_mode: "automatic"`) with the same Brick; a link to the Mercado Pago-hosted **Checkout Pro via Orders** for OXXO/SPEI/account money | `payTokenPackWithCard` (card, in app) and `createTokenPackCheckout` (hosted) in `token-checkout-actions.ts`, from `/app/usage/checkout` | the same request for cards; webhook topic `orders` for the hosted flow      |
 
 Why this split and not something else:
 
@@ -19,24 +19,27 @@ Why this split and not something else:
   every month, retries failed charges, and pauses the subscription when
   retries run out. Selling a plan as a one-off Checkout Pro payment (what the
   hub did before) means nobody is ever charged a second month.
-- **"Sin plan asociado, estado pendiente."** Of the three subscription
-  contracts Mercado Pago offers this is the one that needs no card form on
-  our side: we create the preapproval with the price and `status: "pending"`
-  and redirect to its `init_point`. Mercado Pago hosts the card entry (PCI is
-  theirs), and the amount is fixed server-side per user, so there is no
-  shared plan object to keep in step with `pricing.ts`.
-- **Checkout Pro for packs.** A pack is a top-up, not a plan. Checkout Pro
-  gives the buyer every method Mercado Pago supports in Mexico (cards, OXXO,
-  SPEI, account balance). Subscriptions are card-only.
-- **Via the Orders API, not Preferences.** The application form now offers
-  "API de Orders" and "API de Preferences", the latter marked as being
-  discontinued. The pack checkout creates an order (`POST /v1/orders`,
-  `type: "online"`, `processing_mode: "manual"`) and redirects to its
-  `checkout_url`; the webhook reads the `orders` topic. Payments made through
-  the old preferences flow still settle through the `payment` topic.
-- **Not Checkout Bricks / API.** Embedding the card form buys nothing here:
-  the products are two plans and three packs, and hosting the form means
-  taking on the PCI questionnaire and 3DS handling for no conversion gain.
+- **The card form is ours, the card data is theirs.** Mercado Pago's Card
+  Payment Brick (`@mercadopago/sdk-react`) renders the card number, expiry
+  and CVV in iframes it hosts and hands the page a single-use token. The
+  buyer never leaves Chalyb, and PCI stays with Mercado Pago (SAQ A). The
+  subscription is created "sin plan asociado" with `card_token_id` and
+  `status: "authorized"`, so the first month is charged in that request
+  and the plan is active before the page answers. There is no shared plan
+  object to keep in step with `pricing.ts`.
+- **Packs pay with the same form.** A card charge goes through the Orders
+  API in `automatic` mode and settles in the same request. OXXO, SPEI and
+  account money only exist on Mercado Pago's own page, so the pack checkout
+  keeps a link to the hosted Checkout Pro for whoever prefers those.
+- **Orders, not Preferences.** The application form now offers "API de
+  Orders" and "API de Preferences", the latter marked as being
+  discontinued. Every pack charge is an order; the webhook reads the
+  `orders` topic. Payments made through the old preferences flow still
+  settle through the `payment` topic.
+- **Not the hosted redirect.** Sending the buyer to mercadopago.com to
+  authorise the card worked but felt like leaving the product, and with
+  test credentials the hosted page 404s unless the buyer is logged in as a
+  test user. The Brick avoids both.
 
 Prices live in one place, `src/lib/payments/pricing.ts`, in MXN. The webhook
 refuses to grant anything whose charged amount or currency differs from it.
@@ -70,8 +73,8 @@ Application → **Credenciales de prueba** first, **Credenciales de producción*
 when going live. Two values matter:
 
 - **Access Token** → `MERCADOPAGO_ACCESS_TOKEN`. Server-side only.
-- **Public Key** → `MERCADOPAGO_PUBLIC_KEY`. Not used today (only embedded
-  checkout needs it); safe to set.
+- **Public Key** → `MERCADOPAGO_PUBLIC_KEY`. Initialises the card form in
+  the browser. Not a secret, but the checkout refuses to render without it.
 
 Production credentials are issued once the application passes Mercado Pago's
 **Calidad de integración** check and the account has completed its business
@@ -120,9 +123,7 @@ NEXT_PUBLIC_APP_URL=https://chalyb.com  # must be HTTPS for subscriptions
 ```
 
 `NEXT_PUBLIC_APP_URL` is the origin used for the preapproval's `back_url`
-and the preference's `back_urls` / `notification_url`. Mercado Pago requires
-HTTPS for a preapproval's `back_url`; the subscription button refuses to
-start on an `http://` origin and says why.
+and the order's return URLs on the hosted fallback.
 
 Apply the migration that backs subscriptions:
 
@@ -145,14 +146,16 @@ API with **test users** whose money is not real.
 3. Sign in to the hub with a Supabase account whose email is the **test
    comprador's** email. A preapproval carries `payer_email`, and with test
    credentials the payer must be a test user, or Mercado Pago answers
-   "Both payer and collector must be real or test users".
+   "Both payer and collector must be real or test users". (Confirm that
+   account from Supabase → Authentication → Users; the buyer's mailbox is
+   fictional.)
 4. Expose the dev server over HTTPS and point `NEXT_PUBLIC_APP_URL` and the
    test webhook URL at it:
    ```sh
    ngrok http 3000   # then NEXT_PUBLIC_APP_URL=https://<id>.ngrok-free.app
    ```
-5. `/app/subscription` → **Pro**. On Mercado Pago's page, log in as the test
-   comprador and pay with a test card, cardholder name `APRO`:
+5. `/app/subscription` → **Pro** → the card form on
+   `/app/subscription/checkout`. Pay with a test card, cardholder name `APRO`:
    - Mastercard `5474 9254 3267 0366`, CVV `123`, any future expiry
    - Visa `4075 5957 1648 3764`, CVV `123`
    - Cardholder `OTHE` rejects the charge, `FUND` rejects for insufficient

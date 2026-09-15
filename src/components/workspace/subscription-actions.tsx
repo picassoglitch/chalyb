@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useWorkspace } from '@/lib/workspace/store';
 import { changeUserTier } from '@/lib/auth/tier-actions';
-import { createTierSubscription } from '@/lib/payments/subscription-actions';
+import { useRouter } from '@/i18n/routing';
+import type { Route } from 'next';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
@@ -121,6 +122,7 @@ export function SubscriptionActions({
   // MERCADOPAGO_WEBHOOK_SECRET unset on Vercel (reason='not_configured').
   const [stickyError, setStickyError] = useState<string | null>(null);
   const showToast = useWorkspace((s) => s.showToast);
+  const router = useRouter();
   const paymentsReady = missingPaymentVars.length === 0;
 
   async function changeTier(next: SubscriptionTier) {
@@ -165,13 +167,13 @@ export function SubscriptionActions({
       return;
     }
 
-    // Branch 2: Non-admin upgrading → Mercado Pago subscription.
-    //  Returns the preapproval's init_point; the user authorises the monthly
-    //  charge there. MP then fires the webhook which writes profiles.tier
-    //  asynchronously; this user lands on /app/billing?status=success.
+    // Branch 2: Non-admin upgrading → the card form on
+    //  /app/subscription/checkout. Nothing is created at Mercado Pago until
+    //  the buyer submits a card there; the plan is active when that page
+    //  says so.
     //
     //  Fail soft when the server told us checkout is not configured: say so
-    //  and stop. No action call, no preference, no redirect, no charge.
+    //  and stop.
     if (!paymentsReady) {
       const msg = paymentsNotReadyMessage ?? 'Los pagos todavía no están activos.';
       setPendingTier(null);
@@ -179,41 +181,7 @@ export function SubscriptionActions({
       setStickyError(msg);
       return;
     }
-    startTransition(async () => {
-      // Client-side timeout: if MP hangs and Vercel kills the function
-      // (10s Hobby, 60s Pro), the useTransition would stay pending forever.
-      // 18s = generous for a slow-but-working MP call, short enough that
-      // we report the failure before Vercel's generic 500 page appears.
-      const CLIENT_TIMEOUT_MS = 18_000;
-      let timedOut = false;
-      const timeoutPromise = new Promise<{ ok: false; error: string }>((resolve) => {
-        setTimeout(() => {
-          timedOut = true;
-          resolve({
-            ok: false,
-            error:
-              'Mercado Pago no respondió en 18s. Posible causa: ' +
-              'MERCADOPAGO_ACCESS_TOKEN inválido en Vercel.',
-          });
-        }, CLIENT_TIMEOUT_MS);
-      });
-      const res = await Promise.race([createTierSubscription(next), timeoutPromise]);
-      if (!res.ok || !('url' in res) || !res.url) {
-        setPendingTier(null);
-        const msg = ('error' in res && res.error) || 'No pudimos abrir el pago.';
-        showToast(`<b>Error</b> · ${msg}`);
-        setStickyError(msg);
-        console.error('[tier-checkout] failed', {
-          targetTier: next,
-          response: res,
-          timedOut,
-        });
-        return;
-      }
-      // Don't reset pendingTier — the browser is about to navigate away.
-      showToast(`Te llevamos a Mercado Pago para autorizar el cobro mensual…`);
-      window.location.href = res.url;
-    });
+    router.push(`/app/subscription/checkout?tier=${next}` as Route);
   }
 
   function cancelSubscription() {

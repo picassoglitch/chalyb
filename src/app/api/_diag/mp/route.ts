@@ -9,22 +9,18 @@
 // APP_USR (production). Lets the operator confirm at a glance which mode
 // they're in without exposing the whole secret.
 //
-// `mpReachable` is a real 7s call to MP's preference endpoint.
-//
-// WHICH call depends on the token. A sandbox (TEST-*) token gets the original
-// create-a-preference ping — a throwaway sandbox object, no consequences. A
-// production (APP_USR-*) token gets a read-only SEARCH instead: creating a
-// preference with a live token makes a REAL checkout, payable by anyone who
-// gets the link, and leaves it in the merchant's account forever. A diagnostic
-// endpoint must not be able to do that. `probe` says which one ran.
+// `mpReachable` is a real 7s read-only call: GET /users/me with the token.
+// It creates nothing, works for test and production tokens alike, reports
+// the account the token belongs to, and — unlike the SDK — surfaces the raw
+// HTTP status when Mercado Pago rejects the credential with an empty body.
 
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import {
   isMercadoPagoConfigured,
-  getMercadoPago,
   getAppUrl,
+  getPublicKey,
   getWebhookSecret,
 } from '@/lib/payments/mercadopago';
 
@@ -40,13 +36,15 @@ interface DiagResult {
    *  is set without us echoing the whole secret back. */
   tokenPrefix?: string | null;
   webhookSecretConfigured?: boolean;
+  /** The Bricks public key that initialises the in-app card form. */
+  publicKeyConfigured?: boolean;
   appUrl?: string;
   isHttps?: boolean;
   mpReachable?: boolean;
   mpResponseStatus?: number | null;
   mpResponseExcerpt?: string | null;
-  /** 'create' (sandbox token) or 'search' (production token, read-only). */
-  probe?: 'create' | 'search';
+  /** Which read-only call was made. */
+  probe?: 'users_me';
   elapsedMs?: number;
 }
 
@@ -77,56 +75,45 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   const appUrl = getAppUrl();
   const isHttps = appUrl.startsWith('https://');
 
-  // Real ping. Build the smallest valid preference body possible and try
-  // to create it. We don't actually use the result — we just want to
-  // know if MP is reachable and if our token works.
+  // Real ping, WITHOUT the SDK: a raw GET /users/me with the token. The SDK
+  // swallows the HTTP status when Mercado Pago answers an error with an
+  // empty body (what its gateway does for a bad credential), and the status
+  // is exactly what an operator needs here. Read-only, creates nothing,
+  // works the same for test and production tokens, and says which account
+  // the token belongs to.
   const started = Date.now();
   let mpReachable = false;
   let mpResponseStatus: number | null = null;
   let mpResponseExcerpt: string | null = null;
-
-  // Only a sandbox token is allowed to create anything here.
-  const isSandboxToken = token.startsWith('TEST-');
-  const probe: 'create' | 'search' = isSandboxToken ? 'create' : 'search';
+  const probe = 'users_me' as const;
 
   try {
-    const { preference } = getMercadoPago();
-    if (isSandboxToken) {
-      const result = await preference.create({
-        body: {
-          items: [
-            {
-              id: 'diag-ping',
-              title: 'Diag · ping',
-              quantity: 1,
-              unit_price: 1,
-              currency_id: 'MXN',
-            },
-          ],
-          external_reference: `diag-ping-${Date.now()}`,
-        },
-      });
-      mpResponseExcerpt = result.id ? `created sandbox preference id=${result.id}` : null;
+    const res = await fetch('https://api.mercadopago.com/users/me', {
+      headers: { Authorization: `Bearer ${token.trim()}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(7000),
+      cache: 'no-store',
+    });
+    mpResponseStatus = res.status;
+    const text = (await res.text().catch(() => '')) ?? '';
+    if (res.ok) {
+      mpReachable = true;
+      try {
+        const me = JSON.parse(text) as { id?: number; nickname?: string; site_id?: string };
+        mpResponseExcerpt = `token válido · cuenta ${me.nickname ?? me.id ?? '?'} · site ${me.site_id ?? '?'}`;
+      } catch {
+        mpResponseExcerpt = 'token válido';
+      }
     } else {
-      // Read-only: proves the token authenticates and MP answers, creates
-      // nothing. This is the path production takes.
-      const result = await preference.search({ options: { limit: 1 } });
-      mpResponseExcerpt =
-        `search ok${typeof result.total === 'number' ? ` · ${result.total} preferencias en la cuenta` : ''}`;
+      mpResponseExcerpt = text
+        ? text.slice(0, 200)
+        : `respuesta vacía con HTTP ${res.status} — Mercado Pago rechazó la credencial`;
     }
-    mpReachable = true;
-    mpResponseStatus = 200;
+    if (token !== token.trim()) {
+      mpResponseExcerpt += ' · OJO: el token tiene espacios o saltos de línea al inicio o al final';
+    }
   } catch (err) {
-    const e = err as {
-      message?: string;
-      status?: number;
-      cause?: { error?: { message?: string }; status?: number };
-    };
     mpReachable = false;
-    mpResponseStatus =
-      e?.cause?.status ?? e?.status ?? null;
-    mpResponseExcerpt =
-      e?.cause?.error?.message ?? e?.message ?? 'unknown error';
+    mpResponseExcerpt = err instanceof Error ? err.message : 'unknown error';
   }
 
   return NextResponse.json({
@@ -134,6 +121,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     tokenKind,
     tokenPrefix,
     webhookSecretConfigured: Boolean(getWebhookSecret()),
+    publicKeyConfigured: Boolean(getPublicKey()),
     appUrl,
     isHttps,
     mpReachable,

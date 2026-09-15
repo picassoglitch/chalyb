@@ -1,7 +1,7 @@
 'use server';
 
 // Mercado Pago checkout for token top-up packs — Checkout Pro via the Orders
-// API. Parallel to createTierSubscription (which sells the monthly plans)
+// API. Parallel to authorizeTierSubscription (which sells the monthly plans)
 // but the post-payment effect is different: instead of a tier, the webhook
 // calls grantTokenPack() to add to profiles.token_bonus_balance.
 //
@@ -28,8 +28,15 @@ import { randomUUID } from 'node:crypto';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { getTokenPack } from './pricing';
-import { orderAmount } from './order-charge';
-import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
+import { chargeFromOrder, orderAmount } from './order-charge';
+import { settleOneOffCharge } from './one-off-settlement';
+import {
+  getMercadoPago,
+  getAppUrl,
+  isCheckoutReady,
+  checkoutNotReadyError,
+  describeMpError,
+} from './mercadopago';
 
 export interface PackCheckoutResult {
   ok: boolean;
@@ -131,11 +138,7 @@ export async function createTokenPackCheckout(
       cause?: { error?: { message?: string }; status?: number };
       name?: string;
     };
-    const detail =
-      e?.cause?.error?.message ||
-      e?.message ||
-      e?.name ||
-      'unknown server error in token-pack-checkout';
+    const detail = describeMpError(err);
     console.error('[token-pack-checkout] uncaught', {
       packId,
       errorName: e?.name,
@@ -152,3 +155,142 @@ export async function createTokenPackCheckout(
 // except async functions ("found object" — TOKEN_PACKS is an array). The
 // re-export was redundant anyway since the page can — and does — import
 // TOKEN_PACKS directly from '@/lib/payments/pricing'.
+
+export interface PackCardPaymentResult {
+  ok: boolean;
+  /** Ledger status after the charge: approved | pending | rejected | … */
+  status?: string;
+  reason?: 'unauth' | 'admin_skip' | 'unknown_pack' | 'not_configured' | 'bad_token' | 'rejected' | 'mp_error';
+  error?: string;
+}
+
+/**
+ * Pay a token pack with a card tokenised in the app (Card Payment Brick), no
+ * redirect. Creates an Orders API order in `automatic` mode — Mercado Pago
+ * charges the token in this same request — then settles it exactly as the
+ * webhook would (ledger row, price gate, token grant), so the tokens are in
+ * the balance before the response. The `orders` notification that follows
+ * finds the row already there and changes nothing.
+ *
+ * The browser sends the token and what the Brick learned about the card;
+ * price and currency come from TOKEN_PACKS here. Tokens are never logged.
+ */
+export async function payTokenPackWithCard(input: {
+  packId: string;
+  token: string;
+  paymentMethodId: string;
+  issuerId?: string | null;
+  installments?: number;
+  paymentTypeId?: string | null;
+  identification?: { type: string; number: string } | null;
+}): Promise<PackCardPaymentResult> {
+  try {
+    const session = await getSessionUser();
+    if (!session) {
+      return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
+    }
+    if (isAdminRole(session.role)) {
+      return { ok: false, reason: 'admin_skip', error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.' };
+    }
+    const pack = getTokenPack(input.packId);
+    if (!pack) {
+      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${input.packId}` };
+    }
+    if (!isCheckoutReady()) {
+      console.error('[token-pack-card] refusing to charge:', checkoutNotReadyError());
+      return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
+    }
+    const token = typeof input.token === 'string' ? input.token.trim() : '';
+    const paymentMethodId = typeof input.paymentMethodId === 'string' ? input.paymentMethodId.trim() : '';
+    if (!token || token.length > 128 || !paymentMethodId) {
+      return { ok: false, reason: 'bad_token', error: 'El formulario no entregó una tarjeta válida. Inténtalo de nuevo.' };
+    }
+    const installments = Math.max(1, Math.min(24, Math.trunc(input.installments ?? 1)));
+    const paymentType =
+      input.paymentTypeId === 'debit_card' || input.paymentTypeId === 'prepaid_card'
+        ? input.paymentTypeId
+        : 'credit_card';
+
+    const { order } = getMercadoPago();
+    const amount = orderAmount(pack.amountCents);
+    const title = `Chalyb · ${pack.label}`;
+    const externalReference = `pack|${session.user.id}|${pack.id}`;
+
+    const result = await order.create({
+      body: {
+        type: 'online',
+        // The card is charged in this request; the result comes back in
+        // `status` (processed / failed / action_required).
+        processing_mode: 'automatic',
+        total_amount: amount,
+        external_reference: externalReference,
+        description: title,
+        payer: {
+          ...(session.user.email ? { email: session.user.email } : {}),
+          ...(input.identification ? { identification: input.identification } : {}),
+        },
+        items: [
+          {
+            title,
+            unit_price: amount,
+            quantity: 1,
+            unit_measure: 'unit',
+            external_code: `pack-${pack.id}`,
+          },
+        ],
+        transactions: {
+          payments: [
+            {
+              amount,
+              payment_method: {
+                id: paymentMethodId,
+                type: paymentType,
+                token,
+                installments,
+                statement_descriptor: 'CHALYB TOKENS',
+              },
+            },
+          ],
+        },
+      },
+      requestOptions: { idempotencyKey: randomUUID() },
+    });
+
+    if (!result.id) {
+      console.error('[token-pack-card] order returned no id', { status: result.status ?? null });
+      return { ok: false, reason: 'mp_error', error: 'Mercado Pago no confirmó el pago. Inténtalo de nuevo en un momento.' };
+    }
+
+    // Same settlement the `orders` webhook runs, so the tokens land now.
+    const charge = chargeFromOrder(result);
+    const settled = await settleOneOffCharge(charge, result as unknown as Record<string, unknown>);
+    if (settled.httpStatus !== 200) {
+      // Money may have moved but our side failed; the webhook retries the
+      // settlement. Tell the user honestly.
+      return {
+        ok: false,
+        reason: 'mp_error',
+        status: charge.status,
+        error: 'El pago se envió pero no pudimos acreditar los tokens todavía. Se acreditan solos en unos minutos; si no, escríbenos.',
+      };
+    }
+    if (charge.status === 'approved') return { ok: true, status: charge.status };
+    if (charge.status === 'pending' || charge.status === 'in_process') {
+      return {
+        ok: true,
+        status: charge.status,
+        error: 'Mercado Pago dejó el pago en revisión; los tokens se acreditan en cuanto lo apruebe.',
+      };
+    }
+    const detail = (result as { status_detail?: string }).status_detail;
+    return {
+      ok: false,
+      reason: 'rejected',
+      status: charge.status,
+      error: `Mercado Pago rechazó el pago${detail ? ` (${detail.replace(/_/g, ' ')})` : ''}. Prueba con otra tarjeta.`,
+    };
+  } catch (err) {
+    console.error('[token-pack-card] order.create failed', err);
+    return { ok: false, reason: 'mp_error', error: `Mercado Pago no pudo procesar el pago: ${describeMpError(err)}` };
+  }
+}

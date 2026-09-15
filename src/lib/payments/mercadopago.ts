@@ -36,6 +36,7 @@ import {
   checkoutNotReadyMessage,
   missingCheckoutConfig,
   readAccessToken,
+  readPublicKey,
   readWebhookSecret,
 } from './mp-config';
 
@@ -55,6 +56,12 @@ function getAccessToken(): string | undefined {
 
 export function getWebhookSecret(): string | undefined {
   return readWebhookSecret(process.env);
+}
+
+/** The Bricks public key. Not a secret: it initialises the card form in the
+ *  browser, so a server page may pass it down to a client component. */
+export function getPublicKey(): string | undefined {
+  return readPublicKey(process.env);
 }
 
 /** The access token is present. Enough to READ from Mercado Pago (the webhook
@@ -143,4 +150,32 @@ export async function mpGet<T>(path: string): Promise<T> {
  *  (though the webhook won't actually fire — use ngrok for that). */
 export function getAppUrl(): string {
   return appUrl();
+}
+
+/**
+ * A sentence for the operator out of whatever the SDK threw.
+ *
+ * The SDK answers a non-2xx by parsing the error body as JSON. When Mercado
+ * Pago's gateway rejects the credential it often answers 401/403 with an
+ * EMPTY body, so what surfaces is node-fetch's "invalid json response body …
+ * Unexpected end of JSON input" and the real status is lost. That shape is
+ * a credential problem until proven otherwise; say so, and point at the
+ * diagnostic that shows the actual HTTP status.
+ */
+export function describeMpError(err: unknown): string {
+  const e = err as {
+    message?: string;
+    type?: string;
+    cause?: { error?: { message?: string }; message?: string };
+  };
+  const detail = e?.cause?.error?.message || e?.cause?.message || e?.message || 'sin detalle';
+  if (e?.type === 'invalid-json' || /invalid json response body/i.test(detail)) {
+    return (
+      'Mercado Pago respondió sin cuerpo, que es lo que hace cuando rechaza la credencial. ' +
+      `Revisa que ${MP_ACCESS_TOKEN_VAR} en Vercel sea el Access Token vigente (si lo regeneraste ` +
+      'en el panel, el anterior dejó de servir) y sin espacios ni comillas. /api/_diag/mp muestra ' +
+      'el código HTTP real.'
+    );
+  }
+  return detail;
 }
