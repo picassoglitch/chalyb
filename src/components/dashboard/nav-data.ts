@@ -10,7 +10,15 @@ export type NavItem = {
   live?: boolean;
 };
 
-export type NavGroup = { grp: string; items: NavItem[] };
+export type NavGroup = {
+  grp: string;
+  /** Message key under `workspace.navGroups` (subscriber nav only). The
+   *  subscriber sidebar localizes group and item labels from messages, keyed
+   *  by this id and each item's `id`; `grp` / `label` are the Spanish
+   *  fallbacks and what the admin sidebar still renders. */
+  id?: string;
+  items: NavItem[];
+};
 
 export const NAV: NavGroup[] = [
   {
@@ -77,6 +85,7 @@ export const NAV: NavGroup[] = [
 export const SUBSCRIBER_NAV: NavGroup[] = [
   {
     grp: 'Tu cuenta',
+    id: 'account',
     items: [
       { id: 'home', href: '/app', ic: '◉', label: 'Inicio' },
       { id: 'subscription', href: '/app/subscription', ic: '◈', label: 'Suscripción' },
@@ -86,6 +95,7 @@ export const SUBSCRIBER_NAV: NavGroup[] = [
   },
   {
     grp: 'Plataforma',
+    id: 'platform',
     items: [
       { id: 'myengines', href: '/app/engines', ic: '◈', label: 'Mis engines' },
       { id: 'history', href: '/app/history', ic: '≡', label: 'Historial' },
@@ -93,6 +103,7 @@ export const SUBSCRIBER_NAV: NavGroup[] = [
   },
   {
     grp: 'Ajustes',
+    id: 'settings',
     items: [
       // Messages → bidirectional thread with the admin team. Partners use this
       // for product feedback + ideas; any user can ping the admin from here.

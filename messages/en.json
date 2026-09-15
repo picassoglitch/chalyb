@@ -443,5 +443,92 @@
       "title": "Terms of service",
       "lastUpdated": "17 June 2026"
     }
+  },
+  "workspace": {
+    "navGroups": {
+      "account": "Your account",
+      "platform": "Platform",
+      "settings": "Settings"
+    },
+    "nav": {
+      "home": "Home",
+      "subscription": "Subscription",
+      "usage": "Usage",
+      "billing": "Billing",
+      "myengines": "My engines",
+      "history": "History",
+      "messages": "Messages",
+      "profile": "Profile & security",
+      "help": "Help"
+    },
+    "adminView": "View",
+    "adminLink": "Admin view",
+    "adminLinkTitle": "Back to the command center",
+    "planSuffix": "{tier} plan",
+    "settingsTitle": "Settings",
+    "menu": "Menu",
+    "pages": {
+      "app": {
+        "title": "Your space",
+        "sub": "Overview of your subscription, usage and active engines."
+      },
+      "app_subscription": {
+        "title": "Subscription",
+        "sub": "Your current plan, tier changes and payment method."
+      },
+      "app_usage": {
+        "title": "Usage",
+        "sub": "Your activity in the current billing period."
+      },
+      "app_billing": {
+        "title": "Billing",
+        "sub": "Invoice history and payment method."
+      },
+      "app_engines": {
+        "title": "My engines",
+        "sub": "ChalybClip, ChalybStreamManager and upcoming products — available on your current tier."
+      },
+      "app_history": {
+        "title": "History",
+        "sub": "Your recent runs and completed jobs."
+      },
+      "app_messages": {
+        "title": "Messages",
+        "sub": "Talk directly to the team. Ideas, problems, proposals — it all goes here."
+      },
+      "app_settings": {
+        "title": "Profile & security",
+        "sub": "Your personal account, password and 2FA."
+      },
+      "app_help": {
+        "title": "Help",
+        "sub": "Docs, contact and system status."
+      }
+    },
+    "settings": {
+      "loading": "Loading…",
+      "account": "Account",
+      "name": "Name",
+      "email": "Email",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Profile updated — <b>{name}</b>",
+      "saveError": "<b>Error</b> · {error}",
+      "saveErrorFallback": "We couldn't save your profile.",
+      "preferences": "Preferences",
+      "preferencesNote": "Language is saved to your account with the “Save changes” button above. Time zone and the switches below are saved only in this browser.",
+      "language": "Language",
+      "timezone": "Time zone",
+      "notifications": "Notifications",
+      "notifyCritical": "Critical errors",
+      "notifyCriticalSub": "We email and push you when something goes down.",
+      "notifyDaily": "Daily digest",
+      "notifyDailySub": "Revenue, tasks and errors from the previous day, at 09:00.",
+      "notifyMarketing": "Marketing events",
+      "notifyMarketingSub": "When a post goes viral or engagement climbs.",
+      "security": "Security",
+      "twoFA": "2FA with an authenticator app",
+      "twoFASub": "The TOTP code is required for the Admin and Super Admin roles."
+    }
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { FusionMark } from '@/components/dashboard/fusion-mark';
 import { SUBSCRIBER_NAV } from '@/components/dashboard/nav-data';
@@ -29,6 +30,7 @@ export function WorkspaceSidebar({
   isAdmin,
   unreadMessages = 0,
 }: Props) {
+  const t = useTranslations('workspace');
   const pathname = usePathname();
   const setMobileSidebarOpen = useWorkspace((s) => s.setMobileSidebarOpen);
   const mobileOpen = useWorkspace((s) => s.mobileSidebarOpen);
@@ -49,7 +51,9 @@ export function WorkspaceSidebar({
       <div className="cc-sb-scroll" data-tour="nav">
         {SUBSCRIBER_NAV.map((g) => (
           <div key={g.grp} className="cc-sb-grp">
-            <div className="cc-gl">{g.grp}</div>
+            <div className="cc-gl">
+              {g.id && t.has(`navGroups.${g.id}`) ? t(`navGroups.${g.id}`) : g.grp}
+            </div>
             <div className="cc-nav">
               {g.items.map((it) => {
                 // Override the static `ct` on the Mensajes item with the
@@ -68,7 +72,7 @@ export function WorkspaceSidebar({
                     onClick={() => setMobileSidebarOpen(false)}
                   >
                     <span className="cc-ic">{it.ic}</span>
-                    <span>{it.label}</span>
+                    <span>{t.has(`nav.${it.id}`) ? t(`nav.${it.id}`) : it.label}</span>
                     {it.live && <span className="cc-dot" />}
                     {ct && (
                       <span
@@ -99,16 +103,16 @@ export function WorkspaceSidebar({
         {/* Cross-nav: only admins can swap into the operator command center */}
         {isAdmin && (
           <div className="cc-sb-grp">
-            <div className="cc-gl">Vista</div>
+            <div className="cc-gl">{t('adminView')}</div>
             <div className="cc-nav">
               <Link
                 href={'/dashboard' as Route}
                 className="cc-nav-item"
                 onClick={() => setMobileSidebarOpen(false)}
-                title="Volver al command center"
+                title={t('adminLinkTitle')}
               >
                 <span className="cc-ic">⬡</span>
-                <span>Vista admin</span>
+                <span>{t('adminLink')}</span>
                 <span className="cc-ct">→</span>
               </Link>
             </div>
@@ -120,12 +124,12 @@ export function WorkspaceSidebar({
         <div className="cc-ava">{userInitial}</div>
         <div className="cc-u">
           <div className="cc-u-n">{userName}</div>
-          <div className="cc-u-r">{tierLabel} plan</div>
+          <div className="cc-u-r">{t('planSuffix', { tier: tierLabel })}</div>
         </div>
         <Link
           href={'/app/settings' as Route}
           className="cc-cog"
-          title="Settings"
+          title={t('settingsTitle')}
           onClick={() => setMobileSidebarOpen(false)}
         >
           ⚙

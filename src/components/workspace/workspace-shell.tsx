@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import { WorkspaceSidebar } from './workspace-sidebar';
@@ -29,7 +30,15 @@ export function WorkspaceShell({
   const setMobileSidebarOpen = useWorkspace((s) => s.setMobileSidebarOpen);
   const toastHtml = useWorkspace((s) => s.toastHtml);
 
-  const meta = PAGE_META[pathname] ?? { title: 'Tu espacio', sub: '' };
+  const t = useTranslations('workspace');
+
+  // Page header, localized. `usePathname` from next-intl strips the locale
+  // prefix, so /en/app/settings and /app/settings both key as `app_settings`.
+  // PAGE_META is the Spanish fallback for any path without a message.
+  const pageKey = pathname.replace(/^\//, '').replace(/\//g, '_') || 'app';
+  const meta = t.has(`pages.${pageKey}.title`)
+    ? { title: t(`pages.${pageKey}.title`), sub: t(`pages.${pageKey}.sub`) }
+    : (PAGE_META[pathname] ?? { title: t('pages.app.title'), sub: '' });
 
   return (
     // `cc-shell--no-rail` swaps the default 3-column grid (sidebar + main +
@@ -56,7 +65,7 @@ export function WorkspaceShell({
             <button
               type="button"
               className="cc-mtoggle"
-              aria-label="Menu"
+              aria-label={t('menu')}
               onClick={() => setMobileSidebarOpen(true)}
             >
               ☰

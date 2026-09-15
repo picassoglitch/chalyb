@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { useWorkspace } from '@/lib/workspace/store';
 import { saveProfileSettings } from '@/lib/auth/profile-actions';
 
@@ -38,6 +39,7 @@ export function SettingsForm({
   defaultLocale,
   justSaved = false,
 }: Props) {
+  const t = useTranslations('workspace.settings');
   const showToast = useWorkspace((s) => s.showToast);
 
   const [name, setName] = useState(defaultName);
@@ -66,9 +68,9 @@ export function SettingsForm({
   // parameter is dropped again so a reload does not repeat the toast.
   useEffect(() => {
     if (!justSaved) return;
-    showToast(`Perfil actualizado — <b>${defaultName}</b>`);
+    showToast(t.markup('saved', { name: defaultName, b: (c) => `<b>${c}</b>` }));
     window.history.replaceState(null, '', window.location.pathname);
-  }, [justSaved, defaultName, showToast]);
+  }, [justSaved, defaultName, showToast, t]);
 
   function persist(next: Prefs) {
     setPrefs(next);
@@ -99,22 +101,27 @@ export function SettingsForm({
     startSaving(async () => {
       const res = await saveProfileSettings({ fullName: name, locale: prefs.locale });
       if (!res.ok) {
-        showToast(`<b>Error</b> · ${res.error ?? 'No pudimos guardar tu perfil.'}`);
+        showToast(
+          t.markup('saveError', {
+            error: res.error ?? t('saveErrorFallback'),
+            b: (c) => `<b>${c}</b>`,
+          }),
+        );
       }
     });
   }
 
   if (!hydrated) {
-    return <div style={{ padding: 20, color: 'var(--cc-txt-4)' }}>Cargando…</div>;
+    return <div style={{ padding: 20, color: 'var(--cc-txt-4)' }}>{t('loading')}</div>;
   }
 
   return (
     <>
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Cuenta</div>
+        <div className="cc-mod-sl">{t('account')}</div>
         <form className="cc-mod-form" onSubmit={saveProfile}>
           <div className="cc-mod-field">
-            <label htmlFor="set-name">Nombre</label>
+            <label htmlFor="set-name">{t('name')}</label>
             <input
               id="set-name"
               type="text"
@@ -123,7 +130,7 @@ export function SettingsForm({
             />
           </div>
           <div className="cc-mod-field">
-            <label htmlFor="set-email">Correo</label>
+            <label htmlFor="set-email">{t('email')}</label>
             <input id="set-email" type="email" value={defaultEmail} disabled />
           </div>
           <button
@@ -142,20 +149,19 @@ export function SettingsForm({
             }}
             disabled={saving}
           >
-            {saving ? 'Guardando…' : 'Guardar cambios'}
+            {saving ? t('saving') : t('save')}
           </button>
         </form>
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Preferencias</div>
+        <div className="cc-mod-sl">{t('preferences')}</div>
         <p style={{ fontSize: 12, color: 'var(--cc-txt-4)', margin: '0 0 10px' }}>
-          El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona
-          horaria y los interruptores de abajo se guardan solo en este navegador.
+          {t('preferencesNote')}
         </p>
         <div className="cc-mod-form">
           <div className="cc-mod-field">
-            <label htmlFor="set-locale">Idioma</label>
+            <label htmlFor="set-locale">{t('language')}</label>
             <select
               id="set-locale"
               value={prefs.locale}
@@ -166,7 +172,7 @@ export function SettingsForm({
             </select>
           </div>
           <div className="cc-mod-field">
-            <label htmlFor="set-tz">Zona horaria</label>
+            <label htmlFor="set-tz">{t('timezone')}</label>
             <select
               id="set-tz"
               value={prefs.timezone}
@@ -182,12 +188,12 @@ export function SettingsForm({
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Notificaciones</div>
+        <div className="cc-mod-sl">{t('notifications')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Errores críticos</span>
-              <span className="s">Te avisamos por email y push cuando algo se cae.</span>
+              <span className="t">{t('notifyCritical')}</span>
+              <span className="s">{t('notifyCriticalSub')}</span>
             </div>
             <button
               type="button"
@@ -198,8 +204,8 @@ export function SettingsForm({
           </div>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Resumen diario</span>
-              <span className="s">Ingresos, tareas y errores del día anterior, a las 09:00.</span>
+              <span className="t">{t('notifyDaily')}</span>
+              <span className="s">{t('notifyDailySub')}</span>
             </div>
             <button
               type="button"
@@ -210,8 +216,8 @@ export function SettingsForm({
           </div>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Eventos de marketing</span>
-              <span className="s">Cuando una publicación se vuelve viral o sube la interacción.</span>
+              <span className="t">{t('notifyMarketing')}</span>
+              <span className="s">{t('notifyMarketingSub')}</span>
             </div>
             <button
               type="button"
@@ -224,12 +230,12 @@ export function SettingsForm({
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Seguridad</div>
+        <div className="cc-mod-sl">{t('security')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">2FA con app autenticadora</span>
-              <span className="s">El código TOTP es obligatorio para los roles Admin y Super Admin.</span>
+              <span className="t">{t('twoFA')}</span>
+              <span className="s">{t('twoFASub')}</span>
             </div>
             <button
               type="button"

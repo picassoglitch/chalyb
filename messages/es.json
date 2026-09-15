@@ -451,5 +451,92 @@
       "title": "Términos de servicio",
       "lastUpdated": "17 junio 2026"
     }
+  },
+  "workspace": {
+    "navGroups": {
+      "account": "Tu cuenta",
+      "platform": "Plataforma",
+      "settings": "Ajustes"
+    },
+    "nav": {
+      "home": "Inicio",
+      "subscription": "Suscripción",
+      "usage": "Uso",
+      "billing": "Facturación",
+      "myengines": "Mis engines",
+      "history": "Historial",
+      "messages": "Mensajes",
+      "profile": "Perfil & seguridad",
+      "help": "Ayuda"
+    },
+    "adminView": "Vista",
+    "adminLink": "Vista admin",
+    "adminLinkTitle": "Volver al command center",
+    "planSuffix": "plan {tier}",
+    "settingsTitle": "Ajustes",
+    "menu": "Menú",
+    "pages": {
+      "app": {
+        "title": "Tu espacio",
+        "sub": "Resumen de tu suscripción, uso y engines activos."
+      },
+      "app_subscription": {
+        "title": "Suscripción",
+        "sub": "Tu plan actual, cambios de tier y método de pago."
+      },
+      "app_usage": {
+        "title": "Uso",
+        "sub": "Tu actividad en el período de facturación actual."
+      },
+      "app_billing": {
+        "title": "Facturación",
+        "sub": "Historial de facturas y método de pago."
+      },
+      "app_engines": {
+        "title": "Mis engines",
+        "sub": "ChalybClip, ChalybStreamManager y próximos productos — disponibles en tu tier actual."
+      },
+      "app_history": {
+        "title": "Historial",
+        "sub": "Tus ejecuciones recientes y trabajos completados."
+      },
+      "app_messages": {
+        "title": "Mensajes",
+        "sub": "Habla directo con el equipo. Ideas, problemas, propuestas — todo va aquí."
+      },
+      "app_settings": {
+        "title": "Perfil & seguridad",
+        "sub": "Tu cuenta personal, contraseña y 2FA."
+      },
+      "app_help": {
+        "title": "Ayuda",
+        "sub": "Docs, contacto y estado del sistema."
+      }
+    },
+    "settings": {
+      "loading": "Cargando…",
+      "account": "Cuenta",
+      "name": "Nombre",
+      "email": "Correo",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Perfil actualizado — <b>{name}</b>",
+      "saveError": "<b>Error</b> · {error}",
+      "saveErrorFallback": "No pudimos guardar tu perfil.",
+      "preferences": "Preferencias",
+      "preferencesNote": "El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona horaria y los interruptores de abajo se guardan solo en este navegador.",
+      "language": "Idioma",
+      "timezone": "Zona horaria",
+      "notifications": "Notificaciones",
+      "notifyCritical": "Errores críticos",
+      "notifyCriticalSub": "Te avisamos por email y push cuando algo se cae.",
+      "notifyDaily": "Resumen diario",
+      "notifyDailySub": "Ingresos, tareas y errores del día anterior, a las 09:00.",
+      "notifyMarketing": "Eventos de marketing",
+      "notifyMarketingSub": "Cuando una publicación se vuelve viral o sube la interacción.",
+      "security": "Seguridad",
+      "twoFA": "2FA con app autenticadora",
+      "twoFASub": "El código TOTP es obligatorio para los roles Admin y Super Admin."
+    }
   }
 }
