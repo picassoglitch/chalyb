@@ -4,7 +4,6 @@ import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import { Lock } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { useWorkspace } from '@/lib/workspace/store';
 import { LiveEngineSelectButton } from '@/components/workspace/live-engine-selector';
 import { EngineGlyph } from './engine-glyph';
 import type { EngineVM, EngineCardVariant } from './engine-config';
@@ -29,15 +28,49 @@ function CategoryLabel({ children }: { children: React.ReactNode }) {
 function StatusBadge({ vm }: { vm: EngineVM }) {
   const t = useTranslations('engines.card');
   const map = {
-    live: { label: t('statusLive'), dot: true, lock: false, cls: 'text-[var(--cc-green)] border-[var(--cc-green)]/40 bg-[var(--cc-green-g)]' },
-    trial: { label: t('statusTrial'), dot: true, lock: false, cls: 'text-[var(--cc-cyan)] border-[var(--cc-cyan)]/40 bg-[var(--cc-cyan-g)]' },
-    simulation: { label: t('statusSimulation'), dot: false, lock: false, cls: 'text-[var(--cc-txt-3)] border-[var(--cc-line-2)] bg-white/[0.02]' },
-    locked: { label: vm.requiresPlanLabel ?? 'Pro', dot: false, lock: true, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/40 bg-[var(--cc-purple-g)]' },
-    coming_soon: { label: t('statusSoon'), dot: false, lock: false, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/30 bg-[var(--cc-purple-g)]' },
+    live: {
+      label: t('statusLive'),
+      dot: true,
+      lock: false,
+      cls: 'text-[var(--cc-green)] border-[var(--cc-green)]/40 bg-[var(--cc-green-g)]',
+    },
+    trial: {
+      label:
+        vm.trialDaysLeft > 0 ? t('statusTrialDays', { days: vm.trialDaysLeft }) : t('statusTrial'),
+      dot: true,
+      lock: false,
+      cls: 'text-[var(--cc-cyan)] border-[var(--cc-cyan)]/40 bg-[var(--cc-cyan-g)]',
+    },
+    ready: {
+      label: t('statusReady'),
+      dot: false,
+      lock: false,
+      cls: 'text-[var(--cc-green)] border-[var(--cc-green)]/40 bg-white/[0.02]',
+    },
+    simulation: {
+      label: t('statusSimulation'),
+      dot: false,
+      lock: false,
+      cls: 'text-[var(--cc-cyan)] border-[var(--cc-cyan)]/30 bg-white/[0.02]',
+    },
+    locked: {
+      label: vm.requiresPlanLabel ?? 'Pro',
+      dot: false,
+      lock: true,
+      cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/40 bg-[var(--cc-purple-g)]',
+    },
+    coming_soon: {
+      label: t('statusSoon'),
+      dot: false,
+      lock: false,
+      cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/30 bg-[var(--cc-purple-g)]',
+    },
   } as const;
   const s = map[vm.state];
   return (
-    <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold ${s.cls}`}>
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold ${s.cls}`}
+    >
       {s.dot && <span className="size-1.5 rounded-full bg-current" />}
       {s.lock && <Lock size={12} strokeWidth={2.25} />}
       {s.label}
@@ -63,7 +96,17 @@ function OwnerCaption({ vm }: { vm: EngineVM }) {
   );
 }
 
-function EngineIcon({ vm, variant, box, glyph }: { vm: EngineVM; variant: EngineCardVariant; box: string; glyph: number }) {
+function EngineIcon({
+  vm,
+  variant,
+  box,
+  glyph,
+}: {
+  vm: EngineVM;
+  variant: EngineCardVariant;
+  box: string;
+  glyph: number;
+}) {
   const tint =
     variant === 'locked'
       ? 'border-[var(--cc-purple)]/30 bg-[var(--cc-purple-g)] text-[var(--cc-purple)]'
@@ -71,7 +114,9 @@ function EngineIcon({ vm, variant, box, glyph }: { vm: EngineVM; variant: Engine
         ? 'border-[var(--cc-line-2)] bg-[var(--cc-bg-2)] text-[var(--cc-txt-4)]'
         : 'border-[var(--cc-green)]/30 bg-[var(--cc-green-g)] text-[var(--cc-green)]';
   return (
-    <span className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border ${tint} ${box}`}>
+    <span
+      className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border ${tint} ${box}`}
+    >
       <EngineGlyph slug={vm.slug} size={glyph} />
     </span>
   );
@@ -82,7 +127,10 @@ function Checkmarks({ bullets }: { bullets: string[] }) {
   return (
     <ul className="space-y-3">
       {bullets.slice(0, 3).map((b) => (
-        <li key={b} className="flex min-h-9 items-center gap-3 text-[15px] leading-[1.6] text-[var(--cc-txt-2)]">
+        <li
+          key={b}
+          className="flex min-h-9 items-center gap-3 text-[15px] leading-[1.6] text-[var(--cc-txt-2)]"
+        >
           <span className="shrink-0 text-[var(--cc-green)]">✓</span>
           <span>{b}</span>
         </li>
@@ -92,25 +140,29 @@ function Checkmarks({ bullets }: { bullets: string[] }) {
 }
 
 // ── Coming-soon: compact row ───────────────────────────────────────────────
+// No "Avísame" button: there is no notification list behind it, so the honest
+// affordance is the detail page, which says what the engine will do and that
+// it is included in the plan.
 function SoonRow({ vm }: { vm: EngineVM }) {
   const t = useTranslations('engines.card');
-  const showToast = useWorkspace((s) => s.showToast);
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-[var(--cc-line)] bg-[var(--cc-panel)]/60 p-5 opacity-70 transition-opacity hover:opacity-100">
+    <div className="flex items-center gap-4 rounded-2xl border border-[var(--cc-line)] bg-[var(--cc-panel)]/60 p-5 opacity-80 transition-opacity hover:opacity-100">
       <EngineIcon vm={vm} variant="soon" box="size-13" glyph={26} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[14px] font-semibold tracking-normal text-[var(--cc-txt-2)]">{vm.name}</div>
+        <div className="truncate text-[14px] font-semibold tracking-normal text-[var(--cc-txt-2)]">
+          {vm.name}
+        </div>
+        <div className="mt-1 line-clamp-1 text-[12px] text-[var(--cc-txt-3)]">{vm.tagline}</div>
         <div className="mt-1 text-[11px] uppercase tracking-[0.08em] text-[var(--cc-txt-4)] [font-family:var(--cc-mono),monospace]">
-          {vm.categoryLabel}
+          {vm.categoryLabel} · {t('statusSoon')}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => showToast(t('notifyDone', { name: vm.name }))}
-        className="shrink-0 rounded-lg border border-[var(--cc-line-2)] px-4 py-2 text-[12.5px] font-medium text-[var(--cc-txt-4)] transition-colors hover:text-[var(--cc-txt-2)]"
+      <Link
+        href={`/app/engines/${vm.slug}` as Route}
+        className="shrink-0 rounded-lg border border-[var(--cc-line-2)] px-4 py-2 text-[12.5px] font-medium text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
       >
-        {t('notify')}
-      </button>
+        {t('details')}
+      </Link>
     </div>
   );
 }
@@ -127,15 +179,20 @@ function FeaturedCard({ vm, href }: { vm: EngineVM; href: Route }) {
         <div className="min-w-0">
           <CategoryLabel>{vm.categoryLabel}</CategoryLabel>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h3 className="text-[26px] font-bold leading-[1.15] tracking-normal text-[var(--cc-txt)]" style={{ fontFamily: 'var(--cc-disp), sans-serif' }}>
+            <h3
+              className="text-[26px] font-bold leading-[1.15] tracking-normal text-[var(--cc-txt)]"
+              style={{ fontFamily: 'var(--cc-disp), sans-serif' }}
+            >
               {vm.name}
             </h3>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--cc-green)]/40 bg-[var(--cc-green-g)] px-3 py-1 text-[11.5px] font-bold uppercase tracking-wide text-[var(--cc-green)]">
               <span className="size-1.5 rounded-full bg-[var(--cc-green)]" />
-              {t('ribbon')}
+              {vm.state === 'trial' ? t('statusTrial') : t('ribbon')}
             </span>
           </div>
-          <p className="mt-3 max-w-[600px] text-[16px] leading-[1.7] text-[var(--cc-txt-2)]">{vm.tagline}</p>
+          <p className="mt-3 max-w-[600px] text-[16px] leading-[1.7] text-[var(--cc-txt-2)]">
+            {vm.tagline}
+          </p>
           {vm.bullets.length > 0 && (
             <div className="mt-5">
               <Checkmarks bullets={vm.bullets} />
@@ -182,7 +239,10 @@ export function EngineCard({ vm, variant }: { vm: EngineVM; variant: EngineCardV
           <EngineIcon vm={vm} variant={variant} box="size-16" glyph={32} />
           <div className="min-w-0">
             <CategoryLabel>{vm.categoryLabel}</CategoryLabel>
-            <h3 className="mt-2 truncate text-[20px] font-bold leading-[1.2] tracking-normal text-[var(--cc-txt)]" style={{ fontFamily: 'var(--cc-disp), sans-serif' }}>
+            <h3
+              className="mt-2 truncate text-[20px] font-bold leading-[1.2] tracking-normal text-[var(--cc-txt)]"
+              style={{ fontFamily: 'var(--cc-disp), sans-serif' }}
+            >
               {vm.name}
             </h3>
           </div>
@@ -190,7 +250,9 @@ export function EngineCard({ vm, variant }: { vm: EngineVM; variant: EngineCardV
         <StatusBadge vm={vm} />
       </header>
 
-      <p className="mt-3 line-clamp-2 max-w-[600px] text-[16px] leading-[1.7] text-[var(--cc-txt-2)]">{vm.tagline}</p>
+      <p className="mt-3 line-clamp-2 max-w-[600px] text-[16px] leading-[1.7] text-[var(--cc-txt-2)]">
+        {vm.tagline}
+      </p>
 
       {showBullets && (
         <div className="mt-5">
@@ -209,7 +271,11 @@ export function EngineCard({ vm, variant }: { vm: EngineVM; variant: EngineCardV
 
         <div className="flex shrink-0 items-center gap-2">
           {vm.canSelectLive && (
-            <LiveEngineSelectButton engineId={vm.id} engineName={vm.name} isCurrentlySelected={vm.isSelectedLive} />
+            <LiveEngineSelectButton
+              engineId={vm.id}
+              engineName={vm.name}
+              isCurrentlySelected={vm.isSelectedLive}
+            />
           )}
           {isLocked ? (
             <Link

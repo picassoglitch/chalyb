@@ -52,6 +52,11 @@ export function EngineGlyph({
         aria-hidden
         fill
         sizes="64px"
+        // Straight from /public: the mark is a 512px PNG with its own dark
+        // background, and a broken image here breaks the home card, the
+        // engines list and the hero at once. Skipping the optimizer removes
+        // the one moving part (/_next/image) between the file and the tile.
+        unoptimized
         className={`object-cover ${className ?? ''}`}
       />
     );

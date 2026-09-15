@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { signupHref, type PlanSlug } from './links';
 
@@ -51,6 +52,11 @@ export function Pricing() {
           ))}
         </div>
         <p className="lp-plans-note">{t('note')}</p>
+        {/* Partner entry: deliberately a footnote under the plans, never a
+            hero. The kit subscribe story stays the pitch. */}
+        <p className="lp-plans-note lp-plans-partner">
+          {t('partnerNote')} <Link href={'/partners' as Route}>{t('partnerCta')}</Link>
+        </p>
       </div>
     </section>
   );

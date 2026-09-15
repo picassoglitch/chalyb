@@ -2,20 +2,25 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { Link } from '@/i18n/routing';
 import { safeNextPath } from '@/lib/auth/safe-next';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
+import { BrandMark } from '@/components/landing/brand-mark';
 
 // Landing pricing cards link to /sign-in?mode=signup&plan=<tier>. Map the
 // chosen plan to where the user needs to BE after auth: Free lands in the
-// workspace, paid tiers land on billing where Mercado Pago checkout lives.
-// An explicit ?next= always wins over the plan-derived default.
+// workspace, paid tiers land on the subscription page where the plan cards
+// (and the in-app card checkout) live. An explicit ?next= always wins.
 const PLAN_NEXT: Record<string, string> = {
   free: '/app',
-  pro: '/app/billing',
-  vip: '/app/billing',
+  pro: '/app/subscription',
+  vip: '/app/subscription',
 };
 
+// On-brand auth: the Chalyb mark + a way back home above the card, Google
+// first (the fastest path), email below. No orphan card, no "platform live"
+// claim — the status pill states what Chalyb is, not what is running.
 export default async function SignInPage({
   params,
   searchParams,
@@ -40,14 +45,9 @@ export default async function SignInPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    // Honor `?next=` so the landing-page pricing CTA flow works:
-    // anon clicks "Pasar a Pro" → /sign-in?next=/app/billing → user signs in →
-    // lands on /app/billing instead of the generic /account. safeNextPath is
-    // the shared allowlist (same one /auth/callback uses) so we can't get used
-    // as an open redirect.
+    // safeNextPath is the shared allowlist (same one /auth/callback uses) so
+    // this can't be used as an open redirect.
     const safeNext = safeNextPath(next, '/account');
-    // typedRoutes can't statically know what `next` is — cast through
-    // Route since we've already validated it's a same-origin path.
     redirect(safeNext as Route);
   }
 
@@ -57,6 +57,16 @@ export default async function SignInPage({
 
   return (
     <main className="auth-shell">
+      <div className="auth-brandbar">
+        <Link href={'/' as Route} className="auth-brand" aria-label="Chalyb">
+          <BrandMark size={22} />
+          <span>CHALYB</span>
+        </Link>
+        <Link href={'/' as Route} className="auth-back">
+          {t('backHome')}
+        </Link>
+      </div>
+
       <div className="auth-status">
         <span className="auth-status-dot" />
         {t('liveStatus')}
@@ -65,7 +75,15 @@ export default async function SignInPage({
       <div className="auth-card">
         {reset === 'success' && <div className="auth-success">{t('resetSuccess')}</div>}
 
-        <EmailAuthForm initialMode={initialMode} next={next} showModeTabs />
+        <div className="auth-section-primary">
+          <p className="auth-kicker">
+            {initialMode === 'signup' ? t('newTitle') : t('returningTitle')}
+          </p>
+          <h1 className="auth-headline">
+            {initialMode === 'signup' ? t('signupTitle') : t('title')}
+          </h1>
+          <GoogleSignInButton next={next} variant="premium" />
+        </div>
 
         {upstreamError && <div className="auth-error auth-error-upstream">{upstreamError}</div>}
 
@@ -73,9 +91,9 @@ export default async function SignInPage({
           <span>{t('orDivider')}</span>
         </div>
 
-        <GoogleSignInButton next={next} variant="compact" />
+        <EmailAuthForm initialMode={initialMode} next={next} showModeTabs />
 
-        <ul className="auth-benefits">
+        <ul className="auth-benefits auth-benefits-compact">
           <li>
             <span className="ab-tick">✓</span>
             {t('benefits.1')}

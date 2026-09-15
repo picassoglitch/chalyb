@@ -150,8 +150,8 @@ export function SettingsForm({
       <div className="cc-mod-section">
         <div className="cc-mod-sl">Preferencias</div>
         <p style={{ fontSize: 12, color: 'var(--cc-txt-4)', margin: '0 0 10px' }}>
-          El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona
-          horaria y los interruptores de abajo se guardan solo en este navegador.
+          El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona horaria
+          y los interruptores de abajo se guardan solo en este navegador.
         </p>
         <div className="cc-mod-form">
           <div className="cc-mod-field">
@@ -211,7 +211,9 @@ export function SettingsForm({
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
               <span className="t">Eventos de marketing</span>
-              <span className="s">Cuando una publicación se vuelve viral o sube la interacción.</span>
+              <span className="s">
+                Cuando una publicación se vuelve viral o sube la interacción.
+              </span>
             </div>
             <button
               type="button"
@@ -226,16 +228,25 @@ export function SettingsForm({
       <div className="cc-mod-section">
         <div className="cc-mod-sl">Seguridad</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="cc-mod-toggle">
+          {/* 2FA is not wired to Supabase MFA yet. A switch that only flips a
+              local flag would look like protection that isn't there, so it is
+              disabled and labelled as upcoming until the real enrolment ships. */}
+          <div className="cc-mod-toggle" style={{ opacity: 0.75 }}>
             <div className="cc-mod-toggle-text">
-              <span className="t">2FA con app autenticadora</span>
-              <span className="s">El código TOTP es obligatorio para los roles Admin y Super Admin.</span>
+              <span className="t">
+                2FA con app autenticadora <span className="cc-mod-badge">Próximamente</span>
+              </span>
+              <span className="s">
+                Aún no disponible. Cuando lo activemos, aparecerá aquí el enrolamiento con tu app
+                autenticadora.
+              </span>
             </div>
             <button
               type="button"
-              aria-label="Toggle 2FA"
-              className={`cc-mod-switch${prefs.twoFA ? ' on' : ''}`}
-              onClick={() => toggle('twoFA', !prefs.twoFA)}
+              aria-label="2FA próximamente"
+              disabled
+              className="cc-mod-switch"
+              style={{ cursor: 'not-allowed' }}
             />
           </div>
         </div>

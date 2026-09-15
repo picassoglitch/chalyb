@@ -84,3 +84,18 @@ The engine repos (`ChalyClip`, `ChalyOBS`, `ChalyCrypto`) carry the rebrand
 and a `cloudbuild.yaml` each; what remains per engine is steps 4–7 of
 [`docs/infra/deploy-runbook.md`](docs/infra/deploy-runbook.md): secrets,
 build, DNS, then the one-line flip to `active`.
+
+## What a user is told about an engine
+
+`src/lib/billing/readiness.ts` is the one place that turns an engine row plus
+the user's plan into a display state: `live`, `trial`, `ready`, `simulation`,
+`locked` or `coming_soon`. An engine is *runnable* only when its row is
+`active` **and** it has a real surface to open (a non-placeholder integration
+with an external URL) — the same test the launch action applies. Everything a
+subscriber sees (`/app`, `/app/engines`, the engine page, `/app/help`, the
+sidebar pill, `/api/health`, the public landing) reads from this, so a fleet
+of upcoming engines shows 0 live on every plan, VIP included, and "Activar en
+vivo" appears only on engines marked Listo. `src/lib/billing/entitlement.ts`
+does the same for billing: a paid tier with no approved payment or Mercado
+Pago subscription behind it is labelled *cortesía*, never as a healthy paid
+plan.

@@ -2,31 +2,41 @@ import { setRequestLocale } from 'next-intl/server';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { HelpFaq } from '@/components/workspace/help-faq';
+import { listEngines } from '@/lib/data/engines';
+import { engineIsRunnable } from '@/lib/billing/readiness';
 
 export const metadata = { title: 'Ayuda' };
 
-export default async function HelpPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function HelpPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // The status tile reads the real fleet, the same way Inicio and Mis engines
+  // do — never a hardcoded "todos los sistemas en línea".
+  const engines = await listEngines().catch(() => []);
+  const catalog = engines.filter((e) => e.status !== 'deprecated');
+  const ready = catalog.filter((e) => engineIsRunnable(e)).length;
+  const upcoming = catalog.length - ready;
 
   return (
     <div className="cc-scroll">
       <div className="cc-mod-statgrid">
         <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Estado de la plataforma</div>
-          <div className="cc-mod-stat-v gr">Operativo</div>
-          <div className="cc-mod-stat-sub">Todos los sistemas en línea</div>
+          <div className="cc-mod-stat-l">Estado del kit</div>
+          <div className={`cc-mod-stat-v ${ready > 0 ? 'gr' : 'am'}`}>
+            {ready}
+            <small>listas</small>
+          </div>
+          <div className="cc-mod-stat-sub">
+            {upcoming > 0 ? `${upcoming} próximamente · en construcción` : 'todo el kit publicado'}
+          </div>
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Tiempo de respuesta</div>
           <div className="cc-mod-stat-v">
             &lt; 24<small>hrs hábiles</small>
           </div>
-          <div className="cc-mod-stat-sub">vía /contacto</div>
+          <div className="cc-mod-stat-sub">vía Mensajes o /contacto</div>
         </div>
       </div>
 
@@ -39,8 +49,8 @@ export default async function HelpPage({
             lineHeight: 1.55,
           }}
         >
-          Esto es lo que casi todos preguntan en sus primeros días. Si tu duda no está
-          aquí, escríbenos directo y te contestamos rápido.
+          Lo que casi todos preguntan en sus primeros días con el kit. Si tu duda no está aquí,
+          escríbenos directo y te contestamos rápido.
         </p>
       </div>
 
@@ -68,7 +78,7 @@ export default async function HelpPage({
             </div>
           </div>
           <Link
-            href={'/contacto' as Route}
+            href={'/app/messages' as Route}
             style={{
               background: 'var(--cc-green)',
               color: '#070809',
@@ -80,7 +90,7 @@ export default async function HelpPage({
               alignSelf: 'center',
             }}
           >
-            Ir a contacto →
+            Abrir Mensajes →
           </Link>
         </div>
       </div>

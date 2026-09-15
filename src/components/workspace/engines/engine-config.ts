@@ -1,25 +1,23 @@
 // Shared types + structural config for the "Mis engines" hub.
 //
 // The DB (lib/data/engines.ts) owns each engine's identity, status, tier gate,
-// and ownership. Marketing copy (tagline + bullets) is localized in
-// messages/*.json under the `engines.marketing*` keys and resolved server-side
-// in the page, then baked into each EngineVM as plain strings.
+// and ownership. lib/billing/readiness.ts turns that + the user's entitlement
+// into ONE display state per engine. Marketing copy (tagline + bullets) is
+// localized in messages/*.json under `engines.marketing*` and resolved
+// server-side in the page, then baked into each EngineVM as plain strings.
 //
 // This module is framework-agnostic (no 'use client'): the server page builds
 // EngineVM[] and the client explorer renders them, both importing from here.
 
-/** Coarse live/lock/lifecycle state — drives the status badge + filter bucket.
- *  Exactly one per engine. */
-export type EngineLiveState =
-  | 'live' // running live for this user (meets tier, selected / all-access)
-  | 'trial' // live via the ChalyClip trial/grace window (FREE user)
-  | 'simulation' // active + available, but running in simulation (not live)
-  | 'locked' // active but gated behind a higher plan
-  | 'coming_soon'; // not launched yet
+import type { EngineDisplayState } from '@/lib/billing/readiness';
 
-/** The visual treatment a card renders with. Three distinct looks so the
- *  states are tellable apart at a glance (spec: available / locked / soon).
- *  `featured` is the dominant ChalyClip card inside the available section. */
+/** The card's state IS the readiness state — one vocabulary, no translation
+ *  layer where a badge could drift from what the user can actually do. */
+export type EngineLiveState = EngineDisplayState;
+
+/** The visual treatment a card renders with. `featured` is the wide card for
+ *  the engine that is running live right now — the kit's mission-control
+ *  spotlight, not a fixed hero for one product. */
 export type EngineCardVariant = 'featured' | 'available' | 'locked' | 'soon';
 
 /** Which actionability section an engine belongs to on the default (grouped)
@@ -29,8 +27,6 @@ export type EngineSection = 'available' | 'pro' | 'soon';
 /** The filter tabs above the grid. `all` always matches. */
 export type EngineFilterKey = 'all' | 'live' | 'simulation' | 'coming_soon' | 'locked';
 
-/** Tab order. Labels are localized in the component via the `engines.filters`
- *  message keys (keyed by these same strings). */
 export const ENGINE_FILTER_KEYS: EngineFilterKey[] = [
   'all',
   'live',
@@ -45,6 +41,7 @@ export function filterKeysFor(state: EngineLiveState): EngineFilterKey[] {
     case 'live':
     case 'trial':
       return ['all', 'live'];
+    case 'ready':
     case 'simulation':
       return ['all', 'simulation'];
     case 'locked':
@@ -58,7 +55,7 @@ export function filterKeysFor(state: EngineLiveState): EngineFilterKey[] {
 export function sectionFor(state: EngineLiveState): EngineSection {
   if (state === 'coming_soon') return 'soon';
   if (state === 'locked') return 'pro';
-  return 'available'; // live | trial | simulation
+  return 'available'; // live | trial | ready | simulation
 }
 
 /** Card variant from state + featured flag. */
@@ -91,9 +88,24 @@ export interface EngineVM {
   isPlatformOwned: boolean;
   isOwnedByMe: boolean;
   ownerLabel: string;
-  /** True only for the hero/featured treatment (ChalyClip when usable now). */
+  /** True only for the wide spotlight treatment (the engine running live). */
   featured: boolean;
-  /** PRO users can pick their single live engine from active+eligible cards. */
+  /** Pro/Partner can point their live slot at this engine right now. */
   canSelectLive: boolean;
   isSelectedLive: boolean;
+  /** Days left on the ChalyClip trial, for the trial badge. */
+  trialDaysLeft: number;
+}
+
+/** What the hero tells the user to do next — decided on the server from the
+ *  same readiness model as the cards, translated there, and passed down as
+ *  plain strings. */
+export interface EngineHeroAction {
+  badge: string;
+  heading: string;
+  sub: string;
+  ctaLabel: string;
+  href: string;
+  secondaryLabel: string | null;
+  secondaryHref: string | null;
 }

@@ -1,18 +1,23 @@
 import { useTranslations } from 'next-intl';
+import { KIT_TOOLS } from '@/lib/kit/tools';
+import type { PublicFleet } from '@/lib/data/public-engines';
 
-const STACK = ['AWS', 'Supabase', 'OpenAI', 'Anthropic', 'Mercado Pago'];
-const METRIC_VALUES = ['99.9%', '24/7', '< 1 min', 'MX · USA'];
+const STACK = ['Vercel', 'Supabase', 'Google Cloud', 'Anthropic', 'Mercado Pago'];
 
-/** Single credibility strip under the hero: four metrics + the stack. */
-export function ProofBar() {
+/** Single credibility strip under the hero: how the kit works, in numbers
+ *  that are true today (one subscription, N tools, zero bought separately),
+ *  plus the stack. No uptime or speed claims the app cannot back. */
+export function ProofBar({ fleet }: { fleet: PublicFleet }) {
   const t = useTranslations('landing.proof');
+  const toolCount = fleet.engines.length > 0 ? fleet.engines.length : KIT_TOOLS.length;
+  const metrics = ['1', String(toolCount), '0', 'MX · USA'];
 
   return (
     <section className="lp-proof" aria-label={t('label')}>
       <div className="lp-container lp-proof-inner">
         <div className="lp-metrics">
-          {METRIC_VALUES.map((value, i) => (
-            <div key={value} className="lp-metric">
+          {metrics.map((value, i) => (
+            <div key={`${i}-${value}`} className="lp-metric">
               <div className="lp-metric-val">{value}</div>
               <div className="lp-metric-label">{t(`metrics.${i + 1}`)}</div>
             </div>

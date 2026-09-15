@@ -6,6 +6,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 import { formatMoney } from '@/lib/payments/pricing';
 import type { SubscriptionTier } from '@/lib/auth/session';
+import { entitlementSource, getEntitlementEvidence } from '@/lib/billing/entitlement';
 
 export const metadata = { title: 'Facturación' };
 
@@ -59,6 +60,14 @@ export default async function WorkspaceBillingPage({
     .limit(50);
   const payments = (paymentsRaw ?? []) as PaymentRow[];
 
+  // A paid-looking tier with no approved payment and no Mercado Pago
+  // subscription behind it was assigned by the team (QA, cortesía). Say so
+  // instead of implying a healthy paid subscription over a $0 history.
+  const evidence = await getEntitlementEvidence(session.user.id);
+  const source = entitlementSource({ storedTier: session.tier, role: session.role, evidence });
+  const isComped = source === 'comped';
+  const isPartner = source === 'partner';
+
   return (
     <div className="cc-scroll">
       {/* Post-checkout return banner — MP redirects here with ?status= */}
@@ -74,10 +83,10 @@ export default async function WorkspaceBillingPage({
             fontSize: 13,
           }}
         >
-          ● <b style={{ color: 'var(--cc-green)' }}>Pago recibido</b> — tu plan se activa en
-          cuanto Mercado Pago confirma el cobro (de segundos a minutos). Si autorizaste una
-          suscripción, el cobro se repite cada mes hasta que la canceles desde /app/subscription.
-          Esta página se actualiza sola.
+          ● <b style={{ color: 'var(--cc-green)' }}>Pago recibido</b> — tu plan se activa en cuanto
+          Mercado Pago confirma el cobro (de segundos a minutos). Si autorizaste una suscripción, el
+          cobro se repite cada mes hasta que la canceles desde /app/subscription. Esta página se
+          actualiza sola.
         </div>
       )}
       {returnedStatus === 'pending' && (
@@ -92,9 +101,8 @@ export default async function WorkspaceBillingPage({
             fontSize: 13,
           }}
         >
-          ● <b style={{ color: 'var(--cc-amber)' }}>Pago pendiente</b> — Mercado Pago todavía no
-          lo confirma. Si pagaste en efectivo (OXXO, ticket), el dinero se acredita cuando lo
-          procesan.
+          ● <b style={{ color: 'var(--cc-amber)' }}>Pago pendiente</b> — Mercado Pago todavía no lo
+          confirma. Si pagaste en efectivo (OXXO, ticket), el dinero se acredita cuando lo procesan.
         </div>
       )}
 
@@ -125,11 +133,24 @@ export default async function WorkspaceBillingPage({
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Plan activo</div>
-          <div className="cc-mod-stat-v gr">{TIER_LABEL[session.tier]}</div>
+          <div className={`cc-mod-stat-v ${isComped ? 'am' : 'gr'}`}>
+            {TIER_LABEL[session.tier]}
+            {isComped && <small>cortesía</small>}
+            {isPartner && <small>programa</small>}
+          </div>
           <div className="cc-mod-stat-sub">
-            <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-3)' }}>
-              gestionar →
-            </Link>
+            {isComped ? (
+              <>
+                asignado por el equipo · sin cobro ·{' '}
+                <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-3)' }}>
+                  gestionar →
+                </Link>
+              </>
+            ) : (
+              <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-3)' }}>
+                gestionar →
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -147,7 +168,9 @@ export default async function WorkspaceBillingPage({
               fontSize: 13,
             }}
           >
-            Todavía no tienes pagos registrados.
+            {isComped
+              ? `Tu plan ${TIER_LABEL[session.tier]} es una cortesía asignada por el equipo: no hay cobros ni renovación detrás.`
+              : 'Todavía no tienes pagos registrados.'}
             <br />
             <span
               style={{
@@ -158,7 +181,9 @@ export default async function WorkspaceBillingPage({
                 display: 'inline-block',
               }}
             >
-              Cuando actives Pro o VIP desde /app/subscription, tu pago aparece aquí.
+              {isComped
+                ? 'Si algún día activas un plan pagado desde /app/subscription, el cobro aparece aquí.'
+                : 'Cuando actives Pro o VIP desde /app/subscription, tu pago aparece aquí.'}
             </span>
           </div>
         ) : (

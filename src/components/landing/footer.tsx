@@ -28,6 +28,7 @@ export function LandingFooter() {
           {/* /contacto is the only support channel we publish; without this
               link the page was reachable only by typing the URL. */}
           <Link href={'/contacto' as Route}>{t('contact')}</Link>
+          <Link href={'/partners' as Route}>{t('partners')}</Link>
           <a href="/api/health" target="_blank" rel="noreferrer">
             {t('status')}
           </a>

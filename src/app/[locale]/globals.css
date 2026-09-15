@@ -6,7 +6,7 @@
   --color-panel: #101320;
   --color-ink: #f4f3ee;
   --color-ink-dim: #b9b9c4;
-  --color-ink-faint: #6c6d7c;
+  --color-ink-faint: #8b8d9d;
   --color-acid: #c6f24e;
   --color-acid-dim: #8aa83a;
   --color-plasma: #5b3df5;
@@ -29,7 +29,11 @@
   --panel: #101320;
   --ink: #f4f3ee;
   --ink-dim: #b9b9c4;
-  --ink-faint: #6c6d7c;
+  --ink-faint: #8b8d9d;
+  /* Navy surface for panels that need to lift off the black bg (mock: black /
+     navy / lime). */
+  --navy: #0f1730;
+  --navy-2: #141d3a;
   --line: rgba(255, 255, 255, 0.08);
   --line-bright: rgba(255, 255, 255, 0.16);
   --acid: #c6f24e;
@@ -1087,14 +1091,149 @@ a {
   }
 }
 
+/* Hero preview — kit status (real catalog state) */
+.lp-status-kit {
+  color: var(--acid);
+  border: 1px solid rgba(198, 242, 78, 0.35);
+  background: rgba(198, 242, 78, 0.08);
+}
+.lp-preview-foot {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+.lp-engine-list-head {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 4px 2px 8px;
+}
+.lp-preview-main,
+.lp-visual {
+  background: linear-gradient(180deg, var(--navy) 0%, var(--panel) 100%);
+}
+.lp-meter-row-plan {
+  display: grid;
+  grid-template-columns: 48px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.lp-meter-row-plan .lp-meter-bar {
+  margin: 0;
+}
+.lp-meter-row-plan strong {
+  text-align: right;
+}
+.lp-plans-partner {
+  margin-top: 12px;
+  font-size: 12.5px;
+}
+.lp-plans-partner a {
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lp-plans-partner a:hover {
+  color: var(--acid);
+}
+
+/* ============ PARTNERS (stub) ============ */
+.lp-partners {
+  padding: clamp(72px, 10vh, 120px) 0 80px;
+}
+.lp-partners-inner {
+  max-width: 820px;
+}
+.lp-partners-head {
+  margin-bottom: 40px;
+}
+.lp-partners-h1 {
+  margin-left: 0;
+  margin-right: 0;
+  font-size: clamp(34px, 5vw, 56px);
+  max-width: 20ch;
+}
+.lp-partners-lead {
+  margin-left: 0;
+  margin-right: 0;
+}
+.lp-partners-steps {
+  margin-bottom: 48px;
+}
+.lp-partners-h2 {
+  font-size: clamp(22px, 3vw, 30px);
+}
+.lp-partners-sub {
+  margin: 10px 0 20px;
+  max-width: 60ch;
+}
+.lp-partners-card {
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line-bright);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--navy) 0%, var(--panel) 100%);
+}
+.lp-partners-honest {
+  margin-top: 14px;
+}
+.lp-partners-kit {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px dashed var(--line-bright);
+  border-radius: 14px;
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
 /* ============ AUTH SHELL (sign-in page) ============ */
+.auth-brandbar {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+}
+.auth-brand svg {
+  color: var(--acid);
+}
+.auth-back {
+  font-size: 13px;
+  color: var(--ink-dim);
+  transition: color 0.2s;
+}
+.auth-back:hover {
+  color: var(--acid);
+}
+.auth-card {
+  background: linear-gradient(180deg, var(--navy) 0%, var(--bg-2) 100%);
+}
 .auth-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 88px 24px 48px;
+  padding: 48px 24px 48px;
   gap: 18px;
   cursor: auto;
 }

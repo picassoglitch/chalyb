@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Chalyb — Ready-made AI engines in one dashboard",
-    "description": "Clip your streams, run trading signals and automate your operation with AI engines. Start free, test in simulation, go live when it pays."
+    "title": "Chalyb — One AI toolkit, one subscription",
+    "description": "ChalyClip, ChalyCrypto, ChalyOBS and more in a single kit. Pay once here instead of buying separate tools. Start free; the kit is under construction and expanding."
   },
   "landing": {
     "nav": {
@@ -10,119 +10,121 @@
       "app": "Open app"
     },
     "hero": {
-      "kicker": "AI automation platform",
-      "h1": "Put AI engines to work. Live in under a minute.",
-      "lead": "Chalyb is one dashboard for ready-made AI engines: clip your streams, run trading signals, automate your operation. Start free, test in simulation, go live when it pays.",
+      "kicker": "One AI toolkit · one subscription",
+      "h1": "You came for one tool. You leave with the whole kit.",
+      "lead": "Chalyb bundles AI tools for creators and operators — clips, trading, broadcasting, bots and more — into a single subscription. Pay once here instead of buying each tool separately. Start free; the kit is under construction and expanding.",
       "cta": "Get started free",
-      "micro": "Free plan · No credit card required · Sign up with Google or email",
+      "micro": "Free plan · No card · Google or email",
       "preview": {
-        "title": "Your engines",
-        "live": "Live",
-        "stat1": "Engines live",
-        "stat2": "Clips this week",
-        "stat3": "Tokens used",
-        "chart": "Clips generated · last 14 days",
-        "statusLive": "Live",
-        "statusSim": "Simulation",
-        "statusSoon": "Coming soon"
+        "title": "Your Chalyb kit",
+        "plan": "One subscription",
+        "stat1": "Tools in the kit",
+        "stat2": "Subscription",
+        "stat3": "Tools ready today",
+        "listTitle": "Kit status",
+        "statusReady": "Ready",
+        "statusSoon": "Coming soon",
+        "foot": "The kit's real status, the same one you see inside the app."
       }
     },
     "proof": {
-      "label": "Runs on production-grade infrastructure",
+      "label": "How the kit works",
       "metrics": {
-        "1": "uptime target",
-        "2": "monitored systems",
-        "3": "from sign-up to first run",
+        "1": "subscription for the whole kit",
+        "2": "tools in the kit, expanding",
+        "3": "tools you buy separately",
         "4": "operating in LATAM and North America"
       },
       "stack": "Built with"
     },
     "pillars": {
-      "title": "Everything you need to run AI. Nothing you don't.",
-      "subtitle": "Three things the platform does well, so you don't have to build any of them.",
+      "title": "One kit, not a pile of subscriptions.",
+      "subtitle": "Three things Chalyb does for you so you never have to assemble anything yourself.",
       "items": {
         "1": {
-          "kicker": "Engine library",
-          "title": "Ready-made AI engines, no build required",
-          "body": "Pick from a growing library of engines the Chalyb team runs in production. Each one solves a specific job from day one.",
+          "kicker": "The kit",
+          "title": "AI tools included, not sold separately",
+          "body": "ChalyClip for clips, ChalyCrypto for signals, ChalyOBS for your broadcast and more. Each is an inner tool of the kit: you come in for one and find the others already in your plan.",
           "bullets": {
             "1": "ChalyClip turns your streams into vertical clips ready to post",
-            "2": "ChalyCrypto delivers backtested crypto signals and 24/7 alerts",
-            "3": "New engines ship continuously and are included in your plan"
+            "2": "ChalyCrypto delivers backtested crypto signals and alerts",
+            "3": "Every new tool joins the kit at no extra cost"
           }
         },
         "2": {
           "kicker": "Simulation to live",
-          "title": "Test everything free. Go live when you're ready",
-          "body": "Every engine runs in simulation on the free plan. When the results convince you, flip it live with one click.",
+          "title": "Explore free. Go live when it convinces you",
+          "body": "On Free you explore the ready tools in simulation. Pro puts one live, your choice; VIP opens the whole kit. Each tool's status reads the same here and inside the app.",
           "bullets": {
-            "1": "Unlimited simulation runs on every engine",
-            "2": "Pro puts one engine live, VIP puts them all live",
-            "3": "Switch engines or pause any time, no lock-in"
+            "1": "Simulation with test data, never touching your accounts",
+            "2": "Pro: one live tool of your choice · VIP: the whole kit",
+            "3": "Switch tools or cancel any time, no lock-in"
           }
         },
         "3": {
-          "kicker": "Monitoring and billing",
-          "title": "See every run. Pay only for what you use",
-          "body": "Dashboards, execution history and a token meter come built in. It is the same tooling the Chalyb team uses on its own systems.",
+          "kicker": "Usage and billing",
+          "title": "One meter, one charge",
+          "body": "AI tokens included in every plan, per-tool usage history and a single monthly charge through Mercado Pago. No per-tool surprises.",
           "bullets": {
-            "1": "Live dashboards and full execution history",
-            "2": "Monthly tokens included, top-ups never expire",
-            "3": "Secure checkout with Mercado Pago, cancel any time"
+            "1": "Monthly AI tokens included; top-ups never expire",
+            "2": "Per-tool usage history inside the app",
+            "3": "Pay with Mercado Pago, cancel any time"
           }
         }
       },
       "visuals": {
-        "libraryTitle": "Engine library",
-        "libraryClip": "Stream clipping",
-        "libraryCrypto": "Trading signals",
-        "libraryObs": "Broadcast control",
+        "libraryTitle": "Tools in the kit",
         "ready": "Ready",
         "soon": "Coming soon",
-        "modeTitle": "Execution mode",
-        "modeSim": "Simulation · free",
-        "modeLive": "Live · Pro",
-        "modeFoot": "One click to switch. No redeploy, no downtime.",
-        "usageTitle": "Usage this month",
-        "usageTokens": "AI tokens",
-        "usageRun": "run",
-        "usageOk": "Completed"
+        "modeTitle": "How the kit unlocks",
+        "modeFree": "Free · explore in simulation",
+        "modePro": "Pro · one live tool, you pick",
+        "modeVip": "VIP · the whole kit live",
+        "modeFoot": "Same kit on all three plans; what changes is what you can switch on.",
+        "usageTitle": "Included in your plan",
+        "usageTokens": "AI tokens per month",
+        "usageFree": "Free",
+        "usagePro": "Pro",
+        "usageVip": "VIP",
+        "usageFoot": "The real counters live in the app, tool by tool."
       }
     },
     "how": {
-      "title": "Up and running in three steps",
+      "title": "How it works",
       "subtitle": "No sales call, no onboarding project.",
       "steps": {
         "1": {
-          "title": "Sign up and connect",
-          "body": "Create your account with Google or email. Your workspace is ready in under a minute."
+          "title": "Create your account",
+          "body": "With Google or email. Your kit waits inside with each tool's real status."
         },
         "2": {
-          "title": "Pick and configure an engine",
-          "body": "Choose an engine, connect your channel or exchange and set the rules. Run it in simulation first."
+          "title": "Get to know the kit",
+          "body": "Each tool shows whether it is ready, in simulation or coming soon. The ready ones open with test data."
         },
         "3": {
-          "title": "Get results",
-          "body": "Clips post themselves, signals arrive in real time and every run is logged. Go live on Pro when it pays."
+          "title": "Pick your plan",
+          "body": "Pro puts one tool live, your choice. VIP opens the whole kit. Switch or cancel any time."
         }
       }
     },
     "pricing": {
-      "title": "Start free. Scale when it pays.",
-      "subtitle": "No contracts, no sales calls. Pick a plan and you're running in under a minute.",
+      "title": "One plan for the whole kit.",
+      "subtitle": "Free explores in simulation · Pro puts one tool live · VIP opens the whole kit. No contracts.",
       "badge": "Most popular",
-      "note": "Prices in MXN. Pro and VIP are billed monthly through Mercado Pago and can be cancelled any time.",
+      "note": "Prices in MXN. Pro and VIP are billed monthly through Mercado Pago and can be cancelled any time. The kit is under construction: your plan applies to each tool as soon as it is ready.",
+      "partnerNote": "Have an idea for a tool? We build it and add it to the kit.",
+      "partnerCta": "See the partner program →",
       "tiers": {
         "free": {
           "name": "Free",
           "amount": "$0",
           "per": " /forever",
-          "tagline": "Create an account and explore the whole platform.",
+          "tagline": "Explore the whole kit in simulation.",
           "features": {
-            "1": "ChalyClip free for 7 days",
-            "2": "50,000 free AI tokens",
-            "3": "Community access",
-            "4": "Watermarked clips · manual download"
+            "1": "Every tool in the kit, in simulation",
+            "2": "7 days of ChalyClip Pro live (once it is ready)",
+            "3": "50,000 AI tokens per month included",
+            "4": "Community access"
           },
           "cta": "Start free"
         },
@@ -130,13 +132,13 @@
           "name": "Pro",
           "amount": "MXN $749",
           "per": " /month",
-          "tagline": "One engine live, your choice.",
+          "tagline": "One kit tool live, your choice.",
           "features": {
             "1": "Everything in Free",
-            "2": "1 engine live · you pick which",
-            "3": "1,000,000 tokens / month, refilled monthly",
-            "4": "ChalyClip Pro: no watermark · ~12 streams/mo · 1 brand kit",
-            "5": "Premium community"
+            "2": "1 tool live · switch any time",
+            "3": "The other tools stay in simulation",
+            "4": "1,000,000 AI tokens per month, refilled monthly",
+            "5": "ChalyClip Pro: no watermark · ~12 streams/mo"
           },
           "cta": "Start with Pro"
         },
@@ -144,21 +146,21 @@
           "name": "VIP",
           "amount": "MXN $2,499",
           "per": " /month",
-          "tagline": "All of Chalyb unlocked. AI + Clip, no limits.",
+          "tagline": "The whole kit live. One subscription, zero separate tools.",
           "features": {
             "1": "Everything in Pro",
-            "2": "All engines live",
-            "3": "5× Pro's tokens",
-            "4": "ChalyClip full streamer package",
-            "5": "Priority support · the Chalyb team helps build your idea"
+            "2": "Every kit tool live, as soon as it ships",
+            "3": "The highest limits on every tool",
+            "4": "5,000,000 AI tokens per month",
+            "5": "Priority support from the Chalyb team"
           },
           "cta": "Start with VIP"
         }
       }
     },
     "cta": {
-      "title": "Start today. Your first engine is free.",
-      "body": "Create your account, run an engine in simulation and see results before you pay anything.",
+      "title": "Get in free. The kit grows with you.",
+      "body": "Create your account, see each tool's real status and pick your plan when the first one convinces you. Pay once here, not once per tool.",
       "btn": "Start today",
       "micro": "Free plan · No credit card required"
     },
@@ -167,7 +169,8 @@
       "terms": "Terms",
       "privacy": "Privacy",
       "status": "Status",
-      "contact": "Contact"
+      "contact": "Contact",
+      "partners": "Partners"
     }
   },
   "auth": {
@@ -179,7 +182,7 @@
       "errorGeneric": "Something went wrong signing you in. Try again.",
       "errorMissingCode": "Sign-in flow incomplete. Try again.",
       "fine": "By continuing you agree to the Terms and Privacy Policy.",
-      "liveStatus": "Platform live · systems in production",
+      "liveStatus": "Your AI toolkit · one subscription",
       "newTitle": "New here?",
       "newSubtitle": "Create your operator workspace in seconds.",
       "newCta": "Start free",
@@ -187,11 +190,11 @@
       "returningSubtitle": "Pick up where you left off — bots, AI agents, execution history.",
       "returningCta": "Continue →",
       "benefits": {
-        "1": "Run any system in simulation",
-        "2": "Live monitoring & execution history",
-        "3": "Pay only for what you use"
+        "1": "The whole kit in one subscription",
+        "2": "Explore in simulation, go live with Pro",
+        "3": "Each tool's real status, no promises"
       },
-      "socialProof": "Built by operators running real systems in production.",
+      "socialProof": "Made in Mexico City by the team that runs the kit.",
       "tabSignIn": "Sign in",
       "tabSignUp": "Create account",
       "emailLabel": "Email",
@@ -204,7 +207,7 @@
       "hasAccount": "Already have an account?",
       "switchToSignIn": "Sign in →",
       "switchToSignUp": "Create one →",
-      "orDivider": "or continue with",
+      "orDivider": "or with your email",
       "errorInvalidCredentials": "Invalid email or password.",
       "errorEmailExists": "An account with this email already exists. Try signing in instead.",
       "errorWeakPassword": "Password must be at least 6 characters.",
@@ -213,10 +216,12 @@
       "checkInboxTitle": "Check your inbox.",
       "checkInboxBody": "We sent a confirmation link to {email}. Click it to finish creating your account.",
       "forgotPassword": "Forgot password?",
-      "resetSuccess": "Password updated. Sign in with your new password."
+      "resetSuccess": "Password updated. Sign in with your new password.",
+      "backHome": "← Back to home",
+      "signupTitle": "Create your Chalyb account"
     },
     "forgotPassword": {
-      "liveStatus": "Platform live · systems in production",
+      "liveStatus": "Your AI toolkit · one subscription",
       "title": "Reset your password",
       "intro": "Enter your account email and we'll send you a link to set a new password.",
       "emailLabel": "Email",
@@ -228,7 +233,7 @@
       "errorRateLimit": "Too many attempts. Wait a minute and try again."
     },
     "resetPassword": {
-      "liveStatus": "Platform live · systems in production",
+      "liveStatus": "Your AI toolkit · one subscription",
       "title": "Set a new password",
       "intro": "Choose a new password for your account.",
       "passwordLabel": "New password",
@@ -269,8 +274,8 @@
         "body": "Navigate everything from here, grouped into Your account, Platform and Settings. Switch sections in one click."
       },
       "engines": {
-        "title": "Your engines",
-        "body": "Under “My engines” you view, open and activate engines (ChalyClip, ChalyCrypto and more). “Live” = running; “Available” = ready to use on your plan."
+        "title": "Your kit",
+        "body": "Under “My engines” you see every tool in the kit (ChalyClip, ChalyCrypto and more) with its real status: “Ready” opens today, “Live” runs on your plan, “Coming soon” is still being built."
       },
       "tokens": {
         "title": "Your token balance",
@@ -282,7 +287,7 @@
       },
       "account": {
         "title": "Your info",
-        "body": "Under “Profile & security” you update your details, change your password and enable two-factor auth."
+        "body": "Under “Profile & security” you update your details, your password and your language."
       },
       "help": {
         "title": "Need help?",
@@ -294,61 +299,76 @@
     "title": "My engines",
     "hero": {
       "badgeLive": "{count} live now",
-      "badgeIdle": "Your engine hub",
+      "badgeReady": "{count} tool(s) ready",
+      "badgeUpcoming": "Kit under construction · {count} coming soon",
       "headingContinue": "Pick up where you left off",
-      "headingStart": "Start with ChalyClip",
       "subContinue": "{name} is running live. Jump back in whenever you want.",
-      "subStart": "Turn your streams into viral clips — the one engine ready to use right now.",
       "ctaContinue": "Continue →",
-      "ctaOpen": "Open ChalyClip →",
-      "ctaDemo": "View demo"
+      "headingPick": "Pick your live tool",
+      "subPick": "Your plan puts one tool of your choice live. {name} is ready.",
+      "ctaPick": "Activate {name} →",
+      "headingExplore": "Explore the kit in simulation",
+      "subExplore": "{name} can be opened with test data now, no risk and no cost.",
+      "ctaExplore": "Open {name} →",
+      "headingUpcoming": "Your kit is on its way",
+      "subUpcoming": "{count} tools under construction, all included in one subscription. None can be opened yet; each one shows up here the moment it is ready.",
+      "ctaUpcoming": "See my plan →",
+      "ctaHome": "Back to Home",
+      "ctaPlans": "See plans"
     },
     "sections": {
       "available": "Available now",
-      "availableSub": "Ready to use on your current plan.",
+      "availableSub": "Can be opened today on your current plan.",
       "pro": "Unlock with Pro",
       "proSub": "Activate these engines by upgrading your plan.",
       "soon": "Coming soon",
-      "soonSub": "In the works — we'll let you know at launch.",
+      "soonSub": "Under construction. Each one shows up as Ready the moment it ships.",
       "soonShow": "View upcoming engines ({count})",
-      "soonHide": "Hide upcoming engines"
+      "soonHide": "Hide upcoming engines",
+      "soonSubOnly": "The whole kit is under construction. No tool can be opened yet; your plan already includes them for when they are ready."
     },
     "card": {
-      "ribbon": "Available now",
+      "ribbon": "Running now",
       "statusLive": "Live",
       "statusTrial": "Live trial",
-      "statusSimulation": "Available",
+      "statusSimulation": "Simulation",
       "statusLocked": "Requires {plan}",
       "statusSoon": "Coming soon",
       "open": "Open engine →",
       "openNamed": "Open {name} →",
       "unlock": "Unlock with Pro",
-      "notify": "Notify me",
       "details": "View details",
       "ownerChalyb": "by Chalyb",
       "ownerBy": "by {owner}",
       "ownerMine": "Your engine",
-      "notifyDone": "Done — we'll let you know when {name} launches."
+      "statusTrialDays": "Trial · {days}d",
+      "statusReady": "Ready · go live"
     },
     "filters": {
       "aria": "Filter engines",
       "all": "All",
       "live": "Live",
-      "simulation": "Available",
+      "simulation": "Ready",
       "coming_soon": "Coming soon",
       "locked": "Requires Pro",
-      "emptyTitle": "No engines in this filter",
-      "emptyCta": "View all"
+      "emptyTitle": "Nothing in this filter yet",
+      "emptyCta": "See the whole kit",
+      "emptyBody": "You came for one tool; your plan includes the whole kit. {count} are under construction today.",
+      "emptyLiveFree": "Nothing runs live on Free: you explore in simulation. Pro puts one tool live; VIP, the whole kit.",
+      "emptyLivePaid": "Your plan allows live runs, but no tool is ready yet. The first one to ship shows up here as Ready.",
+      "emptyLocked": "Nothing locked: everything that is ready is included in your plan.",
+      "emptySoon": "No tools under construction: the whole kit has shipped.",
+      "emptyPlans": "See plans"
     },
     "upsell": {
-      "title": "Unlock more engines with Pro",
-      "sub": "Run ChalyCrypto, ChalyOBS and more live with a Pro plan.",
+      "title": "Unlock one live tool with Pro",
+      "sub": "Pro puts the kit tool of your choice live; VIP opens the whole kit.",
       "cta": "Upgrade to Pro →"
     },
     "caps": {
       "heading": "Your plan capabilities · {plan}",
       "headingPriced": "Your plan capabilities · {plan} · {price}/{per}",
-      "liveEngines": "Live engines",
+      "liveEngines": "Tools live",
       "tokens": "AI tokens / mo",
       "storage": "Storage",
       "history": "History",
@@ -360,8 +380,9 @@
       "supportCommunity": "Community"
     },
     "empty": {
-      "title": "No engines available",
-      "hint": "If you're an admin: run 0010_rename_bots_to_engines.sql in Supabase and refresh."
+      "title": "Your kit, under construction",
+      "body": "We could not read the catalog right now. These are the tools in the kit; all are included in one subscription and show up here as Ready the moment they ship.",
+      "hint": "If you're an admin: check the engines table exists (migration 0010) and refresh."
     },
     "marketing": {
       "chalybclip": {
@@ -374,11 +395,19 @@
       },
       "chalybcrypto": {
         "tagline": "24/7 crypto trading signals and automation.",
-        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+        "bullets": [
+          "Backtested strategies",
+          "Real-time alerts",
+          "Emotion-free execution"
+        ]
       },
       "chalybobs": {
         "tagline": "Control your live broadcast from a single panel.",
-        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Connects with ChalyClip"]
+        "bullets": [
+          "Dynamic scenes and overlays",
+          "Stream automation",
+          "Connects with ChalyClip"
+        ]
       }
     },
     "marketingCat": {
@@ -443,5 +472,31 @@
       "title": "Terms of service",
       "lastUpdated": "17 June 2026"
     }
+  },
+  "partners": {
+    "metaTitle": "Partners",
+    "metaDescription": "You have the idea, we build it. Propose a tool for the Chalyb kit and share the revenue it generates.",
+    "eyebrow": "Partner program · secondary to the kit",
+    "title": "You have the idea, we build it.",
+    "lead": "See an AI tool missing from the kit? Tell us the idea. If it fits, the Chalyb team builds it, runs it and adds it to the kit; you receive a share of what it generates.",
+    "steps": {
+      "1": {
+        "title": "You propose",
+        "body": "Describe the problem, who it is for and what the result looks like. No code needed."
+      },
+      "2": {
+        "title": "We build",
+        "body": "If it fits the kit, the Chalyb team builds and runs it on the same infrastructure as the rest."
+      },
+      "3": {
+        "title": "We share",
+        "body": "The tool joins the kit for every subscriber and you receive a share of its revenue, tracked in your account."
+      }
+    },
+    "formTitle": "Tell us your idea",
+    "formLead": "This form goes straight to the team. We reply within 24 business hours. There is no partner dashboard or online contract yet: the conversation starts here.",
+    "honest": "The program is at an early stage: the share and terms are agreed case by case. We promise neither approval nor dates.",
+    "backKit": "The kit comes first: if you don't have an account yet, start free and get to know the tools.",
+    "backKitCta": "Start free →"
   }
 }

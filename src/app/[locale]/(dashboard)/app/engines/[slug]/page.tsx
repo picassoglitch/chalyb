@@ -8,16 +8,19 @@ import { getSessionUser, type SubscriptionTier } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getTokenBalance } from '@/lib/usage/tokens';
 import {
-  engineIsLiveForUser,
   isChalybclipTrialActive,
   isChalybclipGraceActive,
+  chalybclipTrialDaysLeft,
   CHALYBCLIP_TRIAL_SLUG,
   effectiveTier,
   isAdminRole,
 } from '@/lib/billing/tiers';
+import { deriveEngineView } from '@/lib/billing/readiness';
 import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscriptions';
 import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
 import { EngineReprovisionButton } from '@/components/workspace/engine-reprovision-button';
+import { LiveEngineSelectButton } from '@/components/workspace/live-engine-selector';
+import { EngineStatusBadge } from '@/components/workspace/engines/engine-status-badge';
 
 // Dynamic title: tab reads "ChalyClip · Chalyb", "ChalybStreamManager · Chalyb", etc.
 export async function generateMetadata({
@@ -31,29 +34,23 @@ export async function generateMetadata({
   return { title: engine?.name ?? 'Engine' };
 }
 
-// Per-engine workspace. Renders different content based on the engine + tier:
-//   - Active + meets tier + Free       → simulation panel (mock controls)
-//   - Active + meets tier + PRO/Above  → launch panel (real controls — placeholder for now)
-//   - Active + above tier              → upgrade gate
-//   - Coming-soon                      → notify-me panel
-//   - Deprecated                       → 404 (deprecated engines are hidden from catalog)
-//
-// Real engine UIs (ChalyClip's clip editor, StreamManager's dashboard) plug in
-// here when those products ship. For v1 we render the metadata + the right
-// CTA for the user's state, with a "Build phase" placeholder for the actual
-// interface.
+// Per-engine workspace. The panel follows the ONE readiness state from
+// lib/billing/readiness (the same one the home strip and the list use):
+//   - coming_soon → "Próximamente / en construcción": nothing to activate, no
+//                   launch button, no Activar en vivo. This covers both a
+//                   coming_soon row and an `active` row with no real surface.
+//   - locked      → upgrade gate
+//   - live/trial  → launch panel (opens the engine over SSO)
+//   - ready       → Activar en vivo (Pro/Partner slot) + open in simulation
+//   - simulation  → open in test mode
+//   - deprecated  → 404 (hidden from the catalog)
 
-// PARTNER ranks alongside PRO for tier-required gates: they get PRO-equivalent
-// access. The owned-engine override (always live) is handled separately in
-// engineCanRunLive via the `isOwnedByUser` flag — engine.tier_required still
-// applies to the engines a partner DOESN'T own.
 const TIER_LABEL_SHORT = {
   FREE: 'Free',
   PRO: 'Pro',
   PARTNER: 'Partner',
   VIP: 'VIP',
 } as const;
-const TIER_ORDER = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 } as const;
 
 export default async function EngineWorkspacePage({
   params,
@@ -78,15 +75,12 @@ export default async function EngineWorkspacePage({
   const storedTier = session.tier;
   const tier = effectiveTier(role, storedTier);
   const isAdmin = isAdminRole(role);
-  const meetsTier = TIER_ORDER[tier] >= TIER_ORDER[engine.tierRequired];
-  // Partner-owned override: the engine's owner sees their own engine as
-  // always-live (additive to any selected_engine_id they may also have).
-  const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session.user.id;
   // ChalyClip 7-day trial grants live access regardless of tier — it bypasses
   // both the tier-required gate and the selection gate (ChalyClip only). After
   // the trial, FREE users keep ChalyClip live in "grace" while tokens remain.
   const nowMs = new Date().getTime();
   const trialActive = isChalybclipTrialActive(session.chalybclipTrialStartedAt, nowMs);
+  const trialDaysLeft = chalybclipTrialDaysLeft(session.chalybclipTrialStartedAt, nowMs);
   const clipBonusTokens =
     tier === 'FREE' && engine.slug === CHALYBCLIP_TRIAL_SLUG
       ? await getTokenBalance(session.user.id)
@@ -96,21 +90,22 @@ export default async function EngineWorkspacePage({
   const graceActive =
     tier === 'FREE' &&
     isChalybclipGraceActive(session.chalybclipTrialStartedAt, nowMs, clipBonusTokens);
-  // ChalyClip is "unlocked" (live, bypassing tier/selection) under either the
-  // trial or the post-trial grace window.
-  const clipUnlocked = (trialActive || graceActive) && engine.slug === CHALYBCLIP_TRIAL_SLUG;
-  const isLive = engineIsLiveForUser({
+  const view = deriveEngineView(engine, {
     tier,
-    engineId: engine.id,
-    engineSlug: engine.slug,
-    engineStatus: engine.status,
-    meetsTier,
+    userId: session.user.id,
     selectedEngineId: session.selectedEngineId,
-    isOwnedByUser: isOwnedByMe,
     trialActive,
     graceActive,
   });
-  const isComingSoon = engine.status === 'coming_soon';
+  const { isLive, isRunnable, meetsTier, isOwnedByMe, canSelectLive } = view;
+  // "Próximamente" from the user's point of view: not runnable, whatever the
+  // catalog row says. `active` behind a placeholder is "en construcción".
+  const isComingSoon = !isRunnable;
+  const isUnderConstruction = !isRunnable && engine.status === 'active';
+  // ChalyClip is "unlocked" (live, bypassing tier/selection) under either the
+  // trial or the post-trial grace window — only when it can actually be opened.
+  const clipUnlocked =
+    isRunnable && (trialActive || graceActive) && engine.slug === CHALYBCLIP_TRIAL_SLUG;
   // Every engine gets a chip. Platform-owned (no partner_id) → "by Chalyb"
   // muted; partner-owned → "by [name]" purple.
   const isPlatformOwned = engine.ownerUserId === null;
@@ -121,7 +116,7 @@ export default async function EngineWorkspacePage({
   // Lazy admin provisioning: admins have effective VIP via role
   // override, so they should auto-have engine access. If migration 0011's
   // backfill missed them (or a new engine was added after), create the row now.
-  if (isAdmin && engine.status === 'active') {
+  if (isAdmin && isRunnable) {
     await ensureAdminEngineAccess(session.user.id, engine.id);
   }
 
@@ -172,6 +167,9 @@ export default async function EngineWorkspacePage({
             width={160}
             height={160}
             priority
+            // Straight from /public — see engine-glyph.tsx for why the Clip
+            // mark skips the optimizer.
+            unoptimized
             style={{ display: 'block', width: 160, height: 160 }}
           />
           <div
@@ -272,32 +270,12 @@ export default async function EngineWorkspacePage({
           </div>
         </div>
         <div>
-          {isComingSoon ? (
-            <span
-              className="cc-mod-badge"
-              style={{
-                color: 'var(--cc-amber)',
-                borderColor: 'rgba(245,177,61,.3)',
-                background: 'var(--cc-amber-g)',
-                padding: '6px 12px',
-                fontSize: 11,
-              }}
-            >
-              Próximamente
-            </span>
-          ) : isLive ? (
-            <span className="cc-mod-badge gr" style={{ padding: '6px 12px', fontSize: 11 }}>
-              ● En vivo
-            </span>
-          ) : meetsTier ? (
-            <span className="cc-mod-badge cy" style={{ padding: '6px 12px', fontSize: 11 }}>
-              Disponible
-            </span>
-          ) : (
-            <span className="cc-mod-badge" style={{ padding: '6px 12px', fontSize: 11 }}>
-              Requiere {TIER_LABEL_SHORT[engine.tierRequired]}
-            </span>
-          )}
+          <EngineStatusBadge
+            state={view.state}
+            size="md"
+            trialDaysLeft={trialDaysLeft}
+            lockedPlan={TIER_LABEL_SHORT[engine.tierRequired]}
+          />
         </div>
       </div>
 
@@ -313,10 +291,15 @@ export default async function EngineWorkspacePage({
         {engine.description}
       </p>
 
-      {/* Tier-state CTA panel */}
+      {/* Readiness-state CTA panel */}
       {isComingSoon ? (
-        <ComingSoonPanel engineName={engine.name} />
-      ) : !meetsTier && !clipUnlocked ? (
+        <ComingSoonPanel
+          engineName={engine.name}
+          underConstruction={isUnderConstruction}
+          includedInPlan={meetsTier || engine.tierRequired === 'FREE'}
+          tierRequired={TIER_LABEL_SHORT[engine.tierRequired]}
+        />
+      ) : view.state === 'locked' ? (
         <UpgradeGatePanel engineName={engine.name} tierRequired={engine.tierRequired} />
       ) : isLive ? (
         <LaunchPanel
@@ -325,6 +308,8 @@ export default async function EngineWorkspacePage({
           integrationMode={engine.integrationMode}
           mode="live"
         />
+      ) : canSelectLive ? (
+        <ReadyPanel engineId={engine.id} engineName={engine.name} isSelected={view.isSelected} />
       ) : (
         <LaunchPanel
           engineId={engine.id}
@@ -357,16 +342,12 @@ export default async function EngineWorkspacePage({
         <div className="cc-mod-statgrid">
           <div className="cc-mod-stat">
             <div className="cc-mod-stat-l">Status</div>
-            <div
-              className={`cc-mod-stat-v ${engine.status === 'active' ? 'gr' : engine.status === 'coming_soon' ? 'am' : ''}`}
-            >
-              {engine.status === 'active'
-                ? 'Activo'
-                : engine.status === 'coming_soon'
-                  ? 'Próximamente'
-                  : 'Deprecado'}
+            <div className={`cc-mod-stat-v ${isRunnable ? 'gr' : 'am'}`}>
+              {isRunnable ? 'Listo' : isUnderConstruction ? 'En construcción' : 'Próximamente'}
             </div>
-            <div className="cc-mod-stat-sub">visible para tu plan</div>
+            <div className="cc-mod-stat-sub">
+              {isRunnable ? 'se puede abrir hoy' : 'aún no se puede abrir'}
+            </div>
           </div>
           {/* Plan tile, phrased for THIS user. A VIP reading "Tier requerido:
               Pro" on an upcoming engine took it as a paywall they had not
@@ -732,7 +713,17 @@ function AccessPanel({
   );
 }
 
-function ComingSoonPanel({ engineName }: { engineName: string }) {
+function ComingSoonPanel({
+  engineName,
+  underConstruction,
+  includedInPlan,
+  tierRequired,
+}: {
+  engineName: string;
+  underConstruction: boolean;
+  includedInPlan: boolean;
+  tierRequired: string;
+}) {
   return (
     <div
       style={{
@@ -753,10 +744,82 @@ function ComingSoonPanel({ engineName }: { engineName: string }) {
           marginBottom: 6,
         }}
       >
-        📅 Próximamente
+        {underConstruction ? '🛠 En construcción' : '📅 Próximamente'}
       </div>
       <div style={{ fontSize: 15.5, color: 'var(--cc-txt)', fontWeight: 500, marginBottom: 4 }}>
-        {engineName} está en construcción.
+        {engineName} todavía no se puede abrir.
+      </div>
+      <div
+        style={{
+          fontSize: 12.5,
+          color: 'var(--cc-txt-3)',
+          marginBottom: 14,
+          lineHeight: 1.55,
+          maxWidth: '62ch',
+        }}
+      >
+        Es parte de tu kit
+        {includedInPlan ? ' y va incluido en tu plan' : ` (requiere ${tierRequired})`}. No hay nada
+        que activar por ahora: el día que se publique aparece como <b>Listo</b> aquí, en Inicio y en
+        Mis engines, y ahí mismo verás el control para abrirlo o ponerlo en vivo.
+      </div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <Link
+          href={'/app/engines' as Route}
+          style={{
+            display: 'inline-block',
+            padding: '11px 20px',
+            borderRadius: 9,
+            border: '1px solid var(--cc-line-2)',
+            color: 'var(--cc-txt)',
+            fontFamily: 'inherit',
+            fontSize: 14,
+            textDecoration: 'none',
+          }}
+        >
+          Ver el resto del kit →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// Runnable, in plan, and the user's live slot is free (or on another engine):
+// the real "Activar en vivo" control lives here, next to the option to open
+// the engine in test mode first.
+function ReadyPanel({
+  engineId,
+  engineName,
+  isSelected,
+}: {
+  engineId: string;
+  engineName: string;
+  isSelected: boolean;
+}) {
+  return (
+    <div
+      style={{
+        padding: '24px 26px',
+        border: '1px solid var(--cc-green)',
+        background: 'rgba(158,234,58,.04)',
+        borderRadius: 'var(--cc-r-l)',
+        marginBottom: 28,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: 'var(--cc-mono), monospace',
+          fontSize: 10.5,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'var(--cc-green)',
+          marginBottom: 6,
+        }}
+      >
+        Listo para correr en vivo
+      </div>
+      <div style={{ fontSize: 15.5, color: 'var(--cc-txt)', fontWeight: 500, marginBottom: 4 }}>
+        {engineName} está listo. Tu plan enciende una herramienta en vivo: puede ser esta.
       </div>
       <div
         style={{
@@ -767,23 +830,21 @@ function ComingSoonPanel({ engineName }: { engineName: string }) {
           maxWidth: '60ch',
         }}
       >
-        Te notificaremos por correo cuando lo lancemos. Mientras tanto, explora los engines activos.
+        Al activarla, la herramienta que estaba en vivo vuelve a simulación. Puedes cambiar cuantas
+        veces quieras, sin penalización.
       </div>
-      <Link
-        href={'/app/engines' as Route}
-        style={{
-          display: 'inline-block',
-          padding: '11px 20px',
-          borderRadius: 9,
-          border: '1px solid var(--cc-line-2)',
-          color: 'var(--cc-txt)',
-          fontFamily: 'inherit',
-          fontSize: 14,
-          textDecoration: 'none',
-        }}
-      >
-        Ver engines disponibles →
-      </Link>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <LiveEngineSelectButton
+          engineId={engineId}
+          engineName={engineName}
+          isCurrentlySelected={isSelected}
+        />
+        <EngineLaunchButton
+          engineId={engineId}
+          engineName={engineName}
+          label={`Abrir prueba de ${engineName} ↗`}
+        />
+      </div>
     </div>
   );
 }

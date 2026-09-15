@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import {
   ENGINE_FILTER_KEYS,
   sectionFor,
   variantFor,
   type EngineFilterKey,
+  type EngineHeroAction,
   type EngineVM,
 } from './engine-config';
 import { EngineHero } from './engine-hero';
@@ -19,9 +22,10 @@ import { EngineCard } from './engine-card';
 // baked into each EngineVM.
 //
 // Default view ('all' filter) = the GROUPED layout: three actionability
-// sections (Disponibles ahora / Desbloueá con Pro / Próximamente) so the one
-// thing a user can do right now leads, and everything else is demoted. Picking
-// a specific filter tab flattens to a plain grid for power users.
+// sections (Disponibles ahora / Desbloquea con Pro / Próximamente) so the one
+// thing a user can do right now leads. When the whole kit is upcoming, the
+// "Próximamente" group is the only one and opens by itself — an empty page
+// with a collapsed list is not a state we show.
 
 function CardGrid({ items }: { items: EngineVM[] }) {
   return (
@@ -35,9 +39,6 @@ function CardGrid({ items }: { items: EngineVM[] }) {
   );
 }
 
-// Section header with a colored accent bar + a hairline divider underneath, so
-// the three actionability groups read as clearly separate bands. `right` is an
-// optional trailing control (used for the coming-soon toggle).
 function SectionHead({
   title,
   sub,
@@ -63,27 +64,28 @@ function SectionHead({
         </div>
         {right}
       </div>
-      {sub && <p className="mt-1 pl-[18px] text-[12.5px] leading-relaxed text-[var(--cc-txt-3)]">{sub}</p>}
+      {sub && (
+        <p className="mt-1 pl-[18px] text-[12.5px] leading-relaxed text-[var(--cc-txt-3)]">{sub}</p>
+      )}
     </div>
   );
 }
 
 export function EnginesExplorer({
   engines,
-  liveCount,
-  continueEngine,
+  heroAction,
   tierLabel,
   showUpsell,
+  isFree,
 }: {
   engines: EngineVM[];
-  liveCount: number;
-  continueEngine: { name: string; slug: string } | null;
+  heroAction: EngineHeroAction;
   tierLabel: string;
   showUpsell: boolean;
+  isFree: boolean;
 }) {
   const t = useTranslations('engines');
   const [filter, setFilter] = useState<EngineFilterKey>('all');
-  const [soonOpen, setSoonOpen] = useState(false);
 
   const counts = useMemo(() => {
     const c = Object.fromEntries(ENGINE_FILTER_KEYS.map((k) => [k, 0])) as Record<
@@ -105,6 +107,10 @@ export function EnginesExplorer({
     return { available, pro, soon };
   }, [engines]);
 
+  // Upcoming is the only group → it is the page; keep it open.
+  const soonIsEverything = groups.available.length === 0 && groups.pro.length === 0;
+  const [soonOpen, setSoonOpen] = useState(soonIsEverything);
+
   const filtered = useMemo(
     () => engines.filter((e) => e.filterKeys.includes(filter)),
     [engines, filter],
@@ -112,11 +118,8 @@ export function EnginesExplorer({
 
   return (
     <div className="flex flex-col gap-10 pb-2 md:gap-12">
-      {/* Slim page title + tier badge */}
       <div className="flex items-center justify-between gap-3">
-        <span
-          className="text-[13px] font-semibold uppercase tracking-wider text-[var(--cc-txt-4)] [font-family:var(--cc-mono),monospace]"
-        >
+        <span className="text-[13px] font-semibold uppercase tracking-wider text-[var(--cc-txt-4)] [font-family:var(--cc-mono),monospace]">
           {t('title')}
         </span>
         <span className="rounded-full border border-[var(--cc-green)]/30 bg-[var(--cc-green-g)] px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[var(--cc-green)]">
@@ -124,20 +127,23 @@ export function EnginesExplorer({
         </span>
       </div>
 
-      <EngineHero liveCount={liveCount} continueEngine={continueEngine} />
+      <EngineHero action={heroAction} />
 
       <div className="flex flex-col gap-10 md:gap-12">
         <EngineFilters active={filter} counts={counts} onChange={setFilter} />
 
         {filter !== 'all' ? (
-          // ── Power-user filtered view: flat grid ──────────────────────────
           filtered.length === 0 ? (
-            <EmptyFilter onReset={() => setFilter('all')} />
+            <EmptyFilter
+              filter={filter}
+              onReset={() => setFilter('all')}
+              isFree={isFree}
+              upcomingCount={groups.soon.length}
+            />
           ) : (
             <CardGrid items={filtered} />
           )
         ) : (
-          // ── Default grouped view: three actionability sections ───────────
           <div className="flex flex-col gap-10 md:gap-12">
             {groups.available.length > 0 && (
               <section className="flex flex-col gap-5">
@@ -166,19 +172,21 @@ export function EnginesExplorer({
               <section className="flex flex-col gap-5">
                 <SectionHead
                   title={t('sections.soon')}
-                  sub={t('sections.soonSub')}
+                  sub={soonIsEverything ? t('sections.soonSubOnly') : t('sections.soonSub')}
                   accent="bg-[var(--cc-txt-4)]"
                   right={
-                    <button
-                      type="button"
-                      onClick={() => setSoonOpen((v) => !v)}
-                      aria-expanded={soonOpen}
-                      className="shrink-0 rounded-lg border border-[var(--cc-line-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
-                    >
-                      {soonOpen
-                        ? t('sections.soonHide')
-                        : t('sections.soonShow', { count: groups.soon.length })}
-                    </button>
+                    soonIsEverything ? undefined : (
+                      <button
+                        type="button"
+                        onClick={() => setSoonOpen((v) => !v)}
+                        aria-expanded={soonOpen}
+                        className="shrink-0 rounded-lg border border-[var(--cc-line-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
+                      >
+                        {soonOpen
+                          ? t('sections.soonHide')
+                          : t('sections.soonShow', { count: groups.soon.length })}
+                      </button>
+                    )
                   }
                 />
                 {soonOpen && (
@@ -197,18 +205,53 @@ export function EnginesExplorer({
   );
 }
 
-function EmptyFilter({ onReset }: { onReset: () => void }) {
+// A filter with nothing in it still teaches the bundle and hands the user a
+// way out: "you came for one tool — this is what else your plan includes".
+function EmptyFilter({
+  filter,
+  onReset,
+  isFree,
+  upcomingCount,
+}: {
+  filter: EngineFilterKey;
+  onReset: () => void;
+  isFree: boolean;
+  upcomingCount: number;
+}) {
   const t = useTranslations('engines.filters');
+  const body =
+    filter === 'live'
+      ? isFree
+        ? t('emptyLiveFree')
+        : t('emptyLivePaid')
+      : filter === 'locked'
+        ? t('emptyLocked')
+        : filter === 'coming_soon'
+          ? t('emptySoon')
+          : t('emptyBody', { count: upcomingCount });
   return (
-    <div className="rounded-[14px] border border-dashed border-[var(--cc-line-2)] p-12 text-center">
+    <div className="rounded-[14px] border border-dashed border-[var(--cc-line-2)] p-10 text-center sm:p-12">
       <div className="text-[14px] font-semibold text-[var(--cc-txt-2)]">{t('emptyTitle')}</div>
-      <button
-        type="button"
-        onClick={onReset}
-        className="mt-3 rounded-lg border border-[var(--cc-line-2)] px-4 py-1.5 text-[12.5px] font-semibold text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
-      >
-        {t('emptyCta')}
-      </button>
+      <p className="mx-auto mt-2 max-w-[52ch] text-[12.5px] leading-relaxed text-[var(--cc-txt-3)]">
+        {body}
+      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded-lg border border-[var(--cc-line-2)] px-4 py-1.5 text-[12.5px] font-semibold text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
+        >
+          {t('emptyCta')}
+        </button>
+        {isFree && (
+          <Link
+            href={'/app/subscription' as Route}
+            className="rounded-lg border border-[var(--cc-green)]/40 px-4 py-1.5 text-[12.5px] font-semibold text-[var(--cc-green)] transition-colors hover:bg-[var(--cc-green-g)]"
+          >
+            {t('emptyPlans')}
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

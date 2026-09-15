@@ -120,7 +120,7 @@ export function WorkspaceSidebar({
         <div className="cc-ava">{userInitial}</div>
         <div className="cc-u">
           <div className="cc-u-n">{userName}</div>
-          <div className="cc-u-r">{tierLabel} plan</div>
+          <div className="cc-u-r">Plan {tierLabel}</div>
         </div>
         <Link
           href={'/app/settings' as Route}

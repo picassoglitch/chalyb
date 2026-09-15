@@ -5,6 +5,11 @@ import { WorkspaceShell } from '@/components/workspace/workspace-shell';
 import { WorkspaceProfileSubscriber } from '@/components/workspace/workspace-profile-subscriber';
 import { effectiveTier, isAdminRole, tierLabelShort } from '@/lib/billing/tiers';
 import { countUnreadForUser } from '@/lib/messages/messages-data';
+import {
+  entitlementSource,
+  entitlementSuffix,
+  getEntitlementEvidence,
+} from '@/lib/billing/entitlement';
 import '../dashboard/dashboard.css';
 
 const inter = Inter({
@@ -45,7 +50,17 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   const isAdmin = isAdminRole(role);
   const storedTier = session?.tier ?? 'FREE';
   const tier = effectiveTier(role, storedTier);
-  const tierLabel = isAdmin ? `${tierLabelShort(tier)} · ADMIN` : tierLabelShort(tier);
+  // A paid tier with no payment behind it is labelled as what it is
+  // (cortesía) rather than looking like a healthy Mercado Pago subscription.
+  const evidence = session
+    ? await getEntitlementEvidence(session.user.id)
+    : { approvedPayments: 0, hasBillingSubscription: false };
+  const suffix = entitlementSuffix(entitlementSource({ storedTier, role, evidence }));
+  const tierLabel = isAdmin
+    ? `${tierLabelShort(tier)} · ADMIN`
+    : suffix
+      ? `${tierLabelShort(tier)} · ${suffix}`
+      : tierLabelShort(tier);
 
   // Sidebar badge — admin-sent messages this user hasn't opened yet.
   // The /app/messages page auto-marks the thread read on render via

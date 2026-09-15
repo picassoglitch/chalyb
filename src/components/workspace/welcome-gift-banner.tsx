@@ -2,23 +2,23 @@
 
 // First-time welcome banner shown at the top of /app while the user hasn't
 // accepted yet (server passes `claimed`). On accept:
-//   1. call claimWelcomeGift() (marks claimed + starts the ChalyClip trial)
+//   1. call claimWelcomeGift() (marks claimed; starts the ChalyClip trial only
+//      when ChalyClip is actually runnable — see welcome-actions.ts)
 //   2. hide the banner + fire confetti
-//   3. after the confetti settles, router.refresh() so the stat cards (Tokens
-//      IA balance, Engines en vivo count, engine cards) re-render with the
-//      trial live — refreshing AFTER the animation instead of unmounting it
-//      mid-flight.
+//   3. after the confetti settles, router.refresh() so the stat cards re-render
+//      — refreshing AFTER the animation instead of unmounting it mid-flight.
 //
-// The component owns its own visibility so a refresh that flips `claimed` to
-// true doesn't yank the confetti out from under itself.
+// COPY IS HONEST ABOUT THE FLEET. The 50,000 tokens are the Free monthly
+// allocation (a real balance, rendered from getTokenBalance). The 7-day
+// ChalyClip Pro trial is described as running only when `clipRunnable`; while
+// ChalyClip is being rebuilt the banner says the trial is reserved and starts
+// the day ChalyClip is ready — which is exactly what the server action does.
 //
-// PERSISTENCE. Accepting is recorded in the database (welcome_gift_claimed_at),
-// which is what `claimed` reflects. "Ahora no" has no database column, so it is
-// remembered in a cookie scoped to this user id (see WELCOME_DISMISSED_COOKIE),
-// which the server page reads before rendering: the banner never mounts open
-// again on a client navigation, a reload, or a new tab, for 30 days. The same
-// cookie is also set on accept as a belt-and-braces: if the profile read ever
-// fails and `claimed` comes back false, the banner still stays gone.
+// PERSISTENCE. Accepting is recorded in the database (welcome_gift_claimed_at).
+// "Ahora no" is remembered in a cookie scoped to this user id (see
+// WELCOME_DISMISSED_COOKIE) that the server page reads before rendering, so the
+// banner never mounts open again on a client navigation, a reload, or a new
+// tab, for 30 days. The same cookie is also set on accept as a belt-and-braces.
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,12 +45,18 @@ export function WelcomeGiftBanner({
   claimed,
   initiallyDismissed,
   userId,
+  clipRunnable,
+  monthlyTokens,
 }: {
   claimed: boolean;
   /** Server-side read of the dismissal cookie for this user, so the banner is
    *  hidden from the first paint instead of flashing and then hiding. */
   initiallyDismissed: boolean;
   userId: string;
+  /** ChalyClip can actually be opened today (engineIsRunnable). */
+  clipRunnable: boolean;
+  /** The Free monthly allocation, from TIER_CAPS — what the "gift" really is. */
+  monthlyTokens: number;
 }) {
   const [dismissed, setDismissed] = useState(initiallyDismissed);
   const [celebrating, setCelebrating] = useState(false);
@@ -58,9 +64,6 @@ export function WelcomeGiftBanner({
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
 
-  // Already accepted (server state), dismissed earlier (cookie), or handled in
-  // this session → render only the confetti overlay if we're mid-celebration,
-  // nothing otherwise.
   if (claimed || dismissed) {
     return celebrating ? <Confetti durationMs={CONFETTI_MS} /> : null;
   }
@@ -80,13 +83,19 @@ export function WelcomeGiftBanner({
       rememberDismissal(userId);
       setDismissed(true);
       setCelebrating(true);
-      // Let the confetti play, then refresh server state (trial now live).
+      if (!res.trialStarted) {
+        showToast(
+          'Listo. Tu prueba de <b>ChalyClip Pro</b> queda reservada y arranca el día que ChalyClip esté listo.',
+        );
+      }
       window.setTimeout(() => {
         setCelebrating(false);
         router.refresh();
       }, CONFETTI_MS);
     });
   }
+
+  const tokens = monthlyTokens.toLocaleString('es-MX');
 
   return (
     <div
@@ -127,12 +136,23 @@ export function WelcomeGiftBanner({
             marginBottom: 6,
           }}
         >
-          Tu regalo de bienvenida está listo
+          Tu kit viene con un regalo de bienvenida
         </div>
-        <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '60ch' }}>
-          <b style={{ color: 'var(--cc-green)' }}>50,000 tokens IA</b> para usar en cualquier engine
-          este mes, más <b style={{ color: 'var(--cc-cyan)' }}>ChalyClip Pro gratis por 7 días</b> —
-          corriendo en vivo, sin tarjeta. Acepta para activarlo.
+        <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '62ch' }}>
+          <b style={{ color: 'var(--cc-green)' }}>{tokens} tokens IA</b> incluidos cada mes en Free,
+          para cualquier herramienta del kit.{' '}
+          {clipRunnable ? (
+            <>
+              Además, <b style={{ color: 'var(--cc-cyan)' }}>ChalyClip Pro gratis 7 días</b>, en
+              vivo y sin tarjeta. Acepta para activarlo.
+            </>
+          ) : (
+            <>
+              Además, <b style={{ color: 'var(--cc-cyan)' }}>7 días de ChalyClip Pro</b> que quedan
+              reservados: arrancan el día que ChalyClip esté listo, no antes. Acepta para
+              apartarlos.
+            </>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -172,7 +192,7 @@ export function WelcomeGiftBanner({
             whiteSpace: 'nowrap',
           }}
         >
-          {pending ? 'Activando…' : 'Aceptar mi regalo →'}
+          {pending ? 'Activando…' : clipRunnable ? 'Aceptar mi regalo →' : 'Apartar mi regalo →'}
         </button>
       </div>
     </div>

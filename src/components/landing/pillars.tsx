@@ -1,63 +1,64 @@
 import { useTranslations } from 'next-intl';
+import { KIT_TOOLS } from '@/lib/kit/tools';
+import type { PublicFleet } from '@/lib/data/public-engines';
 
 /* ── Illustrations ──────────────────────────────────────────────────────
-   Static, CSS-built UI snippets. Each mirrors a real /app surface so the
-   copy next to it is describing something the visitor will actually see. */
+   Static, CSS-built UI snippets. Each mirrors a real /app surface and shows
+   only what the visitor will actually see: the kit list carries the real
+   catalog status, the plan ladder states plan facts, the usage tile lists the
+   token allocations from the plans — no invented runs or meters. */
 
-function LibraryVisual() {
+function LibraryVisual({ fleet }: { fleet: PublicFleet }) {
   const t = useTranslations('landing.pillars.visuals');
+  const tools =
+    fleet.engines.length > 0
+      ? fleet.engines.slice(0, 4)
+      : KIT_TOOLS.slice(0, 4).map((k) => ({ slug: k.slug, name: k.name, ready: false }));
   return (
     <div className="lp-visual">
       <div className="lp-visual-head">{t('libraryTitle')}</div>
       <div className="lp-engine-list">
-        <div className="lp-engine">
-          <span className="lp-engine-name">
-            <i className="lp-engine-icon">◆</i>ChalyClip
-            <small>{t('libraryClip')}</small>
-          </span>
-          <span className="lp-status lp-status-live">
-            <i />
-            {t('ready')}
-          </span>
-        </div>
-        <div className="lp-engine">
-          <span className="lp-engine-name">
-            <i className="lp-engine-icon">▲</i>ChalyCrypto
-            <small>{t('libraryCrypto')}</small>
-          </span>
-          <span className="lp-status lp-status-live">
-            <i />
-            {t('ready')}
-          </span>
-        </div>
-        <div className="lp-engine">
-          <span className="lp-engine-name">
-            <i className="lp-engine-icon">●</i>ChalyOBS
-            <small>{t('libraryObs')}</small>
-          </span>
-          <span className="lp-status lp-status-soon">{t('soon')}</span>
-        </div>
+        {tools.map((tool) => (
+          <div key={tool.slug} className="lp-engine">
+            <span className="lp-engine-name">
+              <i className="lp-engine-icon">◆</i>
+              {tool.name}
+            </span>
+            {tool.ready ? (
+              <span className="lp-status lp-status-live">
+                <i />
+                {t('ready')}
+              </span>
+            ) : (
+              <span className="lp-status lp-status-soon">{t('soon')}</span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function SimulationVisual() {
+function PlanLadderVisual() {
   const t = useTranslations('landing.pillars.visuals');
   return (
     <div className="lp-visual">
       <div className="lp-visual-head">{t('modeTitle')}</div>
       <div className="lp-mode-row">
         <div>
-          <div className="lp-mode-name">ChalyClip</div>
-          <div className="lp-mode-sub">{t('modeSim')}</div>
+          <div className="lp-mode-name">{t('modeFree')}</div>
         </div>
         <span className="lp-switch" data-on="false" />
       </div>
       <div className="lp-mode-row lp-mode-row-on">
         <div>
-          <div className="lp-mode-name">ChalyClip</div>
-          <div className="lp-mode-sub lp-up">{t('modeLive')}</div>
+          <div className="lp-mode-name">{t('modePro')}</div>
+        </div>
+        <span className="lp-switch" data-on="true" />
+      </div>
+      <div className="lp-mode-row lp-mode-row-on">
+        <div>
+          <div className="lp-mode-name">{t('modeVip')}</div>
         </div>
         <span className="lp-switch" data-on="true" />
       </div>
@@ -66,43 +67,43 @@ function SimulationVisual() {
   );
 }
 
-function UsageVisual() {
+function IncludedVisual() {
   const t = useTranslations('landing.pillars.visuals');
+  const rows = [
+    { plan: t('usageFree'), tokens: '50k', pct: 5 },
+    { plan: t('usagePro'), tokens: '1M', pct: 20 },
+    { plan: t('usageVip'), tokens: '5M', pct: 100 },
+  ];
   return (
     <div className="lp-visual">
       <div className="lp-visual-head">{t('usageTitle')}</div>
       <div className="lp-meter">
         <div className="lp-meter-row">
           <span>{t('usageTokens')}</span>
-          <strong>312k / 1M</strong>
         </div>
-        <div className="lp-meter-bar">
-          <i style={{ width: '31%' }} />
-        </div>
+        {rows.map((r) => (
+          <div key={r.plan} className="lp-meter-row lp-meter-row-plan">
+            <span>{r.plan}</span>
+            <span className="lp-meter-bar">
+              <i style={{ width: `${r.pct}%` }} />
+            </span>
+            <strong>{r.tokens}</strong>
+          </div>
+        ))}
       </div>
-      <div className="lp-history">
-        <div className="lp-history-row">
-          <span>ChalyClip · {t('usageRun')} #1284</span>
-          <span className="lp-up">{t('usageOk')}</span>
-        </div>
-        <div className="lp-history-row">
-          <span>ChalyClip · {t('usageRun')} #1283</span>
-          <span className="lp-up">{t('usageOk')}</span>
-        </div>
-        <div className="lp-history-row">
-          <span>ChalyCrypto · {t('usageRun')} #0912</span>
-          <span className="lp-up">{t('usageOk')}</span>
-        </div>
-      </div>
+      <div className="lp-visual-foot">{t('usageFoot')}</div>
     </div>
   );
 }
 
-const VISUALS = [LibraryVisual, SimulationVisual, UsageVisual] as const;
-
 /** Exactly three benefit pillars in an alternating two-column layout. */
-export function Pillars() {
+export function Pillars({ fleet }: { fleet: PublicFleet }) {
   const t = useTranslations('landing.pillars');
+  const visuals = [
+    <LibraryVisual key="lib" fleet={fleet} />,
+    <PlanLadderVisual key="plan" />,
+    <IncludedVisual key="inc" />,
+  ];
 
   return (
     <section className="lp-section" id="features">
@@ -112,7 +113,7 @@ export function Pillars() {
           <p className="lp-sub">{t('subtitle')}</p>
         </div>
 
-        {VISUALS.map((Visual, idx) => {
+        {visuals.map((visual, idx) => {
           const n = idx + 1;
           return (
             <article key={n} className={`lp-pillar${idx % 2 === 1 ? ' lp-pillar-flip' : ''}`}>
@@ -132,7 +133,7 @@ export function Pillars() {
                 </ul>
               </div>
               <div className="lp-pillar-visual" aria-hidden="true">
-                <Visual />
+                {visual}
               </div>
             </article>
           );

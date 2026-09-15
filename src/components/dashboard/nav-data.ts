@@ -178,12 +178,12 @@ export const PAGE_META: Record<string, { title: string; sub: string }> = {
     sub: 'Cuenta, organización, notificaciones y seguridad.',
   },
   '/app': {
-    title: 'Tu espacio',
-    sub: 'Resumen de tu suscripción, uso y bots activos.',
+    title: 'Tu kit',
+    sub: 'Qué corre hoy, tu siguiente paso y todas las herramientas de tu suscripción.',
   },
   '/app/subscription': {
     title: 'Suscripción',
-    sub: 'Tu plan actual, cambios de tier y método de pago.',
+    sub: 'Un plan para todo el kit: Free explora, Pro enciende una herramienta, VIP abre el kit.',
   },
   '/app/usage': {
     title: 'Uso',
@@ -195,7 +195,7 @@ export const PAGE_META: Record<string, { title: string; sub: string }> = {
   },
   '/app/engines': {
     title: 'Mis engines',
-    sub: 'ChalyClip, ChalybStreamManager y próximos productos — disponibles en tu tier actual.',
+    sub: 'Las herramientas del kit y su estado real: listas, en vivo o próximamente.',
   },
   '/app/history': {
     title: 'Historial',
@@ -207,10 +207,10 @@ export const PAGE_META: Record<string, { title: string; sub: string }> = {
   },
   '/app/settings': {
     title: 'Perfil & seguridad',
-    sub: 'Tu cuenta personal, contraseña y 2FA.',
+    sub: 'Tu cuenta personal, idioma y contraseña.',
   },
   '/app/help': {
     title: 'Ayuda',
-    sub: 'Docs, contacto y estado del sistema.',
+    sub: 'Preguntas frecuentes, contacto y estado del kit.',
   },
 };

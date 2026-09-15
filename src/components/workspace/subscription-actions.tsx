@@ -23,30 +23,29 @@ const TIER_MARKETING: Record<
   SubscriptionTier,
   { tagline: string; features: string[]; featured?: boolean }
 > = {
+  // Kit unlock first, tokens second. Nothing here promises a tool is live:
+  // the fleet's real state lives on Inicio / Mis engines.
   FREE: {
-    tagline: 'Crea tu cuenta y prueba toda la plataforma gratis.',
+    tagline: 'Explora todo el kit en simulación, sin tarjeta.',
     features: [
-      'ChalyClip gratis 7 días',
-      '50,000 tokens IA de regalo',
+      'Todas las herramientas del kit, en simulación',
+      '7 días de ChalyClip Pro en vivo (cuando ChalyClip esté listo)',
+      '50,000 tokens IA al mes incluidos',
       'Acceso a la comunidad',
-      'Clips con marca de agua · descarga manual',
     ],
   },
   PRO: {
-    tagline: 'Enciende el engine que quieras, en vivo.',
+    tagline: 'Una herramienta del kit en vivo, la que tú elijas.',
     featured: true,
     features: [
       'Todo lo de Free',
-      '1 engine en vivo · tú eliges cuál',
-      '1,000,000 de tokens / mes (se regeneran)',
+      '1 herramienta en vivo · cámbiala cuando quieras',
+      'Las demás herramientas siguen en simulación',
+      '1,000,000 de tokens IA al mes (se regeneran)',
       'ChalyClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit',
-      'Comunidad premium',
     ],
   },
   // PARTNER tier is admin-granted only — never shown as a buyable card.
-  // We still need the entry so Record<SubscriptionTier, ...> typechecks
-  // and the labels map can be indexed by any tier. The card-filtering
-  // ORDER array below excludes it.
   PARTNER: {
     tagline: 'Programa de partners · solo por invitación.',
     features: [
@@ -58,12 +57,12 @@ const TIER_MARKETING: Record<
     ],
   },
   VIP: {
-    tagline: 'Todo Chalyb abierto — IA + Clip, sin límites.',
+    tagline: 'Todo el kit en vivo. Una suscripción, cero herramientas aparte.',
     features: [
       'Todo lo de Pro',
-      'Todos los engines en vivo',
-      '5× los tokens de Pro (5,000,000 / mes)',
-      'Paquete completo de streamer de ChalyClip',
+      'Todas las herramientas del kit en vivo, en cuanto se publican',
+      'Los límites más altos en cada herramienta',
+      '5,000,000 de tokens IA al mes',
       'Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea',
     ],
   },
