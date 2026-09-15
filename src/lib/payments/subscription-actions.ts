@@ -27,7 +27,13 @@ import { getSessionUser, type SubscriptionTier } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_PRICING } from './pricing';
-import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
+import {
+  getMercadoPago,
+  getAppUrl,
+  isCheckoutReady,
+  checkoutNotReadyError,
+  describeMpError,
+} from './mercadopago';
 import { isSubscribableTier, subscriptionReference } from './subscription-reference';
 
 export interface SubscriptionCheckoutResult {
@@ -161,11 +167,7 @@ export async function createTierSubscription(
     return { ok: true, url };
   } catch (err) {
     console.error('[mp/subscription] preapproval.create failed', err);
-    const e = err as {
-      message?: string;
-      cause?: { error?: { message?: string }; message?: string };
-    };
-    const detail = e?.cause?.error?.message || e?.cause?.message || e?.message || 'sin detalle';
+    const detail = describeMpError(err);
     const isCurrencyError = /currency|currency_id|moneda/i.test(detail);
     const isPayerError = /payer|collector|test user|usuario de prueba/i.test(detail);
     const hint = isCurrencyError

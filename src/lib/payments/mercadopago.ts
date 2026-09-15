@@ -144,3 +144,31 @@ export async function mpGet<T>(path: string): Promise<T> {
 export function getAppUrl(): string {
   return appUrl();
 }
+
+/**
+ * A sentence for the operator out of whatever the SDK threw.
+ *
+ * The SDK answers a non-2xx by parsing the error body as JSON. When Mercado
+ * Pago's gateway rejects the credential it often answers 401/403 with an
+ * EMPTY body, so what surfaces is node-fetch's "invalid json response body …
+ * Unexpected end of JSON input" and the real status is lost. That shape is
+ * a credential problem until proven otherwise; say so, and point at the
+ * diagnostic that shows the actual HTTP status.
+ */
+export function describeMpError(err: unknown): string {
+  const e = err as {
+    message?: string;
+    type?: string;
+    cause?: { error?: { message?: string }; message?: string };
+  };
+  const detail = e?.cause?.error?.message || e?.cause?.message || e?.message || 'sin detalle';
+  if (e?.type === 'invalid-json' || /invalid json response body/i.test(detail)) {
+    return (
+      'Mercado Pago respondió sin cuerpo, que es lo que hace cuando rechaza la credencial. ' +
+      `Revisa que ${MP_ACCESS_TOKEN_VAR} en Vercel sea el Access Token vigente (si lo regeneraste ` +
+      'en el panel, el anterior dejó de servir) y sin espacios ni comillas. /api/_diag/mp muestra ' +
+      'el código HTTP real.'
+    );
+  }
+  return detail;
+}

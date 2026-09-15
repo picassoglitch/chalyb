@@ -29,7 +29,13 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { getTokenPack } from './pricing';
 import { orderAmount } from './order-charge';
-import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
+import {
+  getMercadoPago,
+  getAppUrl,
+  isCheckoutReady,
+  checkoutNotReadyError,
+  describeMpError,
+} from './mercadopago';
 
 export interface PackCheckoutResult {
   ok: boolean;
@@ -131,11 +137,7 @@ export async function createTokenPackCheckout(
       cause?: { error?: { message?: string }; status?: number };
       name?: string;
     };
-    const detail =
-      e?.cause?.error?.message ||
-      e?.message ||
-      e?.name ||
-      'unknown server error in token-pack-checkout';
+    const detail = describeMpError(err);
     console.error('[token-pack-checkout] uncaught', {
       packId,
       errorName: e?.name,
