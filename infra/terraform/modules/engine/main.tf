@@ -69,19 +69,22 @@ locals {
   )
 
   # S3-API access to the media bucket (see var.object_storage_env_prefix).
-  # `one()` keeps these expressions valid when the HMAC key is not created.
+  # The map keys are interpolated BEFORE the `if` filter runs, so a null
+  # prefix has to be substituted first; `one()` likewise keeps the values
+  # valid when the HMAC key is not created.
   object_storage_enabled = var.object_storage_env_prefix != null
+  object_storage_prefix  = coalesce(var.object_storage_env_prefix, "UNUSED")
   object_storage_env = {
     for k, v in {
-      "${var.object_storage_env_prefix}_BUCKET"        = var.media_bucket
-      "${var.object_storage_env_prefix}_ENDPOINT"      = "https://storage.googleapis.com"
-      "${var.object_storage_env_prefix}_REGION"        = var.region
-      "${var.object_storage_env_prefix}_ACCESS_KEY_ID" = one(google_storage_hmac_key.media[*].access_id)
+      "${local.object_storage_prefix}_BUCKET"        = var.media_bucket
+      "${local.object_storage_prefix}_ENDPOINT"      = "https://storage.googleapis.com"
+      "${local.object_storage_prefix}_REGION"        = var.region
+      "${local.object_storage_prefix}_ACCESS_KEY_ID" = one(google_storage_hmac_key.media[*].access_id)
     } : k => v if local.object_storage_enabled
   }
   object_storage_secret_env = {
     for k, v in {
-      "${var.object_storage_env_prefix}_SECRET_ACCESS_KEY" = one(google_secret_manager_secret.media_hmac[*].secret_id)
+      "${local.object_storage_prefix}_SECRET_ACCESS_KEY" = one(google_secret_manager_secret.media_hmac[*].secret_id)
     } : k => v if local.object_storage_enabled
   }
   job_secret_env = merge(
