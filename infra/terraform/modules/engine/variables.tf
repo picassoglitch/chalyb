@@ -29,6 +29,20 @@ variable "env" {
   default     = {}
 }
 
+variable "object_storage_env_prefix" {
+  description = <<-EOT
+    Set for an engine that talks to the media bucket through the S3 API
+    (boto3 with an endpoint override) rather than a GCS client. The module
+    then creates an HMAC key for the engine's service account and injects
+    <PREFIX>_BUCKET, _ENDPOINT, _REGION, _ACCESS_KEY_ID and (from Secret
+    Manager) _SECRET_ACCESS_KEY into the API, the worker and every job.
+    ChalyClip reads CHALYBCLIP_OBJECT_STORAGE_*. Null means the engine gets
+    only the IAM grant on the bucket.
+  EOT
+  type        = string
+  default     = null
+}
+
 variable "shared_secret_env" {
   description = <<-EOT
     Project-wide secrets to inject, as VAR_NAME => secret_id (e.g. the Zernio
@@ -84,10 +98,10 @@ variable "worker" {
                     internet with nothing but the app token in front of it.
   EOT
   type = object({
-    cpu              = optional(string, "2")
-    memory           = optional(string, "4Gi")
-    max_instances    = optional(number, 3)
-    timeout          = optional(string, "3600s")
+    cpu                   = optional(string, "2")
+    memory                = optional(string, "4Gi")
+    max_instances         = optional(number, 3)
+    timeout               = optional(string, "3600s")
     env                   = optional(map(string), {})
     endpoint_env_var      = optional(string)
     token_env_var         = optional(string)

@@ -95,6 +95,10 @@ variable "engines" {
     # Project-wide secrets to inject: VAR_NAME => key in local.shared_secrets.
     shared_secrets = optional(map(string), {})
 
+    # Env-var prefix for S3-API access to the media bucket (HMAC key), for
+    # engines whose storage client is boto3. See modules/engine/variables.tf.
+    object_storage_env_prefix = optional(string)
+
     # What the engine calls its own three secrets. Defaults are the
     # convention; override for engines that read different names.
     secret_env_names = optional(object({
@@ -104,13 +108,13 @@ variable "engines" {
     }), {})
 
     worker = optional(object({
-      cpu                   = optional(string, "2")
-      memory                = optional(string, "4Gi")
-      max_instances         = optional(number, 3)
-      timeout               = optional(string, "3600s")
-      env                   = optional(map(string), {})
-      endpoint_env_var      = optional(string)
-      token_env_var         = optional(string)
+      cpu              = optional(string, "2")
+      memory           = optional(string, "4Gi")
+      max_instances    = optional(number, 3)
+      timeout          = optional(string, "3600s")
+      env              = optional(map(string), {})
+      endpoint_env_var = optional(string)
+      token_env_var    = optional(string)
       # Defaults to false: only the engine's service account may invoke the
       # worker. See modules/engine/variables.tf for what the API has to send.
       allow_unauthenticated = optional(bool, false)
@@ -141,6 +145,10 @@ variable "engines" {
         # inside the API request and never touches the worker. This is what
         # makes it dispatch.
         CHALYBCLIP_JOB_DISPATCHER = "modal"
+        # Transcription is a metered API, not a GPU: the cheapest option at
+        # this volume (docs/infra/compute-costs.md). The provider name is the
+        # engine's; the key comes from the shared secret below.
+        CHALYBCLIP_TRANSCRIBE_PROVIDER = "assemblyai"
       }
 
       # ChalyClip reads all three WITHOUT its usual CHALYBCLIP_ prefix:
@@ -154,11 +162,25 @@ variable "engines" {
       }
 
       shared_secrets = {
-        CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key"
+        CHALYBCLIP_ZERNIO_API_KEY     = "zernio-api-key"
+        CHALYBCLIP_ASSEMBLYAI_API_KEY = "assemblyai-api-key"
+        # The LLM router (config/llm.yaml in the engine) routes every purpose
+        # to Anthropic; the key is read by name from the environment.
+        ANTHROPIC_API_KEY = "anthropic-api-key"
       }
 
-      # `chalybclip worker` — the kickoff/poll pipeline service.
+      # ChalyClip's pipeline refuses to run without an S3-API bucket (clip
+      # artifacts must outlive the worker's disk). boto3 against GCS's S3
+      # interop endpoint, credentials from an HMAC key on the service account.
+      object_storage_env_prefix = "CHALYBCLIP_OBJECT_STORAGE"
+
+      # `chalybclip worker` — the kickoff/poll pipeline service. Scene
+      # detection (OpenCV) and ffmpeg cuts are CPU-bound; 4 vCPU halves the
+      # wall time of a run for the same vCPU-seconds, so the same money buys
+      # a faster turnaround.
       worker = {
+        cpu              = "4"
+        memory           = "8Gi"
         env              = { CHALYBCLIP_ROLE = "worker" }
         endpoint_env_var = "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL"
         # The API sends settings.modal_token as its bearer; the worker accepts
