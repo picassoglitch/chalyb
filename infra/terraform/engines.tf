@@ -34,7 +34,8 @@ module "engine" {
     each.value.env,
   )
 
-  secret_env_names = each.value.secret_env_names
+  secret_env_names          = each.value.secret_env_names
+  object_storage_env_prefix = each.value.object_storage_env_prefix
 
   shared_secret_env = {
     for var_name, secret_key in each.value.shared_secrets :

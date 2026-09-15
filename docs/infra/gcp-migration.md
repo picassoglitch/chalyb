@@ -117,12 +117,17 @@ Options, best first:
 Do not run the relay on Cloud Run — it won't work — and don't put it on a GCE
 VM without modelling your egress bill first.
 
-### Transcription / GPU
+### Transcription, LLM and the GPU that is gone
 
-If the clip pipeline used the dead machine's GPU for Whisper, don't rent a GPU
-to replace it at this volume. A transcription API (Deepgram, Groq, OpenAI) is
-dramatically cheaper until you're running many hours a day. Cloud Run does
-support L4 GPUs with scale-to-zero if that changes.
+The dead machine's GPU did three jobs for ChalyClip: Whisper, and Ollama
+serving a text model and a vision model for every LLM purpose. None of it is
+replaced by a GPU: at this volume a metered API is cheaper than an idle L4
+by an order of magnitude, and scales to $0. Transcription goes to AssemblyAI
+and the LLM router to Anthropic; Terraform injects both keys. The evaluation,
+the alternatives and the per-VOD numbers are in [`compute-costs.md`](compute-costs.md).
+Modal, which ChalyClip once used for both, is not needed at all — the
+`CHALYBCLIP_MODAL_*` names that remain are the worker protocol, now pointed
+at the Cloud Run worker.
 
 ## Rebuild order
 
