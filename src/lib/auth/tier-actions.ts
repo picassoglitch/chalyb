@@ -15,7 +15,7 @@ interface ChangeResult {
   error?: string;
   /** True when the caller asked for a paid tier they cannot grant themselves.
    *  The write did NOT happen — the UI must send them through Mercado Pago
-   *  (createTierSubscription), and the tier lands when the webhook confirms the
+   *  (authorizeTierSubscription), and the tier lands when Mercado Pago confirms the
    *  payment. */
   paymentRequired?: boolean;
   /** ISO date the cancelled plan stops working. Present when the user

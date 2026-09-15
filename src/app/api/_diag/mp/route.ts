@@ -20,6 +20,7 @@ import { isAdminRole } from '@/lib/billing/tiers';
 import {
   isMercadoPagoConfigured,
   getAppUrl,
+  getPublicKey,
   getWebhookSecret,
 } from '@/lib/payments/mercadopago';
 
@@ -35,6 +36,8 @@ interface DiagResult {
    *  is set without us echoing the whole secret back. */
   tokenPrefix?: string | null;
   webhookSecretConfigured?: boolean;
+  /** The Bricks public key that initialises the in-app card form. */
+  publicKeyConfigured?: boolean;
   appUrl?: string;
   isHttps?: boolean;
   mpReachable?: boolean;
@@ -118,6 +121,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     tokenKind,
     tokenPrefix,
     webhookSecretConfigured: Boolean(getWebhookSecret()),
+    publicKeyConfigured: Boolean(getPublicKey()),
     appUrl,
     isHttps,
     mpReachable,

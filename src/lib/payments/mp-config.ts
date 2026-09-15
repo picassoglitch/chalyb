@@ -8,7 +8,7 @@
 
 export const MP_ACCESS_TOKEN_VAR = 'MERCADOPAGO_ACCESS_TOKEN';
 export const MP_WEBHOOK_SECRET_VAR = 'MERCADOPAGO_WEBHOOK_SECRET';
-/** Only needed for embedded (Bricks) checkout, which the hub does not use. */
+/** The Bricks (embedded card form) public key. Ships to the browser. */
 export const MP_PUBLIC_KEY_VAR = 'MERCADOPAGO_PUBLIC_KEY';
 
 type Env = Record<string, string | undefined>;
@@ -21,24 +21,34 @@ export function readWebhookSecret(env: Env): string | undefined {
   return env[MP_WEBHOOK_SECRET_VAR] || env.MP_WEBHOOK_SECRET || undefined;
 }
 
+export function readPublicKey(env: Env): string | undefined {
+  return env[MP_PUBLIC_KEY_VAR] || env.MP_PUBLIC_KEY || undefined;
+}
+
 /**
  * Variables a checkout cannot safely start without, by canonical name.
  *
- * The access token is obvious. The webhook secret is on the list because
- * /api/mp/webhook fails closed without it: Mercado Pago would take the money
- * and the tier or token pack would never be credited. Starting a checkout in
- * that state is exactly the half-configured failure we refuse to fail open into.
+ * The access token is obvious. The public key is what the card form in the
+ * browser (Checkout Bricks) initialises with; without it there is no form to
+ * pay in. The webhook secret is on the list because /api/mp/webhook fails
+ * closed without it: Mercado Pago would take the money and the tier or token
+ * pack would never be credited. Starting a checkout in that state is exactly
+ * the half-configured failure we refuse to fail open into.
  */
 export function missingCheckoutConfig(env: Env): string[] {
   const missing: string[] = [];
   if (!readAccessToken(env)) missing.push(MP_ACCESS_TOKEN_VAR);
+  if (!readPublicKey(env)) missing.push(MP_PUBLIC_KEY_VAR);
   if (!readWebhookSecret(env)) missing.push(MP_WEBHOOK_SECRET_VAR);
   return missing;
 }
 
 /** Operator-facing sentence naming what to set and where. */
 export function checkoutNotReadyMessage(missing: string[]): string {
-  const list = missing.join(' y ');
+  const list =
+    missing.length > 1
+      ? `${missing.slice(0, -1).join(', ')} y ${missing[missing.length - 1]}`
+      : (missing[0] ?? '');
   return (
     `Los pagos con Mercado Pago todavía no están activos: falta ${list} en Vercel ` +
     `(los mismos nombres que en .env.local.example). Un admin puede activar tu plan directo.`

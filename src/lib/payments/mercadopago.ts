@@ -36,6 +36,7 @@ import {
   checkoutNotReadyMessage,
   missingCheckoutConfig,
   readAccessToken,
+  readPublicKey,
   readWebhookSecret,
 } from './mp-config';
 
@@ -55,6 +56,12 @@ function getAccessToken(): string | undefined {
 
 export function getWebhookSecret(): string | undefined {
   return readWebhookSecret(process.env);
+}
+
+/** The Bricks public key. Not a secret: it initialises the card form in the
+ *  browser, so a server page may pass it down to a client component. */
+export function getPublicKey(): string | undefined {
+  return readPublicKey(process.env);
 }
 
 /** The access token is present. Enough to READ from Mercado Pago (the webhook
