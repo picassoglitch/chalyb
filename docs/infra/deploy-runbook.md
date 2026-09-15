@@ -226,8 +226,7 @@ terraform -chdir=infra/terraform output -raw cloud_build_service_account
 # chalyb-deployer@chalyb.iam.gserviceaccount.com
 ```
 
-Then from the engine's own repo (for example `picassoglitch/chalybclip`, which
-GitHub still serves at its old URL until the repo is renamed):
+Then from the engine's own repo (for example `picassoglitch/ChalyClip`):
 
 ```sh
 gcloud builds submit --config=cloudbuild.yaml \

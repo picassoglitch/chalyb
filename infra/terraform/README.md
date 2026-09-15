@@ -33,7 +33,7 @@ secrets, so a compromise of one engine does not expose another's.
 
 ## Shapes verified against the application
 
-`worker.tf` was corrected after reading picassoglitch/chalybclip. Both halves
+`worker.tf` was corrected after reading picassoglitch/ChalyClip. Both halves
 were originally inverted, and both would have failed silently rather than
 loudly:
 
