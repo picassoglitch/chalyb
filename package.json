@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "db:link": "supabase link --project-ref uqcbziwdgbnzehipzjxp",
     "db:push": "supabase db push",
-    "db:new": "supabase migration new"
+    "db:new": "supabase migration new",
+    "auth:emails": "node scripts/push-auth-emails.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

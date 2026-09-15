@@ -122,7 +122,22 @@ server-side (invite type only) and sets the session cookies. Invites are sent
 from `/dashboard/team`; Supabase creates the user, the trigger creates the
 profile, and the action applies the chosen role.
 
-## Rebrand checklist — Nexo AI → Chalyb (dashboard-only)
+## Rebrand checklist — Nexo AI → Chalyb
+
+Fastest route, from a terminal (needs a personal access token from
+https://supabase.com/dashboard/account/tokens — not the anon or service key):
+
+```
+SUPABASE_ACCESS_TOKEN=sbp_... pnpm auth:emails                      # dry run, shows the diff
+SUPABASE_ACCESS_TOKEN=sbp_... pnpm auth:emails -- --apply --sender --urls --smtp-pass "$RESEND_API_KEY"
+```
+
+That pushes the six templates and subjects from this folder, sets the sender
+to `Chalyb <noreply@chalyb.com>`, points the SMTP relay at Resend, and sets
+the Site URL and redirect list, through the Management API. The manual
+equivalent is the checklist below.
+
+### Manual (dashboard-only)
 
 Everything in this repo already says Chalyb. What still says Nexo lives in
 the Supabase and Resend dashboards, and only a human with dashboard access
