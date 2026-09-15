@@ -15,7 +15,7 @@ interface Cmd {
 
 const STATIC_CMDS: Cmd[] = [
   { g: 'Acciones', ic: '▶', n: 'Iniciar stream', s: 'ChalybStreamManager', k: 'S' },
-  { g: 'Acciones', ic: '✂', n: 'Crear clip', s: 'ChalybClip · último VOD' },
+  { g: 'Acciones', ic: '✂', n: 'Crear clip', s: 'ChalyClip · último VOD' },
   { g: 'Acciones', ic: '↗', n: 'Publicar a TikTok', s: 'Publishing' },
   { g: 'Acciones', ic: '⟳', n: 'Reiniciar worker', s: 'Elige un engine' },
   { g: 'Acciones', ic: '👥', n: 'Invitar a tu equipo', s: 'Team & Roles' },

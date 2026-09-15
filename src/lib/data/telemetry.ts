@@ -35,7 +35,7 @@ const HIST_LEN = 14;
 //   rev      → SUM(payments.amount_cents)/100 with status='approved'
 //              AND created_at::date = today
 //   streams  → COUNT(DISTINCT user_id) usage_events today
-//              (now labeled "Usuarios hoy" — no ChalybClip live-stream
+//              (now labeled "Usuarios hoy" — no ChalyClip live-stream
 //              count available cross-system yet)
 //   queue    → SUM(usage_events.amount) today
 //              (now labeled "Tokens hoy" — no queue/backpressure concept
@@ -72,7 +72,9 @@ function pushHist(id: string, value: number): number[] {
 
 function startOfDayIso(): string {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  ).toISOString();
 }
 function sixtySecondsAgoIso(): string {
   return new Date(Date.now() - 60_000).toISOString();
@@ -107,10 +109,7 @@ export async function tickStrip(): Promise<StripValue[]> {
       .select('amount_cents')
       .eq('status', 'approved')
       .gte('created_at', dayStart),
-    admin
-      .from('usage_events')
-      .select('user_id')
-      .gte('occurred_at', dayStart),
+    admin.from('usage_events').select('user_id').gte('occurred_at', dayStart),
     admin
       .from('usage_events')
       .select('amount')

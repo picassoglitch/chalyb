@@ -56,11 +56,7 @@ export async function getTokenBalance(userId: string): Promise<TokenBalance> {
   const admin = createAdminClient();
 
   const [{ data: profile }, { data: events }] = await Promise.all([
-    admin
-      .from('profiles')
-      .select('role, tier, token_bonus_balance')
-      .eq('id', userId)
-      .maybeSingle(),
+    admin.from('profiles').select('role, tier, token_bonus_balance').eq('id', userId).maybeSingle(),
     // Pull EVERY metered event this month (not just llm.tokens) so the
     // quota reflects ALL provider spend — transcription, the engine base
     // charge, future meters — instead of only Claude tokens.
@@ -131,7 +127,7 @@ export async function isOverQuota(userId: string): Promise<boolean> {
 export interface RecordedEvent {
   /** Engine slug calling in (e.g. 'chalybclip'). */
   engineSlug: string;
-  /** Chalyb user id (ChalybClip stores this as tenant.external_user_id). */
+  /** Chalyb user id (ChalyClip stores this as tenant.external_user_id). */
   userId: string;
   /** Free-text kind discriminator. Common values: 'llm.tokens',
    *  'transcription.seconds', 'storage.mb', 'publish.count'. The platform
@@ -209,13 +205,11 @@ export async function recordUsageEvents(
 
   // upsert with ignoreDuplicates so the (engine_id, source_id) UNIQUE
   // catches retries without erroring out the whole batch.
-  const { error, count } = await admin
-    .from('usage_events')
-    .upsert(rows, {
-      onConflict: 'engine_id,source_id',
-      ignoreDuplicates: true,
-      count: 'exact',
-    });
+  const { error, count } = await admin.from('usage_events').upsert(rows, {
+    onConflict: 'engine_id,source_id',
+    ignoreDuplicates: true,
+    count: 'exact',
+  });
 
   if (error) {
     console.error('[usage] insert failed', error.message);

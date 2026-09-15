@@ -89,7 +89,7 @@ export function TermsDocumentEs() {
         </li>
         <li>
           <strong>Engine</strong>: cada producto independiente integrado a la Plataforma. Al momento
-          de esta versión: <strong>ChalybClip</strong> (generador de clips a partir de streams/VODs)
+          de esta versión: <strong>ChalyClip</strong> (generador de clips a partir de streams/VODs)
           y <strong>ChalybStreamManager</strong>
           (control central de transmisiones en vivo). Cada Engine se ejecuta en infraestructura
           propia bajo su propia licencia y política de uso.
@@ -205,7 +205,7 @@ export function TermsDocumentEs() {
         </li>
       </ul>
       <p>
-        <strong>ChalybClip</strong> en particular procesa contenido de video que tú subes o que
+        <strong>ChalyClip</strong> en particular procesa contenido de video que tú subes o que
         descargas de fuentes externas. Eres responsable de tener los derechos sobre ese contenido
         (ver Sección 9).
       </p>
@@ -237,7 +237,7 @@ export function TermsDocumentEs() {
       <h2 id="contenido">9. Tu contenido y licencias</h2>
       <p>
         <strong>Tú eres dueño de tu contenido.</strong> No reclamamos propiedad sobre los VODs que
-        subes, los clips que ChalybClip genera para ti, los prompts que escribes, ni los streams que
+        subes, los clips que ChalyClip genera para ti, los prompts que escribes, ni los streams que
         enrutas vía ChalybStreamManager.
       </p>
       <p>

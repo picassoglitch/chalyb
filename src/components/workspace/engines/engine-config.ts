@@ -12,14 +12,14 @@
  *  Exactly one per engine. */
 export type EngineLiveState =
   | 'live' // running live for this user (meets tier, selected / all-access)
-  | 'trial' // live via the ChalybClip trial/grace window (FREE user)
+  | 'trial' // live via the ChalyClip trial/grace window (FREE user)
   | 'simulation' // active + available, but running in simulation (not live)
   | 'locked' // active but gated behind a higher plan
   | 'coming_soon'; // not launched yet
 
 /** The visual treatment a card renders with. Three distinct looks so the
  *  states are tellable apart at a glance (spec: available / locked / soon).
- *  `featured` is the dominant ChalybClip card inside the available section. */
+ *  `featured` is the dominant ChalyClip card inside the available section. */
 export type EngineCardVariant = 'featured' | 'available' | 'locked' | 'soon';
 
 /** Which actionability section an engine belongs to on the default (grouped)
@@ -91,7 +91,7 @@ export interface EngineVM {
   isPlatformOwned: boolean;
   isOwnedByMe: boolean;
   ownerLabel: string;
-  /** True only for the hero/featured treatment (ChalybClip when usable now). */
+  /** True only for the hero/featured treatment (ChalyClip when usable now). */
   featured: boolean;
   /** PRO users can pick their single live engine from active+eligible cards. */
   canSelectLive: boolean;

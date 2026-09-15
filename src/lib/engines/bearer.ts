@@ -2,8 +2,8 @@
 //
 // Every engine calls back into the hub (usage reporting, balance lookups)
 // with its own admin token. This used to be a two-entry lookup table copied
-// into each route file, listing only chalybclip — so ChalybOBS and
-// ChalybCrypto got a 404 "unknown engine" from endpoints they are supposed to
+// into each route file, listing only chalybclip — so ChalyOBS and
+// ChalyCrypto got a 404 "unknown engine" from endpoints they are supposed to
 // use, and the copy in one file could drift from the copy in the other.
 //
 // The env var name follows from the slug, the same rule the rest of the hub

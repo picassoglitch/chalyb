@@ -1,7 +1,7 @@
-# ChalybClip — Publishing via Zernio (replaces upload-post)
+# ChalyClip — Publishing via Zernio (replaces upload-post)
 
 Build spec for swapping the clip-publishing backend from **upload-post** to
-**Zernio** (`https://zernio.com/api/v1`). Publishing lives in **ChalybClip's** repo
+**Zernio** (`https://zernio.com/api/v1`). Publishing lives in **ChalyClip's** repo
 (it renders + posts clips); `chalyb` stays vendor-agnostic. This doc is the
 contract + reference implementation.
 
@@ -25,14 +25,14 @@ TikTok/IG apps (likely avoids running your own TikTok Content-Posting audit).
 - Base URL `https://zernio.com/api/v1`; header `Authorization: Bearer sk_…`.
 - Store `ZERNIO_API_KEY` server-side only (never client). One key per
   environment; scope every call by `profileId`. Rotate on leak.
-- SDKs (Node/Python), CLI, and an MCP server exist — use the SDK in ChalybClip's
+- SDKs (Node/Python), CLI, and an MCP server exist — use the SDK in ChalyClip's
   backend rather than hand-rolling HTTP.
 
 ---
 
-## 1. Map a ChalybClip tenant → a Zernio profile
+## 1. Map a ChalyClip tenant → a Zernio profile
 
-A Zernio **profile** = a container of social accounts = **one ChalybClip user**.
+A Zernio **profile** = a container of social accounts = **one ChalyClip user**.
 
 - On first publish-setup for a tenant: `POST /profiles { name, description }` →
   store `profile._id` on the tenant (`tenants.zernio_profile_id`). Idempotent:
@@ -43,7 +43,7 @@ A Zernio **profile** = a container of social accounts = **one ChalybClip user**.
 
 ---
 
-## 2. Connect social accounts (white-label, from inside ChalybClip)
+## 2. Connect social accounts (white-label, from inside ChalyClip)
 
 Gate on `clipConnectSocials` (read from the SSO tier). FREE users never see the
 connect button.
@@ -67,7 +67,7 @@ Notes:
 
 ## 3. Publish a clip (video)
 
-Three steps (ChalybClip already has the rendered clip on disk/CDN):
+Three steps (ChalyClip already has the rendered clip on disk/CDN):
 
 1. `POST /v1/media/presign` → `{ uploadUrl, publicUrl }`.
 2. `PUT` the rendered clip bytes to `uploadUrl`.
@@ -165,7 +165,7 @@ Subscribe to:
 
 ## 8. Acceptance
 
-- A PRO/VIP tenant connects TikTok/IG/YT from inside ChalybClip without leaving the
+- A PRO/VIP tenant connects TikTok/IG/YT from inside ChalyClip without leaving the
   app; `account.connected` arrives; the account shows in their UI.
 - Publishing a clip returns live `postUrl`s; `post.published` webhook fires.
 - VIP can schedule a clip for a future time / recurring slot; PRO cannot.
@@ -175,14 +175,14 @@ Subscribe to:
 
 ---
 
-## 9. ChalybClip-side reference — schema & endpoints
+## 9. ChalyClip-side reference — schema & endpoints
 
-What ChalybClip owns. Zernio is the upstream; these are ChalybClip's own DB tables +
-the routes its frontend calls. All routes resolve `tenant_id` from the ChalybClip
+What ChalyClip owns. Zernio is the upstream; these are ChalyClip's own DB tables +
+the routes its frontend calls. All routes resolve `tenant_id` from the ChalyClip
 session and read entitlements (`clipConnectSocials`, `clipAutoPublish`) from the
 SSO `tier` claim.
 
-### DB (ChalybClip)
+### DB (ChalyClip)
 
 ```sql
 alter table tenants add column if not exists zernio_profile_id text;  -- one Zernio profile per tenant
@@ -221,7 +221,7 @@ create table clip_publish_targets (
 );
 ```
 
-### ChalybClip routes (its backend → Zernio)
+### ChalyClip routes (its backend → Zernio)
 
 | Method   | Route                        | Gate                                                             | Does                                                                                                              |
 | -------- | ---------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |

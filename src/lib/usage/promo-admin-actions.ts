@@ -5,7 +5,7 @@
 // layout revalidate).
 //
 // Three levers, all writing to profiles (migration 0025):
-//   - grantChalybclipTrial : start a fresh 7-day ChalybClip live trial (now()).
+//   - grantChalybclipTrial : start a fresh 7-day ChalyClip live trial (now()).
 //                          Re-granting resets the clock to a full 7 days.
 //   - revokeChalybclipTrial : end the trial immediately (chalybclip_trial_started_at = NULL).
 //   - resetWelcomeGift    : clear welcome_gift_claimed_at so the welcome banner
@@ -30,9 +30,7 @@ interface PromoResult {
 }
 
 /** Shared admin gate + target read. */
-async function authorize(
-  targetUserId: string,
-): Promise<
+async function authorize(targetUserId: string): Promise<
   | { ok: false; error: string }
   | {
       ok: true;
@@ -67,7 +65,7 @@ async function authorize(
   };
 }
 
-/** Start (or extend, by resetting to a fresh window) a user's ChalybClip trial. */
+/** Start (or extend, by resetting to a fresh window) a user's ChalyClip trial. */
 export async function grantChalybclipTrial(
   targetUserId: string,
   reason: string | null = null,
@@ -110,7 +108,7 @@ export async function grantChalybclipTrial(
   return { ok: true, trialStartedAt: nowIso };
 }
 
-/** End a user's ChalybClip trial immediately. */
+/** End a user's ChalyClip trial immediately. */
 export async function revokeChalybclipTrial(
   targetUserId: string,
   reason: string | null = null,

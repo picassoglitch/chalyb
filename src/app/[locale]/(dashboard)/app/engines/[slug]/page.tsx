@@ -15,14 +15,11 @@ import {
   effectiveTier,
   isAdminRole,
 } from '@/lib/billing/tiers';
-import {
-  ensureAdminEngineAccess,
-  getEngineAccess,
-} from '@/lib/engines/subscriptions';
+import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscriptions';
 import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
 import { EngineReprovisionButton } from '@/components/workspace/engine-reprovision-button';
 
-// Dynamic title: tab reads "ChalybClip · Chalyb", "ChalybStreamManager · Chalyb", etc.
+// Dynamic title: tab reads "ChalyClip · Chalyb", "ChalybStreamManager · Chalyb", etc.
 export async function generateMetadata({
   params,
 }: {
@@ -41,7 +38,7 @@ export async function generateMetadata({
 //   - Coming-soon                      → notify-me panel
 //   - Deprecated                       → 404 (deprecated engines are hidden from catalog)
 //
-// Real engine UIs (ChalybClip's clip editor, StreamManager's dashboard) plug in
+// Real engine UIs (ChalyClip's clip editor, StreamManager's dashboard) plug in
 // here when those products ship. For v1 we render the metadata + the right
 // CTA for the user's state, with a "Build phase" placeholder for the actual
 // interface.
@@ -73,7 +70,7 @@ export default async function EngineWorkspacePage({
   const engine = engines.find((e) => e.slug === slug);
   if (!engine || engine.status === 'deprecated') notFound();
 
-  // ChalybClip has a real brand lockup — show it as a hero banner and drop the
+  // ChalyClip has a real brand lockup — show it as a hero banner and drop the
   // generic emoji icon box from the header (the lockup already brands the page).
   const isChalybclip = engine.slug === CHALYBCLIP_TRIAL_SLUG;
 
@@ -84,11 +81,10 @@ export default async function EngineWorkspacePage({
   const meetsTier = TIER_ORDER[tier] >= TIER_ORDER[engine.tierRequired];
   // Partner-owned override: the engine's owner sees their own engine as
   // always-live (additive to any selected_engine_id they may also have).
-  const isOwnedByMe =
-    engine.ownerUserId !== null && engine.ownerUserId === session.user.id;
-  // ChalybClip 7-day trial grants live access regardless of tier — it bypasses
-  // both the tier-required gate and the selection gate (ChalybClip only). After
-  // the trial, FREE users keep ChalybClip live in "grace" while tokens remain.
+  const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session.user.id;
+  // ChalyClip 7-day trial grants live access regardless of tier — it bypasses
+  // both the tier-required gate and the selection gate (ChalyClip only). After
+  // the trial, FREE users keep ChalyClip live in "grace" while tokens remain.
   const nowMs = new Date().getTime();
   const trialActive = isChalybclipTrialActive(session.chalybclipTrialStartedAt, nowMs);
   const clipBonusTokens =
@@ -100,7 +96,7 @@ export default async function EngineWorkspacePage({
   const graceActive =
     tier === 'FREE' &&
     isChalybclipGraceActive(session.chalybclipTrialStartedAt, nowMs, clipBonusTokens);
-  // ChalybClip is "unlocked" (live, bypassing tier/selection) under either the
+  // ChalyClip is "unlocked" (live, bypassing tier/selection) under either the
   // trial or the post-trial grace window.
   const clipUnlocked = (trialActive || graceActive) && engine.slug === CHALYBCLIP_TRIAL_SLUG;
   const isLive = engineIsLiveForUser({
@@ -120,9 +116,7 @@ export default async function EngineWorkspacePage({
   const isPlatformOwned = engine.ownerUserId === null;
   const ownerLabel = isPlatformOwned
     ? 'Chalyb'
-    : engine.ownerDisplayName ||
-      engine.ownerEmail?.split('@')[0] ||
-      'Partner';
+    : engine.ownerDisplayName || engine.ownerEmail?.split('@')[0] || 'Partner';
 
   // Lazy admin provisioning: admins have effective VIP via role
   // override, so they should auto-have engine access. If migration 0011's
@@ -152,10 +146,10 @@ export default async function EngineWorkspacePage({
         </Link>
       </div>
 
-      {/* ChalybClip brand hero — the same mark the home card and the engines
+      {/* ChalyClip brand hero — the same mark the home card and the engines
           list use (public/chalybclip-mark.png), with the wordmark set in text.
           The only full lockup in the repo still carries the pre-rebrand name,
-          so it is not shipped; swap this block for a real ChalybClip lockup
+          so it is not shipped; swap this block for a real ChalyClip lockup
           when design has one. The mark's own dark background (#03040b) matches
           the banner fill, so it reads as a floating mark, not a pasted tile. */}
       {isChalybclip && (
@@ -174,7 +168,7 @@ export default async function EngineWorkspacePage({
         >
           <Image
             src="/chalybclip-mark.png"
-            alt="ChalybClip"
+            alt="ChalyClip"
             width={160}
             height={160}
             priority
@@ -253,9 +247,7 @@ export default async function EngineWorkspacePage({
                 fontSize: 11,
                 letterSpacing: '0.1em',
                 color: isPlatformOwned ? 'var(--cc-txt-4)' : 'var(--cc-purple)',
-                background: isPlatformOwned
-                  ? 'rgba(255,255,255,.03)'
-                  : 'var(--cc-purple-g)',
+                background: isPlatformOwned ? 'rgba(255,255,255,.03)' : 'var(--cc-purple-g)',
                 border: isPlatformOwned
                   ? '1px solid var(--cc-line-2)'
                   : '1px solid rgba(157,123,255,.3)',
@@ -714,12 +706,11 @@ function AccessPanel({
                     maxWidth: '60ch',
                   }}
                 >
-                  Si esto falla: (1) verifica que {engineName} esté corriendo en su URL;
-                  (2) que <code>{`${engineName.toUpperCase().replace(/[^A-Z0-9]/g, '')}_ADMIN_TOKEN`}</code>{' '}
-                  en Vercel coincida con <code>CHALYB_ADMIN_TOKEN</code> en {engineName};{' '}
-                  (3) que la URL en <code>engines.admin_api_base</code> apunte al endpoint
-                  correcto. El log del dev server (busca <code>[engine_subs]</code>) muestra
-                  el error exacto.
+                  Si esto falla: (1) verifica que {engineName} esté corriendo en su URL; (2) que{' '}
+                  <code>{`${engineName.toUpperCase().replace(/[^A-Z0-9]/g, '')}_ADMIN_TOKEN`}</code>{' '}
+                  en Vercel coincida con <code>CHALYB_ADMIN_TOKEN</code> en {engineName}; (3) que la
+                  URL en <code>engines.admin_api_base</code> apunte al endpoint correcto. El log del
+                  dev server (busca <code>[engine_subs]</code>) muestra el error exacto.
                 </div>
               </div>
             ) : (
@@ -776,8 +767,7 @@ function ComingSoonPanel({ engineName }: { engineName: string }) {
           maxWidth: '60ch',
         }}
       >
-        Te notificaremos por correo cuando lo lancemos. Mientras tanto, explora los engines
-        activos.
+        Te notificaremos por correo cuando lo lancemos. Mientras tanto, explora los engines activos.
       </div>
       <Link
         href={'/app/engines' as Route}

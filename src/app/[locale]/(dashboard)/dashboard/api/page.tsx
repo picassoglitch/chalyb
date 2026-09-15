@@ -9,24 +9,44 @@ export const metadata = { title: 'API e integraciones' };
 // no reason to put even masked secrets in HTML).
 const INTEGRATIONS: Array<{ name: string; detail: string; envKeys: string[][] }> = [
   // envKeys: outer array = AND groups, inner array = any-of alternatives.
-  { name: 'Supabase', detail: 'DB · auth · RLS', envKeys: [['NEXT_PUBLIC_SUPABASE_URL'], ['SUPABASE_SERVICE_ROLE_KEY']] },
-  { name: 'Mercado Pago', detail: 'pagos · webhooks', envKeys: [['MERCADOPAGO_ACCESS_TOKEN', 'MP_ACCESS_TOKEN']] },
+  {
+    name: 'Supabase',
+    detail: 'DB · auth · RLS',
+    envKeys: [['NEXT_PUBLIC_SUPABASE_URL'], ['SUPABASE_SERVICE_ROLE_KEY']],
+  },
+  {
+    name: 'Mercado Pago',
+    detail: 'pagos · webhooks',
+    envKeys: [['MERCADOPAGO_ACCESS_TOKEN', 'MP_ACCESS_TOKEN']],
+  },
   { name: 'Resend', detail: 'email transaccional', envKeys: [['RESEND_API_KEY']] },
-  { name: 'Anthropic (admin)', detail: 'billing/costos Claude', envKeys: [['ANTHROPIC_ADMIN_KEY']] },
-  { name: 'ChalybClip', detail: 'engine · SSO + admin API', envKeys: [['CHALYBCLIP_ADMIN_TOKEN'], ['CHALYBCLIP_SSO_SECRET']] },
-  { name: 'ChalybCrypto', detail: 'engine · SSO + admin API', envKeys: [['CHALYBCRYPTO_ADMIN_TOKEN'], ['CHALYBCRYPTO_SSO_SECRET']] },
-  { name: 'ChalybOBS', detail: 'engine · SSO + admin API', envKeys: [['CHALYBOBS_ADMIN_TOKEN'], ['CHALYBOBS_SSO_SECRET']] },
+  {
+    name: 'Anthropic (admin)',
+    detail: 'billing/costos Claude',
+    envKeys: [['ANTHROPIC_ADMIN_KEY']],
+  },
+  {
+    name: 'ChalyClip',
+    detail: 'engine · SSO + admin API',
+    envKeys: [['CHALYBCLIP_ADMIN_TOKEN'], ['CHALYBCLIP_SSO_SECRET']],
+  },
+  {
+    name: 'ChalyCrypto',
+    detail: 'engine · SSO + admin API',
+    envKeys: [['CHALYBCRYPTO_ADMIN_TOKEN'], ['CHALYBCRYPTO_SSO_SECRET']],
+  },
+  {
+    name: 'ChalyOBS',
+    detail: 'engine · SSO + admin API',
+    envKeys: [['CHALYBOBS_ADMIN_TOKEN'], ['CHALYBOBS_SSO_SECRET']],
+  },
 ];
 
 function isConfigured(envKeys: string[][]): boolean {
   return envKeys.every((group) => group.some((key) => Boolean(process.env[key])));
 }
 
-export default async function ApiPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function ApiPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 

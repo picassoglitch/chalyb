@@ -130,7 +130,7 @@ variable "engines" {
 
   default = {
     chalybclip = {
-      display_name = "ChalybClip"
+      display_name = "ChalyClip"
       memory       = "2Gi"
 
       env = {
@@ -143,7 +143,7 @@ variable "engines" {
         CHALYBCLIP_JOB_DISPATCHER = "modal"
       }
 
-      # ChalybClip reads all three WITHOUT its usual CHALYBCLIP_ prefix:
+      # ChalyClip reads all three WITHOUT its usual CHALYBCLIP_ prefix:
       # settings.py gives each an explicit validation_alias. These are the
       # names the rebranded engine image reads (the contract the hub
       # documents in .env.local.example).
@@ -183,9 +183,9 @@ variable "engines" {
       }
     }
 
-    # ChalybOBS's web app (web/src/lib/env.ts) reads its own prefixed pair.
+    # ChalyOBS's web app (web/src/lib/env.ts) reads its own prefixed pair.
     chalybobs = {
-      display_name = "ChalybOBS"
+      display_name = "ChalyOBS"
       secret_env_names = {
         admin_token  = "CHALYBOBS_ADMIN_TOKEN"
         sso_secret   = "CHALYBOBS_SSO_SECRET"
@@ -193,10 +193,10 @@ variable "engines" {
       }
     }
 
-    # ChalybCrypto's API (services/api sso.py) reads the unprefixed pair,
-    # same as ChalybClip.
+    # ChalyCrypto's API (services/api sso.py) reads the unprefixed pair,
+    # same as ChalyClip.
     chalybcrypto = {
-      display_name = "ChalybCrypto"
+      display_name = "ChalyCrypto"
       secret_env_names = {
         admin_token  = "CHALYB_ADMIN_TOKEN"
         sso_secret   = "CHALYB_SSO_SECRET"

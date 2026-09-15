@@ -17,13 +17,10 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDashboard } from '@/lib/dashboard/store';
-import {
-  reconcileEngineLinks,
-  type ReconcileSummary,
-} from '@/lib/engines/reconcile-actions';
+import { reconcileEngineLinks, type ReconcileSummary } from '@/lib/engines/reconcile-actions';
 
 const SUPPORTED_ENGINES: Array<{ slug: string; label: string }> = [
-  { slug: 'chalybclip', label: 'ChalybClip' },
+  { slug: 'chalybclip', label: 'ChalyClip' },
   // Add more here when integrations register reconciliation support.
 ];
 
@@ -114,15 +111,12 @@ export function TeamReconcileEngine() {
               margin: 0,
             }}
           >
-            Recorre cada perfil + re-provisiona contra el engine elegido.
-            Idempotente: usuarios ya linkeados no se tocan. El engine reclama
-            tenants huérfanos por email (post-B2). Tope: 500 usuarios por
-            corrida.
+            Recorre cada perfil + re-provisiona contra el engine elegido. Idempotente: usuarios ya
+            linkeados no se tocan. El engine reclama tenants huérfanos por email (post-B2). Tope:
+            500 usuarios por corrida.
           </p>
 
-          <label
-            style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}
-          >
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
             <span style={{ color: 'var(--cc-txt-3)' }}>Engine</span>
             <select
               value={engineSlug}
@@ -212,11 +206,15 @@ export function TeamReconcileEngine() {
               >
                 {summary.engineName} · {summary.dryRun ? 'DRY RUN' : 'EJECUTADO'}
               </div>
-              <div>Escaneados: <b>{summary.scanned}</b></div>
+              <div>
+                Escaneados: <b>{summary.scanned}</b>
+              </div>
               <div style={{ color: 'var(--cc-green)' }}>
                 Nuevos linkeados: <b>{summary.newlyLinked}</b>
               </div>
-              <div>Ya linkeados: <b>{summary.alreadyLinked}</b></div>
+              <div>
+                Ya linkeados: <b>{summary.alreadyLinked}</b>
+              </div>
               <div style={{ color: 'var(--cc-txt-3)' }}>
                 Saltados (sin email / no requiere): <b>{summary.skipped}</b>
               </div>

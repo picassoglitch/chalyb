@@ -4,7 +4,7 @@
 //   Auth: Bearer engine admin token (e.g. CHALYBCLIP_ADMIN_TOKEN).
 //         The token identifies WHICH engine is reporting; the URL slug must
 //         match the slug the token belongs to (defense-in-depth so a leaked
-//         ChalybStream token can't write usage on ChalybClip's behalf).
+//         ChalybStream token can't write usage on ChalyClip's behalf).
 //   Body: {
 //     external_user_id: string,   // Chalyb user id (matches profiles.id)
 //     events: [
@@ -43,7 +43,6 @@ import { getTokenBalance, recordUsageEvents } from '@/lib/usage/tokens';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
 
 interface PostBody {
   external_user_id?: string;
@@ -89,10 +88,7 @@ export async function POST(
 
   const userId = body.external_user_id;
   if (!userId || typeof userId !== 'string') {
-    return NextResponse.json(
-      { error: 'external_user_id required' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'external_user_id required' }, { status: 400 });
   }
 
   // Resolve userId → confirm it exists. The engine should never send an
@@ -105,10 +101,7 @@ export async function POST(
     .eq('id', userId)
     .maybeSingle();
   if (!profile) {
-    return NextResponse.json(
-      { error: 'unknown user_id' },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: 'unknown user_id' }, { status: 404 });
   }
 
   const events = Array.isArray(body.events) ? body.events : [];
@@ -131,10 +124,7 @@ export async function POST(
       e.amount < 0 ||
       !e.source_id
     ) {
-      return NextResponse.json(
-        { error: 'invalid event shape', event: e },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'invalid event shape', event: e }, { status: 400 });
     }
     // Optional T4 fields — present means they must parse cleanly, but
     // missing is fine (legacy engines, or kinds without a provider cost).
@@ -142,10 +132,7 @@ export async function POST(
       e.provider !== undefined &&
       (typeof e.provider !== 'string' || !PROVIDER_RE.test(e.provider))
     ) {
-      return NextResponse.json(
-        { error: 'invalid provider', event: e },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'invalid provider', event: e }, { status: 400 });
     }
     if (
       e.cost_usd_micros !== undefined &&
@@ -154,10 +141,7 @@ export async function POST(
         !Number.isInteger(e.cost_usd_micros) ||
         e.cost_usd_micros < 0)
     ) {
-      return NextResponse.json(
-        { error: 'invalid cost_usd_micros', event: e },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'invalid cost_usd_micros', event: e }, { status: 400 });
     }
     normalized.push({
       engineSlug: slug,
@@ -172,8 +156,7 @@ export async function POST(
           ? (e.metadata as Record<string, unknown>)
           : undefined,
       provider: typeof e.provider === 'string' ? e.provider : undefined,
-      costUsdMicros:
-        typeof e.cost_usd_micros === 'number' ? e.cost_usd_micros : undefined,
+      costUsdMicros: typeof e.cost_usd_micros === 'number' ? e.cost_usd_micros : undefined,
     });
   }
 
@@ -194,10 +177,7 @@ export async function GET(
   const url = new URL(req.url);
   const userId = url.searchParams.get('external_user_id');
   if (!userId) {
-    return NextResponse.json(
-      { error: 'external_user_id query param required' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'external_user_id query param required' }, { status: 400 });
   }
   const admin = createAdminClient();
   const { data: profile } = await admin

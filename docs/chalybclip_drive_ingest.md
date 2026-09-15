@@ -1,18 +1,18 @@
-# ChalybClip — "Watch a Drive folder" (auto-ingest VODs)
+# ChalyClip — "Watch a Drive folder" (auto-ingest VODs)
 
-Complete build spec for the Google-Drive auto-ingest feature shown on ChalybClip's
+Complete build spec for the Google-Drive auto-ingest feature shown on ChalyClip's
 dashboard ("Watch a Drive folder → Connect a Drive folder"). The watcher and the
-video pipeline live in **ChalybClip's** repo (FastAPI + worker), not in `chalyb`.
+video pipeline live in **ChalyClip's** repo (FastAPI + worker), not in `chalyb`.
 This doc is the contract + reference implementation so whoever builds it on the
-ChalybClip side has everything.
+ChalyClip side has everything.
 
 `chalyb`'s only involvement is two things, both already in place:
 
 1. **Entitlement** — `TIER_CAPS[...].clipDriveAutoIngest` (added in
    `src/lib/billing/tiers.ts`). FREE = false; PRO / PARTNER / VIP = true. The
-   tier is signed into ChalybClip's SSO token (`tier` claim), so ChalybClip gates the
+   tier is signed into ChalyClip's SSO token (`tier` claim), so ChalyClip gates the
    feature off the same value as every other clip cap.
-2. **Token balance** — ChalybClip pre-checks the user's balance before ingesting
+2. **Token balance** — ChalyClip pre-checks the user's balance before ingesting
    via the existing `GET /api/engines/chalybclip/usage/balance?external_user_id=…`
    endpoint, and reports consumption via `POST /api/engines/chalybclip/usage`.
 
@@ -42,7 +42,7 @@ Per-user OAuth, least privilege:
 
 - Scope: `https://www.googleapis.com/auth/drive.readonly` (read files + metadata).
   Avoid full `drive` scope.
-- Flow: ChalybClip "Connect a Drive folder" → Google consent → callback stores the
+- Flow: ChalyClip "Connect a Drive folder" → Google consent → callback stores the
   **refresh token encrypted at rest** (KMS / libsodium; never plaintext, never
   logged). Access tokens are short-lived and refreshed on demand.
 - Folder picker: use the Google Picker API (or paste a folder URL) to capture the
@@ -52,13 +52,13 @@ Per-user OAuth, least privilege:
 
 ---
 
-## 3. Schema (ChalybClip DB)
+## 3. Schema (ChalyClip DB)
 
 ```sql
 -- One row per watched folder.
 create table drive_watches (
   id              uuid primary key default gen_random_uuid(),
-  tenant_id       text not null,            -- ChalybClip tenant (= chalyb user_id)
+  tenant_id       text not null,            -- ChalyClip tenant (= chalyb user_id)
   folder_id       text not null,            -- Google Drive folder id
   folder_name     text,
   drive_id        text,                     -- non-null for Shared Drives

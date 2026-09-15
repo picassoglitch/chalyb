@@ -12,7 +12,7 @@ function LibraryVisual() {
       <div className="lp-engine-list">
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">◆</i>ChalybClip
+            <i className="lp-engine-icon">◆</i>ChalyClip
             <small>{t('libraryClip')}</small>
           </span>
           <span className="lp-status lp-status-live">
@@ -22,7 +22,7 @@ function LibraryVisual() {
         </div>
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">▲</i>ChalybCrypto
+            <i className="lp-engine-icon">▲</i>ChalyCrypto
             <small>{t('libraryCrypto')}</small>
           </span>
           <span className="lp-status lp-status-live">
@@ -32,7 +32,7 @@ function LibraryVisual() {
         </div>
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">●</i>ChalybOBS
+            <i className="lp-engine-icon">●</i>ChalyOBS
             <small>{t('libraryObs')}</small>
           </span>
           <span className="lp-status lp-status-soon">{t('soon')}</span>
@@ -49,14 +49,14 @@ function SimulationVisual() {
       <div className="lp-visual-head">{t('modeTitle')}</div>
       <div className="lp-mode-row">
         <div>
-          <div className="lp-mode-name">ChalybClip</div>
+          <div className="lp-mode-name">ChalyClip</div>
           <div className="lp-mode-sub">{t('modeSim')}</div>
         </div>
         <span className="lp-switch" data-on="false" />
       </div>
       <div className="lp-mode-row lp-mode-row-on">
         <div>
-          <div className="lp-mode-name">ChalybClip</div>
+          <div className="lp-mode-name">ChalyClip</div>
           <div className="lp-mode-sub lp-up">{t('modeLive')}</div>
         </div>
         <span className="lp-switch" data-on="true" />
@@ -82,15 +82,15 @@ function UsageVisual() {
       </div>
       <div className="lp-history">
         <div className="lp-history-row">
-          <span>ChalybClip · {t('usageRun')} #1284</span>
+          <span>ChalyClip · {t('usageRun')} #1284</span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
         <div className="lp-history-row">
-          <span>ChalybClip · {t('usageRun')} #1283</span>
+          <span>ChalyClip · {t('usageRun')} #1283</span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
         <div className="lp-history-row">
-          <span>ChalybCrypto · {t('usageRun')} #0912</span>
+          <span>ChalyCrypto · {t('usageRun')} #0912</span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
       </div>
