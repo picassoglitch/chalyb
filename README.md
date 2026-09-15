@@ -69,6 +69,8 @@ Full path, including the new repo and going live:
   architecture and why each piece is shaped the way it is
 - [`docs/infra/adding-an-engine.md`](docs/infra/adding-an-engine.md)
 - [`infra/terraform/README.md`](infra/terraform/README.md) — bootstrap and apply
+- [`docs/payments/mercadopago.md`](docs/payments/mercadopago.md) — Mercado Pago:
+  which product sells what, creating the application, webhook, testing, go-live
 - [`docs/email/`](docs/email/) — Resend + Supabase auth email setup
 
 ## State of play

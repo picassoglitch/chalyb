@@ -75,8 +75,9 @@ export default async function WorkspaceBillingPage({
           }}
         >
           ● <b style={{ color: 'var(--cc-green)' }}>Pago recibido</b> — tu plan se activa en
-          cuanto Mercado Pago confirma el pago (de segundos a minutos). Esta página se actualiza
-          sola.
+          cuanto Mercado Pago confirma el cobro (de segundos a minutos). Si autorizaste una
+          suscripción, el cobro se repite cada mes hasta que la canceles desde /app/subscription.
+          Esta página se actualiza sola.
         </div>
       )}
       {returnedStatus === 'pending' && (

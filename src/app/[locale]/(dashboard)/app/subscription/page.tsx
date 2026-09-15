@@ -1,7 +1,12 @@
 import { setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
-import { SubscriptionActions } from '@/components/workspace/subscription-actions';
+import { createClient } from '@/lib/supabase/server';
+import {
+  SubscriptionActions,
+  type ActiveSubscription,
+} from '@/components/workspace/subscription-actions';
+import { normalizePreapprovalStatus } from '@/lib/payments/subscription-reference';
 import { TIER_CAPS, buildQuotaRows, effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import { checkoutNotReadyError, missingCheckoutVars } from '@/lib/payments/mercadopago';
 
@@ -31,6 +36,42 @@ export default async function SubscriptionPage({
   // the checkout action at all. Only names are sent down, never values.
   const missingPaymentVars = missingCheckoutVars();
   const paymentsNotReadyMessage = missingPaymentVars.length ? checkoutNotReadyError() : null;
+
+  // The Mercado Pago subscription behind a paid tier, if there is one. Read
+  // through the user's own client (RLS: select self). Null for FREE, for an
+  // admin grant, and for the legacy one-off purchases — those have no
+  // renewal date because nothing renews them.
+  const supabase = await createClient();
+  const { data: subRow } = await supabase
+    .from('subscriptions')
+    .select('status, next_payment_date, tier')
+    .eq('user_id', session.user.id)
+    .in('status', ['pending', 'authorized', 'paused'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const subscription: ActiveSubscription | null =
+    subRow && storedTier !== 'FREE'
+      ? {
+          status: normalizePreapprovalStatus(subRow.status as string),
+          nextPaymentDate: (subRow.next_payment_date as string | null) ?? null,
+        }
+      : null;
+  const renewsOn =
+    subscription?.status === 'authorized' && subscription.nextPaymentDate && !session.tierEndsAt
+      ? new Date(subscription.nextPaymentDate).toLocaleDateString('es-MX', {
+          day: '2-digit',
+          month: 'short',
+          timeZone: 'America/Mexico_City',
+        })
+      : null;
+  const endsOn = session.tierEndsAt
+    ? new Date(session.tierEndsAt).toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'short',
+        timeZone: 'America/Mexico_City',
+      })
+    : null;
 
   return (
     <div className="cc-scroll">
@@ -75,22 +116,40 @@ export default async function SubscriptionPage({
             </div>
           ) : (
             <div className="cc-mod-stat">
-              <div className="cc-mod-stat-l">Renovación</div>
-              <div className="cc-mod-stat-v">{storedTier === 'FREE' ? '—' : '01 jun'}</div>
+              <div className="cc-mod-stat-l">{endsOn ? 'Termina' : 'Renovación'}</div>
+              <div className={`cc-mod-stat-v ${endsOn ? 'am' : ''}`}>
+                {storedTier === 'FREE' ? '—' : (endsOn ?? renewsOn ?? '—')}
+              </div>
               <div className="cc-mod-stat-sub">
-                {storedTier === 'FREE' ? 'Free nunca vence' : 'se cobra solo'}
+                {storedTier === 'FREE'
+                  ? 'Free nunca vence'
+                  : endsOn
+                    ? 'cancelado · después pasas a Free'
+                    : renewsOn
+                      ? 'se cobra solo cada mes'
+                      : subscription?.status === 'paused'
+                        ? 'cobro fallido · revisa tu tarjeta en Mercado Pago'
+                        : subscription?.status === 'pending'
+                          ? 'esperando que autorices el cobro'
+                          : 'sin renovación automática'}
               </div>
             </div>
           )}
           <div className="cc-mod-stat">
             <div className="cc-mod-stat-l">Método de pago</div>
-            <div className="cc-mod-stat-v">{storedTier === 'FREE' ? '—' : 'Mercado Pago'}</div>
+            <div className="cc-mod-stat-v">
+              {storedTier === 'FREE' ? '—' : subscription ? 'Mercado Pago' : isAdmin ? '—' : 'Pago único'}
+            </div>
             <div className="cc-mod-stat-sub">
               {storedTier === 'FREE'
                 ? isAdmin
                   ? 'Como admin no pagas'
                   : 'En Free no necesitas tarjeta'
-                : 'se conecta en el paso 05'}
+                : subscription
+                  ? 'suscripción mensual con tarjeta'
+                  : isAdmin
+                    ? 'plan asignado, sin cobro'
+                    : 'sin suscripción activa'}
             </div>
           </div>
           <div className="cc-mod-stat">
@@ -115,6 +174,7 @@ export default async function SubscriptionPage({
           initialTier={tier}
           userId={session.user.id}
           isAdmin={isAdmin}
+          subscription={subscription}
           initialEndsAt={session.tierEndsAt}
           missingPaymentVars={missingPaymentVars}
           paymentsNotReadyMessage={paymentsNotReadyMessage}
