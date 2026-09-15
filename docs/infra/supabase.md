@@ -2,7 +2,7 @@
 
 Chalyb runs on project **`uqcbziwdgbnzehipzjxp`**
 (`https://uqcbziwdgbnzehipzjxp.supabase.co`). This is the **original
-production database** — the Nexo AI project under Quantor's Org — with its
+production database** — the pre-rebrand project under Quantor's Org — with its
 users, subscriptions and payments intact. It was never a fresh project.
 
 Nothing in the code names a project. Every reference goes through

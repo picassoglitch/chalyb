@@ -20,7 +20,7 @@ this is the executable half.
 | ---------------------------- | ------------------------------------------------------------------------------------ |
 | Cloud Run service per engine | `chalybclip`, `chalybobs`, `chalybcrypto` — scale to zero, so idle cost is $0        |
 | Cloud Run service            | `chalybclip-worker` — the pipeline worker, internal-only, **CPU always allocated**   |
-| Cloud Run Job                | `drive-poll`, running `nexoclip drive poll`                                          |
+| Cloud Run Job                | `drive-poll`, running `chalybclip drive poll`                                        |
 | Cloud Scheduler              | triggers the poll job every minute — **paused by default**, see below                |
 | Cloud Storage                | one media bucket, private, with lifecycle pruning                                    |
 | Artifact Registry            | one Docker repo with a cleanup policy                                                |
@@ -33,11 +33,11 @@ secrets, so a compromise of one engine does not expose another's.
 
 ## Shapes verified against the application
 
-`worker.tf` was corrected after reading picassoglitch/nexoclip. Both halves
+`worker.tf` was corrected after reading picassoglitch/chalybclip. Both halves
 were originally inverted, and both would have failed silently rather than
 loudly:
 
-- **The pipeline worker is a service, not a job.** `nexoclip worker` serves
+- **The pipeline worker is a service, not a job.** `chalybclip worker` serves
   the kickoff/poll HTTP contract `ModalJobDispatcher` already speaks. It runs
   with `cpu_idle = false`, which is load-bearing: the worker answers the
   kickoff POST immediately and does the work in an asyncio task, so with
@@ -57,21 +57,23 @@ carry an explicit `validation_alias` in the engine's `settings.py`, so they
 take **no** `CHALYBCLIP_` prefix. Only the values need to match the hub's
 `CHALYBCLIP_*` vars.
 
-### Rebrand: the engine image has to speak CHALYB\*
+### Secret names per engine
 
-Terraform used to inject the pre-rebrand names. Everything here now injects the
-chalyb names, which is what the hub documents in `.env.local.example`:
+Each engine reads its admin token and SSO secret under its own env var names,
+and `secret_env_names` in `variables.tf` injects exactly those. The engine
+repos were rebranded on the `claude/chalyb-rebrand` branch of each, and these
+are the names their images read:
 
-| was | is |
-| --- | --- |
-| `NEXO_AI_ADMIN_TOKEN` | `CHALYB_ADMIN_TOKEN` |
-| `NEXO_AI_SSO_SECRET` | `CHALYB_SSO_SECRET` |
-| `NEXOCLIP_*` (role, dispatcher, output dir, modal token, endpoint, Zernio key) | `CHALYBCLIP_*` |
+| Engine       | Admin token             | SSO secret             |
+| ------------ | ----------------------- | ---------------------- |
+| chalybclip   | `CHALYB_ADMIN_TOKEN`    | `CHALYB_SSO_SECRET`    |
+| chalybobs    | `CHALYBOBS_ADMIN_TOKEN` | `CHALYBOBS_SSO_SECRET` |
+| chalybcrypto | `CHALYB_ADMIN_TOKEN`    | `CHALYB_SSO_SECRET`    |
 
-The values are unchanged, so nothing in Secret Manager moves. **The engine
-image must read the new names** (a `validation_alias` per field, or an alias
-list accepting both during the transition). Apply the engine-side rename first,
-or the API comes up without its admin token and every provisioning call 401s.
+ChalybClip's other settings are `CHALYBCLIP_*` (role, dispatcher, output dir,
+modal token, endpoint, Zernio key). If an engine's image and this table ever
+disagree, the API comes up without its admin token and every provisioning call
+401s — fix the table, not the engine.
 
 ### The worker is no longer open to the internet
 
