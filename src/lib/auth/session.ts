@@ -88,13 +88,22 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const user = await getCurrentUser();
   if (!user) return null;
   const supabase = await createClient();
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
       'role, tier, tier_ends_at, org_id, selected_engine_id, chalybclip_trial_started_at, welcome_gift_claimed_at',
     )
     .eq('id', user.id)
     .maybeSingle();
+  if (profileError) {
+    // The defaults below (VIEWER / FREE) are the right fail-closed answer, but
+    // a failing read here demotes EVERY user at once — a missing column from
+    // an unapplied migration did exactly that, silently. Say so in the logs.
+    console.error(
+      `[session] profiles read failed for ${user.id}; treating as VIEWER/FREE:`,
+      profileError.message,
+    );
+  }
   const storedRole = (profile?.role as UserRole | undefined) ?? 'VIEWER';
   const role: UserRole = isSuperAdminEmail(user.email) ? 'SUPER_ADMIN' : storedRole;
   const storedTier = (profile?.tier as SubscriptionTier | undefined) ?? 'FREE';
