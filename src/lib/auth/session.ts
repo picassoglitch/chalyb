@@ -38,7 +38,7 @@ export interface SessionUser {
   /** Which engine the user has chosen to run LIVE (PRO tier only).
    *  Backed by profiles.selected_engine_id (was selected_bot_id pre-migration 0010). */
   selectedEngineId: string | null;
-  /** Start of the ChalybClip 7-day live trial, or null. Backed by
+  /** Start of the ChalyClip 7-day live trial, or null. Backed by
    *  profiles.chalybclip_trial_started_at (migration 0025). Read by the
    *  live-execution gating — see isChalybclipTrialActive in lib/billing/tiers. */
   chalybclipTrialStartedAt: string | null;

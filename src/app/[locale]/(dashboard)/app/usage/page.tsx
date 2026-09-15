@@ -395,7 +395,9 @@ export default async function UsagePage({
             {formatNumber(balance.bonus)}
           </div>
           <div className="cc-mod-stat-sub">
-            {balance.bonus > 0 ? 'tokens extra comprados · no caducan' : 'aún no compras tokens extra'}
+            {balance.bonus > 0
+              ? 'tokens extra comprados · no caducan'
+              : 'aún no compras tokens extra'}
           </div>
         </div>
         <div className="cc-mod-stat">
@@ -451,7 +453,8 @@ export default async function UsagePage({
                   fontFamily: 'var(--cc-mono), monospace',
                 }}
               >
-                ▸ Ya casi llegas a tu límite. Compra tokens extra para no quedarte sin servicio cuando se acaben.
+                ▸ Ya casi llegas a tu límite. Compra tokens extra para no quedarte sin servicio
+                cuando se acaben.
               </div>
             )}
           </div>
@@ -472,7 +475,8 @@ export default async function UsagePage({
             }}
           >
             Los tokens que compras <b>nunca caducan</b> y se usan <b>después</b> de los tokens que
-            ya trae tu plan cada mes. Sirven en todos los engines (ChalybClip y los que vengan después).
+            ya trae tu plan cada mes. Sirven en todos los engines (ChalyClip y los que vengan
+            después).
           </p>
           <div className="cc-mod-grid">
             {TOKEN_PACKS.map((pack) => (
@@ -495,7 +499,7 @@ export default async function UsagePage({
                     <b>{formatNumber(pack.tokens)}</b> tokens
                   </span>
                   <span style={{ fontFamily: 'var(--cc-mono), monospace', fontSize: 10.5 }}>
-                    ≈ ${((pack.amountCents / 100 / (pack.tokens / 1000)).toFixed(2))} MXN/1k tokens
+                    ≈ ${(pack.amountCents / 100 / (pack.tokens / 1000)).toFixed(2)} MXN/1k tokens
                   </span>
                 </div>
                 <TokenPackBuyButton packId={pack.id} packLabel={pack.label} />
@@ -519,9 +523,9 @@ export default async function UsagePage({
               marginBottom: 14,
             }}
           >
-            Como dueño de uno o más engines, ganas regalías cada vez que
-            otros usuarios gastan tokens en ellos. El admin cierra el
-            periodo al final del mes y procesa el pago por fuera.
+            Como dueño de uno o más engines, ganas regalías cada vez que otros usuarios gastan
+            tokens en ellos. El admin cierra el periodo al final del mes y procesa el pago por
+            fuera.
           </p>
           {royaltyAccruals.length > 0 && (
             <div className="cc-mod-list" style={{ marginBottom: 14 }}>
@@ -537,9 +541,7 @@ export default async function UsagePage({
                     </div>
                     <div className="cc-mod-sub">
                       {formatNumber(a.tokensThisPeriod)} tokens este mes · rate{' '}
-                      <code>
-                        ${(a.ratePerMillionCents / 100).toLocaleString('es-MX')}/1M
-                      </code>
+                      <code>${(a.ratePerMillionCents / 100).toLocaleString('es-MX')}/1M</code>
                     </div>
                   </div>
                   <div className="cc-mod-right">
@@ -646,8 +648,7 @@ export default async function UsagePage({
                     <div className="cc-mod-ic">{eng?.icon ?? '◆'}</div>
                     <div className="cc-mod-body">
                       <div className="cc-mod-name">
-                        {eng?.name ?? 'Engine'}{' '}
-                        <span className="cc-mod-badge">{g.operation}</span>{' '}
+                        {eng?.name ?? 'Engine'} <span className="cc-mod-badge">{g.operation}</span>{' '}
                         <span className="cc-mod-badge gr">
                           {g.count} llamada{g.count === 1 ? '' : 's'}
                         </span>
@@ -706,9 +707,8 @@ export default async function UsagePage({
             lineHeight: 1.5,
           }}
         >
-          ▸ Algunos datos se mostraron con valores por defecto (
-          {data.warnings.join(', ')}). Si esto sigue pasando, revisa los logs de
-          Vercel — busca por el prefijo `[/app/usage]`.
+          ▸ Algunos datos se mostraron con valores por defecto ({data.warnings.join(', ')}). Si esto
+          sigue pasando, revisa los logs de Vercel — busca por el prefijo `[/app/usage]`.
         </div>
       )}
     </div>

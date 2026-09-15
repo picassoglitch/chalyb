@@ -49,8 +49,8 @@ export interface EngineIntegrationConfig {
   displayName: string;
 
   /** Where a fresh SSO login should land, as a RELATIVE same-origin path.
-   *  Sent as `next`. Omit when the engine's own /auth/sso decides — ChalybOBS
-   *  and ChalybCrypto do, ChalybClip wants /dashboard/start. */
+   *  Sent as `next`. Omit when the engine's own /auth/sso decides — ChalyOBS
+   *  and ChalyCrypto do, ChalyClip wants /dashboard/start. */
   postSsoPath?: string;
 
   /** Launch-token lifetime. Long enough to redirect, short enough that an
@@ -103,7 +103,11 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
     status: 'active' | 'paused',
   ): Promise<PauseResult> {
     if (!engine.adminApiBase) {
-      return { ok: false, reason: 'not_configured', error: `${displayName} admin_api_base not set` };
+      return {
+        ok: false,
+        reason: 'not_configured',
+        error: `${displayName} admin_api_base not set`,
+      };
     }
     const token = adminToken();
     if (!token) {
@@ -123,7 +127,7 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
         `${engine.adminApiBase}/tenants/${encodeURIComponent(externalUserId)}/status`,
         {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ status }),
         },
       );
@@ -180,7 +184,7 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
       try {
         response = await fetch(`${engine.adminApiBase}/tenants`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             // Chalyb's user_id is the external_user_id on the engine side, so
             // the link is bidirectional and duplicates are detectable.
@@ -250,7 +254,11 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
       engine,
     }: LaunchTokenInput): Promise<LaunchTokenResult> {
       if (!engine.externalUrl) {
-        return { ok: false, reason: 'not_configured', error: `${displayName} external_url not set` };
+        return {
+          ok: false,
+          reason: 'not_configured',
+          error: `${displayName} external_url not set`,
+        };
       }
       if (!externalUserId) {
         return {

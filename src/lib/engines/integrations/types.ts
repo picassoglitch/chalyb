@@ -14,7 +14,7 @@ export interface ProvisionInput {
   /** Display name from auth metadata. May be null. */
   fullName: string | null;
   /** Effective tier (admin override applied). Engines that have their own
-   *  tier concept (ChalybClip's watermark, etc.) write this on the engine-side
+   *  tier concept (ChalyClip's watermark, etc.) write this on the engine-side
    *  tenant record. Always pass effective, never stored — admin = VIP
    *  regardless of profiles.tier. */
   effectiveTier: SubscriptionTier;
@@ -24,7 +24,7 @@ export interface ProvisionInput {
 
 export interface ProvisionResult {
   ok: boolean;
-  /** Engine's internal user/tenant id (e.g. ChalybClip's `ten_...` ULID).
+  /** Engine's internal user/tenant id (e.g. ChalyClip's `ten_...` ULID).
    *  Stored in engine_subscriptions.external_user_id. */
   externalUserId?: string;
   /** Secrets needed for later calls (api token, etc.). Stored in

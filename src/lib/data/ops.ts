@@ -6,7 +6,7 @@
 // CLIENT CHOICE:
 //   - RLS server client where admin SELECT policies exist: usage_events,
 //     payments, audit_events, token_pack_purchases, notifications, engines.
-//   - Service-role client ONLY for the ChalybOBS tenant tables — those have
+//   - Service-role client ONLY for the ChalyOBS tenant tables — those have
 //     no auth policies on purpose (defense-in-depth lockdown in migration
 //     0023), so the page using listObsStreams() must role-gate explicitly.
 //
@@ -386,7 +386,7 @@ export async function getAutomationCounts(): Promise<AutomationCounts> {
   };
 }
 
-// ── ChalybOBS streams (streams page) ───────────────────────────────────────
+// ── ChalyOBS streams (streams page) ───────────────────────────────────────
 //
 // Service-role read: chalybobs_* have no auth RLS policies by design
 // (migration 0023). The page MUST role-gate before calling this.
@@ -429,10 +429,7 @@ export async function listObsStreams(): Promise<ObsStream[]> {
   const tenantIds = sessions.map((s) => s.tenant_id as string);
   let emailByTenant = new Map<string, string | null>();
   if (tenantIds.length > 0) {
-    const { data: profiles } = await admin
-      .from('profiles')
-      .select('id, email')
-      .in('id', tenantIds);
+    const { data: profiles } = await admin.from('profiles').select('id, email').in('id', tenantIds);
     emailByTenant = new Map(
       (profiles ?? []).map((p) => [p.id as string, (p.email as string | null) ?? null]),
     );

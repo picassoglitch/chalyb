@@ -2,7 +2,7 @@
 
 // First-time welcome banner shown at the top of /app while the user hasn't
 // accepted yet (server passes `claimed`). On accept:
-//   1. call claimWelcomeGift() (marks claimed + starts the ChalybClip trial)
+//   1. call claimWelcomeGift() (marks claimed + starts the ChalyClip trial)
 //   2. hide the banner + fire confetti
 //   3. after the confetti settles, router.refresh() so the stat cards (Tokens
 //      IA balance, Engines en vivo count, engine cards) re-render with the
@@ -130,10 +130,9 @@ export function WelcomeGiftBanner({
           Tu regalo de bienvenida está listo
         </div>
         <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '60ch' }}>
-          <b style={{ color: 'var(--cc-green)' }}>50,000 tokens IA</b> para usar en cualquier
-          engine este mes, más{' '}
-          <b style={{ color: 'var(--cc-cyan)' }}>ChalybClip Pro gratis por 7 días</b> — corriendo en
-          vivo, sin tarjeta. Acepta para activarlo.
+          <b style={{ color: 'var(--cc-green)' }}>50,000 tokens IA</b> para usar en cualquier engine
+          este mes, más <b style={{ color: 'var(--cc-cyan)' }}>ChalyClip Pro gratis por 7 días</b> —
+          corriendo en vivo, sin tarjeta. Acepta para activarlo.
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

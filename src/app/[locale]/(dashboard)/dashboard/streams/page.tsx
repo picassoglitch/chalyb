@@ -5,16 +5,12 @@ import { listObsStreams, timeAgo } from '@/lib/data/ops';
 
 export const metadata = { title: 'Streams' };
 
-export default async function StreamsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function StreamsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   // Mandatory double-gate (not just the layout's): listObsStreams reads the
-  // ChalybOBS tenant tables with the service-role client — RLS can't protect
+  // ChalyOBS tenant tables with the service-role client — RLS can't protect
   // us here, so the page must.
   const session = await getSessionUser();
   if (!session || (session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN')) {
@@ -33,7 +29,7 @@ export default async function StreamsPage({
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">En vivo ahora</div>
           <div className="cc-mod-stat-v gr">{live.length}</div>
-          <div className="cc-mod-stat-sub">{streams.length} sesiones de ChalybOBS en total</div>
+          <div className="cc-mod-stat-sub">{streams.length} sesiones de ChalyOBS en total</div>
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Destinos activos</div>
@@ -62,7 +58,7 @@ export default async function StreamsPage({
               fontSize: 13,
             }}
           >
-            Todavía nadie ha creado una sesión de ChalybOBS.
+            Todavía nadie ha creado una sesión de ChalyOBS.
           </div>
         ) : (
           <div className="cc-mod-grid cc-mod-grid-2">
@@ -91,9 +87,7 @@ export default async function StreamsPage({
                   </span>
                 </div>
                 {s.destinations.length > 0 && (
-                  <div
-                    style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}
-                  >
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
                     {s.destinations.map((d) => (
                       <span
                         key={d.platformId}

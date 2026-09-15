@@ -56,18 +56,16 @@ export default async function WorkspaceHomePage({
   // Real token balance + engine catalog. Both tolerate failure (balance falls
   // back to a zeroed shape; engines to an empty list) so the home never 500s.
   const [balance, engines] = await Promise.all([
-    session
-      ? getTokenBalance(session.user.id).catch(() => null)
-      : Promise.resolve(null),
+    session ? getTokenBalance(session.user.id).catch(() => null) : Promise.resolve(null),
     listEngines().catch(() => []),
   ]);
 
-  // ChalybClip trial state (drives the live count + engine badges + spotlight).
+  // ChalyClip trial state (drives the live count + engine badges + spotlight).
   const nowMs = new Date().getTime();
   const trialActive = isChalybclipTrialActive(session?.chalybclipTrialStartedAt ?? null, nowMs);
   const trialDaysLeft = chalybclipTrialDaysLeft(session?.chalybclipTrialStartedAt ?? null, nowMs);
   // Post-trial grace: trial clock ran out but the FREE user still has PURCHASED
-  // (bonus) tokens — ChalybClip stays live until those are spent, then ends for
+  // (bonus) tokens — ChalyClip stays live until those are spent, then ends for
   // good (bonus doesn't regenerate monthly). Only meaningful for FREE.
   const clipBonusTokens = balance && !balance.unlimited ? balance.bonus : 0;
   const graceActive =
@@ -80,8 +78,7 @@ export default async function WorkspaceHomePage({
     .filter((e) => e.status !== 'deprecated')
     .map((engine) => {
       const meetsTier = TIER_ORDER[tier] >= TIER_ORDER[engine.tierRequired];
-      const isOwnedByMe =
-        engine.ownerUserId !== null && engine.ownerUserId === session?.user.id;
+      const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session?.user.id;
       const isTrial = trialActive && engine.slug === CHALYBCLIP_TRIAL_SLUG;
       const isLive = engineIsLiveForUser({
         tier,
@@ -103,7 +100,7 @@ export default async function WorkspaceHomePage({
   const unlimitedLive = caps.liveEnginesCount === Infinity;
   const liveEngineNames = engineViews.filter((v) => v.isLive).map((v) => v.engine.name);
   const liveSub = trialActive
-    ? `ChalybClip · prueba ${trialDaysLeft}d`
+    ? `ChalyClip · prueba ${trialDaysLeft}d`
     : unlimitedLive
       ? 'todos disponibles'
       : liveEngineNames.length > 0
@@ -142,7 +139,7 @@ export default async function WorkspaceHomePage({
   const heroSub = isAdmin
     ? `Tu rol <b style="color:var(--cc-purple)">${role.replace('_', ' ')}</b> te da acceso completo a todos los engines, sin importar tu plan (almacenado: <b>${storedTier.replace('_', '-')}</b>).`
     : trialActive
-      ? `Tu <b style="color:var(--cc-cyan)">prueba de ChalybClip Pro</b> está activa — te quedan ${trialDaysLeft} día${trialDaysLeft === 1 ? '' : 's'} corriendo en vivo. Mientras, prueba los demás en modo demo.`
+      ? `Tu <b style="color:var(--cc-cyan)">prueba de ChalyClip Pro</b> está activa — te quedan ${trialDaysLeft} día${trialDaysLeft === 1 ? '' : 's'} corriendo en vivo. Mientras, prueba los demás en modo demo.`
       : tier === 'FREE'
         ? `Estás en el plan <b style="color:var(--cc-green)">Free</b>. Prueba los engines en modo demo y activa la ejecución en vivo cuando quieras.`
         : tier === 'PRO'
@@ -165,7 +162,7 @@ export default async function WorkspaceHomePage({
         />
       )}
 
-      {/* Post-trial grace: ChalybClip trial expired but tokens remain — keep them
+      {/* Post-trial grace: ChalyClip trial expired but tokens remain — keep them
           going (and nudge toward Pro). Server-gated on graceActive. */}
       {graceActive && <ChalybclipGraceBanner tokensRemaining={clipBonusTokens} />}
 

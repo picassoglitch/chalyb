@@ -5,15 +5,15 @@
 // domain), so this route mints the engine's signed SSO token and 302s
 // straight into its dashboard — no landing/login bounce.
 //
-// Used by ChalybClip's "Transmitir con ChalybOBS" button (→ /auth/launch/chalybobs)
-// and ChalybOBS's "Get Clips" button (→ /auth/launch/chalybclip). Also the
+// Used by ChalyClip's "Transmitir con ChalyOBS" button (→ /auth/launch/chalybobs)
+// and ChalyOBS's "Get Clips" button (→ /auth/launch/chalybclip). Also the
 // registration funnel target for chalybclip.chalyb.com's landing CTAs
 // (/sign-in?next=/auth/launch/chalybclip) — sign-up flows straight back into
-// ChalybClip with trial + provisioning handled here in the background.
+// ChalyClip with trial + provisioning handled here in the background.
 //
 // Gated to VIP for cross-engine launches (the streaming↔clips perk).
-// ChalybClip itself is open to every signed-in user: first-timers get the
-// welcome gift / 7-day trial claimed silently, and ChalybClip enforces its
+// ChalyClip itself is open to every signed-in user: first-timers get the
+// welcome gift / 7-day trial claimed silently, and ChalyClip enforces its
 // own tier perks once inside.
 //
 // Under /auth/* so it's excluded from the i18n proxy matcher (no locale
@@ -41,13 +41,13 @@ export async function GET(
     );
   }
 
-  // Full-access gate — for cross-engine launches only. ChalybClip is exempt:
+  // Full-access gate — for cross-engine launches only. ChalyClip is exempt:
   // it's the registration funnel from chalybclip.chalyb.com (the landing
   // links every CTA here via /sign-in?next=/auth/launch/chalybclip), so any
   // signed-in user passes through. The platform onboarding happens silently
-  // below (trial claim + provisioning) and ChalybClip enforces its own
+  // below (trial claim + provisioning) and ChalyClip enforces its own
   // per-tier perks — the visitor goes straight from sign-up to
-  // ChalybClip's /dashboard/start without ever seeing the Chalyb dashboard.
+  // ChalyClip's /dashboard/start without ever seeing the Chalyb dashboard.
   const tier = effectiveTier(session.role, session.tier);
   if (slug !== CHALYBCLIP_TRIAL_SLUG && tier !== 'VIP') {
     return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
@@ -84,9 +84,9 @@ export async function GET(
 
   if (slug === CHALYBCLIP_TRIAL_SLUG) {
     // Idempotent: first-timers get the welcome gift + 7-day trial started
-    // and a ChalybClip tenant provisioned; returning users no-op. The audit
+    // and a ChalyClip tenant provisioned; returning users no-op. The audit
     // log's `via: chalybclip_landing_launch` marks the user as having
-    // registered through the ChalybClip funnel. Never blocks the launch.
+    // registered through the ChalyClip funnel. Never blocks the launch.
     try {
       await claimWelcomeGift('chalybclip_landing_launch');
     } catch (err) {
@@ -95,7 +95,7 @@ export async function GET(
   }
 
   // Ensure the user is provisioned on the target engine (idempotent) so the
-  // launch has an external_user_id to sign into the SSO token. ChalybClip
+  // launch has an external_user_id to sign into the SSO token. ChalyClip
   // funnel users are 'manual' (any tier); cross-engine launches keep the
   // VIP seed source.
   try {

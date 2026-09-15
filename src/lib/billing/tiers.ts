@@ -29,7 +29,7 @@ export function isPartnerTier(tier: SubscriptionTier): boolean {
   return tier === 'PARTNER';
 }
 
-/** ChalybClip's max export resolution per tier. Ordered ascending so callers
+/** ChalyClip's max export resolution per tier. Ordered ascending so callers
  *  can compare with EXPORT_QUALITY_RANK below. */
 export type ClipExportQuality = 'sd' | 'hd' | '4k';
 
@@ -68,26 +68,26 @@ export interface TierCapabilities {
   /** Which community space this tier unlocks (free vs premium). */
   community: CommunityAccess;
 
-  // ── ChalybClip ──────────────────────────────────────────────────────────
-  // These travel to ChalybClip via the SSO tier string; ChalybClip enforces them
+  // ── ChalyClip ──────────────────────────────────────────────────────────
+  // These travel to ChalyClip via the SSO tier string; ChalyClip enforces them
   // on its side keyed off the same tier. Modeling them here keeps ONE source
   // of truth so the two products' plans stay in harmony — the /app paywalls,
-  // the marketing cards, and ChalybClip's gates all read the same ladder.
-  /** Whether exported clips carry the "ChalybClip" watermark. */
+  // the marketing cards, and ChalyClip's gates all read the same ladder.
+  /** Whether exported clips carry the "ChalyClip" watermark. */
   clipWatermark: boolean;
   /** VOD retention window in days before clips are pruned. */
   clipVodRetentionDays: number;
-  /** Live streams ChalybClip allows per month (Infinity = uncapped). */
+  /** Live streams ChalyClip allows per month (Infinity = uncapped). */
   clipStreamsPerMonth: number;
-  /** Highest export resolution ChalybClip will render. */
+  /** Highest export resolution ChalyClip will render. */
   clipExportMaxQuality: ClipExportQuality;
   /** Whether clips can auto-publish (false = manual download only). */
   clipAutoPublish: boolean;
-  /** How many brand kits ChalybClip stores (Infinity = uncapped). */
+  /** How many brand kits ChalyClip stores (Infinity = uncapped). */
   clipBrandKits: number;
   /** Whether the user can auto-ingest VODs from a watched Google Drive folder
-   *  (ChalybClip "Watch a Drive folder"). false = manual upload only. Gated here
-   *  so ChalybClip reads it off the SSO tier like every other clip cap. */
+   *  (ChalyClip "Watch a Drive folder"). false = manual upload only. Gated here
+   *  so ChalyClip reads it off the SSO tier like every other clip cap. */
   clipDriveAutoIngest: boolean;
   /** Whether the user can connect their own social accounts (TikTok/IG/YT/…)
    *  and one-click publish clips via the Zernio publishing API. This is the
@@ -114,7 +114,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     hasPrioritySupport: false,
     hasEarlyAccess: false,
     community: 'free',
-    // ChalybClip Free: watermarked clips, short VOD window, manual download only.
+    // ChalyClip Free: watermarked clips, short VOD window, manual download only.
     clipWatermark: true,
     clipVodRetentionDays: 7,
     clipStreamsPerMonth: 0,
@@ -139,7 +139,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     hasPrioritySupport: false,
     hasEarlyAccess: false,
     community: 'premium',
-    // ChalybClip Pro ("el streamer"): no watermark, ~12 streams/mo, HD-only
+    // ChalyClip Pro ("el streamer"): no watermark, ~12 streams/mo, HD-only
     // export, one brand kit. Auto-publish stays a VIP-only perk. Out of tokens
     // before month end → prompted to buy a top-up pack (TOKEN_PACKS).
     clipWatermark: false,
@@ -159,7 +159,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   // effective live count is 2: their owned + the slot they pick. We keep
   // liveEnginesCount = 1 here because the value drives the *selectable* slot
   // count on /app surfaces — partners pick 1 like PRO does. The owned engine
-  // is bonus capacity outside the slot mechanic. ChalybClip caps mirror PRO.
+  // is bonus capacity outside the slot mechanic. ChalyClip caps mirror PRO.
   PARTNER: {
     liveEnginesCount: 1,
     jobsPerMonth: 2_000,
@@ -184,7 +184,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     per: '',
   },
   // VIP (was "All-Access"): every engine live, 5× PRO tokens, and the full
-  // ChalybClip feature set unlocked — no caps on streams, brand kits, or export.
+  // ChalyClip feature set unlocked — no caps on streams, brand kits, or export.
   VIP: {
     liveEnginesCount: Infinity,
     jobsPerMonth: 20_000,
@@ -244,9 +244,9 @@ export function engineCanRunLive(
 // Back-compat alias — remove after all call sites migrated.
 export { engineCanRunLive as botCanRunLive };
 
-// ── ChalybClip 7-day trial ───────────────────────────────────────────────────
-// First-time users get ChalybClip running LIVE (Pro-level) for 7 days, even on
-// FREE. The trial grants live access to ChalybClip ONLY — every other engine
+// ── ChalyClip 7-day trial ───────────────────────────────────────────────────
+// First-time users get ChalyClip running LIVE (Pro-level) for 7 days, even on
+// FREE. The trial grants live access to ChalyClip ONLY — every other engine
 // stays gated by tier. Backed by profiles.chalybclip_trial_started_at (set when
 // the user accepts the welcome banner, or by an admin from /dashboard/team).
 //
@@ -259,7 +259,7 @@ export const CHALYBCLIP_TRIAL_SLUG = 'chalybclip';
 export const CHALYBCLIP_TRIAL_DAYS = 7;
 const TRIAL_MS = CHALYBCLIP_TRIAL_DAYS * 24 * 60 * 60 * 1000;
 
-/** Is the ChalybClip trial currently active for a profile with this start time? */
+/** Is the ChalyClip trial currently active for a profile with this start time? */
 export function isChalybclipTrialActive(startedAtIso: string | null, nowMs: number): boolean {
   if (!startedAtIso) return false;
   const startMs = Date.parse(startedAtIso);
@@ -280,7 +280,7 @@ export function chalybclipTrialDaysLeft(startedAtIso: string | null, nowMs: numb
 
 /**
  * Post-trial grace: the 7-day clock has run out, but the user still has
- * PURCHASED/persistent tokens left — so we keep ChalybClip live until those are
+ * PURCHASED/persistent tokens left — so we keep ChalyClip live until those are
  * gone ("we know your time ran out, but we like you"). True only once the trial
  * window has CLOSED (an active trial isn't grace) and bonus tokens remain.
  * Drives both the live gate and the grace banner on /app.
@@ -302,16 +302,16 @@ export function isChalybclipGraceActive(
 }
 
 /**
- * Whether `engineSlug` runs LIVE for a user, folding in the ChalybClip trial on
+ * Whether `engineSlug` runs LIVE for a user, folding in the ChalyClip trial on
  * top of the normal tier/selection/ownership rules. Centralizes the formula so
  * the home page, engines list, and engine detail page all agree.
  *
  * The trial short-circuits BOTH the tier-required gate and the selection gate —
- * a FREE trial user sees ChalybClip (tier_required = PRO) as live without a
+ * a FREE trial user sees ChalyClip (tier_required = PRO) as live without a
  * selection. Pass `meetsTier` (caller already computes tier_required vs tier),
  * `trialActive` (isChalybclipTrialActive), and `graceActive` (isChalybclipGraceActive,
  * the post-trial "still has tokens" window). Trial and grace behave identically
- * for the live gate — both keep ChalybClip running; they differ only in the banner
+ * for the live gate — both keep ChalyClip running; they differ only in the banner
  * the UI shows.
  */
 export function engineIsLiveForUser(opts: {

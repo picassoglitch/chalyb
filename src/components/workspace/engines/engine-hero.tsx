@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 
 // Single focused continuation hero. ONE primary action only:
 //   - has a live/in-progress engine  → "Continuar →" resumes it (by name)
-//   - otherwise                      → "Abrir ChalybClip →" (the ready-now engine)
+//   - otherwise                      → "Abrir ChalyClip →" (the ready-now engine)
 // Plus one low-emphasis "Ver demo" text link. The "Actualizar a Pro" upsell
 // lives down in the Pro section now — it no longer competes up here.
 

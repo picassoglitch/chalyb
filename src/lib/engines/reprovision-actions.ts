@@ -5,7 +5,7 @@
 // complete (external_user_id is NULL). Common when:
 //   - Migration 0011 backfilled admin rows BEFORE the integration secrets
 //     were configured.
-//   - ChalybClip was down the first time the user activated.
+//   - ChalyClip was down the first time the user activated.
 //   - Env vars changed and the auto-retry hasn't run yet.
 //
 // Returns the fresh row state so the client can re-render without a full

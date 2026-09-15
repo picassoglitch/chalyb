@@ -3,11 +3,7 @@ import { getAutomationCounts } from '@/lib/data/ops';
 
 export const metadata = { title: 'Automatizaciones' };
 
-export default async function AutomationsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function AutomationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -37,7 +33,7 @@ export default async function AutomationsPage({
     {
       id: 'welcome',
       trigger: 'Te registras o ves el saludo de bienvenida',
-      action: 'Regalo de bienvenida y prueba de ChalybClip por 7 días',
+      action: 'Regalo de bienvenida y prueba de ChalyClip por 7 días',
       runs: c.welcomeGifts30d,
     },
     {

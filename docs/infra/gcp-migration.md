@@ -13,14 +13,14 @@ cost model.
 - Supabase: auth, `profiles`, `engines`, `engine_subscriptions`, payments,
   usage, audit.
 - Mercado Pago, Resend and Zernio (external SaaS).
-- The engine source repos on GitHub (`ChalybClip`, `ChalybOBS`, `chalybcrypto`).
+- The engine source repos on GitHub (`ChalyClip`, `ChalyOBS`, `chalybcrypto`).
 
 **Gone with the disk:**
 
-- ChalybClip's Postgres: `tenants`, `drive_watches`, `drive_oauth_credentials`,
+- ChalyClip's Postgres: `tenants`, `drive_watches`, `drive_oauth_credentials`,
   `drive_ingested_files`, and all job history.
-- ChalybOBS's database and the RTMP relay config.
-- ChalybCrypto's database.
+- ChalyOBS's database and the RTMP relay config.
+- ChalyCrypto's database.
 - Every rendered clip and cached VOD that lived on local disk.
 
 Two consequences worth being explicit about:
@@ -50,7 +50,7 @@ Nothing else in `chalyb` needs to change to survive the outage.
 
 Split by workload shape, because the pricing models differ enormously.
 
-- **ChalybClip FastAPI, ChalybOBS web, ChalybCrypto** → **Cloud Run**,
+- **ChalyClip FastAPI, ChalyOBS web, ChalyCrypto** → **Cloud Run**,
   `--min-instances=0`. Scales to zero, so idle cost is $0. The default
   concurrency of 80 is fine here.
 - **ffmpeg render worker** → a second **Cloud Run service** running
@@ -94,10 +94,10 @@ also gets you caching and DDoS cover for free). The apex `chalyb.com` still
 needs its own DNS for Vercel, and Resend needs the new domain verified before
 any mail sends from `noreply@chalyb.com`.
 
-### The RTMP problem — read before putting ChalybOBS on GCP
+### The RTMP problem — read before putting ChalyOBS on GCP
 
 Cloud Run speaks HTTP, gRPC and WebSocket only. It **cannot accept RTMP on
-:1935**, so ChalybOBS's ingest relay needs a real VM with a static IP — and that
+:1935**, so ChalyOBS's ingest relay needs a real VM with a static IP — and that
 is where GCP gets expensive:
 
 > One 6 Mbps input fanned out to 4 platforms is ~24 Mbps outbound ≈ **11 GB per
@@ -111,7 +111,7 @@ Options, best first:
    traffic) or similar. Bandwidth is the product; buy it from someone who
    sells it flat-rate. Keep the API and workers on GCP.
 2. **Use a managed multistream service** and drop the self-hosted relay.
-3. **Defer ChalybOBS** until it has paying users. It's the most expensive engine
+3. **Defer ChalyOBS** until it has paying users. It's the most expensive engine
    to run and the least finished.
 
 Do not run the relay on Cloud Run — it won't work — and don't put it on a GCE
@@ -131,25 +131,25 @@ support L4 GPUs with scale-to-zero if that changes.
    valuable ten minutes in the whole migration.
 2. **Artifact Registry + Secret Manager.** Push images, load secrets. The SSO
    secrets must match what's set in Vercel — `CHALYBCLIP_SSO_SECRET` here has to
-   equal ChalybClip's `CHALYB_SSO_SECRET`, or every SSO launch fails.
+   equal ChalyClip's `CHALYB_SSO_SECRET`, or every SSO launch fails.
 3. **Supabase schemas for the engines.** Re-run each engine's migrations
    against an empty database. Schemas are in the engine repos; the Drive
    tables are also reproduced in `docs/chalybclip_drive_ingest.md` §3.
-4. **ChalybClip API on Cloud Run.** Verify `POST /api/admin/tenants` and
+4. **ChalyClip API on Cloud Run.** Verify `POST /api/admin/tenants` and
    `GET /auth/sso` respond before touching anything else — those two endpoints
    are the entire contract with `chalyb`
    (`src/lib/engines/integrations/chalybclip.ts`).
 5. **GCS bucket + render worker as a Cloud Run Job.** Then Cloud Scheduler for
    the Drive poll.
-6. **Relaunch ChalybClip:** flip `status` back to `active`, then run
+6. **Relaunch ChalyClip:** flip `status` back to `active`, then run
    **`reconcileEngineLinks('chalybclip')`** from `/dashboard/team` — dry-run
    first. This force-reprovisions every user against the rebuilt engine and
    backfills `external_user_id`. It exists precisely for "the engine side lost
    its state" (see `src/lib/engines/reconcile-actions.ts`) so no new recovery
    tooling is needed.
 7. **Email users to reconnect Drive and socials.**
-8. **ChalybCrypto**, same pattern.
-9. **ChalybOBS last**, after deciding where the relay lives.
+8. **ChalyCrypto**, same pattern.
+9. **ChalyOBS last**, after deciding where the relay lives.
 
 Relaunch one engine at a time. Each flip to `active` is independently
 reversible with a one-line update.

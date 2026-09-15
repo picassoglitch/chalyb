@@ -25,7 +25,7 @@ const TIER_MARKETING: Record<
   FREE: {
     tagline: 'Crea tu cuenta y prueba toda la plataforma gratis.',
     features: [
-      'ChalybClip gratis 7 días',
+      'ChalyClip gratis 7 días',
       '50,000 tokens IA de regalo',
       'Acceso a la comunidad',
       'Clips con marca de agua · descarga manual',
@@ -38,7 +38,7 @@ const TIER_MARKETING: Record<
       'Todo lo de Free',
       '1 engine en vivo · tú eliges cuál',
       '1,000,000 de tokens / mes (se regeneran)',
-      'ChalybClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit',
+      'ChalyClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit',
       'Comunidad premium',
     ],
   },
@@ -62,7 +62,7 @@ const TIER_MARKETING: Record<
       'Todo lo de Pro',
       'Todos los engines en vivo',
       '5× los tokens de Pro (5,000,000 / mes)',
-      'Paquete completo de streamer de ChalybClip',
+      'Paquete completo de streamer de ChalyClip',
       'Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea',
     ],
   },
@@ -189,8 +189,7 @@ export function SubscriptionActions({
       const res = await Promise.race([createTierCheckout(next), timeoutPromise]);
       if (!res.ok || !('url' in res) || !res.url) {
         setPendingTier(null);
-        const msg =
-          ('error' in res && res.error) || 'No pudimos abrir el pago.';
+        const msg = ('error' in res && res.error) || 'No pudimos abrir el pago.';
         showToast(`<b>Error</b> · ${msg}`);
         setStickyError(msg);
         console.error('[tier-checkout] failed', {
@@ -261,8 +260,7 @@ export function SubscriptionActions({
             marginBottom: 16,
           }}
         >
-          ▸ <b>Modo admin</b> — los cambios de plan se aplican al instante, sin pasar por el
-          pago.
+          ▸ <b>Modo admin</b> — los cambios de plan se aplican al instante, sin pasar por el pago.
         </div>
       )}
 
@@ -291,8 +289,8 @@ export function SubscriptionActions({
                   <code>{v}</code>
                 </span>
               ))}{' '}
-              {missingPaymentVars.length === 1 ? 'esté' : 'estén'} en Vercel (mismos nombres que
-              en <code>.env.local.example</code>) y el secreto del webhook también en el panel de
+              {missingPaymentVars.length === 1 ? 'esté' : 'estén'} en Vercel (mismos nombres que en{' '}
+              <code>.env.local.example</code>) y el secreto del webhook también en el panel de
               Mercado Pago. Tus cambios de plan como admin siguen aplicándose directo.
             </span>
           ) : (
@@ -319,9 +317,7 @@ export function SubscriptionActions({
         >
           <span style={{ fontSize: 14, lineHeight: 1 }}>▸</span>
           <div style={{ flex: 1 }}>
-            <b style={{ display: 'block', marginBottom: 3 }}>
-              No pudimos abrir el pago
-            </b>
+            <b style={{ display: 'block', marginBottom: 3 }}>No pudimos abrir el pago</b>
             <span>{stickyError}</span>
           </div>
           <button
@@ -372,7 +368,9 @@ export function SubscriptionActions({
                   {c.name}
                 </span>
                 {isCurrent && <span className="cc-mod-badge gr">Tu plan</span>}
-                {!isCurrent && c.featured && <span className="cc-mod-badge gr">El más elegido</span>}
+                {!isCurrent && c.featured && (
+                  <span className="cc-mod-badge gr">El más elegido</span>
+                )}
               </div>
               <div
                 style={{
@@ -395,9 +393,7 @@ export function SubscriptionActions({
                   {c.per}
                 </span>
               </div>
-              <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', minHeight: 36 }}>
-                {c.tagline}
-              </p>
+              <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', minHeight: 36 }}>{c.tagline}</p>
               <ul
                 style={{
                   listStyle: 'none',
@@ -470,9 +466,7 @@ export function SubscriptionActions({
         <div className="cc-mod-section">
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">
-                {endsAt ? 'Suscripción cancelada' : 'Cancelar suscripción'}
-              </span>
+              <span className="t">{endsAt ? 'Suscripción cancelada' : 'Cancelar suscripción'}</span>
               <span className="s">
                 {endsAt
                   ? `No se renueva. Conservas ${TIER_LABELS[tier]} hasta el ${formatEndDate(endsAt)}; ese día pasas a Free.`
