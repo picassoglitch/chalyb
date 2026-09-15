@@ -6,10 +6,10 @@ code side is already in place; this is the operator's checklist.
 
 ## What is sold, and through what
 
-| Product                 | Mercado Pago product                       | Where it starts                                          | What activates it                                              |
-| ----------------------- | ------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------- |
-| Plan Pro / VIP, monthly | **Suscripciones** (`/preapproval`)         | `createTierSubscription` in `subscription-actions.ts`    | webhook topic `subscription_preapproval` → status `authorized` |
-| Token packs, one-off    | **Checkout Pro** (`/checkout/preferences`) | `createTokenPackCheckout` in `token-checkout-actions.ts` | webhook topic `payment` → status `approved`                    |
+| Product                 | Mercado Pago product                                                | Where it starts                                          | What activates it                                              |
+| ----------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Plan Pro / VIP, monthly | **Suscripciones** (`/preapproval`)                                  | `createTierSubscription` in `subscription-actions.ts`    | webhook topic `subscription_preapproval` → status `authorized` |
+| Token packs, one-off    | **Checkout Pro via Orders** (`POST /v1/orders`, `type: \"online\"`) | `createTokenPackCheckout` in `token-checkout-actions.ts` | webhook topic `orders` → status `processed`                    |
 
 Why this split and not something else:
 
@@ -28,6 +28,12 @@ Why this split and not something else:
 - **Checkout Pro for packs.** A pack is a top-up, not a plan. Checkout Pro
   gives the buyer every method Mercado Pago supports in Mexico (cards, OXXO,
   SPEI, account balance). Subscriptions are card-only.
+- **Via the Orders API, not Preferences.** The application form now offers
+  "API de Orders" and "API de Preferences", the latter marked as being
+  discontinued. The pack checkout creates an order (`POST /v1/orders`,
+  `type: "online"`, `processing_mode: "manual"`) and redirects to its
+  `checkout_url`; the webhook reads the `orders` topic. Payments made through
+  the old preferences flow still settle through the `payment` topic.
 - **Not Checkout Bricks / API.** Embedding the card form buys nothing here:
   the products are two plans and three packs, and hosting the form means
   taking on the PCI questionnaire and 3DS handling for no conversion gain.
@@ -75,11 +81,11 @@ verification (**Activar credenciales de producción** in the application).
 
 Application → **Webhooks** → **Configurar notificaciones**:
 
-| Field             | Value                                                            |
-| ----------------- | ---------------------------------------------------------------- |
-| URL de producción | `https://chalyb.com/api/mp/webhook`                              |
-| URL de prueba     | your tunnel or preview URL + `/api/mp/webhook` (see §5)          |
-| Eventos           | **Pagos** and **Suscripciones** — both. Nothing else is handled. |
+| Field             | Value                                                                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| URL de producción | `https://chalyb.com/api/mp/webhook`                                                                                                             |
+| URL de prueba     | your tunnel or preview URL + `/api/mp/webhook` (see §5)                                                                                         |
+| Eventos           | **Orders** (token packs), **Suscripciones** (plans) and **Pagos** (legacy one-off purchases and subscription charges). Nothing else is handled. |
 
 Then **Clave secreta** on the same page → `MERCADOPAGO_WEBHOOK_SECRET`. The
 receiver rejects every notification until this is set, on purpose: without
@@ -94,7 +100,8 @@ from Mercado Pago's API and never trusts the notification body. Topics:
 | --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------- |
 | `subscription_preapproval`        | `GET /preapproval/{id}`         | `authorized` → tier on; `paused`/`cancelled` → tier ends at `next_payment_date` |
 | `subscription_authorized_payment` | `GET /authorized_payments/{id}` | monthly charge → row in `payments`, then re-sync                                |
-| `payment`                         | `GET /v1/payments/{id}`         | token pack → tokens; legacy one-off tier → tier                                 |
+| `orders`                          | `GET /v1/orders/{id}`           | token pack → tokens once the order is `processed`                               |
+| `payment`                         | `GET /v1/payments/{id}`         | legacy one-off tier → tier; a subscription charge → ledger                      |
 
 Retries: the receiver answers `500` only when _our_ side failed (database,
 Mercado Pago unreachable) so Mercado Pago retries; anything that cannot be

@@ -29,7 +29,7 @@
 // throwing is the backstop for a caller that skipped that check.
 
 import 'server-only';
-import { MercadoPagoConfig, Preference, Payment, PreApproval } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment, PreApproval, Order } from 'mercadopago';
 import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
@@ -45,6 +45,8 @@ let cached: {
   payment: Payment;
   /** Subscriptions (the /preapproval API): one per paying Pro/VIP user. */
   preapproval: PreApproval;
+  /** Orders API (/v1/orders): Checkout Pro via Orders, used for token packs. */
+  order: Order;
 } | null = null;
 
 function getAccessToken(): string | undefined {
@@ -102,6 +104,7 @@ export function getMercadoPago() {
     preference: new Preference(config),
     payment: new Payment(config),
     preapproval: new PreApproval(config),
+    order: new Order(config),
   };
   return cached;
 }

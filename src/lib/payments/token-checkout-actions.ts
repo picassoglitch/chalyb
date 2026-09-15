@@ -1,27 +1,34 @@
 'use server';
 
-// Mercado Pago checkout for token top-up packs. Parallel to createTierCheckout
-// (which sells tier subscriptions) but the post-payment effect is different:
-// instead of bumping profiles.tier, the webhook calls grantTokenPack() to
-// add to profiles.token_bonus_balance.
+// Mercado Pago checkout for token top-up packs — Checkout Pro via the Orders
+// API. Parallel to createTierSubscription (which sells the monthly plans)
+// but the post-payment effect is different: instead of a tier, the webhook
+// calls grantTokenPack() to add to profiles.token_bonus_balance.
 //
 // FLOW:
-//   1. User clicks "Comprar +500k tokens" → calls createTokenPackCheckout('tokens_500k')
-//   2. Server creates MP Preference, returns init_point URL
-//   3. Browser navigates to MP checkout
-//   4. User pays
+//   1. User clicks "Comprar +500k tokens" → createTokenPackCheckout('tokens_500k')
+//   2. Server creates an order (POST /v1/orders, type "online") and returns
+//      its checkout_url
+//   3. Browser navigates to the Mercado Pago-hosted checkout
+//   4. User pays (card, OXXO, SPEI, account money…)
 //   5. MP redirects back to /app/usage?status=success
-//   6. (Async) MP webhook → fires with external_reference="pack|<userId>|<packId>"
-//   7. Webhook detects 'pack' prefix and routes to grantTokenPack instead of
-//      tier change. See app/api/mp/webhook/route.ts.
+//   6. (Async) MP webhook, topic `orders`, external_reference
+//      "pack|<userId>|<packId>" → one-off-settlement.ts grants the tokens.
+//
+// Price and currency come from TOKEN_PACKS on the server. The browser only
+// names the pack. The Orders API is what the application in the Mercado Pago
+// panel is registered for ("API de Orders"); the preferences-based Checkout
+// Pro it replaces is being discontinued.
 //
 // Admins still pay for packs (we don't comp them via this path) but they
 // don't NEED to — admins have unlimited via getTokenBalance. The button on
 // /app/usage is hidden for admins.
 
+import { randomUUID } from 'node:crypto';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { TOKEN_PACKS, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
+import { getTokenPack } from './pricing';
+import { orderAmount } from './order-charge';
 import { getMercadoPago, getAppUrl, isCheckoutReady, checkoutNotReadyError } from './mercadopago';
 
 export interface PackCheckoutResult {
@@ -67,47 +74,51 @@ export async function createTokenPackCheckout(
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
 
-    const { preference } = getMercadoPago();
+    const { order } = getMercadoPago();
     const appUrl = getAppUrl();
-    const isHttps = appUrl.startsWith('https://');
+    const amount = orderAmount(pack.amountCents);
+    const title = `Chalyb · ${pack.label}`;
 
     // external_reference shape: "pack|<userId>|<packId>" so the webhook can
-    // distinguish from tier upgrades (which use "<userId>|<tier>").
-    const body: Record<string, unknown> = {
-      items: [
-        {
-          id: `pack-${pack.id}`,
-          title: `Chalyb · ${pack.label}`,
-          quantity: 1,
-          unit_price: pack.amountCents / 100,
-          currency_id: TOKEN_PACK_CURRENCY,
+    // tell a pack from a plan ("sub|…" for subscriptions, "<userId>|<TIER>"
+    // for the legacy one-off purchases).
+    const result = await order.create({
+      body: {
+        type: 'online',
+        // The only mode Checkout Pro accepts: the buyer completes the
+        // payment on Mercado Pago's page, not in this request.
+        processing_mode: 'manual',
+        total_amount: amount,
+        external_reference: `pack|${session.user.id}|${pack.id}`,
+        description: title,
+        ...(session.user.email ? { payer: { email: session.user.email } } : {}),
+        items: [
+          {
+            title,
+            unit_price: amount,
+            quantity: 1,
+            unit_measure: 'unit',
+            external_code: `pack-${pack.id}`,
+          },
+        ],
+        config: {
+          online: {
+            success_url: `${appUrl}/app/usage?status=success`,
+            pending_url: `${appUrl}/app/usage?status=pending`,
+            failure_url: `${appUrl}/app/usage?status=failure`,
+          },
         },
-      ],
-      external_reference: `pack|${session.user.id}|${pack.id}`,
-      back_urls: {
-        success: `${appUrl}/app/usage?status=success`,
-        failure: `${appUrl}/app/usage?status=failure`,
-        pending: `${appUrl}/app/usage?status=pending`,
       },
-      statement_descriptor: 'CHALYB TOKENS',
-      metadata: {
-        user_id: session.user.id,
-        pack_id: pack.id,
-        tokens_granted: pack.tokens,
-        kind: 'token_pack',
-      },
-    };
-
-    if (isHttps) {
-      body.auto_return = 'approved';
-      body.notification_url = `${appUrl}/api/mp/webhook`;
-    }
-
-    const result = await preference.create({
-      body: body as Parameters<typeof preference.create>[0]['body'],
+      // Orders require X-Idempotency-Key; a fresh UUID per attempt means a
+      // retried click can never create two payable orders.
+      requestOptions: { idempotencyKey: randomUUID() },
     });
-    const url = result.init_point ?? result.sandbox_init_point;
-    if (!url) {
+
+    // checkout_url is documented for Checkout Pro via Orders but the SDK's
+    // OrderResponse type (2.12) predates it, hence the widening.
+    const url = (result as typeof result & { checkout_url?: string }).checkout_url;
+    if (!result.id || !url) {
+      console.error('[token-pack-checkout] order returned no id/checkout_url', result);
       return { ok: false, reason: 'mp_error', error: 'MP no devolvió URL de checkout.' };
     }
     return { ok: true, url };
