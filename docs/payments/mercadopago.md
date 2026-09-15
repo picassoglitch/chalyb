@@ -127,7 +127,7 @@ start on an `http://` origin and says why.
 Apply the migration that backs subscriptions:
 
 ```sh
-pnpm db:push        # applies supabase/migrations/0036_mp_subscriptions.sql
+pnpm db:push        # applies supabase/migrations/0037_mp_subscriptions.sql
 ```
 
 ## 5. Testing
