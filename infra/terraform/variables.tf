@@ -145,9 +145,8 @@ variable "engines" {
 
       # ChalybClip reads all three WITHOUT its usual CHALYBCLIP_ prefix:
       # settings.py gives each an explicit validation_alias. These are the
-      # post-rebrand names — the engine image must be one that reads
-      # CHALYB_ADMIN_TOKEN / CHALYB_SSO_SECRET (the contract the hub documents
-      # in .env.local.example), not the old NEXO_AI_* pair.
+      # names the rebranded engine image reads (the contract the hub
+      # documents in .env.local.example).
       secret_env_names = {
         admin_token  = "CHALYB_ADMIN_TOKEN"
         sso_secret   = "CHALYB_SSO_SECRET"
@@ -158,7 +157,7 @@ variable "engines" {
         CHALYBCLIP_ZERNIO_API_KEY = "zernio-api-key"
       }
 
-      # `nexoclip worker` — the kickoff/poll pipeline service.
+      # `chalybclip worker` — the kickoff/poll pipeline service.
       worker = {
         env              = { CHALYBCLIP_ROLE = "worker" }
         endpoint_env_var = "CHALYBCLIP_MODAL_PIPELINE_ENDPOINT_URL"
@@ -169,14 +168,13 @@ variable "engines" {
 
       jobs = {
         # `drive poll` is a Typer command, not an HTTP route. `command` is the
-        # image's console-script name, not an env var, so it follows whatever
-        # the engine repo ships rather than the CHALYB* env rename. The
-        # schedule is paused, so a stale name here cannot break a deploy.
+        # image's console-script name (pyproject [project.scripts] in the
+        # engine repo), not an env var.
         # Scheduled every minute per the ingest SLA, but PAUSED: without
         # --source-dir the command builds the real GoogleDriveClient, which is
         # not implemented yet and exits 1. Un-pause when it ships.
         drive-poll = {
-          command  = ["nexoclip"]
+          command  = ["chalybclip"]
           args     = ["drive", "poll"]
           schedule = "* * * * *"
           paused   = true
@@ -185,8 +183,26 @@ variable "engines" {
       }
     }
 
-    chalybobs    = { display_name = "ChalybOBS" }
-    chalybcrypto = { display_name = "ChalybCrypto" }
+    # ChalybOBS's web app (web/src/lib/env.ts) reads its own prefixed pair.
+    chalybobs = {
+      display_name = "ChalybOBS"
+      secret_env_names = {
+        admin_token  = "CHALYBOBS_ADMIN_TOKEN"
+        sso_secret   = "CHALYBOBS_SSO_SECRET"
+        database_url = "DATABASE_URL"
+      }
+    }
+
+    # ChalybCrypto's API (services/api sso.py) reads the unprefixed pair,
+    # same as ChalybClip.
+    chalybcrypto = {
+      display_name = "ChalybCrypto"
+      secret_env_names = {
+        admin_token  = "CHALYB_ADMIN_TOKEN"
+        sso_secret   = "CHALYB_SSO_SECRET"
+        database_url = "DATABASE_URL"
+      }
+    }
   }
 }
 

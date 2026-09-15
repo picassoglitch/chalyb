@@ -77,3 +77,8 @@ The engines are `coming_soon` in the database and their backends are being
 rebuilt on GCP after the self-hosted machine that ran them died. The launch
 guard in `src/app/auth/launch/[slug]/route.ts` keeps users out of an engine
 that is not serving, so the hub is safe to run while that work lands.
+
+The engine repos (`chalybclip`, `chalybobs`, `chalybcrypto`) carry the rebrand
+and a `cloudbuild.yaml` each; what remains per engine is steps 4–7 of
+[`docs/infra/deploy-runbook.md`](docs/infra/deploy-runbook.md): secrets,
+build, DNS, then the one-line flip to `active`.

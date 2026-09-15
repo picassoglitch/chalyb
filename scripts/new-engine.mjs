@@ -33,7 +33,9 @@ for (let i = 0; i < argv.length; i++) {
 
 const [slug, displayName] = positional;
 if (!slug || !displayName) {
-  fail('usage: node scripts/new-engine.mjs <slug> "<Display Name>" [--icon 🤖] [--tier PRO] [--category AGENTS]');
+  fail(
+    'usage: node scripts/new-engine.mjs <slug> "<Display Name>" [--icon 🤖] [--tier PRO] [--category AGENTS]',
+  );
 }
 if (!/^[a-z][a-z0-9]*$/.test(slug)) {
   // The slug becomes a subdomain, a Cloud Run service name, a GCP service
@@ -66,10 +68,10 @@ const existing = readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql'));
 
 // Check migration CONTENTS, not filenames. The pre-rebrand migrations still
 // carry their original names (they are Supabase's applied-migration ledger and
-// must not be renamed), so `0030` registers slug 'chalybclip' from a file
-// called 0018_nexoclip_url_rename.sql. A filename check misses that and
-// happily generates a duplicate slug, which then fails at apply time against
-// the unique (org_id, slug) constraint.
+// must not be renamed), so `0030` registers slug 'chalybclip' while the file
+// that first seeded that engine (0018) still carries the old slug in its name.
+// A filename check misses that and happily generates a duplicate slug, which
+// then fails at apply time against the unique (org_id, slug) constraint.
 const claimed = new RegExp(`'${slug}'`);
 const clash = existing.find((f) => claimed.test(readFileSync(join(MIGRATIONS, f), 'utf8')));
 if (clash) {

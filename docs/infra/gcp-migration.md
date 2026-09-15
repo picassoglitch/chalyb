@@ -54,13 +54,13 @@ Split by workload shape, because the pricing models differ enormously.
   `--min-instances=0`. Scales to zero, so idle cost is $0. The default
   concurrency of 80 is fine here.
 - **ffmpeg render worker** → a second **Cloud Run service** running
-  `nexoclip worker`, with CPU always allocated. Corrected after reading the
+  `chalybclip worker`, with CPU always allocated. Corrected after reading the
   application: the worker speaks a kickoff/poll HTTP contract, so it is a
   service, not a batch job. CPU-always is not tuning — the work happens in an
   asyncio task after the kickoff response, which Cloud Run's default
   throttling would freeze. Renders still do not run in the API service.
 - **Drive change poll (~60 s)** → **Cloud Scheduler** triggering a **Cloud Run
-  Job** that runs `nexoclip drive poll`. It is a CLI command, not an endpoint.
+  Job** that runs `chalybclip drive poll`. It is a CLI command, not an endpoint.
   One-minute granularity is exactly the SLA in
   `docs/chalybclip_drive_ingest.md`. Shipped paused: the real
   `GoogleDriveClient` is not implemented yet and the command exits 1.
@@ -82,7 +82,7 @@ Split by workload shape, because the pricing models differ enormously.
 The hostnames moved with the rebrand: `chalybclip.chalyb.com`,
 `chalybobs.chalyb.com`, `chalybcrypto.chalyb.com`. Migration `0030` writes
 those into `engines.external_url` / `admin_api_base`, replacing the
-`*.nexo-ai.world` values seeded in `0018`, `0019` and `0022`.
+pre-rebrand hostnames seeded in `0018`, `0019` and `0022`.
 
 **Each subdomain must resolve before its engine flips back to `active`.** The
 launch guard in `src/app/auth/launch/[slug]/route.ts` keeps users out while an
