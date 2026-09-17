@@ -273,13 +273,28 @@ export function MpCardBrick({
           iframesInDocument: document.querySelectorAll('iframe').length,
         });
         if (stageRef.current === 'create') stageRef.current = 'onReady';
-        if (!aliveRef.current) {
-          // Left before creation finished: nothing keeps this one.
-          log('component left during creation; unmounting');
-          controller.unmount();
-          return;
-        }
+        // Always keep the controller. Never unmount inline here: if the
+        // component left while create() was in flight, the deferred cleanup
+        // (already scheduled) unmounts it once; if that cleanup was
+        // cancelled by an immediate re-run, the Brick simply lives on.
         controllerRef.current = controller;
+        if (!aliveRef.current && pendingUnmount.current === null) {
+          // Left for real and the cleanup already ran its timer before we
+          // had a controller: schedule the unmount now, still deferred.
+          log('component left during creation; scheduling deferred unmount');
+          pendingUnmount.current = window.setTimeout(() => {
+            pendingUnmount.current = null;
+            if (!aliveRef.current && controllerRef.current) {
+              log('unmounting Brick (component left)');
+              try {
+                controllerRef.current.unmount();
+              } catch (err) {
+                console.warn('[mercadopago brick] unmount threw', err);
+              }
+              controllerRef.current = null;
+            }
+          }, 0);
+        }
       })
       .catch((err: unknown) => {
         console.error('[mercadopago brick] create failed', err);
