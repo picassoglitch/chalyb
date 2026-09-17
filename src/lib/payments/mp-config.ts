@@ -54,3 +54,47 @@ export function checkoutNotReadyMessage(missing: string[]): string {
     `(los mismos nombres que en .env.local.example). Un admin puede activar tu plan directo.`
   );
 }
+
+/**
+ * Mistakes that leave every variable SET but the card form dead: the public
+ * key slot holding the access token (or the reverse), or a test key paired
+ * with a production token. Mercado Pago's Brick then never reports ready.
+ * Pure, so the checkout pages and /api/_diag/mp can name the mistake
+ * without touching the SDK. Empty = nothing obviously wrong.
+ */
+export function checkoutConfigProblems(env: Env): string[] {
+  const problems: string[] = [];
+  const token = readAccessToken(env)?.trim();
+  const publicKey = readPublicKey(env)?.trim();
+  if (!token || !publicKey) return problems;
+
+  // A public key is "<PREFIX>-<uuid>"; an access token is
+  // "<PREFIX>-<digits>-<digits>-<hex>-<digits>".
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const prefixOf = (v: string) =>
+    v.startsWith('TEST-') ? 'TEST' : v.startsWith('APP_USR-') ? 'APP_USR' : null;
+  const body = (v: string) => v.replace(/^(TEST|APP_USR)-/, '');
+
+  const pkPrefix = prefixOf(publicKey);
+  const tokPrefix = prefixOf(token);
+  if (!pkPrefix) {
+    problems.push(
+      `${MP_PUBLIC_KEY_VAR} no empieza con APP_USR- ni TEST-; no parece una Public Key de Mercado Pago`,
+    );
+  } else if (!uuid.test(body(publicKey))) {
+    problems.push(
+      /^\d{5,}-/.test(body(publicKey))
+        ? `${MP_PUBLIC_KEY_VAR} contiene un Access Token, no la Public Key (la Public Key es el otro valor del mismo panel de credenciales)`
+        : `${MP_PUBLIC_KEY_VAR} no tiene la forma de una Public Key (PREFIJO-uuid)`,
+    );
+  }
+  if (tokPrefix && uuid.test(body(token))) {
+    problems.push(`${MP_ACCESS_TOKEN_VAR} contiene una Public Key, no el Access Token`);
+  }
+  if (pkPrefix && tokPrefix && pkPrefix !== tokPrefix) {
+    problems.push(
+      `${MP_PUBLIC_KEY_VAR} es ${pkPrefix} pero ${MP_ACCESS_TOKEN_VAR} es ${tokPrefix}: las dos credenciales deben venir del mismo panel (ambas de prueba o ambas de producción)`,
+    );
+  }
+  return problems;
+}

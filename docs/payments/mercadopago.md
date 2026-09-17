@@ -20,7 +20,7 @@ Why this split and not something else:
   retries run out. Selling a plan as a one-off Checkout Pro payment (what the
   hub did before) means nobody is ever charged a second month.
 - **The card form is ours, the card data is theirs.** Mercado Pago's Card
-  Payment Brick (`@mercadopago/sdk-react`) renders the card number, expiry
+  Payment Brick (MercadoPago.js v2, loaded with `@mercadopago/sdk-js`) renders the card number, expiry
   and CVV in iframes it hosts and hands the page a single-use token. The
   buyer never leaves Chalyb, and PCI stays with Mercado Pago (SAQ A). The
   subscription is created "sin plan asociado" with `card_token_id` and
@@ -128,7 +128,7 @@ and the order's return URLs on the hosted fallback.
 Apply the migration that backs subscriptions:
 
 ```sh
-pnpm db:push        # applies supabase/migrations/0037_mp_subscriptions.sql
+pnpm db:push        # 0037_mp_subscriptions.sql and 0038_token_pack_clawback.sql
 ```
 
 ## 5. Testing
@@ -196,5 +196,32 @@ Notification delivery history and failures: Application → **Webhooks** →
 - **Legacy one-off purchases** (plans bought before subscriptions existed)
   keep working: their tier has no end date and the old `<userId>|<TIER>`
   reference is still honoured by the webhook. They never renew.
-- **Refunds and chargebacks** are handled in the Mercado Pago dashboard. The
-  `payments.raw` column keeps the full payload for disputes.
+- **Refunds and chargebacks** are issued or decided in the Mercado Pago
+  dashboard; the webhook then undoes what the payment bought. POLICY:
+  - A **token pack** whose payment is reversed loses its tokens
+    (`clawback_token_pack`, migration 0038): idempotent per payment id,
+    the balance is clamped at zero, and a payment with no purchase on file
+    removes nothing. The user gets an email.
+  - A **subscription** charge that is reversed revokes the plan **now**
+    (tier → FREE, preapproval cancelled at Mercado Pago). A cancellation
+    keeps the plan to the end of the period because that period was paid;
+    a reversal is the opposite case. The user gets an email.
+  - A **legacy one-off plan** whose payment is reversed drops to FREE now,
+    only if that payment is the one on file for the tier.
+    The `payments.raw` column keeps the full payload for disputes.
+- **What the amount gate reads.** For an order it is `total_amount` (the
+  catalog price we sent), never `total_paid_amount`, which can carry
+  installment interest or fees. For a Payments API payment it is
+  `transaction_amount`. A mismatch with `pricing.ts`, or a missing
+  currency, grants nothing.
+- **One order per purchase window.** The Orders `X-Idempotency-Key` is
+  stable for the same user, pack and ten-minute window, so a double click
+  or a retried server function gets the same order back.
+- **One live subscription per user.** `authorizeTierSubscription` checks
+  for an existing authorised or pending preapproval first: same tier and
+  authorised → nothing is created; pending (never authorised) → closed at
+  Mercado Pago before a new one is created; another tier → the new one
+  replaces it once authorised.
+- **The hosted `checkout_url`** is only followed when its host is
+  `mercadopago.com` or `mercadopago.com.mx` (with or without `www`), over
+  HTTPS.

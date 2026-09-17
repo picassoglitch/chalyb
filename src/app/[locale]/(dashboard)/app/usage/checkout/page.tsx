@@ -6,6 +6,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { TOKEN_PACK_CURRENCY, formatMoney, getTokenPack } from '@/lib/payments/pricing';
 import {
+  checkoutConfigWarnings,
   checkoutNotReadyError,
   getPublicKey,
   missingCheckoutVars,
@@ -37,6 +38,9 @@ export default async function PackCheckoutPage({
 
   const missing = missingCheckoutVars();
   const publicKey = getPublicKey();
+  // Set-but-wrong credentials leave the Brick loading forever; say so here,
+  // before the form, instead of after its 20 s watchdog.
+  const problems = missing.length === 0 ? checkoutConfigWarnings() : [];
 
   return (
     <div className="cc-scroll">
@@ -69,7 +73,7 @@ export default async function PackCheckoutPage({
           </p>
         </div>
 
-        {missing.length > 0 || !publicKey ? (
+        {missing.length > 0 || !publicKey || problems.length > 0 ? (
           <div
             style={{
               padding: '12px 14px',
@@ -84,7 +88,7 @@ export default async function PackCheckoutPage({
             <b style={{ display: 'block', marginBottom: 3, color: 'var(--cc-amber)' }}>
               Pagos aún no disponibles
             </b>
-            {checkoutNotReadyError()}
+            {problems.length > 0 ? problems.join('. ') + '.' : checkoutNotReadyError()}
           </div>
         ) : (
           <PackCheckout

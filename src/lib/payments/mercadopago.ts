@@ -1,26 +1,40 @@
 // Mercado Pago SDK wrapper — server-side only.
 //
-// CONFIGURATION:
-// Set the following env vars in .env.local (and Vercel for prod):
-//   MERCADOPAGO_ACCESS_TOKEN   — your MP private access token. TEST-* for
-//                                sandbox, APP_USR-* for production. Get from
-//                                https://www.mercadopago.com/developers/panel/credentials
-//   MERCADOPAGO_WEBHOOK_SECRET (optional but recommended) — the secret MP
-//                                signs the webhook x-signature header with.
-//                                Set the same value in your MP dashboard under
-//                                "Notificaciones IPN/Webhooks".
-//   MERCADOPAGO_PUBLIC_KEY    (optional) — only needed if/when we switch from
-//                                redirect-based checkout to embedded MP Bricks.
-//                                Currently unused — safe to leave set.
-//   NEXT_PUBLIC_APP_URL        — the publicly reachable origin (https://chalyb.com
-//                                or http://localhost:3000 for local). Used in
-//                                back_urls and notification_url on the preference.
-//                                Read through src/lib/app-url.ts, which is the
-//                                one reader for this value across the app.
+// WHAT TALKS TO MERCADO PAGO, AND THROUGH WHICH CLIENT:
+//   preapproval  Pro/VIP subscriptions. Created already authorised with the
+//                card token from the in-app Card Payment Brick
+//                (subscription-actions.ts); read, cancelled and re-synced by
+//                subscription-sync.ts.
+//   order        Token packs (Orders API): `automatic` with the Brick's card
+//                token (token-checkout-actions.ts → payTokenPackWithCard) or
+//                `manual` for the hosted checkout_url fallback (OXXO, SPEI,
+//                account money). Read by the `orders` webhook topic.
+//   payment      Payments API reads only: the `payment` webhook topic (legacy
+//                one-off purchases made through the discontinued preferences
+//                flow, and subscription charges reported on that topic).
+//   mpGet        Raw GET for resources the SDK has no client for
+//                (/authorized_payments/{id}).
+// There is no Preference client: nothing creates preferences any more.
 //
-// LEGACY ALIAS: `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` are still read as
-// fallbacks so an older Vercel setup keeps working. Every message names the
-// canonical MERCADOPAGO_* variable. The lookup lives in ./mp-config.ts.
+// CONFIGURATION (names as in the committed env example; set the same on Vercel):
+//   MERCADOPAGO_ACCESS_TOKEN   — the application's private token. Server-side
+//                                only. From Tus integraciones → the app →
+//                                Credenciales (prueba / producción).
+//   MERCADOPAGO_PUBLIC_KEY     — initialises the Card Payment Brick in the
+//                                browser. Not a secret, but REQUIRED: without
+//                                it there is no card form to pay in.
+//   MERCADOPAGO_WEBHOOK_SECRET — the secret Mercado Pago signs x-signature
+//                                with. REQUIRED: /api/mp/webhook rejects every
+//                                notification without it, so nothing would
+//                                ever be credited.
+//   NEXT_PUBLIC_APP_URL        — the public origin, for the preapproval's
+//                                back_url and the hosted order's return URLs.
+//                                Read through src/lib/app-url.ts.
+//
+// LEGACY ALIAS: `MP_ACCESS_TOKEN` / `MP_PUBLIC_KEY` / `MP_WEBHOOK_SECRET` are
+// still read as fallbacks so an older Vercel setup keeps working. Every
+// message names the canonical MERCADOPAGO_* variable. The lookup lives in
+// ./mp-config.ts.
 //
 // NOT-CONFIGURED FALLBACK:
 // The checkout actions ask `isCheckoutReady()` BEFORE touching the SDK and
@@ -29,11 +43,12 @@
 // throwing is the backstop for a caller that skipped that check.
 
 import 'server-only';
-import { MercadoPagoConfig, Preference, Payment, PreApproval, Order } from 'mercadopago';
+import { MercadoPagoConfig, Payment, PreApproval, Order } from 'mercadopago';
 import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
   checkoutNotReadyMessage,
+  checkoutConfigProblems,
   missingCheckoutConfig,
   readAccessToken,
   readPublicKey,
@@ -42,7 +57,7 @@ import {
 
 let cached: {
   config: MercadoPagoConfig;
-  preference: Preference;
+  /** Payments API, read-only here (the `payment` webhook topic). */
   payment: Payment;
   /** Subscriptions (the /preapproval API): one per paying Pro/VIP user. */
   preapproval: PreApproval;
@@ -74,6 +89,12 @@ export function isMercadoPagoConfigured(): boolean {
 /** Canonical names of the variables a checkout still needs. Empty = ready. */
 export function missingCheckoutVars(): string[] {
   return missingCheckoutConfig(process.env);
+}
+
+/** Set-but-wrong credentials (swapped, or test paired with production).
+ *  Names, never values. Empty = nothing obviously wrong. */
+export function checkoutConfigWarnings(): string[] {
+  return checkoutConfigProblems(process.env);
 }
 
 /** Everything a checkout needs to both start AND be credited afterwards. */
@@ -108,7 +129,6 @@ export function getMercadoPago() {
   });
   cached = {
     config,
-    preference: new Preference(config),
     payment: new Payment(config),
     preapproval: new PreApproval(config),
     order: new Order(config),
@@ -143,11 +163,11 @@ export async function mpGet<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** Absolute origin for back_urls / notification_url.
- *  Thin alias over appUrl() so payment callers keep their familiar name while
- *  there is exactly one place that reads the environment. Falls back to
- *  localhost for dev so the dev workflow still creates valid preferences
- *  (though the webhook won't actually fire — use ngrok for that). */
+/** Absolute origin for the preapproval's back_url and the hosted order's
+ *  return URLs. Thin alias over appUrl() so payment callers keep their
+ *  familiar name while there is exactly one place that reads the
+ *  environment. Falls back to localhost in dev (Mercado Pago cannot call the
+ *  webhook there — use a tunnel for that). */
 export function getAppUrl(): string {
   return appUrl();
 }

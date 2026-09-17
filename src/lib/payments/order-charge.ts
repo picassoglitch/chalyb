@@ -5,6 +5,8 @@
 // checkout creates today). Both are reduced to this before anything is
 // recorded or granted, so the settlement logic exists once. Pure, no I/O.
 
+import { createHash } from 'node:crypto';
+
 /** Status vocabulary the settlement understands. It is the Payments API's,
  *  because that is what `payments.status` and /app/billing already speak. */
 export type ChargeStatus =
@@ -26,8 +28,20 @@ export interface NormalizedCharge {
   /** The id to quote to humans and to Mercado Pago support. */
   mpReference: string;
   status: ChargeStatus;
-  /** Major units, as Mercado Pago reports them (749.00). null when unknown. */
+  /**
+   * THE AMOUNT THE ENTITLEMENT IS GATED ON, in major units (749.00).
+   *
+   * For an order this is `total_amount`: the price of what was sold, which
+   * we set from the catalog and Mercado Pago echoes back. It is never
+   * `total_paid_amount`, which can include installment interest, fees or
+   * rounding Mercado Pago adds on top and would make a correctly priced
+   * pack look "wrong" (or, worse, let a different total pass). For a
+   * Payments API payment it is `transaction_amount`. null when unknown.
+   */
   amountMajor: number | null;
+  /** What Mercado Pago says actually moved (`total_paid_amount`). For the
+   *  ledger and humans only — never for deciding what to grant. */
+  paidAmountMajor: number | null;
   currency: string | null;
   externalReference: string;
 }
@@ -109,16 +123,14 @@ export function chargeFromOrder(order: OrderLike): NormalizedCharge {
   const orderId = order.id ?? '';
   const payment = order.transactions?.payments?.[0];
   const status = orderStatusToChargeStatus(order.status);
-  // What was actually paid, when something was; the order total otherwise,
-  // so a pending or failed charge still shows the right figure in the ledger.
-  const paid = toAmount(order.total_paid_amount);
-  const amountMajor = status === 'approved' && paid ? paid : toAmount(order.total_amount);
   return {
     source: 'order',
     mpPaymentId: payment?.id ? String(payment.id) : orderId,
     mpReference: orderId,
     status,
-    amountMajor,
+    // Authoritative: the order's total, i.e. the catalog price we sent.
+    amountMajor: toAmount(order.total_amount),
+    paidAmountMajor: toAmount(order.total_paid_amount),
     currency: order.currency ?? null,
     externalReference: order.external_reference ?? '',
   };
@@ -126,15 +138,81 @@ export function chargeFromOrder(order: OrderLike): NormalizedCharge {
 
 export function chargeFromPayment(payment: PaymentLike, fallbackId: string): NormalizedCharge {
   const id = String(payment.id ?? fallbackId);
+  const amount = toAmount(payment.transaction_amount);
   return {
     source: 'payment',
     mpPaymentId: id,
     mpReference: id,
     status: paymentStatusToChargeStatus(payment.status),
-    amountMajor: toAmount(payment.transaction_amount),
+    amountMajor: amount,
+    paidAmountMajor: amount,
     currency: payment.currency_id ?? null,
     externalReference: payment.external_reference ?? '',
   };
+}
+
+/** A charge Mercado Pago has reversed: the buyer got the money back. */
+export function isReversal(status: ChargeStatus): boolean {
+  return status === 'refunded' || status === 'charged_back';
+}
+
+// ── Idempotency ──────────────────────────────────────────────────────────
+
+/** How long two attempts count as the same purchase. A buyer who clicks
+ *  twice, or a server function retried by the framework, lands in the same
+ *  bucket and gets the same order back instead of a second payable one. */
+export const ORDER_IDEMPOTENCY_BUCKET_MS = 10 * 60 * 1000;
+
+/**
+ * X-Idempotency-Key for creating a pack order: STABLE for the same user,
+ * pack and ten-minute window, so a retry of the same logical purchase
+ * reuses the order Mercado Pago already created. A random key per attempt
+ * would do the opposite. Hashed so the header carries no user id.
+ */
+export function orderIdempotencyKey(input: {
+  userId: string;
+  packId: string;
+  /** 'card' (Brick, automatic order) or 'hosted' (checkout_url). Different
+   *  bodies must not share a key. */
+  mode: 'card' | 'hosted';
+  now?: Date;
+  bucketMs?: number;
+}): string {
+  const bucketMs = input.bucketMs ?? ORDER_IDEMPOTENCY_BUCKET_MS;
+  const bucket = Math.floor((input.now ?? new Date()).getTime() / bucketMs);
+  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}`;
+  return sha256Hex(logical);
+}
+
+function sha256Hex(text: string): string {
+  return createHash('sha256').update(text).digest('hex');
+}
+
+// ── Hosted checkout redirect ─────────────────────────────────────────────
+
+const ALLOWED_CHECKOUT_HOSTS = new Set([
+  'mercadopago.com',
+  'www.mercadopago.com',
+  'mercadopago.com.mx',
+  'www.mercadopago.com.mx',
+]);
+
+/**
+ * The only place a browser is ever sent from a pack purchase is Mercado
+ * Pago's own checkout. `checkout_url` comes from their API, but the browser
+ * navigates wherever the server function says, so the server function
+ * checks the host before handing it back. HTTPS only.
+ */
+export function isAllowedCheckoutUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:') return false;
+  return ALLOWED_CHECKOUT_HOSTS.has(parsed.hostname.toLowerCase());
 }
 
 /** "1000.00" — the Orders API takes amounts as strings with two decimals. */

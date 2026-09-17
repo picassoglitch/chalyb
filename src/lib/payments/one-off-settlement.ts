@@ -11,10 +11,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
-import { paymentSuccessTemplate } from '@/lib/email/templates';
+import { paymentReversedTemplate, paymentSuccessTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
-import { grantTokenPack } from '@/lib/usage/tokens';
+import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from './pricing';
 import { getAppUrl } from './mercadopago';
 import {
@@ -23,7 +23,7 @@ import {
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import type { NormalizedCharge } from './order-charge';
+import { isReversal, type NormalizedCharge } from './order-charge';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -116,6 +116,140 @@ export async function settleOneOffCharge(
       href: '/dashboard/billing',
       source: 'mp.webhook',
     });
+  }
+
+  // ── Reversals: the buyer has the money back ───────────────────────────
+  // POLICY. A refund or a chargeback undoes the purchase: a pack's tokens
+  // come off the balance (clamped at zero — clawback_token_pack, migration
+  // 0038) and a legacy one-off plan drops to FREE at once. Both are keyed
+  // to the payment id, so a retried notification changes nothing, and both
+  // refuse when no grant is on file for that payment.
+  if (isReversal(status)) {
+    const reason = status as 'refunded' | 'charged_back';
+    const reversedLabel = reason === 'charged_back' ? 'con contracargo' : 'reembolsado';
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('email, tier, tier_ends_at')
+      .eq('id', userId)
+      .maybeSingle();
+    const email = (profile?.email as string | null) ?? null;
+
+    if (isPackPurchase) {
+      const pack = getTokenPack(packIdRaw!)!;
+      const claw = await clawbackTokenPack({ mpPaymentId: mpId, reason });
+      if (!claw.ok) {
+        if (claw.error === 'no_purchase') {
+          // Nothing was ever granted for this payment (it never reached
+          // approved); there is nothing to take back.
+          return ok({ ok: true, kind: 'pack', status, clawback: 'nothing_granted' });
+        }
+        return retry({ error: 'pack clawback failed' });
+      }
+      if (!claw.alreadyClawedBack) {
+        await logAudit({
+          action: 'tokens.revoke',
+          actorId: null,
+          actorEmail: null,
+          targetUserId: userId,
+          targetEmail: email,
+          before: { token_bonus_balance: claw.previousBalance },
+          after: { token_bonus_balance: claw.balance },
+          metadata: {
+            mp_payment_id: mpId,
+            mp_reference: charge.mpReference,
+            source: charge.source,
+            kind: `tokens.pack_${reason}`,
+            pack_id: pack.id,
+            tokens_granted: claw.tokensGranted,
+            tokens_removed: claw.tokensRemoved,
+          },
+        });
+        await notify({
+          severity: 'warning',
+          title: `Pack ${reversedLabel} — ${claw.tokensRemoved.toLocaleString('es-MX')} tokens retirados`,
+          body: `${email ?? userId} · MP ${charge.mpReference} · $${amountMajor} ${currency}`,
+          href: '/dashboard/billing',
+          source: 'mp.webhook',
+        });
+        if (email) {
+          const tmpl = paymentReversedTemplate({
+            reason,
+            what: `${claw.tokensGranted.toLocaleString('es-MX')} tokens`,
+            amountMajor,
+            currency,
+            paymentId: mpId,
+            appUrl: getAppUrl(),
+          });
+          void sendEmail({
+            to: email,
+            subject: 'Pago revertido: retiramos los tokens del pack · Chalyb',
+            html: tmpl.html,
+            text: tmpl.text,
+          }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
+        }
+      }
+      return ok({
+        ok: true,
+        kind: 'pack',
+        status,
+        clawback: claw.alreadyClawedBack ? 'already' : 'done',
+      });
+    }
+
+    // Legacy one-off plan. Only if this payment is the one behind the tier
+    // the user holds — never touch a plan bought by a different payment.
+    if (profile?.tier === tier) {
+      const { data: grant } = await admin
+        .from('audit_events')
+        .select('id')
+        .eq('action', 'tier.payment')
+        .eq('target_user_id', userId)
+        .contains('metadata', { mp_payment_id: mpId })
+        .limit(1)
+        .maybeSingle();
+      if (!grant) {
+        return ok({ ok: true, status, reversal: 'no_grant_on_file' });
+      }
+      const { error } = await admin
+        .from('profiles')
+        .update({ tier: 'FREE', tier_ends_at: null })
+        .eq('id', userId);
+      if (error) return retry({ error: 'db tier revoke failed' });
+      await logAudit({
+        action: 'tier.downgrade',
+        actorId: null,
+        actorEmail: null,
+        targetUserId: userId,
+        targetEmail: email,
+        before: { tier, tier_ends_at: (profile?.tier_ends_at as string | null) ?? null },
+        after: { tier: 'FREE', tier_ends_at: null },
+        metadata: { mp_payment_id: mpId, source: charge.source, kind: `tier.${reason}` },
+      });
+      await notify({
+        severity: 'warning',
+        title: `Plan ${tier} revocado — pago ${reversedLabel}`,
+        body: `${email ?? userId} · MP ${charge.mpReference} · $${amountMajor} ${currency}`,
+        href: '/dashboard/billing',
+        source: 'mp.webhook',
+      });
+      if (email) {
+        const tmpl = paymentReversedTemplate({
+          reason,
+          what: `tu plan ${TIER_CAPS[tier!].label}`,
+          amountMajor,
+          currency,
+          paymentId: mpId,
+          appUrl: getAppUrl(),
+        });
+        void sendEmail({
+          to: email,
+          subject: `Tu plan ${TIER_CAPS[tier!].label} fue retirado · Chalyb`,
+          html: tmpl.html,
+          text: tmpl.text,
+        }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
+      }
+    }
+    return ok({ ok: true, status, reversal: 'done' });
   }
 
   // ── Amount + currency gate ───────────────────────────────────────────

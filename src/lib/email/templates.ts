@@ -359,3 +359,75 @@ Se renueva solo; cancela cuando quieras desde ${opts.appUrl}/app/subscription y 
     text,
   };
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// PAYMENT REVERSED — sent from the MP webhook when a refund or chargeback
+// takes back what a payment had bought (a token pack, or a plan).
+// ──────────────────────────────────────────────────────────────────────────
+export function paymentReversedTemplate(opts: {
+  /** 'refunded' | 'charged_back' */
+  reason: 'refunded' | 'charged_back';
+  /** What was taken back, already worded: "100,000 tokens" or "tu plan Pro". */
+  what: string;
+  amountMajor: string;
+  currency: string;
+  paymentId: string;
+  appUrl: string;
+}): { html: string; text: string } {
+  const why =
+    opts.reason === 'charged_back'
+      ? 'tu banco revirtió el cargo (contracargo)'
+      : 'el pago fue reembolsado';
+  const body = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;padding:6px 14px;background:rgba(245,177,61,0.12);border:1px solid #f5b13d;border-radius:100px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#f5b13d;">
+        ● Pago revertido
+      </div>
+    </div>
+
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:600;letter-spacing:-0.015em;color:${INK_PRIMARY};text-align:center;">
+      Retiramos ${escapeHtml(opts.what)}
+    </h1>
+
+    <p style="margin:0 0 28px;font-size:14px;color:${INK_DIM};line-height:1.55;text-align:center;">
+      Mercado Pago nos avisó que ${why}. Como el dinero volvió a tu cuenta, lo que ese pago había comprado ya no está activo.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:${BG_DARK};border-radius:10px;margin-bottom:28px;">
+      <tr>
+        <td style="padding:14px 18px;border-bottom:1px solid ${LINE};">
+          <div style="font-size:11px;color:${INK_FAINT};font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Monto revertido</div>
+          <div style="font-size:18px;color:${INK_PRIMARY};font-weight:600;">$${escapeHtml(opts.amountMajor)} ${escapeHtml(opts.currency)}</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:14px 18px;">
+          <div style="font-size:11px;color:${INK_FAINT};font-family:'SF Mono',Menlo,Consolas,monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">ID de pago Mercado Pago</div>
+          <div style="font-size:13px;color:${INK_DIM};font-family:'SF Mono',Menlo,Consolas,monospace;">${escapeHtml(opts.paymentId)}</div>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${LINE};font-size:12px;color:${INK_FAINT};line-height:1.55;text-align:center;">
+      ¿Fue un error? Escríbenos respondiendo este correo o desde <a href="${escapeHtml(opts.appUrl)}/contacto" style="color:${INK_DIM};text-decoration:underline;">/contacto</a> y lo revisamos.
+    </p>
+  `;
+
+  const text = `Retiramos ${opts.what}.
+
+Mercado Pago nos avisó que ${why}: $${opts.amountMajor} ${opts.currency}, pago ${opts.paymentId}.
+Como el dinero volvió a tu cuenta, lo que ese pago había comprado ya no está activo.
+
+¿Fue un error? Escríbenos: ${opts.appUrl}/contacto
+
+— Chalyb`;
+
+  return {
+    html: wrap({
+      title: `Pago revertido · Chalyb`,
+      preview: `Mercado Pago revirtió un pago; retiramos ${opts.what}.`,
+      body,
+    }),
+    text,
+  };
+}

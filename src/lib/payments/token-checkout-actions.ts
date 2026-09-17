@@ -24,11 +24,15 @@
 // don't NEED to — admins have unlimited via getTokenBalance. The button on
 // /app/usage is hidden for admins.
 
-import { randomUUID } from 'node:crypto';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { getTokenPack } from './pricing';
-import { chargeFromOrder, orderAmount } from './order-charge';
+import {
+  chargeFromOrder,
+  isAllowedCheckoutUrl,
+  orderAmount,
+  orderIdempotencyKey,
+} from './order-charge';
 import { settleOneOffCharge } from './one-off-settlement';
 import {
   getMercadoPago,
@@ -45,9 +49,7 @@ export interface PackCheckoutResult {
   error?: string;
 }
 
-export async function createTokenPackCheckout(
-  packId: string,
-): Promise<PackCheckoutResult> {
+export async function createTokenPackCheckout(packId: string): Promise<PackCheckoutResult> {
   // Top-level try wraps EVERYTHING — including the pre-flight checks. The
   // previous version had try/catch only around the MP call, so a thrown
   // exception from getSessionUser / isMercadoPagoConfigured / config
@@ -116,9 +118,17 @@ export async function createTokenPackCheckout(
           },
         },
       },
-      // Orders require X-Idempotency-Key; a fresh UUID per attempt means a
-      // retried click can never create two payable orders.
-      requestOptions: { idempotencyKey: randomUUID() },
+      // Orders require X-Idempotency-Key. It is STABLE for this user, pack
+      // and ten-minute window (order-charge.ts): a double click or a
+      // framework retry gets the same order and checkout_url back instead
+      // of a second payable order.
+      requestOptions: {
+        idempotencyKey: orderIdempotencyKey({
+          userId: session.user.id,
+          packId: pack.id,
+          mode: 'hosted',
+        }),
+      },
     });
 
     // checkout_url is documented for Checkout Pro via Orders but the SDK's
@@ -127,6 +137,26 @@ export async function createTokenPackCheckout(
     if (!result.id || !url) {
       console.error('[token-pack-checkout] order returned no id/checkout_url', result);
       return { ok: false, reason: 'mp_error', error: 'MP no devolvió URL de checkout.' };
+    }
+    // The browser goes wherever this returns. Only Mercado Pago's own
+    // checkout hosts qualify, over HTTPS.
+    if (!isAllowedCheckoutUrl(url)) {
+      console.error('[token-pack-checkout] refusing to redirect to a non-Mercado Pago host', {
+        orderId: result.id,
+        host: (() => {
+          try {
+            return new URL(url).host;
+          } catch {
+            return 'unparseable';
+          }
+        })(),
+      });
+      return {
+        ok: false,
+        reason: 'mp_error',
+        error:
+          'Mercado Pago devolvió una URL de pago inesperada. No te redirigimos; inténtalo de nuevo.',
+      };
     }
     return { ok: true, url };
   } catch (err) {
@@ -160,7 +190,14 @@ export interface PackCardPaymentResult {
   ok: boolean;
   /** Ledger status after the charge: approved | pending | rejected | … */
   status?: string;
-  reason?: 'unauth' | 'admin_skip' | 'unknown_pack' | 'not_configured' | 'bad_token' | 'rejected' | 'mp_error';
+  reason?:
+    | 'unauth'
+    | 'admin_skip'
+    | 'unknown_pack'
+    | 'not_configured'
+    | 'bad_token'
+    | 'rejected'
+    | 'mp_error';
   error?: string;
 }
 
@@ -190,7 +227,11 @@ export async function payTokenPackWithCard(input: {
       return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
     }
     if (isAdminRole(session.role)) {
-      return { ok: false, reason: 'admin_skip', error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.' };
+      return {
+        ok: false,
+        reason: 'admin_skip',
+        error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
+      };
     }
     const pack = getTokenPack(input.packId);
     if (!pack) {
@@ -201,9 +242,14 @@ export async function payTokenPackWithCard(input: {
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
     const token = typeof input.token === 'string' ? input.token.trim() : '';
-    const paymentMethodId = typeof input.paymentMethodId === 'string' ? input.paymentMethodId.trim() : '';
+    const paymentMethodId =
+      typeof input.paymentMethodId === 'string' ? input.paymentMethodId.trim() : '';
     if (!token || token.length > 128 || !paymentMethodId) {
-      return { ok: false, reason: 'bad_token', error: 'El formulario no entregó una tarjeta válida. Inténtalo de nuevo.' };
+      return {
+        ok: false,
+        reason: 'bad_token',
+        error: 'El formulario no entregó una tarjeta válida. Inténtalo de nuevo.',
+      };
     }
     const installments = Math.max(1, Math.min(24, Math.trunc(input.installments ?? 1)));
     const paymentType =
@@ -253,12 +299,25 @@ export async function payTokenPackWithCard(input: {
           ],
         },
       },
-      requestOptions: { idempotencyKey: randomUUID() },
+      // Stable per user, pack and ten-minute window (order-charge.ts): a
+      // retried submit reuses the order instead of charging twice. The card
+      // token is single-use anyway; the key is what keeps the ORDER single.
+      requestOptions: {
+        idempotencyKey: orderIdempotencyKey({
+          userId: session.user.id,
+          packId: pack.id,
+          mode: 'card',
+        }),
+      },
     });
 
     if (!result.id) {
       console.error('[token-pack-card] order returned no id', { status: result.status ?? null });
-      return { ok: false, reason: 'mp_error', error: 'Mercado Pago no confirmó el pago. Inténtalo de nuevo en un momento.' };
+      return {
+        ok: false,
+        reason: 'mp_error',
+        error: 'Mercado Pago no confirmó el pago. Inténtalo de nuevo en un momento.',
+      };
     }
 
     // Same settlement the `orders` webhook runs, so the tokens land now.
@@ -271,7 +330,8 @@ export async function payTokenPackWithCard(input: {
         ok: false,
         reason: 'mp_error',
         status: charge.status,
-        error: 'El pago se envió pero no pudimos acreditar los tokens todavía. Se acreditan solos en unos minutos; si no, escríbenos.',
+        error:
+          'El pago se envió pero no pudimos acreditar los tokens todavía. Se acreditan solos en unos minutos; si no, escríbenos.',
       };
     }
     if (charge.status === 'approved') return { ok: true, status: charge.status };
@@ -279,7 +339,8 @@ export async function payTokenPackWithCard(input: {
       return {
         ok: true,
         status: charge.status,
-        error: 'Mercado Pago dejó el pago en revisión; los tokens se acreditan en cuanto lo apruebe.',
+        error:
+          'Mercado Pago dejó el pago en revisión; los tokens se acreditan en cuanto lo apruebe.',
       };
     }
     const detail = (result as { status_detail?: string }).status_detail;
@@ -291,6 +352,10 @@ export async function payTokenPackWithCard(input: {
     };
   } catch (err) {
     console.error('[token-pack-card] order.create failed', err);
-    return { ok: false, reason: 'mp_error', error: `Mercado Pago no pudo procesar el pago: ${describeMpError(err)}` };
+    return {
+      ok: false,
+      reason: 'mp_error',
+      error: `Mercado Pago no pudo procesar el pago: ${describeMpError(err)}`,
+    };
   }
 }

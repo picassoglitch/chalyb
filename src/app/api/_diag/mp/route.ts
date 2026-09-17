@@ -19,6 +19,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import {
   isMercadoPagoConfigured,
+  checkoutConfigWarnings,
   getAppUrl,
   getPublicKey,
   getWebhookSecret,
@@ -38,6 +39,8 @@ interface DiagResult {
   webhookSecretConfigured?: boolean;
   /** The Bricks public key that initialises the in-app card form. */
   publicKeyConfigured?: boolean;
+  /** Set-but-wrong credentials: swapped values, or test paired with production. */
+  credentialProblems?: string[];
   appUrl?: string;
   isHttps?: boolean;
   mpReachable?: boolean;
@@ -51,10 +54,7 @@ interface DiagResult {
 export async function GET(): Promise<NextResponse<DiagResult>> {
   const session = await getSessionUser();
   if (!session || !isAdminRole(session.role)) {
-    return NextResponse.json(
-      { ok: false, error: 'admin only' },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: 'admin only' }, { status: 403 });
   }
 
   if (!isMercadoPagoConfigured()) {
@@ -64,8 +64,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     });
   }
 
-  const token =
-    process.env.MERCADOPAGO_ACCESS_TOKEN ?? process.env.MP_ACCESS_TOKEN ?? '';
+  const token = process.env.MERCADOPAGO_ACCESS_TOKEN ?? process.env.MP_ACCESS_TOKEN ?? '';
   const tokenKind = token.startsWith('TEST-')
     ? 'TEST (sandbox)'
     : token.startsWith('APP_USR-')
@@ -122,6 +121,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     tokenPrefix,
     webhookSecretConfigured: Boolean(getWebhookSecret()),
     publicKeyConfigured: Boolean(getPublicKey()),
+    credentialProblems: checkoutConfigWarnings(),
     appUrl,
     isHttps,
     mpReachable,
