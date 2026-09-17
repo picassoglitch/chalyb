@@ -20,7 +20,7 @@ Why this split and not something else:
   retries run out. Selling a plan as a one-off Checkout Pro payment (what the
   hub did before) means nobody is ever charged a second month.
 - **The card form is ours, the card data is theirs.** Mercado Pago's Card
-  Payment Brick (`@mercadopago/sdk-react`) renders the card number, expiry
+  Payment Brick (MercadoPago.js v2, loaded with `@mercadopago/sdk-js`) renders the card number, expiry
   and CVV in iframes it hosts and hands the page a single-use token. The
   buyer never leaves Chalyb, and PCI stays with Mercado Pago (SAQ A). The
   subscription is created "sin plan asociado" with `card_token_id` and

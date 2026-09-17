@@ -48,6 +48,7 @@ import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
   checkoutNotReadyMessage,
+  checkoutConfigProblems,
   missingCheckoutConfig,
   readAccessToken,
   readPublicKey,
@@ -88,6 +89,12 @@ export function isMercadoPagoConfigured(): boolean {
 /** Canonical names of the variables a checkout still needs. Empty = ready. */
 export function missingCheckoutVars(): string[] {
   return missingCheckoutConfig(process.env);
+}
+
+/** Set-but-wrong credentials (swapped, or test paired with production).
+ *  Names, never values. Empty = nothing obviously wrong. */
+export function checkoutConfigWarnings(): string[] {
+  return checkoutConfigProblems(process.env);
 }
 
 /** Everything a checkout needs to both start AND be credited afterwards. */

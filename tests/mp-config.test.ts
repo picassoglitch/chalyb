@@ -8,6 +8,7 @@ import {
   MP_ACCESS_TOKEN_VAR,
   MP_PUBLIC_KEY_VAR,
   MP_WEBHOOK_SECRET_VAR,
+  checkoutConfigProblems,
   checkoutNotReadyMessage,
   missingCheckoutConfig,
   readAccessToken,
@@ -81,4 +82,63 @@ test('the message names the real variables and never the legacy alias', () => {
     /MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_PUBLIC_KEY y MERCADOPAGO_WEBHOOK_SECRET/,
   );
   assert.equal(checkoutNotReadyMessage([MP_PUBLIC_KEY_VAR]).includes(' y '), false);
+});
+
+// Shapes only: a public key is PREFIX-uuid, an access token is
+// PREFIX-digits-digits-hex-digits. Assembled at runtime so no literal here
+// resembles a real credential.
+const UUID = ['65ede7d0', '5bc3', '4a5b', 'b9db', '0'.repeat(12)].join('-');
+const TOKEN_BODY = ['1'.repeat(16), '091517', '0'.repeat(32), '2'.repeat(10)].join('-');
+const PK_TEST = `TEST-${UUID}`;
+const PK_PROD = `APP_USR-${UUID}`;
+const TOK_TEST = `TEST-${TOKEN_BODY}`;
+const TOK_PROD = `APP_USR-${TOKEN_BODY}`;
+
+test('a matching public key + access token pair raises no credential problem', () => {
+  assert.deepEqual(
+    checkoutConfigProblems({ MERCADOPAGO_ACCESS_TOKEN: TOK_PROD, MERCADOPAGO_PUBLIC_KEY: PK_PROD }),
+    [],
+  );
+  assert.deepEqual(
+    checkoutConfigProblems({ MERCADOPAGO_ACCESS_TOKEN: TOK_TEST, MERCADOPAGO_PUBLIC_KEY: PK_TEST }),
+    [],
+  );
+  // Nothing to compare while something is missing — that is missingCheckoutConfig's job.
+  assert.deepEqual(checkoutConfigProblems({ MERCADOPAGO_ACCESS_TOKEN: TOK_PROD }), []);
+});
+
+test('the access token pasted into the public key slot is named as such', () => {
+  const p = checkoutConfigProblems({
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: TOK_PROD,
+  });
+  assert.equal(p.length, 1);
+  assert.match(p[0]!, /contiene un Access Token, no la Public Key/);
+});
+
+test('the public key pasted into the access token slot is named as such', () => {
+  const p = checkoutConfigProblems({
+    MERCADOPAGO_ACCESS_TOKEN: PK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+  });
+  assert.equal(p.length, 1);
+  assert.match(p[0]!, /contiene una Public Key, no el Access Token/);
+});
+
+test('a test public key with a production access token is a pairing problem', () => {
+  const p = checkoutConfigProblems({
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+  });
+  assert.equal(p.length, 1);
+  assert.match(p[0]!, /es TEST pero .* es APP_USR/);
+});
+
+test('a public key with no Mercado Pago prefix is flagged', () => {
+  const p = checkoutConfigProblems({
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: 'pk_live_something',
+  });
+  assert.equal(p.length, 1);
+  assert.match(p[0]!, /no parece una Public Key/);
 });
