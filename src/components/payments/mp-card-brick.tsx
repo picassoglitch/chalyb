@@ -168,7 +168,15 @@ export function MpCardBrick({
     const s = settingsRef.current;
     creatingRef.current = true;
     stageRef.current = 'create';
-    log('creating Brick', { containerId, amount: s.amount });
+    // Diagnostic: the Brick holds a reference to the container it finds at
+    // create() time. If React ever swaps that element, the Brick renders
+    // into a detached node and its lookups come back null. Compare later.
+    const containerAtCreate = document.getElementById(containerId);
+    log('creating Brick', {
+      containerId,
+      amount: s.amount,
+      containerConnected: containerAtCreate?.isConnected ?? false,
+    });
 
     const mp = new window.MercadoPago(s.publicKey, { locale: 'es-MX' });
     mp.bricks()
@@ -239,7 +247,13 @@ export function MpCardBrick({
         },
       })
       .then((controller) => {
-        log('Brick created; waiting for onReady');
+        const now = document.getElementById(containerId);
+        log('Brick created; waiting for onReady', {
+          containerSameElement: now === containerAtCreate,
+          containerConnected: now?.isConnected ?? false,
+          iframesInContainer: now?.querySelectorAll('iframe').length ?? 0,
+          iframesInDocument: document.querySelectorAll('iframe').length,
+        });
         if (stageRef.current === 'create') stageRef.current = 'onReady';
         if (!aliveRef.current) {
           // Left before creation finished: nothing keeps this one.
