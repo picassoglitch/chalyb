@@ -1,32 +1,33 @@
 'use client';
 
-// The card form, inside our page. Mercado Pago's Card Payment Brick renders
-// the number, expiry and CVV in iframes it owns (PCI stays with them) and
-// hands us a single-use token in onSubmit. What the token pays for is decided
-// by the caller's server function, never by anything in this component: the
-// amount shown here is for the buyer's eyes and the Brick's installment
-// maths, and the server re-reads the price from pricing.ts.
+// Mercado Pago Card Payment Brick, mounted by hand.
 //
-// Used by the subscription checkout (the token becomes card_token_id on a
-// preapproval) and the token pack checkout (the token pays an order).
+// The SDK is the documented script tag (https://sdk.mercadopago.com/js/v2),
+// then `new MercadoPago(PUBLIC_KEY)` and `mp.bricks().create('cardPayment',
+// containerId, settings)`. What this component adds is MOUNT STABILITY,
+// because the Brick loads its bundle and its secure-field iframes
+// asynchronously and dies if it is torn down in the meantime:
 //
-// WHY THIS MOUNTS THE BRICK BY HAND instead of <CardPayment> from
-// @mercadopago/sdk-react: that wrapper creates the Brick in an effect and
-// unmounts it in the effect's cleanup. Any second effect run — a parent
-// remount, StrictMode in dev, a Suspense boundary hiding and resuming the
-// subtree, a prop identity change — tears the form down while its bundle
-// and iframes are still loading, which surfaces as
-// "Cannot read properties of null (reading 'addEventListener')" from
-// cardPayment.js and a skeleton that never resolves. Here:
-//   - the container element has a unique id per component instance;
-//   - one Brick is created per instance, and an effect re-run reuses it;
-//   - cleanup DEFERS the unmount by a tick and an effect re-run cancels
-//     that, so only a real unmount destroys the Brick;
-//   - every step logs under [mp-card-brick] so the next failure names
-//     itself: script, instance, create, ready, error.
+//   1. A container id unique per component instance (useId). Never the
+//      shared global `cardPaymentBrick_container`, so two instances or a
+//      remounted one can never fight over one element.
+//   2. One Brick per instance. The creating effect depends only on the SDK
+//      being loaded; publicKey/amount/etc. are read from refs at creation,
+//      so a parent re-render never recreates the Brick.
+//   3. Deferred unmount. The effect cleanup does not destroy the Brick; it
+//      schedules the unmount on the next tick, and an immediate re-run of
+//      the effect (React Strict Mode, a Suspense resume, a remount of this
+//      subtree) cancels it. Only a real leave lets the timer fire.
+//   4. Critical Brick errors reach the banner; create failures log under
+//      [mercadopago brick]; a 20 s watchdog names the stage that stalled.
+//
+// The card fields are Mercado Pago iframes (PCI stays with them). onSubmit
+// hands us a single-use token; the caller's server function turns it into a
+// preapproval or an order and decides the price. Nothing here is trusted
+// for money.
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { loadMercadoPago } from '@mercadopago/sdk-js';
+import { useEffect, useId, useRef, useState } from 'react';
+import Script from 'next/script';
 
 export interface CardSubmission {
   token: string;
@@ -35,15 +36,11 @@ export interface CardSubmission {
   installments: number;
   payerEmail: string | null;
   identification: { type: string; number: string } | null;
-  /** 'credit_card' | 'debit_card' | 'prepaid_card' when the Brick reports it. */
   paymentTypeId: string | null;
 }
 
 export type CardSubmitResult =
-  /** Money moved and the entitlement is granted. */
   | { ok: true; outcome: 'approved'; message?: string }
-  /** Mercado Pago has not decided yet (pending / in review / action
-   *  required). Nothing is granted; the webhook finishes the job. */
   | { ok: true; outcome: 'pending'; message: string }
   | { ok: false; error: string };
 
@@ -51,24 +48,15 @@ interface Props {
   publicKey: string;
   /** Major units, e.g. 749 for $749.00 MXN. */
   amount: number;
-  payerEmail: string | null;
+  payerEmail?: string | null;
   /** 1 for subscriptions (a monthly charge has no installments). */
   maxInstallments?: number;
   submitLabel?: string;
-  /** Called with the tokenised card. Resolve ok=true to show the success
-   *  state; ok=false keeps the form so the buyer can try another card. */
   onSubmit: (card: CardSubmission) => Promise<CardSubmitResult>;
-  /** Rendered once the payment is approved. */
   success: React.ReactNode;
-  /** Rendered when Mercado Pago left the payment pending. Never the success
-   *  node: nothing has been granted yet. */
   pending: React.ReactNode;
 }
 
-type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
-
-// ── Minimal typing of MercadoPago.js v2 (loaded at runtime from
-// sdk.mercadopago.com; no types ship with the loader). ──────────────────
 interface BrickController {
   unmount: () => void;
 }
@@ -78,9 +66,6 @@ interface BrickFormData {
   payment_method_id: string;
   installments?: number;
   payer?: { email?: string; identification?: { type: string; number: string } };
-}
-interface BrickAdditionalData {
-  paymentTypeId?: string;
 }
 interface BrickError {
   type: 'critical' | 'non_critical';
@@ -107,208 +92,167 @@ declare global {
   }
 }
 
-/** One SDK instance per public key for the whole page. */
-const instances = new Map<string, MercadoPagoInstance>();
+const SDK_URL = 'https://sdk.mercadopago.com/js/v2';
+const WATCHDOG_MS = 20_000;
+
+type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
+type Stage = 'sdk' | 'create' | 'onReady' | 'ready';
 
 function log(step: string, detail?: unknown) {
-  if (detail === undefined) console.info(`[mp-card-brick] ${step}`);
-  else console.info(`[mp-card-brick] ${step}`, detail);
-}
-
-async function getInstance(publicKey: string): Promise<MercadoPagoInstance> {
-  const cached = instances.get(publicKey);
-  if (cached) return cached;
-  log('loading MercadoPago.js');
-  await loadMercadoPago();
-  if (!window.MercadoPago) {
-    throw new Error('MercadoPago.js loaded but window.MercadoPago is missing');
-  }
-  log('MercadoPago.js loaded; creating SDK instance');
-  const mp = new window.MercadoPago(publicKey, { locale: 'es-MX' });
-  instances.set(publicKey, mp);
-  return mp;
+  if (detail === undefined) console.info(`[mercadopago brick] ${step}`);
+  else console.info(`[mercadopago brick] ${step}`, detail);
 }
 
 export function MpCardBrick({
   publicKey,
   amount,
-  payerEmail,
+  payerEmail = null,
   maxInstallments = 1,
   submitLabel = 'Pagar',
   onSubmit,
   success,
   pending,
 }: Props) {
+  const [sdkReady, setSdkReady] = useState(
+    () => typeof window !== 'undefined' && Boolean(window.MercadoPago),
+  );
   const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const busy = useRef(false);
-  const phaseRef = useRef<Phase>('loading');
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
 
-  // The caller's onSubmit may change identity on its renders; the Brick
-  // must not care. Always call the latest one through the ref.
+  // Unique per instance and valid for getElementById (useId yields «:r1:»).
+  const containerId = `mp-card-brick-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+
+  // Everything the Brick needs at creation, read from refs so the creating
+  // effect can depend on the SDK alone and never recreate on re-render.
+  const settingsRef = useRef({ publicKey, amount, payerEmail, maxInstallments, submitLabel });
   const onSubmitRef = useRef(onSubmit);
+  // Declared before the creating effect so React runs it first.
   useEffect(() => {
+    settingsRef.current = { publicKey, amount, payerEmail, maxInstallments, submitLabel };
     onSubmitRef.current = onSubmit;
-  }, [onSubmit]);
-
-  // A container id that is unique per instance and valid for
-  // getElementById (useId yields «:r1:» style tokens).
-  const reactId = useId();
-  const containerId = `mp-card-brick-${reactId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  }, [publicKey, amount, payerEmail, maxInstallments, submitLabel, onSubmit]);
 
   // Lifecycle state that must survive effect re-runs.
   const controllerRef = useRef<BrickController | null>(null);
+  const creatingRef = useRef(false);
   const aliveRef = useRef(false);
   const pendingUnmount = useRef<number | null>(null);
-  const creatingRef = useRef(false);
-
-  const handleSubmit = useCallback(
-    async (form: BrickFormData, extra?: BrickAdditionalData) => {
-      if (busy.current) return;
-      busy.current = true;
-      setError(null);
-      setPhase('processing');
-      log('submit: token received, calling the server');
-      try {
-        const result = await onSubmitRef.current({
-          token: form.token,
-          paymentMethodId: form.payment_method_id,
-          issuerId: form.issuer_id || null,
-          installments: form.installments || 1,
-          payerEmail: form.payer?.email ?? payerEmail,
-          identification: form.payer?.identification
-            ? { type: form.payer.identification.type, number: form.payer.identification.number }
-            : null,
-          paymentTypeId: extra?.paymentTypeId ?? null,
-        });
-        if (result.ok && result.outcome === 'approved') {
-          log('submit: approved');
-          setNotice(result.message ?? null);
-          setPhase('done');
-        } else if (result.ok) {
-          // Pending is not success: the buyer must not see an unlock.
-          log('submit: pending');
-          setNotice(result.message);
-          setPhase('pending');
-        } else {
-          log('submit: refused', result.error);
-          setError(result.error);
-          setPhase('ready');
-        }
-      } catch (err) {
-        console.error('[mp-card-brick] submit failed', err);
-        setError('No pudimos completar el pago. Inténtalo de nuevo en un momento.');
-        setPhase('ready');
-      } finally {
-        busy.current = false;
-      }
-    },
-    [payerEmail],
-  );
+  const stageRef = useRef<Stage>('sdk');
+  const brickErrors = useRef<string[]>([]);
+  const busy = useRef(false);
 
   useEffect(() => {
+    if (!sdkReady) return;
     aliveRef.current = true;
 
-    // An effect re-run right after a cleanup (StrictMode, a Suspense
-    // resume, a parent re-render that remounted this subtree): keep the
-    // Brick that already exists instead of creating a second one.
+    // Re-run right after a cleanup (Strict Mode, Suspense resume, remount):
+    // cancel the scheduled unmount and keep the Brick that exists.
     if (pendingUnmount.current !== null) {
       window.clearTimeout(pendingUnmount.current);
       pendingUnmount.current = null;
       log('effect re-ran; keeping the existing Brick');
       return cleanup;
     }
-    if (controllerRef.current || creatingRef.current) {
-      log('effect ran while a Brick exists or is being created; nothing to do');
+    if (controllerRef.current || creatingRef.current) return cleanup;
+
+    if (!window.MercadoPago) {
+      console.error('[mercadopago brick] script loaded but window.MercadoPago is missing');
+      window.setTimeout(
+        () => setError('El script de Mercado Pago cargó pero no expuso MercadoPago.'),
+        0,
+      );
       return cleanup;
     }
 
+    const s = settingsRef.current;
     creatingRef.current = true;
-    (async () => {
-      const mp = await getInstance(publicKey);
-      if (!aliveRef.current) {
-        log('component went away before the SDK instance was ready');
-        return;
-      }
-      const container = document.getElementById(containerId);
-      if (!container || !container.isConnected) {
-        throw new Error(`container #${containerId} is not in the document`);
-      }
-      log('creating Brick', { containerId, amount, maxInstallments });
-      const controller = await mp.bricks().create('cardPayment', containerId, {
-        locale: 'es-MX',
+    stageRef.current = 'create';
+    log('creating Brick', { containerId, amount: s.amount });
+
+    const mp = new window.MercadoPago(s.publicKey, { locale: 'es-MX' });
+    mp.bricks()
+      .create('cardPayment', containerId, {
         initialization: {
-          amount,
-          ...(payerEmail ? { payer: { email: payerEmail } } : {}),
+          amount: s.amount,
+          ...(s.payerEmail ? { payer: { email: s.payerEmail } } : {}),
         },
         customization: {
-          paymentMethods: { minInstallments: 1, maxInstallments },
+          paymentMethods: { minInstallments: 1, maxInstallments: s.maxInstallments },
           visual: {
             hideFormTitle: true,
-            texts: { formSubmit: submitLabel },
-            style: {
-              theme: 'dark',
-              customVariables: {
-                baseColor: '#9eea3a',
-                baseColorFirstVariant: '#7bc220',
-                baseColorSecondVariant: '#c6f24e',
-                buttonTextColor: '#070809',
-                formBackgroundColor: '#0c0e11',
-                inputBackgroundColor: '#111418',
-                textPrimaryColor: '#e6e9ee',
-                textSecondaryColor: '#aab2bf',
-                outlinePrimaryColor: '#262c34',
-                outlineSecondaryColor: '#1c2128',
-                errorColor: '#ff5d5d',
-                successColor: '#9eea3a',
-                borderRadiusMedium: '9px',
-                borderRadiusLarge: '13px',
-                formPadding: '0px',
-              },
-            },
+            texts: { formSubmit: s.submitLabel },
+            style: { theme: 'dark' },
           },
         },
         callbacks: {
           onReady: () => {
+            stageRef.current = 'ready';
             log('Brick ready');
             setError(null);
             setPhase('ready');
           },
-          onSubmit: handleSubmit,
+          onSubmit: async (form: BrickFormData, extra?: { paymentTypeId?: string }) => {
+            if (busy.current) return;
+            busy.current = true;
+            setError(null);
+            setPhase('processing');
+            try {
+              const result = await onSubmitRef.current({
+                token: form.token,
+                paymentMethodId: form.payment_method_id,
+                issuerId: form.issuer_id || null,
+                installments: form.installments || 1,
+                payerEmail: form.payer?.email ?? settingsRef.current.payerEmail,
+                identification: form.payer?.identification ?? null,
+                paymentTypeId: extra?.paymentTypeId ?? null,
+              });
+              if (result.ok && result.outcome === 'approved') {
+                setNotice(result.message ?? null);
+                setPhase('done');
+              } else if (result.ok) {
+                setNotice(result.message);
+                setPhase('pending');
+              } else {
+                setError(result.error);
+                setPhase('ready');
+              }
+            } catch (err) {
+              console.error('[mercadopago brick] submit failed', err);
+              setError('No pudimos completar el pago. Inténtalo de nuevo en un momento.');
+              setPhase('ready');
+            } finally {
+              busy.current = false;
+            }
+          },
           onError: (e: BrickError) => {
-            // The Brick reports validation slips as non_critical while the
-            // buyer types; only a critical error is worth a banner.
+            brickErrors.current.push(`${e.cause ?? 'sin_causa'}: ${e.message}`);
             if (e.type === 'critical') {
-              console.error('[mp-card-brick] Brick critical error', e);
+              console.error('[mercadopago brick] critical error', e);
               setError(
                 `El formulario de pago falló: ${e.message}${e.cause ? ` (${e.cause})` : ''}`,
               );
-              setPhase('ready');
             } else {
-              log('Brick non-critical error', e);
+              log('non-critical error', e);
             }
           },
         },
-      });
-      log('Brick created (controller obtained)');
-      if (!aliveRef.current) {
-        log('component went away during creation; unmounting the new Brick');
-        controller.unmount();
-        return;
-      }
-      controllerRef.current = controller;
-    })()
+      })
+      .then((controller) => {
+        log('Brick created; waiting for onReady');
+        if (stageRef.current === 'create') stageRef.current = 'onReady';
+        if (!aliveRef.current) {
+          // Left before creation finished: nothing keeps this one.
+          log('component left during creation; unmounting');
+          controller.unmount();
+          return;
+        }
+        controllerRef.current = controller;
+      })
       .catch((err: unknown) => {
-        console.error('[mp-card-brick] could not mount the Brick', err);
-        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[mercadopago brick] create failed', err);
         setError(
-          /Failed to load MercadoPago\.js|not available/i.test(msg)
-            ? 'No pudimos cargar el script de Mercado Pago (sdk.mercadopago.com). Si usas un bloqueador de anuncios o de rastreadores, permítelo para esta página y recarga.'
-            : `No pudimos montar el formulario de pago: ${msg}`,
+          `No pudimos montar el formulario de pago: ${err instanceof Error ? err.message : String(err)}`,
         );
       })
       .finally(() => {
@@ -317,42 +261,43 @@ export function MpCardBrick({
 
     function cleanup() {
       aliveRef.current = false;
-      // Defer: if this cleanup is immediately followed by another effect
-      // run, that run cancels the unmount and the Brick lives on.
+      // Deferred: an immediate effect re-run cancels this and the Brick
+      // survives. Only a real leave reaches the timer body.
       pendingUnmount.current = window.setTimeout(() => {
         pendingUnmount.current = null;
         if (controllerRef.current) {
-          log('unmounting Brick (component left the page)');
+          log('unmounting Brick (component left)');
           try {
             controllerRef.current.unmount();
           } catch (err) {
-            console.warn('[mp-card-brick] unmount threw', err);
+            console.warn('[mercadopago brick] unmount threw', err);
           }
           controllerRef.current = null;
         }
       }, 0);
     }
     return cleanup;
-    // The Brick is created once per instance; changing these props after
-    // mount is not supported (the pages pass server-decided constants).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey, containerId]);
+    // Create once per instance: only the SDK arriving triggers this.
+    // Everything else is read from refs above.
+  }, [sdkReady, containerId]);
 
   useEffect(() => {
-    // If the Brick never reports ready, say which stage stalled.
     const t = window.setTimeout(() => {
-      if (phaseRef.current === 'loading') {
-        const stage = controllerRef.current
-          ? 'Mercado Pago creó el formulario pero sus campos seguros nunca terminaron de cargar'
-          : window.MercadoPago
+      if (stageRef.current === 'ready') return;
+      const stage =
+        stageRef.current === 'sdk'
+          ? 'el script de Mercado Pago (sdk.mercadopago.com) no cargó'
+          : stageRef.current === 'create'
             ? 'Mercado Pago no terminó de crear el formulario'
-            : 'el script de Mercado Pago no cargó';
-        console.error(`[mp-card-brick] watchdog: still loading after 20s — ${stage}`);
-        setError(
-          `No pudimos cargar el formulario de pago: ${stage}. Revisa tu conexión y cualquier bloqueador de anuncios, y recarga la página.`,
-        );
-      }
-    }, 20_000);
+            : 'Mercado Pago creó el formulario pero nunca avisó que estuviera listo';
+      const reported = brickErrors.current.length
+        ? ` Errores reportados: ${Array.from(new Set(brickErrors.current)).join(' · ')}.`
+        : ' Sin errores reportados por Mercado Pago.';
+      console.error(
+        `[mercadopago brick] watchdog after ${WATCHDOG_MS / 1000}s: ${stage}.${reported}`,
+      );
+      setError((prev) => prev ?? `No pudimos cargar el formulario de pago: ${stage}.${reported}`);
+    }, WATCHDOG_MS);
     return () => window.clearTimeout(t);
   }, []);
 
@@ -366,7 +311,19 @@ export function MpCardBrick({
 
   return (
     <div>
-      {/* Always rendered, so the Brick's container below never changes position. */}
+      <Script
+        src={SDK_URL}
+        strategy="afterInteractive"
+        onLoad={() => {
+          log('SDK script loaded');
+          setSdkReady(true);
+        }}
+        onError={() => {
+          console.error('[mercadopago brick] SDK script failed to load');
+          setError('No se pudo cargar el script de Mercado Pago (sdk.mercadopago.com).');
+        }}
+      />
+      {/* Always rendered so the Brick's container never changes position. */}
       <div key="status" style={{ minHeight: finished ? 0 : 22 }}>
         {finished ? (
           <>
@@ -408,10 +365,9 @@ export function MpCardBrick({
           </>
         )}
       </div>
-      {/* The Brick's container. React renders this div empty and never
-          touches its children; the Brick owns everything inside. Kept in
-          the tree (hidden) once the payment is decided so the deferred
-          unmount, not React, takes the Brick down. */}
+      {/* The Brick's container: React renders it empty and never touches
+          its children. Hidden, not removed, once the payment is decided, so
+          only the deferred unmount takes the Brick down. */}
       <div
         key="brick"
         id={containerId}
