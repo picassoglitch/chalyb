@@ -162,7 +162,7 @@ API with **test users** whose money is not real.
      funds — use these to see the `rejected` path.
 6. Watch it land: `/app/billing` shows the charge, `/app/subscription` shows
    the renewal date, `/dashboard/notifications` shows "Suscripción PRO
-   activa", and `/api/_diag/mp` (admin) confirms which token is in use.
+   activa", and `/api/diag/mp` (admin) confirms which token is in use.
 7. Cancel from `/app/subscription`: Mercado Pago's preapproval goes to
    `cancelled`, the plan stays until the renewal date, then lapses to Free.
 

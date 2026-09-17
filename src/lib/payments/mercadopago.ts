@@ -193,7 +193,7 @@ export function describeMpError(err: unknown): string {
     return (
       'Mercado Pago respondió sin cuerpo, que es lo que hace cuando rechaza la credencial. ' +
       `Revisa que ${MP_ACCESS_TOKEN_VAR} en Vercel sea el Access Token vigente (si lo regeneraste ` +
-      'en el panel, el anterior dejó de servir) y sin espacios ni comillas. /api/_diag/mp muestra ' +
+      'en el panel, el anterior dejó de servir) y sin espacios ni comillas. /api/diag/mp muestra ' +
       'el código HTTP real.'
     );
   }
