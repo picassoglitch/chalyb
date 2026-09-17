@@ -107,32 +107,33 @@ export function PackCheckout({ packId, packLabel, publicKey, amountMajor, payerE
             /app/usage. Puedes cerrar esta página.
           </div>
         }
+        fallback={
+          <>
+            <button
+              type="button"
+              onClick={payAnotherWay}
+              disabled={otherPending}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                color: 'var(--cc-txt-3)',
+                fontFamily: 'inherit',
+                fontSize: 12.5,
+                cursor: otherPending ? 'wait' : 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              {otherPending
+                ? 'Abriendo Mercado Pago…'
+                : '¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Pagar en Mercado Pago →'}
+            </button>
+            {otherError && (
+              <p style={{ fontSize: 11.5, color: 'var(--cc-red)', marginTop: 6 }}>▸ {otherError}</p>
+            )}
+          </>
+        }
       />
-
-      <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--cc-line)' }}>
-        <button
-          type="button"
-          onClick={payAnotherWay}
-          disabled={otherPending}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            color: 'var(--cc-txt-3)',
-            fontFamily: 'inherit',
-            fontSize: 12.5,
-            cursor: otherPending ? 'wait' : 'pointer',
-            textDecoration: 'underline',
-          }}
-        >
-          {otherPending
-            ? 'Abriendo Mercado Pago…'
-            : '¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Pagar en Mercado Pago →'}
-        </button>
-        {otherError && (
-          <p style={{ fontSize: 11.5, color: 'var(--cc-red)', marginTop: 6 }}>▸ {otherError}</p>
-        )}
-      </div>
     </div>
   );
 }

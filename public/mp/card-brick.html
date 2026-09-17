@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Mercado Pago · tarjeta</title>
+    <!--
+      Host page for the Mercado Pago Card Payment Brick.
+
+      The app embeds this file in a same-origin <iframe> and talks to it with
+      postMessage (see src/components/payments/mp-card-brick.tsx). It is the
+      plain, documented Brick integration and nothing else: a script tag for
+      the SDK, one container with the documented id, one bricks().create().
+      No React, no app CSS, no app scripts, no lifecycle to fight. Leaving
+      the checkout removes the iframe, which tears the Brick down cleanly.
+
+      Messages (all with origin === location.origin):
+        parent → host   chalyb-mp:init            { publicKey, amount, payerEmail, maxInstallments, submitLabel, locale }
+        parent → host   chalyb-mp:submit-result   { id, ok, error }
+        host → parent   chalyb-mp:host-ready
+        host → parent   chalyb-mp:sdk-failed
+        host → parent   chalyb-mp:stage           { stage: 'create' | 'created' }
+        host → parent   chalyb-mp:ready
+        host → parent   chalyb-mp:error           { errorType, cause, message }
+        host → parent   chalyb-mp:submit          { id, formData, additionalData }
+        host → parent   chalyb-mp:resize          { height }
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      body {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        color: #e6e8ee;
+        overflow: hidden;
+      }
+      #cardPaymentBrick_container {
+        min-height: 40px;
+      }
+    </style>
+    <script src="https://sdk.mercadopago.com/js/v2" onerror="window.__mpSdkFailed = true"></script>
+  </head>
+  <body>
+    <div id="cardPaymentBrick_container"></div>
+    <script>
+      (function () {
+        var ORIGIN = window.location.origin;
+        var parentWin = window.parent;
+        var initialised = false;
+        var submitId = 0;
+        var pendingSubmits = {};
+
+        function send(type, data) {
+          var msg = Object.assign({ type: 'chalyb-mp:' + type }, data || {});
+          parentWin.postMessage(msg, ORIGIN);
+        }
+
+        var lastHeight = -1;
+        function reportHeight() {
+          var el = document.getElementById('cardPaymentBrick_container');
+          var h = Math.ceil(
+            Math.max(
+              el ? el.getBoundingClientRect().height : 0,
+              document.documentElement.scrollHeight,
+              document.body.scrollHeight
+            )
+          );
+          if (h === lastHeight) return;
+          lastHeight = h;
+          send('resize', { height: h });
+        }
+
+        function watchHeight() {
+          if (typeof ResizeObserver !== 'undefined') {
+            var ro = new ResizeObserver(reportHeight);
+            ro.observe(document.body);
+            var container = document.getElementById('cardPaymentBrick_container');
+            if (container) ro.observe(container);
+          }
+          // The Brick's secure fields are iframes; their loads never hit the
+          // observer, so also poll gently while the page lives.
+          setInterval(reportHeight, 500);
+        }
+
+        function create(cfg) {
+          if (initialised) return;
+          initialised = true;
+
+          if (window.__mpSdkFailed || typeof window.MercadoPago !== 'function') {
+            send('sdk-failed');
+            return;
+          }
+
+          var mp = new window.MercadoPago(cfg.publicKey, { locale: cfg.locale || 'es-MX' });
+          var settings = {
+            initialization: { amount: Number(cfg.amount) },
+            customization: {
+              paymentMethods: {
+                minInstallments: 1,
+                maxInstallments: Number(cfg.maxInstallments) || 1
+              },
+              visual: {
+                hideFormTitle: true,
+                style: { theme: 'dark' },
+                texts: { formSubmit: cfg.submitLabel || 'Pagar' }
+              }
+            },
+            callbacks: {
+              onReady: function () {
+                send('ready');
+                reportHeight();
+              },
+              onSubmit: function (formData, additionalData) {
+                var id = ++submitId;
+                return new Promise(function (resolve, reject) {
+                  pendingSubmits[id] = { resolve: resolve, reject: reject };
+                  send('submit', { id: id, formData: formData, additionalData: additionalData || null });
+                });
+              },
+              onError: function (error) {
+                send('error', {
+                  errorType: error && error.type,
+                  cause: error && error.cause,
+                  message: error && error.message
+                });
+              }
+            }
+          };
+          if (cfg.payerEmail) settings.initialization.payer = { email: cfg.payerEmail };
+
+          send('stage', { stage: 'create' });
+          mp.bricks()
+            .create('cardPayment', 'cardPaymentBrick_container', settings)
+            .then(function () {
+              send('stage', { stage: 'created' });
+              reportHeight();
+            })
+            .catch(function (err) {
+              send('error', {
+                errorType: 'critical',
+                cause: 'create_failed',
+                message: err && err.message ? err.message : String(err)
+              });
+            });
+        }
+
+        window.addEventListener('message', function (event) {
+          if (event.origin !== ORIGIN || event.source !== parentWin) return;
+          var data = event.data;
+          if (!data || typeof data.type !== 'string') return;
+
+          if (data.type === 'chalyb-mp:init') {
+            create(data);
+          } else if (data.type === 'chalyb-mp:submit-result') {
+            var p = pendingSubmits[data.id];
+            if (!p) return;
+            delete pendingSubmits[data.id];
+            if (data.ok) p.resolve();
+            else p.reject(new Error(data.error || 'payment failed'));
+            reportHeight();
+          }
+        });
+
+        watchHeight();
+        send('host-ready');
+      })();
+    </script>
+  </body>
+</html>

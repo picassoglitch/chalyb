@@ -20,13 +20,36 @@ Why this split and not something else:
   retries run out. Selling a plan as a one-off Checkout Pro payment (what the
   hub did before) means nobody is ever charged a second month.
 - **The card form is ours, the card data is theirs.** Mercado Pago's Card
-  Payment Brick (MercadoPago.js v2, loaded with `@mercadopago/sdk-js`) renders the card number, expiry
-  and CVV in iframes it hosts and hands the page a single-use token. The
-  buyer never leaves Chalyb, and PCI stays with Mercado Pago (SAQ A). The
+  Payment Brick (MercadoPago.js v2) renders the card number, expiry and CVV
+  in iframes it hosts and hands the page a single-use token. The buyer
+  never leaves Chalyb, and PCI stays with Mercado Pago (SAQ A). The
   subscription is created "sin plan asociado" with `card_token_id` and
   `status: "authorized"`, so the first month is charged in that request
   and the plan is active before the page answers. There is no shared plan
   object to keep in step with `pricing.ts`.
+- **The Brick runs in its own page.** `public/mp/card-brick.html` is the
+  plain, documented integration (the SDK script tag, the documented
+  `cardPaymentBrick_container`, one `bricks().create()`) and nothing else.
+  `src/components/payments/mp-card-brick.tsx` embeds it in a same-origin
+  `<iframe>` and talks to it over origin-checked `postMessage`: settings in,
+  ready/error/submit/height out, the server's verdict back. Mounted inline
+  in the app, the Brick kept dying while its bundle and secure-field iframes
+  were still loading (`Cannot read properties of null (reading
+'addEventListener')` from `cardPayment.js`, `onReady` never firing):
+  React, the app's CSS and scripts and the effect lifecycle all share that
+  DOM. In its own document nothing else touches it, and leaving the
+  checkout simply removes the iframe. The console still narrates the stages
+  under `[mercadopago brick]`, and a 20 s watchdog names the one that
+  stalled.
+- **Mercado Pago's page is always one click away.** Under both card forms
+  there is a link to the hosted flow: `startHostedTierSubscription` creates
+  the same preapproval without a card (`status: "pending"`) and sends the
+  buyer to its `init_point`; `createTokenPackCheckout` does the same for a
+  pack through Checkout Pro via Orders. Nobody is stuck if the in-app form
+  cannot load in their browser (an extension that rewrites forms, a blocked
+  `sdk.mercadopago.com`). Coming back to `/app/subscription?status=success`
+  syncs the pending preapproval on the spot; the `subscription_preapproval`
+  webhook does the same whenever it lands.
 - **Packs pay with the same form.** A card charge goes through the Orders
   API in `automatic` mode and settles in the same request. OXXO, SPEI and
   account money only exist on Mercado Pago's own page, so the pack checkout
@@ -36,10 +59,11 @@ Why this split and not something else:
   discontinued. Every pack charge is an order; the webhook reads the
   `orders` topic. Payments made through the old preferences flow still
   settle through the `payment` topic.
-- **Not the hosted redirect.** Sending the buyer to mercadopago.com to
-  authorise the card worked but felt like leaving the product, and with
-  test credentials the hosted page 404s unless the buyer is logged in as a
-  test user. The Brick avoids both.
+- **The hosted redirect is the fallback, not the default.** Sending the
+  buyer to mercadopago.com to authorise the card feels like leaving the
+  product, and with test credentials the hosted page 404s unless the buyer
+  is logged in as a test user. The Brick avoids both; the link stays for
+  whoever needs it.
 
 Prices live in one place, `src/lib/payments/pricing.ts`, in MXN. The webhook
 refuses to grant anything whose charged amount or currency differs from it.
@@ -160,6 +184,11 @@ API with **test users** whose money is not real.
    - Visa `4075 5957 1648 3764`, CVV `123`
    - Cardholder `OTHE` rejects the charge, `FUND` rejects for insufficient
      funds — use these to see the `rejected` path.
+     If the form never appears, the banner names the stage that stalled and
+     the link under it opens the same plan on Mercado Pago's page. The Brick
+     can also be exercised alone at `/mp/card-brick.html`: it waits for a
+     `chalyb-mp:init` message from its parent, so open it from the checkout,
+     not directly.
 6. Watch it land: `/app/billing` shows the charge, `/app/subscription` shows
    the renewal date, `/dashboard/notifications` shows "Suscripción PRO
    activa", and `/api/diag/mp` (admin) confirms which token is in use.

@@ -1,12 +1,19 @@
 'use client';
 
-// The card form for a monthly plan. Renders the Brick, sends the token to
-// authorizeTierSubscription, and shows the result. Price and tier are
-// server-decided (props from the page); the browser cannot change them.
+// The card form for a monthly plan, plus the "pay on Mercado Pago" way.
+// Renders the Brick, sends the token to authorizeTierSubscription, and shows
+// the result. Price and tier are server-decided (props from the page); the
+// browser cannot change them. The link under the form opens the Mercado
+// Pago-hosted authorisation for the same plan (startHostedTierSubscription):
+// the way to pay when the in-app form cannot load in someone's browser.
 
+import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
-import { authorizeTierSubscription } from '@/lib/payments/subscription-actions';
+import {
+  authorizeTierSubscription,
+  startHostedTierSubscription,
+} from '@/lib/payments/subscription-actions';
 import { MpCardBrick } from '@/components/payments/mp-card-brick';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
@@ -27,6 +34,20 @@ export function SubscriptionCheckout({
 }: Props) {
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
+  const [hostedPending, startHosted] = useTransition();
+  const [hostedError, setHostedError] = useState<string | null>(null);
+
+  function payOnMercadoPago() {
+    setHostedError(null);
+    startHosted(async () => {
+      const res = await startHostedTierSubscription({ tier });
+      if (!res.ok || !res.url) {
+        setHostedError(res.error ?? 'No pudimos abrir el pago en Mercado Pago.');
+        return;
+      }
+      window.location.href = res.url;
+    });
+  }
 
   return (
     <div data-mp-subscriptions-page="without-plan-authorized">
@@ -90,6 +111,34 @@ export function SubscriptionCheckout({
             lo aprueba. No se ha activado nada; en cuanto lo confirme se activa tu plan. Puedes
             cerrar esta página.
           </div>
+        }
+        fallback={
+          <>
+            <button
+              type="button"
+              onClick={payOnMercadoPago}
+              disabled={hostedPending}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                color: 'var(--cc-txt-3)',
+                fontFamily: 'inherit',
+                fontSize: 12.5,
+                cursor: hostedPending ? 'wait' : 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              {hostedPending
+                ? 'Abriendo Mercado Pago…'
+                : `¿Prefieres autorizar la tarjeta en Mercado Pago? Activar ${tierLabel} en Mercado Pago →`}
+            </button>
+            {hostedError && (
+              <p style={{ fontSize: 11.5, color: 'var(--cc-red)', marginTop: 6 }}>
+                ▸ {hostedError}
+              </p>
+            )}
+          </>
         }
       />
     </div>
