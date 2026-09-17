@@ -15,7 +15,6 @@
     "db:new": "supabase migration new"
   },
   "dependencies": {
-    "@mercadopago/sdk-js": "^0.0.3",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "@vercel/analytics": "^2.0.1",
