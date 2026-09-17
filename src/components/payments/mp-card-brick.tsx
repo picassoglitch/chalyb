@@ -141,6 +141,24 @@ export function MpCardBrick({
   const stageRef = useRef<Stage>('sdk');
   const brickErrors = useRef<string[]>([]);
   const busy = useRef(false);
+  // "A listener indicated an asynchronous response by returning true, but
+  // the message channel closed…" is emitted only by browser extensions'
+  // messaging API. Seeing it while the Brick loads means an extension is
+  // injecting into this page (and usually into Mercado Pago's iframes),
+  // which is what breaks the form. Remembered so the watchdog can say so.
+  const extensionInterference = useRef(false);
+  useEffect(() => {
+    const onRejection = (ev: PromiseRejectionEvent) => {
+      const msg = String(
+        (ev.reason as { message?: string } | undefined)?.message ?? ev.reason ?? '',
+      );
+      if (/message channel closed before a response was received/i.test(msg)) {
+        extensionInterference.current = true;
+      }
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
 
   useEffect(() => {
     if (!sdkReady) return;
@@ -168,7 +186,15 @@ export function MpCardBrick({
     const s = settingsRef.current;
     creatingRef.current = true;
     stageRef.current = 'create';
-    log('creating Brick', { containerId, amount: s.amount });
+    // Diagnostic: the Brick holds a reference to the container it finds at
+    // create() time. If React ever swaps that element, the Brick renders
+    // into a detached node and its lookups come back null. Compare later.
+    const containerAtCreate = document.getElementById(containerId);
+    log('creating Brick', {
+      containerId,
+      amount: s.amount,
+      containerConnected: containerAtCreate?.isConnected ?? false,
+    });
 
     const mp = new window.MercadoPago(s.publicKey, { locale: 'es-MX' });
     mp.bricks()
@@ -239,15 +265,36 @@ export function MpCardBrick({
         },
       })
       .then((controller) => {
-        log('Brick created; waiting for onReady');
+        const now = document.getElementById(containerId);
+        log('Brick created; waiting for onReady', {
+          containerSameElement: now === containerAtCreate,
+          containerConnected: now?.isConnected ?? false,
+          iframesInContainer: now?.querySelectorAll('iframe').length ?? 0,
+          iframesInDocument: document.querySelectorAll('iframe').length,
+        });
         if (stageRef.current === 'create') stageRef.current = 'onReady';
-        if (!aliveRef.current) {
-          // Left before creation finished: nothing keeps this one.
-          log('component left during creation; unmounting');
-          controller.unmount();
-          return;
-        }
+        // Always keep the controller. Never unmount inline here: if the
+        // component left while create() was in flight, the deferred cleanup
+        // (already scheduled) unmounts it once; if that cleanup was
+        // cancelled by an immediate re-run, the Brick simply lives on.
         controllerRef.current = controller;
+        if (!aliveRef.current && pendingUnmount.current === null) {
+          // Left for real and the cleanup already ran its timer before we
+          // had a controller: schedule the unmount now, still deferred.
+          log('component left during creation; scheduling deferred unmount');
+          pendingUnmount.current = window.setTimeout(() => {
+            pendingUnmount.current = null;
+            if (!aliveRef.current && controllerRef.current) {
+              log('unmounting Brick (component left)');
+              try {
+                controllerRef.current.unmount();
+              } catch (err) {
+                console.warn('[mercadopago brick] unmount threw', err);
+              }
+              controllerRef.current = null;
+            }
+          }, 0);
+        }
       })
       .catch((err: unknown) => {
         console.error('[mercadopago brick] create failed', err);
@@ -293,10 +340,16 @@ export function MpCardBrick({
       const reported = brickErrors.current.length
         ? ` Errores reportados: ${Array.from(new Set(brickErrors.current)).join(' · ')}.`
         : ' Sin errores reportados por Mercado Pago.';
+      const extensionHint = extensionInterference.current
+        ? ' Detectamos una extensión del navegador interfiriendo con la página de pago (gestores de contraseñas, autocompletado de tarjetas, cupones o traductores suelen hacerlo). Prueba en una ventana de incógnito o desactívala para este sitio.'
+        : '';
       console.error(
         `[mercadopago brick] watchdog after ${WATCHDOG_MS / 1000}s: ${stage}.${reported}`,
       );
-      setError((prev) => prev ?? `No pudimos cargar el formulario de pago: ${stage}.${reported}`);
+      setError(
+        (prev) =>
+          prev ?? `No pudimos cargar el formulario de pago: ${stage}.${reported}${extensionHint}`,
+      );
     }, WATCHDOG_MS);
     return () => window.clearTimeout(t);
   }, []);
