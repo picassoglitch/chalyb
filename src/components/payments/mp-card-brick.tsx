@@ -279,7 +279,6 @@ export function MpCardBrick({
     return cleanup;
     // Create once per instance: only the SDK arriving triggers this.
     // Everything else is read from refs above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sdkReady, containerId]);
 
   useEffect(() => {
