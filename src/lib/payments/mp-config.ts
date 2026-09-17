@@ -59,7 +59,7 @@ export function checkoutNotReadyMessage(missing: string[]): string {
  * Mistakes that leave every variable SET but the card form dead: the public
  * key slot holding the access token (or the reverse), or a test key paired
  * with a production token. Mercado Pago's Brick then never reports ready.
- * Pure, so the checkout pages and /api/_diag/mp can name the mistake
+ * Pure, so the checkout pages and /api/diag/mp can name the mistake
  * without touching the SDK. Empty = nothing obviously wrong.
  */
 export function checkoutConfigProblems(env: Env): string[] {

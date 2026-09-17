@@ -1,6 +1,11 @@
 // Diagnostic endpoint — verifies the Mercado Pago integration is healthy
 // from the server side. Admin-only so we don't leak env-var state to users.
 //
+// Lives at /api/diag/mp. It used to sit under `_diag`, and a folder whose
+// name starts with an underscore is a PRIVATE folder in the App Router:
+// Next never registered the route, so the endpoint answered 404 from the
+// day it was written.
+//
 // Returns:
 //   { ok: true, tokenPrefix, tokenKind, appUrl, isHttps, mpReachable }
 //   { ok: false, error }
