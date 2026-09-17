@@ -141,6 +141,24 @@ export function MpCardBrick({
   const stageRef = useRef<Stage>('sdk');
   const brickErrors = useRef<string[]>([]);
   const busy = useRef(false);
+  // "A listener indicated an asynchronous response by returning true, but
+  // the message channel closed…" is emitted only by browser extensions'
+  // messaging API. Seeing it while the Brick loads means an extension is
+  // injecting into this page (and usually into Mercado Pago's iframes),
+  // which is what breaks the form. Remembered so the watchdog can say so.
+  const extensionInterference = useRef(false);
+  useEffect(() => {
+    const onRejection = (ev: PromiseRejectionEvent) => {
+      const msg = String(
+        (ev.reason as { message?: string } | undefined)?.message ?? ev.reason ?? '',
+      );
+      if (/message channel closed before a response was received/i.test(msg)) {
+        extensionInterference.current = true;
+      }
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
 
   useEffect(() => {
     if (!sdkReady) return;
@@ -307,10 +325,16 @@ export function MpCardBrick({
       const reported = brickErrors.current.length
         ? ` Errores reportados: ${Array.from(new Set(brickErrors.current)).join(' · ')}.`
         : ' Sin errores reportados por Mercado Pago.';
+      const extensionHint = extensionInterference.current
+        ? ' Detectamos una extensión del navegador interfiriendo con la página de pago (gestores de contraseñas, autocompletado de tarjetas, cupones o traductores suelen hacerlo). Prueba en una ventana de incógnito o desactívala para este sitio.'
+        : '';
       console.error(
         `[mercadopago brick] watchdog after ${WATCHDOG_MS / 1000}s: ${stage}.${reported}`,
       );
-      setError((prev) => prev ?? `No pudimos cargar el formulario de pago: ${stage}.${reported}`);
+      setError(
+        (prev) =>
+          prev ?? `No pudimos cargar el formulario de pago: ${stage}.${reported}${extensionHint}`,
+      );
     }, WATCHDOG_MS);
     return () => window.clearTimeout(t);
   }, []);
