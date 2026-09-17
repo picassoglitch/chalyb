@@ -46,6 +46,10 @@ interface DiagResult {
   publicKeyConfigured?: boolean;
   /** Set-but-wrong credentials: swapped values, or test paired with production. */
   credentialProblems?: string[];
+  /** What the card form does first: GET /v1/payment_methods with the PUBLIC
+   *  key (no access token). If Mercado Pago refuses the public key here, the
+   *  Brick never gets past its skeleton. */
+  publicKeyProbe?: { status: number | null; ok: boolean; excerpt: string };
   appUrl?: string;
   isHttps?: boolean;
   mpReachable?: boolean;
@@ -120,6 +124,46 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     mpResponseExcerpt = err instanceof Error ? err.message : 'unknown error';
   }
 
+  // The Brick's own first request, made from the server with the same
+  // public key the page hands to the browser. A 401/403 here is the answer
+  // to "why does the form never load" — the key is not accepted.
+  let publicKeyProbe: DiagResult['publicKeyProbe'] = undefined;
+  const publicKey = getPublicKey()?.trim();
+  if (publicKey) {
+    try {
+      const res = await fetch(
+        `https://api.mercadopago.com/v1/payment_methods?public_key=${encodeURIComponent(publicKey)}`,
+        {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(7000),
+          cache: 'no-store',
+        },
+      );
+      const text = (await res.text().catch(() => '')) ?? '';
+      let excerpt = text.slice(0, 200);
+      if (res.ok) {
+        try {
+          const methods = JSON.parse(text) as Array<{ id?: string }>;
+          excerpt = `public key aceptada · ${methods.length} métodos de pago (${methods
+            .slice(0, 6)
+            .map((m) => m.id)
+            .join(', ')}…)`;
+        } catch {
+          excerpt = 'public key aceptada';
+        }
+      } else if (!text) {
+        excerpt = `respuesta vacía con HTTP ${res.status} — Mercado Pago rechazó la public key`;
+      }
+      publicKeyProbe = { status: res.status, ok: res.ok, excerpt };
+    } catch (err) {
+      publicKeyProbe = {
+        status: null,
+        ok: false,
+        excerpt: err instanceof Error ? err.message : 'unknown error',
+      };
+    }
+  }
+
   return NextResponse.json({
     ok: mpReachable,
     tokenKind,
@@ -127,6 +171,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     webhookSecretConfigured: Boolean(getWebhookSecret()),
     publicKeyConfigured: Boolean(getPublicKey()),
     credentialProblems: checkoutConfigWarnings(),
+    publicKeyProbe,
     appUrl,
     isHttps,
     mpReachable,
