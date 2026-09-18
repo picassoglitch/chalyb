@@ -80,7 +80,8 @@ type HostMessage =
       formData: BrickFormData;
       additionalData: { paymentTypeId?: string } | null;
     }
-  | { type: 'chalyb-mp:resize'; height: number };
+  | { type: 'chalyb-mp:resize'; height: number }
+  | { type: 'chalyb-mp:extension'; script: string; extensionId: string };
 
 function log(step: string, detail?: unknown) {
   if (detail === undefined) console.info(`[mercadopago brick] ${step}`);
@@ -109,6 +110,8 @@ export function MpCardBrick({
   const brickErrors = useRef<string[]>([]);
   const busy = useRef(false);
   const initSent = useRef(false);
+  // A browser extension seen inside the Brick's stack traces, if any.
+  const extensionRef = useRef<{ script: string; extensionId: string } | null>(null);
 
   // Read at init time so a parent re-render never re-initialises the Brick.
   const settingsRef = useRef({ publicKey, amount, payerEmail, maxInstallments, submitLabel });
@@ -143,7 +146,11 @@ export function MpCardBrick({
 
   const failLoad = useCallback((message: string) => {
     setLoadFailed(true);
-    setError((prev) => prev ?? message);
+    const ext = extensionRef.current;
+    const withExtension = ext
+      ? `${message} Una extensión del navegador (${ext.script}, id ${ext.extensionId}) está interfiriendo con el formulario: pruébalo en una ventana de incógnito o desactívala en chrome://extensions.`
+      : message;
+    setError((prev) => prev ?? withExtension);
   }, []);
 
   useEffect(() => {
@@ -197,6 +204,12 @@ export function MpCardBrick({
           if (typeof data.height === 'number' && data.height > 0) {
             setHeight(Math.max(40, Math.ceil(data.height)));
           }
+          break;
+        case 'chalyb-mp:extension':
+          extensionRef.current = { script: data.script, extensionId: data.extensionId };
+          console.error(
+            `[mercadopago brick] a browser extension is running inside the Brick's stack: ${data.script} (extension id ${data.extensionId}). Test in an incognito window or disable it.`,
+          );
           break;
         case 'chalyb-mp:submit':
           void handleSubmit(data.id, data.formData, data.additionalData);

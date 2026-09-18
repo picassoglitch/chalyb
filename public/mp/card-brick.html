@@ -25,6 +25,7 @@
         host → parent   chalyb-mp:error           { errorType, cause, message }
         host → parent   chalyb-mp:submit          { id, formData, additionalData }
         host → parent   chalyb-mp:resize          { height }
+        host → parent   chalyb-mp:extension       { script, extensionId }
     -->
     <style>
       html,
@@ -153,6 +154,47 @@
               });
             });
         }
+
+        // A browser extension that hooks DOM APIs injects its own script into
+        // the page (chrome-extension://<id>/injectScript.js and the like) and
+        // shows up in the middle of the Brick's stack, where the Brick dies.
+        // Name it, so the checkout can say so instead of blaming the network.
+        // The DOM scan is the reliable path: errors thrown by Mercado Pago's
+        // cross-origin bundles reach window.onerror stripped of their stack.
+        var EXT_RE = /^(chrome-extension|moz-extension|safari-web-extension):\/\/([a-z0-9-]+)\/([^\s:)?#]+)/i;
+        var reportedExtensions = {};
+        function reportExtension(id, script) {
+          if (reportedExtensions[id]) return;
+          reportedExtensions[id] = true;
+          send('extension', { script: script, extensionId: id });
+        }
+        function scanScripts() {
+          var scripts = document.getElementsByTagName('script');
+          for (var i = 0; i < scripts.length; i++) {
+            var m = EXT_RE.exec(scripts[i].src || '');
+            if (m) reportExtension(m[2], m[3]);
+          }
+        }
+        function reportExtensionFromError(err) {
+          var stack = err && typeof err.stack === 'string' ? err.stack : '';
+          var m = /(chrome-extension|moz-extension|safari-web-extension):\/\/([a-z0-9-]+)\/([^\s:)?#]+)/i.exec(
+            stack
+          );
+          if (m) reportExtension(m[2], m[3]);
+        }
+        window.addEventListener('error', function (e) {
+          reportExtensionFromError(e.error);
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          reportExtensionFromError(e.reason);
+        });
+        if (typeof MutationObserver !== 'undefined') {
+          new MutationObserver(scanScripts).observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
+        }
+        scanScripts();
 
         window.addEventListener('message', function (event) {
           if (event.origin !== ORIGIN || event.source !== parentWin) return;
