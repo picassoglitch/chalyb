@@ -5,10 +5,9 @@ import assert from 'node:assert/strict';
 import { decideTierChange } from '@/lib/auth/tier-policy';
 
 test('a user may downgrade themselves to FREE', () => {
-  assert.deepEqual(
-    decideTierChange({ newTier: 'FREE', isSelf: true, isAdmin: false }),
-    { allow: true },
-  );
+  assert.deepEqual(decideTierChange({ newTier: 'FREE', isSelf: true, isAdmin: false }), {
+    allow: true,
+  });
 });
 
 test('a user may NOT hand themselves a paid tier', () => {
@@ -22,17 +21,17 @@ test('a user may NOT hand themselves a paid tier', () => {
 });
 
 test('PARTNER is admin-grant only, with its own reason', () => {
-  assert.deepEqual(
-    decideTierChange({ newTier: 'PARTNER', isSelf: true, isAdmin: false }),
-    { allow: false, reason: 'partner_is_admin_grant' },
-  );
+  assert.deepEqual(decideTierChange({ newTier: 'PARTNER', isSelf: true, isAdmin: false }), {
+    allow: false,
+    reason: 'partner_is_admin_grant',
+  });
 });
 
 test('a user may not touch anyone else', () => {
-  assert.deepEqual(
-    decideTierChange({ newTier: 'FREE', isSelf: false, isAdmin: false }),
-    { allow: false, reason: 'not_admin' },
-  );
+  assert.deepEqual(decideTierChange({ newTier: 'FREE', isSelf: false, isAdmin: false }), {
+    allow: false,
+    reason: 'not_admin',
+  });
 });
 
 test('an admin may set any real tier, on anyone', () => {

@@ -19,7 +19,9 @@ const TS = '1733520000';
 
 function signedHeader(opts: { secret?: string; paymentId?: string; requestId?: string } = {}) {
   const manifest = `id:${opts.paymentId ?? PAYMENT_ID};request-id:${opts.requestId ?? REQUEST_ID};ts:${TS};`;
-  const v1 = createHmac('sha256', opts.secret ?? SECRET).update(manifest).digest('hex');
+  const v1 = createHmac('sha256', opts.secret ?? SECRET)
+    .update(manifest)
+    .digest('hex');
   return `ts=${TS},v1=${v1}`;
 }
 

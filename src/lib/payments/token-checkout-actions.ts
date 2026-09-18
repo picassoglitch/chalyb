@@ -13,7 +13,7 @@
 //   4. User pays (card, OXXO, SPEI, account money…)
 //   5. MP redirects back to /app/usage?status=success
 //   6. (Async) MP webhook, topic `orders`, external_reference
-//      "pack|<userId>|<packId>" → one-off-settlement.ts grants the tokens.
+//      "pack-<userId>-<slug>" → one-off-settlement.ts grants the tokens.
 //
 // Price and currency come from TOKEN_PACKS on the server. The browser only
 // names the pack. The Orders API is what the application in the Mercado Pago
@@ -32,6 +32,7 @@ import {
   isAllowedCheckoutUrl,
   orderAmount,
   orderIdempotencyKey,
+  packReference,
 } from './order-charge';
 import { settleOneOffCharge } from './one-off-settlement';
 import {
@@ -89,9 +90,10 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
 
-    // external_reference shape: "pack|<userId>|<packId>" so the webhook can
+    // external_reference shape: "pack-<userId>-<slug>" so the webhook can
     // tell a pack from a plan ("sub|…" for subscriptions, "<userId>|<TIER>"
-    // for the legacy one-off purchases).
+    // for the legacy one-off purchases). Built in order-charge.ts, which
+    // explains why the separator is a dash and not a pipe.
     const result = await order.create({
       body: {
         type: 'online',
@@ -99,7 +101,7 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         // payment on Mercado Pago's page, not in this request.
         processing_mode: 'manual',
         total_amount: amount,
-        external_reference: `pack|${session.user.id}|${pack.id}`,
+        external_reference: packReference(session.user.id, pack.id),
         description: title,
         ...(session.user.email ? { payer: { email: session.user.email } } : {}),
         items: [
@@ -107,7 +109,6 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
             title,
             unit_price: amount,
             quantity: 1,
-            unit_measure: 'unit',
             external_code: `pack-${pack.id}`,
           },
         ],
@@ -248,7 +249,7 @@ export async function payTokenPackWithCard(input: {
     const { order } = getMercadoPago();
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
-    const externalReference = `pack|${session.user.id}|${pack.id}`;
+    const externalReference = packReference(session.user.id, pack.id);
 
     const result = await order.create({
       body: {
@@ -268,7 +269,6 @@ export async function payTokenPackWithCard(input: {
             title,
             unit_price: amount,
             quantity: 1,
-            unit_measure: 'unit',
             external_code: `pack-${pack.id}`,
           },
         ],

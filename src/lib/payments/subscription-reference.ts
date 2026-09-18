@@ -14,7 +14,8 @@ export function isSubscribableTier(tier: string): tier is SubscribableTier {
 }
 
 /** Prefix that tells a subscription reference apart from the one-off ones
- *  ("<userId>|<TIER>" for the old tier checkout, "pack|…" for token packs). */
+ *  ("<userId>|<TIER>" for the old tier checkout, "pack-…" for token packs;
+ *  see order-charge.ts for why those use dashes and these keep pipes). */
 export const SUBSCRIPTION_REF_PREFIX = 'sub';
 
 /** external_reference for a preapproval: "sub|<userId>|<TIER>". */

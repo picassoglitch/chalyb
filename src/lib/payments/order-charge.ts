@@ -219,3 +219,86 @@ export function isAllowedCheckoutUrl(url: string | null | undefined): boolean {
 export function orderAmount(amountCents: number): string {
   return (amountCents / 100).toFixed(2);
 }
+
+// ── external_reference ───────────────────────────────────────────────────
+//
+// The reference is how a notification finds the buyer and what they bought;
+// nothing else on the order says it. The Orders API validates it against a
+// pattern and rejects `|`:
+//
+//   Invalid value for property (property_value) · '$.external_reference'
+//   - does not match pattern
+//
+// which is what made every card charge fail. So a pack reference is now
+// built from `-` alone, which every shape of the pattern allows:
+//
+//   pack-<uuid>-<pack id with _ as ->    pack-3f2a…cde-tokens-100k
+//
+// The user id stays readable, so the reference is still meaningful in
+// Mercado Pago's own panel. Parsing accepts the old `|` forms too: orders
+// and preferences created before this change are still out there, and a
+// notification for one must settle exactly as it always did.
+//
+// Subscriptions keep their "sub|<userId>|<TIER>" reference: the preapproval
+// API takes it (its validation is what answered CC_VAL_433, well past the
+// schema), and changing a format that works would put live plans at risk
+// for nothing. See subscription-reference.ts.
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** A pack id as it appears inside a reference: `_` is not in the Orders
+ *  API's alphabet, `-` is. */
+function packSlug(packId: string): string {
+  return packId.replace(/_/g, '-');
+}
+
+/** external_reference for a token pack order: "pack-<userId>-<slug>". */
+export function packReference(userId: string, packId: string): string {
+  return `pack-${userId}-${packSlug(packId)}`;
+}
+
+export type ParsedOneOffReference =
+  | { kind: 'pack'; userId: string; packId: string }
+  /** The one-off tier purchase the hub sold before subscriptions existed. */
+  | { kind: 'tier'; userId: string; tier: string }
+  | null;
+
+/**
+ * Who paid and for what, from the reference on an order or a payment.
+ *
+ * `knownPackIds` is the list to resolve a slug against — the pack ids are
+ * the only authority on where a `-` in the slug was once a `_`, and passing
+ * them in keeps this module free of the pricing table.
+ */
+export function parseOneOffReference(
+  ref: string | null | undefined,
+  knownPackIds: readonly string[],
+): ParsedOneOffReference {
+  const value = (ref ?? '').trim();
+  if (!value) return null;
+
+  // Current form: pack-<uuid>-<slug>
+  if (value.startsWith('pack-')) {
+    const rest = value.slice('pack-'.length);
+    const userId = rest.slice(0, 36);
+    if (!UUID_RE.test(userId) || rest[36] !== '-') return null;
+    const slug = rest.slice(37);
+    if (!slug) return null;
+    const packId = knownPackIds.find((id) => packSlug(id) === slug);
+    return packId ? { kind: 'pack', userId, packId } : null;
+  }
+
+  // Legacy forms, still arriving for anything created before the change.
+  const parts = value.split('|');
+  if (parts[0] === 'pack') {
+    const [, userId, packId] = parts;
+    if (parts.length !== 3 || !userId || !packId) return null;
+    return knownPackIds.includes(packId) ? { kind: 'pack', userId, packId } : null;
+  }
+  if (parts.length === 2) {
+    const [userId, tier] = parts;
+    if (!userId || !tier) return null;
+    return { kind: 'tier', userId, tier };
+  }
+  return null;
+}

@@ -15,7 +15,7 @@ import { paymentReversedTemplate, paymentSuccessTemplate } from '@/lib/email/tem
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
-import { getTokenPack } from './pricing';
+import { TOKEN_PACKS, getTokenPack } from './pricing';
 import { getAppUrl } from './mercadopago';
 import {
   checkCharge,
@@ -23,7 +23,7 @@ import {
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import { isReversal, type NormalizedCharge } from './order-charge';
+import { isReversal, parseOneOffReference, type NormalizedCharge } from './order-charge';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -51,22 +51,29 @@ export async function settleOneOffCharge(
   const currency = charge.currency ?? 'MXN';
   const amountCents = Math.round((charge.amountMajor ?? 0) * 100);
 
-  // external_reference is one of two shapes:
-  //   1. Legacy one-off tier purchase: "<userId>|<TIER>"  (e.g. "abc|PRO")
-  //   2. Token pack:                   "pack|<userId>|<packId>"
-  const refParts = externalRef.split('|');
-  const isPackPurchase = refParts[0] === 'pack';
-  const userId = isPackPurchase ? refParts[1] : refParts[0];
-  const tierRaw = isPackPurchase ? null : refParts[1];
-  const packIdRaw = isPackPurchase ? refParts[2] : null;
-  const tier = tierRaw as SubscriptionTier | null;
+  // Who paid and for what: a token pack ("pack-<userId>-<slug>", and the
+  // "pack|<userId>|<packId>" orders created before the Orders API's pattern
+  // forced the change) or the one-off tier purchase the hub sold before
+  // subscriptions ("<userId>|<TIER>"). See order-charge.ts.
+  const parsed = parseOneOffReference(
+    externalRef,
+    TOKEN_PACKS.map((p) => p.id),
+  );
+  if (!parsed) {
+    // An unresolvable pack slug and a malformed reference are different
+    // mistakes; say which, because this is all the webhook leaves behind.
+    const looksLikePack = externalRef.startsWith('pack-') || externalRef.startsWith('pack|');
+    return ok({
+      error: looksLikePack ? 'unknown token pack' : 'bad external_reference',
+      externalRef,
+    });
+  }
+  const isPackPurchase = parsed.kind === 'pack';
+  const userId = parsed.userId;
+  const packIdRaw = parsed.kind === 'pack' ? parsed.packId : null;
+  const tier = (parsed.kind === 'tier' ? parsed.tier : null) as SubscriptionTier | null;
 
-  if (!userId) return ok({ error: 'bad external_reference', externalRef });
-  if (isPackPurchase) {
-    if (!packIdRaw || !getTokenPack(packIdRaw)) {
-      return ok({ error: 'unknown token pack', externalRef });
-    }
-  } else if (!tier || !VALID_TIERS.includes(tier)) {
+  if (!isPackPurchase && (!tier || !VALID_TIERS.includes(tier))) {
     return ok({ error: 'bad external_reference', externalRef });
   }
 

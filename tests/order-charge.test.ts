@@ -12,6 +12,8 @@ import {
   orderAmount,
   orderIdempotencyKey,
   orderStatusToChargeStatus,
+  packReference,
+  parseOneOffReference,
   paymentStatusToChargeStatus,
 } from '@/lib/payments/order-charge';
 import { checkCharge, expectedChargeForPack } from '@/lib/payments/webhook-verify';
@@ -170,4 +172,53 @@ test('a Payments API payment normalises the same way', () => {
   assert.equal(c.amountMajor, 749);
   // No id on the payload → the notification's id keys the ledger.
   assert.equal(chargeFromPayment({ status: 'pending' }, '555').mpPaymentId, '555');
+});
+
+// ── external_reference ───────────────────────────────────────────────────
+// The Orders API rejects `|` in external_reference ("does not match
+// pattern"), which is what made every card charge fail. Packs use dashes
+// now; the old forms still have to parse, because orders created before the
+// change are still out there and their notifications must settle.
+
+const PACK_IDS = ['tokens_100k', 'tokens_500k', 'tokens_2m', 'prueba_cobro'];
+const USER = '3f2a1b4c-5d6e-7f80-9012-3456789abcde';
+
+test('a pack reference uses only characters the Orders API allows', () => {
+  const ref = packReference(USER, 'tokens_100k');
+  assert.equal(ref, `pack-${USER}-tokens-100k`);
+  assert.match(ref, /^[A-Za-z0-9-]+$/);
+});
+
+test('a pack reference round-trips, underscores and all', () => {
+  for (const id of PACK_IDS) {
+    assert.deepEqual(parseOneOffReference(packReference(USER, id), PACK_IDS), {
+      kind: 'pack',
+      userId: USER,
+      packId: id,
+    });
+  }
+});
+
+test('the pipe forms created before the change still parse', () => {
+  assert.deepEqual(parseOneOffReference(`pack|${USER}|tokens_500k`, PACK_IDS), {
+    kind: 'pack',
+    userId: USER,
+    packId: 'tokens_500k',
+  });
+  assert.deepEqual(parseOneOffReference(`${USER}|PRO`, PACK_IDS), {
+    kind: 'tier',
+    userId: USER,
+    tier: 'PRO',
+  });
+});
+
+test('a reference we cannot resolve is null, never a wrong grant', () => {
+  assert.equal(parseOneOffReference('', PACK_IDS), null);
+  assert.equal(parseOneOffReference(null, PACK_IDS), null);
+  assert.equal(parseOneOffReference('pack-not-a-uuid-tokens-100k', PACK_IDS), null);
+  // A slug for a pack that does not exist must not become some other pack.
+  assert.equal(parseOneOffReference(`pack-${USER}-tokens-999k`, PACK_IDS), null);
+  assert.equal(parseOneOffReference(`pack|${USER}|tokens_999k`, PACK_IDS), null);
+  // A subscription reference is not a one-off charge.
+  assert.equal(parseOneOffReference(`sub|${USER}|PRO`, PACK_IDS), null);
 });

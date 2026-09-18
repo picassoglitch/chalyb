@@ -32,7 +32,9 @@ registerHooks({
     const isRelative = specifier.startsWith('./') || specifier.startsWith('../');
 
     if (isAlias || isRelative) {
-      const base = isAlias ? new URL(specifier.slice(2), SRC) : new URL(specifier, context.parentURL);
+      const base = isAlias
+        ? new URL(specifier.slice(2), SRC)
+        : new URL(specifier, context.parentURL);
       const resolved = resolveWithExtension(base);
       if (resolved) return { url: resolved.href, shortCircuit: true };
     }
