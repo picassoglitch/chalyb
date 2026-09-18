@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
     <title>Mercado Pago · tarjeta</title>
     <!--
       Host document for the Mercado Pago Card Payment Brick.
@@ -17,7 +18,8 @@
       Messages (parent origin is checked on both sides):
         parent → host   chalyb-mp:init            { strategy, publicKey, amount, payerEmail, maxInstallments, submitLabel, locale }
         parent → host   chalyb-mp:submit-result   { id, ok, error }
-        host → parent   chalyb-mp:host-ready
+        host → parent   chalyb-mp:host-ready      sent first, before anything else runs
+        host → parent   chalyb-mp:init-ack        answers every init, so the parent stops resending it
         host → parent   chalyb-mp:sdk-failed
         host → parent   chalyb-mp:stage           { stage: 'create' | 'created' }
         host → parent   chalyb-mp:ready
@@ -33,6 +35,7 @@
         margin: 0;
         padding: 0;
         background: transparent;
+        color-scheme: dark;
       }
       body {
         font-family:
@@ -71,14 +74,19 @@
         // ── Height ──────────────────────────────────────────────────────
         var lastHeight = -1;
         function reportHeight() {
-          var el = document.getElementById('cardPaymentBrick_container');
-          var h = Math.ceil(
-            Math.max(
-              el ? el.getBoundingClientRect().height : 0,
-              document.documentElement.scrollHeight,
-              document.body.scrollHeight
-            )
-          );
+          var h;
+          try {
+            var el = document.getElementById('cardPaymentBrick_container');
+            h = Math.ceil(
+              Math.max(
+                el ? el.getBoundingClientRect().height : 0,
+                document.documentElement.scrollHeight,
+                document.body.scrollHeight
+              )
+            );
+          } catch (e) {
+            return;
+          }
           if (h === lastHeight) return;
           lastHeight = h;
           send('resize', { height: h });
@@ -137,7 +145,8 @@
           var m = STACK_EXT_RE.exec(stack);
           if (m) reportExtension(m[2], m[3]);
         }
-        if (typeof MutationObserver !== 'undefined') {
+        function watchScripts() {
+          if (typeof MutationObserver === 'undefined') return;
           new MutationObserver(scanScripts).observe(document.documentElement, {
             childList: true,
             subtree: true
@@ -228,6 +237,9 @@
           if (data.type === 'chalyb-mp:init') {
             if (parentOrigin && event.origin !== parentOrigin) return;
             parentOrigin = event.origin;
+            // Answer every init, repeats included: the parent resends until
+            // it hears this, in case host-ready went by before it listened.
+            send('init-ack');
             create(data);
           } else if (data.type === 'chalyb-mp:submit-result') {
             if (!parentOrigin || event.origin !== parentOrigin) return;
@@ -240,9 +252,18 @@
           }
         });
 
-        scanScripts();
-        watchHeight();
+        // The handshake goes out before anything that could throw. A DOM
+        // API an extension has wrapped must not be able to stop it.
         send('host-ready');
+        try {
+          scanScripts();
+        } catch (e) {}
+        try {
+          watchScripts();
+        } catch (e) {}
+        try {
+          watchHeight();
+        } catch (e) {}
       })();
     </script>
   </body>

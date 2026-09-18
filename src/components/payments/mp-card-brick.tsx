@@ -73,6 +73,10 @@ const ATTEMPT_TIMEOUT_MS = 15_000;
 /** After a poisoned report: how long ready may still arrive before the
  *  attempt is abandoned. */
 const POISON_GRACE_MS = 3_000;
+/** The init message is resent at this interval until the host answers it,
+ *  so the handshake does not hang on one lost message or a stalled load
+ *  event. The host ignores repeats. */
+const INIT_RETRY_MS = 400;
 const INITIAL_HEIGHT = 330;
 
 type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
@@ -100,6 +104,7 @@ interface ExtensionInfo {
 
 type HostMessage =
   | { type: 'chalyb-mp:host-ready' }
+  | { type: 'chalyb-mp:init-ack' }
   | { type: 'chalyb-mp:sdk-failed' }
   | { type: 'chalyb-mp:stage'; stage: 'create' | 'created' }
   | { type: 'chalyb-mp:ready' }
@@ -157,7 +162,7 @@ function BrickAttempt({
   // failed; nothing after that counts.
   const stage = useRef<'load' | 'sdk' | 'create' | 'onReady' | 'ready'>('load');
   const done = useRef(false);
-  const initSent = useRef(false);
+  const initAcked = useRef(false);
   const errors = useRef<string[]>([]);
   const poisonTimer = useRef<number | null>(null);
 
@@ -178,14 +183,18 @@ function BrickAttempt({
   }, []);
 
   const sendInit = useCallback(() => {
-    if (initSent.current || done.current) return;
-    initSent.current = true;
-    stage.current = 'sdk';
+    if (initAcked.current || done.current) return;
+    const win = frameRef.current?.contentWindow;
+    if (!win) return;
+    if (stage.current === 'load') {
+      stage.current = 'sdk';
+      const s = settingsRef.current;
+      log(`attempt "${strategy}": initialising the host document`, {
+        amount: s.amount,
+        maxInstallments: s.maxInstallments,
+      });
+    }
     const s = settingsRef.current;
-    log(`attempt "${strategy}": initialising the host document`, {
-      amount: s.amount,
-      maxInstallments: s.maxInstallments,
-    });
     post({
       type: 'chalyb-mp:init',
       strategy,
@@ -197,6 +206,21 @@ function BrickAttempt({
       locale: 'es-MX',
     });
   }, [post, strategy]);
+
+  // Keep offering init until the host acknowledges it. Covers a host-ready
+  // that went by before this listener existed and a load event that never
+  // fires because some subresource of the SDK stalled.
+  useEffect(() => {
+    if (!src) return;
+    const t = window.setInterval(() => {
+      if (initAcked.current || done.current) {
+        window.clearInterval(t);
+        return;
+      }
+      sendInit();
+    }, INIT_RETRY_MS);
+    return () => window.clearInterval(t);
+  }, [src, sendInit]);
 
   // The blob strategy builds its document from the same file.
   useEffect(() => {
@@ -234,11 +258,19 @@ function BrickAttempt({
         case 'chalyb-mp:host-ready':
           sendInit();
           break;
+        case 'chalyb-mp:init-ack':
+          if (!initAcked.current) {
+            initAcked.current = true;
+            log(`attempt "${strategy}": host acknowledged init`);
+          }
+          break;
         case 'chalyb-mp:sdk-failed':
+          initAcked.current = true;
           fail('el script de Mercado Pago (sdk.mercadopago.com) no cargó');
           break;
         case 'chalyb-mp:stage':
           if (done.current) break;
+          initAcked.current = true;
           if (data.stage === 'create') {
             stage.current = 'create';
             log(`attempt "${strategy}": creating Brick`);
