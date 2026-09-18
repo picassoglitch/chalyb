@@ -14,6 +14,8 @@
 // rather than empty.
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getMoneyToday } from '@/lib/billing/money-data';
+import { zonedStartOfDay } from '@/lib/billing/money';
 import { type ActivityEvent, type EngineStateCode, type StripValue } from './types';
 
 // Kept for compatibility — `MOCK` is read by nothing important now, but
@@ -32,8 +34,9 @@ const HIST_LEN = 14;
 //   active   → engines.status = 'active'
 //   aicalls  → COUNT(usage_events) in the last 60s where kind='llm.tokens'
 //              (= per-minute rate by construction)
-//   rev      → SUM(payments.amount_cents)/100 with status='approved'
-//              AND created_at::date = today
+//   rev      → getMoneyToday() — THE shared money helper
+//              (lib/billing/money-data.ts): settled payments since midnight
+//              in America/Mexico_City, USD folded in at the manual FX rate
 //   streams  → COUNT(DISTINCT user_id) usage_events today
 //              (now labeled "Usuarios hoy" — no ChalyClip live-stream
 //              count available cross-system yet)
@@ -70,11 +73,11 @@ function pushHist(id: string, value: number): number[] {
   return arr.slice();
 }
 
+// "Hoy" is Mexico City's today, not UTC's — see lib/billing/money.ts. Using
+// UTC midnight here is what put a 7pm-local payment on tomorrow's tally and
+// made the strip disagree with the P&L.
 function startOfDayIso(): string {
-  const now = new Date();
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  ).toISOString();
+  return zonedStartOfDay(new Date()).toISOString();
 }
 function sixtySecondsAgoIso(): string {
   return new Date(Date.now() - 60_000).toISOString();
@@ -90,44 +93,34 @@ export async function tickStrip(): Promise<StripValue[]> {
 
   // Six queries in parallel. Each is cheap (COUNT with an indexed predicate
   // or a tiny aggregate). Total round-trip stays under 200ms in practice.
-  const [
-    enginesResult,
-    callsResult,
-    revenueResult,
-    usersTodayResult,
-    tokensTodayResult,
-    subsResult,
-  ] = await Promise.all([
-    admin.from('engines').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    admin
-      .from('usage_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('kind', 'llm.tokens')
-      .gte('occurred_at', minuteAgo),
-    admin
-      .from('payments')
-      .select('amount_cents')
-      .eq('status', 'approved')
-      .gte('created_at', dayStart),
-    admin.from('usage_events').select('user_id').gte('occurred_at', dayStart),
-    admin
-      .from('usage_events')
-      .select('amount')
-      .eq('kind', 'llm.tokens')
-      .gte('occurred_at', dayStart),
-    admin
-      .from('engine_subscriptions')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active'),
-  ]);
+  const [enginesResult, callsResult, moneyToday, usersTodayResult, tokensTodayResult, subsResult] =
+    await Promise.all([
+      admin.from('engines').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      admin
+        .from('usage_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('kind', 'llm.tokens')
+        .gte('occurred_at', minuteAgo),
+      // THE money helper — same window, same status filter and same exchange
+      // rate as /dashboard/revenue and the P&L. This tile used to run its own
+      // query against a UTC day, which is how "Ingresos hoy $10" sat next to
+      // "Lo que ganaste hoy $0" on the same screen.
+      getMoneyToday(),
+      admin.from('usage_events').select('user_id').gte('occurred_at', dayStart),
+      admin
+        .from('usage_events')
+        .select('amount')
+        .eq('kind', 'llm.tokens')
+        .gte('occurred_at', dayStart),
+      admin
+        .from('engine_subscriptions')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active'),
+    ]);
 
   const engines = enginesResult.count ?? 0;
   const callsPerMin = callsResult.count ?? 0;
-  const revenueCentsToday = (revenueResult.data ?? []).reduce<number>(
-    (sum, row) => sum + ((row.amount_cents as number | null) ?? 0),
-    0,
-  );
-  const revenueToday = Math.round(revenueCentsToday / 100);
+  const revenueToday = Math.round(moneyToday.totalMxnCents / 100);
   const uniqueUsersToday = new Set(
     (usersTodayResult.data ?? []).map((r) => r.user_id as string).filter(Boolean),
   ).size;
@@ -160,7 +153,7 @@ export async function tickStrip(): Promise<StripValue[]> {
 //                   (used to be a fake queue depth; repurposed as
 //                   "active subs" so the rail tile carries real info)
 //   tokensToday   → SUM(usage_events.amount) today, formatted "1.2M"
-//   revenueToday  → SUM(payments.amount_cents)/100 today
+//   revenueToday  → getMoneyToday(), the same helper the strip uses
 
 interface RailCache {
   at: number;
@@ -189,7 +182,7 @@ export async function tickRail() {
   const dayStart = startOfDayIso();
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-  const [jobsResult, subsResult, tokensResult, revenueResult] = await Promise.all([
+  const [jobsResult, subsResult, tokensResult, moneyToday] = await Promise.all([
     admin
       .from('usage_events')
       .select('id', { count: 'exact', head: true })
@@ -203,27 +196,19 @@ export async function tickRail() {
       .select('amount')
       .eq('kind', 'llm.tokens')
       .gte('occurred_at', dayStart),
-    admin
-      .from('payments')
-      .select('amount_cents')
-      .eq('status', 'approved')
-      .gte('created_at', dayStart),
+    // Same helper as the strip: one number, one definition.
+    getMoneyToday(),
   ]);
 
   const tokensSum = (tokensResult.data ?? []).reduce<number>(
     (sum, row) => sum + ((row.amount as number | null) ?? 0),
     0,
   );
-  const revenueCents = (revenueResult.data ?? []).reduce<number>(
-    (sum, row) => sum + ((row.amount_cents as number | null) ?? 0),
-    0,
-  );
-
   const data = {
     jobsPerHour: jobsResult.count ?? 0,
     queue: subsResult.count ?? 0,
     tokensToday: formatTokensCompact(tokensSum),
-    revenueToday: Math.round(revenueCents / 100),
+    revenueToday: Math.round(moneyToday.totalMxnCents / 100),
   };
   railCache = { at: now, data };
   return data;

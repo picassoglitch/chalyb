@@ -75,6 +75,11 @@ export async function settleOneOffCharge(
   // For pack purchases the payments.tier column gets the user's CURRENT tier
   // (we're not changing it — the pack just adds bonus tokens). For tier
   // upgrades it's the target tier.
+  //
+  // `kind` is what makes that readable downstream. Without it the row above
+  // is indistinguishable from a plan purchase, and /app/billing rendered a
+  // token pack as "Plan Free · $149.00" — a plan the buyer never bought, at
+  // a price no plan costs.
   let paymentRowTier: SubscriptionTier;
   if (isPackPurchase) {
     const { data: currentProfile } = await admin
@@ -86,6 +91,7 @@ export async function settleOneOffCharge(
   } else {
     paymentRowTier = tier!; // validated above
   }
+  const packForRow = isPackPurchase ? getTokenPack(packIdRaw!) : undefined;
 
   // Always record the charge regardless of status — pending/rejected ones
   // are useful audit data. UNIQUE on mp_payment_id makes this idempotent.
@@ -93,6 +99,12 @@ export async function settleOneOffCharge(
     {
       user_id: userId,
       tier: paymentRowTier,
+      kind: isPackPurchase ? 'pack' : 'plan',
+      pack_id: packForRow?.id ?? null,
+      // What the buyer gets if (and only if) this charge reaches approved.
+      // Recorded on the row so the receipt on /app/billing can say it
+      // without re-deriving it from the external reference.
+      tokens_granted: packForRow?.tokens ?? null,
       mp_payment_id: mpId,
       amount_cents: amountCents,
       currency,

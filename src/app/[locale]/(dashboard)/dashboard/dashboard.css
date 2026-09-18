@@ -1780,6 +1780,26 @@ body:has(.cc-shell) {
 .cc-mod-card .cc-mod-meta b.am { color: var(--cc-amber); }
 .cc-mod-card .cc-mod-meta b.pu { color: var(--cc-purple); }
 
+/* Empty state. ONE look for "no hay datos", so a disconnected surface reads
+   as disconnected instead of borrowing the styling of a live one. Never put
+   a fabricated number, a delta or a neon chart inside one of these. */
+.cc-mod-empty-note {
+  padding: 28px 22px;
+  border: 1px dashed var(--cc-line-2);
+  border-radius: var(--cc-r-l);
+  text-align: center;
+  color: var(--cc-txt-3);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.cc-mod-empty-note small {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: var(--cc-mono), monospace;
+  font-size: 11.5px;
+  color: var(--cc-txt-4);
+}
+
 .cc-mod-list {
   display: flex;
   flex-direction: column;

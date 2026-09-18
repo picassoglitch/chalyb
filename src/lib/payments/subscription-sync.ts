@@ -21,6 +21,7 @@ import { paymentReversedTemplate, subscriptionActiveTemplate } from '@/lib/email
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
+import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
 import { checkCharge, expectedChargeForTier } from './webhook-verify';
 import {
   entitlementFor,
@@ -299,7 +300,14 @@ export async function recordAuthorizedPayment(
 
   const admin = createAdminClient();
   const paymentId = ap.payment?.id;
-  const paymentStatus = ap.payment?.status ?? ap.status ?? 'unknown';
+  // ONE status vocabulary in the ledger. `ap.payment.status` already speaks
+  // it; `ap.status` does not (scheduled | processed | recycling | cancelled),
+  // and writing it raw is what made a settled monthly charge read as
+  // "processed" — invisible to every `status = 'approved'` filter on
+  // /app/billing and in the revenue queries. Normalise before it is stored.
+  const paymentStatus: string = ap.payment?.status
+    ? paymentStatusToChargeStatus(ap.payment.status)
+    : authorizedPaymentStatusToChargeStatus(ap.status);
   // 'scheduled' means Mercado Pago has not tried the card yet: there is no
   // payment to record, only a date. Everything else has a payment id.
   if (paymentId) {
@@ -307,11 +315,12 @@ export async function recordAuthorizedPayment(
       {
         user_id: ref.userId,
         tier: ref.tier,
+        kind: 'subscription',
         mp_payment_id: String(paymentId),
         mp_preapproval_id: preapprovalId,
         amount_cents: Math.round((ap.transaction_amount ?? 0) * 100),
         currency: ap.currency_id ?? 'MXN',
-        status: String(paymentStatus),
+        status: paymentStatus,
         raw: ap as unknown as Record<string, unknown>,
       },
       { onConflict: 'mp_payment_id' },
