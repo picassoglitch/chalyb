@@ -447,9 +447,99 @@
     },
     "terms": {
       "metaTitle": "Términos de servicio",
-      "metaDescription": "Términos y condiciones para usar Chalyb y sus engines (ChalyClip, ChalybStreamManager y futuros productos).",
+      "metaDescription": "Términos y condiciones para usar Chalyb y sus engines (ChalyClip, ChalyStreamManager y futuros productos).",
       "title": "Términos de servicio",
       "lastUpdated": "17 junio 2026"
+    }
+  },
+  "workspace": {
+    "nav": {
+      "groupAccount": "Tu cuenta",
+      "groupPlatform": "Plataforma",
+      "groupSettings": "Ajustes",
+      "home": "Inicio",
+      "subscription": "Suscripción",
+      "usage": "Uso",
+      "billing": "Facturación",
+      "myengines": "Mis engines",
+      "history": "Historial",
+      "messages": "Mensajes",
+      "profile": "Perfil & seguridad",
+      "help": "Ayuda",
+      "adminView": "Vista admin",
+      "adminViewTitle": "Volver al command center",
+      "viewGroup": "Vista",
+      "settingsTitle": "Ajustes",
+      "openMenu": "Abrir menú",
+      "planSuffix": "plan"
+    },
+    "pages": {
+      "home": {
+        "title": "Tu espacio",
+        "sub": "Resumen de tu suscripción, uso y engines activos."
+      },
+      "subscription": {
+        "title": "Suscripción",
+        "sub": "Tu plan actual, cambios de tier y método de pago."
+      },
+      "usage": {
+        "title": "Uso",
+        "sub": "Tu actividad en el período de facturación actual."
+      },
+      "billing": {
+        "title": "Facturación",
+        "sub": "Historial de pagos y método de pago."
+      },
+      "engines": {
+        "title": "Mis engines",
+        "sub": "{clip}, {stream} y próximos productos — disponibles en tu tier actual."
+      },
+      "history": {
+        "title": "Historial",
+        "sub": "Tus ejecuciones recientes y trabajos completados."
+      },
+      "messages": {
+        "title": "Mensajes",
+        "sub": "Habla directo con el equipo. Ideas, problemas, propuestas — todo va aquí."
+      },
+      "settings": {
+        "title": "Perfil & seguridad",
+        "sub": "Tu cuenta personal, contraseña y 2FA."
+      },
+      "help": {
+        "title": "Ayuda",
+        "sub": "Docs, contacto y estado del sistema."
+      },
+      "fallback": {
+        "title": "Tu espacio",
+        "sub": ""
+      }
+    },
+    "settings": {
+      "loading": "Cargando…",
+      "accountSection": "Cuenta",
+      "name": "Nombre",
+      "email": "Correo",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "savedToast": "Perfil actualizado",
+      "saveErrorPrefix": "Error",
+      "saveErrorFallback": "No pudimos guardar tu perfil.",
+      "prefsSection": "Preferencias",
+      "prefsNote": "El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona horaria y los interruptores de abajo se guardan solo en este navegador.",
+      "language": "Idioma",
+      "timezone": "Zona horaria",
+      "notifsSection": "Notificaciones",
+      "critical": "Errores críticos",
+      "criticalSub": "Te avisamos por email y push cuando algo se cae.",
+      "daily": "Resumen diario",
+      "dailySub": "Ingresos, tareas y errores del día anterior, a las 09:00.",
+      "marketing": "Eventos de marketing",
+      "marketingSub": "Cuando una publicación se vuelve viral o sube la interacción.",
+      "securitySection": "Seguridad",
+      "twofa": "2FA con app autenticadora",
+      "twofaSub": "El código TOTP es obligatorio para los roles Admin y Super Admin.",
+      "toggleAria": "Cambiar {label}"
     }
   }
 }

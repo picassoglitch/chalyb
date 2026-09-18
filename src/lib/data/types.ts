@@ -4,8 +4,8 @@
 // NAMING: We call these "Engines" (the revenue-producing products), paired
 // conceptually with Chalyb Academy on the learn side. The codebase used to
 // say "bots" everywhere; renamed in migration 0010 since not all engines
-// are bots (ChalyClip is a video pipeline, ChalybStreamManager is a control
-// panel, ChalybRealtor is a scraper, etc.).
+// are bots (ChalyClip is a video pipeline, ChalyStreamManager is a control
+// panel, ChalyRealtor is a scraper, etc.).
 
 import type { SubscriptionTier } from '@/lib/auth/session';
 

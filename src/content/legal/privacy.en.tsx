@@ -107,7 +107,7 @@ export function PrivacyDocumentEn() {
       <ul>
         <li>VODs you upload to ChalyClip, generated clips, transcripts, caption variants.</li>
         <li>
-          Streams routed via ChalybStreamManager, saved layouts, OAuth connections to destination
+          Streams routed via ChalyStreamManager, saved layouts, OAuth connections to destination
           platforms (TikTok, YouTube, Twitch, Kick).
         </li>
         <li>Prompts, AI persona configurations, saved contexts.</li>
@@ -178,7 +178,7 @@ export function PrivacyDocumentEn() {
           this data.
         </li>
         <li>
-          <strong>Integrated Engines</strong> (ChalyClip, ChalybStreamManager): see section 5.
+          <strong>Integrated Engines</strong> (ChalyClip, ChalyStreamManager): see section 5.
         </li>
       </ul>
 

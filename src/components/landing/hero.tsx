@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { signupHref } from './links';
+import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
 
 const CHART_LINE =
   'M0,88 L28,80 L56,84 L84,66 L112,70 L140,52 L168,58 L196,40 L224,46 L252,30 L280,36 L308,22 L336,28 L364,14 L392,18';
@@ -74,7 +75,8 @@ export function Hero() {
             <div className="lp-engine-list">
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">◆</i>ChalyClip
+                  <i className="lp-engine-icon">◆</i>
+                  {ENGINE_DISPLAY_NAMES.chalybclip}
                 </span>
                 <span className="lp-status lp-status-live">
                   <i />
@@ -83,13 +85,15 @@ export function Hero() {
               </div>
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">▲</i>ChalyCrypto
+                  <i className="lp-engine-icon">▲</i>
+                  {ENGINE_DISPLAY_NAMES.chalybcrypto}
                 </span>
                 <span className="lp-status lp-status-sim">{tp('statusSim')}</span>
               </div>
               <div className="lp-engine">
                 <span className="lp-engine-name">
-                  <i className="lp-engine-icon">●</i>ChalyOBS
+                  <i className="lp-engine-icon">●</i>
+                  {ENGINE_DISPLAY_NAMES.chalybobs}
                 </span>
                 <span className="lp-status lp-status-soon">{tp('statusSoon')}</span>
               </div>

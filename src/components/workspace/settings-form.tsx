@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { useWorkspace } from '@/lib/workspace/store';
 import { saveProfileSettings } from '@/lib/auth/profile-actions';
 
@@ -32,6 +33,18 @@ const DEFAULT_PREFS: Omit<Prefs, 'locale'> = {
 
 const STORAGE_KEY = 'chalyb:settings:prefs';
 
+/** The toast is rendered with dangerouslySetInnerHTML so it can bold a name.
+ *  The name comes from the user's own profile, so it is escaped before it
+ *  gets anywhere near that. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function SettingsForm({
   defaultName,
   defaultEmail,
@@ -39,6 +52,10 @@ export function SettingsForm({
   justSaved = false,
 }: Props) {
   const showToast = useWorkspace((s) => s.showToast);
+  // Every string on this form comes from the catalogue: saving "English" used
+  // to localize the page body and leave these labels and the "Guardar
+  // cambios" button in Spanish.
+  const t = useTranslations('workspace.settings');
 
   const [name, setName] = useState(defaultName);
   const [saving, startSaving] = useTransition();
@@ -66,9 +83,9 @@ export function SettingsForm({
   // parameter is dropped again so a reload does not repeat the toast.
   useEffect(() => {
     if (!justSaved) return;
-    showToast(`Perfil actualizado — <b>${defaultName}</b>`);
+    showToast(`${t('savedToast')} — <b>${escapeHtml(defaultName)}</b>`);
     window.history.replaceState(null, '', window.location.pathname);
-  }, [justSaved, defaultName, showToast]);
+  }, [justSaved, defaultName, showToast, t]);
 
   function persist(next: Prefs) {
     setPrefs(next);
@@ -99,22 +116,24 @@ export function SettingsForm({
     startSaving(async () => {
       const res = await saveProfileSettings({ fullName: name, locale: prefs.locale });
       if (!res.ok) {
-        showToast(`<b>Error</b> · ${res.error ?? 'No pudimos guardar tu perfil.'}`);
+        showToast(
+          `<b>${t('saveErrorPrefix')}</b> · ${escapeHtml(res.error ?? t('saveErrorFallback'))}`,
+        );
       }
     });
   }
 
   if (!hydrated) {
-    return <div style={{ padding: 20, color: 'var(--cc-txt-4)' }}>Cargando…</div>;
+    return <div style={{ padding: 20, color: 'var(--cc-txt-4)' }}>{t('loading')}</div>;
   }
 
   return (
     <>
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Cuenta</div>
+        <div className="cc-mod-sl">{t('accountSection')}</div>
         <form className="cc-mod-form" onSubmit={saveProfile}>
           <div className="cc-mod-field">
-            <label htmlFor="set-name">Nombre</label>
+            <label htmlFor="set-name">{t('name')}</label>
             <input
               id="set-name"
               type="text"
@@ -123,7 +142,7 @@ export function SettingsForm({
             />
           </div>
           <div className="cc-mod-field">
-            <label htmlFor="set-email">Correo</label>
+            <label htmlFor="set-email">{t('email')}</label>
             <input id="set-email" type="email" value={defaultEmail} disabled />
           </div>
           <button
@@ -142,20 +161,19 @@ export function SettingsForm({
             }}
             disabled={saving}
           >
-            {saving ? 'Guardando…' : 'Guardar cambios'}
+            {saving ? t('saving') : t('save')}
           </button>
         </form>
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Preferencias</div>
+        <div className="cc-mod-sl">{t('prefsSection')}</div>
         <p style={{ fontSize: 12, color: 'var(--cc-txt-4)', margin: '0 0 10px' }}>
-          El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona
-          horaria y los interruptores de abajo se guardan solo en este navegador.
+          {t('prefsNote')}
         </p>
         <div className="cc-mod-form">
           <div className="cc-mod-field">
-            <label htmlFor="set-locale">Idioma</label>
+            <label htmlFor="set-locale">{t('language')}</label>
             <select
               id="set-locale"
               value={prefs.locale}
@@ -166,7 +184,7 @@ export function SettingsForm({
             </select>
           </div>
           <div className="cc-mod-field">
-            <label htmlFor="set-tz">Zona horaria</label>
+            <label htmlFor="set-tz">{t('timezone')}</label>
             <select
               id="set-tz"
               value={prefs.timezone}
@@ -182,40 +200,40 @@ export function SettingsForm({
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Notificaciones</div>
+        <div className="cc-mod-sl">{t('notifsSection')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Errores críticos</span>
-              <span className="s">Te avisamos por email y push cuando algo se cae.</span>
+              <span className="t">{t('critical')}</span>
+              <span className="s">{t('criticalSub')}</span>
             </div>
             <button
               type="button"
-              aria-label="Toggle notify critical"
+              aria-label={t('toggleAria', { label: t('critical') })}
               className={`cc-mod-switch${prefs.notifyCritical ? ' on' : ''}`}
               onClick={() => toggle('notifyCritical', !prefs.notifyCritical)}
             />
           </div>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Resumen diario</span>
-              <span className="s">Ingresos, tareas y errores del día anterior, a las 09:00.</span>
+              <span className="t">{t('daily')}</span>
+              <span className="s">{t('dailySub')}</span>
             </div>
             <button
               type="button"
-              aria-label="Toggle notify daily"
+              aria-label={t('toggleAria', { label: t('daily') })}
               className={`cc-mod-switch${prefs.notifyDaily ? ' on' : ''}`}
               onClick={() => toggle('notifyDaily', !prefs.notifyDaily)}
             />
           </div>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">Eventos de marketing</span>
-              <span className="s">Cuando una publicación se vuelve viral o sube la interacción.</span>
+              <span className="t">{t('marketing')}</span>
+              <span className="s">{t('marketingSub')}</span>
             </div>
             <button
               type="button"
-              aria-label="Toggle notify marketing"
+              aria-label={t('toggleAria', { label: t('marketing') })}
               className={`cc-mod-switch${prefs.notifyMarketing ? ' on' : ''}`}
               onClick={() => toggle('notifyMarketing', !prefs.notifyMarketing)}
             />
@@ -224,16 +242,16 @@ export function SettingsForm({
       </div>
 
       <div className="cc-mod-section">
-        <div className="cc-mod-sl">Seguridad</div>
+        <div className="cc-mod-sl">{t('securitySection')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="cc-mod-toggle">
             <div className="cc-mod-toggle-text">
-              <span className="t">2FA con app autenticadora</span>
-              <span className="s">El código TOTP es obligatorio para los roles Admin y Super Admin.</span>
+              <span className="t">{t('twofa')}</span>
+              <span className="s">{t('twofaSub')}</span>
             </div>
             <button
               type="button"
-              aria-label="Toggle 2FA"
+              aria-label={t('toggleAria', { label: t('twofa') })}
               className={`cc-mod-switch${prefs.twoFA ? ' on' : ''}`}
               onClick={() => toggle('twoFA', !prefs.twoFA)}
             />

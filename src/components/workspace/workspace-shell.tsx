@@ -1,10 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import { WorkspaceSidebar } from './workspace-sidebar';
 import { WorkspaceTour } from './workspace-tour';
-import { PAGE_META } from '@/components/dashboard/nav-data';
+import { workspacePageKey } from '@/components/dashboard/nav-data';
+import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
 
 interface Props {
   userInitial: string;
@@ -25,11 +27,22 @@ export function WorkspaceShell({
   children,
 }: Props) {
   const pathname = usePathname();
+  const t = useTranslations('workspace.pages');
+  const tNav = useTranslations('workspace.nav');
   const mobileSidebarOpen = useWorkspace((s) => s.mobileSidebarOpen);
   const setMobileSidebarOpen = useWorkspace((s) => s.setMobileSidebarOpen);
   const toastHtml = useWorkspace((s) => s.toastHtml);
 
-  const meta = PAGE_META[pathname] ?? { title: 'Tu espacio', sub: '' };
+  // The header used to read a Spanish-only literal map, which is why
+  // /en/app/* had an English body under a Spanish title.
+  const pageKey = workspacePageKey(pathname);
+  const meta = {
+    title: t(`${pageKey}.title`),
+    sub: t(`${pageKey}.sub`, {
+      clip: ENGINE_DISPLAY_NAMES.chalybclip!,
+      stream: ENGINE_DISPLAY_NAMES.chalybstream!,
+    }),
+  };
 
   return (
     // `cc-shell--no-rail` swaps the default 3-column grid (sidebar + main +
@@ -56,7 +69,7 @@ export function WorkspaceShell({
             <button
               type="button"
               className="cc-mtoggle"
-              aria-label="Menu"
+              aria-label={tNav('openMenu')}
               onClick={() => setMobileSidebarOpen(true)}
             >
               ☰

@@ -73,37 +73,86 @@ export const NAV: NavGroup[] = [
 // ============================================================
 // Subscriber workspace navigation — Free / Pro / VIP tier UI.
 // Mounted at /app/*. Distinct from the admin /dashboard sidebar.
+//
+// STRUCTURE ONLY: no copy lives here. The subscriber shell is served in two
+// languages and the labels used to be hardcoded Spanish, so /en/app/settings
+// answered in English in the body and Spanish in the chrome around it. `id`
+// is the message key — see `workspace.nav` in messages/*.json.
 // ============================================================
-export const SUBSCRIBER_NAV: NavGroup[] = [
+
+export type SubscriberNavItem = {
+  /** Also the `workspace.nav.<id>` message key. */
+  id: string;
+  href: string;
+  ic: string;
+};
+
+export type SubscriberNavGroup = {
+  /** `workspace.nav.<groupKey>` message key. */
+  groupKey: 'groupAccount' | 'groupPlatform' | 'groupSettings';
+  items: SubscriberNavItem[];
+};
+
+export const SUBSCRIBER_NAV: SubscriberNavGroup[] = [
   {
-    grp: 'Tu cuenta',
+    groupKey: 'groupAccount',
     items: [
-      { id: 'home', href: '/app', ic: '◉', label: 'Inicio' },
-      { id: 'subscription', href: '/app/subscription', ic: '◈', label: 'Suscripción' },
-      { id: 'usage', href: '/app/usage', ic: '◑', label: 'Uso' },
-      { id: 'billing', href: '/app/billing', ic: '▦', label: 'Facturación' },
+      { id: 'home', href: '/app', ic: '◉' },
+      { id: 'subscription', href: '/app/subscription', ic: '◈' },
+      { id: 'usage', href: '/app/usage', ic: '◑' },
+      { id: 'billing', href: '/app/billing', ic: '▦' },
     ],
   },
   {
-    grp: 'Plataforma',
+    groupKey: 'groupPlatform',
     items: [
-      { id: 'myengines', href: '/app/engines', ic: '◈', label: 'Mis engines' },
-      { id: 'history', href: '/app/history', ic: '≡', label: 'Historial' },
+      { id: 'myengines', href: '/app/engines', ic: '◈' },
+      { id: 'history', href: '/app/history', ic: '≡' },
     ],
   },
   {
-    grp: 'Ajustes',
+    groupKey: 'groupSettings',
     items: [
       // Messages → bidirectional thread with the admin team. Partners use this
       // for product feedback + ideas; any user can ping the admin from here.
       // Unread count is rendered server-side in the WorkspaceSidebar.
-      { id: 'messages', href: '/app/messages', ic: '✉', label: 'Mensajes' },
-      { id: 'profile', href: '/app/settings', ic: '⚙', label: 'Perfil & seguridad' },
-      { id: 'help', href: '/app/help', ic: '?', label: 'Ayuda' },
+      { id: 'messages', href: '/app/messages', ic: '✉' },
+      { id: 'profile', href: '/app/settings', ic: '⚙' },
+      { id: 'help', href: '/app/help', ic: '?' },
     ],
   },
 ];
 
+/**
+ * /app pathname → `workspace.pages.<key>` message key.
+ *
+ * The workspace header used to read PAGE_META, a Spanish-only literal map;
+ * these titles now come from the message catalogue like every other piece of
+ * user-facing copy.
+ */
+export function workspacePageKey(pathname: string): string {
+  if (pathname === '/app') return 'home';
+  const rest = pathname.startsWith('/app/') ? pathname.slice('/app/'.length) : '';
+  const head = rest.split('/')[0] ?? '';
+  switch (head) {
+    case 'subscription':
+    case 'usage':
+    case 'billing':
+    case 'engines':
+    case 'history':
+    case 'messages':
+    case 'help':
+      return head;
+    case 'settings':
+      return 'settings';
+    default:
+      return 'fallback';
+  }
+}
+
+/** Admin command-center page headers, keyed by exact pathname.
+ *  The /app/* entries moved to the message catalogue — see
+ *  workspacePageKey() above and `workspace.pages` in messages/*.json. */
 export const PAGE_META: Record<string, { title: string; sub: string }> = {
   '/dashboard': {
     title: 'Operaciones',
@@ -176,41 +225,5 @@ export const PAGE_META: Record<string, { title: string; sub: string }> = {
   '/dashboard/settings': {
     title: 'Settings',
     sub: 'Cuenta, organización, notificaciones y seguridad.',
-  },
-  '/app': {
-    title: 'Tu espacio',
-    sub: 'Resumen de tu suscripción, uso y bots activos.',
-  },
-  '/app/subscription': {
-    title: 'Suscripción',
-    sub: 'Tu plan actual, cambios de tier y método de pago.',
-  },
-  '/app/usage': {
-    title: 'Uso',
-    sub: 'Tu actividad en el período de facturación actual.',
-  },
-  '/app/billing': {
-    title: 'Facturación',
-    sub: 'Historial de facturas y método de pago.',
-  },
-  '/app/engines': {
-    title: 'Mis engines',
-    sub: 'ChalyClip, ChalybStreamManager y próximos productos — disponibles en tu tier actual.',
-  },
-  '/app/history': {
-    title: 'Historial',
-    sub: 'Tus ejecuciones recientes y trabajos completados.',
-  },
-  '/app/messages': {
-    title: 'Mensajes',
-    sub: 'Habla directo con el equipo. Ideas, problemas, propuestas — todo va aquí.',
-  },
-  '/app/settings': {
-    title: 'Perfil & seguridad',
-    sub: 'Tu cuenta personal, contraseña y 2FA.',
-  },
-  '/app/help': {
-    title: 'Ayuda',
-    sub: 'Docs, contacto y estado del sistema.',
   },
 };
