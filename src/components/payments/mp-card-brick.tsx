@@ -151,6 +151,8 @@ interface AttemptProps {
   onReady: () => void;
   onFail: (reason: string) => void;
   onExtension: (info: ExtensionInfo) => void;
+  /** Something the buyer should read, from a non-critical Brick error. */
+  onNotice: (text: string) => void;
   onSubmit: (form: BrickFormData, extra: { paymentTypeId?: string } | null) => Promise<boolean>;
 }
 
@@ -162,6 +164,7 @@ function BrickAttempt({
   onReady,
   onFail,
   onExtension,
+  onNotice,
   onSubmit,
 }: AttemptProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
@@ -169,11 +172,11 @@ function BrickAttempt({
   const [height, setHeight] = useState(INITIAL_HEIGHT);
 
   const settingsRef = useRef(settings);
-  const callbacks = useRef({ onReady, onFail, onExtension, onSubmit });
+  const callbacks = useRef({ onReady, onFail, onExtension, onNotice, onSubmit });
   useEffect(() => {
     settingsRef.current = settings;
-    callbacks.current = { onReady, onFail, onExtension, onSubmit };
-  }, [settings, onReady, onFail, onExtension, onSubmit]);
+    callbacks.current = { onReady, onFail, onExtension, onNotice, onSubmit };
+  }, [settings, onReady, onFail, onExtension, onNotice, onSubmit]);
 
   // Lifecycle of this attempt. `done` is set once it has reported ready or
   // failed; nothing after that counts.
@@ -342,6 +345,11 @@ function BrickAttempt({
             fail(`Mercado Pago reportó un error crítico (${line})`);
           } else {
             log(`attempt "${strategy}": non-critical error`, data);
+            if (/card_token_creation_failed/.test(data.cause ?? '')) {
+              callbacks.current.onNotice(
+                'Mercado Pago no pudo validar la tarjeta. Revisa el número, el vencimiento (MM/AA) y el código de seguridad: 3 dígitos, o 4 en American Express.',
+              );
+            }
           }
           break;
         }
@@ -431,7 +439,9 @@ function BrickAttempt({
         height,
         border: 0,
         background: 'transparent',
-        colorScheme: 'dark',
+        // Must match the host document (which declares none): a mismatch
+        // makes Chrome paint the iframe on an opaque white canvas.
+        colorScheme: 'normal',
         opacity: dimmed ? 0.6 : 1,
         pointerEvents: dimmed ? 'none' : 'auto',
         transition: 'height 120ms ease-out',
@@ -621,6 +631,7 @@ export function MpCardBrick({
           onReady={handleReady}
           onFail={handleFail}
           onExtension={handleExtension}
+          onNotice={setError}
           onSubmit={handleSubmit}
         />
       )}

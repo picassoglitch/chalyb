@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <meta name="color-scheme" content="dark" />
     <title>Mercado Pago · tarjeta</title>
     <!--
       Host document for the Mercado Pago Card Payment Brick.
@@ -36,12 +35,16 @@
         host → parent   chalyb-mp:resize          { height }
     -->
     <style>
+      /* No color-scheme here, on purpose. Chrome paints an iframe on an
+         opaque white canvas when the iframe element's color-scheme differs
+         from its document's, and Mercado Pago's secure fields are iframes
+         inside this document whose documents are light. The embedding
+         iframe in the app is set to normal for the same reason. */
       html,
       body {
         margin: 0;
         padding: 0;
         background: transparent;
-        color-scheme: dark;
       }
       body {
         font-family:
