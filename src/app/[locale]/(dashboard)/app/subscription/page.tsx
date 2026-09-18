@@ -7,6 +7,7 @@ import {
   type ActiveSubscription,
 } from '@/components/workspace/subscription-actions';
 import { normalizePreapprovalStatus } from '@/lib/payments/subscription-reference';
+import { syncSubscription } from '@/lib/payments/subscription-sync';
 import { TIER_CAPS, buildQuotaRows, effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import { checkoutNotReadyError, missingCheckoutVars } from '@/lib/payments/mercadopago';
 
@@ -14,11 +15,14 @@ export const metadata = { title: 'Suscripción' };
 
 export default async function SubscriptionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { status: returnStatus } = await searchParams;
 
   const session = await getSessionUser();
   if (!session) redirect('/sign-in?next=/app/subscription');
@@ -42,6 +46,29 @@ export default async function SubscriptionPage({
   // admin grant, and for the legacy one-off purchases — those have no
   // renewal date because nothing renews them.
   const supabase = await createClient();
+
+  // Back from the Mercado Pago-hosted authorisation (?status=success on the
+  // preapproval's back_url): refresh the pending preapproval now instead of
+  // waiting for the webhook, so the plan shows active on this very render.
+  if (returnStatus) {
+    const { data: pendingRow } = await supabase
+      .from('subscriptions')
+      .select('mp_preapproval_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (pendingRow?.mp_preapproval_id) {
+      try {
+        await syncSubscription(pendingRow.mp_preapproval_id as string);
+      } catch (err) {
+        // The webhook finishes the job; the page just shows "pending" meanwhile.
+        console.error('[mp/subscription] sync on return failed', err);
+      }
+    }
+  }
+
   const { data: subRow } = await supabase
     .from('subscriptions')
     .select('status, next_payment_date, tier')
@@ -88,19 +115,17 @@ export default async function SubscriptionPage({
             lineHeight: 1.55,
           }}
         >
-          ● <b style={{ color: 'var(--cc-purple)' }}>Modo {role.replace('_', ' ')}</b> — tu rol manda
-          sobre el plan guardado. Tienes acceso completo a todos los sistemas, sin importar el plan
-          que veas abajo. La columna <code>profiles.tier</code> sigue ahí para que pruebes lo que ven
-          los suscriptores; cambiarla no te quita acceso.
+          ● <b style={{ color: 'var(--cc-purple)' }}>Modo {role.replace('_', ' ')}</b> — tu rol
+          manda sobre el plan guardado. Tienes acceso completo a todos los sistemas, sin importar el
+          plan que veas abajo. La columna <code>profiles.tier</code> sigue ahí para que pruebes lo
+          que ven los suscriptores; cambiarla no te quita acceso.
         </div>
       )}
 
       <div className="cc-mod-section">
         <div className="cc-mod-statgrid">
           <div className="cc-mod-stat">
-            <div className="cc-mod-stat-l">
-              {isAdmin ? 'Plan almacenado' : 'Plan actual'}
-            </div>
+            <div className="cc-mod-stat-l">{isAdmin ? 'Plan almacenado' : 'Plan actual'}</div>
             <div className="cc-mod-stat-v gr">{storedCaps.label}</div>
             <div className="cc-mod-stat-sub">
               {storedTier === 'FREE'
@@ -138,7 +163,13 @@ export default async function SubscriptionPage({
           <div className="cc-mod-stat">
             <div className="cc-mod-stat-l">Método de pago</div>
             <div className="cc-mod-stat-v">
-              {storedTier === 'FREE' ? '—' : subscription ? 'Mercado Pago' : isAdmin ? '—' : 'Pago único'}
+              {storedTier === 'FREE'
+                ? '—'
+                : subscription
+                  ? 'Mercado Pago'
+                  : isAdmin
+                    ? '—'
+                    : 'Pago único'}
             </div>
             <div className="cc-mod-stat-sub">
               {storedTier === 'FREE'

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Mercado Pago · tarjeta</title>
+    <!--
+      Host document for the Mercado Pago Card Payment Brick.
+
+      The app (src/components/payments/mp-card-brick.tsx) loads this document
+      in an iframe, either by its URL or as a blob: document built from this
+      same file, and talks to it with postMessage. It is the plain, documented
+      Brick integration and nothing else: the SDK script tag, the documented
+      container id, one bricks().create(). No app code shares this document.
+
+      Messages (parent origin is checked on both sides):
+        parent → host   chalyb-mp:init            { strategy, publicKey, amount, payerEmail, maxInstallments, submitLabel, locale }
+        parent → host   chalyb-mp:submit-result   { id, ok, error }
+        host → parent   chalyb-mp:host-ready
+        host → parent   chalyb-mp:sdk-failed
+        host → parent   chalyb-mp:stage           { stage: 'create' | 'created' }
+        host → parent   chalyb-mp:ready
+        host → parent   chalyb-mp:error           { errorType, cause, message }
+        host → parent   chalyb-mp:poisoned        { count, sample }   an uncaught error while the Brick was coming up
+        host → parent   chalyb-mp:extension       { script, extensionId }
+        host → parent   chalyb-mp:submit          { id, formData, additionalData }
+        host → parent   chalyb-mp:resize          { height }
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      body {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        color: #e6e8ee;
+        overflow: hidden;
+      }
+      #cardPaymentBrick_container {
+        min-height: 40px;
+      }
+    </style>
+    <script src="https://sdk.mercadopago.com/js/v2" onerror="window.__mpSdkFailed = true"></script>
+  </head>
+  <body>
+    <div id="cardPaymentBrick_container"></div>
+    <script>
+      (function () {
+        var parentWin = window.parent;
+        // Set from the init message; until then only host-ready goes out.
+        var parentOrigin = null;
+        var initialised = false;
+        var ready = false;
+        var submitId = 0;
+        var pendingSubmits = {};
+
+        function send(type, data) {
+          var msg = Object.assign({ type: 'chalyb-mp:' + type }, data || {});
+          parentWin.postMessage(msg, parentOrigin || '*');
+        }
+
+        // ── Height ──────────────────────────────────────────────────────
+        var lastHeight = -1;
+        function reportHeight() {
+          var el = document.getElementById('cardPaymentBrick_container');
+          var h = Math.ceil(
+            Math.max(
+              el ? el.getBoundingClientRect().height : 0,
+              document.documentElement.scrollHeight,
+              document.body.scrollHeight
+            )
+          );
+          if (h === lastHeight) return;
+          lastHeight = h;
+          send('resize', { height: h });
+        }
+        function watchHeight() {
+          if (typeof ResizeObserver !== 'undefined') {
+            var ro = new ResizeObserver(reportHeight);
+            ro.observe(document.body);
+            ro.observe(document.getElementById('cardPaymentBrick_container'));
+          }
+          // The Brick's secure fields are iframes; their loads never hit the
+          // observer, so also poll gently while the page lives.
+          setInterval(reportHeight, 500);
+        }
+
+        // ── Interference ────────────────────────────────────────────────
+        // An uncaught error while the Brick is coming up means this document
+        // is not going to produce a form (a browser extension hooking DOM
+        // APIs, typically). Errors thrown by Mercado Pago's cross-origin
+        // bundles arrive here as "Script error." with no stack, which is
+        // still the signal: the parent abandons this attempt at once and
+        // tries the next isolation strategy instead of waiting.
+        var errorCount = 0;
+        var errorSample = '';
+        window.addEventListener('error', function (e) {
+          reportExtensionFromError(e.error);
+          if (ready) return;
+          errorCount += 1;
+          if (!errorSample) errorSample = (e.message || 'error') + (e.filename ? ' @ ' + e.filename : '');
+          send('poisoned', { count: errorCount, sample: errorSample });
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          reportExtensionFromError(e.reason);
+        });
+
+        // A browser extension that injects a script into the page shows up
+        // as chrome-extension://<id>/<file> in the DOM (and, when a stack
+        // survives, in the middle of the Brick's stack). Name it.
+        var EXT_RE = /^(chrome-extension|moz-extension|safari-web-extension):\/\/([a-z0-9-]+)\/([^\s:)?#]+)/i;
+        var STACK_EXT_RE = /(chrome-extension|moz-extension|safari-web-extension):\/\/([a-z0-9-]+)\/([^\s:)?#]+)/i;
+        var reportedExtensions = {};
+        function reportExtension(id, script) {
+          if (reportedExtensions[id]) return;
+          reportedExtensions[id] = true;
+          send('extension', { script: script, extensionId: id });
+        }
+        function scanScripts() {
+          var scripts = document.getElementsByTagName('script');
+          for (var i = 0; i < scripts.length; i++) {
+            var m = EXT_RE.exec(scripts[i].src || '');
+            if (m) reportExtension(m[2], m[3]);
+          }
+        }
+        function reportExtensionFromError(err) {
+          var stack = err && typeof err.stack === 'string' ? err.stack : '';
+          var m = STACK_EXT_RE.exec(stack);
+          if (m) reportExtension(m[2], m[3]);
+        }
+        if (typeof MutationObserver !== 'undefined') {
+          new MutationObserver(scanScripts).observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
+        }
+
+        // ── The Brick ───────────────────────────────────────────────────
+        function create(cfg) {
+          if (initialised) return;
+          initialised = true;
+
+          if (window.__mpSdkFailed || typeof window.MercadoPago !== 'function') {
+            send('sdk-failed');
+            return;
+          }
+
+          var settings = {
+            initialization: { amount: Number(cfg.amount) },
+            customization: {
+              paymentMethods: {
+                minInstallments: 1,
+                maxInstallments: Number(cfg.maxInstallments) || 1
+              },
+              visual: {
+                hideFormTitle: true,
+                style: { theme: 'dark' },
+                texts: { formSubmit: cfg.submitLabel || 'Pagar' }
+              }
+            },
+            callbacks: {
+              onReady: function () {
+                ready = true;
+                send('ready');
+                reportHeight();
+              },
+              onSubmit: function (formData, additionalData) {
+                var id = ++submitId;
+                return new Promise(function (resolve, reject) {
+                  pendingSubmits[id] = { resolve: resolve, reject: reject };
+                  send('submit', {
+                    id: id,
+                    formData: formData,
+                    additionalData: additionalData || null
+                  });
+                });
+              },
+              onError: function (error) {
+                send('error', {
+                  errorType: error && error.type,
+                  cause: error && error.cause,
+                  message: error && error.message
+                });
+              }
+            }
+          };
+          if (cfg.payerEmail) settings.initialization.payer = { email: cfg.payerEmail };
+
+          send('stage', { stage: 'create' });
+          try {
+            var mp = new window.MercadoPago(cfg.publicKey, { locale: cfg.locale || 'es-MX' });
+            mp.bricks()
+              .create('cardPayment', 'cardPaymentBrick_container', settings)
+              .then(function () {
+                send('stage', { stage: 'created' });
+                reportHeight();
+              })
+              .catch(function (err) {
+                send('error', {
+                  errorType: 'critical',
+                  cause: 'create_failed',
+                  message: err && err.message ? err.message : String(err)
+                });
+              });
+          } catch (err) {
+            send('error', {
+              errorType: 'critical',
+              cause: 'create_threw',
+              message: err && err.message ? err.message : String(err)
+            });
+          }
+        }
+
+        window.addEventListener('message', function (event) {
+          if (event.source !== parentWin) return;
+          var data = event.data;
+          if (!data || typeof data.type !== 'string') return;
+
+          if (data.type === 'chalyb-mp:init') {
+            if (parentOrigin && event.origin !== parentOrigin) return;
+            parentOrigin = event.origin;
+            create(data);
+          } else if (data.type === 'chalyb-mp:submit-result') {
+            if (!parentOrigin || event.origin !== parentOrigin) return;
+            var p = pendingSubmits[data.id];
+            if (!p) return;
+            delete pendingSubmits[data.id];
+            if (data.ok) p.resolve();
+            else p.reject(new Error(data.error || 'payment failed'));
+            reportHeight();
+          }
+        });
+
+        scanScripts();
+        watchHeight();
+        send('host-ready');
+      })();
+    </script>
+  </body>
+</html>

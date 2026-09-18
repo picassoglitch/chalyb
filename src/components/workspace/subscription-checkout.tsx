@@ -1,13 +1,20 @@
 'use client';
 
-// The card form for a monthly plan. Renders the Brick, sends the token to
-// authorizeTierSubscription, and shows the result. Price and tier are
-// server-decided (props from the page); the browser cannot change them.
+// The card form for a monthly plan, plus the "pay on Mercado Pago" way.
+// Renders the Brick, sends the token to authorizeTierSubscription, and shows
+// the result. Price and tier are server-decided (props from the page); the
+// browser cannot change them. The link under the form opens the Mercado
+// Pago-hosted authorisation for the same plan (startHostedTierSubscription):
+// the way to pay when the in-app form cannot load in someone's browser.
 
 import { useRouter } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
-import { authorizeTierSubscription } from '@/lib/payments/subscription-actions';
+import {
+  authorizeTierSubscription,
+  startHostedTierSubscription,
+} from '@/lib/payments/subscription-actions';
 import { MpCardBrick } from '@/components/payments/mp-card-brick';
+import { HostedCheckoutButton } from '@/components/payments/hosted-checkout-button';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 interface Props {
@@ -27,7 +34,6 @@ export function SubscriptionCheckout({
 }: Props) {
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
-
   return (
     <div data-mp-subscriptions-page="without-plan-authorized">
       <MpCardBrick
@@ -90,6 +96,13 @@ export function SubscriptionCheckout({
             lo aprueba. No se ha activado nada; en cuanto lo confirme se activa tu plan. Puedes
             cerrar esta página.
           </div>
+        }
+        fallback={
+          <HostedCheckoutButton
+            hint="¿Prefieres autorizar la tarjeta en la página de Mercado Pago? Mismo plan, mismo precio; vuelves aquí al terminar."
+            label={`Activar ${tierLabel} en Mercado Pago →`}
+            start={() => startHostedTierSubscription({ tier })}
+          />
         }
       />
     </div>
