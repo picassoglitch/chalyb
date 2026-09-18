@@ -38,6 +38,7 @@ import {
   isCheckoutReady,
   checkoutNotReadyError,
   describeMpError,
+  mpErrorForLog,
 } from './mercadopago';
 import {
   isSubscribableTier,
@@ -296,7 +297,7 @@ export async function authorizeTierSubscription(input: {
       error: 'Mercado Pago no autorizó la tarjeta para el cobro mensual. Prueba con otra tarjeta.',
     };
   } catch (err) {
-    console.error('[mp/subscription] preapproval.create failed', err);
+    console.error('[mp/subscription] preapproval.create failed:', mpErrorForLog(err));
     const detail = describeMpError(err);
     const isCurrencyError = /currency|currency_id|moneda/i.test(detail);
     const isPayerError = /payer|collector|test user|usuario de prueba/i.test(detail);
@@ -396,7 +397,7 @@ export async function startHostedTierSubscription(input: {
 
     return { ok: true, url };
   } catch (err) {
-    console.error('[mp/subscription] hosted preapproval.create failed', err);
+    console.error('[mp/subscription] hosted preapproval.create failed:', mpErrorForLog(err));
     return {
       ok: false,
       reason: 'mp_error',

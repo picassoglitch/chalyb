@@ -97,7 +97,13 @@ export function expectedChargeForPack(packId: string): ExpectedCharge | null {
 
 export type ChargeCheck =
   | { ok: true }
-  | { ok: false; reason: 'amount' | 'currency'; expected: ExpectedCharge; paidCents: number; paidCurrency: string };
+  | {
+      ok: false;
+      reason: 'amount' | 'currency';
+      expected: ExpectedCharge;
+      paidCents: number;
+      paidCurrency: string;
+    };
 
 /**
  * Compare what MP says was paid against what the entitlement costs.

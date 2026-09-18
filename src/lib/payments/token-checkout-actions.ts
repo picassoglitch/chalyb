@@ -40,6 +40,7 @@ import {
   isCheckoutReady,
   checkoutNotReadyError,
   describeMpError,
+  mpErrorForLog,
 } from './mercadopago';
 
 export interface PackCheckoutResult {
@@ -160,23 +161,10 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
     }
     return { ok: true, url };
   } catch (err) {
-    // Log to Vercel server logs with enough context to debug — we lose
-    // the raw stack in production builds but the structured fields survive.
-    const e = err as {
-      message?: string;
-      status?: number;
-      cause?: { error?: { message?: string }; status?: number };
-      name?: string;
-    };
-    const detail = describeMpError(err);
-    console.error('[token-pack-checkout] uncaught', {
-      packId,
-      errorName: e?.name,
-      errorMessage: e?.message,
-      causeStatus: e?.cause?.status,
-      causeMessage: e?.cause?.error?.message,
-    });
-    return { ok: false, reason: 'mp_error', error: detail };
+    // The whole body, not hand-picked fields: which keys carry the reason
+    // depends on which Mercado Pago API refused (see mp-error.ts).
+    console.error(`[token-pack-checkout] order.create failed for ${packId}:`, mpErrorForLog(err));
+    return { ok: false, reason: 'mp_error', error: describeMpError(err) };
   }
 }
 
@@ -351,7 +339,7 @@ export async function payTokenPackWithCard(input: {
       error: `Mercado Pago rechazó el pago${detail ? ` (${detail.replace(/_/g, ' ')})` : ''}. Prueba con otra tarjeta.`,
     };
   } catch (err) {
-    console.error('[token-pack-card] order.create failed', err);
+    console.error('[token-pack-card] order.create failed:', mpErrorForLog(err));
     return {
       ok: false,
       reason: 'mp_error',
