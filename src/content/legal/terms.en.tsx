@@ -89,7 +89,7 @@ export function TermsDocumentEn() {
         <li>
           <strong>Engine</strong>: each independent product integrated into the Platform. As of this
           version: <strong>ChalyClip</strong> (clip generator from streams/VODs) and{' '}
-          <strong>ChalybStreamManager</strong>
+          <strong>ChalyStreamManager</strong>
           (central control for live broadcasts). Each Engine runs on its own infrastructure under
           its own licence and usage policy.
         </li>
@@ -240,7 +240,7 @@ export function TermsDocumentEn() {
       <p>
         <strong>You own your content.</strong> We claim no ownership over the VODs you upload, the
         clips ChalyClip generates for you, the prompts you write, or the streams you route via
-        ChalybStreamManager.
+        ChalyStreamManager.
       </p>
       <p>
         To operate the service, however, you grant us a{' '}

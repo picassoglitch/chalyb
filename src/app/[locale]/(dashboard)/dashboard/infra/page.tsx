@@ -16,11 +16,7 @@ const STATE_BADGE: Record<EngineState, { label: string; cls: string }> = {
   OFFLINE: { label: 'Offline', cls: 'am' },
 };
 
-export default async function InfraPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function InfraPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -35,9 +31,7 @@ export default async function InfraPage({
   const regions = new Set(engines.map((e) => e.region));
   const latencies = active.map((e) => e.latencyMs).filter((n) => n > 0);
   const avgLatency =
-    latencies.length > 0
-      ? Math.round(latencies.reduce((s, n) => s + n, 0) / latencies.length)
-      : 0;
+    latencies.length > 0 ? Math.round(latencies.reduce((s, n) => s + n, 0) / latencies.length) : 0;
   const inError = active.filter((e) => e.state === 'ERROR');
 
   return (
@@ -62,11 +56,22 @@ export default async function InfraPage({
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Latencia promedio</div>
-          <div className="cc-mod-stat-v cy">
-            {avgLatency}
-            <small>ms</small>
+          {/* No engine reporting = no latency. "0ms" would be a claim of
+              instantaneous response, which is exactly the opposite of what
+              an empty measurement means. */}
+          <div className={`cc-mod-stat-v ${avgLatency > 0 ? 'cy' : ''}`}>
+            {avgLatency > 0 ? (
+              <>
+                {avgLatency}
+                <small>ms</small>
+              </>
+            ) : (
+              '—'
+            )}
           </div>
-          <div className="cc-mod-stat-sub">solo engines en línea</div>
+          <div className="cc-mod-stat-sub">
+            {avgLatency > 0 ? 'solo engines en línea' : 'sin mediciones — ningún engine reporta'}
+          </div>
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Regiones</div>
@@ -99,12 +104,21 @@ export default async function InfraPage({
                   <div className="cc-mod-name">{node}</div>
                   <div
                     className="cc-mod-sub"
-                    style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      alignItems: 'center',
+                      marginTop: 6,
+                      flexWrap: 'wrap',
+                    }}
                   >
                     {nodeEngines.map((e) => {
                       const badge = STATE_BADGE[e.state];
                       return (
-                        <span key={e.id} style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                        <span
+                          key={e.id}
+                          style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}
+                        >
                           {e.icon} {e.name}
                           <span className={`cc-mod-badge ${badge.cls}`}>{badge.label}</span>
                         </span>
@@ -117,7 +131,10 @@ export default async function InfraPage({
                     {nodeEngines.length} engine{nodeEngines.length === 1 ? '' : 's'}
                   </b>
                   <span>
-                    {Math.max(...nodeEngines.map((e) => e.latencyMs))}ms máx
+                    {(() => {
+                      const maxMs = Math.max(...nodeEngines.map((e) => e.latencyMs));
+                      return maxMs > 0 ? `${maxMs}ms máx` : 'sin mediciones';
+                    })()}
                   </span>
                 </div>
               </div>

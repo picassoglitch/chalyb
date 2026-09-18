@@ -2,23 +2,8 @@
 
 import { useState } from 'react';
 import { toggleFavoriteClient } from '@/lib/data/favorites-client';
-import {
-  type Engine,
-  type EngineStateCode,
-  CATS,
-  ENV_LABEL,
-  STATE_LABEL,
-} from '@/lib/data/types';
+import { type Engine, CATS, ENV_LABEL } from '@/lib/data/types';
 import { useDashboard } from '@/lib/dashboard/store';
-
-const COLOR_VAR: Record<EngineStateCode, string> = {
-  g: '--cc-green',
-  c: '--cc-cyan',
-  p: '--cc-purple',
-  a: '--cc-amber',
-  r: '--cc-red',
-  o: '--cc-txt-4',
-};
 
 function HealthBars({ bot }: { bot: Engine }) {
   const n = 10;
@@ -30,11 +15,7 @@ function HealthBars({ bot }: { bot: Engine }) {
         const ht = 6 + i * 1.1;
         const active = i < on;
         return (
-          <i
-            key={i}
-            className={active ? `cc-hb-act ${cls}` : ''}
-            style={{ height: `${ht}px` }}
-          />
+          <i key={i} className={active ? `cc-hb-act ${cls}` : ''} style={{ height: `${ht}px` }} />
         );
       })}
     </div>
@@ -93,11 +74,13 @@ function OperatorRow({ bot }: { bot: Engine }) {
           {bot.stateCode === 'o' ? '—' : `${bot.health}% · ${bot.latencyMs || '—'}ms`}
         </span>
       </div>
-      <div className={`cc-r-rev ${bot.revenueCents > 0 ? 'pos' : 'zero'}`}>
-        {bot.revenueCents > 0 ? '$' + Math.round(bot.revenueCents / 100).toLocaleString() : '—'}
-      </div>
+      {/* No per-engine revenue column. It read engine_health.revenue_cents,
+          a value seeded to 0 and never written, so every row said "—" while
+          the top bar showed real money — two revenue figures on one screen,
+          disagreeing. Payments carry no engine_id; until they do, revenue
+          lives in Dinero and only there. */}
       <div className="cc-r-act">
-        {bot.stateCode === 'o' ? 'hace 3d' : bot.stateCode === 'r' ? 'falló' : 'ahora'}
+        {bot.stateCode === 'o' ? 'sin actividad' : bot.stateCode === 'r' ? 'falló' : 'ahora'}
       </div>
       <div className="cc-r-go">
         <button type="button" className="cc-mini" title="Fijar" onClick={handleFav}>
@@ -115,7 +98,6 @@ function CategorySection({ catId, bots }: { catId: Engine['category']; bots: Eng
   const [collapsed, setCollapsed] = useState(false);
   const cat = CATS.find((c) => c.id === catId)!;
   const live = bots.filter((b) => b.stateCode !== 'o' && b.stateCode !== 'r').length;
-  const rev = bots.reduce((a, b) => a + b.revenueCents, 0);
   return (
     <div className="cc-cat">
       <button
@@ -131,9 +113,6 @@ function CategorySection({ catId, bots }: { catId: Engine['category']; bots: Eng
           <span>
             <b>{live}</b> activos
           </span>
-          <span>
-            $<b>{Math.round(rev / 100).toLocaleString()}</b>
-          </span>
         </span>
       </button>
       {!collapsed && (
@@ -143,7 +122,6 @@ function CategorySection({ catId, bots }: { catId: Engine['category']; bots: Eng
             <div>Sistema</div>
             <div className="cc-h-type">Tipo</div>
             <div>Salud</div>
-            <div className="cc-h-rev">Ingresos</div>
             <div className="cc-h-act">Última actividad</div>
             <div />
           </div>
@@ -156,60 +134,11 @@ function CategorySection({ catId, bots }: { catId: Engine['category']; bots: Eng
   );
 }
 
-function FeaturedStrip({ bots }: { bots: Engine[] }) {
-  const openDrawer = useDashboard((s) => s.openDrawer);
-  if (!bots.length) return null;
-  return (
-    <div className="cc-feat-wrap">
-      <div className="cc-feat-h">Tus favoritos</div>
-      <div className="cc-feat">
-        {bots.map((b) => {
-          const [lbl] = [STATE_LABEL[b.stateCode]];
-          return (
-            <button
-              key={b.id}
-              type="button"
-              className="cc-fcard"
-              onClick={() => openDrawer(b.id)}
-            >
-              <div className="cc-ft">
-                <div className="cc-fi">{b.icon}</div>
-                <span
-                  className="cc-fbadge"
-                  style={{
-                    color: `var(${COLOR_VAR[b.stateCode]})`,
-                    background: 'rgba(255,255,255,.04)',
-                    border: '1px solid var(--cc-line-2)',
-                  }}
-                >
-                  {lbl}
-                </span>
-              </div>
-              <h4>{b.name}</h4>
-              <div className="cc-fd">{b.description}</div>
-              <div className="cc-fm">
-                <span>
-                  Salud <b>{b.health}%</b>
-                </span>
-                <span>
-                  Ingresos{' '}
-                  <b>
-                    {b.revenueCents
-                      ? '$' + Math.round(b.revenueCents / 100).toLocaleString()
-                      : '—'}
-                  </b>
-                </span>
-                <span>
-                  <b>{ENV_LABEL[b.env]}</b>
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// FeaturedStrip is gone. It was headed "Tus favoritos" but filtered on
+// `featured`, not on `favorite` — so it showed engines the operator had
+// never starred, under a heading claiming they had. And whatever it showed
+// was repeated verbatim in the category list right below it. The ★
+// Favoritos segment in the toolbar is now the one favourites affordance.
 
 export function OperatorSurface() {
   const bots = useDashboard((s) => s.engines);
@@ -234,20 +163,21 @@ export function OperatorSurface() {
   });
 
   const cats = activeCats.size ? CATS.filter((c) => activeCats.has(c.id)) : CATS;
-  const featured = bots.filter(
-    (b) => b.featured && (!activeCats.size || activeCats.has(b.category)) && (viewMode !== 'fav' || b.favorite),
-  );
 
   return (
     <>
-      {!query && <FeaturedStrip bots={featured} />}
       {cats.map((c) => {
         const bs = filtered.filter((b) => b.category === c.id);
         if (!bs.length) return null;
         return <CategorySection key={c.id} catId={c.id} bots={bs} />;
       })}
       {!filtered.length && (
-        <div className="cc-empty-state">▸ Ningún sistema coincide con tu búsqueda.</div>
+        <div className="cc-empty-state">
+          ▸{' '}
+          {viewMode === 'fav'
+            ? 'Todavía no has fijado ningún engine. Usa ☆ en cualquier fila.'
+            : 'Ningún engine coincide con tu búsqueda.'}
+        </div>
       )}
     </>
   );

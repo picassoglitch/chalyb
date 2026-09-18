@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
 
 /* ── Illustrations ──────────────────────────────────────────────────────
    Static, CSS-built UI snippets. Each mirrors a real /app surface so the
@@ -12,7 +13,8 @@ function LibraryVisual() {
       <div className="lp-engine-list">
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">◆</i>ChalyClip
+            <i className="lp-engine-icon">◆</i>
+            {ENGINE_DISPLAY_NAMES.chalybclip}
             <small>{t('libraryClip')}</small>
           </span>
           <span className="lp-status lp-status-live">
@@ -22,7 +24,8 @@ function LibraryVisual() {
         </div>
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">▲</i>ChalyCrypto
+            <i className="lp-engine-icon">▲</i>
+            {ENGINE_DISPLAY_NAMES.chalybcrypto}
             <small>{t('libraryCrypto')}</small>
           </span>
           <span className="lp-status lp-status-live">
@@ -32,7 +35,8 @@ function LibraryVisual() {
         </div>
         <div className="lp-engine">
           <span className="lp-engine-name">
-            <i className="lp-engine-icon">●</i>ChalyOBS
+            <i className="lp-engine-icon">●</i>
+            {ENGINE_DISPLAY_NAMES.chalybobs}
             <small>{t('libraryObs')}</small>
           </span>
           <span className="lp-status lp-status-soon">{t('soon')}</span>
@@ -49,14 +53,14 @@ function SimulationVisual() {
       <div className="lp-visual-head">{t('modeTitle')}</div>
       <div className="lp-mode-row">
         <div>
-          <div className="lp-mode-name">ChalyClip</div>
+          <div className="lp-mode-name">{ENGINE_DISPLAY_NAMES.chalybclip}</div>
           <div className="lp-mode-sub">{t('modeSim')}</div>
         </div>
         <span className="lp-switch" data-on="false" />
       </div>
       <div className="lp-mode-row lp-mode-row-on">
         <div>
-          <div className="lp-mode-name">ChalyClip</div>
+          <div className="lp-mode-name">{ENGINE_DISPLAY_NAMES.chalybclip}</div>
           <div className="lp-mode-sub lp-up">{t('modeLive')}</div>
         </div>
         <span className="lp-switch" data-on="true" />
@@ -82,15 +86,21 @@ function UsageVisual() {
       </div>
       <div className="lp-history">
         <div className="lp-history-row">
-          <span>ChalyClip · {t('usageRun')} #1284</span>
+          <span>
+            {ENGINE_DISPLAY_NAMES.chalybclip} · {t('usageRun')} #1284
+          </span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
         <div className="lp-history-row">
-          <span>ChalyClip · {t('usageRun')} #1283</span>
+          <span>
+            {ENGINE_DISPLAY_NAMES.chalybclip} · {t('usageRun')} #1283
+          </span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
         <div className="lp-history-row">
-          <span>ChalyCrypto · {t('usageRun')} #0912</span>
+          <span>
+            {ENGINE_DISPLAY_NAMES.chalybcrypto} · {t('usageRun')} #0912
+          </span>
           <span className="lp-up">{t('usageOk')}</span>
         </div>
       </div>

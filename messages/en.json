@@ -439,9 +439,99 @@
     },
     "terms": {
       "metaTitle": "Terms of service",
-      "metaDescription": "Terms and conditions for using Chalyb and its engines (ChalyClip, ChalybStreamManager and future products).",
+      "metaDescription": "Terms and conditions for using Chalyb and its engines (ChalyClip, ChalyStreamManager and future products).",
       "title": "Terms of service",
       "lastUpdated": "17 June 2026"
+    }
+  },
+  "workspace": {
+    "nav": {
+      "groupAccount": "Your account",
+      "groupPlatform": "Platform",
+      "groupSettings": "Settings",
+      "home": "Home",
+      "subscription": "Subscription",
+      "usage": "Usage",
+      "billing": "Billing",
+      "myengines": "My engines",
+      "history": "History",
+      "messages": "Messages",
+      "profile": "Profile & security",
+      "help": "Help",
+      "adminView": "Admin view",
+      "adminViewTitle": "Back to the command center",
+      "viewGroup": "View",
+      "settingsTitle": "Settings",
+      "openMenu": "Open menu",
+      "planSuffix": "plan"
+    },
+    "pages": {
+      "home": {
+        "title": "Your workspace",
+        "sub": "Your subscription, usage and active engines at a glance."
+      },
+      "subscription": {
+        "title": "Subscription",
+        "sub": "Your current plan, tier changes and payment method."
+      },
+      "usage": {
+        "title": "Usage",
+        "sub": "Your activity in the current billing period."
+      },
+      "billing": {
+        "title": "Billing",
+        "sub": "Payment history and payment method."
+      },
+      "engines": {
+        "title": "My engines",
+        "sub": "{clip}, {stream} and upcoming products — whatever your tier includes."
+      },
+      "history": {
+        "title": "History",
+        "sub": "Your recent runs and completed jobs."
+      },
+      "messages": {
+        "title": "Messages",
+        "sub": "Talk to the team directly. Ideas, problems, proposals — it all goes here."
+      },
+      "settings": {
+        "title": "Profile & security",
+        "sub": "Your personal account, password and 2FA."
+      },
+      "help": {
+        "title": "Help",
+        "sub": "Docs, contact and system status."
+      },
+      "fallback": {
+        "title": "Your workspace",
+        "sub": ""
+      }
+    },
+    "settings": {
+      "loading": "Loading…",
+      "accountSection": "Account",
+      "name": "Name",
+      "email": "Email",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "savedToast": "Profile updated",
+      "saveErrorPrefix": "Error",
+      "saveErrorFallback": "We couldn't save your profile.",
+      "prefsSection": "Preferences",
+      "prefsNote": "Language is saved to your account with the “Save changes” button above. The timezone and the switches below are stored in this browser only.",
+      "language": "Language",
+      "timezone": "Timezone",
+      "notifsSection": "Notifications",
+      "critical": "Critical errors",
+      "criticalSub": "We email and push you when something goes down.",
+      "daily": "Daily digest",
+      "dailySub": "Yesterday's revenue, jobs and errors, at 09:00.",
+      "marketing": "Marketing events",
+      "marketingSub": "When a post goes viral or engagement spikes.",
+      "securitySection": "Security",
+      "twofa": "2FA with an authenticator app",
+      "twofaSub": "The TOTP code is mandatory for Admin and Super Admin roles.",
+      "toggleAria": "Toggle {label}"
     }
   }
 }

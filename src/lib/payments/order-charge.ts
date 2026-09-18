@@ -108,6 +108,40 @@ export function paymentStatusToChargeStatus(status: string | null | undefined): 
     case 'refunded':
     case 'charged_back':
       return s;
+    // Mercado Pago reports a settled charge as `accredited` on some
+    // integrations (it is normally the status_detail). Same money.
+    case 'accredited':
+      return 'approved';
+    default:
+      return 'unknown';
+  }
+}
+
+/**
+ * Authorized payments (a recurring charge of a preapproval) → Payments API
+ * status. Their own vocabulary is `scheduled | processed | recycling |
+ * cancelled`, which is NOT what `payments.status` speaks.
+ *
+ * This matters because the recurring path used to fall back to that raw
+ * value when the nested `payment.status` was absent, writing `processed`
+ * into the ledger. Every surface that decides whether money arrived asks
+ * for `approved`, so a perfectly good monthly charge showed up as
+ * not-approved on /app/billing and contributed $0 to today's revenue —
+ * while the row itself sat there looking fine.
+ */
+export function authorizedPaymentStatusToChargeStatus(
+  status: string | null | undefined,
+): ChargeStatus {
+  switch ((status ?? '').trim().toLowerCase()) {
+    case 'processed':
+      return 'approved';
+    case 'scheduled':
+    // Mercado Pago is retrying a card that failed: still outstanding.
+    case 'recycling':
+      return 'pending';
+    case 'cancelled':
+    case 'canceled':
+      return 'cancelled';
     default:
       return 'unknown';
   }

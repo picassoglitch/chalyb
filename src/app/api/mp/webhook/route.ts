@@ -182,6 +182,10 @@ export async function POST(req: Request) {
       {
         user_id: subRef.userId,
         tier: subRef.tier,
+        // Same ledger row recordAuthorizedPayment writes; keep the product
+        // label identical so /app/billing does not describe the same charge
+        // two different ways depending on which topic reported it first.
+        kind: 'subscription',
         mp_payment_id: charge.mpPaymentId,
         mp_preapproval_id: (sub?.mp_preapproval_id as string | undefined) ?? null,
         amount_cents: Math.round((charge.amountMajor ?? 0) * 100),

@@ -19,7 +19,7 @@ import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscrip
 import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
 import { EngineReprovisionButton } from '@/components/workspace/engine-reprovision-button';
 
-// Dynamic title: tab reads "ChalyClip · Chalyb", "ChalybStreamManager · Chalyb", etc.
+// Dynamic title: tab reads "ChalyClip · Chalyb", "ChalyStreamManager · Chalyb", etc.
 export async function generateMetadata({
   params,
 }: {

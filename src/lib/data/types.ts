@@ -4,8 +4,8 @@
 // NAMING: We call these "Engines" (the revenue-producing products), paired
 // conceptually with Chalyb Academy on the learn side. The codebase used to
 // say "bots" everywhere; renamed in migration 0010 since not all engines
-// are bots (ChalyClip is a video pipeline, ChalybStreamManager is a control
-// panel, ChalybRealtor is a scraper, etc.).
+// are bots (ChalyClip is a video pipeline, ChalyStreamManager is a control
+// panel, ChalyRealtor is a scraper, etc.).
 
 import type { SubscriptionTier } from '@/lib/auth/session';
 
@@ -138,12 +138,22 @@ export interface ActivityEvent {
   time: string; // HH:MM
 }
 
-export type StripMetricId = 'active' | 'aicalls' | 'rev' | 'streams' | 'queue' | 'gpu';
+/**
+ * The top bar carries THREE numbers, not six.
+ *
+ * It used to carry six — engines, AI calls/min, revenue, users, tokens and
+ * subscriptions — four of which were repeated verbatim in the activity rail
+ * two hundred pixels to the right. Three is what an operator needs at a
+ * glance: did money come in, is anyone using it, is anything down.
+ */
+export type StripMetricId = 'rev' | 'users' | 'engines';
 
 export interface StripValue {
   id: StripMetricId;
   value: number;
-  hist: number[]; // last 14 points for sparkline
+  /** Last 14 points, for the sparkline. Empty when there is nothing to plot
+   *  — a flat decorative line under a zero is worse than no line. */
+  hist: number[];
 }
 
 export interface StreamTick {
@@ -153,9 +163,8 @@ export interface StreamTick {
   health?: Array<{ engineId: string; health: number }>;
   rail?: {
     jobsPerHour: number;
-    queue: number;
+    activeSubscriptions: number;
     tokensToday: string;
-    revenueToday: number;
   };
 }
 

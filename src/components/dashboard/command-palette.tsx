@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Route } from 'next';
+import { useRouter } from '@/i18n/routing';
 import { useDashboard } from '@/lib/dashboard/store';
 import { ENV_LABEL } from '@/lib/data/types';
 
@@ -11,18 +13,69 @@ interface Cmd {
   s: string;
   k?: string;
   engineId?: string;
+  href?: string;
 }
 
+// The palette navigates. It does not pretend to act.
+//
+// It used to offer "Iniciar stream", "Crear clip", "Publicar a TikTok" and
+// "Reiniciar worker" — none of which were wired to anything. Picking one
+// popped a toast reading "<b>Reiniciar worker</b> — listo", which is a
+// success message for something that did not happen. Those are gone; what is
+// left goes where it says it goes.
 const STATIC_CMDS: Cmd[] = [
-  { g: 'Acciones', ic: '▶', n: 'Iniciar stream', s: 'ChalybStreamManager', k: 'S' },
-  { g: 'Acciones', ic: '✂', n: 'Crear clip', s: 'ChalyClip · último VOD' },
-  { g: 'Acciones', ic: '↗', n: 'Publicar a TikTok', s: 'Publishing' },
-  { g: 'Acciones', ic: '⟳', n: 'Reiniciar worker', s: 'Elige un engine' },
-  { g: 'Acciones', ic: '👥', n: 'Invitar a tu equipo', s: 'Team & Roles' },
-  { g: 'Navegar', ic: '◑', n: 'Abrir Analytics', s: 'Tus métricas e ingresos' },
-  { g: 'Navegar', ic: '$', n: 'Abrir Revenue', s: 'MRR por engine' },
-  { g: 'Navegar', ic: '▤', n: 'Abrir Infra', s: 'Workers · GPU · costos' },
-  { g: 'Navegar', ic: '◉', n: 'Abrir Audit log', s: 'Todo lo que pasa en tu cuenta' },
+  {
+    g: 'Ir a',
+    ic: '⬡',
+    n: 'Centro de mando',
+    s: 'Salud, incidentes y engines',
+    href: '/dashboard',
+  },
+  {
+    g: 'Ir a',
+    ic: '👥',
+    n: 'Personas',
+    s: 'Equipo, roles, planes e invitaciones',
+    href: '/dashboard/team',
+  },
+  { g: 'Ir a', ic: '$', n: 'Dinero', s: 'Pagos, P&L y royalties', href: '/dashboard/billing' },
+  { g: 'Ir a', ic: '◈', n: 'Engines', s: 'Catálogo de productos', href: '/dashboard/engines' },
+  {
+    g: 'Ir a',
+    ic: '◉',
+    n: 'Actividad',
+    s: 'Notificaciones y auditoría',
+    href: '/dashboard/activity',
+  },
+  { g: 'Ir a', ic: '⚙', n: 'Ajustes', s: 'Organización y seguridad', href: '/dashboard/settings' },
+  {
+    g: 'Sub-vistas',
+    ic: '◆',
+    n: 'Royalties',
+    s: 'Accruals del mes y pagos a socios',
+    href: '/dashboard/royalties',
+  },
+  {
+    g: 'Sub-vistas',
+    ic: '⌬',
+    n: 'Ingresos por engine',
+    s: 'Consumo de IA por engine',
+    href: '/dashboard/revenue',
+  },
+  {
+    g: 'Sub-vistas',
+    ic: '≡',
+    n: 'Registro de auditoría',
+    s: 'Cambios campo por campo',
+    href: '/dashboard/audit',
+  },
+  {
+    g: 'Sub-vistas',
+    ic: '✉',
+    n: 'Mensajes',
+    s: 'Hilos con subscribers y leads',
+    href: '/dashboard/messages',
+  },
 ];
 
 export function CommandPalette() {
@@ -31,7 +84,7 @@ export function CommandPalette() {
   const close = useDashboard((s) => s.closePalette);
   const engines = useDashboard((s) => s.engines);
   const openDrawer = useDashboard((s) => s.openDrawer);
-  const showToast = useDashboard((s) => s.showToast);
+  const router = useRouter();
 
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(0);
@@ -106,7 +159,7 @@ export function CommandPalette() {
       openDrawer(c.engineId);
       return;
     }
-    showToast(`<b>${c.n}</b> — listo`);
+    if (c.href) router.push(c.href as Route);
   }
 
   if (!open) return null;

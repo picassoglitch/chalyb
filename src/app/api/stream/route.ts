@@ -54,8 +54,7 @@ export async function GET(request: Request) {
         }
       };
 
-      const sendJson = (payload: unknown) =>
-        safeEnqueue(`data: ${JSON.stringify(payload)}\n\n`);
+      const sendJson = (payload: unknown) => safeEnqueue(`data: ${JSON.stringify(payload)}\n\n`);
 
       const cleanup = () => {
         if (closed) return;
@@ -82,7 +81,12 @@ export async function GET(request: Request) {
 
       timers.push(
         setInterval(async () => sendJson({ kind: 'strip', strip: await tickStrip() }), 2200),
-        setInterval(async () => sendJson({ kind: 'activity', event: await nextActivityEvent() }), 3400),
+        setInterval(async () => {
+          // null = nothing real to report. Send nothing; the rail keeps its
+          // empty state instead of scrolling invented events.
+          const event = await nextActivityEvent();
+          if (event) sendJson({ kind: 'activity', event });
+        }, 3400),
         setInterval(async () => sendJson({ kind: 'rail', rail: await tickRail() }), 4800),
         // Keepalive ping every 25s to defeat proxy idle timeouts.
         setInterval(() => safeEnqueue(`: ping\n\n`), 25000),

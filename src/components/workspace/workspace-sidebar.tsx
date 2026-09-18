@@ -1,6 +1,7 @@
 'use client';
 
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { FusionMark } from '@/components/dashboard/fusion-mark';
 import { SUBSCRIBER_NAV } from '@/components/dashboard/nav-data';
@@ -30,6 +31,9 @@ export function WorkspaceSidebar({
   unreadMessages = 0,
 }: Props) {
   const pathname = usePathname();
+  // Labels come from the catalogue, not from the nav array. Saving English in
+  // settings used to change the page bodies and leave this sidebar in Spanish.
+  const t = useTranslations('workspace.nav');
   const setMobileSidebarOpen = useWorkspace((s) => s.setMobileSidebarOpen);
   const mobileOpen = useWorkspace((s) => s.mobileSidebarOpen);
 
@@ -48,17 +52,16 @@ export function WorkspaceSidebar({
 
       <div className="cc-sb-scroll" data-tour="nav">
         {SUBSCRIBER_NAV.map((g) => (
-          <div key={g.grp} className="cc-sb-grp">
-            <div className="cc-gl">{g.grp}</div>
+          <div key={g.groupKey} className="cc-sb-grp">
+            <div className="cc-gl">{t(g.groupKey)}</div>
             <div className="cc-nav">
               {g.items.map((it) => {
-                // Override the static `ct` on the Mensajes item with the
-                // live unread count from the server. Static NAV stays
-                // count-agnostic for every other item.
+                // The only badge in this sidebar, and it is a real count from
+                // the server — never a decorative number.
                 const ct =
                   it.id === 'messages' && unreadMessages > 0
                     ? formatBadgeCount(unreadMessages)
-                    : it.ct;
+                    : null;
                 return (
                   <Link
                     key={it.id}
@@ -68,23 +71,15 @@ export function WorkspaceSidebar({
                     onClick={() => setMobileSidebarOpen(false)}
                   >
                     <span className="cc-ic">{it.ic}</span>
-                    <span>{it.label}</span>
-                    {it.live && <span className="cc-dot" />}
+                    <span>{t(it.id)}</span>
                     {ct && (
                       <span
                         className="cc-ct"
-                        style={
-                          // Highlight unread-message badge in green so it's
-                          // the eye-catcher in the sidebar (vs. neutral counts
-                          // used by other items).
-                          it.id === 'messages' && unreadMessages > 0
-                            ? {
-                                background: 'var(--cc-green-g)',
-                                color: 'var(--cc-green)',
-                                border: '1px solid rgba(158,234,58,.3)',
-                              }
-                            : undefined
-                        }
+                        style={{
+                          background: 'var(--cc-green-g)',
+                          color: 'var(--cc-green)',
+                          border: '1px solid rgba(158,234,58,.3)',
+                        }}
                       >
                         {ct}
                       </span>
@@ -99,16 +94,16 @@ export function WorkspaceSidebar({
         {/* Cross-nav: only admins can swap into the operator command center */}
         {isAdmin && (
           <div className="cc-sb-grp">
-            <div className="cc-gl">Vista</div>
+            <div className="cc-gl">{t('viewGroup')}</div>
             <div className="cc-nav">
               <Link
                 href={'/dashboard' as Route}
                 className="cc-nav-item"
                 onClick={() => setMobileSidebarOpen(false)}
-                title="Volver al command center"
+                title={t('adminViewTitle')}
               >
                 <span className="cc-ic">⬡</span>
-                <span>Vista admin</span>
+                <span>{t('adminView')}</span>
                 <span className="cc-ct">→</span>
               </Link>
             </div>
@@ -120,12 +115,14 @@ export function WorkspaceSidebar({
         <div className="cc-ava">{userInitial}</div>
         <div className="cc-u">
           <div className="cc-u-n">{userName}</div>
-          <div className="cc-u-r">{tierLabel} plan</div>
+          <div className="cc-u-r">
+            {tierLabel} {t('planSuffix')}
+          </div>
         </div>
         <Link
           href={'/app/settings' as Route}
           className="cc-cog"
-          title="Settings"
+          title={t('settingsTitle')}
           onClick={() => setMobileSidebarOpen(false)}
         >
           ⚙

@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ORDER_IDEMPOTENCY_BUCKET_MS,
+  authorizedPaymentStatusToChargeStatus,
   chargeFromOrder,
   chargeFromPayment,
   isAllowedCheckoutUrl,
@@ -170,4 +171,36 @@ test('a Payments API payment normalises the same way', () => {
   assert.equal(c.amountMajor, 749);
   // No id on the payload → the notification's id keys the ledger.
   assert.equal(chargeFromPayment({ status: 'pending' }, '555').mpPaymentId, '555');
+});
+
+// ── Recurring charges speak a different status vocabulary ───────────────
+// An authorized payment (one monthly charge of a preapproval) reports
+// scheduled | processed | recycling | cancelled. `payments.status` speaks the
+// Payments API's vocabulary, and every surface that asks "did the money
+// arrive?" looks for 'approved'. Writing the raw value made a settled
+// monthly charge invisible on /app/billing and worth $0 in today's revenue.
+
+test('a processed authorized payment is an approved charge', () => {
+  assert.equal(authorizedPaymentStatusToChargeStatus('processed'), 'approved');
+  assert.equal(authorizedPaymentStatusToChargeStatus('PROCESSED'), 'approved');
+});
+
+test('scheduled and recycling are still outstanding', () => {
+  assert.equal(authorizedPaymentStatusToChargeStatus('scheduled'), 'pending');
+  assert.equal(authorizedPaymentStatusToChargeStatus('recycling'), 'pending');
+});
+
+test('a cancelled authorized payment is cancelled', () => {
+  assert.equal(authorizedPaymentStatusToChargeStatus('cancelled'), 'cancelled');
+  assert.equal(authorizedPaymentStatusToChargeStatus('canceled'), 'cancelled');
+});
+
+test('an authorized-payment status we do not know is never treated as paid', () => {
+  assert.equal(authorizedPaymentStatusToChargeStatus('something_new'), 'unknown');
+  assert.equal(authorizedPaymentStatusToChargeStatus(null), 'unknown');
+  assert.equal(authorizedPaymentStatusToChargeStatus(undefined), 'unknown');
+});
+
+test('accredited is the Payments API saying approved', () => {
+  assert.equal(paymentStatusToChargeStatus('accredited'), 'approved');
 });

@@ -15,7 +15,7 @@
 // this into a small popover that lists each integrated engine and lets
 // the admin re-link any of them.
 
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDashboard } from '@/lib/dashboard/store';
 import { relinkUserToEngine } from '@/lib/engines/reconcile-actions';
@@ -31,11 +31,27 @@ interface Props {
 
 export function TeamRelinkEngine({ userId, userName, engineSlug = 'chalybclip' }: Props) {
   const [pending, startTransition] = useTransition();
+  // Two-step: this writes to someone else's account on an external engine,
+  // and it sits in a menu next to a token grant. One stray click should not
+  // be enough. Same pattern as the royalty finalize button.
+  const [confirming, setConfirming] = useState(false);
   const router = useRouter();
   const showToast = useDashboard((s) => s.showToast);
 
+  // Arming expires, so a menu left open does not stay one click from firing.
+  useEffect(() => {
+    if (!confirming) return;
+    const t = setTimeout(() => setConfirming(false), 6000);
+    return () => clearTimeout(t);
+  }, [confirming]);
+
   function handleClick() {
     if (pending) return;
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
     startTransition(async () => {
       const res = await relinkUserToEngine(userId, engineSlug);
       if (!res.ok) {
@@ -58,13 +74,17 @@ export function TeamRelinkEngine({ userId, userName, engineSlug = 'chalybclip' }
       type="button"
       onClick={handleClick}
       disabled={pending}
-      title={`Forzar re-provisioning de ${engineSlug} para este usuario`}
+      title={`Forzar re-provisioning de ${engineSlug} para ${userName}`}
       style={{
         padding: '6px 10px',
         borderRadius: 7,
-        border: '1px solid var(--cc-line-2)',
-        background: pending ? 'var(--cc-bg-3)' : 'var(--cc-bg-2)',
-        color: pending ? 'var(--cc-txt-4)' : 'var(--cc-txt-2)',
+        border: `1px solid ${confirming ? 'var(--cc-amber)' : 'var(--cc-line-2)'}`,
+        background: pending
+          ? 'var(--cc-bg-3)'
+          : confirming
+            ? 'var(--cc-amber-g)'
+            : 'var(--cc-bg-2)',
+        color: pending ? 'var(--cc-txt-4)' : confirming ? 'var(--cc-amber)' : 'var(--cc-txt-2)',
         fontFamily: 'inherit',
         fontSize: 11.5,
         fontWeight: 500,
@@ -78,7 +98,13 @@ export function TeamRelinkEngine({ userId, userName, engineSlug = 'chalybclip' }
       {/* ↻ symbol — keeps it compact next to tier/role selects which are
           already wider. */}
       <span style={{ fontSize: 13, lineHeight: 1 }}>↻</span>
-      <span>{pending ? 'Re-linking…' : 'Re-link'}</span>
+      <span>
+        {pending
+          ? 'Re-linking…'
+          : confirming
+            ? `Re-linkear a ${userName.split(' ')[0]} — confirmar`
+            : `Re-link ${engineSlug}`}
+      </span>
     </button>
   );
 }

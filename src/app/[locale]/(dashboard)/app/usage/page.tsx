@@ -24,6 +24,8 @@
 
 import { setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import type { Route } from 'next';
+import { Link } from '@/i18n/routing';
 import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth/session';
 import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
@@ -476,7 +478,12 @@ export default async function UsagePage({
           >
             Los tokens que compras <b>nunca caducan</b> y se usan <b>después</b> de los tokens que
             ya trae tu plan cada mes. Sirven en todos los engines (ChalyClip y los que vengan
-            después).
+            después). Comprar tokens <b>no cambia tu plan</b>: tu tier, tus límites y tu fecha de
+            renovación siguen igual — eso se gestiona en{' '}
+            <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-2)' }}>
+              Suscripción
+            </Link>
+            .
           </p>
           <div className="cc-mod-grid">
             {TOKEN_PACKS.map((pack) => (
