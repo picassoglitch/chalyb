@@ -3,42 +3,37 @@
 import { useEffect, useState } from 'react';
 import type { StripValue } from '@/lib/data/types';
 
-// Six tiles in the top metric strip. IDs still match the StripMetricId
-// union for back-compat; what they REPRESENT has changed from the previous
-// mock random-walk values to real Supabase queries — see telemetry.ts for
-// the exact semantics behind each id. Labels updated to match what's
-// actually being measured instead of the original aspirational copy
-// ("Streams en vivo", "GPU util", etc.) that we don't have backing data
-// for yet.
-function formatTokensCompact(n: number): string {
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return `${n}`;
-}
+// THREE tiles: Dinero hoy · Usuarios hoy · Engines vivos/total.
+//
+// There were six, and four of them ("Ingresos hoy", "Tokens hoy",
+// "Suscripciones", "AI calls / min") were repeated by the activity rail on
+// the right of the same screen. Detail belongs in the rail; the strip is
+// the glance. See telemetry.ts for what backs each id.
 
 const META: Array<{
   id: StripValue['id'];
   label: string;
   led?: boolean;
-  format: (v: number, total?: number) => string;
+  format: (v: number) => string;
 }> = [
-  // Real: engines.status='active'
-  { id: 'active', label: 'Engines activos', led: true, format: (v) => `${v}` },
-  // Real: usage_events with kind='llm.tokens' in the last 60s
-  { id: 'aicalls', label: 'AI calls / min', format: (v) => `${v}` },
-  // Real: SUM(payments.amount_cents)/100 today
-  { id: 'rev', label: 'Ingresos hoy', format: (v) => `$${v.toLocaleString('es-MX')}` },
-  // Real: COUNT(DISTINCT user_id) in usage_events today
-  { id: 'streams', label: 'Usuarios hoy', led: true, format: (v) => `${v}` },
-  // Real: SUM(usage_events.amount) today
-  { id: 'queue', label: 'Tokens hoy', format: (v) => formatTokensCompact(v) },
-  // Real: COUNT(engine_subscriptions WHERE status='active')
-  { id: 'gpu', label: 'Suscripciones', format: (v) => `${v}` },
+  // getMoneyToday() — the same helper Dinero reads. One number, one source.
+  { id: 'rev', label: 'Dinero hoy', format: (v) => `$${v.toLocaleString('es-MX')}` },
+  // COUNT(DISTINCT user_id) in usage_events today.
+  { id: 'users', label: 'Usuarios hoy', led: true, format: (v) => `${v}` },
+  // engines.status = 'active', rendered over the catalogue total below.
+  { id: 'engines', label: 'Engines vivos', led: true, format: (v) => `${v}` },
 ];
 
+/** Two real readings is the minimum that can honestly be called a trend.
+ *  Below that the tile shows no line at all — a flat glowing polyline under
+ *  a number measured once is decoration, not data. */
+const MIN_HIST_POINTS = 2;
+
 function Sparkline({ hist }: { hist: number[] }) {
-  if (!hist.length) return <svg className="cc-spark" viewBox="0 0 54 22" />;
+  if (hist.length < MIN_HIST_POINTS) return null;
+  // All-zero history: there is nothing happening, and drawing a neon line
+  // along the floor says otherwise.
+  if (hist.every((v) => v === 0)) return null;
   const max = Math.max(...hist);
   const min = Math.min(...hist);
   const rng = max - min || 1;
@@ -54,6 +49,7 @@ function Sparkline({ hist }: { hist: number[] }) {
 
 export function MetricStrip({ totalEngines }: { totalEngines: number }) {
   const [strip, setStrip] = useState<StripValue[]>([]);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     const src = new EventSource('/api/stream');
@@ -62,6 +58,7 @@ export function MetricStrip({ totalEngines }: { totalEngines: number }) {
         const data = JSON.parse(ev.data);
         if (data.kind === 'strip' && Array.isArray(data.strip)) {
           setStrip(data.strip as StripValue[]);
+          setConnected(true);
         }
       } catch {
         /* ignore parse errors */
@@ -75,19 +72,20 @@ export function MetricStrip({ totalEngines }: { totalEngines: number }) {
     <div className="cc-strip">
       {META.map((m) => {
         const v = byId.get(m.id);
-        const value = v?.value ?? 0;
-        const hist = v?.hist ?? [];
         return (
           <div key={m.id} className="cc-metric">
             <div className="cc-metric-l">
-              {m.led && <span className="cc-metric-led" />}
+              {m.led && connected && <span className="cc-metric-led" />}
               {m.label}
             </div>
             <div className="cc-metric-v">
-              {m.format(value)}
-              {m.id === 'active' && <small>/ {totalEngines}</small>}
+              {/* Until the stream has answered once, the tile says so. It
+                  used to render "0" / "$0", which is a claim, not a
+                  loading state. */}
+              {v ? m.format(v.value) : '—'}
+              {m.id === 'engines' && <small>/ {totalEngines}</small>}
             </div>
-            <Sparkline hist={hist} />
+            <Sparkline hist={v?.hist ?? []} />
           </div>
         );
       })}

@@ -16,7 +16,7 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMoneyToday } from '@/lib/billing/money-data';
 import { zonedStartOfDay } from '@/lib/billing/money';
-import { type ActivityEvent, type EngineStateCode, type StripValue } from './types';
+import { type ActivityEvent, type StripValue } from './types';
 
 // Kept for compatibility — `MOCK` is read by nothing important now, but
 // some doc/test code grepped for it historically. Hardwired to false so
@@ -27,24 +27,20 @@ const HIST_LEN = 14;
 
 // ── Strip metrics ────────────────────────────────────────────────────────
 //
-// Six tiles in the top metric strip. IDs remain the same shape as the old
-// mock for back-compat with metric-strip.tsx (StripMetricId in types.ts);
-// the SEMANTICS have changed to real-data definitions:
+// THREE tiles. The strip used to carry six, four of which the activity rail
+// repeated two hundred pixels away — same number, twice, on the same screen.
+// What is left is what an operator glances at:
 //
-//   active   → engines.status = 'active'
-//   aicalls  → COUNT(usage_events) in the last 60s where kind='llm.tokens'
-//              (= per-minute rate by construction)
 //   rev      → getMoneyToday() — THE shared money helper
 //              (lib/billing/money-data.ts): settled payments since midnight
-//              in America/Mexico_City, USD folded in at the manual FX rate
-//   streams  → COUNT(DISTINCT user_id) usage_events today
-//              (now labeled "Usuarios hoy" — no ChalyClip live-stream
-//              count available cross-system yet)
-//   queue    → SUM(usage_events.amount) today
-//              (now labeled "Tokens hoy" — no queue/backpressure concept
-//              in the platform yet, so we repurpose the slot)
-//   gpu      → COUNT(engine_subscriptions) status='active'
-//              (now labeled "Suscripciones" — no real GPU infra yet)
+//              in America/Mexico_City, USD folded in at the manual FX rate.
+//              Identical to the figure on Dinero, by construction.
+//   users    → COUNT(DISTINCT user_id) in usage_events today
+//   engines  → engines.status = 'active'; the strip renders it over the
+//              catalogue total it is given
+//
+// The per-minute AI-call rate, the token total and the subscription count
+// moved to (or stayed in) the activity rail, which is where the detail lives.
 
 interface StripCache {
   at: number;
@@ -55,20 +51,24 @@ const STRIP_TTL_MS = 2000;
 
 // Sparkline history per metric. Keys match StripValue['id'].
 const stripHist: Record<string, number[]> = {
-  active: [],
-  aicalls: [],
   rev: [],
-  streams: [],
-  queue: [],
-  gpu: [],
+  users: [],
+  engines: [],
 };
 
+/**
+ * Append a reading and return the history so far.
+ *
+ * It used to back-fill the array to 14 points with the current value on the
+ * first tick, so a brand-new process drew a confident flat line under a
+ * number nobody had measured twice. Now the history is only what was
+ * actually observed, and the strip draws nothing until there are at least
+ * two real points to draw.
+ */
 function pushHist(id: string, value: number): number[] {
   const arr = stripHist[id] ?? [];
   arr.push(value);
   while (arr.length > HIST_LEN) arr.shift();
-  // Seed the history so a fresh process doesn't render a one-point line.
-  while (arr.length < HIST_LEN) arr.unshift(value);
   stripHist[id] = arr;
   return arr.slice();
 }
@@ -79,9 +79,6 @@ function pushHist(id: string, value: number): number[] {
 function startOfDayIso(): string {
   return zonedStartOfDay(new Date()).toISOString();
 }
-function sixtySecondsAgoIso(): string {
-  return new Date(Date.now() - 60_000).toISOString();
-}
 
 export async function tickStrip(): Promise<StripValue[]> {
   const now = Date.now();
@@ -89,54 +86,27 @@ export async function tickStrip(): Promise<StripValue[]> {
 
   const admin = createAdminClient();
   const dayStart = startOfDayIso();
-  const minuteAgo = sixtySecondsAgoIso();
 
-  // Six queries in parallel. Each is cheap (COUNT with an indexed predicate
-  // or a tiny aggregate). Total round-trip stays under 200ms in practice.
-  const [enginesResult, callsResult, moneyToday, usersTodayResult, tokensTodayResult, subsResult] =
-    await Promise.all([
-      admin.from('engines').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-      admin
-        .from('usage_events')
-        .select('id', { count: 'exact', head: true })
-        .eq('kind', 'llm.tokens')
-        .gte('occurred_at', minuteAgo),
-      // THE money helper — same window, same status filter and same exchange
-      // rate as /dashboard/revenue and the P&L. This tile used to run its own
-      // query against a UTC day, which is how "Ingresos hoy $10" sat next to
-      // "Lo que ganaste hoy $0" on the same screen.
-      getMoneyToday(),
-      admin.from('usage_events').select('user_id').gte('occurred_at', dayStart),
-      admin
-        .from('usage_events')
-        .select('amount')
-        .eq('kind', 'llm.tokens')
-        .gte('occurred_at', dayStart),
-      admin
-        .from('engine_subscriptions')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
-    ]);
+  const [enginesResult, moneyToday, usersTodayResult] = await Promise.all([
+    admin.from('engines').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    // THE money helper — same window, same status filter and same exchange
+    // rate as Dinero and the revenue sub-view. This tile used to run its own
+    // query against a UTC day, which is how "Ingresos hoy $10" sat next to
+    // "Lo que ganaste hoy $0" on the same screen.
+    getMoneyToday(),
+    admin.from('usage_events').select('user_id').gte('occurred_at', dayStart),
+  ]);
 
   const engines = enginesResult.count ?? 0;
-  const callsPerMin = callsResult.count ?? 0;
   const revenueToday = Math.round(moneyToday.totalMxnCents / 100);
   const uniqueUsersToday = new Set(
     (usersTodayResult.data ?? []).map((r) => r.user_id as string).filter(Boolean),
   ).size;
-  const tokensToday = (tokensTodayResult.data ?? []).reduce<number>(
-    (sum, row) => sum + ((row.amount as number | null) ?? 0),
-    0,
-  );
-  const subscriptions = subsResult.count ?? 0;
 
   const data: StripValue[] = [
-    { id: 'active', value: engines, hist: pushHist('active', engines) },
-    { id: 'aicalls', value: callsPerMin, hist: pushHist('aicalls', callsPerMin) },
     { id: 'rev', value: revenueToday, hist: pushHist('rev', revenueToday) },
-    { id: 'streams', value: uniqueUsersToday, hist: pushHist('streams', uniqueUsersToday) },
-    { id: 'queue', value: tokensToday, hist: pushHist('queue', tokensToday) },
-    { id: 'gpu', value: subscriptions, hist: pushHist('gpu', subscriptions) },
+    { id: 'users', value: uniqueUsersToday, hist: pushHist('users', uniqueUsersToday) },
+    { id: 'engines', value: engines, hist: pushHist('engines', engines) },
   ];
   stripCache = { at: now, data };
   return data;
@@ -144,24 +114,22 @@ export async function tickStrip(): Promise<StripValue[]> {
 
 // ── Activity rail (sidebar — right column) ──────────────────────────────
 //
-// Originally three sparkline-ish numbers + a revenue number. We keep the
-// shape (jobsPerHour, queue, tokensToday, revenueToday) but back each one
-// with real data:
+// The rail is the DETAIL, the strip is the headline. It used to repeat
+// "Ingresos hoy" and "Tokens hoy" from the strip verbatim, so the same two
+// numbers appeared twice on one screen — and if the two queries ever
+// disagreed, the operator got to choose which one to believe. The rail now
+// carries only what the strip does not:
 //
-//   jobsPerHour   → COUNT(usage_events) in last hour
-//   queue         → COUNT(engine_subscriptions WHERE status='active')
-//                   (used to be a fake queue depth; repurposed as
-//                   "active subs" so the rail tile carries real info)
-//   tokensToday   → SUM(usage_events.amount) today, formatted "1.2M"
-//   revenueToday  → getMoneyToday(), the same helper the strip uses
+//   jobsPerHour           → COUNT(usage_events) in the last hour
+//   activeSubscriptions   → COUNT(engine_subscriptions WHERE status='active')
+//   tokensToday           → SUM(usage_events.amount) today, formatted "1.2M"
 
 interface RailCache {
   at: number;
   data: {
     jobsPerHour: number;
-    queue: number;
+    activeSubscriptions: number;
     tokensToday: string;
-    revenueToday: number;
   };
 }
 let railCache: RailCache | null = null;
@@ -182,7 +150,7 @@ export async function tickRail() {
   const dayStart = startOfDayIso();
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-  const [jobsResult, subsResult, tokensResult, moneyToday] = await Promise.all([
+  const [jobsResult, subsResult, tokensResult] = await Promise.all([
     admin
       .from('usage_events')
       .select('id', { count: 'exact', head: true })
@@ -196,19 +164,17 @@ export async function tickRail() {
       .select('amount')
       .eq('kind', 'llm.tokens')
       .gte('occurred_at', dayStart),
-    // Same helper as the strip: one number, one definition.
-    getMoneyToday(),
   ]);
 
   const tokensSum = (tokensResult.data ?? []).reduce<number>(
     (sum, row) => sum + ((row.amount as number | null) ?? 0),
     0,
   );
+
   const data = {
     jobsPerHour: jobsResult.count ?? 0,
-    queue: subsResult.count ?? 0,
+    activeSubscriptions: subsResult.count ?? 0,
     tokensToday: formatTokensCompact(tokensSum),
-    revenueToday: Math.round(moneyToday.totalMxnCents / 100),
   };
   railCache = { at: now, data };
   return data;
@@ -217,17 +183,17 @@ export async function tickRail() {
 // ── Activity feed ───────────────────────────────────────────────────────
 //
 // Reads the most recent audit_events + recent usage_events to surface real
-// activity (tier changes, token grants, large LLM batches). Falls back to
-// a small synthetic catalog when there's nothing recent to show — better
-// than an empty rail on a fresh deploy.
+// activity (tier changes, token grants, large LLM batches).
+//
+// It used to invent events when there was nothing to show — "Plataforma
+// lista", "Esperando primera llamada", picked at random and timestamped
+// `now` — so a platform with zero traffic still had a rail scrolling as if
+// something were happening. An empty rail that says it is empty is the more
+// useful screen. nextActivityEvent() returns null in that case and the SSE
+// endpoint sends nothing.
 //
 // Cursor maintained per-process so subsequent SSE ticks return the NEXT
 // real event rather than the same one. Wraps around when exhausted.
-
-const FALLBACK_ACTS: Array<[EngineStateCode, string, string, string]> = [
-  ['g', 'Plataforma lista', 'Chalyb', 'cero usage hoy'],
-  ['c', 'Esperando primera llamada', 'Chalyb', 'engines listos'],
-];
 
 let recentEventsCache: ActivityEvent[] = [];
 let recentEventsCacheAt = 0;
@@ -279,7 +245,9 @@ async function refreshRecentEvents(): Promise<void> {
       kind: 'p',
       title: `${amount.toLocaleString('es-MX')} tokens consumidos`,
       engine,
-      meta: row.kind as string,
+      // Was `row.kind` verbatim — "llm.tokens", "storage.mb". Raw event keys
+      // are for the detail view, not for the default one.
+      meta: labelForUsageKind(row.kind as string),
       time: at.slice(11, 16),
     });
   }
@@ -288,6 +256,21 @@ async function refreshRecentEvents(): Promise<void> {
   events.sort((a, b) => b.time.localeCompare(a.time));
   recentEventsCache = events.slice(0, 20);
   recentEventsCacheAt = Date.now();
+}
+
+/** usage_events.kind → something a person reads. '' hides the chip rather
+ *  than printing a key nobody outside this repo can parse. */
+function labelForUsageKind(kind: string): string {
+  switch (kind) {
+    case 'llm.tokens':
+      return 'consumo de IA';
+    case 'storage.mb':
+      return 'almacenamiento';
+    case 'publish.count':
+      return 'publicación';
+    default:
+      return '';
+  }
 }
 
 function labelForAudit(action: string): string | null {
@@ -315,8 +298,9 @@ function labelForAudit(action: string): string | null {
   }
 }
 
-let eventSeq = 0;
-export async function nextActivityEvent(): Promise<ActivityEvent> {
+/** The next real event to show, or null when there is nothing. Null means
+ *  the rail stays on its empty state — see the note above. */
+export async function nextActivityEvent(): Promise<ActivityEvent | null> {
   if (Date.now() - recentEventsCacheAt > RECENT_TTL_MS) {
     try {
       await refreshRecentEvents();
@@ -324,19 +308,7 @@ export async function nextActivityEvent(): Promise<ActivityEvent> {
       // Refresh failure — keep serving stale cache so the rail keeps moving.
     }
   }
-  if (recentEventsCache.length === 0) {
-    // Empty platform — emit a fallback so the UI doesn't go blank.
-    const a = FALLBACK_ACTS[Math.floor(Math.random() * FALLBACK_ACTS.length)]!;
-    eventSeq += 1;
-    return {
-      id: `fb-${Date.now()}-${eventSeq}`,
-      kind: a[0],
-      title: a[1],
-      engine: a[2],
-      meta: a[3],
-      time: new Date().toTimeString().slice(0, 5),
-    };
-  }
+  if (recentEventsCache.length === 0) return null;
   // Round-robin through the cached real events so each tick shows a
   // different one — feels alive even when nothing new came in.
   const next = recentEventsCache[recentEventsCursor % recentEventsCache.length]!;

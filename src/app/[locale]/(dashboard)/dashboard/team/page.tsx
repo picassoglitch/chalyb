@@ -8,6 +8,7 @@ import { TeamInviteForm } from '@/components/dashboard/team-invite-form';
 import { TeamGrantTokens } from '@/components/dashboard/team-grant-tokens';
 import { TeamPromoControl } from '@/components/dashboard/team-promo-control';
 import { TeamRelinkEngine } from '@/components/dashboard/team-relink-engine';
+import { TeamRowMore } from '@/components/dashboard/team-row-more';
 import { isChalybclipTrialActive, chalybclipTrialDaysLeft } from '@/lib/billing/tiers';
 import { TeamReconcileEngine } from '@/components/dashboard/team-reconcile-engine';
 import {
@@ -183,50 +184,53 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
                 >
                   {canEdit ? (
                     <>
+                      {/* On the row: what the person IS. Plan and role are
+                          the two things an operator reads Personas for. */}
                       <TeamTierSelect userId={p.id} current={p.tier} />
-                      {/* Owner-engine picker — only renders for PARTNER rows.
-                          Hidden on FREE/PRO/VIP users since the column
-                          on engines is partner-specific (no other tier owns
-                          engines today). */}
-                      {p.tier === 'PARTNER' && (
-                        <PartnerEngineSelect
-                          userId={p.id}
-                          currentEngineId={ownedEngineByUser.get(p.id) ?? null}
-                          engines={engineOptions}
-                        />
-                      )}
-                      {/* Token-grant control. Shows current bonus balance as
-                          a cyan chip; click opens an inline popover with
-                          +/− amount input and quick-grant buttons. Hidden
-                          for the actor themselves (no self-grant) to keep
-                          the audit log honest. */}
-                      {!isSelf && (
-                        <TeamGrantTokens
+                      <TeamRoleSelect userId={p.id} current={p.role} envLocked={isEnvLocked} />
+                      {/* Behind "Más": everything that ACTS on the person.
+                          These are maintenance tools, used rarely, and they
+                          used to sit on the row competing with the identity
+                          it exists to show. */}
+                      <TeamRowMore userName={displayName}>
+                        {/* Owner-engine picker — only for PARTNER rows; no
+                            other tier owns engines today. */}
+                        {p.tier === 'PARTNER' && (
+                          <PartnerEngineSelect
+                            userId={p.id}
+                            currentEngineId={ownedEngineByUser.get(p.id) ?? null}
+                            engines={engineOptions}
+                          />
+                        )}
+                        {/* Token grant. Hidden for the actor themselves (no
+                            self-grant) so the audit log stays honest. */}
+                        {!isSelf && (
+                          <TeamGrantTokens
+                            userId={p.id}
+                            userName={displayName}
+                            bonusBalance={p.token_bonus_balance ?? 0}
+                          />
+                        )}
+                        {/* Promotions: grant/extend/revoke the ChalyClip trial
+                            and reset the welcome banner per user. */}
+                        <TeamPromoControl
                           userId={p.id}
                           userName={displayName}
-                          bonusBalance={p.token_bonus_balance ?? 0}
+                          trialActive={isChalybclipTrialActive(
+                            p.chalybclip_trial_started_at,
+                            nowMs,
+                          )}
+                          trialDaysLeft={chalybclipTrialDaysLeft(
+                            p.chalybclip_trial_started_at,
+                            nowMs,
+                          )}
+                          welcomeClaimed={p.welcome_gift_claimed_at != null}
                         />
-                      )}
-                      {/* Promotions: grant/extend/revoke the ChalyClip trial and
-                          reset the welcome banner per user. */}
-                      <TeamPromoControl
-                        userId={p.id}
-                        userName={displayName}
-                        trialActive={isChalybclipTrialActive(p.chalybclip_trial_started_at, nowMs)}
-                        trialDaysLeft={chalybclipTrialDaysLeft(
-                          p.chalybclip_trial_started_at,
-                          nowMs,
-                        )}
-                        welcomeClaimed={p.welcome_gift_claimed_at != null}
-                      />
-                      {/* Re-link control. Forces the integration to
-                          re-provision this user in ChalyClip; combined with
-                          the engine-side B2 self-healing this reclaims any
-                          orphan tenant by email. Always shown — relinking
-                          yourself is the most common case (admin's own
-                          tenant from CLI-era never got an external_user_id). */}
-                      <TeamRelinkEngine userId={p.id} userName={displayName} />
-                      <TeamRoleSelect userId={p.id} current={p.role} envLocked={isEnvLocked} />
+                        {/* Re-link: forces the integration to re-provision
+                            this user in ChalyClip, reclaiming an orphan
+                            tenant by email. */}
+                        <TeamRelinkEngine userId={p.id} userName={displayName} />
+                      </TeamRowMore>
                     </>
                   ) : (
                     <>

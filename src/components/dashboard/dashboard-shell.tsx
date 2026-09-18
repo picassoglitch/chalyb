@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname } from '@/i18n/routing';
+import type { Route } from 'next';
+import { Link, usePathname } from '@/i18n/routing';
 import { useDashboard } from '@/lib/dashboard/store';
 import { Sidebar } from './sidebar';
 import { ActivityRail } from './activity-rail';
@@ -17,10 +18,10 @@ interface Props {
   userInitial: string;
   userName: string;
   userRole: string;
-  /** Unread message count rendered as a chip on the "Mensajes" nav item.
-   *  Combines subscriber-thread unreads + landing-form inquiries that
-   *  haven't been opened yet. 0 hides the badge. */
+  /** Unread admin inbox: subscriber threads + landing-form inquiries. */
   unreadMessages?: number;
+  /** Unread notifications. Badges Actividad and the bell. */
+  unreadNotifications?: number;
   children: React.ReactNode;
 }
 
@@ -30,6 +31,7 @@ export function DashboardShell({
   userName,
   userRole,
   unreadMessages = 0,
+  unreadNotifications = 0,
   children,
 }: Props) {
   const pathname = usePathname();
@@ -37,7 +39,6 @@ export function DashboardShell({
   const openPalette = useDashboard((s) => s.openPalette);
   const mobileSidebarOpen = useDashboard((s) => s.mobileSidebarOpen);
   const setMobileSidebarOpen = useDashboard((s) => s.setMobileSidebarOpen);
-  const showToast = useDashboard((s) => s.showToast);
 
   // Hydrate Zustand from server-fetched engines once.
   useEffect(() => {
@@ -48,15 +49,26 @@ export function DashboardShell({
   // (e.g. /dashboard/engines/[slug]) wouldn't match. Fall back to a prefix
   // search so /dashboard/engines/chalybclip inherits the /dashboard/engines
   // strip while we wait for someone to add slug-specific copy.
-  const meta = PAGE_META[pathname] ?? (() => {
-    for (const [key, value] of Object.entries(PAGE_META)) {
-      if (pathname.startsWith(key + '/')) return value;
-    }
-    return { title: 'Módulo', sub: 'Esta sección sigue en construcción.' };
-  })();
+  const meta =
+    PAGE_META[pathname] ??
+    (() => {
+      for (const [key, value] of Object.entries(PAGE_META)) {
+        if (pathname.startsWith(key + '/')) return value;
+      }
+      return { title: 'Módulo', sub: 'Esta sección sigue en construcción.' };
+    })();
+
+  // One catalogue count for the whole shell: the strip's "vivos / total" and
+  // the Engines badge in the sidebar read the same two numbers. The sidebar
+  // used to carry a hardcoded "6" while the catalogue held eight.
+  const engineLiveCount = initialEngines.filter((e) => e.status === 'active').length;
+
+  // The rail lives on the Centro de mando only. Everywhere else the main
+  // column takes the space back.
+  const railVisible = pathname === '/dashboard';
 
   return (
-    <div className="cc-shell">
+    <div className={`cc-shell${railVisible ? '' : ' cc-shell--no-rail'}`}>
       {mobileSidebarOpen && (
         <div className="cc-sbscrim show" onClick={() => setMobileSidebarOpen(false)} />
       )}
@@ -66,6 +78,9 @@ export function DashboardShell({
         userRole={userRole}
         mobileOpen={mobileSidebarOpen}
         unreadMessages={unreadMessages}
+        unreadNotifications={unreadNotifications}
+        engineCount={initialEngines.length}
+        engineLiveCount={engineLiveCount}
       />
 
       <main className="cc-main">
@@ -101,14 +116,36 @@ export function DashboardShell({
               <span>Busca o ejecuta una acción…</span>
               <kbd>⌘K</kbd>
             </button>
-            <button
-              type="button"
+            {/* Goes to Actividad. It used to be a button that popped a toast
+                saying "No tienes notificaciones nuevas" whether or not that
+                was true. */}
+            <Link
+              href={'/dashboard/activity' as Route}
               className="cc-ibtn"
-              title="Notificaciones"
-              onClick={() => showToast('No tienes notificaciones nuevas.')}
+              title={
+                unreadNotifications > 0
+                  ? `${unreadNotifications} notificación${unreadNotifications === 1 ? '' : 'es'} sin leer`
+                  : 'Actividad — notificaciones y auditoría'
+              }
+              style={{ position: 'relative' }}
             >
               🔔
-            </button>
+              {unreadNotifications > 0 && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    top: 5,
+                    right: 5,
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: 'var(--cc-green)',
+                    boxShadow: '0 0 6px var(--cc-green)',
+                  }}
+                />
+              )}
+            </Link>
           </div>
         </div>
 
@@ -116,15 +153,6 @@ export function DashboardShell({
       </main>
 
       <ActivityRail />
-
-      <button
-        type="button"
-        className="cc-mrail"
-        title="Actividad"
-        onClick={() => showToast('Actividad de IA — pronto la verás en pantalla completa')}
-      >
-        ⚡
-      </button>
 
       <CommandPalette />
       <DetailDrawer />

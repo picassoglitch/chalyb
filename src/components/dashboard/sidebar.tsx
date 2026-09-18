@@ -12,9 +12,16 @@ interface Props {
   userName: string;
   userRole: string;
   mobileOpen?: boolean;
-  /** Render as the ct chip on the Mensajes nav item. 0 / undefined hides it.
-   *  Counts >= 100 collapse to "99+" so the chip width stays predictable. */
+  /** Unread admin inbox: subscriber threads + landing-form inquiries. */
   unreadMessages?: number;
+  /** Unread notifications. Feeds the Actividad badge. */
+  unreadNotifications?: number;
+  /** Engines in the catalogue, and how many are live. Rendered as the
+   *  Engines badge so the sidebar, the strip and /dashboard/engines cannot
+   *  disagree — this chip used to be the literal string "6" while the
+   *  catalogue held eight. */
+  engineCount?: number;
+  engineLiveCount?: number;
 }
 
 function formatBadgeCount(n: number): string {
@@ -22,7 +29,16 @@ function formatBadgeCount(n: number): string {
   return String(n);
 }
 
-export function Sidebar({ userInitial, userName, userRole, mobileOpen, unreadMessages = 0 }: Props) {
+export function Sidebar({
+  userInitial,
+  userName,
+  userRole,
+  mobileOpen,
+  unreadMessages = 0,
+  unreadNotifications = 0,
+  engineCount = 0,
+  engineLiveCount = 0,
+}: Props) {
   const pathname = usePathname();
   const setMobileSidebarOpen = useDashboard((s) => s.setMobileSidebarOpen);
 
@@ -31,13 +47,26 @@ export function Sidebar({ userInitial, userName, userRole, mobileOpen, unreadMes
     return pathname === href || pathname.startsWith(href + '/');
   }
 
+  /** Every badge in this sidebar is a real count taken on this render, or
+   *  nothing at all. There are no decorative numbers. */
+  function badgeFor(id: string): { text: string; highlight: boolean } | null {
+    if (id === 'engines' && engineCount > 0) {
+      return { text: `${engineLiveCount}/${engineCount}`, highlight: false };
+    }
+    if (id === 'messages' && unreadMessages > 0) {
+      return { text: formatBadgeCount(unreadMessages), highlight: true };
+    }
+    if (id === 'activity' && unreadNotifications > 0) {
+      return { text: formatBadgeCount(unreadNotifications), highlight: true };
+    }
+    return null;
+  }
+
   return (
     <aside className={`cc-sb${mobileOpen ? ' open' : ''}`}>
       <div className="cc-sb-top">
         <FusionMark size={26} />
-        <div className="cc-wm">
-          Chalyb
-        </div>
+        <div className="cc-wm">Chalyb</div>
         <span className="cc-env">PROD</span>
       </div>
 
@@ -47,41 +76,43 @@ export function Sidebar({ userInitial, userName, userRole, mobileOpen, unreadMes
             <div className="cc-gl">{g.grp}</div>
             <div className="cc-nav">
               {g.items.map((it) => {
-                // Override the static `ct` on the Mensajes item with the
-                // live unread count from the server. Keeps NAV stateless
-                // for everything else.
-                const ct =
-                  it.id === 'messages' && unreadMessages > 0
-                    ? formatBadgeCount(unreadMessages)
-                    : it.ct;
+                const badge = badgeFor(it.id);
                 return (
                   <Link
                     key={it.id}
                     href={it.href as Route}
-                    className={`cc-nav-item${isActive(it.href) ? ' on' : ''}`}
+                    className={`cc-nav-item${isActive(it.href) ? ' on' : ''}${
+                      it.disconnected ? ' cc-nav-item--off' : ''
+                    }`}
+                    title={
+                      it.disconnected
+                        ? `${it.label} — todavía no hay backend detrás de esta pantalla`
+                        : undefined
+                    }
                     onClick={() => setMobileSidebarOpen(false)}
                   >
                     <span className="cc-ic">{it.ic}</span>
                     <span>{it.label}</span>
                     {it.live && <span className="cc-dot" />}
-                    {ct && (
-                      <span
-                        className="cc-ct"
-                        style={
-                          // Highlight unread-message badges in green so they
-                          // pop against the muted counts (engines: "6",
-                          // models: "9", etc.) that share this class.
-                          it.id === 'messages' && unreadMessages > 0
-                            ? {
-                                background: 'var(--cc-green-g)',
-                                color: 'var(--cc-green)',
-                                border: '1px solid rgba(158,234,58,.3)',
-                              }
-                            : undefined
-                        }
-                      >
-                        {ct}
-                      </span>
+                    {it.disconnected ? (
+                      <span className="cc-ct cc-ct--off">sin conectar</span>
+                    ) : (
+                      badge && (
+                        <span
+                          className="cc-ct"
+                          style={
+                            badge.highlight
+                              ? {
+                                  background: 'var(--cc-green-g)',
+                                  color: 'var(--cc-green)',
+                                  border: '1px solid rgba(158,234,58,.3)',
+                                }
+                              : undefined
+                          }
+                        >
+                          {badge.text}
+                        </span>
+                      )
                     )}
                   </Link>
                 );
@@ -108,22 +139,14 @@ export function Sidebar({ userInitial, userName, userRole, mobileOpen, unreadMes
         </div>
       </div>
 
+      {/* No settings cog down here: Ajustes is one of the six above, and two
+          doors to the same room is one door too many. */}
       <div className="cc-sb-foot">
         <div className="cc-ava">{userInitial}</div>
         <div className="cc-u">
           <div className="cc-u-n">{userName}</div>
           <div className="cc-u-r">{userRole}</div>
         </div>
-        <Link
-          href={'/dashboard/settings' as Route}
-          className="cc-cog"
-          title="Ajustes"
-          onClick={() => setMobileSidebarOpen(false)}
-        >
-          ⚙
-        </Link>
-        {/* Always-visible logout next to settings. One click signs out
-            via supabase + bounces to landing. */}
         <SidebarSignOut onBeforeNav={() => setMobileSidebarOpen(false)} />
       </div>
     </aside>

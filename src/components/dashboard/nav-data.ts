@@ -1,71 +1,80 @@
-// Verbatim port of the prototype's NAV array, extended with href for routing.
-// Each module gets a real /dashboard/<slug> route in CP-extension.
+// Admin command-center navigation.
+//
+// SIX primary destinations, because a Super Admin has four questions —
+// ¿quién está en el equipo?, ¿nos pagaron?, ¿qué engines están vivos?, ¿qué
+// se rompió? — and every one of them should be at most two clicks away.
+//
+// It used to be eighteen items across five groups: Overview AND Operaciones
+// (two views of the same engines), Revenue AND Billing AND Royalties (three
+// views of the same money), plus Streams, Automations, Queues and Workers &
+// GPU — surfaces with no backend behind them, several wearing hardcoded
+// badges ("31", "7") and a live dot. An operator cannot tell a real surface
+// from a mock when they look the same in the nav, so the mocks are demoted
+// into Labs and labelled as what they are.
+//
+// COUNTS: real or absent. A number in this sidebar means something was
+// counted just now. `ct` is gone from the static data on purpose — the
+// engines badge and the two unread badges are passed in from the server.
 
 export type NavItem = {
   id: string;
   href: string; // locale-agnostic; next-intl Link prefixes /es when needed
   ic: string;
   label: string;
-  ct?: string;
+  /** A green dot: this surface updates by itself. Only where that is true. */
   live?: boolean;
+  /**
+   * No backend behind it yet. Rendered muted with a "sin conectar" chip so
+   * nobody reads a demo as production data.
+   */
+  disconnected?: boolean;
 };
 
 export type NavGroup = { grp: string; items: NavItem[] };
 
 export const NAV: NavGroup[] = [
   {
-    grp: 'Resumen',
+    grp: 'Operación',
     items: [
-      { id: 'overview', href: '/dashboard/overview', ic: '◰', label: 'Overview' },
-      { id: 'ops', href: '/dashboard', ic: '⬡', label: 'Operaciones', live: true },
+      // Health, incidents, action now. Absorbed the old Overview.
+      { id: 'command', href: '/dashboard', ic: '⬡', label: 'Centro de mando', live: true },
+      // Team, roles, plans, invites.
+      { id: 'team', href: '/dashboard/team', ic: '👥', label: 'Personas' },
+      // The one money hub: payments + P&L + royalties.
+      { id: 'money', href: '/dashboard/billing', ic: '$', label: 'Dinero' },
+      // Catalogue lifecycle. Models and integrations are sub-views, later.
+      { id: 'engines', href: '/dashboard/engines', ic: '◈', label: 'Engines' },
+      // Notifications + audit, nothing else.
+      { id: 'activity', href: '/dashboard/activity', ic: '◉', label: 'Actividad' },
+      { id: 'settings', href: '/dashboard/settings', ic: '⚙', label: 'Ajustes' },
     ],
   },
   {
-    // "Plataforma" = AI infra surfaces that operate on engines. The top-level
-    // "Operaciones" entry above is the live ops view of those engines.
-    grp: 'Plataforma',
+    // Everything that is not part of running the business today. Real
+    // surfaces that are simply secondary sit at the top; the ones with no
+    // backend carry `disconnected` and say so in the sidebar.
+    grp: 'Labs · fuera del flujo principal',
     items: [
-      // First-class engines management (catalog status + tier_required).
-      { id: 'engines', href: '/dashboard/engines', ic: '◈', label: 'Engines', ct: '6' },
-      { id: 'models', href: '/dashboard/models', ic: '⌬', label: 'AI Models', ct: '9' },
-      { id: 'streams', href: '/dashboard/streams', ic: '▶', label: 'Streams', live: true },
-      { id: 'autos', href: '/dashboard/automations', ic: '⟳', label: 'Automations', ct: '31' },
-      { id: 'queues', href: '/dashboard/queues', ic: '≡', label: 'Queues', ct: '7' },
-    ],
-  },
-  // "Contenido" group removed — clips/publishing/uploads are ChalyClip-internal
-  // features, not platform-admin concerns. Same reason "Clients" got removed
-  // from Organización: Chalyb is a SaaS, not an agency with client engagements.
-  {
-    grp: 'Inteligencia',
-    items: [
-      { id: 'analytics', href: '/dashboard/analytics', ic: '◑', label: 'Analytics' },
-      { id: 'revenue', href: '/dashboard/revenue', ic: '$', label: 'Revenue' },
-    ],
-  },
-  {
-    grp: 'Infra',
-    items: [
-      { id: 'infra', href: '/dashboard/infra', ic: '▤', label: 'Workers & GPU' },
-      { id: 'api', href: '/dashboard/api', ic: '⌘', label: 'API & Keys' },
-      { id: 'notifs', href: '/dashboard/notifications', ic: '🔔', label: 'Notifications', ct: '3' },
-    ],
-  },
-  {
-    grp: 'Organización',
-    items: [
-      { id: 'team', href: '/dashboard/team', ic: '👥', label: 'Team & Roles' },
-      // Inbox: subscriber threads + landing-form partner inquiries.
-      // Count is rendered live by the admin sidebar from
-      // countUnreadForAdmin() + countUnreadInquiriesForAdmin().
       { id: 'messages', href: '/dashboard/messages', ic: '✉', label: 'Mensajes' },
-      { id: 'billing', href: '/dashboard/billing', ic: '▦', label: 'Billing (P&L)' },
-      // Royalty payouts to partner engine owners — accruals + history.
-      // Lives next to billing because operationally they're the same
-      // surface (money flowing through the platform).
-      { id: 'royalties', href: '/dashboard/royalties', ic: '◆', label: 'Royalties' },
-      { id: 'audit', href: '/dashboard/audit', ic: '◉', label: 'Audit log' },
-      { id: 'settings', href: '/dashboard/settings', ic: '⚙', label: 'Settings' },
+      { id: 'models', href: '/dashboard/models', ic: '⌬', label: 'AI Models' },
+      { id: 'analytics', href: '/dashboard/analytics', ic: '◑', label: 'Analytics' },
+      { id: 'api', href: '/dashboard/api', ic: '⌘', label: 'API & Keys' },
+      { id: 'streams', href: '/dashboard/streams', ic: '▶', label: 'Streams', disconnected: true },
+      {
+        id: 'autos',
+        href: '/dashboard/automations',
+        ic: '⟳',
+        label: 'Automations',
+        disconnected: true,
+      },
+      { id: 'queues', href: '/dashboard/queues', ic: '≡', label: 'Queues', disconnected: true },
+      {
+        id: 'infra',
+        href: '/dashboard/infra',
+        ic: '▤',
+        label: 'Workers & GPU',
+        disconnected: true,
+      },
     ],
   },
 ];
@@ -153,77 +162,84 @@ export function workspacePageKey(pathname: string): string {
 /** Admin command-center page headers, keyed by exact pathname.
  *  The /app/* entries moved to the message catalogue — see
  *  workspacePageKey() above and `workspace.pages` in messages/*.json. */
+/** Admin command-center page headers, keyed by exact pathname. The /app/*
+ *  entries moved to the message catalogue — see workspacePageKey() above
+ *  and `workspace.pages` in messages/*.json. */
 export const PAGE_META: Record<string, { title: string; sub: string }> = {
   '/dashboard': {
-    title: 'Operaciones',
-    sub: 'Todos los sistemas, agentes y trabajos de IA — estado en vivo.',
+    title: 'Centro de mando',
+    sub: 'Salud, incidentes y lo que hay que atender ahora.',
   },
-  '/dashboard/overview': {
-    title: 'Overview',
-    sub: 'Resumen ejecutivo de toda la plataforma.',
+  '/dashboard/team': {
+    title: 'Personas',
+    sub: 'Equipo, roles, planes e invitaciones.',
+  },
+  '/dashboard/billing': {
+    title: 'Dinero',
+    sub: 'Lo que entró, lo que cuesta operar, y lo que se les debe a los socios.',
   },
   '/dashboard/engines': {
     title: 'Engines',
     sub: 'Catálogo de productos: status, tier requerido, visibilidad.',
   },
+  '/dashboard/activity': {
+    title: 'Actividad',
+    sub: 'Notificaciones y registro de auditoría.',
+  },
+  '/dashboard/settings': {
+    title: 'Ajustes',
+    sub: 'Organización, idioma, zona horaria y seguridad.',
+  },
+
+  // Sub-views: reachable from the six above, not from the primary nav.
+  '/dashboard/revenue': {
+    title: 'Ingresos por engine',
+    sub: 'Sub-vista de Dinero: consumo de IA por engine.',
+  },
+  '/dashboard/royalties': {
+    title: 'Royalties',
+    sub: 'Sub-vista de Dinero: accruals del mes e historial de pagos a socios.',
+  },
+  '/dashboard/notifications': {
+    title: 'Notificaciones',
+    sub: 'Sub-vista de Actividad: alertas del sistema.',
+  },
+  '/dashboard/audit': {
+    title: 'Registro de auditoría',
+    sub: 'Sub-vista de Actividad: cambios de plan, rol y pagos automáticos.',
+  },
+
+  // Labs.
+  '/dashboard/messages': {
+    title: 'Mensajes',
+    sub: 'Hilos con subscribers + leads de partners desde la landing.',
+  },
   '/dashboard/models': {
     title: 'AI Models',
     sub: 'Modelos, prompts, personas y generaciones.',
-  },
-  '/dashboard/streams': {
-    title: 'Streams',
-    sub: 'Streams en vivo y su estado.',
-  },
-  '/dashboard/automations': {
-    title: 'Automations',
-    sub: 'Flujos automatizados y disparadores.',
-  },
-  '/dashboard/queues': {
-    title: 'Queues',
-    sub: 'Cola de trabajos por worker y prioridad.',
   },
   '/dashboard/analytics': {
     title: 'Analytics',
     sub: 'Métricas, tendencias y comportamiento por sistema.',
   },
-  '/dashboard/revenue': {
-    title: 'Revenue',
-    sub: 'Ingresos por sistema, MRR y tendencias.',
-  },
-  '/dashboard/infra': {
-    title: 'Workers & GPU',
-    sub: 'Nodos, GPU, regiones y costos de infraestructura.',
-  },
   '/dashboard/api': {
     title: 'API & Keys',
     sub: 'Llaves de API por proveedor, costos y límites.',
   },
-  '/dashboard/notifications': {
-    title: 'Notifications',
-    sub: 'Alertas del sistema y eventos sin leer.',
+  '/dashboard/streams': {
+    title: 'Streams',
+    sub: 'Labs · sin conectar. No hay backend de streams todavía.',
   },
-  '/dashboard/team': {
-    title: 'Team & Roles',
-    sub: 'Usuarios, permisos y registro de actividad.',
+  '/dashboard/automations': {
+    title: 'Automations',
+    sub: 'Labs · sin conectar. No hay motor de automatizaciones todavía.',
   },
-  '/dashboard/messages': {
-    title: 'Mensajes',
-    sub: 'Hilos con subscribers + leads de partners desde la landing.',
+  '/dashboard/queues': {
+    title: 'Queues',
+    sub: 'Labs · sin conectar. No hay cola de trabajos todavía.',
   },
-  '/dashboard/billing': {
-    title: 'Billing',
-    sub: 'Plan actual, facturas y método de pago.',
-  },
-  '/dashboard/royalties': {
-    title: 'Royalties',
-    sub: 'Pagos a partners owners de engines — accruals del mes + historial.',
-  },
-  '/dashboard/audit': {
-    title: 'Audit log',
-    sub: 'Eventos de cuenta: cambios de plan, rol y pagos automáticos.',
-  },
-  '/dashboard/settings': {
-    title: 'Settings',
-    sub: 'Cuenta, organización, notificaciones y seguridad.',
+  '/dashboard/infra': {
+    title: 'Workers & GPU',
+    sub: 'Labs · sin conectar. No hay infraestructura de workers todavía.',
   },
 };

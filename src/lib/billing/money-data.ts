@@ -48,7 +48,18 @@ function emptyWindow(from: Date, failed: boolean): MoneyWindow {
 }
 
 async function loadSince(from: Date): Promise<MoneyWindow> {
-  const admin = createAdminClient();
+  // Never throw out of the money helper. Half the surfaces that read it are
+  // the top strip and the command center, and a thrown error there is a 500
+  // on the whole admin shell. A window that reports `failed` renders as
+  // "sin datos", which is both honest and survivable.
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    console.error('[money] admin client unavailable', err);
+    return emptyWindow(from, true);
+  }
+
   const { data, error } = await admin
     .from('payments')
     .select('amount_cents, currency, status')
@@ -104,7 +115,13 @@ export async function getPayingCustomersThisMonth(
   now: Date = new Date(),
 ): Promise<PayingCustomers> {
   const from = zonedStartOfMonth(now);
-  const admin = createAdminClient();
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    console.error('[money] admin client unavailable', err);
+    return { ...EMPTY_CUSTOMERS, failed: true };
+  }
 
   // `kind` arrived in migration 0039. Fall back to the pre-0039 shape rather
   // than reporting zero customers on a database that has not been migrated.

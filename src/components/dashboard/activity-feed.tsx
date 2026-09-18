@@ -14,9 +14,8 @@ const COLOR: Record<string, string> = {
 
 interface RailStats {
   jobsPerHour: number;
-  queue: number;
+  activeSubscriptions: number;
   tokensToday: string;
-  revenueToday: number;
 }
 
 export function ActivityFeedLive() {
@@ -56,33 +55,32 @@ export function ActivityFeedLive() {
               <div className="cc-ev-t">{e.title}</div>
               <div className="cc-ev-m">
                 <span className="cc-ev-bot">{e.engine}</span>
-                <span>{e.meta}</span>
+                {/* `meta` is a person or a plain phrase now. It used to carry
+                    raw event keys like "llm.tokens" straight from the
+                    database, which reads as debug output in a default view. */}
+                {e.meta && <span>{e.meta}</span>}
                 <span>{e.time}</span>
               </div>
             </div>
           </div>
         ))}
       </div>
+      {/* Three numbers the top strip does NOT show. "Ingresos hoy" and
+          "Tokens hoy" used to appear here AND up there, same screen, two
+          separate queries — so a disagreement between them was the
+          operator's problem to adjudicate. */}
       <div className="cc-rail-foot">
-        {/* Labels mirror what we actually measure in telemetry.tickRail.
-            Cola → Suscripciones because we don't have a queue/backpressure
-            concept yet; the slot now carries real engine_subscriptions
-            count instead of being a smoke-and-mirrors random number. */}
         <div className="cc-rstat">
           <div className="cc-rs-l">Trabajos IA / h</div>
-          <div className="cc-rs-v cy">{rail?.jobsPerHour ?? '—'}</div>
+          <div className="cc-rs-v cy">{rail ? rail.jobsPerHour : '—'}</div>
         </div>
         <div className="cc-rstat">
           <div className="cc-rs-l">Suscripciones</div>
-          <div className="cc-rs-v">{rail?.queue ?? '—'}</div>
+          <div className="cc-rs-v">{rail ? rail.activeSubscriptions : '—'}</div>
         </div>
         <div className="cc-rstat">
           <div className="cc-rs-l">Tokens hoy</div>
-          <div className="cc-rs-v">{rail?.tokensToday ?? '—'}</div>
-        </div>
-        <div className="cc-rstat">
-          <div className="cc-rs-l">Ingresos hoy</div>
-          <div className="cc-rs-v gr">{rail ? '$' + rail.revenueToday.toLocaleString('es-MX') : '$0'}</div>
+          <div className="cc-rs-v">{rail ? rail.tokensToday : '—'}</div>
         </div>
       </div>
     </>

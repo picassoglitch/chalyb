@@ -5,10 +5,8 @@ import { BfcacheGuard } from '@/components/auth/bfcache-guard';
 import { listEngines } from '@/lib/data/engines';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { ProfileSubscriber } from '@/components/workspace/profile-subscriber';
-import {
-  countUnreadForAdmin,
-  countUnreadInquiriesForAdmin,
-} from '@/lib/messages/messages-data';
+import { countUnreadForAdmin, countUnreadInquiriesForAdmin } from '@/lib/messages/messages-data';
+import { listNotifications } from '@/lib/data/ops';
 import './dashboard.css';
 
 const inter = Inter({
@@ -57,11 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // to /app — the subscriber workspace they should be using.
   // This guards every /dashboard/* route below this layout, including any URL
   // typed directly into the address bar.
-  if (
-    session &&
-    session.role !== 'SUPER_ADMIN' &&
-    session.role !== 'ADMIN'
-  ) {
+  if (session && session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN') {
     redirect('/app');
   }
 
@@ -106,6 +100,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     unreadMessages = 0;
   }
 
+  // The Actividad badge. A real count or no badge at all — this sidebar does
+  // not carry decorative numbers any more.
+  let unreadNotifications = 0;
+  try {
+    unreadNotifications = (await listNotifications()).filter((n) => !n.read_at).length;
+  } catch {
+    unreadNotifications = 0;
+  }
+
   return (
     <div className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>
       <BfcacheGuard />
@@ -119,6 +122,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         userName={fullName}
         userRole={roleLabel(role)}
         unreadMessages={unreadMessages}
+        unreadNotifications={unreadNotifications}
       >
         {children}
       </DashboardShell>
