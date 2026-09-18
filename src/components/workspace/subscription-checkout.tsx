@@ -7,7 +7,6 @@
 // Pago-hosted authorisation for the same plan (startHostedTierSubscription):
 // the way to pay when the in-app form cannot load in someone's browser.
 
-import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import {
@@ -15,6 +14,7 @@ import {
   startHostedTierSubscription,
 } from '@/lib/payments/subscription-actions';
 import { MpCardBrick } from '@/components/payments/mp-card-brick';
+import { HostedCheckoutButton } from '@/components/payments/hosted-checkout-button';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 interface Props {
@@ -34,21 +34,6 @@ export function SubscriptionCheckout({
 }: Props) {
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
-  const [hostedPending, startHosted] = useTransition();
-  const [hostedError, setHostedError] = useState<string | null>(null);
-
-  function payOnMercadoPago() {
-    setHostedError(null);
-    startHosted(async () => {
-      const res = await startHostedTierSubscription({ tier });
-      if (!res.ok || !res.url) {
-        setHostedError(res.error ?? 'No pudimos abrir el pago en Mercado Pago.');
-        return;
-      }
-      window.location.href = res.url;
-    });
-  }
-
   return (
     <div data-mp-subscriptions-page="without-plan-authorized">
       <MpCardBrick
@@ -113,32 +98,11 @@ export function SubscriptionCheckout({
           </div>
         }
         fallback={
-          <>
-            <button
-              type="button"
-              onClick={payOnMercadoPago}
-              disabled={hostedPending}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                color: 'var(--cc-txt-3)',
-                fontFamily: 'inherit',
-                fontSize: 12.5,
-                cursor: hostedPending ? 'wait' : 'pointer',
-                textDecoration: 'underline',
-              }}
-            >
-              {hostedPending
-                ? 'Abriendo Mercado Pago…'
-                : `¿Prefieres autorizar la tarjeta en Mercado Pago? Activar ${tierLabel} en Mercado Pago →`}
-            </button>
-            {hostedError && (
-              <p style={{ fontSize: 11.5, color: 'var(--cc-red)', marginTop: 6 }}>
-                ▸ {hostedError}
-              </p>
-            )}
-          </>
+          <HostedCheckoutButton
+            hint="¿Prefieres autorizar la tarjeta en la página de Mercado Pago? Mismo plan, mismo precio; vuelves aquí al terminar."
+            label={`Activar ${tierLabel} en Mercado Pago →`}
+            start={() => startHostedTierSubscription({ tier })}
+          />
         }
       />
     </div>

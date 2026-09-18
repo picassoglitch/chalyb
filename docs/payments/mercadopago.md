@@ -27,20 +27,25 @@ Why this split and not something else:
   `status: "authorized"`, so the first month is charged in that request
   and the plan is active before the page answers. There is no shared plan
   object to keep in step with `pricing.ts`.
-- **The Brick runs in its own page.** `public/mp/card-brick.html` is the
-  plain, documented integration (the SDK script tag, the documented
-  `cardPaymentBrick_container`, one `bricks().create()`) and nothing else.
-  `src/components/payments/mp-card-brick.tsx` embeds it in a same-origin
-  `<iframe>` and talks to it over origin-checked `postMessage`: settings in,
-  ready/error/submit/height out, the server's verdict back. Mounted inline
-  in the app, the Brick kept dying while its bundle and secure-field iframes
-  were still loading (`Cannot read properties of null (reading
-'addEventListener')` from `cardPayment.js`, `onReady` never firing):
-  React, the app's CSS and scripts and the effect lifecycle all share that
-  DOM. In its own document nothing else touches it, and leaving the
-  checkout simply removes the iframe. The console still narrates the stages
-  under `[mercadopago brick]`, and a 20 s watchdog names the one that
-  stalled.
+- **The Brick runs in its own document, and more than one if it must.**
+  `public/mp/card-brick.html` is the plain, documented integration (the SDK
+  script tag, the documented `cardPaymentBrick_container`, one
+  `bricks().create()`) with no app code in it.
+  `src/components/payments/mp-card-brick.tsx` loads it in an iframe and
+  talks to it over origin-checked `postMessage`: settings in;
+  ready/error/submit/height out; the server's verdict back. It tries two
+  isolations in order and switches the moment an attempt is poisoned (an
+  uncaught error in the host document while the Brick is coming up, a
+  failed SDK load, a critical Brick error, or 15 s without `onReady`):
+  first the document at its https URL (nothing from the app page is in it,
+  and extensions that only inject into the top frame never see it), then
+  the same document served from a `blob:` URL of this origin (extension
+  content scripts match by URL pattern, and `blob:` matches none of them).
+  Mounted inline in the app the Brick died while its bundle and
+  secure-field iframes were loading, with a browser extension's
+  `injectScript.js` in the middle of every stack trace; in its own document
+  nothing of the app's touches it, and the console narrates every attempt
+  under `[mercadopago brick]`, naming any extension script it finds.
 - **Mercado Pago's page is always one click away.** Under both card forms
   there is a link to the hosted flow: `startHostedTierSubscription` creates
   the same preapproval without a card (`status: "pending"`) and sends the

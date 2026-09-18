@@ -5,7 +5,6 @@
 // account money still exist for whoever wants them: that link opens the
 // Mercado Pago-hosted checkout, which is the only place those methods live.
 
-import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import {
@@ -13,6 +12,7 @@ import {
   payTokenPackWithCard,
 } from '@/lib/payments/token-checkout-actions';
 import { MpCardBrick } from '@/components/payments/mp-card-brick';
+import { HostedCheckoutButton } from '@/components/payments/hosted-checkout-button';
 
 interface Props {
   packId: string;
@@ -25,21 +25,6 @@ interface Props {
 export function PackCheckout({ packId, packLabel, publicKey, amountMajor, payerEmail }: Props) {
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
-  const [otherPending, startOther] = useTransition();
-  const [otherError, setOtherError] = useState<string | null>(null);
-
-  function payAnotherWay() {
-    setOtherError(null);
-    startOther(async () => {
-      const res = await createTokenPackCheckout(packId);
-      if (!res.ok || !res.url) {
-        setOtherError(res.error ?? 'No pudimos abrir el pago en Mercado Pago.');
-        return;
-      }
-      window.location.href = res.url;
-    });
-  }
-
   return (
     <div>
       <MpCardBrick
@@ -108,30 +93,11 @@ export function PackCheckout({ packId, packLabel, publicKey, amountMajor, payerE
           </div>
         }
         fallback={
-          <>
-            <button
-              type="button"
-              onClick={payAnotherWay}
-              disabled={otherPending}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                color: 'var(--cc-txt-3)',
-                fontFamily: 'inherit',
-                fontSize: 12.5,
-                cursor: otherPending ? 'wait' : 'pointer',
-                textDecoration: 'underline',
-              }}
-            >
-              {otherPending
-                ? 'Abriendo Mercado Pago…'
-                : '¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Pagar en Mercado Pago →'}
-            </button>
-            {otherError && (
-              <p style={{ fontSize: 11.5, color: 'var(--cc-red)', marginTop: 6 }}>▸ {otherError}</p>
-            )}
-          </>
+          <HostedCheckoutButton
+            hint="¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Esos viven en la página de Mercado Pago."
+            label={`Pagar ${packLabel} en Mercado Pago →`}
+            start={() => createTokenPackCheckout(packId)}
+          />
         }
       />
     </div>
