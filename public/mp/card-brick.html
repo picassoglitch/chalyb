@@ -15,6 +15,12 @@
       Brick integration and nothing else: the SDK script tag, the documented
       container id, one bricks().create(). No app code shares this document.
 
+      Two channels carry the same messages. The parent, being same-origin,
+      prefers calling window.chalybMpHost.init(cfg, receive) directly and
+      receives through that callback; postMessage is the second channel, for
+      a parent that cannot reach in. Nothing on either path depends on the
+      other.
+
       Messages (parent origin is checked on both sides):
         parent → host   chalyb-mp:init            { strategy, publicKey, amount, payerEmail, maxInstallments, submitLabel, locale }
         parent → host   chalyb-mp:submit-result   { id, ok, error }
@@ -66,10 +72,41 @@
         var submitId = 0;
         var pendingSubmits = {};
 
+        // The direct channel: the parent's receive callback, when it used
+        // chalybMpHost.init. Falls back to postMessage.
+        var directReceive = null;
+
         function send(type, data) {
           var msg = Object.assign({ type: 'chalyb-mp:' + type }, data || {});
+          if (directReceive) {
+            try {
+              directReceive(msg);
+              return;
+            } catch (e) {}
+          }
           parentWin.postMessage(msg, parentOrigin || '*');
         }
+
+        function resolveSubmit(id, ok, error) {
+          var p = pendingSubmits[id];
+          if (!p) return;
+          delete pendingSubmits[id];
+          if (ok) p.resolve();
+          else p.reject(new Error(error || 'payment failed'));
+          reportHeight();
+        }
+
+        window.chalybMpHost = {
+          init: function (cfg, receive) {
+            if (typeof receive === 'function') directReceive = receive;
+            send('init-ack');
+            create(cfg);
+            return true;
+          },
+          submitResult: function (id, ok, error) {
+            resolveSubmit(id, ok, error);
+          }
+        };
 
         // ── Height ──────────────────────────────────────────────────────
         var lastHeight = -1;
@@ -243,12 +280,7 @@
             create(data);
           } else if (data.type === 'chalyb-mp:submit-result') {
             if (!parentOrigin || event.origin !== parentOrigin) return;
-            var p = pendingSubmits[data.id];
-            if (!p) return;
-            delete pendingSubmits[data.id];
-            if (data.ok) p.resolve();
-            else p.reject(new Error(data.error || 'payment failed'));
-            reportHeight();
+            resolveSubmit(data.id, data.ok, data.error);
           }
         });
 

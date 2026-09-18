@@ -119,6 +119,23 @@ type HostMessage =
     }
   | { type: 'chalyb-mp:resize'; height: number };
 
+/** What the host document exposes for the direct, same-origin channel. */
+interface HostApi {
+  init: (cfg: Record<string, unknown>, receive: (msg: HostMessage) => void) => boolean;
+  submitResult: (id: number, ok: boolean, error?: string) => void;
+}
+
+function hostApiOf(frame: HTMLIFrameElement | null): HostApi | null {
+  try {
+    const api = (frame?.contentWindow as (Window & { chalybMpHost?: HostApi }) | null | undefined)
+      ?.chalybMpHost;
+    return api && typeof api.init === 'function' ? api : null;
+  } catch {
+    // Cross-origin access throws; that document is not ours.
+    return null;
+  }
+}
+
 function log(step: string, detail?: unknown) {
   if (detail === undefined) console.info(`[mercadopago brick] ${step}`);
   else console.info(`[mercadopago brick] ${step}`, detail);
@@ -163,6 +180,10 @@ function BrickAttempt({
   const stage = useRef<'load' | 'sdk' | 'create' | 'onReady' | 'ready'>('load');
   const done = useRef(false);
   const initAcked = useRef(false);
+  /** The host's API when the direct channel is in use. */
+  const hostApi = useRef<HostApi | null>(null);
+  /** The current message handler; both channels call through it. */
+  const handleRef = useRef<(msg: HostMessage) => void>(() => {});
   const errors = useRef<string[]>([]);
   const poisonTimer = useRef<number | null>(null);
 
@@ -182,6 +203,22 @@ function BrickAttempt({
     if (win) win.postMessage(msg, window.location.origin);
   }, []);
 
+  const sendSubmitResult = useCallback(
+    (id: number, ok: boolean, error?: string) => {
+      const api = hostApi.current;
+      if (api) {
+        try {
+          api.submitResult(id, ok, error);
+          return;
+        } catch {
+          // fall through to postMessage
+        }
+      }
+      post({ type: 'chalyb-mp:submit-result', id, ok, error });
+    },
+    [post],
+  );
+
   const sendInit = useCallback(() => {
     if (initAcked.current || done.current) return;
     const win = frameRef.current?.contentWindow;
@@ -195,7 +232,7 @@ function BrickAttempt({
       });
     }
     const s = settingsRef.current;
-    post({
+    const cfg = {
       type: 'chalyb-mp:init',
       strategy,
       publicKey: s.publicKey,
@@ -204,7 +241,22 @@ function BrickAttempt({
       maxInstallments: s.maxInstallments,
       submitLabel: s.submitLabel,
       locale: 'es-MX',
-    });
+    };
+    // Same origin: call the host directly when it is there. No event
+    // system is involved, so nothing that hooks events can get between.
+    const api = hostApiOf(frameRef.current);
+    if (api) {
+      try {
+        hostApi.current = api;
+        api.init(cfg, (msg) => handleRef.current(msg));
+        log(`attempt "${strategy}": initialised the host by direct call`);
+        return;
+      } catch (err) {
+        hostApi.current = null;
+        console.warn(`[mercadopago brick] attempt "${strategy}": direct init threw`, err);
+      }
+    }
+    post(cfg);
   }, [post, strategy]);
 
   // Keep offering init until the host acknowledges it. Covers a host-ready
@@ -246,14 +298,10 @@ function BrickAttempt({
     };
   }, [strategy, fail]);
 
-  // Messages from the host document.
-  useEffect(() => {
-    const onMessage = (event: MessageEvent<HostMessage>) => {
-      if (event.origin !== window.location.origin) return;
-      if (!frameRef.current || event.source !== frameRef.current.contentWindow) return;
-      const data = event.data;
+  // Messages from the host document, from either channel.
+  const handle = useCallback(
+    (data: HostMessage) => {
       if (!data || typeof data.type !== 'string') return;
-
       switch (data.type) {
         case 'chalyb-mp:host-ready':
           sendInit();
@@ -323,16 +371,26 @@ function BrickAttempt({
         case 'chalyb-mp:submit':
           void callbacks.current
             .onSubmit(data.formData, data.additionalData)
-            .then((ok) => post({ type: 'chalyb-mp:submit-result', id: data.id, ok }))
-            .catch(() =>
-              post({ type: 'chalyb-mp:submit-result', id: data.id, ok: false, error: 'failed' }),
-            );
+            .then((ok) => sendSubmitResult(data.id, ok))
+            .catch(() => sendSubmitResult(data.id, false, 'failed'));
           break;
       }
+    },
+    [strategy, sendInit, fail, sendSubmitResult],
+  );
+  useEffect(() => {
+    handleRef.current = handle;
+  }, [handle]);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent<HostMessage>) => {
+      if (event.origin !== window.location.origin) return;
+      if (!frameRef.current || event.source !== frameRef.current.contentWindow) return;
+      handleRef.current(event.data);
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [strategy, sendInit, fail, post]);
+  }, []);
 
   // Watchdog: names the stage that stalled.
   useEffect(() => {
