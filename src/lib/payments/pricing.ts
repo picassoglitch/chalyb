@@ -50,7 +50,7 @@ export function formatMoney(amountCents: number, currency: string): string {
 
 export interface TokenPack {
   /** Stable slug used as the MP preference's external_reference. */
-  id: 'tokens_100k' | 'tokens_500k' | 'tokens_2m';
+  id: 'tokens_100k' | 'tokens_500k' | 'tokens_2m' | 'prueba_cobro';
   /** Tokens granted. Combined input+output, same units as TIER_CAPS. */
   tokens: number;
   /** Price in MXN minor units (centavos). */
@@ -59,6 +59,8 @@ export interface TokenPack {
   label: string;
   /** Marketing tagline. */
   tagline: string;
+  /** Not offered on /app/usage; reachable only by its checkout URL. */
+  hidden?: boolean;
 }
 
 export const TOKEN_PACKS: TokenPack[] = [
@@ -83,7 +85,22 @@ export const TOKEN_PACKS: TokenPack[] = [
     label: '+2M tokens',
     tagline: 'Mejor relación · pensado para usuarios PRO con uso pesado',
   },
+  {
+    // A real charge for the smallest amount worth attempting, so the
+    // operator can complete Mercado Pago's "recibir un pago real" step and
+    // prove the whole chain (form → order → webhook → grant) on production
+    // credentials. Admins may buy this one. /app/usage/checkout?pack=prueba_cobro
+    id: 'prueba_cobro',
+    tokens: 1_000,
+    amountCents: 1000, // MXN $10
+    label: 'Cobro de prueba',
+    tagline: 'Un cobro real mínimo para verificar la integración',
+    hidden: true,
+  },
 ];
+
+/** The packs offered on /app/usage. */
+export const PUBLIC_TOKEN_PACKS: TokenPack[] = TOKEN_PACKS.filter((p) => !p.hidden);
 
 /** Packs are priced in MXN like the tiers. One constant so the checkout
  *  preference and the webhook's amount check can't drift apart. */

@@ -31,10 +31,10 @@ export default async function PackCheckoutPage({
 
   const session = await getSessionUser();
   if (!session) redirect(`/sign-in?next=/app/usage/checkout?pack=${packParam ?? ''}`);
-  if (isAdminRole(session.role)) redirect('/app/usage' as Route);
-
   const pack = getTokenPack(packParam ?? '');
   if (!pack) redirect('/app/usage' as Route);
+  // Admins do not buy packs; the hidden test charge is for them, though.
+  if (isAdminRole(session.role) && !pack.hidden) redirect('/app/usage' as Route);
 
   const missing = missingCheckoutVars();
   const publicKey = getPublicKey();

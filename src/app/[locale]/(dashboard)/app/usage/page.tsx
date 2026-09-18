@@ -24,12 +24,14 @@
 
 import { setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import type { Route } from 'next';
+import { Link } from '@/i18n/routing';
 import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth/session';
 import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
 import { createClient } from '@/lib/supabase/server';
 import { TokenPackBuyButton } from '@/components/workspace/token-pack-buy-button';
-import { TOKEN_PACKS } from '@/lib/payments/pricing';
+import { PUBLIC_TOKEN_PACKS } from '@/lib/payments/pricing';
 import {
   getCurrentAccrualsForPartner,
   getPayoutsForPartner,
@@ -461,6 +463,43 @@ export default async function UsagePage({
         </div>
       )}
 
+      {/* Operator: one real charge for the minimum amount, to complete Mercado
+          Pago's "recibir un pago real" step and prove the chain end to end. */}
+      {isAdmin && (
+        <div className="cc-mod-section">
+          <div className="cc-mod-sl">Verificar cobros</div>
+          <p
+            style={{
+              fontSize: 12.5,
+              color: 'var(--cc-txt-3)',
+              maxWidth: '64ch',
+              lineHeight: 1.55,
+              marginBottom: 10,
+            }}
+          >
+            Un cobro real de <b>$10 MXN</b> con tarjeta, por el mismo camino que un pack:
+            formulario, orden en Mercado Pago, webhook y acreditación (1,000 tokens). Mercado Pago
+            rechaza pagarte a ti mismo: usa una tarjeta que no esté ligada a la cuenta que cobra.
+          </p>
+          <Link
+            href={'/app/usage/checkout?pack=prueba_cobro' as Route}
+            style={{
+              display: 'inline-block',
+              padding: '11px 18px',
+              borderRadius: 9,
+              background: 'var(--cc-green)',
+              color: '#070809',
+              fontFamily: 'inherit',
+              fontSize: 13.5,
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Hacer un cobro de prueba · $10 MXN →
+          </Link>
+        </div>
+      )}
+
       {/* Buy top-up packs — hidden for admins */}
       {!isAdmin && (
         <div className="cc-mod-section">
@@ -479,7 +518,7 @@ export default async function UsagePage({
             después).
           </p>
           <div className="cc-mod-grid">
-            {TOKEN_PACKS.map((pack) => (
+            {PUBLIC_TOKEN_PACKS.map((pack) => (
               <div
                 key={pack.id}
                 className="cc-mod-card"

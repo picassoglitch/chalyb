@@ -62,18 +62,18 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
     if (!session) {
       return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
     }
+    const pack = getTokenPack(packId);
+    if (!pack) {
+      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${packId}` };
+    }
     // Admins don't need packs. If we let them buy anyway it'd be confusing.
-    if (isAdminRole(session.role)) {
+    // The hidden test charge is the exception: it exists for the operator.
+    if (isAdminRole(session.role) && !pack.hidden) {
       return {
         ok: false,
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
-    }
-
-    const pack = getTokenPack(packId);
-    if (!pack) {
-      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${packId}` };
     }
 
     // Same rule as the tier checkout: decided before the SDK is touched, so
@@ -226,16 +226,16 @@ export async function payTokenPackWithCard(input: {
     if (!session) {
       return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
     }
-    if (isAdminRole(session.role)) {
+    const pack = getTokenPack(input.packId);
+    if (!pack) {
+      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${input.packId}` };
+    }
+    if (isAdminRole(session.role) && !pack.hidden) {
       return {
         ok: false,
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
-    }
-    const pack = getTokenPack(input.packId);
-    if (!pack) {
-      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${input.packId}` };
     }
     if (!isCheckoutReady()) {
       console.error('[token-pack-card] refusing to charge:', checkoutNotReadyError());
