@@ -63,12 +63,12 @@ export function Hero() {
                 <svg viewBox="0 0 392 100" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="lpChartFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#f7ce87" stopOpacity="0.32" />
-                      <stop offset="100%" stopColor="#f7ce87" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#f0b44e" stopOpacity="0.32" />
+                      <stop offset="100%" stopColor="#f0b44e" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                   <path d={`${CHART_LINE} L392,100 L0,100 Z`} fill="url(#lpChartFill)" />
-                  <path d={CHART_LINE} fill="none" stroke="#f7ce87" strokeWidth="2" />
+                  <path d={CHART_LINE} fill="none" stroke="#f0b44e" strokeWidth="2" />
                 </svg>
               </div>
             </div>

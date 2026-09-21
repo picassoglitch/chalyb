@@ -5,28 +5,42 @@ consumer actually renders at. Hand this to whoever produces the assets.
 
 ## Status
 
-Every slot below is **filled**, derived from the supplied 3D logo render — a
-379×338 fully-opaque PNG whose emblem measures 275×275, with the grey gradient
-backdrop keyed out by modelling it from the four corners and subtracting. The
-Nexo-era artwork is gone: `public/chalybclip-mark.png` was the NexoClip "NC"
-monogram with only the filename changed, and the platform mark was the Nexo
-**N** (`fusion-mark.tsx` called its own geometry the "N-path", while
-`icon.svg` described the identical path as a "Chalyb 'C'").
+Every slot below is **filled**, derived from `logo-master.jpg` in this folder —
+a 2000×2000 opaque JPEG whose emblem measures 1801×1801. Run
+`scripts/build-brand-assets.py` to regenerate the lot. The Nexo-era artwork is
+gone: `public/chalybclip-mark.png` was the NexoClip "NC" monogram with only the
+filename changed, and the platform mark was the Nexo **N** (`fusion-mark.tsx`
+called its own geometry the "N-path", while `icon.svg` described the identical
+path as a "Chalyb 'C'").
 
 **What is still owed, and why it matters:**
 
-| Gap                       | Consequence today                                                            |
-| ------------------------- | ---------------------------------------------------------------------------- |
-| No vector master          | Every asset is a 275px raster upscaled to its slot. The 512px ones are soft. |
-| No simplified small cut   | The favicon is a blur at 16px. It only reads from ~48px up.                  |
-| No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.         |
-| No wordmark file          | The social image sets `CHALYB` in Bricolage Grotesque, not the real face.    |
+| Gap                       | Consequence today                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| No vector master          | Every asset is a raster downscale. Fine at the sizes the app uses, but it cannot be recoloured or redrawn. |
+| No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.                                       |
+| No wordmark file          | The social image sets `CHALYB` in Liberation Sans, not the real face.                                      |
+
+The **simplified small cut** is no longer urgent. It was, against the first
+render: a muted six-strand knot that went to mush below 32 px. This master is
+bolder — two high-contrast hues in a pinwheel, a solid white star, a heavy
+silver ring — and at 2000 px there is real detail to downsample from, so 16 px
+now resolves into a legible mark rather than a smudge. A purpose-drawn 16 px
+cut would still be sharper.
+
+**One easy win, if the render is easy to re-export: a PNG with an alpha
+channel.** The master is opaque, so every asset here starts by keying a
+backdrop out, and a faint speckled arc of drop shadow survives along the
+mark's lower-left edge. It resists removal for a specific reason — the shadow
+there measures lum~203/sat~20 against a silver ring of lum~210/sat~15, so no
+colour rule tells them apart; it is connected to the mark, so component
+filtering keeps it; and it sits at radius 843–896 where the mark's own body
+reaches 854, so no radial cutoff separates them without shaving the shield's
+points. A transparent export deletes the problem rather than working around
+it, and reduces the script to a resize.
 
 Sections A–F below are unchanged: they are still the ask. Supplying them
 replaces the derived assets in place — the paths and sizes do not move.
-
-The derivation is reproducible; the script is recorded in the commit that
-added these assets.
 
 ---
 
@@ -43,10 +57,10 @@ cut (one colour, no gradient, no inner detail) puts it back.
 
 **2. The mark has to survive 20 px.** It renders at **20 px** in the landing
 footer, **26 px** in the nav and both sidebars, and **16 px** in the favicon.
-A multi-strand gradient knot turns to mud at that size. The small sizes need a
-**simplified mark** — fewer strands, heavier strokes, no gradient — not a
-scaled-down master. Expect to draw two: full detail for large, simplified for
-≤32 px.
+The current master survives this because it is bold and high-contrast; the
+render before it did not. Any future mark has to clear the same bar, and the
+sharpest answer is still a **simplified cut** for ≤32 px — fewer strands,
+heavier strokes, no gradient — rather than a scaled-down master.
 
 **3. Engine tiles are `object-cover`, so those marks need their own
 background.** `engine-glyph.tsx` renders the mark filling a square tile with
@@ -57,7 +71,7 @@ component to letterbox a transparent mark instead.
 **4. The brand colour is a button background with near-black text on it.**
 `engine-hero.tsx` sets `INK = '#0a0c0e'` as the label colour on a solid
 brand-coloured button, and `.lp-btn-primary` does the same on the landing.
-This is why the primary slot went to the emblem's **gold** and not its indigo
+This is why the primary slot went to the emblem's **gold** and not its blue
 — see section E for the measured ratios. Any future change to the primary has
 to clear that bar or change every such button to light text.
 
@@ -85,8 +99,8 @@ being installed.
 | B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | Draws its own rounded dark tile. Was `icon.svg`; now a 512×512 PNG, so an SVG here would be an upgrade                                            |
 | B3  | `public/apple-touch-icon.png` | **PNG**                   | **180×180**            | **Opaque — iOS composites transparency onto white.** Keep ~10% padding inside the square; iOS rounds the corners itself, so do not pre-round them |
 
-B2 is a **512×512 PNG** today, which is what the current render supports. An
-SVG is still preferable — Next accepts either at that path.
+B2 is a **512×512 PNG** today. An SVG is still preferable — it would stay
+sharp on any display, and Next accepts either at that path.
 
 Optional, only if a PWA manifest is ever added (there is none today):
 `icon-192.png` and `icon-512.png`, opaque, plus a maskable variant with 20%
@@ -96,8 +110,8 @@ safe padding.
 
 The app had **no** `opengraph-image` or `twitter-image` at all, so links to
 chalyb.com unfurled with no image. Both now exist, composed from the emblem
-plus a `CHALYB` wordmark set in Bricolage Grotesque — a stand-in for the real
-face (section F).
+plus a `CHALYB` wordmark set in Liberation Sans — a stand-in for the real face
+(section F).
 
 | #   | Destination path              | Format     | Size         | Limit  |
 | --- | ----------------------------- | ---------- | ------------ | ------ |
@@ -149,18 +163,18 @@ from the emblem and are now set in two places —
 (`--brand*`, plus the Tailwind v4 `@theme` colours). The old names are kept as
 aliases so those 147 call sites did not have to churn alongside the artwork.
 
-| Slot          | Was                   | Now           | Why                               |
-| ------------- | --------------------- | ------------- | --------------------------------- |
-| primary       | `#9eea3a` / `#c6f24e` | **`#f7ce87`** | the emblem's gold highlight       |
-| primary hover | `#7bc220` / `#8aa83a` | **`#dda670`** | its gold body                     |
-| accent        | `#42d9e8` / `#3df5e0` | **`#8ea2e8`** | its indigo, lifted for legibility |
+| Slot          | Was                   | Now           | Why                                     |
+| ------------- | --------------------- | ------------- | --------------------------------------- |
+| primary       | `#9eea3a` / `#c6f24e` | **`#f0b44e`** | the emblem's gold, lifted off `#e1a131` |
+| primary hover | `#7bc220` / `#8aa83a` | **`#e1a131`** | its gold body, measured                 |
+| accent        | `#42d9e8` / `#3df5e0` | **`#5aa9f0`** | its blue, lifted for legibility         |
 
-**Gold, not indigo, carries the primary slot.** Both `.lp-btn-primary` and
+**Gold, not blue, carries the primary slot.** Both `.lp-btn-primary` and
 `engine-hero.tsx` fill with the brand colour and put near-black text _on_ it.
-Measured against that ink: gold `#f7ce87` gives **13.2:1** — near-identical to
-the acid green's 13.3:1, so no component changed — while the emblem's indigo
-`#383f89` gives **2.1:1** and would have forced every such button to light
-text. If the brand insists on an indigo primary, that is the work it implies.
+Measured against that ink: gold `#f0b44e` gives **10.6:1**, comfortably clear
+of the 4.5:1 bar, so no component changed — while the emblem's blue `#1e5cca`
+gives **3.2:1** and would have forced every such button to light text. If the
+brand insists on a blue primary, that is the work it implies.
 
 Original ask, for reference:
 

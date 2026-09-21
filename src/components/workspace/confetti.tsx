@@ -19,7 +19,7 @@ interface Particle {
 }
 
 // Brand-ish palette: green / cyan / purple / amber accents used across the app.
-const COLORS = ['#f7ce87', '#8ea2e8', '#9d7bff', '#dda670', '#ffffff'];
+const COLORS = ['#f0b44e', '#5aa9f0', '#9d7bff', '#e1a131', '#ffffff'];
 
 export function Confetti({ durationMs = 2400 }: { durationMs?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
