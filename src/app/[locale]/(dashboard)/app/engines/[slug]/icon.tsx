@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-// Per-engine tab icon. A file-based icon (src/app/icon.svg) overrides any
+// Per-engine tab icon. A file-based icon (src/app/icon.png) overrides any
 // `metadata.icons` we'd set in generateMetadata, so the only way to give the
 // ChalyClip workspace its own favicon is this code-generated icon route, which
 // receives the dynamic `slug` and branches on it. Every other engine keeps the
@@ -16,10 +16,9 @@ export default async function Icon({ params }: { params: Promise<{ slug: string 
   const isChalybclip = slug === 'chalybclip';
   const filePath = isChalybclip
     ? join(process.cwd(), 'public', 'chalybclip-mark.png')
-    : join(process.cwd(), 'src', 'app', 'icon.svg');
-  const mime = isChalybclip ? 'image/png' : 'image/svg+xml';
+    : join(process.cwd(), 'src', 'app', 'icon.png');
   const data = await readFile(filePath);
-  const src = `data:${mime};base64,${data.toString('base64')}`;
+  const src = `data:image/png;base64,${data.toString('base64')}`;
 
   return new ImageResponse(
     <div

@@ -83,7 +83,7 @@ export function MessageThread({ messages, viewer, emptyMessage }: Props) {
                   : 'var(--cc-panel-2)',
                 border: '1px solid',
                 borderColor: fromViewer
-                  ? 'rgba(158, 234, 58, 0.35)'
+                  ? 'rgba(247, 206, 135, 0.35)'
                   : 'var(--cc-line)',
                 color: 'var(--cc-txt)',
                 fontSize: 13.5,

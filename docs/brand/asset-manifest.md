@@ -3,12 +3,30 @@
 Everything the codebase loads as brand artwork, with the format and size each
 consumer actually renders at. Hand this to whoever produces the assets.
 
-Written against the identity replacing the Nexo-era artwork. **Both marks in
-the repo today are pre-rebrand**: `public/chalybclip-mark.png` is the NexoClip
-"NC" monogram with only the filename changed, and the platform mark in
-`icon.svg` / `brand-mark.tsx` / `fusion-mark.tsx` is the Nexo **N** — the
-comment in `fusion-mark.tsx` says "N-path" outright, while `icon.svg` calls
-the same geometry a "Chalyb 'C'". Neither is a Chalyb asset.
+## Status
+
+Every slot below is **filled**, derived from the supplied 3D logo render — a
+379×338 fully-opaque PNG whose emblem measures 275×275, with the grey gradient
+backdrop keyed out by modelling it from the four corners and subtracting. The
+Nexo-era artwork is gone: `public/chalybclip-mark.png` was the NexoClip "NC"
+monogram with only the filename changed, and the platform mark was the Nexo
+**N** (`fusion-mark.tsx` called its own geometry the "N-path", while
+`icon.svg` described the identical path as a "Chalyb 'C'").
+
+**What is still owed, and why it matters:**
+
+| Gap                       | Consequence today                                                            |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| No vector master          | Every asset is a 275px raster upscaled to its slot. The 512px ones are soft. |
+| No simplified small cut   | The favicon is a blur at 16px. It only reads from ~48px up.                  |
+| No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.         |
+| No wordmark file          | The social image sets `CHALYB` in Bricolage Grotesque, not the real face.    |
+
+Sections A–F below are unchanged: they are still the ask. Supplying them
+replaces the derived assets in place — the paths and sizes do not move.
+
+The derivation is reproducible; the script is recorded in the commit that
+added these assets.
 
 ---
 
@@ -17,12 +35,11 @@ the same geometry a "Chalyb 'C'". Neither is a Chalyb asset.
 Four constraints come from how the code uses the artwork, not from taste.
 Getting them wrong means assets that have to be redrawn.
 
-**1. The nav mark is tinted by CSS, so it cannot be multi-colour.**
-`brand-mark.tsx` strokes with `stroke="currentColor"` and the nav and footer
-set the colour. A gradient cannot inherit `currentColor`. Supply a **flat
-single-colour** version of the mark (one colour, no gradient, no inner detail)
-for that slot — or say explicitly that the nav should carry the full-colour
-mark instead, and the tinting gets removed.
+**1. The nav mark was tinted by CSS, so it cannot be multi-colour.**
+`brand-mark.tsx` stroked with `stroke="currentColor"` and the nav and footer
+set the colour. A gradient cannot inherit `currentColor`, so that component is
+now an `<Image>` and the tinting is gone. Supplying a **flat single-colour**
+cut (one colour, no gradient, no inner detail) puts it back.
 
 **2. The mark has to survive 20 px.** It renders at **20 px** in the landing
 footer, **26 px** in the nav and both sidebars, and **16 px** in the favicon.
@@ -39,9 +56,10 @@ component to letterbox a transparent mark instead.
 
 **4. The brand colour is a button background with near-black text on it.**
 `engine-hero.tsx` sets `INK = '#0a0c0e'` as the label colour on a solid
-`--cc-green` button. Acid green carries dark text at ~11:1 contrast. A mid
-indigo will not — it needs light text, which is a component change, not a
-token swap. Flag which way the new primary goes.
+brand-coloured button, and `.lp-btn-primary` does the same on the landing.
+This is why the primary slot went to the emblem's **gold** and not its indigo
+— see section E for the measured ratios. Any future change to the primary has
+to clear that bar or change every such button to light text.
 
 ---
 
@@ -64,30 +82,30 @@ being installed.
 | #   | Destination path              | Format                    | Size                   | Background                                                                                                                                        |
 | --- | ----------------------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | B1  | `src/app/favicon.ico`         | **ICO**, multi-resolution | 16, 32, 48 in one file | **Opaque** dark                                                                                                                                   |
-| B2  | `src/app/icon.svg`            | **SVG**                   | Square viewBox         | Draws its own rounded dark tile (currently `rx=40` on a 200×200 box)                                                                              |
+| B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | Draws its own rounded dark tile. Was `icon.svg`; now a 512×512 PNG, so an SVG here would be an upgrade                                            |
 | B3  | `public/apple-touch-icon.png` | **PNG**                   | **180×180**            | **Opaque — iOS composites transparency onto white.** Keep ~10% padding inside the square; iOS rounds the corners itself, so do not pre-round them |
 
-B2 can be a **512×512 PNG** instead if the mark is too complex to hand-tune as
-a small SVG — Next accepts `icon.png` in the same slot.
+B2 is a **512×512 PNG** today, which is what the current render supports. An
+SVG is still preferable — Next accepts either at that path.
 
 Optional, only if a PWA manifest is ever added (there is none today):
 `icon-192.png` and `icon-512.png`, opaque, plus a maskable variant with 20%
 safe padding.
 
-## C. Social preview — currently missing entirely
+## C. Social preview
 
-The app has **no** `opengraph-image` or `twitter-image`, so links to
-chalyb.com unfurl with no image at all. This is the one slot the mockup render
-fits as-is.
+The app had **no** `opengraph-image` or `twitter-image` at all, so links to
+chalyb.com unfurled with no image. Both now exist, composed from the emblem
+plus a `CHALYB` wordmark set in Bricolage Grotesque — a stand-in for the real
+face (section F).
 
 | #   | Destination path              | Format     | Size         | Limit  |
 | --- | ----------------------------- | ---------- | ------------ | ------ |
 | C1  | `src/app/opengraph-image.png` | PNG or JPG | **1200×630** | < 8 MB |
 | C2  | `src/app/twitter-image.png`   | PNG or JPG | **1200×630** | < 5 MB |
 
-Same file can serve both. The render supplied is **1024×559** — re-export at
-1200×630 rather than upscaling. Keep the wordmark and URL out of the outer
-~5%: every platform crops these differently.
+One file serves both. Keep the wordmark and URL out of the outer ~5%: every
+platform crops these differently.
 
 Optional: `opengraph-image.alt.txt` beside it, one line of alt text.
 
@@ -104,6 +122,14 @@ the hero on the engine page (**160×160**), and the generated tab icon in
 | D2  | ChalyOBS    | `public/chalybobs-mark.png`    | PNG                      | 512×512     |
 | D3  | ChalyCrypto | `public/chalybcrypto-mark.png` | PNG                      | 512×512     |
 
+**⚠ ChalyClip currently shows the PLATFORM emblem.** The supplied render is
+the Chalyb mark, and it was put in `chalybclip-mark.png` because the
+alternative was leaving NexoClip's "NC" in place. The consequence is that the
+ChalyClip tile and the Chalyb favicon are the same picture, which reads as a
+bug rather than a brand. Two ways out, both cheap: give ChalyClip its own mark
+(D1 below), or drop it to a Lucide glyph like every other engine — a one-line
+change in `engine-glyph.tsx`.
+
 D2 and D3 are **optional**: those engines currently render Lucide glyphs
 (`Video`, `CandlestickChart`) and look fine. Supply them only if each engine
 gets its own mark in the new system.
@@ -117,9 +143,26 @@ See `src/lib/engines/display-names.ts`.
 
 ## E. Colour tokens
 
-`--cc-green` alone appears in **147 places** across `src/`. The tokens live in
-`src/app/[locale]/(dashboard)/dashboard/dashboard.css:27-53`. I need hex
-values for these — the rest of the palette is semantic and stays put:
+`--cc-green` alone appears in **147 places** across `src/`. Values were sampled
+from the emblem and are now set in two places —
+`dashboard.css` (`--cc-brand*` / `--cc-accent*`) and `globals.css`
+(`--brand*`, plus the Tailwind v4 `@theme` colours). The old names are kept as
+aliases so those 147 call sites did not have to churn alongside the artwork.
+
+| Slot          | Was                   | Now           | Why                               |
+| ------------- | --------------------- | ------------- | --------------------------------- |
+| primary       | `#9eea3a` / `#c6f24e` | **`#f7ce87`** | the emblem's gold highlight       |
+| primary hover | `#7bc220` / `#8aa83a` | **`#dda670`** | its gold body                     |
+| accent        | `#42d9e8` / `#3df5e0` | **`#8ea2e8`** | its indigo, lifted for legibility |
+
+**Gold, not indigo, carries the primary slot.** Both `.lp-btn-primary` and
+`engine-hero.tsx` fill with the brand colour and put near-black text _on_ it.
+Measured against that ink: gold `#f7ce87` gives **13.2:1** — near-identical to
+the acid green's 13.3:1, so no component changed — while the emblem's indigo
+`#383f89` gives **2.1:1** and would have forced every such button to light
+text. If the brand insists on an indigo primary, that is the work it implies.
+
+Original ask, for reference:
 
 | Token          | Today                   | Needs                                            |
 | -------------- | ----------------------- | ------------------------------------------------ |
@@ -137,8 +180,11 @@ Also needed:
 - **Button text colour**, per constraint 4 above.
 - `--cc-purple`, `--cc-amber`, `--cc-red` are **status** colours (paused,
   warning, error). They stay unless the new system defines its own.
-- Three hardcoded hexes also need updating: `fusion-mark.tsx:17,21,26-27`,
-  `icon.svg:8,13,19`, and the confetti palette in `confetti.tsx:22`.
+- Hardcoded hexes were updated too: the confetti palette (`confetti.tsx`), the
+  email accent (`lib/email/templates.ts`), the landing hero's chart gradient
+  (`landing/hero.tsx`), a message bubble border, and the inline `rgba()` glows
+  in both stylesheets. `fusion-mark.tsx` and `icon.svg` no longer hold any —
+  the first renders an `<Image>`, the second is deleted.
 
 ## F. Type
 
