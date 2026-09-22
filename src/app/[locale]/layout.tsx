@@ -30,7 +30,7 @@ export async function generateMetadata({
       template: '%s · Chalyb',
     },
     description: messages.meta.description,
-    // Icons come from the file conventions (app/favicon.ico, app/icon.svg) and
+    // Icons come from the file conventions (app/favicon.ico, app/icon.png) and
     // from public/apple-touch-icon.png, which iOS requests by that exact path.
     // Declaring `icons` here would replace the convention's <link> tags, so we
     // don't — see src/app/favicon.ico and public/apple-touch-icon.png.

@@ -1,31 +1,24 @@
-// REAL Chalyb brand mark — copy-verbatim from the prototype.
-// N-path stroked in green + 6 node circles (4 corners green, 2 inner cyan).
-// Do NOT redraw this. Do NOT add/remove circles. This IS the brand.
+import Image from 'next/image';
 
+// The Chalyb mark, as it appears in the command-center and workspace sidebars.
+// Same emblem as the landing nav (BrandMark) and the browser tab
+// (src/app/icon.png) — one asset, public/chalyb-mark.png.
+//
+// WAS the pre-rebrand Nexo "N": a stroked N-path in acid green with six node
+// circles, carried over verbatim from the prototype. It was never a Chalyb
+// mark. Replaced with the 2026 emblem.
+//
+// Raster, so it softens below ~32px; both callers render it at 26px. See
+// docs/brand/asset-manifest.md for what a vector master would fix.
 export function FusionMark({ size = 26, className }: { size?: number; className?: string }) {
   return (
-    <svg
-      viewBox="0 0 200 200"
+    <Image
+      src="/chalyb-mark.png"
+      alt="Chalyb"
       width={size}
       height={size}
-      aria-label="Chalyb"
       className={className}
-    >
-      <path
-        d="M44,150 L44,50 L66,50 L122,118 L122,50 L156,50 L156,150 L134,150 L78,82 L78,150 Z"
-        fill="none"
-        stroke="#9eea3a"
-        strokeWidth="7"
-        strokeLinejoin="round"
-      />
-      <g fill="#9eea3a">
-        <circle cx="44" cy="50" r="6" />
-        <circle cx="156" cy="50" r="6" />
-        <circle cx="44" cy="150" r="6" />
-        <circle cx="156" cy="150" r="6" />
-        <circle cx="122" cy="84" r="5" fill="#42d9e8" />
-        <circle cx="78" cy="116" r="5" fill="#42d9e8" />
-      </g>
-    </svg>
+      priority
+    />
   );
 }

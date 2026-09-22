@@ -148,10 +148,17 @@ export default async function EngineWorkspacePage({
 
       {/* ChalyClip brand hero — the same mark the home card and the engines
           list use (public/chalybclip-mark.png), with the wordmark set in text.
-          The only full lockup in the repo still carries the pre-rebrand name,
-          so it is not shipped; swap this block for a real ChalyClip lockup
-          when design has one. The mark's own dark background (#03040b) matches
-          the banner fill, so it reads as a floating mark, not a pasted tile. */}
+          The wordmark follows lib/engines/display-names.ts: `Chaly` + what it
+          does, no `b`. The `b` stays in the FILENAME because that is a wire
+          value, like the slug and the hostname.
+
+          ⚠ THE MARK ITSELF IS STILL PRE-REBRAND: the artwork is the NexoClip
+          "NC" monogram and only the file was renamed, so this hero reads
+          "NC" over the word "chalyclip". Swapping in a real ChalyClip lockup
+          is a design task, not a code one — drop the new art at the same path
+          and this block picks it up. The mark's own dark background (#03040b)
+          matches the banner fill, so it reads as a floating mark, not a
+          pasted tile. */}
       {isChalybclip && (
         <div
           style={{
@@ -183,7 +190,7 @@ export default async function EngineWorkspacePage({
               color: '#f4f6f8',
             }}
           >
-            chalyb<span style={{ color: 'var(--cc-green)' }}>clip</span>
+            chaly<span style={{ color: 'var(--cc-green)' }}>clip</span>
           </div>
           <div
             style={{

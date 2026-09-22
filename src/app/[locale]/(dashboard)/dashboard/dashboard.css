@@ -3,7 +3,7 @@
   Verbatim port of .chalyb-reference/reference-prototype-userdashboard.html <style> block,
   scoped under .cc-shell so the dashboard's color discipline can't leak into / be leaked
   on by the marketing site.
-  Token discipline: green (#9eea3a) is LIVE/ACTIVE/REVENUE/SUCCESS ONLY.
+  Token discipline: the brand gold (--cc-brand) is LIVE/ACTIVE/REVENUE/SUCCESS ONLY.
   cyan = training/processing · purple = AI/rendering · amber = delayed/queue ·
   red = failure/error · blue = deploying/staging.
 */
@@ -39,11 +39,27 @@ body:has(.cc-shell) {
   --cc-txt-3: #6b7480;
   --cc-txt-4: #454c56;
   /* state palette — each color MEANS something */
-  --cc-green: #9eea3a;
-  --cc-green-d: #7bc220;
-  --cc-green-g: rgba(158, 234, 58, 0.18);
-  --cc-cyan: #42d9e8;
-  --cc-cyan-g: rgba(66, 217, 232, 0.16);
+  /* Brand accent, sampled from the mark (docs/brand/logo-master.png): the
+     gold of its warm strands, and the indigo of its cool ones lifted until it
+     is legible on this background.
+     Gold rather than indigo carries the primary slot because it is
+     used as a BUTTON FILL with near-black ink on it (see engine-hero.tsx) —
+     #e8bb7f gives that 11.1:1, where the mark's indigo #373e7f gives 2.0:1
+     and would have forced every such button to light text.
+
+     The --cc-green-* names are the acid-green identity this replaced. They are
+     kept as aliases so the ~147 call sites did not have to churn in the same
+     commit as the artwork; prefer --cc-brand-* in new code. */
+  --cc-brand: #e8bb7f;
+  --cc-brand-d: #be8c66;
+  --cc-brand-g: rgba(232, 187, 127, 0.18);
+  --cc-accent: #8ea2e8;
+  --cc-accent-g: rgba(142, 162, 232, 0.16);
+  --cc-green: var(--cc-brand);
+  --cc-green-d: var(--cc-brand-d);
+  --cc-green-g: var(--cc-brand-g);
+  --cc-cyan: var(--cc-accent);
+  --cc-cyan-g: var(--cc-accent-g);
   --cc-purple: #9d7bff;
   --cc-purple-g: rgba(157, 123, 255, 0.16);
   --cc-amber: #f5b13d;
@@ -141,7 +157,7 @@ body:has(.cc-shell) {
   letter-spacing: 0.1em;
   color: var(--cc-green);
   background: var(--cc-green-g);
-  border: 1px solid rgba(158, 234, 58, 0.3);
+  border: 1px solid rgba(232, 187, 127, 0.3);
   padding: 3px 7px;
   border-radius: 5px;
   text-transform: uppercase;
@@ -457,7 +473,7 @@ body:has(.cc-shell) {
 }
 .cc-chip.on {
   background: var(--cc-green-g);
-  border-color: rgba(158, 234, 58, 0.4);
+  border-color: rgba(232, 187, 127, 0.4);
   color: var(--cc-green);
 }
 .cc-chip-n {
@@ -999,7 +1015,7 @@ body:has(.cc-shell) {
   color: var(--cc-txt);
 }
 .cc-mini.go:hover {
-  border-color: rgba(158, 234, 58, 0.5);
+  border-color: rgba(232, 187, 127, 0.5);
   color: var(--cc-green);
   background: var(--cc-green-g);
 }
@@ -2061,12 +2077,12 @@ body:has(.cc-shell) {
 .cc-mod-badge.gr {
   color: var(--cc-green);
   background: var(--cc-green-g);
-  border-color: rgba(158, 234, 58, 0.3);
+  border-color: rgba(232, 187, 127, 0.3);
 }
 .cc-mod-badge.cy {
   color: var(--cc-cyan);
   background: var(--cc-cyan-g);
-  border-color: rgba(66, 217, 232, 0.3);
+  border-color: rgba(142, 162, 232, 0.3);
 }
 .cc-mod-badge.pu {
   color: var(--cc-purple);
