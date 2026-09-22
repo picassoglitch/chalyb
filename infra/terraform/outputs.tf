@@ -38,3 +38,8 @@ output "cloud_build_service_account" {
   description = "Pass to `gcloud builds submit --service-account=projects/<project>/serviceAccounts/<this>`."
   value       = google_service_account.deployer.email
 }
+
+output "build_source_bucket" {
+  description = "Pass to `gcloud builds submit --gcs-source-staging-dir=gs://<this>/source`. The deployer can read this bucket and nothing else."
+  value       = google_storage_bucket.build_source.name
+}

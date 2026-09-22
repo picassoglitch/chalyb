@@ -167,19 +167,27 @@ which is why state lives in a private, versioned bucket and not on a laptop.
 You never type these — but you do need to **copy the hub's pair into Vercel**:
 
 ```sh
-for s in chalybclip-sso-secret chalybclip-admin-token; do
-  printf '%s  ' "$s"; gcloud secrets versions access latest --secret="$s" --project=chalyb; echo
+for e in chalybclip chalybobs chalybcrypto; do
+  for s in sso-secret admin-token; do
+    printf '%s  ' "$e-$s"; gcloud secrets versions access latest --secret="$e-$s" --project=chalyb; echo
+  done
 done
 ```
 
-| GCP secret               | Vercel env var           |
-| ------------------------ | ------------------------ |
-| `chalybclip-sso-secret`  | `CHALYBCLIP_SSO_SECRET`  |
-| `chalybclip-admin-token` | `CHALYBCLIP_ADMIN_TOKEN` |
+| GCP secret                 | Vercel env var             |
+| -------------------------- | -------------------------- |
+| `chalybclip-sso-secret`    | `CHALYBCLIP_SSO_SECRET`    |
+| `chalybclip-admin-token`   | `CHALYBCLIP_ADMIN_TOKEN`   |
+| `chalybobs-sso-secret`     | `CHALYBOBS_SSO_SECRET`     |
+| `chalybobs-admin-token`    | `CHALYBOBS_ADMIN_TOKEN`    |
+| `chalybcrypto-sso-secret`  | `CHALYBCRYPTO_SSO_SECRET`  |
+| `chalybcrypto-admin-token` | `CHALYBCRYPTO_ADMIN_TOKEN` |
 
-Same for `chalybobs` and `chalybcrypto`. The hub signs the launch token with
-its copy and the engine verifies with its own; if they differ, every SSO
-launch fails signature verification with a generic error.
+The hub derives the variable name from the slug uppercased
+(`src/lib/engines/integrations/factory.ts`), so any `NEXOCLIP_*` leftovers
+from before the rename are dead and should go. The hub signs the launch
+token with its copy and the engine verifies with its own; if they differ,
+every SSO launch fails signature verification with a generic error.
 
 **Placeholders you replace (six).** Created holding the string `REPLACE_ME`
 so deploys work; the real value comes from somewhere else:
@@ -189,7 +197,11 @@ terraform output secrets_needing_values
 ```
 
 The three database URLs are all the same Supabase connection string — the
-engines share that Postgres — from Supabase → Project Settings → Database:
+engines share that Postgres. Get it from the **Connect** button at the top
+of the Supabase dashboard, and pick the **Session pooler** (port 5432 on
+`aws-0-<region>.pooler.supabase.com`). Not the other two: the direct host is
+IPv6-only, which Cloud Run cannot reach, and the transaction pooler on 6543
+breaks ChalyClip's asyncpg prepared statements.
 
 ```sh
 read -rs DSN   # paste the DSN; -s keeps it off the screen
@@ -216,38 +228,58 @@ genuinely painful to debug.
 
 **Then redeploy.** Cloud Run pins `latest` to a specific version when a
 revision is created. The revision Terraform made is holding `REPLACE_ME`, and
-it will keep holding it until a new revision is deployed. The Cloud Build
-pipeline in step 5 does that on every push, so in practice: fill the
-placeholders before your first `gcloud builds submit`, not after.
+it will keep holding it until a new revision is deployed — which only the
+`gcloud builds submit` in step 5 does. So in practice: fill the placeholders
+before your first build, not after.
 
 ## 5. Build and deploy an engine
 
-```sh
-gcloud auth configure-docker us-central1-docker.pkg.dev
-```
-
-Get the build identity once, from this repo:
+Nothing deploys on push. There is no Cloud Build trigger and no GitHub
+workflow that deploys — every deploy is this command, run by you, from the
+engine's own repo (for example `picassoglitch/ChalyClip`):
 
 ```sh
-terraform -chdir=infra/terraform output -raw cloud_build_service_account
-# chalyb-deployer@chalyb.iam.gserviceaccount.com
-```
-
-Then from the engine's own repo (for example `picassoglitch/ChalyClip`):
-
-```sh
-gcloud builds submit --config=cloudbuild.yaml \
+gcloud builds submit --config=cloudbuild.yaml --project=chalyb \
   --service-account=projects/chalyb/serviceAccounts/chalyb-deployer@chalyb.iam.gserviceaccount.com \
-  --substitutions=_PROJECT=chalyb,_SERVICE=chalybclip,_HAS_WORKER=true
+  --gcs-source-staging-dir=gs://chalyb-build-source/source \
+  --substitutions=SHORT_SHA=$(git rev-parse --short=7 HEAD)
 ```
 
-Terraform created that service account and granted it exactly four roles:
-push images, deploy Cloud Run, act as the runtime service account, write
-logs. See `infra/terraform/deployer.tf` for why each one is there.
+The two values come from this repo — `terraform output
+cloud_build_service_account` and `terraform output build_source_bucket` —
+and `_PROJECT`, `_SERVICE` and `_HAS_WORKER` are already set in each engine's
+`cloudbuild.yaml`, so nothing else needs passing.
 
-ChalyClip's image is large — ffmpeg, OpenCV and a full Playwright Chromium —
-so the first build takes a while and the config already raises the timeout to
-2400s on a bigger machine. Cloud Build's 10-minute default kills it mid-install.
+Two flags are load-bearing, and dropping either fails the build:
+
+- **`--gcs-source-staging-dir`.** Without it gcloud stages the tarball in
+  an auto-created `<project>_cloudbuild` bucket the deployer cannot read,
+  and the build dies before its first step with `could not resolve source:
+  ... storage.objects.get denied`. Terraform owns the bucket named here and
+  grants the deployer read on it and nothing else (`deployer.tf`).
+- **`SHORT_SHA`.** Cloud Build only fills it in for trigger-based builds.
+  From `gcloud builds submit` it is empty, the image tag becomes
+  `chalybclip:` and Docker refuses with `invalid reference format`.
+
+Terraform created that service account and granted it exactly four project
+roles: push images, deploy Cloud Run, act as the runtime service account,
+write logs. See `infra/terraform/deployer.tf` for why each one is there.
+
+ChalyClip's image is large — ffmpeg, a JS runtime for yt-dlp, and the
+Python stack — so the first build takes a while and the config already
+raises the timeout to 2400s on a bigger machine. Cloud Build's 10-minute
+default kills it mid-install. ChalyOBS (a Next.js standalone build) and
+ChalyCrypto are quick.
+
+Before flipping an engine live, check it is actually up:
+
+```sh
+curl -s https://chalybclip.chalyb.com/healthz; echo
+gcloud run services logs read chalybclip --project=chalyb --region=us-central1 --limit=30
+```
+
+A health response and no connection errors in the logs means the engine
+booted and reached Postgres.
 
 ## 6. DNS
 

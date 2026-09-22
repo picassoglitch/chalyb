@@ -9,12 +9,23 @@
 #
 #   gcloud builds submit --config=cloudbuild.yaml \
 #     --service-account=projects/<project>/serviceAccounts/<email> \
-#     --substitutions=_PROJECT=<project>,_SERVICE=chalybclip
+#     --gcs-source-staging-dir=gs://<build_source_bucket>/source \
+#     --substitutions=SHORT_SHA=$(git rev-parse --short=7 HEAD)
 #
 # A user-specified build service account requires the build to send logs to
-# Cloud Logging only — which is why both cloudbuild.yaml files set
+# Cloud Logging only — which is why every cloudbuild.yaml sets
 # `logging: CLOUD_LOGGING_ONLY`. Without that pairing the build fails before
 # it starts, with an error about logging buckets rather than permissions.
+#
+# It also has to READ THE SOURCE. `gcloud builds submit` uploads the tarball
+# to a bucket and the build account fetches it from there. gcloud's default
+# is an auto-created `<project>_cloudbuild` bucket that only the legacy
+# default build account can read, so the very first submit with this account
+# died with "could not resolve source: storage.objects.get denied". The
+# staging bucket below is ours, the grant is scoped to it, and the
+# --gcs-source-staging-dir flag points gcloud at it. The alternative —
+# project-wide objectViewer — would also let the deployer read the media
+# bucket and the Terraform state, which holds every generated secret.
 
 resource "google_service_account" "deployer" {
   account_id   = "chalyb-deployer"
@@ -51,4 +62,32 @@ resource "google_project_iam_member" "deployer" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.deployer.email}"
+}
+
+# Where `gcloud builds submit` stages the source tarball (see the header).
+# Tarballs are throwaway — the image in Artifact Registry is the artifact —
+# so they expire after a week.
+resource "google_storage_bucket" "build_source" {
+  name     = var.build_source_bucket_name != "" ? var.build_source_bucket_name : "${var.project_id}-build-source"
+  location = var.region
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+
+  lifecycle_rule {
+    condition {
+      age = 7
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  depends_on = [google_project_service.enabled]
+}
+
+resource "google_storage_bucket_iam_member" "deployer_build_source" {
+  bucket = google_storage_bucket.build_source.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.deployer.email}"
 }

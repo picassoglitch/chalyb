@@ -251,3 +251,13 @@ variable "media_bucket_name" {
   type        = string
   default     = ""
 }
+
+variable "build_source_bucket_name" {
+  description = <<-EOT
+    Name for the Cloud Build source-staging bucket. Same global-uniqueness
+    caveat as media_bucket_name: if apply fails with 409 on
+    google_storage_bucket.build_source, set this to something distinctive.
+  EOT
+  type        = string
+  default     = ""
+}
