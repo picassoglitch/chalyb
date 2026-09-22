@@ -5,44 +5,32 @@ consumer actually renders at. Hand this to whoever produces the assets.
 
 ## Status
 
-**Two marks are in play, by request.** `logo-master.jpg` in this folder — a
-2000×2000 opaque JPEG, the angular blue/gold shield — drives the nav, both
-sidebars, the engine tile and the social image. The **browser tab** uses
-`logo-favicon.png` instead: the softer indigo/cream knot, supplied already cut
-out on transparency. They are different artwork, so a tab and the nav beside
-it do not currently show the same mark. Point both at one file to unify.
+Every slot is **filled** from a single master: `logo-master.png` in this
+folder, the mark supplied already cut out on transparency. Run
+`scripts/build-brand-assets.py` to regenerate the lot.
 
-Every slot below is **filled**. Run `scripts/build-brand-assets.py` to
-regenerate the lot. The Nexo-era artwork is
-gone: `public/chalybclip-mark.png` was the NexoClip "NC" monogram with only the
-filename changed, and the platform mark was the Nexo **N** (`fusion-mark.tsx`
-called its own geometry the "N-path", while `icon.svg` described the identical
-path as a "Chalyb 'C'").
+The Nexo-era artwork is gone: `public/chalybclip-mark.png` was the NexoClip
+"NC" monogram with only the filename changed, and the platform mark was the
+Nexo **N** (`fusion-mark.tsx` called its own geometry the "N-path", while
+`icon.svg` described the identical path as a "Chalyb 'C'").
+
+**Because the master is transparent, there is no background-keying step at
+all** — every asset is a resize. An earlier revision worked from an opaque
+render and needed a flood fill with a hand-tuned threshold, a second pass for
+the drop shadow, and still left a grey arc along one edge that could not be
+removed (the shadow and the silver ring were the same grey, so no colour rule,
+connected-component pass or radial cutoff could separate them). Keep it this
+way: if a new mark arrives on a background, ask for a PNG with alpha before
+anyone writes code to cut it out.
 
 **What is still owed, and why it matters:**
 
-| Gap                       | Consequence today                                                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| No vector master          | Every asset is a raster downscale. Fine at the sizes the app uses, but it cannot be recoloured or redrawn. |
-| No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.                                       |
-| No wordmark file          | The social image sets `CHALYB` in Liberation Sans, not the real face.                                      |
-
-The **simplified small cut** matters again, and only for the tab. The shield
-master handles small sizes well — two high-contrast hues in a pinwheel, a
-solid white star, a heavy silver ring, and 2000 px of detail to downsample
-from, so it resolves cleanly at 16 px. The knot chosen for the tab does not:
-its strands blur together and the centre star is lost. See section B.
-
-**One easy win, if the render is easy to re-export: a PNG with an alpha
-channel** — as `logo-favicon.png` already is. `logo-master.jpg` is not, so
-every asset derived from it starts by keying a backdrop out, and a faint
-speckled arc of drop shadow survives along the mark's lower-left edge. It resists removal for a specific reason — the shadow
-there measures lum~203/sat~20 against a silver ring of lum~210/sat~15, so no
-colour rule tells them apart; it is connected to the mark, so component
-filtering keeps it; and it sits at radius 843–896 where the mark's own body
-reaches 854, so no radial cutoff separates them without shaving the shield's
-points. A transparent export deletes the problem rather than working around
-it, and reduces the script to a resize.
+| Gap                       | Consequence today                                                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No vector master          | Every asset is a raster downscale from a 281px mark. Fine at the sizes the app uses, but it cannot be recoloured, and there is nothing more to show on a 4K display. |
+| No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.                                                                                                 |
+| No simplified small cut   | The mark goes soft at 16px — strands blur together, the centre star is lost. Measured on both a light and a dark tab. 32px and 48px read fine.                       |
+| No wordmark file          | The social image sets `CHALYB` in Liberation Sans, not the real face.                                                                                                |
 
 Sections A–F below are unchanged: they are still the ask. Supplying them
 replaces the derived assets in place — the paths and sizes do not move.
@@ -62,21 +50,22 @@ cut (one colour, no gradient, no inner detail) puts it back.
 
 **2. The mark has to survive 20 px.** It renders at **20 px** in the landing
 footer, **26 px** in the nav and both sidebars, and **16 px** in the favicon.
-The current master survives this because it is bold and high-contrast; the
-render before it did not. Any future mark has to clear the same bar, and the
-sharpest answer is still a **simplified cut** for ≤32 px — fewer strands,
-heavier strokes, no gradient — rather than a scaled-down master.
+The current master clears 32 px and 48 px but **not 16 px** — its strands blur
+together and the centre star is lost, measured on both a light and a dark tab.
+The fix is a **simplified cut** for ≤32 px (A3): fewer strands, heavier
+strokes, no gradient — drawn for the size, not scaled down to it.
 
-**3. Engine tiles are `object-cover`, so those marks need their own
-background.** `engine-glyph.tsx` renders the mark filling a square tile with
-`fill` + `object-cover`; the current file bakes in `#03040b`. Either supply
-them with an opaque square background, or tell me and I'll change the
-component to letterbox a transparent mark instead.
+**3. Engine tiles are square, so a square mark needs no background.**
+`engine-glyph.tsx` renders the mark filling a square tile with `fill` +
+`object-cover`. Because both the image and the box are square, `object-cover`
+and `object-contain` are equivalent — a transparent mark simply lets the card
+behind it show. Supply engine marks square and transparent; anything
+non-square would get cropped rather than letterboxed.
 
 **4. The brand colour is a button background with near-black text on it.**
 `engine-hero.tsx` sets `INK = '#0a0c0e'` as the label colour on a solid
 brand-coloured button, and `.lp-btn-primary` does the same on the landing.
-This is why the primary slot went to the emblem's **gold** and not its blue
+This is why the primary slot went to the mark's **gold** and not its indigo
 — see section E for the measured ratios. Any future change to the primary has
 to clear that bar or change every such button to light text.
 
@@ -98,22 +87,16 @@ being installed.
 
 ## B. Icons
 
-| #   | Destination path              | Format                    | Size                   | Background                                                                                                                                        |
-| --- | ----------------------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | `src/app/favicon.ico`         | **ICO**, multi-resolution | 16, 32, 48 in one file | **Transparent** — composites onto the tab's own colour, light or dark                                                                             |
-| B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | **Transparent**, same as B1. Was `icon.svg` drawing its own dark tile; that tile is gone                                                          |
-| B3  | `public/apple-touch-icon.png` | **PNG**                   | **180×180**            | **Opaque — iOS composites transparency onto white.** Keep ~10% padding inside the square; iOS rounds the corners itself, so do not pre-round them |
+| #   | Destination path              | Format                    | Size                   | Background                                                                                                                                      |
+| --- | ----------------------------- | ------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | `src/app/favicon.ico`         | **ICO**, multi-resolution | 16, 32, 48 in one file | **Transparent** — composites onto the tab's own colour, light or dark                                                                           |
+| B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | **Transparent**, same as B1. Was `icon.svg` drawing its own dark tile; that tile is gone                                                        |
+| B3  | `public/apple-touch-icon.png` | **PNG**                   | **180×180**            | **Opaque white** — iOS composites transparency onto a colour of its own choosing, so this picks one. ~8% padding; iOS rounds the corners itself |
 
-B2 is a **256×256 transparent PNG** today, cut from `logo-favicon.png` — 256
-rather than 512 because that source mark is 281px, so anything larger is an
-upscale. An SVG is still preferable: it would stay sharp at any size, and Next
-accepts either at that path.
-
-**The tab mark goes soft at 16px.** Measured on both a light and a dark tab:
-32px and 48px read fine, but at 16px the strands blur together and the centre
-star is lost. That is the artwork being fine-detailed, not the cut-out — the
-shield mark survives 16px because it is bolder. A simplified 16px cut (A3
-below) is the fix.
+B2 is a **256×256 transparent PNG** — 256 rather than 512 because the master
+mark is 281px, so anything larger is an upscale. Every consumer renders well
+below that (160px at the largest, the engine hero). An SVG is still
+preferable: it would stay sharp at any size, and Next accepts either here.
 
 Optional, only if a PWA manifest is ever added (there is none today):
 `icon-192.png` and `icon-512.png`, opaque, plus a maskable variant with 20%
@@ -149,13 +132,15 @@ the hero on the engine page (**160×160**), and the generated tab icon in
 | D2  | ChalyOBS    | `public/chalybobs-mark.png`    | PNG                      | 512×512     |
 | D3  | ChalyCrypto | `public/chalybcrypto-mark.png` | PNG                      | 512×512     |
 
-**⚠ ChalyClip currently shows the PLATFORM emblem.** The supplied render is
-the Chalyb mark, and it was put in `chalybclip-mark.png` because the
-alternative was leaving NexoClip's "NC" in place. The consequence is that the
-ChalyClip tile and the Chalyb favicon are the same picture, which reads as a
-bug rather than a brand. Two ways out, both cheap: give ChalyClip its own mark
-(D1 below), or drop it to a Lucide glyph like every other engine — a one-line
-change in `engine-glyph.tsx`.
+**⚠ ChalyClip shows the PLATFORM mark.** There is one mark in the system and
+ChalyClip's tile uses it, because the alternative was leaving NexoClip's "NC"
+in place. So the tile and the browser tab are the same picture. Two ways out,
+both cheap: give ChalyClip its own mark (D1 below), or drop it to a Lucide
+glyph like every other engine — a one-line change in `engine-glyph.tsx`.
+
+The tile is transparent now: it is a square image in a square box, so
+`object-cover` and `object-contain` are equivalent and the card behind simply
+shows through. Nothing bakes its own dark tile any more.
 
 D2 and D3 are **optional**: those engines currently render Lucide glyphs
 (`Video`, `CandlestickChart`) and look fine. Supply them only if each engine
@@ -176,18 +161,18 @@ from the emblem and are now set in two places —
 (`--brand*`, plus the Tailwind v4 `@theme` colours). The old names are kept as
 aliases so those 147 call sites did not have to churn alongside the artwork.
 
-| Slot          | Was                   | Now           | Why                                     |
-| ------------- | --------------------- | ------------- | --------------------------------------- |
-| primary       | `#9eea3a` / `#c6f24e` | **`#f0b44e`** | the emblem's gold, lifted off `#e1a131` |
-| primary hover | `#7bc220` / `#8aa83a` | **`#e1a131`** | its gold body, measured                 |
-| accent        | `#42d9e8` / `#3df5e0` | **`#5aa9f0`** | its blue, lifted for legibility         |
+| Slot          | Was                   | Now           | Why                               |
+| ------------- | --------------------- | ------------- | --------------------------------- |
+| primary       | `#9eea3a` / `#c6f24e` | **`#e8bb7f`** | the mark's warm strands, measured |
+| primary hover | `#7bc220` / `#8aa83a` | **`#be8c66`** | their deeper tan                  |
+| accent        | `#42d9e8` / `#3df5e0` | **`#8ea2e8`** | its indigo, lifted for legibility |
 
 **Gold, not blue, carries the primary slot.** Both `.lp-btn-primary` and
 `engine-hero.tsx` fill with the brand colour and put near-black text _on_ it.
-Measured against that ink: gold `#f0b44e` gives **10.6:1**, comfortably clear
-of the 4.5:1 bar, so no component changed — while the emblem's blue `#1e5cca`
-gives **3.2:1** and would have forced every such button to light text. If the
-brand insists on a blue primary, that is the work it implies.
+Measured against that ink: gold `#e8bb7f` gives **11.1:1**, comfortably clear
+of the 4.5:1 bar, so no component changed — while the mark's indigo `#373e7f`
+gives **2.0:1** and would have forced every such button to light text. If the
+brand insists on an indigo primary, that is the work it implies.
 
 Original ask, for reference:
 

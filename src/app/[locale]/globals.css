@@ -7,11 +7,11 @@
   --color-ink: #f4f3ee;
   --color-ink-dim: #b9b9c4;
   --color-ink-faint: #6c6d7c;
-  --color-acid: #f0b44e;
-  --color-acid-dim: #e1a131;
+  --color-acid: #e8bb7f;
+  --color-acid-dim: #be8c66;
   --color-plasma: #5b3df5;
   --color-plasma-glow: #7a5cff;
-  --color-cyan: #5aa9f0;
+  --color-cyan: #8ea2e8;
   --color-ember: #ff6b3d;
   --color-magenta: #ff3df0;
 
@@ -35,20 +35,20 @@
   /* Brand accent — the emblem's gold. Same reasoning as dashboard.css: .lp-btn-primary
      fills with this and sets color:#06070b, so the primary has to carry dark
      text. --acid / --acid-dim are the pre-rebrand names, kept as aliases. */
-  --brand: #f0b44e;
-  --brand-dim: #e1a131;
+  --brand: #e8bb7f;
+  --brand-dim: #be8c66;
   --acid: var(--brand);
   --acid-dim: var(--brand-dim);
   --plasma: #5b3df5;
   --plasma-glow: #7a5cff;
-  --cyan: #5aa9f0; /* the emblem's blue, lifted for legibility on --bg */
+  --cyan: #8ea2e8; /* the mark's indigo, lifted for legibility on --bg */
   --ember: #ff6b3d;
   --magenta: #ff3df0;
   --font-display: 'Familjen Grotesk', sans-serif;
   --font-serif: 'Fraunces', serif;
   --font-mono: 'Space Mono', monospace;
   --path: var(--brand);
-  --path-glow: rgba(240, 180, 78, 0.4);
+  --path-glow: rgba(232, 187, 127, 0.4);
 }
 
 * {
@@ -265,7 +265,7 @@ a {
   max-width: 100vw;
   height: 520px;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(240, 180, 78, 0.1) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(232, 187, 127, 0.1) 0%, transparent 65%);
   pointer-events: none;
 }
 .lp-hero > * {
@@ -1129,7 +1129,7 @@ a {
   height: 7px;
   border-radius: 50%;
   background: var(--acid);
-  box-shadow: 0 0 8px rgba(240, 180, 78, 0.6);
+  box-shadow: 0 0 8px rgba(232, 187, 127, 0.6);
   animation: blink 1.8s infinite;
 }
 .auth-status-compact {
@@ -1187,7 +1187,7 @@ a {
 }
 .auth-success {
   border: 1px solid var(--acid);
-  background: rgba(240, 180, 78, 0.1);
+  background: rgba(232, 187, 127, 0.1);
   color: var(--acid);
   padding: 12px 14px;
   border-radius: 10px;
@@ -1616,7 +1616,7 @@ a {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(240, 180, 78, 0.15);
+  background: rgba(232, 187, 127, 0.15);
   border: 1px solid var(--acid);
   color: var(--acid);
   display: flex;
