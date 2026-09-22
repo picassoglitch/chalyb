@@ -54,3 +54,7 @@ next-env.d.ts
 
 # Supabase CLI scratch — created by every `supabase` invocation, never source.
 supabase/.temp/
+
+# python
+__pycache__/
+*.pyc
