@@ -217,10 +217,62 @@ genuinely painful to debug.
 **Then redeploy.** Cloud Run pins `latest` to a specific version when a
 revision is created. The revision Terraform made is holding `REPLACE_ME`, and
 it will keep holding it until a new revision is deployed. The Cloud Build
-pipeline in step 5 does that on every push, so in practice: fill the
+pipeline in step 6 does that on every push, so in practice: fill the
 placeholders before your first `gcloud builds submit`, not after.
 
-## 5. Build and deploy an engine
+## 5. Engine schemas
+
+The engine databases are **empty**. That is the whole point of this
+migration: the self-hosted machine that died took every engine's Postgres
+with it, and the Supabase project you just pointed the three
+`*-database-url` secrets at has the hub's schema in it, not theirs.
+
+A container that boots against a database with no tables does not fail at
+startup — it fails on the first request, which is `POST /api/admin/tenants`
+from the hub, which is the one endpoint the entire SSO contract rests on. So
+run each engine's migrations **before** its first deploy, not after you find
+out.
+
+Each engine owns its own migrations, in its own repo:
+
+| Engine      | Where                                                    |
+| ----------- | -------------------------------------------------------- |
+| ChalyClip   | `chalybclip/db/migrations/` — numbered, applied in order |
+| ChalyOBS    | `web/migrations/`                                        |
+| ChalyCrypto | `schema.sql`, then `supabase/migrations/`                |
+
+Apply them with the same connection string you put in the `*-database-url`
+secrets. Step 4 deliberately `unset` it, so read it in again rather than
+leaving a DSN in your shell history:
+
+```sh
+read -rs DSN   # the same Supabase connection string as step 4
+```
+
+Then, from each engine's repo, in filename order:
+
+```sh
+for f in chalybclip/db/migrations/*.sql; do
+  echo "$f"; psql "$DSN" -v ON_ERROR_STOP=1 -f "$f" || break
+done
+```
+
+`ON_ERROR_STOP=1` matters: without it psql reports the failure and keeps
+going, leaving a half-applied schema that looks like it worked.
+
+The ChalyClip Drive tables are also reproduced in
+[`../chalybclip_drive_ingest.md`](../chalybclip_drive_ingest.md) §3 if you
+need to read what they should look like.
+
+Sanity-check before moving on — this should list the engine's tables, not
+nothing — then clear the DSN:
+
+```sh
+psql "$DSN" -c '\dt'
+unset DSN
+```
+
+## 6. Build and deploy an engine
 
 ```sh
 gcloud auth configure-docker us-central1-docker.pkg.dev
@@ -249,7 +301,7 @@ ChalyClip's image is large — ffmpeg, OpenCV and a full Playwright Chromium —
 so the first build takes a while and the config already raises the timeout to
 2400s on a bigger machine. Cloud Build's 10-minute default kills it mid-install.
 
-## 6. DNS
+## 7. DNS
 
 **The hub**: add `chalyb.com` in Vercel → Project → Domains and follow its
 records.
@@ -265,7 +317,7 @@ records.
 Either way the hostname must resolve **before** you flip an engine to
 `active`.
 
-## 7. Go live, one engine at a time
+## 8. Go live, one engine at a time
 
 ```sql
 update public.engines set status = 'active' where slug = 'chalybclip';

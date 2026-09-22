@@ -1,28 +1,28 @@
-// Static Chalyb mark. Same geometry as src/app/icon.svg so the nav, the
-// footer and the favicon read as one brand. Pure SVG — no animation loop.
+import Image from 'next/image';
+
+// Static Chalyb mark — the same emblem as the favicon (src/app/icon.png) and
+// the dashboard's FusionMark, so the nav, the footer and the browser tab read
+// as one brand.
+//
+// WAS an inline SVG stroked in `currentColor`, which let .lp-mark tint it from
+// CSS. The 2026 emblem is a multi-colour 3D render and cannot inherit
+// `currentColor`, so this is an <Image> and the tinting is gone. If a flat
+// single-colour cut of the mark ever lands, this goes back to inline SVG and
+// the tinting with it — see docs/brand/asset-manifest.md (constraint 1).
+//
+// The source art is a raster render, so it softens below ~32px. The nav uses
+// 26px and the footer 20px; that is a known limitation of the current asset,
+// not of this component.
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
-    <svg
+    <Image
       className="lp-mark"
+      src="/chalyb-mark.png"
+      alt=""
+      aria-hidden
       width={size}
       height={size}
-      viewBox="0 0 200 200"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M44,150 L44,50 L66,50 L122,118 L122,50 L156,50 L156,150 L134,150 L78,82 L78,150 Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="12"
-        strokeLinejoin="round"
-      />
-      <g fill="currentColor">
-        <circle cx="44" cy="50" r="9" />
-        <circle cx="156" cy="50" r="9" />
-        <circle cx="44" cy="150" r="9" />
-        <circle cx="156" cy="150" r="9" />
-      </g>
-    </svg>
+      priority
+    />
   );
 }

@@ -143,7 +143,9 @@ at the Cloud Run worker.
 4. **ChalyClip API on Cloud Run.** Verify `POST /api/admin/tenants` and
    `GET /auth/sso` respond before touching anything else — those two endpoints
    are the entire contract with `chalyb`
-   (`src/lib/engines/integrations/chalybclip.ts`).
+   (the contract is spelled out at the top of
+   `src/lib/engines/integrations/factory.ts`; the per-engine entries are in
+   `definitions.ts`).
 5. **GCS bucket + render worker as a Cloud Run Job.** Then Cloud Scheduler for
    the Drive poll.
 6. **Relaunch ChalyClip:** flip `status` back to `active`, then run

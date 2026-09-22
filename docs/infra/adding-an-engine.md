@@ -123,10 +123,14 @@ Three things that are easy to get wrong:
 2. Give each secret a value — `terraform output secrets_needing_values` lists
    them. `<slug>-sso-secret` must equal `<SLUG>_SSO_SECRET` in Vercel, or
    every launch fails signature verification.
-3. Build and push: `gcloud builds submit --config=cloudbuild.yaml`.
-4. Point `<slug>.chalyb.com` at the Cloud Run URL.
-5. Flip the engine row to `active`, then run `reconcileEngineLinks('<slug>')`
+3. Apply the engine's own migrations against that database. A container
+   booting against an empty schema does not fail at startup — it fails on the
+   hub's first `POST /api/admin/tenants`, which is the whole SSO contract.
+   See [`deploy-runbook.md`](deploy-runbook.md#5-engine-schemas).
+4. Build and push: `gcloud builds submit --config=cloudbuild.yaml`.
+5. Point `<slug>.chalyb.com` at the Cloud Run URL.
+6. Flip the engine row to `active`, then run `reconcileEngineLinks('<slug>')`
    from `/dashboard/team` — dry-run first.
 
-Steps 1–4 are all reversible and invisible to users; the engine stays
-`coming_soon` until step 5.
+Steps 1–5 are all reversible and invisible to users; the engine stays
+`coming_soon` until step 6.

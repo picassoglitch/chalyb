@@ -6,12 +6,12 @@
 // CSS. Dark-mode media query at the top inverts colors automatically in
 // modern Gmail / Apple Mail; older clients fall back to the light theme.
 //
-// Color palette is the brand: acid green (#c6f24e) accent on near-black bg.
+// Color palette is the brand: the emblem's gold (#f0b44e) on near-black bg.
 // We use system fonts (no Google Fonts in email — too unreliable).
 
 import { escapeHtml } from './escape';
 
-const BRAND_ACCENT = '#c6f24e';
+const BRAND_ACCENT = '#f0b44e';
 const BG_DARK = '#06070b';
 const BG_PANEL = '#0f1218';
 const INK_PRIMARY = '#f4f3ee';

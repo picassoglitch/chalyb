@@ -80,7 +80,19 @@ rebuilt on GCP after the self-hosted machine that ran them died. The launch
 guard in `src/app/auth/launch/[slug]/route.ts` keeps users out of an engine
 that is not serving, so the hub is safe to run while that work lands.
 
-The engine repos (`ChalyClip`, `ChalyOBS`, `ChalyCrypto`) carry the rebrand
-and a `cloudbuild.yaml` each; what remains per engine is steps 4–7 of
-[`docs/infra/deploy-runbook.md`](docs/infra/deploy-runbook.md): secrets,
-build, DNS, then the one-line flip to `active`.
+The engine repos (`ChalyClip`, `ChalyOBS`, `ChalyCrypto`) each carry the
+rebrand, a `cloudbuild.yaml`, and a working implementation of the contract in
+`factory.ts` — so what remains is deployment, not code: steps 4–8 of
+[`docs/infra/deploy-runbook.md`](docs/infra/deploy-runbook.md) per engine —
+secrets, **schemas**, build, DNS, then the one-line flip to `active`.
+
+Two of those are not just "run the runbook":
+
+- **ChalyOBS has nowhere to put its RTMP relay.** Cloud Run cannot accept
+  `:1935` and nothing in Terraform provisions a relay, so its web app will
+  come up but ingest will not work. That is a decision (flat-rate host vs.
+  managed multistream vs. defer), not a task — see
+  [`docs/infra/gcp-migration.md`](docs/infra/gcp-migration.md#the-rtmp-problem--read-before-putting-chalyobs-on-gcp).
+- **ChalyClip's Drive ingest is stubbed.** The `drive-poll` job ships
+  `paused = true` because `GoogleDriveClient` is not implemented yet; it
+  exits 1 without `--source-dir`.

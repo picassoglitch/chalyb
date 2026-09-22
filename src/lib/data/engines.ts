@@ -4,6 +4,7 @@
 // Was named bots.ts before migration 0010 — see types.ts for naming rationale.
 
 import { createClient } from '@/lib/supabase/server';
+import { engineDisplayName } from '@/lib/engines/display-names';
 import {
   type Engine,
   type EngineCategory,
@@ -72,7 +73,13 @@ function rowToEngine(
   return {
     id: row.id,
     slug: row.slug,
-    name: row.name,
+    // The canonical spelling wins over the stored one. Every surface that
+    // shows an engine's name reads it from here, so a database that has not
+    // run migration 0040 (or 0036) still renders "ChalyClip" rather than the
+    // stale "ChalybClip" — which is exactly the fallback engineDisplayName()
+    // documents. The row's name is the fallback for a slug the map has not
+    // been told about yet.
+    name: engineDisplayName(row.slug, row.name),
     icon: row.icon ?? '◆',
     category: row.category,
     type: row.type,
