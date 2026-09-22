@@ -28,9 +28,10 @@ locals {
 
   # Secrets whose real value comes from elsewhere. Created with a placeholder
   # version so the services can deploy; the runbook has you add the real one.
-  placeholders = {
-    database_url = "${var.slug}-database-url"
-  }
+  placeholders = merge(
+    { database_url = "${var.slug}-database-url" },
+    { for name, suffix in var.extra_placeholder_secrets : name => "${var.slug}-${suffix}" },
+  )
 
   secrets = merge(local.generated, local.placeholders)
 
@@ -49,9 +50,9 @@ locals {
     : {}
   )
 
-  # Engine-specific generated secrets, keyed by the env var the engine reads.
-  extra_generated_env = {
-    for name, _ in var.extra_generated_secrets :
+  # Engine-specific secrets, keyed by the env var the engine reads.
+  extra_secret_env = {
+    for name, _ in merge(var.extra_generated_secrets, var.extra_placeholder_secrets) :
     name => google_secret_manager_secret.own[name].secret_id
   }
 
@@ -61,7 +62,7 @@ locals {
       (var.secret_env_names.sso_secret)   = google_secret_manager_secret.own["sso_secret"].secret_id
       (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
     },
-    local.extra_generated_env,
+    local.extra_secret_env,
     local.worker_token_env,
     var.shared_secret_env,
     local.object_storage_secret_env,

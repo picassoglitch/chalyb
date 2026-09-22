@@ -82,6 +82,19 @@ variable "extra_generated_secrets" {
   default     = {}
 }
 
+variable "extra_placeholder_secrets" {
+  description = <<-EOT
+    Further secrets whose value is issued elsewhere, as VAR_NAME => secret-id
+    suffix. Created as <slug>-<suffix> holding REPLACE_ME so the service can
+    deploy, listed in `secrets_needing_values`, filled by the runbook, and
+    injected into the API service under VAR_NAME. ChalyOBS reaches the shared
+    Supabase project through its API client, not a Postgres URL, so it asks
+    for CHALYBOBS_SUPABASE_URL and CHALYBOBS_SUPABASE_SECRET_KEY here.
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
 variable "worker" {
   description = <<-EOT
     An optional second Cloud Run service running the same image in a worker

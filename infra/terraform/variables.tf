@@ -110,6 +110,8 @@ variable "engines" {
     # Engine-specific secrets Terraform should generate, VAR_NAME => suffix.
     # See modules/engine/variables.tf.
     extra_generated_secrets = optional(map(string), {})
+    # Engine-specific secrets filled by hand after apply, VAR_NAME => suffix.
+    extra_placeholder_secrets = optional(map(string), {})
 
     worker = optional(object({
       cpu              = optional(string, "2")
@@ -234,6 +236,14 @@ variable "engines" {
       # without it ("Servicio no configurado").
       extra_generated_secrets = {
         CHALYBOBS_SESSION_SECRET = "session-secret"
+      }
+
+      # ChalyOBS does not read DATABASE_URL. web/src/lib/supabase.ts talks to
+      # the shared Supabase project through supabase-js with the project URL
+      # and an sb_secret_ key (bypasses RLS; every query filters by tenant).
+      extra_placeholder_secrets = {
+        CHALYBOBS_SUPABASE_URL        = "supabase-url"
+        CHALYBOBS_SUPABASE_SECRET_KEY = "supabase-secret-key"
       }
     }
 

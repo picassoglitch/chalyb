@@ -149,10 +149,10 @@ is empty, and that used to make a first apply impossible to finish.
 
 There are two kinds, and only one needs you.
 
-First confirm the apply reached the end — sixteen secrets, each with a version:
+First confirm the apply reached the end — eighteen secrets, each with a version:
 
 ```sh
-gcloud secrets list --project=chalyb | tail -n +2 | wc -l   # 16
+gcloud secrets list --project=chalyb | tail -n +2 | wc -l   # 18
 ```
 
 Fewer means the apply stopped early: read its error, then run `terraform
@@ -190,7 +190,7 @@ from before the rename are dead and should go. The hub signs the launch
 token with its copy and the engine verifies with its own; if they differ,
 every SSO launch fails signature verification with a generic error.
 
-**Placeholders you replace (six).** Created holding the string `REPLACE_ME`
+**Placeholders you replace (eight).** Created holding the string `REPLACE_ME`
 so deploys work; the real value comes from somewhere else:
 
 ```sh
@@ -221,6 +221,17 @@ frames — the two metered services that replaced the dead GPU box (see
 printf '%s' "sk_..." | gcloud secrets versions add zernio-api-key --data-file=- --project=chalyb
 printf '%s' "..."    | gcloud secrets versions add assemblyai-api-key --data-file=- --project=chalyb
 printf '%s' "sk-ant-..." | gcloud secrets versions add anthropic-api-key --data-file=- --project=chalyb
+```
+
+ChalyOBS is the odd one out: it never reads `DATABASE_URL` (its own
+`chalybobs-database-url` secret is created and unused). It reaches the same
+Supabase project through supabase-js, so it needs the project URL and a
+secret key — Supabase → Project Settings → API Keys → **Secret keys** →
+create one (`sb_secret_…`), and the Project URL from the Data API page:
+
+```sh
+printf '%s' "https://<ref>.supabase.co" | gcloud secrets versions add chalybobs-supabase-url --data-file=- --project=chalyb
+printf '%s' "sb_secret_..."             | gcloud secrets versions add chalybobs-supabase-secret-key --data-file=- --project=chalyb
 ```
 
 `printf` rather than `echo` throughout: `echo` appends a newline, and a
