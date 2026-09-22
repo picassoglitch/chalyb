@@ -213,6 +213,21 @@ variable "engines" {
         sso_secret   = "CHALYBOBS_SSO_SECRET"
         database_url = "DATABASE_URL"
       }
+
+      # ChalyOBS reaches the shared Supabase project through supabase-js
+      # (web/src/lib/supabase.ts), so DATABASE_URL alone is not enough: it
+      # needs the project URL plus the secret key. Same project as the hub
+      # (docs/infra/supabase.md). PUBLIC_URL (injected for every engine) is
+      # what ChalyOBS uses as CHALYBOBS_PUBLIC_URL.
+      env = {
+        CHALYBOBS_SUPABASE_URL = "https://uqcbziwdgbnzehipzjxp.supabase.co"
+        CHALYB_LOGIN_URL       = "https://chalyb.com/login"
+      }
+
+      shared_secrets = {
+        CHALYBOBS_SUPABASE_SECRET_KEY = "supabase-secret-key"
+        CHALYBOBS_SESSION_SECRET      = "chalybobs-session-secret"
+      }
     }
 
     # ChalyCrypto's API (services/api sso.py) reads the unprefixed pair,
