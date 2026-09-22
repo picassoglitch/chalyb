@@ -286,16 +286,60 @@ booted and reached Postgres.
 **The hub**: add `chalyb.com` in Vercel → Project → Domains and follow its
 records.
 
-**The engines**: two options.
+**The engines**: a plain CNAME at the `*.run.app` URL does **not** work,
+and it fails in a way that looks like DNS is fine. Cloud Run routes on the
+`Host` header and only holds a certificate for `*.run.app`, so a browser
+that resolves `chalybclip.chalyb.com` straight to Google's IPs gets a
+certificate error, and a request that got past that would get a 404. Two
+things do work:
 
-1. **Cloudflare in front** (simpler): CNAME `chalybclip.chalyb.com` at the
-   `*.run.app` URL from `terraform output engine_urls`. You also get caching
-   and DDoS cover.
-2. **Cloud Run domain mapping**: verify the domain for your account in Google
-   Search Console first, then set `enable_domain_mappings = true` and apply.
+1. **Cloud Run domain mapping** (the default — no other service involved).
+   Verify `chalyb.com` in [Google Search Console](https://search.google.com/search-console)
+   as the account that runs Terraform (Add property → Domain → the TXT
+   record it gives you goes at the apex). Then:
 
-Either way the hostname must resolve **before** you flip an engine to
-`active`.
+   ```sh
+   # infra/terraform/terraform.tfvars
+   enable_domain_mappings = true
+   ```
+
+   ```sh
+   terraform apply     # three google_cloud_run_domain_mapping resources
+   ```
+
+   and point each hostname at Google's mapping frontend, not at run.app:
+
+   ```
+   chalybclip     CNAME  ghs.googlehosted.com.
+   chalybobs      CNAME  ghs.googlehosted.com.
+   chalybcrypto   CNAME  ghs.googlehosted.com.
+   ```
+
+   Google provisions the certificate once the record is visible; that
+   takes anywhere from fifteen minutes to an hour. Watch it:
+
+   ```sh
+   gcloud beta run domain-mappings describe --domain=chalybclip.chalyb.com \
+     --region=us-central1 --project=chalyb --format='value(status.conditions)'
+   ```
+
+   `CertificateProvisioned: True` and `Ready: True` means done. An apply
+   that fails with "caller is not authorized to administer the domain"
+   means the Search Console verification is missing or was done by a
+   different Google account.
+
+2. **Cloudflare in front**, only if `chalyb.com` is on Cloudflare
+   nameservers: a *proxied* CNAME at the `*.run.app` URL plus an Origin
+   Rule that overrides the `Host` header to that same `run.app` hostname.
+   Without the override you get the 404 above; without the proxy you get
+   the certificate error.
+
+Either way the hostname must serve the engine over HTTPS **before** you
+flip it to `active`:
+
+```sh
+curl -s https://chalybclip.chalyb.com/healthz; echo
+```
 
 ## 7. Go live, one engine at a time
 
