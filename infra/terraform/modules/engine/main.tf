@@ -23,6 +23,7 @@ locals {
       sso_secret  = "${var.slug}-sso-secret"
     },
     local.worker_token_enabled ? { worker_token = "${var.slug}-worker-token" } : {},
+    { for name, suffix in var.extra_generated_secrets : name => "${var.slug}-${suffix}" },
   )
 
   # Secrets whose real value comes from elsewhere. Created with a placeholder
@@ -48,12 +49,19 @@ locals {
     : {}
   )
 
+  # Engine-specific generated secrets, keyed by the env var the engine reads.
+  extra_generated_env = {
+    for name, _ in var.extra_generated_secrets :
+    name => google_secret_manager_secret.own[name].secret_id
+  }
+
   api_secret_env = merge(
     {
       (var.secret_env_names.admin_token)  = google_secret_manager_secret.own["admin_token"].secret_id
       (var.secret_env_names.sso_secret)   = google_secret_manager_secret.own["sso_secret"].secret_id
       (var.secret_env_names.database_url) = google_secret_manager_secret.own["database_url"].secret_id
     },
+    local.extra_generated_env,
     local.worker_token_env,
     var.shared_secret_env,
     local.object_storage_secret_env,

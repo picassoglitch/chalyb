@@ -69,6 +69,19 @@ variable "secret_env_names" {
   default = {}
 }
 
+variable "extra_generated_secrets" {
+  description = <<-EOT
+    Further secrets this engine needs that nothing outside decides, as
+    VAR_NAME => secret-id suffix. Terraform generates each value the way it
+    does the admin token, stores it as <slug>-<suffix>, and injects it into
+    the API service under VAR_NAME. ChalyOBS's cookie-signing key is one:
+    { CHALYBOBS_SESSION_SECRET = "session-secret" }. Not for values issued
+    elsewhere — those are placeholders the runbook has you fill.
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
 variable "worker" {
   description = <<-EOT
     An optional second Cloud Run service running the same image in a worker

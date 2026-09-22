@@ -107,6 +107,10 @@ variable "engines" {
       database_url = optional(string, "DATABASE_URL")
     }), {})
 
+    # Engine-specific secrets Terraform should generate, VAR_NAME => suffix.
+    # See modules/engine/variables.tf.
+    extra_generated_secrets = optional(map(string), {})
+
     worker = optional(object({
       cpu              = optional(string, "2")
       memory           = optional(string, "4Gi")
@@ -208,10 +212,28 @@ variable "engines" {
     # ChalyOBS's web app (web/src/lib/env.ts) reads its own prefixed pair.
     chalybobs = {
       display_name = "ChalyOBS"
+
+      env = {
+        # env.ts reads its own prefixed URL, not PUBLIC_URL, and falls back
+        # to localhost:3000 — which is where every post-login redirect went
+        # until this was set.
+        CHALYBOBS_PUBLIC_URL = "https://chalybobs.chalyb.com"
+        # Where unauthenticated visitors are sent. The engine's default is
+        # /login; the hub's route is /sign-in.
+        CHALYB_LOGIN_URL = "https://chalyb.com/sign-in"
+      }
+
       secret_env_names = {
         admin_token  = "CHALYBOBS_ADMIN_TOKEN"
         sso_secret   = "CHALYBOBS_SSO_SECRET"
         database_url = "DATABASE_URL"
+      }
+
+      # Signs ChalyOBS's own session cookie. Independent of the SSO secret
+      # and never shared with the hub; the login page refuses to start
+      # without it ("Servicio no configurado").
+      extra_generated_secrets = {
+        CHALYBOBS_SESSION_SECRET = "session-secret"
       }
     }
 
