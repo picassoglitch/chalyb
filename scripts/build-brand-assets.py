@@ -47,6 +47,10 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.environ.get('CHALYB_LOGO_SRC', os.path.join(REPO, 'docs/brand/logo-master.jpg'))
+# The browser tab uses a DIFFERENT mark, by request: the softer indigo/cream
+# knot, supplied already cut out on transparency. Nothing to key, so it skips
+# keyed_master() entirely — see favicon_master().
+FAVICON_SRC = os.environ.get('CHALYB_FAVICON_SRC', os.path.join(REPO, 'docs/brand/logo-favicon.png'))
 # Stand-in for the real wordmark face; see docs/brand/asset-manifest.md F.
 FONT = os.environ.get(
     'CHALYB_WORDMARK_FONT', '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
@@ -109,6 +113,37 @@ def keyed_master():
     return out
 
 
+def favicon_master():
+    """The tab mark: already transparent, so just trim it square.
+
+    A separate file from SRC on purpose. This is the softer knot, and it is
+    finer than the shield: it reads at 32px and 48px but goes soft at 16px,
+    where the strands blur together and the star is lost. That was measured on
+    both a light and a dark tab, and accepted — it is the chosen artwork. A
+    simplified 16px cut is what would fix it.
+    """
+    src = Image.open(FAVICON_SRC).convert('RGBA')
+    bb = src.getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox()
+    em = src.crop(bb)
+    s = max(em.size)
+    out = Image.new('RGBA', (s, s), (0, 0, 0, 0))
+    out.paste(em, ((s - em.width) // 2, (s - em.height) // 2), em)
+    return out
+
+
+def tab_icon(master, n):
+    """Transparent tab icon at n px, sharpened — no invented backdrop.
+
+    Deliberately NOT composited onto the brand dark. An earlier pass did that
+    and the result did not look like the artwork it came from: a black tile
+    the designer never drew, cropped edge to edge. Transparent lets the tab's
+    own colour show through, light or dark, which is what the supplied cut-out
+    is for.
+    """
+    r = master.resize((n, n), Image.LANCZOS)
+    return ImageEnhance.Sharpness(r).enhance(1.7)
+
+
 def on_bg(master, size, bg, pad=0.0, radius=0.0, sharpen=False):
     """Composite the master onto an opaque square."""
     inner = int(size * (1 - 2 * pad))
@@ -166,13 +201,15 @@ def main():
     # Platform mark for components, on transparency.
     master.resize((512, 512), Image.LANCZOS).save(f'{REPO}/public/chalyb-mark.png')
 
-    # Tab icon. Replaces the old icon.svg; keeps the rounded dark tile it drew.
-    on_bg(master, 512, BRAND_BG, pad=0.06, radius=0.20).save(f'{REPO}/src/app/icon.png')
-
-    # Favicon: minimal padding and a sharpen pass, because 16px needs every pixel.
-    # Stays RGBA (opaque) — Turbopack's ICO decoder rejects RGB-encoded frames
-    # with "The PNG is not in RGBA format!" and fails the build.
-    on_bg(master, 48, BRAND_BG, pad=0.02, sharpen=True).save(
+    # Tab icons come from the OTHER mark, on transparency.
+    fav = favicon_master()
+    print(f'favicon master: {fav.size[0]}x{fav.size[1]} transparent')
+    # 256 rather than 512: the source mark is 281px, so 512 would be an upscale
+    # and soft. 256 is a clean downscale and ample for a tab.
+    tab_icon(fav, 256).save(f'{REPO}/src/app/icon.png')
+    # RGBA is required, not merely preferred — Turbopack's ICO decoder rejects
+    # RGB-encoded frames with "The PNG is not in RGBA format!" and fails the build.
+    tab_icon(fav, 48).save(
         f'{REPO}/src/app/favicon.ico', format='ICO', sizes=[(48, 48), (32, 32), (16, 16)]
     )
 

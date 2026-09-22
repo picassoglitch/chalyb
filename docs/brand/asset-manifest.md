@@ -5,9 +5,15 @@ consumer actually renders at. Hand this to whoever produces the assets.
 
 ## Status
 
-Every slot below is **filled**, derived from `logo-master.jpg` in this folder —
-a 2000×2000 opaque JPEG whose emblem measures 1801×1801. Run
-`scripts/build-brand-assets.py` to regenerate the lot. The Nexo-era artwork is
+**Two marks are in play, by request.** `logo-master.jpg` in this folder — a
+2000×2000 opaque JPEG, the angular blue/gold shield — drives the nav, both
+sidebars, the engine tile and the social image. The **browser tab** uses
+`logo-favicon.png` instead: the softer indigo/cream knot, supplied already cut
+out on transparency. They are different artwork, so a tab and the nav beside
+it do not currently show the same mark. Point both at one file to unify.
+
+Every slot below is **filled**. Run `scripts/build-brand-assets.py` to
+regenerate the lot. The Nexo-era artwork is
 gone: `public/chalybclip-mark.png` was the NexoClip "NC" monogram with only the
 filename changed, and the platform mark was the Nexo **N** (`fusion-mark.tsx`
 called its own geometry the "N-path", while `icon.svg` described the identical
@@ -21,17 +27,16 @@ path as a "Chalyb 'C'").
 | No flat single-colour cut | `BrandMark` lost its `currentColor` tinting and is now an `<Image>`.                                       |
 | No wordmark file          | The social image sets `CHALYB` in Liberation Sans, not the real face.                                      |
 
-The **simplified small cut** is no longer urgent. It was, against the first
-render: a muted six-strand knot that went to mush below 32 px. This master is
-bolder — two high-contrast hues in a pinwheel, a solid white star, a heavy
-silver ring — and at 2000 px there is real detail to downsample from, so 16 px
-now resolves into a legible mark rather than a smudge. A purpose-drawn 16 px
-cut would still be sharper.
+The **simplified small cut** matters again, and only for the tab. The shield
+master handles small sizes well — two high-contrast hues in a pinwheel, a
+solid white star, a heavy silver ring, and 2000 px of detail to downsample
+from, so it resolves cleanly at 16 px. The knot chosen for the tab does not:
+its strands blur together and the centre star is lost. See section B.
 
 **One easy win, if the render is easy to re-export: a PNG with an alpha
-channel.** The master is opaque, so every asset here starts by keying a
-backdrop out, and a faint speckled arc of drop shadow survives along the
-mark's lower-left edge. It resists removal for a specific reason — the shadow
+channel** — as `logo-favicon.png` already is. `logo-master.jpg` is not, so
+every asset derived from it starts by keying a backdrop out, and a faint
+speckled arc of drop shadow survives along the mark's lower-left edge. It resists removal for a specific reason — the shadow
 there measures lum~203/sat~20 against a silver ring of lum~210/sat~15, so no
 colour rule tells them apart; it is connected to the mark, so component
 filtering keeps it; and it sits at radius 843–896 where the mark's own body
@@ -95,12 +100,20 @@ being installed.
 
 | #   | Destination path              | Format                    | Size                   | Background                                                                                                                                        |
 | --- | ----------------------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | `src/app/favicon.ico`         | **ICO**, multi-resolution | 16, 32, 48 in one file | **Opaque** dark                                                                                                                                   |
-| B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | Draws its own rounded dark tile. Was `icon.svg`; now a 512×512 PNG, so an SVG here would be an upgrade                                            |
+| B1  | `src/app/favicon.ico`         | **ICO**, multi-resolution | 16, 32, 48 in one file | **Transparent** — composites onto the tab's own colour, light or dark                                                                             |
+| B2  | `src/app/icon.png`            | **SVG** (or PNG)          | Square viewBox         | **Transparent**, same as B1. Was `icon.svg` drawing its own dark tile; that tile is gone                                                          |
 | B3  | `public/apple-touch-icon.png` | **PNG**                   | **180×180**            | **Opaque — iOS composites transparency onto white.** Keep ~10% padding inside the square; iOS rounds the corners itself, so do not pre-round them |
 
-B2 is a **512×512 PNG** today. An SVG is still preferable — it would stay
-sharp on any display, and Next accepts either at that path.
+B2 is a **256×256 transparent PNG** today, cut from `logo-favicon.png` — 256
+rather than 512 because that source mark is 281px, so anything larger is an
+upscale. An SVG is still preferable: it would stay sharp at any size, and Next
+accepts either at that path.
+
+**The tab mark goes soft at 16px.** Measured on both a light and a dark tab:
+32px and 48px read fine, but at 16px the strands blur together and the centre
+star is lost. That is the artwork being fine-detailed, not the cut-out — the
+shield mark survives 16px because it is bolder. A simplified 16px cut (A3
+below) is the fix.
 
 Optional, only if a PWA manifest is ever added (there is none today):
 `icon-192.png` and `icon-512.png`, opaque, plus a maskable variant with 20%
