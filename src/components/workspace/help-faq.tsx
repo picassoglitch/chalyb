@@ -20,11 +20,8 @@ const FAQ: FaqGroup[] = [
         q: '¿Cuál es la diferencia entre Free, Pro y VIP?',
         a: (
           <>
-            <b>Free</b> te deja probar todos los sistemas en modo simulación, sin tarjeta de
-            crédito. <b>Pro</b> activa <b>UN</b> sistema en ejecución real — tú eliges cuál
-            desde tu lista de bots. <b>VIP</b> activa los 16 sistemas en vivo y te da los
-            límites de uso más altos. El admin puede cambiarte de plan desde su panel sin pasar
-            por la página de pago.
+            <b>Free</b> incluye Clips, sin tarjeta de crédito. <b>Pro</b> incluye una herramienta a
+            tu elección. <b>VIP</b> incluye todas las herramientas y los límites de uso más altos.
           </>
         ),
       },
@@ -32,10 +29,10 @@ const FAQ: FaqGroup[] = [
         q: '¿Cómo cambio mi plan?',
         a: (
           <>
-            Desde <b>/app/subscription</b>, haz clic en el botón del plan al que quieres
-            cambiar. Si subes (Free → Pro o Pro → VIP), te redirigimos a Mercado Pago
-            para procesar el pago. Si bajas a Free, no se te cobra nada y conservas el plan
-            anterior hasta que termine el período que ya pagaste.
+            Desde <b>Suscripción</b>, haz clic en el botón del plan al que quieres cambiar. Si subes
+            (Free → Pro o Pro → VIP), te llevamos a Mercado Pago para el pago. Si bajas a Free, no
+            se te cobra nada y conservas el plan anterior hasta que termine el período que ya
+            pagaste.
           </>
         ),
       },
@@ -43,10 +40,10 @@ const FAQ: FaqGroup[] = [
         q: '¿Puedo cancelar en cualquier momento?',
         a: (
           <>
-            Sí. Desde <b>/app/subscription</b>, abajo de las tarjetas de plan hay un botón
-            &laquo;Cancelar suscripción&raquo;. La cancelación detiene la renovación y
-            conservas tu plan hasta que termine el período que ya pagaste; ese día bajas
-            automáticamente a Free. No te cobramos nada adicional.
+            Sí. En <b>Suscripción</b>, abajo de las tarjetas de plan, está el botón &laquo;Cancelar
+            suscripción&raquo;. La cancelación detiene la renovación y conservas tu plan hasta que
+            termine el período que ya pagaste; ese día bajas automáticamente a Free. No te cobramos
+            nada adicional.
           </>
         ),
       },
@@ -54,47 +51,33 @@ const FAQ: FaqGroup[] = [
         q: '¿Por qué no veo cambios después de pagar?',
         a: (
           <>
-            Mercado Pago confirma el pago en segundos a minutos. Tu plan se activa
-            automáticamente vía webhook cuando MP nos notifica. Revisa <b>/app/billing</b> para
-            ver el estado del pago — si dice <b>Aprobado</b>, tu tier ya está activo. Si dice{' '}
-            <b>Pendiente</b> y pagaste en efectivo (OXXO, ticket), espera a que el comercio
-            procese.
+            Mercado Pago confirma el pago en segundos o minutos, y tu plan se activa solo en cuanto
+            nos avisa. En <b>Facturación</b> ves el estado del pago: si dice <b>Aprobado</b>, tu
+            plan ya está activo. Si dice <b>Pendiente</b> y pagaste en efectivo (OXXO), espera a que
+            el comercio lo procese.
           </>
         ),
       },
     ],
   },
   {
-    title: 'Sistemas y ejecución',
+    title: 'Herramientas',
     items: [
       {
-        q: 'En Pro, ¿puedo cambiar cuál sistema corre en vivo?',
+        q: 'En Pro, ¿puedo cambiar de herramienta?',
         a: (
           <>
-            Sí, cuantas veces quieras. Ve a <b>/app/engines</b> y haz clic en{' '}
-            <b>Activar en vivo</b> en el sistema que prefieras. El sistema que estaba en vivo
-            antes vuelve automáticamente a simulación. No hay penalización por cambiar.
+            Sí, cuantas veces quieras. En <b>Herramientas</b>, elige la que prefieras. No hay
+            penalización por cambiar.
           </>
         ),
       },
       {
-        q: '¿Qué hace cada sistema?',
+        q: '¿Qué hace cada herramienta?',
         a: (
           <>
-            Cada uno está descrito en <b>/app/engines</b>: lee la categoría y descripción debajo
-            del nombre. Para una explicación más a fondo con ejemplos reales, escríbenos a
-            través de <b>/contacto</b> y te mandamos un resumen.
-          </>
-        ),
-      },
-      {
-        q: '¿Qué es modo simulación?',
-        a: (
-          <>
-            En simulación, el sistema corre con datos de prueba y no toca tus cuentas externas
-            (Stripe, exchanges, redes sociales, etc.). Sirve para evaluar comportamiento y
-            límites sin riesgo. <b>Ejecución real</b> conecta al sistema con tus credenciales y
-            actúa sobre tus datos — solo disponible en Pro y VIP.
+            Cada una tiene su descripción en <b>Herramientas</b>. Si quieres una explicación con
+            ejemplos, escríbenos desde <b>Contacto</b> y te respondemos.
           </>
         ),
       },
@@ -107,8 +90,8 @@ const FAQ: FaqGroup[] = [
         q: '¿Cómo activo autenticación de dos factores (2FA)?',
         a: (
           <>
-            Desde <b>/app/settings</b> &raquo; sección Seguridad &raquo; Activar 2FA. Recomendamos
-            usar una app como Authy o 1Password en vez de SMS. Si pierdes acceso al
+            Desde <b>Perfil &amp; seguridad</b> &raquo; sección Seguridad &raquo; Activar 2FA.
+            Recomendamos usar una app como Authy o 1Password en vez de SMS. Si pierdes acceso al
             authenticator, escríbenos a través de <b>/contacto</b> y validamos tu identidad
             manualmente.
           </>
@@ -118,10 +101,9 @@ const FAQ: FaqGroup[] = [
         q: '¿Pueden ver mis datos los administradores de Chalyb?',
         a: (
           <>
-            Solo el rol <b>SUPER_ADMIN</b> de tu organización puede ver tu perfil y tu uso
-            general. El equipo de Chalyb no accede a los datos de tu operación (lo que tus sistemas
-            generan). Para soporte técnico, te pedimos permiso explícito antes de revisar
-            los registros.
+            Solo el rol <b>SUPER_ADMIN</b> de tu organización puede ver tu perfil y tu uso general.
+            El equipo de Chalyb no accede a los datos de tu operación (lo que tus sistemas generan).
+            Para soporte técnico, te pedimos permiso explícito antes de revisar los registros.
           </>
         ),
       },
@@ -129,10 +111,10 @@ const FAQ: FaqGroup[] = [
         q: '¿Cómo cierro mi cuenta?',
         a: (
           <>
-            Cancela primero tu suscripción desde <b>/app/subscription</b> (te deja en Free) y
-            luego escríbenos a <b>/contacto</b> pidiendo el borrado de cuenta. Eliminamos
-            tu perfil, tus ejecuciones y tus pagos en menos de 7 días, conforme a tu derecho a
-            la portabilidad de datos.
+            Cancela primero tu suscripción desde <b>Suscripción</b> (te deja en Free) y luego
+            escríbenos a <b>/contacto</b> pidiendo el borrado de cuenta. Eliminamos tu perfil, tus
+            ejecuciones y tus pagos en menos de 7 días, conforme a tu derecho a la portabilidad de
+            datos.
           </>
         ),
       },
@@ -145,10 +127,9 @@ const FAQ: FaqGroup[] = [
         q: '¿Aceptan factura fiscal?',
         a: (
           <>
-            Sí, para clientes en México emitimos CFDI 4.0. Después de tu primer pago en Pro o
-            VIP, escríbenos vía <b>/contacto</b> con tu RFC + razón social y la generamos
-            dentro de los siguientes 3 días hábiles. Para otros países, emitimos una factura
-            estándar en PDF.
+            Sí, para clientes en México emitimos CFDI 4.0. Después de tu primer pago en Pro o VIP,
+            escríbenos vía <b>/contacto</b> con tu RFC + razón social y la generamos dentro de los
+            siguientes 3 días hábiles. Para otros países, emitimos una factura estándar en PDF.
           </>
         ),
       },
@@ -156,10 +137,9 @@ const FAQ: FaqGroup[] = [
         q: '¿Qué métodos de pago aceptan?',
         a: (
           <>
-            Todos los que Mercado Pago soporta en tu país: tarjeta de crédito/débito,
-            transferencia, OXXO/ticket (México), Rapipago/Pago Fácil (Argentina), y más.
-            Mercado Pago muestra las opciones disponibles según tu ubicación al momento de
-            pagar.
+            Todos los que Mercado Pago soporta en tu país: tarjeta de crédito/débito, transferencia,
+            OXXO/ticket (México), Rapipago/Pago Fácil (Argentina), y más. Mercado Pago muestra las
+            opciones disponibles según tu ubicación al momento de pagar.
           </>
         ),
       },
@@ -167,9 +147,9 @@ const FAQ: FaqGroup[] = [
         q: '¿Reembolsos?',
         a: (
           <>
-            Te devolvemos el 100% si pides reembolso dentro de los primeros 7 días del primer
-            cobro de cualquier plan. Para cobros posteriores, no hay reembolso pero cancelas
-            cuando quieras y dejas de ser facturado en el próximo ciclo.
+            Te devolvemos el 100% si pides reembolso dentro de los primeros 7 días del primer cobro
+            de cualquier plan. Para cobros posteriores, no hay reembolso pero cancelas cuando
+            quieras y dejas de ser facturado en el próximo ciclo.
           </>
         ),
       },
@@ -211,7 +191,8 @@ export function HelpFaq() {
                 <div
                   key={key}
                   style={{
-                    borderBottom: ii < group.items.length - 1 ? '1px solid var(--cc-line-soft)' : 'none',
+                    borderBottom:
+                      ii < group.items.length - 1 ? '1px solid var(--cc-line-soft)' : 'none',
                     background: 'var(--cc-panel)',
                   }}
                 >

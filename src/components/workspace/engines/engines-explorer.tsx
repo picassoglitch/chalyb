@@ -83,7 +83,6 @@ export function EnginesExplorer({
 }) {
   const t = useTranslations('engines');
   const [filter, setFilter] = useState<EngineFilterKey>('all');
-  const [soonOpen, setSoonOpen] = useState(false);
 
   const counts = useMemo(() => {
     const c = Object.fromEntries(ENGINE_FILTER_KEYS.map((k) => [k, 0])) as Record<
@@ -162,34 +161,6 @@ export function EnginesExplorer({
               </section>
             )}
 
-            {groups.soon.length > 0 && (
-              <section className="flex flex-col gap-5">
-                <SectionHead
-                  title={t('sections.soon')}
-                  sub={t('sections.soonSub')}
-                  accent="bg-[var(--cc-txt-4)]"
-                  right={
-                    <button
-                      type="button"
-                      onClick={() => setSoonOpen((v) => !v)}
-                      aria-expanded={soonOpen}
-                      className="shrink-0 rounded-lg border border-[var(--cc-line-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--cc-txt-3)] transition-colors hover:text-[var(--cc-txt)]"
-                    >
-                      {soonOpen
-                        ? t('sections.soonHide')
-                        : t('sections.soonShow', { count: groups.soon.length })}
-                    </button>
-                  }
-                />
-                {soonOpen && (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {groups.soon.map((vm) => (
-                      <EngineCard key={vm.id} vm={vm} variant="soon" />
-                    ))}
-                  </div>
-                )}
-              </section>
-            )}
           </div>
         )}
       </div>

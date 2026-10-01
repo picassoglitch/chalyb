@@ -6,7 +6,6 @@ import { useWorkspace } from '@/lib/workspace/store';
 import { WorkspaceSidebar } from './workspace-sidebar';
 import { WorkspaceTour } from './workspace-tour';
 import { workspacePageKey } from '@/components/dashboard/nav-data';
-import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
 
 interface Props {
   userInitial: string;
@@ -38,10 +37,7 @@ export function WorkspaceShell({
   const pageKey = workspacePageKey(pathname);
   const meta = {
     title: t(`${pageKey}.title`),
-    sub: t(`${pageKey}.sub`, {
-      clip: ENGINE_DISPLAY_NAMES.chalybclip!,
-      stream: ENGINE_DISPLAY_NAMES.chalybstream!,
-    }),
+    sub: t(`${pageKey}.sub`),
   };
 
   return (

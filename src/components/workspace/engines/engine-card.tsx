@@ -30,10 +30,10 @@ function StatusBadge({ vm }: { vm: EngineVM }) {
   const t = useTranslations('engines.card');
   const map = {
     live: { label: t('statusLive'), dot: true, lock: false, cls: 'text-[var(--cc-green)] border-[var(--cc-green)]/40 bg-[var(--cc-green-g)]' },
-    trial: { label: t('statusTrial'), dot: true, lock: false, cls: 'text-[var(--cc-cyan)] border-[var(--cc-cyan)]/40 bg-[var(--cc-cyan-g)]' },
-    simulation: { label: t('statusSimulation'), dot: false, lock: false, cls: 'text-[var(--cc-txt-3)] border-[var(--cc-line-2)] bg-white/[0.02]' },
-    locked: { label: vm.requiresPlanLabel ?? 'Pro', dot: false, lock: true, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/40 bg-[var(--cc-purple-g)]' },
-    coming_soon: { label: t('statusSoon'), dot: false, lock: false, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/30 bg-[var(--cc-purple-g)]' },
+    trial: { label: t('statusLive'), dot: true, lock: false, cls: 'text-[var(--cc-cyan)] border-[var(--cc-cyan)]/40 bg-[var(--cc-cyan-g)]' },
+    simulation: { label: t('statusLive'), dot: false, lock: false, cls: 'text-[var(--cc-txt-3)] border-[var(--cc-line-2)] bg-white/[0.02]' },
+    locked: { label: t('statusLocked'), dot: false, lock: false, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/40 bg-[var(--cc-purple-g)]' },
+    coming_soon: { label: t('statusLocked'), dot: false, lock: false, cls: 'text-[var(--cc-purple)] border-[var(--cc-purple)]/30 bg-[var(--cc-purple-g)]' },
   } as const;
   const s = map[vm.state];
   return (
@@ -211,7 +211,7 @@ export function EngineCard({ vm, variant }: { vm: EngineVM; variant: EngineCardV
           {vm.canSelectLive && (
             <LiveEngineSelectButton engineId={vm.id} engineName={vm.name} isCurrentlySelected={vm.isSelectedLive} />
           )}
-          {isLocked ? (
+          {isLocked && vm.canSelectLive ? null : isLocked ? (
             <Link
               href={'/app/subscription' as Route}
               className="rounded-xl border border-[var(--cc-purple)]/45 bg-[var(--cc-purple-g)] px-4 py-2.5 text-[13.5px] font-semibold text-[var(--cc-purple)] transition-colors hover:bg-[var(--cc-purple)]/20"

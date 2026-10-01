@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Chalyb — Engines de IA listos para usar, en un solo dashboard",
-    "description": "Clipea tus streams, corre señales de trading y automatiza tu operación con engines de IA. Empieza gratis, prueba en simulación y pasa a vivo cuando rinda."
+    "title": "Chalyb — Herramientas de IA listas para usar, en un solo lugar",
+    "description": "Haz clips de tus streams, recibe señales de cripto y maneja tu transmisión con herramientas de IA. Empieza gratis."
   },
   "landing": {
     "nav": {
@@ -11,20 +11,20 @@
     },
     "hero": {
       "kicker": "Plataforma de automatización con IA",
-      "h1": "Pon engines de IA a trabajar. En vivo en menos de un minuto.",
-      "lead": "Chalyb es un solo dashboard para engines de IA listos para usar: clipea tus streams, corre señales de trading, automatiza tu operación. Empieza gratis, prueba en simulación y pasa a vivo cuando rinda.",
+      "h1": "Pon herramientas de IA a trabajar. Listas en menos de un minuto.",
+      "lead": "Chalyb reúne herramientas de IA listas para usar: haz clips de tus streams, recibe señales de cripto y maneja tu transmisión. Empieza gratis.",
       "cta": "Empezar gratis",
       "micro": "Plan gratis · Sin tarjeta de crédito · Regístrate con Google o correo",
       "preview": {
-        "title": "Tus engines",
+        "title": "Tus herramientas",
         "live": "En vivo",
-        "stat1": "Engines en vivo",
+        "stat1": "Herramientas",
         "stat2": "Clips esta semana",
-        "stat3": "Tokens usados",
+        "stat3": "Créditos usados",
         "chart": "Clips generados · últimos 14 días",
         "statusLive": "En vivo",
-        "statusSim": "Simulación",
-        "statusSoon": "Próximamente"
+        "statusSim": "Incluido",
+        "statusSoon": "En Pro"
       }
     },
     "proof": {
@@ -42,49 +42,49 @@
       "subtitle": "Tres cosas que la plataforma hace bien, para que tú no tengas que construir ninguna.",
       "items": {
         "1": {
-          "kicker": "Librería de engines",
-          "title": "Engines de IA listos, sin construir nada",
-          "body": "Elige de una librería creciente de engines que el equipo de Chalyb opera en producción. Cada uno resuelve un trabajo concreto desde el día uno.",
+          "kicker": "Herramientas",
+          "title": "Herramientas de IA listas, sin construir nada",
+          "body": "Elige entre herramientas que el equipo de Chalyb opera en producción. Cada una resuelve un trabajo concreto desde el día uno.",
           "bullets": {
-            "1": "ChalyClip convierte tus streams en clips verticales listos para publicar",
-            "2": "ChalyCrypto entrega señales cripto con backtesting y alertas 24/7",
-            "3": "Nuevos engines salen continuamente y van incluidos en tu plan"
+            "1": "Clips convierte tus streams en clips verticales listos para publicar",
+            "2": "Señales te avisa cuándo es buen momento para comprar o vender cripto",
+            "3": "En vivo maneja tu transmisión y tus escenas de OBS con botones grandes"
           }
         },
         "2": {
-          "kicker": "De simulación a vivo",
+          "kicker": "Empieza gratis",
           "title": "Prueba todo gratis. Pasa a vivo cuando estés listo",
-          "body": "Todos los engines corren en simulación en el plan gratis. Cuando los resultados te convenzan, actívalo en vivo con un clic.",
+          "body": "Clips viene incluido en el plan gratis. Cuando quieras más, cambia de plan con un clic.",
           "bullets": {
-            "1": "Corridas en simulación ilimitadas en todos los engines",
-            "2": "Pro pone un engine en vivo, VIP los pone todos",
-            "3": "Cambia de engine o pausa cuando quieras, sin ataduras"
+            "1": "Clips incluido en el plan gratis",
+            "2": "Pro incluye una herramienta a tu elección, VIP las incluye todas",
+            "3": "Cambia de herramienta o pausa cuando quieras, sin ataduras"
           }
         },
         "3": {
           "kicker": "Monitoreo y cobro",
           "title": "Ve cada corrida. Paga solo lo que usas",
-          "body": "Dashboards, historial de ejecución y medidor de tokens vienen integrados. Son las mismas herramientas que el equipo de Chalyb usa en sus propios sistemas.",
+          "body": "Historial y medidor de créditos vienen integrados. Son las mismas herramientas que el equipo de Chalyb usa en sus propios sistemas.",
           "bullets": {
             "1": "Dashboards en vivo e historial completo de ejecución",
-            "2": "Tokens mensuales incluidos, las recargas nunca caducan",
+            "2": "Créditos mensuales incluidos, las recargas nunca caducan",
             "3": "Pago seguro con Mercado Pago, cancela cuando quieras"
           }
         }
       },
       "visuals": {
-        "libraryTitle": "Librería de engines",
+        "libraryTitle": "Herramientas",
         "libraryClip": "Clips de streams",
         "libraryCrypto": "Señales de trading",
         "libraryObs": "Control de transmisión",
         "ready": "Listo",
-        "soon": "Próximamente",
+        "soon": "En Pro",
         "modeTitle": "Modo de ejecución",
-        "modeSim": "Simulación · gratis",
+        "modeSim": "Gratis",
         "modeLive": "En vivo · Pro",
         "modeFoot": "Un clic para cambiar. Sin redeploy, sin caídas.",
         "usageTitle": "Uso este mes",
-        "usageTokens": "Tokens IA",
+        "usageTokens": "Créditos",
         "usageRun": "corrida",
         "usageOk": "Completada"
       }
@@ -98,8 +98,8 @@
           "body": "Crea tu cuenta con Google o correo. Tu espacio queda listo en menos de un minuto."
         },
         "2": {
-          "title": "Elige y configura un engine",
-          "body": "Escoge un engine, conecta tu canal o exchange y define las reglas. Córrelo primero en simulación."
+          "title": "Elige una herramienta",
+          "body": "Escoge una herramienta, conecta tu canal o pega un enlace, y listo."
         },
         "3": {
           "title": "Obtén resultados",
@@ -119,8 +119,8 @@
           "per": " /siempre",
           "tagline": "Crea una cuenta y explora toda la plataforma.",
           "features": {
-            "1": "ChalyClip gratis 7 días",
-            "2": "50,000 tokens IA de regalo",
+            "1": "Clips incluido",
+            "2": "50,000 créditos de regalo",
             "3": "Acceso a la comunidad",
             "4": "Clips con marca de agua · descarga manual"
           },
@@ -130,12 +130,12 @@
           "name": "Pro",
           "amount": "MXN $749",
           "per": " /mes",
-          "tagline": "Un engine en vivo a tu elección.",
+          "tagline": "Una herramienta a tu elección.",
           "features": {
             "1": "Todo lo de Gratis",
-            "2": "1 engine en vivo · tú eliges cuál",
-            "3": "1,000,000 de tokens / mes, se regeneran",
-            "4": "ChalyClip Pro: sin marca de agua · ~12 streams/mes · 1 brand kit",
+            "2": "1 herramienta incluida · tú eliges cuál",
+            "3": "1,000,000 de créditos al mes, se renuevan",
+            "4": "Clips sin marca de agua · ~12 streams al mes · 1 logo",
             "5": "Comunidad premium"
           },
           "cta": "Empezar con Pro"
@@ -147,9 +147,9 @@
           "tagline": "Todo Chalyb desbloqueado. IA + Clip, sin límites.",
           "features": {
             "1": "Todo lo de Pro",
-            "2": "Todos los engines en vivo",
-            "3": "5× los tokens de Pro",
-            "4": "Paquete completo de streamer de ChalyClip",
+            "2": "Todas las herramientas incluidas",
+            "3": "5 veces los créditos de Pro",
+            "4": "Clips completo para streamers",
             "5": "Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea"
           },
           "cta": "Empezar con VIP"
@@ -157,8 +157,8 @@
       }
     },
     "cta": {
-      "title": "Empieza hoy. Tu primer engine es gratis.",
-      "body": "Crea tu cuenta, corre un engine en simulación y ve resultados antes de pagar nada.",
+      "title": "Empieza hoy. Clips es gratis.",
+      "body": "Crea tu cuenta, pega el enlace de tu stream y ve tus clips antes de pagar nada.",
       "btn": "Empezar hoy",
       "micro": "Plan gratis · Sin tarjeta de crédito"
     },
@@ -187,7 +187,7 @@
       "returningSubtitle": "Retoma donde lo dejaste — bots, agentes IA, historial de ejecución.",
       "returningCta": "Continuar →",
       "benefits": {
-        "1": "Ejecuta cualquier sistema en simulación",
+        "1": "Haz clips gratis desde el primer día",
         "2": "Monitoreo en vivo e historial de ejecución",
         "3": "Paga solo por lo que uses"
       },
@@ -249,7 +249,8 @@
     "account": {
       "title": "Cuenta",
       "signedInAs": "Sesión iniciada como",
-      "signOut": "Cerrar sesión"
+      "signOut": "Cerrar sesión",
+      "signingOut": "Cerrando sesión…"
     }
   },
   "tour": {
@@ -269,12 +270,12 @@
         "body": "Todo se navega desde aquí, agrupado en Tu cuenta, Plataforma y Ajustes. Cámbiate de sección con un clic."
       },
       "engines": {
-        "title": "Tus engines",
-        "body": "En «Mis engines» ves, abres y activas tus engines (ChalyClip, ChalyCrypto y más). «En vivo» = corriendo; «Disponible» = listo para usar con tu plan."
+        "title": "Tus herramientas",
+        "body": "En «Herramientas» ves y abres tus herramientas (Clips, Señales y más). «Incluido en tu plan» = lista para usar."
       },
       "tokens": {
-        "title": "Tu balance de tokens",
-        "body": "En «Uso» revisas cuántos tokens IA te quedan este mes y tu consumo. Si se acaban, puedes recargar o subir de plan."
+        "title": "Tus créditos",
+        "body": "En «Uso» revisas cuántos créditos te quedan este mes. Si se acaban, puedes recargar o cambiar de plan."
       },
       "plan": {
         "title": "Tu plan",
@@ -291,81 +292,71 @@
     }
   },
   "engines": {
-    "title": "Mis engines",
+    "title": "Herramientas",
     "hero": {
       "badgeLive": "{count} en vivo ahora",
-      "badgeIdle": "Tu centro de engines",
+      "badgeIdle": "Tus herramientas",
       "headingContinue": "Continúa donde lo dejaste",
-      "headingStart": "Empieza con ChalyClip",
+      "headingStart": "Empieza con Clips",
       "subContinue": "{name} está corriendo en vivo. Retoma el control cuando quieras.",
-      "subStart": "Convierte tus streams en clips virales — el único engine listo para usar ahora mismo.",
+      "subStart": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
       "ctaContinue": "Continuar →",
-      "ctaOpen": "Abrir ChalyClip →",
-      "ctaDemo": "Ver demo"
+      "ctaOpen": "Abrir Clips →"
     },
     "sections": {
-      "available": "Disponibles ahora",
+      "available": "Incluido en tu plan",
       "availableSub": "Listos para usar con tu plan actual.",
-      "pro": "Desbloquea con Pro",
-      "proSub": "Activa estos engines al subir de plan.",
-      "soon": "Próximamente",
-      "soonSub": "En construcción — te avisamos al lanzar.",
-      "soonShow": "Ver próximos engines ({count})",
-      "soonHide": "Ocultar próximos engines"
+      "pro": "Incluido en Pro",
+      "proSub": "Pruébalas gratis con Pro."
     },
     "card": {
-      "ribbon": "Disponible ahora",
-      "statusLive": "En vivo",
-      "statusTrial": "Prueba en vivo",
-      "statusSimulation": "Disponible",
-      "statusLocked": "Requiere {plan}",
-      "statusSoon": "Próximamente",
-      "open": "Abrir engine →",
+      "ribbon": "Incluido en tu plan",
+      "statusLive": "Incluido en tu plan",
+      "statusLocked": "Incluido en Pro · Pruébalo gratis",
+      "open": "Abrir →",
       "openNamed": "Abrir {name} →",
-      "unlock": "Desbloquear con Pro",
+      "unlock": "Ver planes",
       "notify": "Avísame",
       "details": "Ver detalles",
-      "ownerChalyb": "by Chalyb",
-      "ownerBy": "by {owner}",
-      "ownerMine": "Tu engine",
+      "ownerChalyb": "de Chalyb",
+      "ownerBy": "de {owner}",
+      "ownerMine": "Tu herramienta",
       "notifyDone": "Listo — te avisaremos cuando lancemos {name}."
     },
     "filters": {
-      "aria": "Filtrar engines",
+      "aria": "Filtrar herramientas",
       "all": "Todos",
-      "live": "En vivo",
-      "simulation": "Disponible",
-      "coming_soon": "Próximamente",
-      "locked": "Requiere Pro",
-      "emptyTitle": "No hay engines en este filtro",
+      "live": "Incluido en tu plan",
+      "locked": "Incluido en Pro",
+      "emptyTitle": "No hay herramientas en este filtro",
       "emptyCta": "Ver todos"
     },
     "upsell": {
-      "title": "Desbloquea más engines con Pro",
-      "sub": "Corre ChalyCrypto, ChalyOBS y más en vivo con un plan Pro.",
-      "cta": "Actualizar a Pro →"
+      "title": "Más herramientas con Pro",
+      "sub": "Usa Señales, En vivo y más con un plan Pro.",
+      "cta": "Ver planes →"
     },
     "caps": {
       "heading": "Capacidades de tu plan · {plan}",
       "headingPriced": "Capacidades de tu plan · {plan} · {price}/{per}",
-      "liveEngines": "Engines en vivo",
-      "tokens": "Tokens IA / mes",
+      "liveEngines": "Herramientas incluidas",
+      "tokens": "Créditos al mes",
       "storage": "Almacenamiento",
       "history": "Historial",
       "historyYear": "1 año+",
       "historyDays": "{days} días",
       "support": "Soporte",
       "supportPriority": "Prioritario",
-      "supportEmail": "Email",
+      "supportEmail": "Correo",
       "supportCommunity": "Comunidad"
     },
     "empty": {
-      "title": "Sin engines disponibles",
-      "hint": "Si eres admin: corre 0010_rename_bots_to_engines.sql en Supabase y refresca."
+      "title": "No pudimos cargar tus herramientas",
+      "hint": "Intenta de nuevo en unos minutos."
     },
     "marketing": {
       "chalybclip": {
-        "tagline": "Convierte tus streams en clips virales, en automático.",
+        "tagline": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
         "bullets": [
           "Detecta los mejores momentos con IA",
           "Render vertical 9:16 listo para publicar",
@@ -373,7 +364,7 @@
         ]
       },
       "chalybcrypto": {
-        "tagline": "Señales y automatización de trading cripto 24/7.",
+        "tagline": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
         "bullets": [
           "Estrategias backtesteadas",
           "Alertas en tiempo real",
@@ -381,11 +372,11 @@
         ]
       },
       "chalybobs": {
-        "tagline": "Controla tu transmisión en vivo desde un solo panel.",
+        "tagline": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
         "bullets": [
           "Escenas y overlays dinámicos",
           "Automatización del stream",
-          "Conecta con ChalyClip"
+          "Funciona con Clips"
         ]
       }
     },
@@ -447,7 +438,7 @@
     },
     "terms": {
       "metaTitle": "Términos de servicio",
-      "metaDescription": "Términos y condiciones para usar Chalyb y sus engines (ChalyClip, ChalyStreamManager y futuros productos).",
+      "metaDescription": "Términos y condiciones para usar Chalyb y sus herramientas.",
       "title": "Términos de servicio",
       "lastUpdated": "17 junio 2026"
     }
@@ -461,7 +452,7 @@
       "subscription": "Suscripción",
       "usage": "Uso",
       "billing": "Facturación",
-      "myengines": "Mis engines",
+      "myengines": "Herramientas",
       "history": "Historial",
       "messages": "Mensajes",
       "profile": "Perfil & seguridad",
@@ -476,11 +467,11 @@
     "pages": {
       "home": {
         "title": "Tu espacio",
-        "sub": "Resumen de tu suscripción, uso y engines activos."
+        "sub": "Tu plan, tus créditos y tus herramientas."
       },
       "subscription": {
         "title": "Suscripción",
-        "sub": "Tu plan actual, cambios de tier y método de pago."
+        "sub": "Tu plan actual y tu método de pago."
       },
       "usage": {
         "title": "Uso",
@@ -491,8 +482,8 @@
         "sub": "Historial de pagos y método de pago."
       },
       "engines": {
-        "title": "Mis engines",
-        "sub": "{clip}, {stream} y próximos productos — disponibles en tu tier actual."
+        "title": "Herramientas",
+        "sub": "Las herramientas incluidas en tu plan."
       },
       "history": {
         "title": "Historial",
@@ -540,6 +531,181 @@
       "twofa": "2FA con app autenticadora",
       "twofaSub": "El código TOTP es obligatorio para los roles Admin y Super Admin.",
       "toggleAria": "Cambiar {label}"
+    }
+  },
+  "home": {
+    "title": "Inicio",
+    "greeting": "Hola, {name}",
+    "greetingAnon": "Hola",
+    "sub": "Elige qué quieres hacer hoy.",
+    "toolsHeading": "Tus herramientas",
+    "open": "Abrir",
+    "see": "Ver",
+    "credits": {
+      "label": "Créditos",
+      "sub": "disponibles este mes",
+      "unlimited": "sin límite"
+    }
+  },
+  "tool": {
+    "back": "Herramientas",
+    "badge": {
+      "included": "Incluido en tu plan",
+      "trialOffer": "Incluido en Pro · Pruébalo gratis",
+      "otherTool": "Cámbiala para usarla",
+      "setup": "Te falta un paso"
+    },
+    "ready": {
+      "body": "{tool} se abre en una pestaña nueva."
+    },
+    "offer": {
+      "title": "Incluido en Pro · Pruébalo gratis",
+      "body": "Con Pro puedes usar {tool}.",
+      "trialCta": "Prueba Pro gratis",
+      "plansCta": "Ver planes"
+    },
+    "switch": {
+      "title": "Tu plan incluye una herramienta a la vez.",
+      "body": "Para usar {tool}, elígela en Herramientas.",
+      "cta": "Cambiar herramienta"
+    }
+  },
+  "launch": {
+    "open": "Abrir",
+    "opening": "Abriendo…",
+    "blocked": "Tu navegador no abrió la pestaña nueva.",
+    "openNamed": "Abrir {tool}",
+    "retry": "Intentar de nuevo",
+    "help": "Hablar con una persona",
+    "trialCta": "Prueba Pro gratis",
+    "plansCta": "Ver planes",
+    "signIn": "Entrar"
+  },
+  "errors": {
+    "tool": {
+      "NEEDS_PLAN": "Incluido en Pro · Pruébalo gratis",
+      "SETUP_NEEDED": "Te falta un paso para usar {tool}.",
+      "TOOL_UNAVAILABLE": "No pudimos abrir {tool} en este momento. Intenta de nuevo en unos minutos.",
+      "PROVISION_FAILED": "No pudimos preparar {tool} para tu cuenta. Intenta de nuevo en un momento.",
+      "PROVISION_FAILED_CLIPS": "No pudimos preparar tus Clips. Intenta de nuevo en un momento.",
+      "SESSION_EXPIRED": "Tu sesión terminó. Vuelve a entrar.",
+      "NETWORK": "Parece que no hay conexión. Revisa tu internet e intenta otra vez.",
+      "UNKNOWN": "Algo salió mal. Intenta de nuevo o escríbenos."
+    }
+  },
+  "setup": {
+    "cta": "Conectar ahora",
+    "alt": "O pega un enlace, sin conectar nada.",
+    "youtube": {
+      "title": "Te falta conectar YouTube",
+      "body": "Así podemos traer tus streams y hacer tus clips solos. Toma 30 segundos."
+    },
+    "twitch": {
+      "title": "Te falta conectar Twitch",
+      "body": "Así podemos traer tus streams y hacer tus clips solos. Toma 30 segundos."
+    },
+    "obs": {
+      "title": "Te falta conectar OBS",
+      "body": "Así puedes manejar tus escenas desde aquí. Toma 30 segundos."
+    },
+    "whatsapp": {
+      "title": "Te falta conectar WhatsApp",
+      "body": "Así podemos enviarte avisos y contestar a tus clientes. Toma 30 segundos."
+    },
+    "exchange": {
+      "title": "Te falta conectar tu exchange",
+      "body": "Solo con permiso para operar; nunca para retirar. Toma 30 segundos."
+    }
+  },
+  "usage": {
+    "loadFailed": "No pudimos cargar tu consumo. Intenta de nuevo en unos minutos.",
+    "retry": "Intentar de nuevo"
+  },
+  "clips": {
+    "wizardNav": "Navegación de Clips",
+    "home": "Inicio",
+    "back": "Atrás",
+    "close": "Cerrar y volver a Inicio",
+    "step": "Paso {n} de 3",
+    "handoff": {
+      "title": "Haz tus clips",
+      "body": "Clips se abre en una pestaña nueva. Ahí pegas el enlace de tu stream y nosotros hacemos el resto."
+    },
+    "s1": {
+      "metaTitle": "Clips · Paso 1",
+      "title": "Pega el enlace de tu stream o video",
+      "sub": "Copia la dirección de tu video y pégala aquí. Nosotros hacemos el resto.",
+      "placeholder": "https://youtube.com/...",
+      "works": "Funciona con YouTube, Twitch, Kick y Facebook.",
+      "cta": "Continuar"
+    },
+    "s2": {
+      "metaTitle": "Clips · Paso 2",
+      "title": "¿Dónde los vas a publicar?",
+      "sub": "Elige la forma de tus clips. Puedes cambiarla después.",
+      "recommended": "Recomendado",
+      "formats": {
+        "vertical": {
+          "title": "TikTok / Reels / Shorts",
+          "detail": "Vertical"
+        },
+        "horizontal": {
+          "title": "YouTube",
+          "detail": "Horizontal"
+        },
+        "square": {
+          "title": "Instagram",
+          "detail": "Cuadrado"
+        }
+      },
+      "count": "¿Cuántos clips?",
+      "countHint": "Te recomendamos 6 para empezar.",
+      "cta": "Crear mis clips"
+    },
+    "wait": {
+      "metaTitle": "Creando tus clips",
+      "title": "Estamos creando tus clips",
+      "sub": "Tarda unos minutos. Puedes cerrar esta página y volver cuando quieras.",
+      "progress": "Avance",
+      "found": "Encontramos {n}",
+      "steps": {
+        "received": "Video recibido",
+        "finding_moments": "Buscando los mejores momentos",
+        "adding_captions": "Agregando subtítulos…",
+        "ready": "Listo para descargar"
+      },
+      "status": {
+        "done": "hecho",
+        "run": "en curso",
+        "wait": "pendiente"
+      }
+    },
+    "done": {
+      "title": "Tus clips están listos 🎉",
+      "sub": "Hicimos {n} clips. Ya tienen subtítulos.",
+      "duration": "{seconds} segundos",
+      "download": "Descargar",
+      "downloadClip": "Descargar {title}",
+      "saved": "Tus clips se guardan en",
+      "results": "Mis resultados",
+      "more": "Hacer más clips"
+    },
+    "error": {
+      "title": "No pudimos hacer tus clips",
+      "link": {
+        "title": "No pudimos leer ese enlace",
+        "body": "Revisa que el video sea público y vuelve a pegarlo."
+      },
+      "unsupported": "Ese enlace no es de una plataforma que podamos leer. Funciona con YouTube, Twitch, Kick y Facebook.",
+      "tooLong": "Ese video es demasiado largo. Sube una parte o pásate a VIP.",
+      "noCredits": "Te quedaste sin créditos este mes. Se renuevan el {fecha}.",
+      "seePlan": "Ver mi plan",
+      "platform": "{plataforma} no responde ahora. Intenta de nuevo en unos minutos.",
+      "platformFallback": "La plataforma de tu video",
+      "unknown": "Algo salió mal de nuestro lado. Ya lo estamos revisando.",
+      "noCharge": "No se usaron créditos.",
+      "retry": "Intentar otra vez",
+      "help": "Hablar con una persona"
     }
   }
 }
