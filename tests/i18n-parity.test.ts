@@ -38,6 +38,7 @@ const SAME_OK_KEYS = new Set([
   'clips.s2.formats.vertical.detail', // "Vertical"
   'clips.s2.formats.horizontal.detail', // "Horizontal"
   'workspace.pages.fallback.sub', // empty
+  'clips.done.thumbAlt', // "Clip: {title}"
 ]);
 
 /** Values that are names, prices or URLs and never translate. */

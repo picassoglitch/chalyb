@@ -43,3 +43,9 @@ export function clipsHubMode(): ToolHubMode {
 export function trialFlowEnabled(): boolean {
   return readBool('TRIAL_FLOW_ENABLED', false);
 }
+
+/** Q16 · Whether the owner confirmed the "minutos" support promise. Until
+ *  then the copy says "lo antes posible". */
+export function supportSlaConfirmed(): boolean {
+  return readBool('SUPPORT_SLA_CONFIRMED', false);
+}

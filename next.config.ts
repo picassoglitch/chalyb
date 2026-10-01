@@ -74,6 +74,15 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
 
+      // BUILD-SPEC names Mi cuenta /app/cuenta; the existing route is
+      // /app/settings (§0.1 reuse rule), so both work.
+      { source: '/app/cuenta', destination: '/app/settings', permanent: true },
+      {
+        source: '/:locale(en|es)/app/cuenta',
+        destination: '/:locale/app/settings',
+        permanent: true,
+      },
+
       // The contact page is ES-canonical at /contacto. English visitors (and
       // anyone linking from English copy) reach for /contact, which 404'd.
       { source: '/contact', destination: '/contacto', permanent: true },

@@ -390,7 +390,9 @@
     }
   },
   "language": {
-    "label": "Idioma"
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
   },
   "contact": {
     "metaTitle": "Contacto",
@@ -534,21 +536,58 @@
     }
   },
   "home": {
-    "title": "Inicio",
-    "greeting": "Hola, {name}",
-    "greetingAnon": "Hola",
-    "sub": "Elige qué quieres hacer hoy.",
-    "toolsHeading": "Tus herramientas",
-    "open": "Abrir",
-    "see": "Ver",
-    "credits": {
-      "label": "Créditos",
-      "sub": "disponibles este mes",
-      "unlimited": "sin límite"
+    "metaTitle": "Inicio",
+    "greeting": "Hola, {nombre} 👋",
+    "greetingAnon": "Hola 👋",
+    "title": "¿Qué quieres hacer hoy?",
+    "task": {
+      "clips": {
+        "title": "Hacer clips de mi stream",
+        "body": "Crea clips cortos listos para TikTok, Reels y Shorts.",
+        "short": "Para TikTok, Reels y Shorts."
+      },
+      "senales": {
+        "title": "Recibir señales de cripto",
+        "body": "Te avisamos cuándo comprar o vender, en tu celular.",
+        "short": "Te avisamos cuándo comprar o vender."
+      },
+      "envivo": {
+        "title": "Manejar mi transmisión",
+        "body": "Controla tus escenas de OBS desde un solo lugar.",
+        "short": "Controla OBS desde tu celular."
+      },
+      "mas": {
+        "label": "Y mucho más",
+        "title": "Más herramientas",
+        "short": "{tools} y más."
+      }
+    },
+    "included": {
+      "aria": "Tu plan",
+      "all": "Todo incluido en tu plan {plan}.",
+      "noExtra": "Sin pagos extra.",
+      "single": "Tu plan Pro incluye {tools}.",
+      "toolsAria": "Herramientas incluidas",
+      "more": "y {n} más",
+      "gratis": "Prueba Pro gratis 1 mes. Todas las herramientas incluidas.",
+      "gratisPlans": "Con Pro tienes más herramientas.",
+      "cta": {
+        "trial": "Prueba Pro gratis 1 mes",
+        "return": "Volver a Pro",
+        "plans": "Ver planes"
+      }
+    },
+    "latest": {
+      "title": "Lo último"
+    },
+    "empty": {
+      "title": "Aún no tienes clips",
+      "body": "Haz el primero en 1 minuto. Solo pega el enlace de tu stream.",
+      "cta": "Hacer mi primer clip"
     }
   },
   "tool": {
-    "back": "Herramientas",
+    "back": "Inicio",
     "badge": {
       "included": "Incluido en tu plan",
       "trialOffer": "Incluido en Pro · Pruébalo gratis",
@@ -688,7 +727,8 @@
       "downloadClip": "Descargar {title}",
       "saved": "Tus clips se guardan en",
       "results": "Mis resultados",
-      "more": "Hacer más clips"
+      "more": "Hacer más clips",
+      "thumbAlt": "Clip: {title}"
     },
     "error": {
       "title": "No pudimos hacer tus clips",
@@ -706,6 +746,76 @@
       "noCharge": "No se usaron créditos.",
       "retry": "Intentar otra vez",
       "help": "Hablar con una persona"
+    }
+  },
+  "app": {
+    "nav": {
+      "aria": "Navegación principal",
+      "skip": "Saltar al contenido",
+      "inicio": "Inicio",
+      "resultados": "Mis resultados",
+      "cuenta": "Mi cuenta",
+      "admin": "Vista admin",
+      "tab": {
+        "inicio": "Inicio",
+        "resultados": "Resultados",
+        "cuenta": "Cuenta"
+      },
+      "plan": {
+        "gratis": "Plan Gratis",
+        "prueba": "Prueba Pro",
+        "pro": "Plan Pro",
+        "pro_anual": "Plan Pro anual",
+        "vip": "Plan VIP"
+      }
+    }
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "plan": {
+      "k": "Tu plan",
+      "name": {
+        "gratis": "Plan Gratis",
+        "pro": "Plan Pro",
+        "vip": "Plan VIP"
+      },
+      "nameAll": "{plan} — todo incluido",
+      "allTools": "Todas las herramientas",
+      "cta": "Ver mi plan"
+    },
+    "billing": {
+      "title": "Mi plan y pagos",
+      "credits": "Créditos disponibles",
+      "method": "Método de pago",
+      "invoices": "Facturas"
+    },
+    "prefs": {
+      "title": "Preferencias",
+      "language": "Idioma",
+      "profile": "Perfil y contraseña"
+    },
+    "help": {
+      "title": "Ayuda",
+      "human": {
+        "title": "Hablar con una persona",
+        "body": "Te respondemos lo antes posible, en español.",
+        "bodyFast": "Te respondemos en minutos, en español.",
+        "cta": "Escribir"
+      }
+    },
+    "more": {
+      "title": "Más",
+      "tools": "Herramientas",
+      "messages": "Mensajes",
+      "unread": "{n} sin leer",
+      "help": "Preguntas frecuentes"
+    },
+    "privacy": {
+      "title": "Privacidad y cuenta",
+      "notice": "Privacidad y notificaciones",
+      "arco": "Mis datos (derechos ARCO)",
+      "charge": "Problema con un cobro",
+      "close": "Cerrar mi cuenta"
     }
   }
 }
