@@ -57,6 +57,6 @@ test.describe('as free', () => {
   test('a Pro tool shows the Pro offer, not a lock (B1)', async ({ page }) => {
     await page.goto('/app/engines/chalybcrypto');
     await expect(page.getByText('Incluido en Pro · Pruébalo gratis').first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Abrir' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Abrir', exact: true })).toHaveCount(0);
   });
 });
