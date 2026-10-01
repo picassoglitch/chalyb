@@ -27,14 +27,29 @@ export function proIncludesAllTools(): boolean {
   return readBool('PRO_INCLUDES_ALL_TOOLS', true);
 }
 
-/** Q4 · Whether the hub drives Clips jobs itself (`on`, through the
- *  ClipsAdapter) or hands the user off to the Clips app over SSO (`off`).
- *  `mock` runs the in-hub flow against the mock adapter (tests, previews). */
-export type ToolHubMode = 'off' | 'on' | 'mock';
+/** Q4 · How the hub runs each tool (rebuild P3), from TOOL_HUB_MODE_<SLUG>:
+ *   off   (default) the tool's card launches the engine's app over SSO
+ *   a     the engine exposes a job/settings API; the hub renders the flow
+ *   b     the hub collects the inputs and hands off through SSO with them
+ *   mock  in-memory adapters — development and e2e only: refused in a
+ *         production build unless E2E_USE_MOCK_ADAPTERS=1 (previews)
+ *  `on` is accepted as an alias of `a`. */
+export type ToolHubMode = 'off' | 'a' | 'b' | 'mock';
+
+export function mockAdaptersAllowed(): boolean {
+  return process.env.NODE_ENV !== 'production' || readBool('E2E_USE_MOCK_ADAPTERS', false);
+}
+
+export function toolHubMode(slug: string): ToolHubMode {
+  const raw = (process.env[`TOOL_HUB_MODE_${slug.toUpperCase()}`] ?? '').toLowerCase();
+  if (raw === 'mock') return mockAdaptersAllowed() ? 'mock' : 'off';
+  if (raw === 'a' || raw === 'on') return 'a';
+  if (raw === 'b') return 'b';
+  return 'off';
+}
 
 export function clipsHubMode(): ToolHubMode {
-  const raw = (process.env.TOOL_HUB_MODE_CHALYBCLIP ?? '').toLowerCase();
-  return raw === 'on' || raw === 'mock' ? raw : 'off';
+  return toolHubMode('chalybclip');
 }
 
 /** What still stops the trial path from going live, when it is requested.

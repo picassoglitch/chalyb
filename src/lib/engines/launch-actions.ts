@@ -17,6 +17,7 @@ import type { Engine } from '@/lib/data/types';
 import { getIntegration } from './integrations/registry';
 import { provisionEngineAccess } from './subscriptions';
 import { runLaunch, type LaunchResult, type LaunchLogEvent } from './launch-flow';
+import { hasRiskAck } from '@/lib/tools/consents';
 
 export type { LaunchResult } from './launch-flow';
 
@@ -50,6 +51,7 @@ export async function getEngineLaunchUrl(engineId: string): Promise<LaunchResult
     defaultSource: entitlements.isAdmin ? 'admin_grant' : 'manual',
     log,
     toolAccess: (slug) => entitlements.tools[slug] ?? null,
+    riskAcked: (slug) => hasRiskAck(userId, slug),
 
     async loadEngine() {
       const { data } = await admin

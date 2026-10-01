@@ -17,7 +17,7 @@ const globalForClips = globalThis as unknown as { __chalybMockClips?: ClipsAdapt
 
 /** The adapter for in-hub jobs, or null when the hub hands off to the app. */
 export function getClipsAdapter(): ClipsAdapter | null {
-  if (clipsHubMode() !== 'mock') return null;
+  if (clipsHubMode() !== 'mock') return null; // 'a' needs the engine's job API (OPS-13)
   // One store per server process, surviving dev hot reloads.
   globalForClips.__chalybMockClips ??= createMockClipsAdapter();
   return globalForClips.__chalybMockClips;

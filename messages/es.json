@@ -632,7 +632,8 @@
       "PROVISION_FAILED_CLIPS": "No pudimos preparar tus Clips. Intenta de nuevo en un momento.",
       "SESSION_EXPIRED": "Tu sesión terminó. Vuelve a entrar.",
       "NETWORK": "Parece que no hay conexión. Revisa tu internet e intenta otra vez.",
-      "UNKNOWN": "Algo salió mal. Intenta de nuevo o escríbenos."
+      "UNKNOWN": "Algo salió mal. Intenta de nuevo o escríbenos.",
+      "RISK_ACK_REQUIRED": "Antes de abrir {tool}, lee el aviso y acéptalo."
     }
   },
   "setup": {
@@ -1156,5 +1157,22 @@
     "complaints": "Quejas y aclaraciones",
     "pending": "Estos datos se publican antes de abrir los cobros.",
     "close": "Cerrar"
+  },
+  "consents": {
+    "risk": {
+      "title": "Antes de empezar",
+      "body": "{herramienta} da <b>información general</b> generada con IA, igual para todos los usuarios de tu plan. <b>No es asesoría financiera, de inversión ni de apuestas</b>, no es una recomendación personal para ti y no toma en cuenta tus saldos, posiciones ni objetivos. No garantizamos resultados y <b>puedes perder todo tu dinero</b>. Chalyb no es asesor en inversiones registrado ante la CNBV, ni casa de bolsa, exchange o casa de apuestas.",
+      "read": "Leer aviso completo",
+      "check": "Entiendo y acepto que las decisiones y los riesgos son míos.",
+      "cta": "Entendido, continuar",
+      "error": "No pudimos guardar tu respuesta. Intenta de nuevo.",
+      "close": "Volver a Inicio"
+    },
+    "likeness": {
+      "title": "Antes de usar una voz o imagen con IA",
+      "body": "Vas a crear una voz o imagen con inteligencia artificial que se parece a una persona real. Solo puedes hacerlo con tu propia voz o imagen, o con el <b>acuerdo previo y por escrito</b> de la persona que aparece. Está prohibido usarla para engañar o hacerte pasar por alguien.",
+      "check": "Confirmo que es mi voz o imagen, o que tengo el acuerdo por escrito de la persona, y acepto la <terms>Política de Uso Aceptable</terms>.",
+      "cta": "Continuar"
+    }
   }
 }
