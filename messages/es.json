@@ -175,7 +175,6 @@
       "googleFastNote": "La forma más rápida de empezar",
       "errorGeneric": "Ocurrió un error al iniciar sesión. Inténtalo de nuevo.",
       "errorMissingCode": "Flujo de inicio de sesión incompleto. Inténtalo de nuevo.",
-      "fine": "Al continuar aceptas los Términos y la Política de Privacidad.",
       "liveStatus": "Plataforma en vivo · sistemas en producción",
       "newTitle": "¿Primera vez?",
       "newSubtitle": "Crea tu espacio de operador en segundos.",
@@ -210,7 +209,14 @@
       "checkInboxTitle": "Revisa tu bandeja.",
       "checkInboxBody": "Enviamos un enlace de confirmación a {email}. Haz clic para terminar de crear tu cuenta.",
       "forgotPassword": "¿Olvidaste tu contraseña?",
-      "resetSuccess": "Contraseña actualizada. Inicia sesión con tu nueva contraseña."
+      "resetSuccess": "Contraseña actualizada. Inicia sesión con tu nueva contraseña.",
+      "nameLabel": "Tu nombre",
+      "passwordHintSignup": "Mínimo 8 letras o números",
+      "errorShortPassword": "Tu contraseña necesita al menos 8 letras o números.",
+      "marketing": "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera.",
+      "legalPublished": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y la <uso>Política de Uso Aceptable</uso>, y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
+      "legalCurrent": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
+      "creating": "Creando tu cuenta…"
     },
     "forgotPassword": {
       "liveStatus": "Plataforma en vivo · sistemas en producción",
@@ -814,7 +820,8 @@
       "arco": "Mis datos (derechos ARCO)",
       "charge": "Problema con un cobro",
       "close": "Cerrar mi cuenta"
-    }
+    },
+    "ivaIncluded": "IVA incluido"
   },
   "billing": {
     "price": {
@@ -860,5 +867,294 @@
     "pay": {
       "consent": "Acepto que, si no cancelo antes del <b>{fecha_cobro}</b>, Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
     }
+  },
+  "plans": {
+    "metaTitle": "Planes",
+    "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
+    "title": "Un plan. Todas las herramientas.",
+    "sub": "Prueba Pro gratis 1 mes. Cancela cuando quieras.",
+    "subNoTrial": "Cancela cuando quieras.",
+    "toggleAria": "Cómo quieres pagar",
+    "toggle": {
+      "month": "Mensual",
+      "year": "Anual",
+      "save": "Ahorras {ahorro}"
+    },
+    "gratis": {
+      "name": "Gratis",
+      "tag": "Para conocer Chalyb",
+      "note": "Sin tarjeta · Para siempre",
+      "cta": "Crear cuenta gratis",
+      "f1": "Clips para probar",
+      "f2": "Tus resultados guardados",
+      "f3": "Ayuda por correo",
+      "fNo": "Señales, En vivo y las demás herramientas"
+    },
+    "pro": {
+      "badge": "Recomendado",
+      "name": "Pro",
+      "tag": "Todas las herramientas",
+      "cta": "Prueba Pro gratis 1 mes",
+      "ctaNoTrial": "Elegir Pro",
+      "ctaReturn": "Volver a Pro",
+      "note": "Hoy pagas $0. Te avisamos 7 días antes del primer cobro.",
+      "monthAlt": "o {monto} MXN al mes con Mensual",
+      "f1": "Las {n} herramientas: {lista}",
+      "fCredits": "{creditos} créditos cada mes",
+      "f3": "Clips sin marca de agua"
+    },
+    "vip": {
+      "name": "VIP",
+      "tag": "Para quien lo usa todos los días",
+      "noYear": "Sin plan anual",
+      "cta": "Elegir VIP",
+      "ctaUp": "Subir a VIP",
+      "f1": "Todo lo de Pro",
+      "f2": "Muchos más créditos cada mes",
+      "f4": "Primero en recibir herramientas nuevas"
+    },
+    "current": "Tu plan actual",
+    "trialing": "Ya estás probando Pro",
+    "notIncluded": "No incluye",
+    "faqTitle": "Preguntas frecuentes",
+    "faq": {
+      "q1": "¿Qué pasa cuando termina mi mes gratis?",
+      "a1": "Sigues con el plan que elegiste (anual o mensual) y se cobra a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada.",
+      "q2": "¿Puedo cambiar de anual a mensual?",
+      "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
+      "q3": "¿Qué son los créditos?",
+      "a3": "Son lo que usan las herramientas para trabajar, por ejemplo, cada clip. Tu plan trae créditos nuevos cada mes.",
+      "q4": "¿Puedo cancelar cuando quiera?",
+      "a4": "Sí. Es 1 clic desde Mi cuenta. Sigues con tu plan hasta el final del periodo que pagaste."
+    },
+    "quebec": "Por ahora los planes de pago no están disponibles en Quebec."
+  },
+  "checkout": {
+    "tool": "Prueba Pro gratis",
+    "toolPaid": "Plan Pro",
+    "step": "Paso {n} de 3",
+    "back": "Atrás",
+    "close": "Cerrar y volver a Inicio",
+    "trial": {
+      "metaTitle": "Tu prueba",
+      "title": "Prueba Pro gratis 1 mes",
+      "sub": "Todas las herramientas incluidas. Cancela cuando quieras.",
+      "q": "¿Qué plan quieres cuando termine tu mes gratis?",
+      "year": "Pro anual",
+      "month": "Pro mensual",
+      "recommended": "Recomendado",
+      "cta": "Continuar al pago"
+    },
+    "paid": {
+      "title": "Elige tu plan Pro",
+      "today": "Hoy se cobran {monto} MXN",
+      "cta": "Pagar y empezar",
+      "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
+    },
+    "pay": {
+      "metaTitle": "Pago",
+      "title": "Agrega tu tarjeta",
+      "oneLine": "Hoy pagas <b>$0</b>. Primer cobro: <b>{monto} MXN</b> el <b>{fecha_cobro}</b> y después <b>{cada_periodo}</b>, salvo que canceles antes.",
+      "oneLinePaid": "Hoy se cobran <b>{monto} MXN</b> y después <b>{cada_periodo}</b>, salvo que canceles.",
+      "secure": "Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
+      "seller": "Quién vende",
+      "cta": "Empezar mi mes gratis",
+      "ctaHint": "Marca la casilla para continuar. Puedes cancelar cuando quieras.",
+      "consentError": "Marca la casilla para confirmar el cobro automático. Puedes cancelar cuando quieras.",
+      "declined": "Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.",
+      "saving": "Guardando tu tarjeta…",
+      "cardUsed": "Esta tarjeta ya tuvo una prueba gratis. Puedes elegir un plan y empezar hoy.",
+      "review": "Pedir que una persona lo revise",
+      "unavailable": "Esto no está disponible por ahora. Intenta más tarde o escríbenos.",
+      "error": "No pudimos guardar tu tarjeta. Intenta de nuevo en un momento.",
+      "where": "¿Dónde vives?",
+      "whereOpts": {
+        "mx": "México",
+        "us": "Estados Unidos",
+        "qc": "Canadá · Quebec",
+        "ca": "Canadá · otra provincia",
+        "other": "Otro país"
+      }
+    },
+    "summary": {
+      "title": "Resumen",
+      "planAfter": "Plan al terminar la prueba",
+      "trialEnds": "Tu mes gratis termina",
+      "remind": "Te avisamos por correo",
+      "first": "Primer cobro",
+      "firstValue": "{monto} MXN · {fecha}",
+      "after": "Después",
+      "afterValue": "{monto} MXN {cada_periodo}",
+      "totalToday": "Total hoy",
+      "switchMonth": "Cambiar a Pro mensual ({monto} al mes)",
+      "switchYear": "Cambiar a Pro anual ({monto} al año)",
+      "ivaLabel": "IVA incluido"
+    },
+    "done": {
+      "metaTitle": "Listo",
+      "title": "¡Listo, {nombre}!",
+      "titleAnon": "¡Listo!",
+      "headline": "Tu mes de Pro gratis ya empezó.",
+      "headlinePaid": "Tu plan Pro ya está activo.",
+      "sub": "Termina el {fecha_fin_prueba}. Primer cobro: <b>{monto} MXN</b> el {fecha_cobro} a tu tarjeta ••{ultimos4}.",
+      "paidToday": "Hoy pagaste",
+      "firstCharge": "Primer cobro ({plan})",
+      "card": "{marca} ••{ultimos4} · se renueva {cada_periodo} hasta que canceles",
+      "cta": "Hacer mis primeros clips",
+      "plan": "Ver mi plan",
+      "footer": "Te enviamos estos datos a {correo} · Folio de tu aceptación: {folio}"
+    }
+  },
+  "banner": {
+    "trial": "Prueba Pro gratis · te quedan {n} días",
+    "last7": "Tu prueba termina el <b>{fecha_fin_prueba}</b>. Se cobrarán <b>{monto} MXN</b> el <b>{fecha_cobro}</b>.",
+    "ended": "Tu prueba terminó. Estás en el plan Gratis.",
+    "pastDue": "No pudimos cobrar tu plan. Actualiza tu tarjeta antes del <b>{fecha_gracia}</b> para no perder Pro.",
+    "renew": "Tu plan {plan} se renueva el <b>{fecha_cobro}</b> por <b>{monto} MXN</b>.",
+    "cta": {
+      "plan": "Ver mi plan",
+      "return": "Volver a Pro",
+      "card": "Actualizar tarjeta"
+    }
+  },
+  "myplan": {
+    "title": "Mi plan",
+    "crumb": "Mi cuenta",
+    "status": {
+      "active": "Tu plan · activo",
+      "trial": "Tu plan · prueba",
+      "cancelled": "Tu plan · cancelado",
+      "pastDue": "Tu plan · pago pendiente",
+      "free": "Tu plan"
+    },
+    "heading": {
+      "pro_month": "Pro mensual — todo incluido",
+      "pro_year": "Pro anual — todo incluido",
+      "vip_month": "VIP — todo incluido y más créditos",
+      "trial": "Prueba Pro gratis",
+      "free": "Gratis"
+    },
+    "planName": {
+      "pro_month": "Pro mensual",
+      "pro_year": "Pro anual",
+      "vip_month": "VIP"
+    },
+    "renewMonth": "Se renueva cada mes.",
+    "renewYear": "Se renueva cada año.",
+    "nextCharge": "Próximo cobro: {fecha}",
+    "priceMonth": "{monto} MXN al mes",
+    "priceYear": "{monto} MXN al año",
+    "trialLeft": "Te quedan {n} días · termina el {fecha}",
+    "trialAfter": "Después de la prueba: {plan} · {monto} MXN {periodo}",
+    "periodYear": "al año",
+    "periodMonth": "al mes",
+    "cancelledUntil": "{plan} hasta el {fecha}",
+    "noMoreCharges": "No habrá más cobros.",
+    "reactivate": "Volver a activar {plan}",
+    "pastDueAmount": "No pudimos cobrar {monto} MXN",
+    "pastDueBody": "Actualiza tu tarjeta antes del {fecha} para no perder {plan}.",
+    "updateCard": "Actualizar tarjeta",
+    "changeCta": "Cambiar plan",
+    "freeBody": "Sin tarjeta · Para siempre",
+    "freeCta": "Ver planes",
+    "next": {
+      "title": "Próximo cobro",
+      "notice7": "Aviso por correo 7 días antes",
+      "notice30": "Aviso por correo 30 y 7 días antes",
+      "noticeOn": "Aviso por correo el {fecha}",
+      "retry": "Mercado Pago intentará de nuevo en los próximos días",
+      "afterCancel": "Después del {fecha} pasarás al plan Gratis. Tus resultados se quedan guardados."
+    },
+    "method": "Método de pago",
+    "methodSub": "Vence {exp}",
+    "methodChange": "Cambiar tarjeta",
+    "credits": "Créditos de este mes",
+    "change": {
+      "title": "Cambiar de plan",
+      "toYear": "Pasar a Pro anual",
+      "toYearSub": "Ahorras {ahorro} al año. Empieza en tu próxima fecha de cobro",
+      "toMonth": "Pasar a Pro mensual",
+      "toMonthSubYear": "Empieza cuando termine tu año pagado",
+      "toVip": "Subir a VIP",
+      "toVipSub": "Se aplica hoy; te mostramos el ajuste antes",
+      "toFree": "Pasar a Gratis",
+      "toFreeSubMonth": "Al terminar tu mes pagado",
+      "toFreeSubYear": "Al terminar tu año pagado",
+      "downMonth": "Bajar a Pro mensual",
+      "downYear": "Bajar a Pro anual",
+      "nextDate": "Empieza en tu próxima fecha de cobro",
+      "trialSwitch": "Cambiar a {plan} (antes del primer cobro)",
+      "priceYearShort": "{monto} al año",
+      "priceMonthShort": "{monto} al mes"
+    },
+    "invoices": "Facturas",
+    "invoicesEmpty": "Ninguna aún",
+    "invoiceRow": "{fecha} · {plan} · {monto}",
+    "movement": {
+      "approved": "Cobrado",
+      "rejected": "Falló",
+      "refunded": "Reembolsado",
+      "pending": "Pendiente",
+      "pack": "Créditos extra",
+      "plan": "Plan"
+    },
+    "cancelSub": "Cancelar suscripción",
+    "cancelTrial": "Cancelar prueba",
+    "cancelSubSub": "1 clic, sin llamadas. Sigues con {plan} hasta el {fecha}.",
+    "cancelTrialSub": "1 clic, sin llamadas",
+    "loadError": "No pudimos cargar tu plan. Intenta de nuevo en un momento.",
+    "adminNote": "Las cuentas admin tienen VIP sin cobro."
+  },
+  "cancel": {
+    "trial": {
+      "title": "¿Cancelar tu prueba?",
+      "body": "Seguirás teniendo Pro hasta el <b>{fecha}</b>. Después no se te cobrará nada y pasarás al plan Gratis. Tus clips y resultados se quedan guardados."
+    },
+    "paid": {
+      "title": "¿Cancelar tu plan {plan}?",
+      "body": "Seguirás teniendo {plan} hasta el <b>{fecha}</b>. No habrá más cobros. Después pasarás al plan Gratis y tus resultados se quedan guardados."
+    },
+    "offer": "¿Prefieres pagar mes a mes?",
+    "offerCta": "Cambiar a {monto} al mes",
+    "yes": "Sí, cancelar",
+    "keep": "Seguir con {plan}",
+    "working": "Cancelando…",
+    "error": "No pudimos cancelar en este momento. Intenta de nuevo o escríbenos.",
+    "done": {
+      "title": "Listo, cancelaste.",
+      "body": "No se te volverá a cobrar. Tienes {plan} hasta el <b>{fecha}</b>.",
+      "again": "Si cambias de opinión, puedes volver a activar Pro en cualquier momento.",
+      "home": "Volver a Inicio",
+      "reactivate": "Volver a activar Pro",
+      "folio": "Folio: {folio} · Te enviamos la confirmación a {correo}"
+    },
+    "close": "Cerrar"
+  },
+  "change": {
+    "metaTitle": "Cambiar de plan",
+    "title": "Cambiar a {plan}",
+    "whenNow": "Hoy se cobran {monto} MXN y te devolvemos {credito} MXN de tu plan actual. Después, {mensual} MXN cada mes.",
+    "whenNowNoRefund": "Hoy se cobran {monto} MXN. Después, {mensual} MXN cada mes.",
+    "whenLater": "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}.",
+    "trialSwitch": "Tu prueba sigue igual. Al terminar, el {fecha}, se cobrarán {monto} MXN {periodo}.",
+    "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta a partir del <b>{fecha}</b>, y acepto los <terms>Términos de Suscripción</terms>.",
+    "card": "Confirma con tu tarjeta. Por seguridad, Mercado Pago la pide de nuevo en cada cambio.",
+    "cta": "Confirmar cambio",
+    "toFreeTitle": "Pasar a Gratis",
+    "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
+    "toFreeCta": "Ir a cancelar",
+    "done": "Listo. Tu cambio quedó registrado."
+  },
+  "seller": {
+    "title": "Quién vende",
+    "name": "Razón social",
+    "rfc": "RFC",
+    "address": "Domicilio",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "hours": "Horario de atención",
+    "complaints": "Quejas y aclaraciones",
+    "pending": "Estos datos se publican antes de abrir los cobros.",
+    "close": "Cerrar"
   }
 }

@@ -15,7 +15,7 @@ export const NAV_ITEMS: { key: NavKey; href: string }[] = [
 ];
 
 /** Screens rebuilt on the new design system. Grows phase by phase. */
-const MODERN = new Set(['/app', '/app/settings', '/app/_ui']);
+const MODERN = new Set(['/app', '/app/settings', '/app/billing', '/app/planes', '/app/_ui']);
 
 /** Strip a leading /en (the default locale is unprefixed) and trailing slash. */
 export function normalizeAppPath(pathname: string): string {
@@ -26,6 +26,8 @@ export function normalizeAppPath(pathname: string): string {
 export function shellModeFor(pathname: string): ShellMode {
   const p = normalizeAppPath(pathname);
   if (p === '/app/clips' || p.startsWith('/app/clips/')) return 'wizard';
+  if (p === '/app/prueba' || p.startsWith('/app/prueba/')) return 'wizard';
+  if (p === '/app/billing/cambiar' || p === '/app/billing/tarjeta') return 'wizard';
   if (MODERN.has(p) || /^\/app\/engines\/[^/]+$/.test(p)) return 'modern';
   return 'legacy';
 }
@@ -35,7 +37,8 @@ export function shellModeFor(pathname: string): ShellMode {
 export function activeNavFor(pathname: string): NavKey | null {
   const p = normalizeAppPath(pathname);
   if (p === '/app/history' || p.startsWith('/app/history/')) return 'resultados';
-  if (/^\/app\/(settings|subscription|usage|billing|messages|help)(\/|$)/.test(p)) return 'cuenta';
+  if (/^\/app\/(settings|subscription|usage|billing|messages|help|planes)(\/|$)/.test(p))
+    return 'cuenta';
   if (p === '/app' || p.startsWith('/app/engines') || p.startsWith('/app/clips')) return 'inicio';
   return null;
 }

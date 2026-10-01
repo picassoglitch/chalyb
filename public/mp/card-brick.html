@@ -17,6 +17,7 @@
       Messages (parent origin is checked on both sides):
         parent → host   chalyb-mp:init            { strategy, publicKey, amount, payerEmail, maxInstallments, submitLabel, locale }
         parent → host   chalyb-mp:submit-result   { id, ok, error }
+        parent → host   chalyb-mp:request-submit  (hideSubmit forms: the page's own button)
         host → parent   chalyb-mp:host-ready
         host → parent   chalyb-mp:sdk-failed
         host → parent   chalyb-mp:stage           { stage: 'create' | 'created' }
@@ -145,6 +146,31 @@
         }
 
         // ── The Brick ───────────────────────────────────────────────────
+        var controller = null;
+
+        // hideSubmit forms: validate + tokenise on the page's request, then
+        // hand the data up exactly like the Brick's own submit would.
+        function requestSubmit() {
+          if (!controller || typeof controller.getFormData !== 'function') {
+            send('error', { errorType: 'non_critical', cause: 'not_ready', message: 'form not ready' });
+            return;
+          }
+          controller
+            .getFormData()
+            .then(function (formData) {
+              if (!formData || !formData.token) {
+                send('error', { errorType: 'non_critical', cause: 'invalid_form', message: 'form invalid' });
+                return;
+              }
+              var id = ++submitId;
+              pendingSubmits[id] = { resolve: function () {}, reject: function () {} };
+              send('submit', { id: id, formData: formData, additionalData: null });
+            })
+            .catch(function (err) {
+              send('error', { errorType: 'non_critical', cause: 'invalid_form', message: err && err.message ? err.message : String(err) });
+            });
+        }
+
         function create(cfg) {
           if (initialised) return;
           initialised = true;
@@ -163,7 +189,10 @@
               },
               visual: {
                 hideFormTitle: true,
-                style: { theme: 'dark' },
+                // The page may own the submit button (the trial's consent
+                // checkbox must gate it), then asks for the data itself.
+                hidePaymentButton: !!cfg.hideSubmit,
+                style: { theme: cfg.theme === 'light' ? 'default' : 'dark' },
                 texts: { formSubmit: cfg.submitLabel || 'Pagar' }
               }
             },
@@ -200,7 +229,8 @@
             var mp = new window.MercadoPago(cfg.publicKey, { locale: cfg.locale || 'es-MX' });
             mp.bricks()
               .create('cardPayment', 'cardPaymentBrick_container', settings)
-              .then(function () {
+              .then(function (ctrl) {
+                controller = ctrl;
                 send('stage', { stage: 'created' });
                 reportHeight();
               })
@@ -229,6 +259,9 @@
             if (parentOrigin && event.origin !== parentOrigin) return;
             parentOrigin = event.origin;
             create(data);
+          } else if (data.type === 'chalyb-mp:request-submit') {
+            if (!parentOrigin || event.origin !== parentOrigin) return;
+            requestSubmit();
           } else if (data.type === 'chalyb-mp:submit-result') {
             if (!parentOrigin || event.origin !== parentOrigin) return;
             var p = pendingSubmits[data.id];

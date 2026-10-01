@@ -45,8 +45,12 @@ const SAME_OK_KEYS = new Set([
 const SAME_OK_VALUES: RegExp[] = [
   /^(MXN )?\$[\d,.]+( MXN)?$/,
   /^https?:\/\//,
-  /^(Pro|VIP|Chalyb|Clips|Señales|En vivo|YouTube|Twitch|Kick|Facebook|Instagram|TikTok \/ Reels \/ Shorts)$/,
+  /^(Pro|VIP|Plan|Chalyb|Clips|Señales|En vivo|YouTube|Twitch|Kick|Facebook|Instagram|TikTok \/ Reels \/ Shorts)$/,
 ];
+
+/** Pure templates — only placeholders, "MXN" and punctuation — read the same
+ *  in both languages ("{monto} MXN · {fecha}"). */
+const isTemplateOnly = (v: string) => v.replace(/\{\w+\}|MXN|[\s·•,.:()\-]/g, '') === '';
 
 test('every key exists in both locales', () => {
   const onlyEs = Object.keys(es).filter((k) => !(k in en));
@@ -68,7 +72,8 @@ test('English is translated, not a copy of the Spanish', () => {
       k in en &&
       es[k] === en[k] &&
       !SAME_OK_KEYS.has(k) &&
-      !SAME_OK_VALUES.some((re) => re.test(es[k]!)),
+      !SAME_OK_VALUES.some((re) => re.test(es[k]!)) &&
+      !isTemplateOnly(es[k]!),
   );
   assert.deepEqual(untranslated, []);
 });

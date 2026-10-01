@@ -29,7 +29,8 @@
   --panel: #101320;
   --ink: #f4f3ee;
   --ink-dim: #b9b9c4;
-  --ink-faint: #6c6d7c;
+  /* AA: ≥ 4.5:1 on every landing surface (was #6c6d7c, 3.9:1). */
+  --ink-faint: #858696;
   --line: rgba(255, 255, 255, 0.08);
   --line-bright: rgba(255, 255, 255, 0.16);
   /* Brand accent — the emblem's gold. Same reasoning as dashboard.css: .lp-btn-primary
@@ -1273,6 +1274,39 @@ a {
   max-width: 360px;
   line-height: 1.5;
   margin-top: 4px;
+}
+
+/* Sign-up (SCR-13): the legal line, the password hint and the marketing
+   box. Legal and billing text is never under 14px (BUILD-SPEC §0.10). */
+.auth-legal {
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+.auth-legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+.auth-hint {
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-top: 6px;
+}
+.auth-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+  cursor: pointer;
+}
+.auth-check input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 1px;
 }
 
 /* Premium Google button */
