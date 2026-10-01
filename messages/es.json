@@ -815,5 +815,50 @@
       "charge": "Problema con un cobro",
       "close": "Cerrar mi cuenta"
     }
+  },
+  "billing": {
+    "price": {
+      "proYearBig": "{monto} MXN al año",
+      "proYearEq": "(equivale a {mensual} al mes)",
+      "renewYear": "Se renueva cada año",
+      "renewMonth": "Se renueva cada mes",
+      "saveYear": "Ahorras {ahorro} al año",
+      "vsMonth": "vs. {total_mensual} pagando mes a mes",
+      "proMonthBig": "{monto} MXN al mes",
+      "monthLine": "{monto} MXN al mes · se renueva cada mes",
+      "tax": "Precios en MXN, IVA incluido.",
+      "free": "Sin tarjeta · Para siempre"
+    },
+    "vars": {
+      "periodicidad": {
+        "year": "por 1 año de Pro",
+        "month": "por tu primer mes de Pro"
+      },
+      "renovacion": {
+        "year": "cada año ({monto} MXN)",
+        "month": "cada mes ({monto} MXN)"
+      },
+      "renovacionCorta": {
+        "year": "y cada año después",
+        "month": "y cada mes después"
+      },
+      "cadaPeriodo": {
+        "year": "cada año",
+        "month": "cada mes"
+      },
+      "tarjeta": {
+        "none": "la tarjeta que registres",
+        "last4": "tu tarjeta terminación {ultimos4}"
+      }
+    },
+    "disclosure": {
+      "today": "<b>Hoy pagas $0.</b> Tu mes gratis termina el <b>{fecha_fin_prueba}</b>.",
+      "charge": "Si no cancelas antes, el <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b> {periodicidad} a {tarjeta}, y se renovará automáticamente {renovacion} hasta que canceles.",
+      "reminder": "Te avisaremos por correo el <b>{fecha_recordatorio}</b> (7 días antes).",
+      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada."
+    },
+    "pay": {
+      "consent": "Acepto que, si no cancelo antes del <b>{fecha_cobro}</b>, Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
+    }
   }
 }

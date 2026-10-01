@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test \"tests/*.test.ts\"",
     "check:copy": "node scripts/check-hardcoded-copy.mjs",
+    "legal:hash": "node scripts/hash-legal-docs.mjs",
+    "test:migrations": "node scripts/test-migrations.mjs",
     "e2e": "playwright test",
     "e2e:mock-supabase": "node e2e/mock-supabase/server.mjs",
     "format": "prettier --write .",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
