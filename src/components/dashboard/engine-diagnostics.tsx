@@ -24,10 +24,11 @@ export function EngineDiagnostics({ engineId, slug, requiresProvisioning, access
       style={{
         marginTop: 28,
         padding: '14px 18px',
-        border: '1px dashed var(--cc-line-2)',
-        borderRadius: 'var(--cc-r-l)',
-        fontSize: 13,
-        color: 'var(--cc-txt-3)',
+        border: '1px dashed #c9c9d2',
+        borderRadius: 16,
+        fontSize: 15,
+        color: '#5e5e66',
+        background: '#fff',
       }}
     >
       <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Diagnóstico (solo admin)</summary>

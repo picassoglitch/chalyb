@@ -65,60 +65,55 @@ export function EngineLaunchButton({ engineId, slug, toolName, planHref, trialFl
         : tErr(errorCode, { tool: toolName });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'inherit' }}>
       <button
         type="button"
         onClick={onClick}
         disabled={pending}
         aria-busy={pending}
-        className="cc-launch-btn"
-        style={{
-          background: 'var(--cc-green)',
-          color: '#070809',
-          minHeight: 48,
-          padding: '12px 24px',
-          borderRadius: 12,
-          border: 'none',
-          fontFamily: 'inherit',
-          fontSize: 16,
-          fontWeight: 600,
-          cursor: pending ? 'wait' : 'pointer',
-          opacity: pending ? 0.7 : 1,
-        }}
+        className="ch-btn ch-btn--primary ch-btn--xl"
       >
         {pending ? t('opening') : t('open')}
       </button>
 
-      <div role="status" aria-live="polite" style={{ fontSize: 15, lineHeight: 1.5 }}>
+      <div role="status" aria-live="polite" style={{ fontSize: 17, lineHeight: 1.5 }}>
         {outcome?.kind === 'blocked' && (
           <span>
             {t('blocked')}{' '}
-            <a href={outcome.url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+            <a href={outcome.url} target="_blank" rel="noopener noreferrer" className="ch-lnk">
               {t('openNamed', { tool: toolName })}
             </a>
           </span>
         )}
         {errorText && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <span>{errorText}</span>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               {errorCode === 'NEEDS_PLAN' && (
-                <Link href={planHref as Route} style={linkStyle}>
+                <Link href={planHref as Route} className="ch-btn ch-btn--secondary ch-btn--compact">
                   {trialFlow ? t('trialCta') : t('plansCta')}
                 </Link>
               )}
               {errorCode === 'SESSION_EXPIRED' && (
-                <Link href={'/sign-in' as Route} style={linkStyle}>
+                <Link
+                  href={'/sign-in' as Route}
+                  className="ch-btn ch-btn--secondary ch-btn--compact"
+                >
                   {t('signIn')}
                 </Link>
               )}
               {errorCode && RETRYABLE.has(errorCode) && (
-                <button type="button" onClick={onClick} disabled={pending} style={retryStyle}>
+                <button
+                  type="button"
+                  onClick={onClick}
+                  disabled={pending}
+                  className="ch-btn ch-btn--secondary ch-btn--compact"
+                >
                   {t('retry')}
                 </button>
               )}
               {errorCode !== 'NEEDS_PLAN' && errorCode !== 'SESSION_EXPIRED' && (
-                <Link href={'/app/help' as Route} style={linkStyle}>
+                <Link href={'/app/help' as Route} className="ch-btn ch-btn--ok ch-btn--compact">
                   {t('help')}
                 </Link>
               )}
@@ -129,24 +124,3 @@ export function EngineLaunchButton({ engineId, slug, toolName, planHref, trialFl
     </div>
   );
 }
-
-const linkStyle = {
-  color: 'var(--cc-green)',
-  textDecoration: 'underline',
-  fontWeight: 600,
-  minHeight: 48,
-  display: 'inline-flex',
-  alignItems: 'center',
-} as const;
-
-const retryStyle = {
-  minHeight: 48,
-  padding: '10px 18px',
-  borderRadius: 12,
-  border: '1px solid var(--cc-line-2)',
-  background: 'transparent',
-  color: 'var(--cc-txt)',
-  fontFamily: 'inherit',
-  fontSize: 15,
-  cursor: 'pointer',
-} as const;

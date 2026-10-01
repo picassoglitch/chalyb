@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
-import type { Route } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Check, Download } from 'lucide-react';
+import type { Route } from 'next';
 import { Link, redirect } from '@/i18n/routing';
 import { requireClipsAccess } from '@/lib/tools/clips-access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { loadClipJob } from '@/lib/tools/clips-jobs';
 import type { ClipJobState } from '@/lib/tools/adapters/types';
-import { WizardHeader } from '@/components/app/clips/wizard-header';
+import { WizardShell } from '@/components/ui/wizard-shell';
+import { ButtonLink } from '@/components/ui/primitives';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { AutoRefresh } from '@/components/app/clips/auto-refresh';
 
@@ -27,6 +29,14 @@ const STEPS: Exclude<ClipJobState, 'failed'>[] = [
   'ready',
 ];
 
+/** Thumbnail frames: gradients, never photos (BUILD-SPEC §1.6 Thumb). */
+const THUMBS = [
+  'linear-gradient(160deg,#7B6CFF,#2A1E7A)',
+  'linear-gradient(160deg,#30B0C7,#0B3B49)',
+  'linear-gradient(160deg,#FF7A45,#6B1A0A)',
+  'linear-gradient(160deg,#5B8DEF,#14245C)',
+];
+
 export default async function ClipJobPage({
   params,
 }: {
@@ -40,132 +50,122 @@ export default async function ClipJobPage({
   const job = await loadClipJob(session.user.id, jobId);
   if (!job) notFound();
   const t = await getTranslations('clips');
+  const chrome = {
+    slug: 'chalybclip',
+    toolName: 'Clips',
+    backHref: '/app/clips',
+    backLabel: t('back'),
+    closeLabel: t('close'),
+  };
 
   if (job.state === 'failed') {
     return (
-      <div className="cc-scroll" style={{ maxWidth: 760 }}>
-        <WizardHeader step={3} backHref="/app/clips" />
+      <WizardShell {...chrome} narrow>
         <ClipError reason={job.reason ?? 'unknown'} sourceUrl={job.sourceUrl} />
-      </div>
+      </WizardShell>
     );
   }
 
   if (job.state === 'ready') {
     return (
-      <div className="cc-scroll" style={{ maxWidth: 1040 }}>
-        <h1 style={h1}>{t('done.title')}</h1>
-        <p style={sub}>{t('done.sub', { n: job.clips.length })}</p>
-        <ul
-          style={{
-            listStyle: 'none',
-            padding: 0,
-            display: 'grid',
-            gap: 16,
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          }}
-        >
-          {job.clips.map((clip) => (
-            <li key={clip.id} style={card}>
-              <p style={{ fontWeight: 600, fontSize: 18 }}>{clip.title}</p>
-              <p style={{ color: 'var(--cc-txt-2)', fontSize: 15 }}>
-                {t('done.duration', { seconds: clip.durationSec })}
-              </p>
-              <a
-                href={clip.downloadUrl}
-                download
-                aria-label={t('done.downloadClip', { title: clip.title })}
-                style={download}
-              >
-                {t('done.download')}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <p style={{ ...sub, fontSize: 16, marginTop: 24 }}>
-          {t('done.saved')}{' '}
-          <Link href={'/app/history' as Route} style={{ color: 'var(--cc-green)' }}>
-            {t('done.results')}
-          </Link>
-        </p>
-        <Link href={'/app/clips' as Route} style={secondary}>
-          {t('done.more')}
-        </Link>
-      </div>
+      <WizardShell {...chrome} backHref="/app" backLabel={t('home')}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <header
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: 16,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <h1 className="ch-h1">{t('done.title')}</h1>
+              <p className="ch-sub">{t('done.sub', { n: job.clips.length })}</p>
+            </div>
+            <ButtonLink href="/app/clips" variant="secondary">
+              {t('done.more')}
+            </ButtonLink>
+          </header>
+          <ul className="ch-clips">
+            {job.clips.map((clip, i) => (
+              <li key={clip.id} className="ch-card ch-clip">
+                <div
+                  className="ch-clip__thumb"
+                  role="img"
+                  aria-label={t('done.thumbAlt', { title: clip.title })}
+                  style={{ background: THUMBS[i % THUMBS.length] }}
+                >
+                  <span className="ch-clip__dur">
+                    {t('done.duration', { seconds: clip.durationSec })}
+                  </span>
+                </div>
+                <p style={{ fontWeight: 600 }}>{clip.title}</p>
+                <a
+                  href={clip.downloadUrl}
+                  download
+                  aria-label={t('done.downloadClip', { title: clip.title })}
+                  className="ch-btn ch-btn--secondary ch-btn--compact"
+                >
+                  <Download aria-hidden="true" />
+                  {t('done.download')}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="ch-muted">
+            {t('done.saved')}{' '}
+            <Link href={'/app/history' as Route} className="ch-lnk">
+              {t('done.results')}
+            </Link>
+          </p>
+        </div>
+      </WizardShell>
     );
   }
 
   const current = STEPS.indexOf(job.state);
+  const pct = Math.round(((current + 0.5) / STEPS.length) * 100);
   return (
-    <div className="cc-scroll" style={{ maxWidth: 760 }}>
-      <WizardHeader step={3} backHref="/app/clips" />
+    <WizardShell {...chrome} step={3} stepLabel={t('step', { n: 3 })} narrow>
       <AutoRefresh />
-      <h1 style={h1}>{t('wait.title')}</h1>
-      <p style={sub}>{t('wait.sub')}</p>
-      <ol
-        aria-label={t('wait.progress')}
-        style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 14 }}
-      >
-        {STEPS.map((step, i) => {
-          const status = i < current ? 'done' : i === current ? 'run' : 'wait';
-          return (
-            <li
-              key={step}
-              aria-current={status === 'run' ? 'step' : undefined}
-              style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 18 }}
-            >
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 7,
-                  background: status === 'wait' ? 'var(--cc-line-2)' : 'var(--cc-green)',
-                  opacity: status === 'run' ? 0.6 : 1,
-                }}
-              />
-              <span style={{ color: status === 'wait' ? 'var(--cc-txt-3)' : 'var(--cc-txt)' }}>
-                {step === 'finding_moments' && job.momentsFound
-                  ? t('wait.found', { n: job.momentsFound })
-                  : t(`wait.steps.${step}`)}
-                <span className="sr-only">{` · ${t(`wait.status.${status}`)}`}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
+      <div className="ch-center-col">
+        <div
+          className="ch-ring"
+          style={{ ['--p' as string]: `${pct}%` }}
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={t('wait.progress')}
+        >
+          <span>{pct}%</span>
+        </div>
+        <h1 className="ch-h1">{t('wait.title')}</h1>
+        <p className="ch-sub">{t('wait.sub')}</p>
+        <ol className="ch-card ch-status" aria-label={t('wait.progress')}>
+          {STEPS.map((step, i) => {
+            const status = i < current ? 'done' : i === current ? 'run' : 'wait';
+            return (
+              <li
+                key={step}
+                className={`ch-status__i ch-status__i--${status}`}
+                aria-current={status === 'run' ? 'step' : undefined}
+              >
+                <span className="ch-status__dot" aria-hidden="true">
+                  {status === 'done' && <Check />}
+                </span>
+                <span>
+                  {step === 'finding_moments' && job.momentsFound
+                    ? t('wait.found', { n: job.momentsFound })
+                    : t(`wait.steps.${step}`)}
+                  <span className="ch-sr">{` · ${t(`wait.status.${status}`)}`}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </WizardShell>
   );
 }
-
-const h1 = { fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 10 } as const;
-const sub = { fontSize: 18, color: 'var(--cc-txt-2)', lineHeight: 1.5, marginBottom: 20 } as const;
-const card = {
-  padding: 18,
-  borderRadius: 20,
-  border: '1px solid var(--cc-line-2)',
-  background: 'var(--cc-panel)',
-  display: 'grid',
-  gap: 8,
-} as const;
-const download = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 52,
-  borderRadius: 16,
-  background: 'var(--cc-green)',
-  color: '#070809',
-  fontWeight: 600,
-  textDecoration: 'none',
-} as const;
-const secondary = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  minHeight: 56,
-  padding: '0 24px',
-  borderRadius: 16,
-  border: '1px solid var(--cc-line-2)',
-  color: 'var(--cc-txt)',
-  textDecoration: 'none',
-  fontSize: 17,
-} as const;
