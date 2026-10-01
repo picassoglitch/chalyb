@@ -28,40 +28,132 @@ const users = {
 const DAY = 86400000;
 const iso = (ms) => new Date(Date.now() + ms).toISOString();
 const sub = (k, over) => ({
-  id: `s-${k}`, user_id: `u-${k}`, status: 'authorized', tier: 'PRO', plan_key: 'pro_month',
-  mp_preapproval_id: `pre-${k}`, external_reference: `sub|u-${k}|PRO`, amount_cents: 86884, currency: 'MXN',
-  started_at: iso(-40 * DAY), trial_ends_at: null, next_charge_at: iso(20 * DAY), next_payment_date: iso(20 * DAY),
-  grace_ends_at: null, access_until: null, card_brand: 'visa', card_last4: '4242', card_exp: '12/29',
-  cancel_at_period_end: false, cancelled_at: null, pending_plan_key: null, pending_effective_at: null,
-  reminder_delivered_at: null, charge_hold_until: null, last_charge_at: iso(-10 * DAY), consent_id: '8f3c2a1e-6b7d-4f0a-9e21-2c5d7a9b1f44',
-  created_at: iso(-40 * DAY), updated_at: new Date().toISOString(), ...over,
+  id: `s-${k}`,
+  user_id: `u-${k}`,
+  status: 'authorized',
+  tier: 'PRO',
+  plan_key: 'pro_month',
+  mp_preapproval_id: `pre-${k}`,
+  external_reference: `sub|u-${k}|PRO`,
+  amount_cents: 86884,
+  currency: 'MXN',
+  started_at: iso(-40 * DAY),
+  trial_ends_at: null,
+  next_charge_at: iso(20 * DAY),
+  next_payment_date: iso(20 * DAY),
+  grace_ends_at: null,
+  access_until: null,
+  card_brand: 'visa',
+  card_last4: '4242',
+  card_exp: '12/29',
+  cancel_at_period_end: false,
+  cancelled_at: null,
+  pending_plan_key: null,
+  pending_effective_at: null,
+  reminder_delivered_at: null,
+  charge_hold_until: null,
+  last_charge_at: iso(-10 * DAY),
+  consent_id: '8f3c2a1e-6b7d-4f0a-9e21-2c5d7a9b1f44',
+  created_at: iso(-40 * DAY),
+  updated_at: new Date().toISOString(),
+  ...over,
 });
 const user = (k) => ({
-  id: `u-${k}`, aud: 'authenticated', role: 'authenticated', email: `${k}@example.com`,
-  user_metadata: { full_name: users[k].name }, app_metadata: { provider: 'email' },
+  id: `u-${k}`,
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: `${k}@example.com`,
+  user_metadata: { full_name: users[k].name },
+  app_metadata: { provider: 'email' },
   created_at: '2026-01-01T00:00:00Z',
 });
 const eng = (id, slug, name, status, tier = 'PRO') => ({
-  id, slug, name, icon: '◆', category: 'CONTENT', type: 'tool', env: 'prod', region: 'mx', node: 'n1',
-  description: '', featured: slug === 'chalybclip', status, tier_required: tier,
+  id,
+  slug,
+  name,
+  icon: '◆',
+  category: 'CONTENT',
+  type: 'tool',
+  env: 'prod',
+  region: 'mx',
+  node: 'n1',
+  description: '',
+  featured: slug === 'chalybclip',
+  status,
+  tier_required: tier,
   external_url: status === 'active' ? 'http://localhost:59998' : null,
   integration_mode: status === 'active' ? 'external_sso_redirect' : 'internal_placeholder',
-  admin_api_base: null, requires_provisioning: true, owner_user_id: null, org_id: ORG,
-  partner_royalty_per_million_tokens_cents: 0, cost_per_million_tokens_cents: 0, fixed_monthly_cost_cents: 0,
-  engine_health: [], engine_personas: [],
+  admin_api_base: null,
+  requires_provisioning: true,
+  owner_user_id: null,
+  org_id: ORG,
+  partner_royalty_per_million_tokens_cents: 0,
+  cost_per_million_tokens_cents: 0,
+  fixed_monthly_cost_cents: 0,
+  engine_health: [],
+  engine_personas: [],
 });
 const tables = {
   subscriptions: [
     sub('pro', {}),
     sub('vip', { tier: 'VIP', plan_key: 'vip_month', amount_cents: 289884 }),
-    sub('trial', { plan_key: 'pro_year', amount_cents: 868840, trial_ends_at: iso(25 * DAY), next_charge_at: iso(25 * DAY), next_payment_date: iso(25 * DAY), last_charge_at: null, started_at: iso(-5 * DAY) }),
-    sub('pro_annual', { plan_key: 'pro_year', amount_cents: 868840, next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY) }),
-    sub('past_due', { status: 'paused', next_charge_at: iso(-1 * DAY), next_payment_date: iso(-1 * DAY), grace_ends_at: iso(6 * DAY) }),
-    sub('cancelled', { status: 'cancelled', cancel_at_period_end: true, access_until: iso(12 * DAY), cancelled_at: iso(-2 * DAY) }),
+    sub('trial', {
+      plan_key: 'pro_year',
+      amount_cents: 868840,
+      trial_ends_at: iso(25 * DAY),
+      next_charge_at: iso(25 * DAY),
+      next_payment_date: iso(25 * DAY),
+      last_charge_at: null,
+      started_at: iso(-5 * DAY),
+    }),
+    sub('pro_annual', {
+      plan_key: 'pro_year',
+      amount_cents: 868840,
+      next_charge_at: iso(5 * DAY),
+      next_payment_date: iso(5 * DAY),
+    }),
+    sub('past_due', {
+      status: 'paused',
+      next_charge_at: iso(-1 * DAY),
+      next_payment_date: iso(-1 * DAY),
+      grace_ends_at: iso(6 * DAY),
+    }),
+    sub('cancelled', {
+      status: 'cancelled',
+      cancel_at_period_end: true,
+      access_until: iso(12 * DAY),
+      cancelled_at: iso(-2 * DAY),
+    }),
   ],
   payments: [
-    { id: 'p1', user_id: 'u-pro', tier: 'PRO', kind: 'subscription', pack_id: null, tokens_granted: null, mp_payment_id: '1001', mp_preapproval_id: 'pre-pro', amount_cents: 86884, currency: 'MXN', status: 'approved', created_at: iso(-10 * DAY) },
-    { id: 'p2', user_id: 'u-past_due', tier: 'PRO', kind: 'subscription', pack_id: null, tokens_granted: null, mp_payment_id: '1002', mp_preapproval_id: 'pre-past_due', amount_cents: 86884, currency: 'MXN', status: 'rejected', created_at: iso(-1 * DAY) },
+    {
+      id: 'p1',
+      user_id: 'u-pro',
+      tier: 'PRO',
+      kind: 'subscription',
+      pack_id: null,
+      tokens_granted: null,
+      mp_payment_id: '1001',
+      mp_preapproval_id: 'pre-pro',
+      amount_cents: 86884,
+      currency: 'MXN',
+      status: 'approved',
+      created_at: iso(-10 * DAY),
+    },
+    {
+      id: 'p2',
+      user_id: 'u-past_due',
+      tier: 'PRO',
+      kind: 'subscription',
+      pack_id: null,
+      tokens_granted: null,
+      mp_payment_id: '1002',
+      mp_preapproval_id: 'pre-past_due',
+      amount_cents: 86884,
+      currency: 'MXN',
+      status: 'rejected',
+      created_at: iso(-1 * DAY),
+    },
   ],
   engines: [
     eng('e-clip', 'chalybclip', 'ChalyClip', 'active'),
@@ -72,10 +164,20 @@ const tables = {
     eng('e-stream', 'chalybstream', 'ChalyStreamManager', 'coming_soon'),
   ],
   profiles: Object.keys(users).map((k) => ({
-    id: `u-${k}`, email: `${k}@example.com`, full_name: users[k].name, role: users[k].role, tier: users[k].tier,
-    tier_ends_at: null, org_id: ORG, selected_engine_id: users[k].selected ?? null,
-    chalybclip_trial_started_at: null, welcome_gift_claimed_at: '2026-01-01T00:00:00Z', token_bonus_balance: 0, locale: 'es',
-    pro_trial_started_at: users[k].trial || k === 'cancelled' ? iso(-5 * DAY) : null, pro_trial_ends_at: null,
+    id: `u-${k}`,
+    email: `${k}@example.com`,
+    full_name: users[k].name,
+    role: users[k].role,
+    tier: users[k].tier,
+    tier_ends_at: null,
+    org_id: ORG,
+    selected_engine_id: users[k].selected ?? null,
+    chalybclip_trial_started_at: null,
+    welcome_gift_claimed_at: '2026-01-01T00:00:00Z',
+    token_bonus_balance: 0,
+    locale: 'es',
+    pro_trial_started_at: users[k].trial || k === 'cancelled' ? iso(-5 * DAY) : null,
+    pro_trial_ends_at: null,
   })),
 };
 
@@ -86,49 +188,72 @@ function filterRows(rows, params) {
     const m = /^eq\.(.*)$/.exec(v);
     if (m) out = out.filter((r) => String(r[k]) === m[1]);
     const inm = /^in\.\((.*)\)$/.exec(v);
-    if (inm) { const set = inm[1].split(',').map((s) => s.replace(/"/g, '')); out = out.filter((r) => set.includes(String(r[k]))); }
+    if (inm) {
+      const set = inm[1].split(',').map((s) => s.replace(/"/g, ''));
+      out = out.filter((r) => set.includes(String(r[k])));
+    }
   }
   return out;
 }
 
-http.createServer((req, res) => {
-  const url = new URL(req.url, 'http://x');
-  const cors = {
-    'access-control-allow-origin': req.headers.origin ?? '*',
-    'access-control-allow-credentials': 'true',
-    'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '*',
-    'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,HEAD,OPTIONS',
-    'access-control-expose-headers': 'content-range',
-  };
-  if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
-  const send = (status, body, headers = {}) => {
-    res.writeHead(status, { 'content-type': 'application/json', ...cors, ...headers });
-    res.end(body === undefined ? '' : JSON.stringify(body));
-  };
-  const token = (req.headers.authorization ?? '').replace(/^Bearer /, '');
-  if (url.pathname === '/auth/v1/user') {
-    return users[token] ? send(200, user(token)) : send(401, { msg: 'invalid token' });
-  }
-  if (url.pathname === '/auth/v1/token') {
-    let body = '';
-    req.on('data', (c) => (body += c));
-    req.on('end', () => {
-      const parsed = JSON.parse(body || '{}');
-      const k = parsed.email ? parsed.email.split('@')[0] : parsed.refresh_token;
-      if (!users[k]) return send(400, { error: 'invalid_grant', error_description: 'Invalid login credentials' });
-      send(200, { access_token: k, refresh_token: k, token_type: 'bearer', expires_in: 360000, expires_at: NOW + 360000, user: user(k) });
-    });
-    return;
-  }
-  if (url.pathname.startsWith('/auth/v1/')) return send(200, {});
-  if (url.pathname.startsWith('/rest/v1/rpc/')) return send(200, null);
-  const table = url.pathname.replace('/rest/v1/', '');
-  if (req.method !== 'GET' && req.method !== 'HEAD') return send(201, []);
-  const rows = filterRows(tables[table] ?? [], url.searchParams);
-  const single = (req.headers.accept ?? '').includes('vnd.pgrst.object');
-  const headers = { 'content-range': `0-${Math.max(rows.length - 1, 0)}/${rows.length}` };
-  if (req.method === 'HEAD') return send(200, undefined, headers);
-  if (single) return rows[0] ? send(200, rows[0], headers) : send(406, { code: 'PGRST116', message: 'no rows' });
-  send(200, rows, headers);
-}).listen(59999, () => console.log('mock supabase on :59999'));
-
+http
+  .createServer((req, res) => {
+    const url = new URL(req.url, 'http://x');
+    const cors = {
+      'access-control-allow-origin': req.headers.origin ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '*',
+      'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,HEAD,OPTIONS',
+      'access-control-expose-headers': 'content-range',
+    };
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, cors);
+      return res.end();
+    }
+    const send = (status, body, headers = {}) => {
+      res.writeHead(status, { 'content-type': 'application/json', ...cors, ...headers });
+      res.end(body === undefined ? '' : JSON.stringify(body));
+    };
+    const token = (req.headers.authorization ?? '').replace(/^Bearer /, '');
+    if (url.pathname === '/auth/v1/user') {
+      return users[token] ? send(200, user(token)) : send(401, { msg: 'invalid token' });
+    }
+    if (url.pathname === '/auth/v1/token') {
+      let body = '';
+      req.on('data', (c) => (body += c));
+      req.on('end', () => {
+        const parsed = JSON.parse(body || '{}');
+        const k = parsed.email ? parsed.email.split('@')[0] : parsed.refresh_token;
+        if (!users[k])
+          return send(400, {
+            error: 'invalid_grant',
+            error_description: 'Invalid login credentials',
+          });
+        send(200, {
+          access_token: k,
+          refresh_token: k,
+          token_type: 'bearer',
+          expires_in: 360000,
+          expires_at: NOW + 360000,
+          user: user(k),
+        });
+      });
+      return;
+    }
+    if (url.pathname.startsWith('/auth/v1/')) return send(200, {});
+    if (url.pathname.startsWith('/rest/v1/rpc/')) return send(200, null);
+    const table = url.pathname.replace('/rest/v1/', '');
+    if (req.method !== 'GET' && req.method !== 'HEAD') return send(201, []);
+    const rows = filterRows(tables[table] ?? [], url.searchParams);
+    const single = (req.headers.accept ?? '').includes('vnd.pgrst.object');
+    const headers = { 'content-range': `0-${Math.max(rows.length - 1, 0)}/${rows.length}` };
+    if (req.method === 'HEAD') return send(200, undefined, headers);
+    if (single)
+      return rows[0]
+        ? send(200, rows[0], headers)
+        : send(406, { code: 'PGRST116', message: 'no rows' });
+    send(200, rows, headers);
+  })
+  .listen(Number(process.env.MOCK_SUPABASE_PORT ?? 59999), () =>
+    console.log(`mock supabase on :${process.env.MOCK_SUPABASE_PORT ?? 59999}`),
+  );
