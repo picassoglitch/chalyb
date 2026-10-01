@@ -11,7 +11,7 @@
 // (/sign-in?next=/auth/launch/chalybclip) — sign-up flows straight back into
 // ChalyClip with trial + provisioning handled here in the background.
 //
-// Gated to VIP for cross-engine launches (the streaming↔clips perk).
+// Cross-tool launches need the target tool in the user's plan.
 // ChalyClip itself is open to every signed-in user: first-timers get the
 // welcome gift / 7-day trial claimed silently, and ChalyClip enforces its
 // own tier perks once inside.
@@ -25,6 +25,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { effectiveTier, CHALYBCLIP_TRIAL_SLUG } from '@/lib/billing/tiers';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
 import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
+import { getEntitlements } from '@/lib/billing/entitlement';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 
 export async function GET(
@@ -48,9 +49,15 @@ export async function GET(
   // below (trial claim + provisioning) and ChalyClip enforces its own
   // per-tier perks — the visitor goes straight from sign-up to
   // ChalyClip's /dashboard/start without ever seeing the Chalyb dashboard.
+  //
+  // The gate is getEntitlements, like every other launch path (P0-3): a tool
+  // the user's plan doesn't include goes to its page, which explains the offer.
   const tier = effectiveTier(session.role, session.tier);
-  if (slug !== CHALYBCLIP_TRIAL_SLUG && tier !== 'VIP') {
-    return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+  if (slug !== CHALYBCLIP_TRIAL_SLUG) {
+    const entitlements = await getEntitlements(session);
+    if (entitlements.tools[slug]?.state !== 'included') {
+      return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+    }
   }
 
   const admin = createAdminClient();
@@ -102,7 +109,11 @@ export async function GET(
     await provisionEngineAccess(
       session.user.id,
       engineId,
-      slug === CHALYBCLIP_TRIAL_SLUG ? 'manual' : 'all_access_seed',
+      slug === CHALYBCLIP_TRIAL_SLUG
+        ? 'manual'
+        : tier === 'VIP'
+          ? 'all_access_seed'
+          : 'pro_selection',
     );
   } catch {
     // Non-fatal — getEngineLaunchUrl will report if access is still missing.

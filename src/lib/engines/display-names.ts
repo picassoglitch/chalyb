@@ -1,57 +1,64 @@
-// What each engine is CALLED, in one place.
+// What each tool is CALLED, in one place.
 //
-// THE RULE: `Chaly` + the thing it does. No `b`.
+// THE RULE (BUILD-SPEC §0.2, rebuild prompt §4): customers see the tool's
+// plain name — Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles,
+// Inversiones. "Chalyb" appears only as the logo and in "Chalyb Pro". The old
+// "Chaly" + thing names (ChalyClip, ChalyOBS, …) are gone from customer UI.
 //
-// The `b` belongs to the platform (Chalyb) and to the wire — slugs
-// (`chalybclip`), hostnames (`chalybclip.chalyb.com`), env-var prefixes
-// (`CHALYBCLIP_SSO_SECRET`), column names. Those are identifiers and they do
-// not change; migration 0030 is explicit that renaming them again gets
-// expensive. Display names are copy, and copy has to be consistent.
-//
-// HOW IT DRIFTED: migration 0036 dropped the `b` from the three engines that
-// actually shipped (ChalybClip → ChalyClip, ChalybOBS → ChalyOBS,
-// ChalybCrypto → ChalyCrypto) to match what their own repos render, and left
-// the five catalogue-only engines on the old spelling because they "have no
-// product yet and no decided name". The result was one sentence reading
-// "ChalyClip, ChalybStreamManager y próximos productos" — the same brand,
-// spelled two ways, three words apart. Migration 0040 finishes the rename;
-// this module is what stops the next hardcoded string from re-opening it.
+// Identifiers do NOT change: slugs (`chalybclip`), hostnames, env-var prefixes
+// (`CHALYBCLIP_SSO_SECRET`), table and column names stay exactly as they are.
+// Migration 0041 writes the same names into engines.name; this map wins over a
+// database that has not run it yet.
 //
 // Pure data, no imports: usable from client components, server components,
 // emails and tests alike.
 
-/** slug → display name. The slug is the wire value and keeps its `b`. */
+/** slug → customer-facing tool name. */
 export const ENGINE_DISPLAY_NAMES: Record<string, string> = {
-  // Built and shipping.
-  chalybclip: 'ChalyClip',
-  chalybobs: 'ChalyOBS',
-  chalybcrypto: 'ChalyCrypto',
-  // Catalogue — announced, not built yet.
-  chalybstream: 'ChalyStreamManager',
-  chalybbot: 'ChalyBot',
-  chalybpicks: 'ChalyPicks',
-  chalybrealtor: 'ChalyRealtor',
-  chalybtrade: 'ChalyTrade',
+  chalybclip: 'Clips',
+  chalybcrypto: 'Señales',
+  chalybobs: 'En vivo',
+  chalybbot: 'Asistente',
+  chalybpicks: 'Pronósticos',
+  chalybrealtor: 'Inmuebles',
+  chalybtrade: 'Inversiones',
+  // TODO(owner) Q32: not one of the seven tools and has no customer name yet.
+  // Kept as an internal label; customer lists never show it (see
+  // HIDDEN_FROM_CUSTOMERS).
+  chalybstream: 'Stream Manager',
+};
+
+/** Slugs that never appear in customer lists, counts or the sitemap, whatever
+ *  their status (Q32). */
+export const HIDDEN_FROM_CUSTOMERS: ReadonlySet<string> = new Set(['chalybstream']);
+
+/** Tool colors from the design system (`more_shared.py` TOOLS). */
+export const TOOL_COLORS: Record<string, string> = {
+  chalybclip: '#5B4BFF',
+  chalybcrypto: '#FF9F0A',
+  chalybobs: '#FF375F',
+  chalybbot: '#30B0C7',
+  chalybpicks: '#34A853',
+  chalybrealtor: '#0A84FF',
+  chalybtrade: '#AF52DE',
 };
 
 /**
  * The display name for a slug.
  *
  * `fallback` is for the common case where the caller already has the name
- * from the `engines` table: pass it, and a slug this module has not been
- * told about still renders its database name instead of the raw slug. The
- * map wins when it has an entry, so a stale row in a database that has not
- * run migration 0040 still renders the canonical spelling.
+ * from the `engines` table: a slug this module has not been told about still
+ * renders its database name instead of the raw slug.
  */
 export function engineDisplayName(
   slug: string | null | undefined,
   fallback?: string | null,
 ): string {
   const key = (slug ?? '').trim().toLowerCase();
-  return ENGINE_DISPLAY_NAMES[key] ?? fallback ?? (slug || 'Engine');
+  return ENGINE_DISPLAY_NAMES[key] ?? fallback ?? (slug || '');
 }
 
-/** The three engines with a product behind them today, in display order. */
+/** The three tools with a product behind them today, in display order. */
 export const LIVE_ENGINE_NAMES = [
   ENGINE_DISPLAY_NAMES.chalybclip!,
   ENGINE_DISPLAY_NAMES.chalybcrypto!,

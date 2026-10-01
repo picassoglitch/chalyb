@@ -1,0 +1,112 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Tu prueba</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.flow{min-height:900px}
+.two{display:grid;grid-template-columns:560px 440px;gap:56px;justify-content:center;margin-top:18px}
+.fcard{background:#fff;border-radius:28px;box-shadow:var(--shadow-lg);padding:26px 40px 24px}
+.fcard h1{font-size:34px}
+.fcard .sub{font-size:18px;margin-top:6px}
+.gbtn{margin-top:18px;width:100%;height:64px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;justify-content:center;gap:14px;font-size:20px;font-weight:600}
+.or{display:flex;align-items:center;gap:16px;margin:14px 0 0;color:var(--ink3);font-size:16px;font-weight:500}
+.or::before,.or::after{content:"";flex:1;height:1px;background:#E3E3E9}
+.fcard .field{margin-top:10px}
+.fcard .field label{margin-bottom:6px;font-size:16px}
+.fcard .field .in{height:52px}
+.legal{font-size:15.5px;color:var(--ink2);margin-top:14px;line-height:1.5}
+.legal a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.have{text-align:center;font-size:17px;color:var(--ink2);margin-top:16px}
+.have a{color:var(--accent);font-weight:650}
+.recap{border-radius:28px;background:linear-gradient(150deg,#6B5CFF 0%,#5B4BFF 55%,#4632E6 100%);color:#fff;padding:34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(91,75,255,.30);align-self:start}
+.recap::after{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.10)}
+.recap .k{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.recap h2{color:#fff;font-size:30px;margin-top:8px}
+.recap ul{list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:11px}
+.recap li{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:550}
+.recap li .c{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;flex:none}
+.recap li .c svg{width:15px;height:15px;stroke-width:3}
+.recap .zero{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.22);display:flex;align-items:baseline;justify-content:space-between}
+.recap .zero span{font-size:18px;opacity:.9}.recap .zero b{font-size:34px;font-weight:750;letter-spacing:-.03em}
+.recap small{display:block;font-size:15.5px;opacity:.85;margin-top:6px}
+
+.col{max-width:860px}
+.title{text-align:center;margin-top:16px}
+.q{font-size:24px;font-weight:650;letter-spacing:-.02em;margin-top:16px;text-align:center}
+.opts{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-top:14px}
+.op{position:relative;background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:22px 26px 22px 74px;min-height:160px}
+.op .rd{position:absolute;left:24px;top:26px;width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 2px #CFCFD8;background:#fff}
+.op.sel{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.op.sel .rd{box-shadow:inset 0 0 0 10px var(--accent)}
+.op h3{font-size:21px;font-weight:650}
+.op .amt{font-size:34px;font-weight:750;letter-spacing:-.035em;margin-top:6px}
+.op .amt span{font-size:19px;font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.op .eq{font-size:17px;color:var(--ink2);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.op .tags{display:flex;gap:8px;margin-top:10px}
+.strike{text-decoration:line-through;color:var(--ink3)}
+.disc{margin-top:14px;font-size:17px;padding:16px 22px}
+.foot{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:16px}
+.foot .btn-xl{max-width:520px}
+.foot small{font-size:16px;color:var(--ink2)}
+</style></head><body><div class="flow"><header class="topbar" style="position:relative"><button class="back"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Atrás</button>
+<div class="toptitle"><span class="tmark"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span>Prueba Pro gratis</div>
+<button class="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></header><div class="steps"><div class="bar"><i class="on"></i><i class="on"></i><i class=""></i></div><div class="t">Paso 2 de 3</div></div><div class="col">
+<div class="title"><h1>Prueba Pro gratis 1 mes</h1><p class="sub">Todas las herramientas incluidas. Cancela cuando quieras.</p></div>
+<div class="q">¿Qué plan quieres cuando termine tu mes gratis?</div>
+<div class="opts"><div class="op sel"><div class="rd"></div><h3>Pro anual</h3><div class="amt">$7,490 <span>MXN al año</span></div>
+<div class="eq">(equivale a $624 al mes)</div><div class="eq"><b style="color:var(--ink)">Se renueva cada año</b></div><div class="tags"><span class="pill acc">Recomendado</span><span class="pill dark">Ahorras $1,498 al año</span></div></div>
+<div class="op"><div class="rd"></div><h3>Pro mensual</h3><div class="amt">$749 <span>MXN al mes</span></div><div class="eq">&nbsp;</div><div class="eq"><b style="color:var(--ink)">Se renueva cada mes</b></div></div></div>
+<div class="disc"><div class="di"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></div><div>
+<p><b>Hoy pagas $0.</b> Tu mes gratis termina el <b>30 de octubre de 2026</b>.</p>
+<p>Si no cancelas antes, el <b>30 de octubre de 2026</b> se cobrarán <b>$7,490 MXN</b> por 1 año de Pro a la tarjeta que registres, y se renovará automáticamente cada año ($7,490 MXN) hasta que canceles.</p>
+<p>Te avisaremos por correo el <b>23 de octubre de 2026</b> (7 días antes).</p>
+<p>Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el 30 de octubre de 2026 y no se te cobra nada.</p></div></div>
+<div class="foot"><button class="btn btn-primary btn-xl">Continuar al pago</button><small>Precios en MXN, IVA incluido.</small></div></div></div></body></html>

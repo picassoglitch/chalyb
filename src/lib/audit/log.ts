@@ -25,7 +25,10 @@ export type AuditAction =
   | 'promo.welcome_claim' // user accepted the first-time welcome banner
   | 'promo.welcome_reset' // admin reset a user's welcome banner so it shows again
   | 'promo.trial_grant' // trial started/extended (self-claim or admin grant)
-  | 'promo.trial_revoke'; // admin ended a user's ChalyClip trial early
+  | 'promo.trial_revoke' // admin ended a user's ChalyClip trial early
+  | 'engine.launch' // "Abrir" refused by entitlement (P0-3)
+  | 'engine.provision' // account created (or failed) at an engine on launch (P0-2)
+  | 'clips.job_failed'; // a Clips job ended in failed(reason) (P0-16)
 
 export interface AuditPayload {
   action: AuditAction;

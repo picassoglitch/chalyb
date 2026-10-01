@@ -1,0 +1,85 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Centro de mando</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.side .logo{padding-bottom:12px}
+.own{margin:0 12px 22px;align-self:flex-start;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);background:#EEEEF2;padding:5px 10px;border-radius:8px}
+.nav a{height:54px;font-size:19px;margin-bottom:4px}
+.main{padding:40px 56px 32px}
+.wrap{max-width:1060px}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.hrow .sub{margin-top:6px;font-size:19px}
+.seg2{display:flex;background:#E6E6EC;border-radius:14px;padding:4px;gap:4px}
+.seg2 span{height:42px;padding:0 16px;display:grid;place-items:center;border-radius:11px;font-size:16px;font-weight:600;color:var(--ink2)}
+.seg2 span.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:24px}
+.kpi{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:20px 22px}
+.kpi .kt{font-size:16.5px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.kpi .kv{white-space:nowrap;font-size:33px;font-weight:750;letter-spacing:-.035em;margin-top:10px;font-variant-numeric:tabular-nums}
+.kpi .kv span{font-size:17px;font-weight:600;color:var(--ink3);letter-spacing:0}
+.kpi .kd{font-size:15.5px;color:var(--ink2);margin-top:8px;line-height:1.6}
+.kpi .kd .tag-ej{font-size:11.5px;padding:1px 6px;margin-right:4px;vertical-align:1px}
+.kpi .kd b{color:var(--accent)}
+.kpi .kd b.bad{color:var(--bad)}
+.c2{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;margin-top:22px;align-items:start}
+.gh2{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;font-size:18px;font-weight:650}
+.gh2 a{font-size:16px;color:var(--accent);font-weight:600}
+.row .btn{height:44px;font-size:16px;padding:0 16px;border-radius:12px;box-shadow:none}
+.stt{display:flex;align-items:center;gap:8px;font-size:16.5px;font-weight:600;white-space:nowrap}
+.stt i{width:10px;height:10px;border-radius:50%;display:block}
+.c2 .row + .row::before{left:72px}</style></head><body><div class="app"><aside class="side"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="own">Panel del dueño</div><nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M12 14 15.5 9"/><path d="M3.3 17a9.5 9.5 0 1 1 17.4 0"/><circle cx="12" cy="14" r="1.6" fill="currentColor"/></svg><span>Centro de mando</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.1a4 4 0 0 1 0 7.8M22 21a7 7 0 0 0-4.5-6.5"/></svg><span>Personas</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/></svg><span>Dinero</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Herramientas</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M22 12h-4l-3 8L9 4l-3 8H2"/></svg><span>Actividad</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Ajustes</span></a></nav>
+<div class="me"><div class="avatar" style="background:linear-gradient(135deg,#7B6CFF,#3F2FE0)">DC</div><div><div class="n">Dueño</div><div class="p">Ver la app ›</div></div></div></aside><main class="main"><div class="wrap">
+<div class="hrow"><div><div class="eyebrow">Buenos días 👋</div><h1>Centro de mando</h1><p class="sub">Así va Chalyb este mes. Lo importante, primero.</p></div><div class="seg2"><span>Hoy</span><span>7 días</span><span class="on">Este mes</span></div></div>
+<div class="kpis"><div class="kpi"><div class="kt">Ingresos del mes</div><div class="kv">$184,250<span> MXN</span></div><div class="kd"><span class="tag-ej">Ejemplo</span> <b>+12%</b> vs. el mes pasado</div></div><div class="kpi"><div class="kt">Suscriptores activos</div><div class="kv">1,240</div><div class="kd"><span class="tag-ej">Ejemplo</span> <b>+86</b> este mes</div></div>
+<div class="kpi"><div class="kt">Pruebas activas</div><div class="kv">312</div><div class="kd"><span class="tag-ej">Ejemplo</span> Terminan esta semana: 74</div></div><div class="kpi"><div class="kt">Conversión de prueba</div><div class="kv">62%</div><div class="kd"><span class="tag-ej">Ejemplo</span> De cada 10 pruebas, 6 se quedan</div></div></div>
+<div class="c2"><div class="group"><div class="gh2">Necesita tu atención<span class="pill bad">4</span></div><div class="row"><div class="ic" style="background:#D70015"><svg class="i" viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17v.01"/></svg></div><div class="tx"><b>6 cobros fallidos</b><small>Mercado Pago reintenta solo. Puedes avisarles por correo.</small></div><button class="btn btn-gray">Revisar</button></div><div class="row"><div class="ic" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/></svg></div><div class="tx"><b>2 personas pidieron reembolso</b><small>Esperan respuesta desde ayer.</small></div><button class="btn btn-gray">Responder</button></div><div class="row"><div class="ic" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><b>Señales: los avisos por WhatsApp van lentos</b><small>Llegan unos minutos tarde desde las 9:00 a.m.</small></div><button class="btn btn-gray">Ver</button></div><div class="row"><div class="ic" style="background:#8E8E93"><svg class="i" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></div><div class="tx"><b>3 ideas nuevas de herramientas</b><small>Del programa “Tienes la idea”.</small></div><button class="btn btn-gray">Leer</button></div></div>
+<div class="group"><div class="gh2">Herramientas<a>Ver actividad</a></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#5B4BFF;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><b style="font-size:18px">Clips</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#FF9F0A;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><b style="font-size:18px">Señales</b></div><span class="stt" style="color:var(--warn)"><i style="background:#F5A623"></i>Lento hoy</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#FF375F;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div><div class="tx"><b style="font-size:18px">En vivo</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#30B0C7;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><div class="tx"><b style="font-size:18px">Asistente</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#34A853;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></div><div class="tx"><b style="font-size:18px">Pronósticos</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#0A84FF;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div><div class="tx"><b style="font-size:18px">Inmuebles</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div><div class="row" style="min-height:52px;padding-top:8px;padding-bottom:8px"><div class="ic" style="background:#AF52DE;width:32px;height:32px;border-radius:9px"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="9" rx="1"/><rect x="17" y="5" width="3" height="12" rx="1"/></svg></div><div class="tx"><b style="font-size:18px">Inversiones</b></div><span class="stt" style="color:var(--ok)"><i style="background:var(--ok)"></i>Funcionando bien</span></div></div></div></div></main></div></body></html>

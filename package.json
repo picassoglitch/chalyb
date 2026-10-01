@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test \"tests/*.test.ts\"",
+    "check:copy": "node scripts/check-hardcoded-copy.mjs",
+    "e2e": "playwright test",
+    "e2e:mock-supabase": "node e2e/mock-supabase/server.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:link": "supabase link --project-ref uqcbziwdgbnzehipzjxp",
@@ -32,6 +36,8 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

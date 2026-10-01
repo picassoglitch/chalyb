@@ -1,0 +1,48 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Avanzado</title>
+<link rel="stylesheet" href="style.css"><style>
+.col{max-width:1000px}
+.title{margin-top:36px;text-align:center}
+.fmts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
+.fmt{position:relative;background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:18px 18px 22px;text-align:center}
+.fmt .stage{height:158px;border-radius:16px;background:var(--bg);display:grid;place-items:center}
+.fmt .shape{border-radius:10px;background:linear-gradient(160deg,#C9C3FF,#8C80FF);position:relative;box-shadow:0 6px 16px rgba(91,75,255,.25)}
+.fmt .shape::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-35%,-50%);border-left:14px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent}
+.fmt h3{font-size:21px;font-weight:650;margin-top:18px;letter-spacing:-.015em}
+.fmt p{font-size:17px;color:var(--ink2);margin-top:4px}
+.fmt.sel{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.fmt.sel .stage{background:var(--tint)}
+.fmt .chk{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 0 0 4px #fff}
+.fmt .chk svg{width:19px;height:19px;stroke-width:3}
+.fmt .rad{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 2px #D2D2DA;background:#fff}
+.badge{position:absolute;top:14px;left:14px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px;letter-spacing:.01em}
+.count{margin-top:22px;display:flex;align-items:center;justify-content:space-between;padding:20px 22px 20px 26px}
+.count b{font-size:21px;font-weight:650;display:block}
+.count small{font-size:17px;color:var(--ink2)}
+.seg{display:flex;background:#EBEBF0;border-radius:16px;padding:4px;gap:4px}
+.seg span{width:96px;height:52px;display:grid;place-items:center;border-radius:13px;font-size:21px;font-weight:600;color:var(--ink2)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.adv{margin-top:14px;display:flex;align-items:center;gap:16px;padding:0 22px 0 26px;height:68px;border-radius:20px;background:transparent;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.adv .ic2{color:var(--ink2)}
+.adv b{font-size:19px;font-weight:600}
+.adv small{font-size:16px;color:var(--ink3);margin-left:auto;margin-right:6px}
+.adv .chev{color:var(--ink3)}
+.foot{margin-top:24px;display:flex;justify-content:center}
+.foot .btn-xl{max-width:520px}
+
+.advopen{margin-top:14px}
+.advh{display:flex;align-items:center;gap:16px;padding:0 22px 0 26px;height:64px}
+.advh b{font-size:19px;font-weight:650}
+.advh .ic2{color:var(--accent)}
+.advh .pro{background:var(--tint);color:var(--accent);font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px}
+.advh .chev{margin-left:auto;color:var(--ink3);transform:rotate(180deg)}
+.advnote{font-size:16px;color:var(--ink3);padding:12px 26px 0}
+.group .row{padding-left:22px;padding-right:22px}
+.row + .row::before{left:78px}
+</style></head><body><div class="flow" style="padding-bottom:48px"><header class="topbar" style="position:relative"><button class="back"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Atrás</button>
+<div class="toptitle"><span class="tmark"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></span>Hacer clips</div>
+<button class="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></header><div class="steps"><div class="bar"><i class="on"></i><i class="on"></i><i class=""></i></div><div class="t">Paso 2 de 3</div></div><div class="col"><div class="title"><h1>¿Dónde los vas a publicar?</h1>
+<p class="sub">Elige la forma de tus clips. Puedes cambiarla después.</p></div>
+<div class="fmts"><div class="fmt sel"><div class="chk"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="badge">Recomendado</div><div class="stage"><div class="shape" style="width:64px;height:112px"></div></div><h3>TikTok / Reels / Shorts</h3><p>Vertical</p></div><div class="fmt"><div class="rad"></div><div class="stage"><div class="shape" style="width:168px;height:94px"></div></div><h3>YouTube</h3><p>Horizontal</p></div><div class="fmt"><div class="rad"></div><div class="stage"><div class="shape" style="width:104px;height:104px"></div></div><h3>Cuadrado</h3><p>Instagram</p></div></div><div class="card count"><div><b>¿Cuántos clips?</b><small>Te recomendamos 6 para empezar.</small></div>
+<div class="seg"><span>3</span><span class="on">6</span><span>10</span></div></div><div class="advopen"><div class="advh"><svg class="i ic2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg><b>Opciones avanzadas</b><span class="pro">Para creadores profesionales</span><svg class="i chev up" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+<div class="group"><div class="row"><div class="ic" style="background:#5B4BFF"><svg class="i" viewBox="0 0 24 24"><path d="M20 7h-3a2 2 0 0 1-2-2V2"/><path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"/></svg></div><div class="tx"><b>Subir varios videos a la vez</b><small>Haz clips de toda una semana de streams</small></div><div class="sw"></div></div><div class="row"><div class="ic" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="M7 15h4M15 15h2M7 11h2M13 11h4"/></svg></div><div class="tx"><b>Subtítulos: estilo y idioma</b><small>Negrita amarilla · Español</small></div><span class="val">Editar</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div><div class="row"><div class="ic" style="background:#30B0C7"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg></div><div class="tx"><b>Formato y duración personalizada</b><small>De 15 a 60 segundos</small></div><span class="val">Automática</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div><div class="row"><div class="ic" style="background:#34C759"><svg class="i" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div><div class="tx"><b>Publicar automáticamente en mis redes</b><small>TikTok y YouTube Shorts</small></div><div class="sw on"></div></div><div class="row"><div class="ic" style="background:#FF375F"><svg class="i" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.69 0-3 1-3 3s1 2 1 3.5V13"/></svg></div><div class="tx"><b>Marca de agua / logo</b><small>Agrega tu logo en cada clip</small></div><div class="sw"></div></div><div class="row"><div class="ic" style="background:#636366"><svg class="i" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="tx"><b>Acceso API</b><small>Para conectar con tus propias apps</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div><p class="advnote">Si no tocas nada, usamos la mejor configuración por ti.</p></div>
+<div class="foot"><button class="btn btn-primary btn-xl">Crear mis clips</button></div></div></div></body></html>

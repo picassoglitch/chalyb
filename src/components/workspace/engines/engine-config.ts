@@ -31,13 +31,7 @@ export type EngineFilterKey = 'all' | 'live' | 'simulation' | 'coming_soon' | 'l
 
 /** Tab order. Labels are localized in the component via the `engines.filters`
  *  message keys (keyed by these same strings). */
-export const ENGINE_FILTER_KEYS: EngineFilterKey[] = [
-  'all',
-  'live',
-  'simulation',
-  'coming_soon',
-  'locked',
-];
+export const ENGINE_FILTER_KEYS: EngineFilterKey[] = ['all', 'live', 'locked'];
 
 /** Which filter buckets an engine belongs to (besides 'all'). */
 export function filterKeysFor(state: EngineLiveState): EngineFilterKey[] {

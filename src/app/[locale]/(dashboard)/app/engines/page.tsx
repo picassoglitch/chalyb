@@ -3,14 +3,9 @@ import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { CATS, type EngineCategory } from '@/lib/data/types';
 import { getTokenBalance } from '@/lib/usage/tokens';
-import {
-  engineIsLiveForUser,
-  isChalybclipTrialActive,
-  isChalybclipGraceActive,
-  TIER_CAPS,
-  effectiveTier,
-  isAdminRole,
-} from '@/lib/billing/tiers';
+import { TIER_CAPS } from '@/lib/billing/tiers';
+import { getEntitlements } from '@/lib/billing/entitlement';
+import { isCustomerVisible, meetsTierRequirement } from '@/lib/billing/entitlement-core';
 import { EnginesExplorer } from '@/components/workspace/engines/engines-explorer';
 import {
   filterKeysFor,
@@ -18,12 +13,12 @@ import {
   type EngineVM,
 } from '@/components/workspace/engines/engine-config';
 
-// Browser tab → "Mis engines · Chalyb" (template in [locale]/layout.tsx).
-export const metadata = { title: 'Mis engines' };
+export async function generateMetadata() {
+  const t = await getTranslations('engines');
+  return { title: t('title') };
+}
 
-// PARTNER ranks alongside PRO for tier-required gates (same level of access).
 const TIER_LABEL_SHORT = { FREE: 'Free', PRO: 'Pro', PARTNER: 'Partner', VIP: 'VIP' } as const;
-const TIER_ORDER = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 } as const;
 const CAT_LABEL = Object.fromEntries(CATS.map((c) => [c.id, c.label])) as Record<
   EngineCategory,
   string
@@ -45,25 +40,17 @@ export default async function MyEnginesPage({ params }: { params: Promise<{ loca
   const t = await getTranslations('engines');
 
   const [engines, session] = await Promise.all([listEngines(), getSessionUser()]);
-  const role = session?.role ?? 'VIEWER';
-  const storedTier = session?.tier ?? 'FREE';
-  const tier = effectiveTier(role, storedTier);
-  const isAdmin = isAdminRole(role);
-  const selectedEngineId = session?.selectedEngineId ?? null;
+  if (!session) return null; // the layout already sent anonymous visitors to sign-in
+  // Access comes from getEntitlements only, so these cards can never disagree
+  // with the tool page they open (B1).
+  const [entitlements, balance] = await Promise.all([
+    getEntitlements(session),
+    getTokenBalance(session.user.id).catch(() => null),
+  ]);
+  const tier = entitlements.plan;
+  const isAdmin = entitlements.isAdmin;
+  const selectedEngineId = session.selectedEngineId;
   const caps = TIER_CAPS[tier];
-
-  // ChalyClip trial (7-day) + post-trial grace (bonus tokens) — both let a FREE
-  // user run ChalyClip live. Mirror of the home/detail surfaces.
-  const nowMs = new Date().getTime();
-  const trialActive = isChalybclipTrialActive(session?.chalybclipTrialStartedAt ?? null, nowMs);
-  // Real token balance for the user — drives the post-trial grace check AND the
-  // "Tokens IA" capability card (so it reflects allocation + any bonus, not a
-  // hardcoded plan figure).
-  const balance = session ? await getTokenBalance(session.user.id).catch(() => null) : null;
-  const clipBonusTokens = balance && !balance.unlimited ? balance.bonus : 0;
-  const graceActive =
-    tier === 'FREE' &&
-    isChalybclipGraceActive(session?.chalybclipTrialStartedAt ?? null, nowMs, clipBonusTokens);
 
   // Marketing copy is localized in messages (engines.marketing*). Resolve it
   // here so the EngineVM carries plain strings across the RSC boundary.
@@ -82,36 +69,17 @@ export default async function MyEnginesPage({ params }: { params: Promise<{ loca
     };
   };
 
-  // Build the serializable view-models the client explorer renders. Deprecated
-  // engines are hidden from the hub (consistent with the home page).
+  // Build the serializable view-models the client explorer renders. Tools that
+  // are not finished are not shown at all (BUILD-SPEC §0.3).
   const vms: EngineVM[] = engines
-    .filter((e) => e.status !== 'deprecated')
+    .filter(isCustomerVisible)
+    .filter((engine) => entitlements.tools[engine.slug] !== undefined)
     .map((engine) => {
-      const meetsTier = TIER_ORDER[tier] >= TIER_ORDER[engine.tierRequired];
-      const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session?.user.id;
+      const access = entitlements.tools[engine.slug]!;
+      const isOwnedByMe = engine.ownerUserId !== null && engine.ownerUserId === session.user.id;
       const isPlatformOwned = engine.ownerUserId === null;
-      const isLive = engineIsLiveForUser({
-        tier,
-        engineId: engine.id,
-        engineSlug: engine.slug,
-        engineStatus: engine.status,
-        meetsTier,
-        selectedEngineId,
-        isOwnedByUser: isOwnedByMe,
-        trialActive,
-        graceActive,
-      });
-
-      const state: EngineLiveState =
-        engine.status === 'coming_soon'
-          ? 'coming_soon'
-          : isLive
-            ? tier === 'FREE'
-              ? 'trial'
-              : 'live'
-            : !meetsTier
-              ? 'locked'
-              : 'simulation';
+      const meetsTier = access.state !== 'trial_offer';
+      const state: EngineLiveState = access.state === 'trial_offer' ? 'locked' : 'live';
 
       const { tagline, bullets } = marketingFor(engine.slug, engine.category, engine.description);
 
@@ -135,7 +103,10 @@ export default async function MyEnginesPage({ params }: { params: Promise<{ loca
           ? 'Chalyb'
           : engine.ownerDisplayName || engine.ownerEmail?.split('@')[0] || 'Partner',
         featured: engine.slug === 'chalybclip' && engine.status === 'active',
-        canSelectLive: tier === 'PRO' && engine.status === 'active' && meetsTier,
+        canSelectLive:
+          tier === 'PRO' &&
+          engine.status === 'active' &&
+          meetsTierRequirement(tier, engine.tierRequired),
         isSelectedLive: engine.id === selectedEngineId,
       } satisfies EngineVM;
     })

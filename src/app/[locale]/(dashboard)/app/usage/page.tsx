@@ -22,7 +22,7 @@
 // zero balance. A second-level error.tsx in the parent dir is still the
 // backstop for anything I haven't anticipated.
 
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
@@ -344,6 +344,7 @@ export default async function UsagePage({
   });
 
   const { balance, isAdmin, tier, royaltyAccruals, royaltyPayouts, engineMap } = data;
+  const tUsage = await getTranslations('usage');
 
   const usedPct = balance.unlimited
     ? 0
@@ -477,9 +478,9 @@ export default async function UsagePage({
             }}
           >
             Los tokens que compras <b>nunca caducan</b> y se usan <b>después</b> de los tokens que
-            ya trae tu plan cada mes. Sirven en todos los engines (ChalyClip y los que vengan
-            después). Comprar tokens <b>no cambia tu plan</b>: tu tier, tus límites y tu fecha de
-            renovación siguen igual — eso se gestiona en{' '}
+            ya trae tu plan cada mes. Sirven en todas tus herramientas. Comprar tokens{' '}
+            <b>no cambia tu plan</b>: tus límites y tu fecha de renovación siguen igual — eso se
+            gestiona en{' '}
             <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-2)' }}>
               Suscripción
             </Link>
@@ -641,7 +642,7 @@ export default async function UsagePage({
                 display: 'inline-block',
               }}
             >
-              Tu actividad aparece aquí en cuanto un engine empiece a usar tokens.
+              Tu actividad aparece aquí en cuanto uses una herramienta.
             </span>
           </div>
         ) : (
@@ -655,7 +656,7 @@ export default async function UsagePage({
                     <div className="cc-mod-ic">{eng?.icon ?? '◆'}</div>
                     <div className="cc-mod-body">
                       <div className="cc-mod-name">
-                        {eng?.name ?? 'Engine'} <span className="cc-mod-badge">{g.operation}</span>{' '}
+                        {eng?.name ?? '—'} <span className="cc-mod-badge">{g.operation}</span>{' '}
                         <span className="cc-mod-badge gr">
                           {g.count} llamada{g.count === 1 ? '' : 's'}
                         </span>
@@ -681,7 +682,7 @@ export default async function UsagePage({
                   <div className="cc-mod-ic">{eng?.icon ?? '◆'}</div>
                   <div className="cc-mod-body">
                     <div className="cc-mod-name">
-                      {eng?.name ?? 'Engine'}{' '}
+                      {eng?.name ?? '—'}{' '}
                       <span className="cc-mod-badge">{KIND_LABEL[e.kind] ?? e.kind}</span>
                     </div>
                     <div className="cc-mod-sub">{relativeDate(e.occurred_at, locale)}</div>
@@ -697,27 +698,38 @@ export default async function UsagePage({
         )}
       </div>
 
-      {/* Diagnostic strip — only when something actually went wrong. Lives at
-          the bottom so it doesn't push the primary surface around. Helps the
-          operator see which subsystem fell over without exposing internals. */}
-      {data.warnings.length > 0 && (
-        <div
-          style={{
-            marginTop: 18,
-            padding: '8px 12px',
-            background: 'var(--cc-amber-g, rgba(245,177,61,0.06))',
-            border: '1px solid rgba(245,177,61,0.25)',
-            borderRadius: 7,
-            fontSize: 11,
-            color: 'var(--cc-amber, #f5b13d)',
-            fontFamily: 'var(--cc-mono), monospace',
-            lineHeight: 1.5,
-          }}
-        >
-          ▸ Algunos datos se mostraron con valores por defecto ({data.warnings.join(', ')}). Si esto
-          sigue pasando, revisa los logs de Vercel — busca por el prefijo `[/app/usage]`.
-        </div>
-      )}
+      {/* Diagnostic strip — only when something actually went wrong. Admins
+          get the warning codes and where to look; customers get one plain
+          sentence and a retry (P0-6). */}
+      {data.warnings.length > 0 &&
+        (isAdmin ? (
+          <div
+            style={{
+              marginTop: 18,
+              padding: '8px 12px',
+              background: 'var(--cc-amber-g, rgba(245,177,61,0.06))',
+              border: '1px solid rgba(245,177,61,0.25)',
+              borderRadius: 7,
+              fontSize: 11,
+              color: 'var(--cc-amber, #f5b13d)',
+              fontFamily: 'var(--cc-mono), monospace',
+              lineHeight: 1.5,
+            }}
+          >
+            ▸ Algunos datos se mostraron con valores por defecto ({data.warnings.join(', ')}). Si
+            esto sigue pasando, revisa los logs de Vercel — busca por el prefijo `[/app/usage]`.
+          </div>
+        ) : (
+          <div role="status" style={{ marginTop: 18, fontSize: 15, color: 'var(--cc-txt-2)' }}>
+            {tUsage('loadFailed')}{' '}
+            <Link
+              href={'/app/usage' as Route}
+              style={{ color: 'var(--cc-green)', fontWeight: 600 }}
+            >
+              {tUsage('retry')}
+            </Link>
+          </div>
+        ))}
     </div>
   );
 }

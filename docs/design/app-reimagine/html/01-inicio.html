@@ -1,0 +1,64 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Inicio</title>
+<link rel="stylesheet" href="style.css"><style>
+.tasks{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:36px}
+.task{display:flex;align-items:flex-start;gap:22px;padding:28px 28px 28px 28px;min-height:178px;position:relative}
+.task .big{width:72px;height:72px;border-radius:20px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.task .big svg.i{width:36px;height:36px;stroke-width:1.9}
+.task .t{flex:1;padding-top:2px;padding-right:48px}
+.task .t h2{margin-top:6px}
+.task .t p{font-size:18px;color:var(--ink2);margin-top:8px;line-height:1.4}
+.task .go{position:absolute;right:26px;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:var(--bg);color:var(--accent);display:grid;place-items:center}
+.task.first{box-shadow:0 0 0 2px var(--accent),var(--shadow-lg)}
+.task.first .big{background:var(--accent);color:#fff}
+.task.first .go{background:var(--accent);color:#fff}
+.strip{margin-top:22px;display:flex;align-items:center;gap:14px;padding:16px 22px;border-radius:18px;background:var(--tint2);border:1px solid #E4E0FF;font-size:17px;color:var(--ink2)}
+.strip .ok{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.strip .ok svg{width:17px;height:17px;stroke-width:3}
+.strip b{color:var(--ink);font-weight:650}
+.strip .tools{display:flex;gap:8px;margin-left:auto}
+.strip .tools span{white-space:nowrap;background:#fff;border-radius:999px;padding:5px 12px;font-size:15px;font-weight:550;color:var(--ink2);box-shadow:inset 0 0 0 1px #E4E0FF}
+.latest{margin-top:34px}
+.latest .lh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.latest .lh h3{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.latest .lh a{font-size:18px;color:var(--accent);font-weight:600}
+.ready{display:flex;align-items:center;gap:22px;padding:18px 22px}
+.stack{display:flex}
+.stack .thumb{box-shadow:0 0 0 3px #fff}
+.stack .thumb + .thumb{margin-left:-18px}
+.ready .tx{flex:1}
+.ready .tx b{font-size:20px;font-weight:650;display:flex;align-items:center;gap:10px}
+.ready .tx small{display:block;font-size:17px;color:var(--ink2);margin-top:3px}
+.pill-ok{display:inline-flex;align-items:center;gap:6px;background:var(--ok-tint);color:var(--ok);font-size:14px;font-weight:700;padding:4px 10px;border-radius:999px}
+.pill-ok svg{width:14px;height:14px;stroke-width:3}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap">
+<div class="eyebrow">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1>
+<div class="tasks"><div class="card task first"><div class="big"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div>
+<div class="t"><div class="label">Clips</div><h2>Hacer clips de mi stream</h2><p>Crea clips cortos listos para TikTok, Reels y Shorts.</p></div><div class="go"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div></div><div class="card task"><div class="big"><svg class="i" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+<div class="t"><div class="label">Señales</div><h2>Recibir señales de cripto</h2><p>Te avisamos cuándo comprar o vender, en tu celular.</p></div><div class="go"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div></div><div class="card task"><div class="big"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div>
+<div class="t"><div class="label">En vivo</div><h2>Manejar mi transmisión</h2><p>Controla tus escenas de OBS desde un solo lugar.</p></div><div class="go"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div></div><div class="card task"><div class="big"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></div>
+<div class="t"><div class="label">Y mucho más</div><h2>Más herramientas</h2><p>Asistente, Pronósticos, Inmuebles e Inversiones.</p></div><div class="go"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div></div></div>
+<div class="strip"><div class="ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div><b>Todo incluido en tu plan Pro.</b> Sin pagos extra.</div>
+<div class="tools"><span>Clips</span><span>Señales</span><span>En vivo</span><span>Asistente</span><span>y 3 más</span></div></div>
+<div class="latest"><div class="lh"><h3>Lo último</h3><a>Ver todo</a></div>
+<div class="card ready"><div class="stack"><div class="thumb" style="width:46px;height:78px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#2B1B6B 0%,#6A2CC9 45%,#FF6B9A 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#FFD36Bcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.04px;height:23.4px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:26.520000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:15.600000000000001px;height:12.48px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:78px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(170deg,#0C2D48 0%,#1478A8 50%,#38E1C4 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#B9FFF1cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.04px;height:23.4px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:26.520000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:15.600000000000001px;height:12.48px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:78px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(165deg,#3A0D12 0%,#C2362C 50%,#FFB347 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#FFE7A3cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.04px;height:23.4px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:26.520000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:15.600000000000001px;height:12.48px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:78px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#101935 0%,#2E3DBA 50%,#8FA2FF 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#E2E7FFcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.04px;height:23.4px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:26.520000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:15.600000000000001px;height:12.48px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div></div>
+<div class="tx"><b>Tus 6 clips están listos <span class="pill-ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Listos</span></b><small>De tu stream “Noche de preguntas” · hace 10 minutos</small></div>
+<button class="btn btn-primary" style="height:54px">Ver mis clips</button></div></div>
+</div></main></div></body></html>

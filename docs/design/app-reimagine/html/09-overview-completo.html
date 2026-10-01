@@ -1,0 +1,74 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Vista general completa</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:#ECECF1}
+.sheet{width:1600px;padding:52px 56px 64px}
+.hd{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.hd .mark{width:48px;height:48px;border-radius:14px;background:linear-gradient(140deg,#7B6CFF 0%,#5B4BFF 55%,#3F2FE0 100%);display:grid;place-items:center;box-shadow:0 4px 12px rgba(91,75,255,.35)}
+.hd .mark svg{width:26px;height:26px}
+.hd h1{font-size:34px}.hd p{font-size:18px;color:var(--ink2);margin-top:2px}
+.hd .tag{margin-left:auto;font-size:16px;font-weight:600;color:var(--accent);background:#fff;padding:9px 16px;border-radius:999px;box-shadow:var(--shadow)}
+.grp{margin-top:38px}
+.grp h2{font-size:22px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.grp h2 span{font-size:15px;font-weight:600;color:var(--ink3)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px 22px}
+.tile img{display:block;width:100%;aspect-ratio:1440/900;object-fit:cover;object-position:top;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 26px rgba(20,20,50,.12);background:#fff}
+.cap{margin-top:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cap .n{font-size:13px;font-weight:700;color:#fff;background:var(--accent);border-radius:7px;padding:2px 7px}
+.cap b{font-size:16.5px;font-weight:650}
+.cap span{font-size:14.5px;color:var(--ink2)}
+.phones{display:flex;gap:40px}
+.ph{width:300px}
+.bezel{padding:10px;border-radius:50px;background:#1C1C1E;box-shadow:0 20px 50px rgba(20,20,50,.25)}
+.bezel img{display:block;width:100%;aspect-ratio:390/844;object-fit:cover;object-position:top;border-radius:41px}
+</style></head><body><div class="sheet"><div class="hd"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div><h1>Chalyb · rediseño completo</h1><p>Sitio, registro y prueba, app, herramientas y panel del dueño. Una cosa por pantalla, un botón grande, palabras simples.</p></div><div class="tag">01 – 30</div></div><section class="grp"><h2>La app (rediseño base)<span>7 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/01-inicio.png"><div class="cap"><span class="n">01</span><b>Inicio</b><span>4 tareas grandes</span></div></div><div class="tile"><img src="../mockups/02-clips-paso1.png"><div class="cap"><span class="n">02</span><b>Clips · Paso 1</b><span>Pega tu enlace</span></div></div><div class="tile"><img src="../mockups/03-clips-paso2.png"><div class="cap"><span class="n">03</span><b>Clips · Paso 2</b><span>Formato y cantidad</span></div></div><div class="tile"><img src="../mockups/04-clips-creando.png"><div class="cap"><span class="n">04</span><b>Clips · Paso 3</b><span>Creando tus clips</span></div></div><div class="tile"><img src="../mockups/05-clips-listos.png"><div class="cap"><span class="n">05</span><b>Clips listos</b><span>Descargar o compartir</span></div></div><div class="tile"><img src="../mockups/06-avanzado.png"><div class="cap"><span class="n">06</span><b>Opciones avanzadas</b><span>Para pros, escondidas</span></div></div><div class="tile"><img src="../mockups/07-mi-cuenta.png"><div class="cap"><span class="n">07</span><b>Mi cuenta</b><span>Plan, pagos, redes, ayuda</span></div></div></div></section><section class="grp"><h2>Sitio público<span>2 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/10-landing.png"><div class="cap"><span class="n">10</span><b>Landing</b><span>Página completa (recortada aquí)</span></div></div><div class="tile"><img src="../mockups/12-planes.png"><div class="cap"><span class="n">12</span><b>Planes</b><span>Gratis · Pro · VIP, anual activado</span></div></div></div></section><section class="grp"><h2>Registro y prueba gratis<span>6 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/13-crear-cuenta.png"><div class="cap"><span class="n">13</span><b>Crear cuenta</b><span>Google o correo, 1 paso</span></div></div><div class="tile"><img src="../mockups/14-tu-prueba.png"><div class="cap"><span class="n">14</span><b>Tu prueba</b><span>Elige plan + aviso de cobro</span></div></div><div class="tile"><img src="../mockups/15-pago.png"><div class="cap"><span class="n">15</span><b>Pago</b><span>Tarjeta con Mercado Pago + casilla</span></div></div><div class="tile"><img src="../mockups/16-listo.png"><div class="cap"><span class="n">16</span><b>Listo</b><span>Fechas y monto, sin sorpresas</span></div></div><div class="tile"><img src="../mockups/17-banners.png"><div class="cap"><span class="n">17</span><b>Avisos</b><span>4 estados de la prueba</span></div></div><div class="tile"><img src="../mockups/18-cancelar.png"><div class="cap"><span class="n">18</span><b>Cancelar</b><span>1 confirmación y listo</span></div></div></div></section><section class="grp"><h2>Herramientas y cuenta<span>8 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/19-mis-resultados.png"><div class="cap"><span class="n">19</span><b>Mis resultados</b><span>Todo lo hecho, con filtros</span></div></div><div class="tile"><img src="../mockups/20-senales-paso1.png"><div class="cap"><span class="n">20</span><b>Señales · Paso 1</b><span>Elige tus monedas</span></div></div><div class="tile"><img src="../mockups/21-senales-listo.png"><div class="cap"><span class="n">21</span><b>Señales activas</b><span>Avisos en palabras simples</span></div></div><div class="tile"><img src="../mockups/22-en-vivo.png"><div class="cap"><span class="n">22</span><b>En vivo</b><span>Un botón grande para transmitir</span></div></div><div class="tile"><img src="../mockups/23-mas-herramientas.png"><div class="cap"><span class="n">23</span><b>Más herramientas</b><span>Incluido en tu plan / Pruébalo</span></div></div><div class="tile"><img src="../mockups/24-vacio-y-error.png"><div class="cap"><span class="n">24</span><b>Vacío y errores</b><span>Siempre un siguiente paso</span></div></div><div class="tile"><img src="../mockups/25-ayuda.png"><div class="cap"><span class="n">25</span><b>Ayuda</b><span>Hablar con una persona</span></div></div><div class="tile"><img src="../mockups/30-mi-plan.png"><div class="cap"><span class="n">30</span><b>Mi plan</b><span>Pro anual pagado</span></div></div></div></section><section class="grp"><h2>Panel del dueño (/dashboard)<span>3 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/27-admin-centro.png"><div class="cap"><span class="n">27</span><b>Centro de mando</b><span>KPIs y lo urgente</span></div></div><div class="tile"><img src="../mockups/28-admin-personas.png"><div class="cap"><span class="n">28</span><b>Personas</b><span>Tabla + acción con confirmación</span></div></div><div class="tile"><img src="../mockups/29-admin-dinero.png"><div class="cap"><span class="n">29</span><b>Dinero</b><span>Una sola fuente de verdad</span></div></div></div></section><section class="grp"><h2>En el celular<span>390 × 844</span></h2><div class="phones"><div class="ph"><div class="bezel"><img src="../mockups/08-inicio-movil.png"></div><div class="cap" style="justify-content:center"><span class="n">08</span><b>Inicio en el celular</b></div></div><div class="ph"><div class="bezel"><img src="../mockups/11-landing-movil.png"></div><div class="cap" style="justify-content:center"><span class="n">11</span><b>Landing en el celular</b></div></div><div class="ph"><div class="bezel"><img src="../mockups/26-notificaciones.png"></div><div class="cap" style="justify-content:center"><span class="n">26</span><b>Avisos en el celular</b></div></div></div></section></div></body></html>

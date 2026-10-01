@@ -28,6 +28,7 @@ import { getTokenPack } from '@/lib/payments/pricing';
 import { formatMxn, isSettledPaymentStatus, summariseMoney } from '@/lib/billing/money';
 import { loadPayments, paymentKind, type PaymentLedgerRow } from '@/lib/billing/payments-data';
 import type { SubscriptionTier } from '@/lib/auth/session';
+import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 
 export const metadata = { title: 'Facturación' };
 
@@ -194,7 +195,12 @@ export default async function WorkspaceBillingPage({
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Plan activo</div>
-          <div className="cc-mod-stat-v gr">{TIER_LABEL[session.tier]}</div>
+          <div className="cc-mod-stat-v gr">
+            {/* Same derivation as the rest of the app: admins count as VIP,
+                whatever profiles.tier says (B11). */}
+            {TIER_LABEL[effectiveTier(session.role, session.tier)]}
+            {isAdminRole(session.role) ? ' (admin)' : ''}
+          </div>
           <div className="cc-mod-stat-sub">
             <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-3)' }}>
               gestionar →

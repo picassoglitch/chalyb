@@ -1,0 +1,34 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Creando</title>
+<link rel="stylesheet" href="style.css"><style>
+.col{max-width:760px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:22px}
+.ring{position:relative;width:184px;height:184px}
+.ring svg{width:184px;height:184px;transform:rotate(-90deg)}
+.ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ring .pct span{font-size:24px;font-weight:600;color:var(--ink2);margin-left:2px}
+.hero h1{margin-top:26px}
+.hero .sub{max-width:600px;margin-top:10px}
+.list{margin-top:26px}
+.list .row{min-height:66px}
+.list .row + .row::before{left:76px}
+.dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dot.ok{background:var(--ok);color:#fff} .dot.ok svg{width:20px;height:20px;stroke-width:3}
+.dot.run{box-shadow:inset 0 0 0 3px var(--tint);position:relative}
+.dot.run::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent);transform:rotate(20deg)}
+.dot.wait{box-shadow:inset 0 0 0 2px #D6D6DD}
+.list .tx b{font-size:19px}
+.list .row.done .tx b{color:var(--ink)}
+.list .row.pending .tx b{color:var(--ink3);font-weight:500}
+.list .row.active .tx b{color:var(--accent);font-weight:650}
+.list .st{font-size:16px;color:var(--ink3)}
+.list .st.ok{color:var(--ok);font-weight:600}
+.foot{margin-top:22px;display:flex;justify-content:center;gap:14px}
+</style></head><body><div class="flow"><header class="topbar" style="position:relative"><button class="back"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Inicio</button>
+<div class="toptitle"><span class="tmark"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></span>Hacer clips</div>
+<button class="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></header><div class="steps"><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i></div><div class="t">Paso 3 de 3</div></div><div class="col"><div class="hero"><div class="ring"><svg viewBox="0 0 184 184"><circle cx="92" cy="92" r="78" fill="none" stroke="#E7E5FF" stroke-width="16"/>
+<circle cx="92" cy="92" r="78" fill="none" stroke="url(#g)" stroke-width="16" stroke-linecap="round" stroke-dasharray="333.3 490.1"/>
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A7DFF"/><stop offset="1" stop-color="#5B4BFF"/></linearGradient></defs></svg>
+<div class="pct">68<span>%</span></div></div>
+<h1>Estamos creando tus clips</h1><p class="sub">Tarda unos minutos. Puedes cerrar esta página, te avisamos cuando estén listos.</p></div>
+<div class="group list"><div class="row done"><div class="dot ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="tx"><b>Video recibido</b></div><span class="st ok">Listo</span></div><div class="row done"><div class="dot ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="tx"><b>Buscando los mejores momentos</b></div><span class="st ok">Encontramos 9</span></div><div class="row active"><div class="dot run"></div><div class="tx"><b>Agregando subtítulos…</b></div><span class="st">En eso estamos</span></div><div class="row pending"><div class="dot wait"></div><div class="tx"><b>Listo para descargar</b></div><span class="st"></span></div></div>
+<div class="foot"><button class="btn btn-secondary" style="height:62px;padding:0 30px"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Avísame por correo</button></div></div></div></body></html>

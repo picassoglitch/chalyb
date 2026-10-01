@@ -1,0 +1,114 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Mis resultados</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding-top:44px}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.hrow .sub{margin-top:6px}
+.srch{display:flex;align-items:center;gap:12px;height:60px;width:380px;padding:0 20px;border-radius:18px;background:#fff;box-shadow:var(--shadow);font-size:18px;color:#A8A8B0}
+.srch svg.i{color:var(--ink3)}
+.chips{display:flex;gap:10px;margin-top:20px;flex-wrap:nowrap}
+.chips .chip{height:46px;padding:0 18px;font-size:17px}
+
+.rg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:20px}
+.rc{background:#fff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.rc .vz{height:104px;position:relative;display:flex;align-items:center;padding:0 22px;gap:14px}
+.rc .vz .big{font-size:21px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.rc .bd{padding:14px 20px 18px}
+.rc .lb{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.rc h3{font-size:20px;font-weight:650;letter-spacing:-.015em;margin-top:6px;line-height:1.25}
+.rc .dt{font-size:16px;color:var(--ink3);margin-top:4px}
+.rc .ac{display:flex;gap:10px;margin-top:12px}
+.rc .ac .btn{height:50px;font-size:17px;padding:0 20px;border-radius:14px;box-shadow:none}
+.rc .ac .btn-gray{background:var(--bg)}
+.stk{display:flex}.stk .thumb{box-shadow:0 0 0 3px #fff}.stk .thumb + .thumb{margin-left:-16px}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class="on"><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap">
+<div class="hrow"><div><h1>Mis resultados</h1><p class="sub">Todo lo que tus herramientas hicieron por ti.</p></div><div class="srch"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar en mis resultados</div></div>
+<div class="chips"><span class="chip on">Todos</span><span class="chip">Clips</span><span class="chip">Señales</span><span class="chip">En vivo</span><span class="chip">Asistente</span><span class="chip">Pronósticos</span><span class="chip">Inmuebles</span><span class="chip">Inversiones</span></div><div class="rg"><div class="rc"><div class="vz" style="background:#F6F5FF"><div class="stk"><div class="thumb" style="width:46px;height:80px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#2B1B6B 0%,#6A2CC9 45%,#FF6B9A 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#FFD36Bcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:80px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(170deg,#0C2D48 0%,#1478A8 50%,#38E1C4 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#B9FFF1cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:80px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(165deg,#3A0D12 0%,#C2362C 50%,#FFB347 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#FFE7A3cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:80px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#101935 0%,#2E3DBA 50%,#8FA2FF 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#E2E7FFcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div><div class="thumb" style="width:46px;height:80px;border-radius:10px"><div style="position:absolute;inset:0;background:linear-gradient(170deg,#0F2A1D 0%,#1F8A4C 50%,#C8F169 100%)"></div>
+<div style="position:absolute;width:50.6px;height:50.6px;left:16.099999999999998px;top:-11.5px;border-radius:50%;background:radial-gradient(circle,#F2FFC2cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:5.52px;right:5.52px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div></div></div><span class="pill ok" style="margin-left:auto"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Listos</span></div><div class="bd">
+<div class="lb" style="color:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>Clips</div><h3>6 clips de “Noche de preguntas”</h3><div class="dt">Hoy, 8:40 p.m. · Vertical con subtítulos</div>
+<div class="ac"><button class="btn btn-primary">Ver clips</button><button class="btn btn-gray">Descargar</button></div></div></div><div class="rc"><div class="vz" style="background:#FFF6E8"><div class="coin" style="background:#F7931A">₿</div><div class="big">Buen momento<br>para comprar</div></div><div class="bd">
+<div class="lb" style="color:#C77700"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Señales</div><h3>Bitcoin: buen momento para comprar</h3><div class="dt">Hoy, 7:15 a.m. · Te avisamos por WhatsApp</div>
+<div class="ac"><button class="btn btn-primary">Ver señal</button></div></div></div><div class="rc"><div class="vz" style="background:#FFEFF2"><div class="thumb" style="width:140px;height:80px;border-radius:12px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#101935 0%,#2E3DBA 50%,#8FA2FF 100%)"></div>
+<div style="position:absolute;width:154.0px;height:154.0px;left:49.0px;top:-35.0px;border-radius:50%;background:radial-gradient(circle,#E2E7FFcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:16.8px;right:16.8px;top:14.399999999999999px;height:24.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:27.200000000000003px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:16.0px;height:12.8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="play" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#fff"/></svg></div><div class="dur">2:14:08</div></div><div class="big" style="font-size:18px">Grabación<br>guardada</div></div><div class="bd">
+<div class="lb" style="color:#E0244A"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>En vivo</div><h3>Transmisión del martes</h3><div class="dt">Mar 29 sep · Duró 2 h 14 min</div>
+<div class="ac"><button class="btn btn-primary">Ver grabación</button><button class="btn btn-gray">Hacer clips</button></div></div></div><div class="rc"><div class="vz" style="background:#EAF8FB"><div class="tico" style="width:52px;height:52px;border-radius:16px;background:#30B0C7"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></div><div class="big">12 respuestas<br>enviadas</div></div><div class="bd">
+<div class="lb" style="color:#1F8FA6"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg>Asistente</div><h3>Respondió 12 mensajes de tus clientes</h3><div class="dt">Lun 28 sep · WhatsApp e Instagram</div>
+<div class="ac"><button class="btn btn-primary">Ver mensajes</button></div></div></div><div class="rc"><div class="vz" style="background:#EAF3FF"><div class="tico" style="width:52px;height:52px;border-radius:16px;background:#0A84FF"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div><div class="big">Ficha lista<br>con fotos y texto</div></div><div class="bd">
+<div class="lb" style="color:#0A6FD8"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>Inmuebles</div><h3>Ficha: Casa en Coyoacán, 3 recámaras</h3><div class="dt">Dom 27 sep · Lista para publicar</div>
+<div class="ac"><button class="btn btn-primary">Abrir</button><button class="btn btn-gray">Compartir</button></div></div></div><div class="rc"><div class="vz" style="background:#EBF8EF"><div class="tico" style="width:52px;height:52px;border-radius:16px;background:#34A853"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></div><div class="big">5 partidos<br>explicados</div></div><div class="bd">
+<div class="lb" style="color:#25883F"><svg class="i" viewBox="0 0 24 24" style="width:17px;height:17px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>Pronósticos</div><h3>Pronósticos del sábado</h3><div class="dt">Sáb 26 sep · 5 partidos</div>
+<div class="ac"><button class="btn btn-primary">Abrir</button></div></div></div></div></div></main></div></body></html>

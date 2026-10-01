@@ -46,7 +46,7 @@ export function ChalybclipGraceBanner({ tokensRemaining }: { tokensRemaining: nu
             marginBottom: 8,
           }}
         >
-          ⏳ Tu prueba de ChalyClip terminó
+          ⏳ Tu prueba de Clips terminó
         </div>
         <div
           style={{
@@ -60,8 +60,8 @@ export function ChalybclipGraceBanner({ tokensRemaining }: { tokensRemaining: nu
           Sabemos que tu tiempo se acabó… pero nos caes bien
         </div>
         <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '60ch' }}>
-          Sigue usando <b style={{ color: 'var(--cc-cyan)' }}>ChalyClip</b> en vivo hasta que se te
-          acaben los tokens — te quedan{' '}
+          Sigue usando <b style={{ color: 'var(--cc-cyan)' }}>Clips</b> hasta que se te acaben los
+          créditos — te quedan{' '}
           <b style={{ color: 'var(--cc-cyan)' }}>{tokensRemaining.toLocaleString('es-MX')}</b>. ¿Lo
           quieres para siempre, sin que se acabe? Pasa a Pro.
         </div>
