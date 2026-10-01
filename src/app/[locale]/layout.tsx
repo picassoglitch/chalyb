@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Analytics } from '@vercel/analytics/next';
+import { CookieConsent } from '@/components/public/cookie-banner';
 import { routing } from '@/i18n/routing';
 import { HREFLANG } from '@/i18n/locales';
 import { canonicalOrigin } from '@/lib/site';
@@ -67,9 +67,11 @@ export default async function LocaleLayout({
         />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-
-        <Analytics />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          {/* Loads Vercel Analytics only after cookie consent (P4-7). */}
+          <CookieConsent />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

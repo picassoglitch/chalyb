@@ -22,6 +22,6 @@ export async function generateMetadata({
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const user = await getCurrentUser();
-  return <LandingPage isAuthenticated={user !== null} />;
+  const user = await getCurrentUser().catch(() => null);
+  return <LandingPage signedIn={user !== null} />;
 }

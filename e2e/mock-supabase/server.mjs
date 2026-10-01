@@ -130,5 +130,5 @@ http.createServer((req, res) => {
   if (req.method === 'HEAD') return send(200, undefined, headers);
   if (single) return rows[0] ? send(200, rows[0], headers) : send(406, { code: 'PGRST116', message: 'no rows' });
   send(200, rows, headers);
-}).listen(59999, () => console.log('mock supabase on :59999'));
+}).listen(Number(process.env.MOCK_SUPABASE_PORT ?? 59999), () => console.log(`mock supabase on :${process.env.MOCK_SUPABASE_PORT ?? 59999}`));
 

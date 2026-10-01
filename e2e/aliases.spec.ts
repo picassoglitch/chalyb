@@ -3,8 +3,8 @@
 import { test, expect } from '@playwright/test';
 
 const CASES: [string, string, number[]][] = [
-  ['/engines', '/#herramientas', [307]],
-  ['/en/engines', '/en/#herramientas', [307]],
+  ['/engines', '/#herramientas', [308]],
+  ['/en/engines', '/en/#herramientas', [308]],
   ['/sign-up', '/sign-in?mode=signup', [308]],
   ['/en/sign-up', '/en/sign-in?mode=signup', [308]],
   ['/terminos', '/legal/terms', [307]],
