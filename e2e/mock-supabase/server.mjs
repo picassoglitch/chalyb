@@ -9,9 +9,12 @@
 //   E2E_FREE_PASSWORD=mock-pass-123 … E2E_CLIPS_MODE=mock pnpm e2e
 //
 // Accounts: free | pro | vip | admin @example.com, any password of 6+
-// characters. The access token IS the role. Writes are accepted and dropped.
+// characters. The access token IS the role. Writes are accepted and dropped,
+// except for the tables in WRITABLE (P3 flows read back what they wrote:
+// risk acks, Avisos, exchange connections), kept in memory per process.
 // Test data only — nothing here is shown outside a local run.
 import http from 'node:http';
+import { randomUUID } from 'node:crypto';
 
 const NOW = Math.floor(Date.now() / 1000);
 const ORG = '00000000-0000-0000-0000-000000000001';
@@ -67,8 +70,10 @@ const tables = {
     eng('e-clip', 'chalybclip', 'ChalyClip', 'active'),
     eng('e-crypto', 'chalybcrypto', 'ChalyCrypto', 'active'),
     eng('e-obs', 'chalybobs', 'ChalyOBS', 'active'),
-    eng('e-bot', 'chalybbot', 'ChalyBot', 'coming_soon'),
-    eng('e-picks', 'chalybpicks', 'ChalyPicks', 'coming_soon'),
+    eng('e-bot', 'chalybbot', 'ChalyBot', 'active'),
+    eng('e-picks', 'chalybpicks', 'ChalyPicks', 'active'),
+    eng('e-realtor', 'chalybrealtor', 'ChalyRealtor', 'active'),
+    eng('e-trade', 'chalybtrade', 'ChalyTrade', 'active'),
     eng('e-stream', 'chalybstream', 'ChalyStreamManager', 'coming_soon'),
   ],
   profiles: Object.keys(users).map((k) => ({
@@ -79,12 +84,28 @@ const tables = {
   })),
 };
 
+tables.consent_events = [];
+tables.exchange_connections = [];
+// Pro has one billing notice (kept until its charge date) and one unread
+// clips notice; the e2e marks them read and checks the billing one stays.
+tables.user_notifications = [
+  { id: 'n-pro-1', user_id: 'u-pro', kind: 'renew', title: 'Tu plan se renueva en 7 días', body: 'El 21 de octubre de 2026 se cobrarán $868.84 MXN.', href: '/app/billing', keep_until: iso(20 * DAY), dedupe_key: 'renew7:pre-pro', read_at: null, created_at: iso(-1 * 3600000) },
+  { id: 'n-pro-2', user_id: 'u-pro', kind: 'liveEnded', title: 'Tu transmisión terminó', body: 'Duró 42 min. ¿Hacemos clips?', href: '/app/clips', keep_until: null, dedupe_key: 'live:seed', read_at: null, created_at: iso(-3 * DAY) },
+];
+const WRITABLE = new Set(['consent_events', 'exchange_connections', 'user_notifications']);
+
+const field = (r, k) => {
+  const j = /^(\w+)->>(\w+)$/.exec(k);
+  return j ? r[j[1]]?.[j[2]] : r[k];
+};
+
 function filterRows(rows, params) {
   let out = rows;
   for (const [k, v] of params) {
     if (['select', 'order', 'limit', 'offset', 'on_conflict', 'columns'].includes(k)) continue;
     const m = /^eq\.(.*)$/.exec(v);
-    if (m) out = out.filter((r) => String(r[k]) === m[1]);
+    if (m) out = out.filter((r) => String(field(r, k)) === m[1]);
+    if (v === 'is.null') out = out.filter((r) => field(r, k) == null);
     const inm = /^in\.\((.*)\)$/.exec(v);
     if (inm) { const set = inm[1].split(',').map((s) => s.replace(/"/g, '')); out = out.filter((r) => set.includes(String(r[k]))); }
   }
@@ -123,8 +144,21 @@ http.createServer((req, res) => {
   if (url.pathname.startsWith('/auth/v1/')) return send(200, {});
   if (url.pathname.startsWith('/rest/v1/rpc/')) return send(200, null);
   const table = url.pathname.replace('/rest/v1/', '');
-  if (req.method !== 'GET' && req.method !== 'HEAD') return send(201, []);
-  const rows = filterRows(tables[table] ?? [], url.searchParams);
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    if (!WRITABLE.has(table)) return send(201, []);
+    let body = '';
+    req.on('data', (c) => (body += c));
+    req.on('end', () => write(req, url, table, body ? JSON.parse(body) : null, send));
+    return;
+  }
+  let rows = filterRows(tables[table] ?? [], url.searchParams);
+  const order = url.searchParams.get('order');
+  if (order) {
+    const [col, dir] = order.split('.');
+    rows = [...rows].sort((a, b) => String(a[col] ?? '').localeCompare(String(b[col] ?? '')) * (dir === 'desc' ? -1 : 1));
+  }
+  const limit = Number(url.searchParams.get('limit'));
+  if (limit) rows = rows.slice(0, limit);
   const single = (req.headers.accept ?? '').includes('vnd.pgrst.object');
   const headers = { 'content-range': `0-${Math.max(rows.length - 1, 0)}/${rows.length}` };
   if (req.method === 'HEAD') return send(200, undefined, headers);
@@ -132,3 +166,38 @@ http.createServer((req, res) => {
   send(200, rows, headers);
 }).listen(59999, () => console.log('mock supabase on :59999'));
 
+
+function write(req, url, table, body, send) {
+  const prefer = req.headers.prefer ?? '';
+  const single = (req.headers.accept ?? '').includes('vnd.pgrst.object');
+  const reply = (rows) =>
+    prefer.includes('return=representation') ? send(single ? 200 : 201, single ? rows[0] ?? null : rows) : send(201, undefined);
+  const list = tables[table];
+  if (req.method === 'POST') {
+    const conflict = url.searchParams.get('on_conflict')?.split(',') ?? [];
+    const out = [];
+    for (const raw of Array.isArray(body) ? body : [body]) {
+      const row = { id: randomUUID(), created_at: new Date().toISOString(), inserted_at: new Date().toISOString(), ...raw };
+      const dup = conflict.length ? list.find((r) => conflict.every((c) => String(r[c]) === String(row[c]))) : null;
+      if (dup) {
+        if (prefer.includes('ignore-duplicates')) continue;
+        Object.assign(dup, raw);
+        out.push(dup);
+      } else {
+        list.push(row);
+        out.push(row);
+      }
+    }
+    return reply(out);
+  }
+  const hit = filterRows(list, url.searchParams);
+  if (req.method === 'PATCH') {
+    for (const r of hit) Object.assign(r, body);
+    return reply(hit);
+  }
+  if (req.method === 'DELETE') {
+    tables[table] = list.filter((r) => !hit.includes(r));
+    return reply(hit);
+  }
+  send(405, { message: 'method not allowed' });
+}

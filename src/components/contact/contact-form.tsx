@@ -13,9 +13,12 @@ interface Props {
    *  / 'earn'; the /contacto page itself doesn't differentiate, but the
    *  prop is here so it can. */
   pane?: Pane;
+  /** From Ayuda: a billing problem (tags the message server-side). */
+  category?: 'cobro';
+  defaultSubject?: string;
 }
 
-export function ContactForm({ pane = 'client' }: Props = {}) {
+export function ContactForm({ pane = 'client', category, defaultSubject }: Props = {}) {
   const t = useTranslations('contact.form');
   const tError = useTranslations('contact.errors');
   const [pending, startTransition] = useTransition();
@@ -136,7 +139,9 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
           required
           maxLength={200}
           placeholder={t('subjectPlaceholder')}
+          defaultValue={defaultSubject}
         />
+        {category && <input type="hidden" name="category" value={category} />}
       </div>
 
       <div className={fieldClass('message')}>

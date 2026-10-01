@@ -7,7 +7,7 @@
 import type { Route } from 'next';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { House, LayoutDashboard, SquarePlay, User } from 'lucide-react';
+import { Bell, House, LayoutDashboard, SquarePlay, User } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import { Avatar, Logo } from '@/components/ui/primitives';
@@ -31,15 +31,32 @@ interface Props {
   isAdmin: boolean;
   /** The single top-banner slot (SCR-17). P2 fills it; empty in P1. */
   banner?: ReactNode;
+  /** Unread Avisos for the bell (SCR-26). */
+  unread?: number;
   children: ReactNode;
 }
 
-export function AppShell({ userName, planKey, isAdmin, banner, children }: Props) {
+function AvisosBell({ unread, label }: { unread: number; label: string }) {
+  return (
+    <Link href={'/app/avisos' as Route} className="ch-bell" aria-label={label}>
+      <Bell aria-hidden="true" />
+      {unread > 0 && (
+        <span className="ch-bell__n" aria-hidden="true">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+export function AppShell({ userName, planKey, isAdmin, banner, unread = 0, children }: Props) {
   const pathname = usePathname();
   const t = useTranslations('app.nav');
   const toastHtml = useWorkspace((s) => s.toastHtml);
   const mode = shellModeFor(pathname);
   const active = activeNavFor(pathname);
+  const tn = useTranslations('notif');
+  const bell = <AvisosBell unread={unread} label={unread > 0 ? tn('bell', { n: unread }) : tn('bellNone')} />;
 
   const toast = toastHtml && (
     <div role="status" className="ch-toast">
@@ -72,7 +89,10 @@ export function AppShell({ userName, planKey, isAdmin, banner, children }: Props
         {t('skip')}
       </a>
       <aside className="ch-side">
-        <Logo href="/app" />
+        <div className="ch-side__top">
+          <Logo href="/app" />
+          {bell}
+        </div>
         <nav className="ch-nav" aria-label={t('aria')}>
           {NAV_ITEMS.map(({ key, href }) => {
             const Icon = NAV_ICONS[key];
@@ -111,7 +131,7 @@ export function AppShell({ userName, planKey, isAdmin, banner, children }: Props
         <header className="ch-mhead">
           <Logo href="/app" />
           <div className="ch-mhead__r">
-            {/* TODO(P3): the Avisos bell (BUILD-SPEC §5.4) joins here with /app/avisos. */}
+            {bell}
             <Link href={'/app/settings' as Route} aria-label={t('cuenta')}>
               <Avatar name={userName} />
             </Link>

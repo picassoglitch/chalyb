@@ -115,7 +115,7 @@ export const SUBSCRIBER_NAV: SubscriberNavGroup[] = [
   {
     groupKey: 'groupPlatform',
     items: [
-      { id: 'myengines', href: '/app/engines', ic: '◈' },
+      { id: 'myengines', href: '/app/herramientas', ic: '◈' },
       { id: 'history', href: '/app/history', ic: '≡' },
     ],
   },

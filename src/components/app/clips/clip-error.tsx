@@ -1,5 +1,5 @@
 // The error state for a failed or refused Clips job (BUILD-SPEC §7.6, mockup
-// 24): what happened in one sentence, "No se usaron créditos.", one primary
+// 24): what happened in one sentence, "No se usaron créditos." when certain, one primary
 // action, and a person to talk to.
 
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -11,9 +11,13 @@ import { creditsRenewDate, platformName } from '@/lib/tools/clips-copy';
 export async function ClipError({
   reason,
   sourceUrl,
+  noCharge,
 }: {
   reason: ClipFailureReason;
   sourceUrl?: string;
+  /** Show "No se usaron créditos." only when that's certain: the job was
+   *  refused before it ran, or the adapter confirms failed jobs are free. */
+  noCharge: boolean;
 }) {
   const t = await getTranslations('clips.error');
   const locale = await getLocale();
@@ -59,7 +63,7 @@ export async function ClipError({
       <p className="ch-muted" style={{ maxWidth: 520 }}>
         {body}
       </p>
-      <p style={{ fontWeight: 600 }}>{t('noCharge')}</p>
+      {noCharge && <p style={{ fontWeight: 600 }}>{t('noCharge')}</p>}
       <div
         style={{
           display: 'flex',

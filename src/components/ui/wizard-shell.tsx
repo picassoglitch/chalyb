@@ -1,13 +1,13 @@
 // Three-step wizard frame (BUILD-SPEC §0.7, §5.5): no navigation; Atrás on
 // the left, the tool in the middle, close (✕) on the right, and "Paso N de 3"
-// underneath. Closing goes back to Inicio.
+// underneath. Closing goes back to Inicio, asking first if something was
+// typed (P3-1).
 
-import type { Route } from 'next';
 import type { ReactNode } from 'react';
-import { ChevronLeft, X } from 'lucide-react';
-import { Link } from '@/i18n/routing';
 import { StepBar } from './primitives';
 import { TOOL_ICONS } from './tool-icon';
+import { WizardClose } from './wizard-close';
+import { WizardBack } from './wizard-back';
 
 export function WizardShell({
   slug,
@@ -35,10 +35,7 @@ export function WizardShell({
   return (
     <div className="ch-flow">
       <header className="ch-topbar">
-        <Link href={backHref as Route} className="ch-back" aria-label={backLabel}>
-          <ChevronLeft aria-hidden="true" />
-          <span>{backLabel}</span>
-        </Link>
+        <WizardBack href={backHref} label={backLabel} />
         <div className="ch-toptitle">
           {Icon && (
             <span className="ch-toptitle__mark" aria-hidden="true">
@@ -47,9 +44,7 @@ export function WizardShell({
           )}
           {toolName}
         </div>
-        <Link href={'/app' as Route} className="ch-close" aria-label={closeLabel}>
-          <X aria-hidden="true" />
-        </Link>
+        <WizardClose label={closeLabel} />
       </header>
       {step && stepLabel && <StepBar step={step} label={stepLabel} />}
       <main id="main" className={`ch-col${narrow ? ' ch-col--narrow' : ''}`}>

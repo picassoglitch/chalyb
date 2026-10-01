@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
   // if we rename the canonical path later.
   async redirects() {
     return [
+      // P3: the tools list is Más herramientas now; tool pages stay put
+      // (/app/engines/[slug] sends included tools to their own screens).
+      { source: '/app/engines', destination: '/app/herramientas', permanent: true },
+      { source: '/:locale(en|es)/app/engines', destination: '/:locale/app/herramientas', permanent: true },
+      // Spanish aliases for the customer screens.
+      { source: '/app/resultados', destination: '/app/history', permanent: false },
+      { source: '/:locale(en|es)/app/resultados', destination: '/:locale/app/history', permanent: false },
+      { source: '/app/ayuda', destination: '/app/help', permanent: false },
+      { source: '/:locale(en|es)/app/ayuda', destination: '/:locale/app/help', permanent: false },
       { source: '/login', destination: '/sign-in', permanent: true },
       { source: '/register', destination: '/sign-in?mode=signup', permanent: true },
       { source: '/signup', destination: '/sign-in?mode=signup', permanent: true },

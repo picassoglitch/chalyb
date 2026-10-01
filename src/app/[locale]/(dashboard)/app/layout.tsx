@@ -6,6 +6,7 @@ import { planLabelKey } from '@/components/app/shell-routes';
 import { WorkspaceProfileSubscriber } from '@/components/workspace/workspace-profile-subscriber';
 import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import { BillingBanner } from '@/components/app/billing/billing-banner';
+import { unreadCount } from '@/lib/notifications/user';
 // The legacy dark theme is still needed by the /app screens later phases
 // rebuild (they render inside AppShell's legacy panel).
 import '../dashboard/dashboard.css';
@@ -43,6 +44,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   const role = session?.role ?? 'VIEWER';
   // The user card shows the EFFECTIVE plan: admins read as VIP.
   const plan = effectiveTier(role, session?.tier ?? 'FREE');
+  const unread = session ? await unreadCount(session.user.id).catch(() => 0) : 0;
 
   return (
     <div className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>
@@ -52,6 +54,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
         userName={fullName}
         planKey={planLabelKey(plan)}
         isAdmin={isAdminRole(role)}
+        unread={unread}
         banner={session && !isAdminRole(role) ? <BillingBanner session={session} /> : null}
       >
         {children}

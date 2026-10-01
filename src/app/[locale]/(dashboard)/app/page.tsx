@@ -3,7 +3,10 @@ import { Check, Scissors } from 'lucide-react';
 import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getEntitlements } from '@/lib/billing/entitlement';
-import { clipsHubMode, proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
+import { proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
+import { hubRunsTool } from '@/lib/tools/registry';
+import { collectResults } from '@/lib/results/collect';
+import { ToolIcon } from '@/components/ui/tool-icon';
 import { selectPlanStrip, selectTaskCards } from '@/components/app/home-model';
 import { ButtonLink, Chip, StateBlock, TaskCard } from '@/components/ui/primitives';
 
@@ -36,7 +39,7 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
   ]);
   const visible = engines.filter((e) => entitlements.tools[e.slug]).map((e) => e.slug);
   const names = Object.fromEntries(engines.map((e) => [e.slug, e.name]));
-  const { cards, extraSlugs } = selectTaskCards(visible, clipsHubMode() !== 'off');
+  const { cards, extraSlugs } = selectTaskCards(visible, hubRunsTool);
   const strip = selectPlanStrip(entitlements, names, {
     proIncludesAllTools: proIncludesAllTools(),
     trialFlow: trialFlowEnabled(),
@@ -45,9 +48,9 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
   const extraNames = extraSlugs.map((s) => names[s] ?? s);
   const clipsHref = cards.find((c) => c.key === 'clips')?.href;
 
-  // TODO(P3): "Lo último" reads the newest real result once Mis resultados
-  // has a source. Until then there is never one, so the empty state shows.
-  const latest = null;
+  // "Lo último": the newest real result, from the same source as Mis resultados.
+  const latest = (await collectResults(session.user.id, entitlements, 1))[0] ?? null;
+  const tr = await getTranslations('results');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -123,6 +126,38 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
           </>
         )}
       </section>
+
+      {latest && (
+        <section aria-labelledby="latest-title" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+            <h2 id="latest-title" className="ch-h2">
+              {t('latest.title')}
+            </h2>
+            <ButtonLink href="/app/history" variant="secondary" size="compact">
+              {tr('seeAll')}
+            </ButtonLink>
+          </div>
+          <div className="ch-card ch-result">
+            <ToolIcon slug={latest.slug} size="sm" />
+            <div className="ch-result__tx">
+              <b>
+                {latest.kind === 'property'
+                  ? tr('propertyTitle', { titulo: latest.title })
+                  : latest.state === 'working'
+                    ? tr('creating', { pct: latest.pct })
+                    : latest.state === 'failed'
+                      ? tr('failed')
+                      : tr('clipsTitle', { n: latest.count })}
+              </b>
+            </div>
+            {latest.kind === 'clips' && (
+              <ButtonLink href={latest.href} variant="secondary" size="compact">
+                {latest.state === 'ready' ? tr('viewClips') : tr('open')}
+              </ButtonLink>
+            )}
+          </div>
+        </section>
+      )}
 
       {latest === null && clipsHref && (
         <section

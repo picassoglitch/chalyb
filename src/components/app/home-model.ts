@@ -3,6 +3,7 @@
 
 import type { Entitlements } from '@/lib/billing/entitlement-core';
 import { paidPlanName } from '@/lib/billing/plan-label';
+import { toolHref } from '@/lib/tools/routes';
 
 export type TaskKey = 'clips' | 'senales' | 'envivo' | 'mas';
 
@@ -19,11 +20,10 @@ const HEADLINE: { key: Exclude<TaskKey, 'mas'>; slug: string }[] = [
   { key: 'envivo', slug: 'chalybobs' },
 ];
 
-/** Card targets until P3 builds the in-hub screens for Señales and En vivo. */
-function hrefFor(key: TaskKey, slug: string, clipsInHub: boolean): string {
-  if (key === 'clips') return clipsInHub ? '/app/clips' : '/app/engines/chalybclip';
-  if (key === 'mas') return '/app/engines'; // TODO(P3): /app/herramientas
-  return `/app/engines/${slug}`;
+/** A tool's own screens when the hub runs it; its launch page otherwise. */
+function hrefFor(key: TaskKey, slug: string, hubRuns: (slug: string) => boolean): string {
+  if (key === 'mas') return '/app/herramientas';
+  return toolHref(slug, hubRuns(slug));
 }
 
 /**
@@ -33,7 +33,7 @@ function hrefFor(key: TaskKey, slug: string, clipsInHub: boolean): string {
  */
 export function selectTaskCards(
   visibleSlugs: string[],
-  clipsInHub: boolean,
+  hubRuns: (slug: string) => boolean,
 ): {
   cards: TaskCardModel[];
   extraSlugs: string[];
@@ -41,12 +41,12 @@ export function selectTaskCards(
   const visible = new Set(visibleSlugs);
   const cards: TaskCardModel[] = HEADLINE.filter((h) => visible.has(h.slug)).map((h) => ({
     ...h,
-    href: hrefFor(h.key, h.slug, clipsInHub),
+    href: hrefFor(h.key, h.slug, hubRuns),
   }));
   const headline = new Set(HEADLINE.map((h) => h.slug));
   const extraSlugs = visibleSlugs.filter((s) => !headline.has(s));
   if (extraSlugs.length > 0)
-    cards.push({ key: 'mas', slug: 'more', href: hrefFor('mas', 'more', clipsInHub) });
+    cards.push({ key: 'mas', slug: 'more', href: hrefFor('mas', 'more', hubRuns) });
   return { cards, extraSlugs };
 }
 

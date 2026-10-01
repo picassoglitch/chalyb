@@ -430,7 +430,8 @@
       "message": "Message is required (10–5000 characters).",
       "rateLimited": "We have received a lot of messages from your connection. Wait a few minutes and try again.",
       "sendFailed": "We couldn't send your message. Try again in a few minutes."
-    }
+    },
+    "cobroSubject": "Problem with a charge"
   },
   "legal": {
     "eyebrow": "Legal",
@@ -632,7 +633,8 @@
       "PROVISION_FAILED_CLIPS": "We could not get your Clips ready. Try again in a moment.",
       "SESSION_EXPIRED": "Your session ended. Sign in again.",
       "NETWORK": "It looks like you are offline. Check your internet and try again.",
-      "UNKNOWN": "Something went wrong. Try again or write to us."
+      "UNKNOWN": "Something went wrong. Try again or write to us.",
+      "RISK_ACK_REQUIRED": "Before opening {tool}, read the notice and accept it."
     }
   },
   "setup": {
@@ -679,8 +681,9 @@
       "title": "Paste the link to your stream or video",
       "sub": "Copy your video’s address and paste it here. We do the rest.",
       "placeholder": "https://youtube.com/...",
-      "works": "Works with YouTube, Twitch, Kick and Facebook.",
-      "cta": "Continue"
+      "works": "Works with {plataformas}.",
+      "cta": "Continue",
+      "paste": "Paste"
     },
     "s2": {
       "metaTitle": "Clips · Step 2",
@@ -732,7 +735,10 @@
       "saved": "Your clips are saved in",
       "results": "My results",
       "more": "Make more clips",
-      "thumbAlt": "Clip: {title}"
+      "thumbAlt": "Clip: {title}",
+      "share": "Share",
+      "shareClip": "Share {title}",
+      "copied": "Link copied"
     },
     "error": {
       "title": "We could not make your clips",
@@ -750,6 +756,31 @@
       "noCharge": "No credits were used.",
       "retry": "Try again",
       "help": "Talk to a person"
+    },
+    "adv": {
+      "title": "Advanced options",
+      "sub": "For professional creators",
+      "bulk": "Upload several videos at once",
+      "bulkHint": "Paste one link per line. Up to {n} more.",
+      "captions": "Captions: style and language",
+      "captionStyle": "Style",
+      "styles": {
+        "clasico": "Classic",
+        "grande": "Large",
+        "ninguno": "No captions"
+      },
+      "captionLang": "Language",
+      "langs": {
+        "es": "Spanish",
+        "en": "English"
+      },
+      "duration": "Custom format and length",
+      "durationHint": "From 15 to 60 seconds",
+      "min": "Minimum (seconds)",
+      "max": "Maximum (seconds)",
+      "autopublish": "Publish to my accounts automatically",
+      "vip": "Included in VIP",
+      "default": "If you don’t touch anything, we use the best settings for you."
     }
   },
   "app": {
@@ -1156,5 +1187,319 @@
     "complaints": "Complaints",
     "pending": "These details are published before payments open.",
     "close": "Close"
+  },
+  "consents": {
+    "risk": {
+      "title": "Before you start",
+      "body": "{herramienta} gives <b>general information</b> generated with AI, the same for every user of your plan. <b>It is not financial, investment or betting advice</b>, it is not a personal recommendation for you and it does not take your balances, positions or goals into account. We don’t guarantee results and <b>you can lose all your money</b>. Chalyb is not an investment adviser registered with the CNBV, nor a brokerage, exchange or betting house.",
+      "read": "Read the full notice",
+      "check": "I understand and accept that the decisions and the risks are mine.",
+      "cta": "Understood, continue",
+      "error": "We couldn’t save your answer. Try again.",
+      "close": "Back to Home"
+    },
+    "likeness": {
+      "title": "Before using an AI voice or image",
+      "body": "You’re about to create an AI voice or image that looks or sounds like a real person. You may only do this with your own voice or image, or with the <b>prior written agreement</b> of the person shown. Using it to deceive or impersonate someone is prohibited.",
+      "check": "I confirm it’s my voice or image, or that I have the person’s written agreement, and I accept the <terms>Acceptable Use Policy</terms>.",
+      "cta": "Continue"
+    },
+    "connect": {
+      "body": "You are about to connect your {plataforma} account. Chalyb will be able to see your videos and <b>publish only when you say so</b> or turn on automatic publishing. We never see your password. You can disconnect it whenever you want.",
+      "cta": "Connect {plataforma}"
+    },
+    "autopublish": {
+      "check": "I understand that Chalyb will publish clips to <b>{cuenta}</b> following the rules I set, and that <b>I am responsible</b> for what gets published.",
+      "cta": "Turn on automatic publishing"
+    }
+  },
+  "wizard": {
+    "step": "Step {n} of 3",
+    "back": "Back",
+    "home": "Home",
+    "close": "Close and go back to Home",
+    "continue": "Continue",
+    "unsaved": "Leave? What you wrote won’t be saved.",
+    "fixFields": "Check the highlighted fields.",
+    "edit": "Change",
+    "leave": "Yes, leave",
+    "stay": "Stay here"
+  },
+  "signals": {
+    "metaTitle": "Signals",
+    "s1": {
+      "title": "Which coins interest you?",
+      "sub": "Pick one or more. You can change them later.",
+      "count": "You picked <b>{n} coins</b>: {lista}.",
+      "same": "Signals are the same for everyone on your plan.",
+      "none": "Pick at least one coin."
+    },
+    "adv": {
+      "title": "Timeframe and notice hours",
+      "timeframe": "Timeframe",
+      "day": "Daily",
+      "week": "Weekly",
+      "quiet": "Don’t notify me at night (10 p.m. to 8 a.m.)"
+    },
+    "s2": {
+      "title": "How should we notify you?",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "app": "In the app",
+      "none": "Pick at least one channel."
+    },
+    "done": {
+      "title": "Your signals are active",
+      "sub": "We’ll notify you by {canal} when something important happens. Here’s the latest.",
+      "channels": "How we notify you",
+      "coins": "Your coins",
+      "edit": "Change",
+      "why": "See why",
+      "empty": "No signals for your coins yet. We’ll tell you as soon as there is one."
+    },
+    "disclaimer": "<b>This is information, not financial advice.</b> Signals are the same for everyone and don’t use your balances or investments. You decide.",
+    "readNotice": "Read the full notice",
+    "state": {
+      "buy": "Good moment to buy",
+      "sell": "Good moment to sell",
+      "wait": "Better wait"
+    },
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "none": "No rush"
+    }
+  },
+  "live": {
+    "metaTitle": "Live",
+    "title": "Your stream",
+    "sub": "All set. Whenever you’re ready, tap the big button.",
+    "obsOk": "OBS connected",
+    "platforms": "Your stream will go out on {plataformas}",
+    "start": "Start stream",
+    "startSub": "Starts in 3 seconds. You can stop it any time.",
+    "stop": "End stream",
+    "liveFor": "Live · {tiempo}",
+    "confirmTitle": "End your stream?",
+    "confirmYes": "Yes, end it",
+    "confirmNo": "Keep going",
+    "scenes": "Scenes",
+    "scenesSub": "Tap one to change what your audience sees",
+    "onAir": "On screen",
+    "quick": "Quick controls",
+    "mic": "Microphone",
+    "cam": "Camera",
+    "clipsAfter": "Make clips when it ends",
+    "check": "Before you start",
+    "internet": "Internet",
+    "good": "Good",
+    "slow": "Slow",
+    "offline": "Offline",
+    "streamTitle": "Title",
+    "adv": "Quality, servers and shortcuts",
+    "advBody": "You manage these in OBS. Shortcuts will show here when your tool offers them."
+  },
+  "tools": {
+    "metaTitle": "Tools",
+    "title": "More tools",
+    "yours": "Your tools",
+    "included": "Included in your plan",
+    "inPro": "Included in Pro",
+    "try": "Try it free",
+    "return": "Back to Pro",
+    "plans": "See plans",
+    "setup": "One step left",
+    "connect": "Connect now",
+    "open": "Open",
+    "strip": "Try Pro free for 1 month · Every tool included. Cancel any time.",
+    "tagline": {
+      "chalybclip": "Turn your stream into short clips for TikTok, Reels and Shorts.",
+      "chalybcrypto": "We tell you when it’s a good moment to buy or sell crypto.",
+      "chalybobs": "Run your stream and your OBS scenes with big buttons.",
+      "chalybbot": "A bot that answers your customers and followers, day and night.",
+      "chalybpicks": "Today’s sports forecasts, explained simply.",
+      "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
+      "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+    }
+  },
+  "assistant": {
+    "metaTitle": "Assistant",
+    "s1": {
+      "title": "Where does it answer?",
+      "business": "Your business name",
+      "whatsapp": "WhatsApp",
+      "instagram": "Instagram",
+      "web": "Your website"
+    },
+    "s2": {
+      "title": "What should it know?",
+      "sub": "Paste your hours, prices and FAQs, or your website link.",
+      "label": "What your Assistant should know"
+    },
+    "s3": {
+      "title": "Try it",
+      "sub": "Write as if you were a customer.",
+      "label": "Your message",
+      "send": "Send",
+      "note": "Your Assistant always says it’s automatic. It never presents itself as a person.",
+      "saved": "Done. Your Assistant is answering."
+    }
+  },
+  "forecasts": {
+    "metaTitle": "Forecasts",
+    "title": "Today’s forecasts",
+    "sub": "Explained simply.",
+    "why": "Why",
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence"
+    },
+    "footer": "This is information only. It isn’t betting advice.",
+    "empty": "No forecasts today. Come back tomorrow."
+  },
+  "homes": {
+    "metaTitle": "Properties",
+    "s1": {
+      "title": "Your property",
+      "name": "Title",
+      "namePh": "House with garden in Querétaro"
+    },
+    "s2": {
+      "title": "Tell us about it",
+      "label": "Details",
+      "sub": "Bedrooms, bathrooms, size, price and what makes it special.",
+      "photos": "Links to your photos (one per line)"
+    },
+    "s3": {
+      "title": "Your listing is ready",
+      "share": "Share",
+      "copied": "Link copied",
+      "another": "Make another"
+    },
+    "note": "Chalyb doesn’t charge or receive payments for your deals."
+  },
+  "invest": {
+    "metaTitle": "Investments",
+    "s1": {
+      "title": "Connect your exchange",
+      "exchange": "Exchange",
+      "key": "API key",
+      "secret": "Secret key",
+      "consentText": "To connect {exchange}, Chalyb will process your API keys and account data (balances, positions, trades) only to show them to you and run the rules you set, as the <privacy>Privacy Notice</privacy> explains. We recommend <b>read-only</b> keys (and trading keys only if you’ll use automations). <b>We reject keys with withdrawal permission.</b>",
+      "noWithdraw": "<b>We can never withdraw your money.</b> Use read-only keys, or read and trade if you’ll use rules. We reject keys with withdrawal permission.",
+      "check": "I give my express consent for Chalyb to process this financial data.",
+      "cta": "Connect",
+      "rejected": "This key allows withdrawals. For your safety we don’t accept it. Create a new one without that permission.",
+      "noRead": "This key can’t read your account. Create one with read permission.",
+      "connected": "{exchange} connected"
+    },
+    "s2": {
+      "title": "Write your rule",
+      "sub": "You decide everything: what, when and how much.",
+      "asset": "Asset",
+      "side": "What to do",
+      "buy": "Buy",
+      "sell": "Sell",
+      "condition": "When (in your words)",
+      "max": "Maximum per order (MXN)",
+      "schedule": "Schedule",
+      "invalid": "Check the highlighted fields."
+    },
+    "s3": {
+      "title": "Review and activate",
+      "text": "This automation will send orders to your {exchange} account <b>only according to the rule you defined</b>: {resumen_regla}. Chalyb doesn’t choose assets, amounts or timing for you. You can pause it any time.",
+      "check": "I reviewed the rule and accept that the orders and their risks are mine.",
+      "activate": "Activate",
+      "pause": "Pause",
+      "resume": "Resume",
+      "active": "Active",
+      "paused": "Paused",
+      "summary": "{lado} {activo} {condicion}, up to {monto} MXN per order, {horario}",
+      "rules": "Your rules",
+      "newRule": "Write another rule"
+    }
+  },
+  "results": {
+    "metaTitle": "My results",
+    "title": "My results",
+    "sub": "Everything your tools did for you.",
+    "search": "Search my results",
+    "all": "All",
+    "ready": "Ready",
+    "noMatch": "We didn’t find “{busqueda}”. Try another word.",
+    "seeAll": "See all",
+    "creating": "Creating… {pct}%",
+    "viewClips": "See clips",
+    "open": "Open",
+    "share": "Share",
+    "clipsTitle": "{n} clips",
+    "propertyTitle": "{titulo}",
+    "empty": "No results yet",
+    "emptyBody": "When your tools finish something, it shows up here.",
+    "emptyCta": "Make my first clips",
+    "failed": "Couldn’t finish",
+    "seeWhy": "See what happened",
+    "copied": "Link copied",
+    "filters": "Filter results"
+  },
+  "help": {
+    "metaTitle": "Help",
+    "title": "Help",
+    "sub": "We’re here to help, in Spanish or English.",
+    "human": {
+      "title": "Talk to a person",
+      "sub": "We answer within minutes. No bots, no long waits.",
+      "subAlt": "We answer as soon as we can, in Spanish or English.",
+      "whatsapp": "WhatsApp",
+      "write": "Write"
+    },
+    "faq": "Common questions",
+    "q": {
+      "clips": "How do I make my first clips?",
+      "clipsA": "Tap Clips on Home, paste your video link and choose where you’ll post them. Done.",
+      "clipsCta": "Make clips",
+      "connect": "How do I connect YouTube or Twitch?",
+      "connectA": "You don’t need to connect anything to make clips: paste your video link. When your tool allows connecting accounts, the button will show in Clips.",
+      "credits": "What are credits?",
+      "creditsA": "They’re what the tools use to work, for example each clip. Your plan brings new credits every month.",
+      "plan": "How do I change or cancel my plan?",
+      "planA": "From My account → My plan. Cancelling is 1 click, no calls.",
+      "planCta": "See my plan",
+      "charge": "I have a problem with a charge",
+      "chargeA": "Write to us and tell us what happened. A person will review it.",
+      "chargeCta": "Write about a charge"
+    }
+  },
+  "notif": {
+    "metaTitle": "Notices",
+    "title": "Notices",
+    "today": "Today",
+    "week": "This week",
+    "earlier": "Earlier",
+    "markRead": "Mark as read",
+    "empty": "You have no notices.",
+    "bell": "Notices ({n} unread)",
+    "bellNone": "Notices",
+    "delete": "Delete",
+    "clipsReady": {
+      "title": "Your clips are ready",
+      "body": "We made {n} clips. They already have captions."
+    },
+    "trial7": {
+      "title": "Your trial ends in 7 days",
+      "body": "On {fecha_cobro} {monto} MXN will be charged. You can cancel in 1 click."
+    },
+    "renew": {
+      "title": "Your plan renews in 7 days",
+      "body": "On {fecha_cobro} {monto} MXN will be charged."
+    },
+    "pastDue": {
+      "title": "We couldn’t charge your plan",
+      "body": "Update your card to keep it."
+    },
+    "liveEnded": {
+      "title": "Your stream ended",
+      "body": "It lasted {duracion}. Shall we make clips?"
+    }
   }
 }

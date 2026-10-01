@@ -28,6 +28,8 @@ test('paths map to their nav item, with or without /en', () => {
   assert.equal(activeNavFor('/app'), 'inicio');
   assert.equal(activeNavFor('/en/app/engines/chalybclip'), 'inicio');
   assert.equal(activeNavFor('/app/history'), 'resultados');
+  assert.equal(activeNavFor('/app/herramientas'), 'inicio');
+  assert.equal(activeNavFor('/app/senales/avisos'), 'inicio');
   for (const p of [
     '/app/settings',
     '/app/settings/perfil',
@@ -51,7 +53,16 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
   assert.equal(shellModeFor('/app/usage'), 'legacy');
   assert.equal(shellModeFor('/app/prueba/pago'), 'wizard');
   assert.equal(shellModeFor('/app/engines/chalybclip'), 'modern', 'tool pages');
-  assert.equal(shellModeFor('/app/engines'), 'legacy', 'the list waits for P3');
+  assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Más herramientas since P3');
+  for (const p of [
+    '/app/senales',
+    '/app/senales/listo',
+    '/app/en-vivo',
+    '/app/herramientas/asistente',
+    '/en/app/herramientas/inversiones',
+  ])
+    assert.equal(shellModeFor(p), 'wizard', p);
+  assert.equal(shellModeFor('/app/billing/cambiar'), 'wizard');
 });
 
 test('plan labels', () => {
@@ -62,7 +73,7 @@ test('plan labels', () => {
 });
 
 test('task cards: only visible headline tools, and Más only with extra tools', () => {
-  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs'], false);
+  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs'], () => false);
   assert.deepEqual(
     three.cards.map((c) => [c.key, c.href]),
     [
@@ -73,13 +84,20 @@ test('task cards: only visible headline tools, and Más only with extra tools', 
   );
   assert.deepEqual(three.extraSlugs, []);
 
-  const more = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs', 'chalybbot'], true);
-  assert.equal(more.cards[0]!.href, '/app/clips', 'Clips goes in-hub when the adapter is on');
+  const more = selectTaskCards(
+    ['chalybclip', 'chalybcrypto', 'chalybobs', 'chalybbot'],
+    (s) => s !== 'chalybobs',
+  );
+  assert.deepEqual(
+    more.cards.map((c) => c.href),
+    ['/app/clips', '/app/senales', '/app/engines/chalybobs', '/app/herramientas'],
+    'each tool goes in-hub only when the hub runs it',
+  );
   assert.equal(more.cards.at(-1)!.key, 'mas');
   assert.deepEqual(more.extraSlugs, ['chalybbot']);
 
   assert.deepEqual(
-    selectTaskCards(['chalybclip'], false).cards.map((c) => c.key),
+    selectTaskCards(['chalybclip'], () => false).cards.map((c) => c.key),
     ['clips'],
   );
 });

@@ -54,6 +54,9 @@ export interface LaunchDeps {
   provision(source: string): Promise<ProvisionOutcome>;
   buildUrl(externalUserId: string | null): Promise<UrlOutcome>;
   log(event: LaunchLogEvent): void;
+  /** Whether the risk notice was accepted for this tool (always true for
+   *  tools that don't need one). Checked on the server before any launch. */
+  riskAcked?(slug: string): Promise<boolean>;
   /** Source recorded on a newly created access row. */
   defaultSource: string;
 }
@@ -67,6 +70,11 @@ export async function runLaunch(deps: LaunchDeps): Promise<LaunchResult> {
   if (refused) {
     deps.log({ slug: engine.slug, outcome: 'refused', code: refused });
     return { ok: false, code: refused };
+  }
+
+  if (deps.riskAcked && !(await deps.riskAcked(engine.slug))) {
+    deps.log({ slug: engine.slug, outcome: 'refused', code: 'RISK_ACK_REQUIRED' });
+    return { ok: false, code: 'RISK_ACK_REQUIRED' };
   }
 
   if (engine.integrationMode === 'internal_placeholder' || !engine.externalUrl) {

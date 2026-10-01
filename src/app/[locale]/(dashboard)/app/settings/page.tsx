@@ -185,7 +185,7 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
               icon={<LayoutGrid />}
               iconColor="#5B4BFF"
               title={t('more.tools')}
-              href="/app/engines"
+              href="/app/herramientas"
             />
             <Row
               icon={<Mail />}

@@ -5,7 +5,13 @@ import { ContactForm } from './contact-form';
 
 // Shares the landing's minimal sticky nav + footer so /contacto keeps the
 // same visual identity as the public site.
-export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function ContactPage({
+  isAuthenticated,
+  category,
+}: {
+  isAuthenticated: boolean;
+  category?: 'cobro';
+}) {
   const t = useTranslations('contact');
 
   return (
@@ -74,7 +80,10 @@ export function ContactPage({ isAuthenticated }: { isAuthenticated: boolean }) {
               WebkitBackdropFilter: 'blur(8px)',
             }}
           >
-            <ContactForm />
+            <ContactForm
+              category={category}
+              defaultSubject={category === 'cobro' ? t('cobroSubject') : undefined}
+            />
           </div>
 
           <div

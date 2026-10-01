@@ -8,6 +8,7 @@ import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapte
 import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { ClipError } from '@/components/app/clips/clip-error';
+import { PasteButton } from '@/components/app/clips/paste-button';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clips');
@@ -16,7 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Clips · Paso 1 (SCR-02): paste a link. With TOOL_HUB_MODE_CHALYBCLIP=off
 // (no engine job API yet) it hands off to the Clips app over SSO (P0-14).
-// P3 adds the connect / upload alternatives once they exist.
+// Connect / upload alternatives show only when the adapter supports them
+// (none does yet); "Pegar" only where the Clipboard API can read.
 
 export default async function ClipsStep1Page({
   params,
@@ -59,6 +61,9 @@ export default async function ClipsStep1Page({
     );
   }
 
+  const caps = getClipsAdapter()!.capabilities();
+  const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
+
   const reason = (CLIP_FAILURE_REASONS as readonly string[]).includes(error ?? '')
     ? (error as ClipFailureReason)
     : null;
@@ -66,7 +71,7 @@ export default async function ClipsStep1Page({
   if (reason) {
     return (
       <WizardShell {...chrome} narrow>
-        <ClipError reason={reason} sourceUrl={link} />
+        <ClipError reason={reason} sourceUrl={link} noCharge />
       </WizardShell>
     );
   }
@@ -80,20 +85,23 @@ export default async function ClipsStep1Page({
         <p className="ch-sub" id="clip-link-sub">
           {t('s1.sub')}
         </p>
-        <input
-          id="clip-link"
-          name="link"
-          type="url"
-          inputMode="url"
-          required
-          autoComplete="off"
-          defaultValue={link ?? ''}
-          placeholder={t('s1.placeholder')}
-          aria-describedby="clip-link-sub clip-link-works"
-          className="ch-input"
-        />
+        <div className="ch-paste">
+          <input
+            id="clip-link"
+            name="link"
+            type="url"
+            inputMode="url"
+            required
+            autoComplete="off"
+            defaultValue={link ?? ''}
+            placeholder={t('s1.placeholder')}
+            aria-describedby="clip-link-sub clip-link-works"
+            className="ch-input"
+          />
+          <PasteButton targetId="clip-link" label={t('s1.paste')} />
+        </div>
         <p id="clip-link-works" className="ch-muted" style={{ fontSize: 17 }}>
-          {t('s1.works')}
+          {t('s1.works', { plataformas: list.format(caps.sources) })}
         </p>
         <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
           {t('s1.cta')}
