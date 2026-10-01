@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Chalyb — Ready-made AI tools in one place",
-    "description": "Clip your streams, get crypto signals and run your stream with AI tools. Start free."
+    "title": "Chalyb — Bots that work for you while you sleep",
+    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 1 month. Prices in MXN, VAT included."
   },
   "landing": {
     "nav": {
@@ -9,163 +9,221 @@
       "signup": "Get started",
       "app": "Open app"
     },
-    "hero": {
-      "kicker": "AI automation platform",
-      "h1": "Put AI tools to work. Ready in under a minute.",
-      "lead": "Chalyb brings ready-made AI tools together: clip your streams, get crypto signals and run your stream. Start free.",
-      "cta": "Get started free",
-      "micro": "Free plan · No credit card required · Sign up with Google or email",
-      "preview": {
-        "title": "Your tools",
-        "live": "Live",
-        "stat1": "Tools",
-        "stat2": "Clips this week",
-        "stat3": "Credits used",
-        "chart": "Clips generated · last 14 days",
-        "statusLive": "Live",
-        "statusSim": "Included",
-        "statusSoon": "In Pro"
-      }
-    },
-    "proof": {
-      "label": "Runs on production-grade infrastructure",
-      "metrics": {
-        "1": "uptime target",
-        "2": "monitored systems",
-        "3": "from sign-up to first run",
-        "4": "operating in LATAM and North America"
-      },
-      "stack": "Built with"
-    },
-    "pillars": {
-      "title": "Everything you need to run AI. Nothing you don't.",
-      "subtitle": "Three things the platform does well, so you don't have to build any of them.",
-      "items": {
-        "1": {
-          "kicker": "Tools",
-          "title": "Ready-made AI tools, no build required",
-          "body": "Pick from tools the Chalyb team runs in production. Each one solves a specific job from day one.",
-          "bullets": {
-            "1": "Clips turns your streams into vertical clips ready to post",
-            "2": "Señales tells you when it is a good moment to buy or sell crypto",
-            "3": "En vivo runs your stream and your OBS scenes with big buttons"
-          }
-        },
-        "2": {
-          "kicker": "Start free",
-          "title": "Test everything free. Go live when you're ready",
-          "body": "Clips is included in the free plan. When you want more, change plans in one click.",
-          "bullets": {
-            "1": "Clips included in the free plan",
-            "2": "Pro includes one tool of your choice, VIP includes them all",
-            "3": "Switch tools or pause any time, no lock-in"
-          }
-        },
-        "3": {
-          "kicker": "Monitoring and billing",
-          "title": "See every run. Pay only for what you use",
-          "body": "History and a credits meter come built in. It is the same tooling the Chalyb team uses on its own systems.",
-          "bullets": {
-            "1": "Live dashboards and full execution history",
-            "2": "Monthly credits included, top-ups never expire",
-            "3": "Secure checkout with Mercado Pago, cancel any time"
-          }
-        }
-      },
-      "visuals": {
-        "libraryTitle": "Tools",
-        "libraryClip": "Stream clipping",
-        "libraryCrypto": "Trading signals",
-        "libraryObs": "Broadcast control",
-        "ready": "Ready",
-        "soon": "In Pro",
-        "modeTitle": "Execution mode",
-        "modeSim": "Free",
-        "modeLive": "Live · Pro",
-        "modeFoot": "One click to switch. No redeploy, no downtime.",
-        "usageTitle": "Usage this month",
-        "usageTokens": "Credits",
-        "usageRun": "run",
-        "usageOk": "Completed"
-      }
-    },
-    "how": {
-      "title": "Up and running in three steps",
-      "subtitle": "No sales call, no onboarding project.",
-      "steps": {
-        "1": {
-          "title": "Sign up and connect",
-          "body": "Create your account with Google or email. Your workspace is ready in under a minute."
-        },
-        "2": {
-          "title": "Pick a tool",
-          "body": "Choose a tool, connect your channel or paste a link, and you are set."
-        },
-        "3": {
-          "title": "Get results",
-          "body": "Clips post themselves, signals arrive in real time and every run is logged. Go live on Pro when it pays."
-        }
-      }
-    },
-    "pricing": {
-      "title": "Start free. Scale when it pays.",
-      "subtitle": "No contracts, no sales calls. Pick a plan and you're running in under a minute.",
-      "badge": "Most popular",
-      "note": "Prices in MXN, VAT (IVA) included. Pro and VIP are charged monthly through Mercado Pago and can be cancelled any time.",
-      "tiers": {
-        "free": {
-          "name": "Free",
-          "per": " /forever",
-          "tagline": "Create an account and explore the whole platform.",
-          "features": {
-            "1": "Clips included",
-            "2": "50,000 free credits",
-            "3": "Community access",
-            "4": "Watermarked clips · manual download"
-          },
-          "cta": "Start free"
-        },
-        "pro": {
-          "name": "Pro",
-          "per": " MXN /mo",
-          "tagline": "One tool, your choice.",
-          "features": {
-            "1": "Everything in Free",
-            "2": "1 tool included · you pick which",
-            "3": "1,000,000 credits a month, renewed monthly",
-            "4": "Clips without watermark · ~12 streams a month · 1 logo",
-            "5": "Premium community"
-          },
-          "cta": "Start with Pro"
-        },
-        "vip": {
-          "name": "VIP",
-          "per": " MXN /mo",
-          "tagline": "All of Chalyb unlocked. AI + Clip, no limits.",
-          "features": {
-            "1": "Everything in Pro",
-            "2": "Every tool included",
-            "3": "5× Pro’s credits",
-            "4": "The full Clips package for streamers",
-            "5": "Priority support · the Chalyb team helps build your idea"
-          },
-          "cta": "Start with VIP"
-        }
-      }
-    },
-    "cta": {
-      "title": "Start today. Clips is free.",
-      "body": "Create your account, paste your stream link and see your clips before you pay anything.",
-      "btn": "Start today",
-      "micro": "Free plan · No credit card required"
-    },
     "footer": {
       "rights": "© {year} Chalyb · Mexico City",
       "terms": "Terms",
       "privacy": "Privacy",
       "status": "Status",
       "contact": "Contact"
-    }
+    },
+    "publicNav": {
+      "aria": "Sections",
+      "tools": "Tools",
+      "how": "How it works",
+      "plans": "Plans",
+      "faq": "Questions",
+      "login": "Log in",
+      "app": "Open Chalyb",
+      "cta": "Try Pro free",
+      "menu": "Open menu",
+      "skip": "Skip to content"
+    },
+    "hero": {
+      "eyebrowTag": "All included",
+      "eyebrow": "One plan, every tool",
+      "title": "Bots that <em>work for you</em> while you sleep",
+      "sub": "Clips for your socials, crypto signals, your live stream and much more. You came for one thing and got everything.",
+      "subMobile": "Clips, crypto signals, your live stream and much more. You came for one thing and got everything.",
+      "seal1": "In Spanish",
+      "seal2": "No tech skills needed",
+      "seal3": "Cancel in 1 click",
+      "panel": "While you slept",
+      "example": "Example",
+      "frameAlt": "Example of a vertical clip",
+      "rows": {
+        "chalybclip": {
+          "label": "Clips ready",
+          "detail": "From last night's stream",
+          "pill": "Ready"
+        },
+        "chalybcrypto": {
+          "label": "Signal: Bitcoin",
+          "detail": "Good time to buy",
+          "pill": "New"
+        },
+        "chalybobs": {
+          "label": "Your live stream",
+          "detail": "Scenes ready for tomorrow",
+          "pill": "Ready"
+        },
+        "chalybbot": {
+          "label": "Your Asistente replied",
+          "detail": "Answered your customers",
+          "pill": "Done"
+        },
+        "chalybpicks": {
+          "label": "Today's Pronósticos",
+          "detail": "Ready to review",
+          "pill": "New"
+        },
+        "chalybrealtor": {
+          "label": "Your Inmuebles listings",
+          "detail": "New people interested",
+          "pill": "New"
+        },
+        "chalybtrade": {
+          "label": "Your Inversiones rules",
+          "detail": "Your rules are still on",
+          "pill": "Done"
+        }
+      }
+    },
+    "cta": "Try Pro free for 1 month",
+    "ctaSub": "Every tool included. Cancel anytime.",
+    "tools": {
+      "label": "Tools",
+      "title": "Everything you need, in one place",
+      "sub": "Each tool does one thing and does it for you. They all come in your plan.",
+      "included": "Included in Pro",
+      "desc": {
+        "chalybclip": "Turns your stream into short clips for TikTok, Reels and Shorts.",
+        "chalybcrypto": "We tell you when it's a good time to buy or sell crypto.",
+        "chalybobs": "Run your live stream and your OBS scenes with big buttons.",
+        "chalybbot": "A bot that answers your customers and followers, day and night.",
+        "chalybpicks": "Today's sports predictions, explained simply.",
+        "chalybrealtor": "List your properties and answer interested buyers without wasting time.",
+        "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+      },
+      "ideaTitle": "Your idea",
+      "ideaSub": "Need another tool? Suggest it and we'll build it.",
+      "ideaCta": "Suggest an idea"
+    },
+    "how": {
+      "label": "How it works",
+      "title": "How it works in 3 steps",
+      "s1": "Create your account",
+      "s1p": "With Google or your email. Takes 1 minute.",
+      "s2": "Choose what you want to do",
+      "s2p": "Clips, signals, your live stream… it's all on Home with big buttons.",
+      "s3": "Done, it works for you",
+      "s3p": "We let you know when your results are ready. You just use them."
+    },
+    "gallery": {
+      "label": "Clips",
+      "title": "This is what your clips look like",
+      "sub": "Paste your stream's link and get captioned clips, ready to post.",
+      "c1": "The best moment of the stream",
+      "c2": "Epic reaction",
+      "c3": "The final play",
+      "c4": "Answering the chat",
+      "c5": "Laughing with friends",
+      "c6": "Tip of the day",
+      "alt": "Example clip: {titulo}"
+    },
+    "who": {
+      "title": "Made for streamers, creators and businesses",
+      "sub": "If you don't have time to edit, reply or watch the market, Chalyb does it for you.",
+      "streamers": "Live streamers",
+      "streamersP": "Clips from every stream and OBS control in one tap.",
+      "creators": "Creators",
+      "creatorsP": "Post every day without spending hours editing.",
+      "business": "Businesses",
+      "businessP": "An assistant that serves your customers for you.",
+      "investors": "Investors",
+      "investorsP": "Clear alerts about crypto and investing, no jargon.",
+      "strip1": "In Spanish, for Mexico and Latin America",
+      "strip2": "Secure payment with Mercado Pago",
+      "strip3": "Help from a real person on WhatsApp"
+    },
+    "plans": {
+      "label": "Plans",
+      "title": "One plan with everything included",
+      "sub": "Start free or try Pro for a month without paying.",
+      "gratis": "Free",
+      "gratisCta": "Create a free account",
+      "pro": "Pro",
+      "badge": "Recommended",
+      "vip": "VIP",
+      "vipCta": "Choose VIP",
+      "seeAll": "See every plan and what it includes"
+    },
+    "partner": {
+      "label": "Partners",
+      "title": "You have the idea, we build it",
+      "sub": "Suggest a tool. If we build it, we share the earnings with you.",
+      "terms": "See the terms"
+    },
+    "idea": {
+      "name": "Your name",
+      "email": "Your email",
+      "idea": "What tool would you like?",
+      "submit": "Send my idea",
+      "sending": "Sending…",
+      "done": "Thank you! We got your idea. If we build it, we'll email you.",
+      "clickwrap": "By sending, you agree that we use your data to reply to you, as described in the <aviso>Privacy Notice</aviso>.",
+      "errors": {
+        "name": "Enter your name.",
+        "email": "Check your email.",
+        "idea": "Tell us a bit more about your idea.",
+        "rateLimited": "We got several ideas in a row. Try again in a few minutes.",
+        "sendFailed": "We couldn't send your idea. Try again."
+      }
+    },
+    "faq": {
+      "label": "Questions",
+      "title": "Frequently asked questions",
+      "q1": "Is the first month really free?",
+      "a1": "Yes. You pay $0 today. We email you {dias} days before it ends, and you can cancel in 1 click from My account, no calls.",
+      "q2": "Do I need tech skills?",
+      "a2": "No. Each tool guides you step by step, with big buttons and simple words.",
+      "a2help": "If you get stuck, a real person helps you on WhatsApp.",
+      "q3": "What does the Pro plan include?",
+      "a3": "Every tool: {lista}, with credits every month.",
+      "q4": "How do I cancel?",
+      "a4": "Go to My account → My plan → Cancel. It's 1 click and 1 confirmation. You keep Pro until the end of your period.",
+      "q5": "How do I pay?",
+      "a5": "With a credit or debit card, securely through Mercado Pago. Chalyb doesn't store your card number.",
+      "q6": "Do you issue invoices?",
+      "a6": "Yes. Request your invoice (CFDI) from My account → My plan after each charge."
+    },
+    "final": {
+      "title": "You came for one thing and got everything.",
+      "sub": "{lista}. All in one plan."
+    },
+    "publicFooter": {
+      "lead": "Tools that work for you, in Spanish and with no tech skills needed.",
+      "tools": "Tools",
+      "plans": "Plans",
+      "help": "Help",
+      "idea": "Suggest an idea",
+      "login": "Log in",
+      "legal": "Legal info",
+      "legalDocs": {
+        "terms": "Terms and Conditions",
+        "privacy": "Privacy Notice"
+      },
+      "seller": "Who sells",
+      "sellerLabel": "Who sells:",
+      "copy": "© {year} Chalyb. Prices in Mexican pesos (MXN), VAT included.",
+      "secure": "Secure payment with Mercado Pago"
+    },
+    "cookies": {
+      "title": "Cookie preferences",
+      "text": "We use necessary cookies so Chalyb works and, if you accept, analytics and advertising cookies to improve and measure campaigns.",
+      "privacy": "Privacy Notice",
+      "acceptAll": "Accept all",
+      "necessaryOnly": "Necessary only",
+      "configure": "Settings",
+      "save": "Save my choice",
+      "necessary": "Necessary",
+      "necessaryHint": "To sign in and remember your preferences. Always on.",
+      "analytics": "Analytics",
+      "analyticsHint": "Tell us which pages are used so we can improve them.",
+      "ads": "Advertising",
+      "adsHint": "Measure whether our ads work.",
+      "link": "Cookie settings"
+    },
+    "sticky": "Try Pro free for 1 month"
   },
   "auth": {
     "signIn": {
@@ -368,19 +426,11 @@
       },
       "chalybcrypto": {
         "tagline": "We tell you when it is a good moment to buy or sell crypto.",
-        "bullets": [
-          "Backtested strategies",
-          "Real-time alerts",
-          "Emotion-free execution"
-        ]
+        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
       },
       "chalybobs": {
         "tagline": "Run your stream and your OBS scenes with big buttons.",
-        "bullets": [
-          "Dynamic scenes and overlays",
-          "Stream automation",
-          "Works with Clips"
-        ]
+        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Works with Clips"]
       }
     },
     "marketingCat": {
