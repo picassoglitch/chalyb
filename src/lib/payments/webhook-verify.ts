@@ -11,6 +11,7 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { TIER_PRICING, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
+import { GRANDFATHERED_CENTS } from '@/config/pricing';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 export type SignatureFailure =
@@ -71,6 +72,9 @@ export function checkMpSignature(opts: {
 
 export interface ExpectedCharge {
   amountCents: number;
+  /** Earlier prices still honoured: subscriptions and checkouts created
+   *  before IVA was added keep charging them (config GRANDFATHERED_CENTS). */
+  alsoAcceptCents?: readonly number[];
   currency: string;
   /** What is being bought, for logs and audit metadata. */
   label: string;
@@ -81,7 +85,13 @@ export interface ExpectedCharge {
 export function expectedChargeForTier(tier: SubscriptionTier): ExpectedCharge | null {
   const price = TIER_PRICING[tier];
   if (!price) return null;
-  return { amountCents: price.amountCents, currency: price.currency, label: `tier ${tier}` };
+  const legacy = tier === 'PRO' || tier === 'VIP' ? GRANDFATHERED_CENTS[tier] : [];
+  return {
+    amountCents: price.amountCents,
+    alsoAcceptCents: legacy,
+    currency: price.currency,
+    label: `tier ${tier}`,
+  };
 }
 
 /** What a token pack must cost. null = unknown pack id. */
@@ -90,6 +100,7 @@ export function expectedChargeForPack(packId: string): ExpectedCharge | null {
   if (!pack) return null;
   return {
     amountCents: pack.amountCents,
+    alsoAcceptCents: [GRANDFATHERED_CENTS.packs[pack.id]],
     currency: TOKEN_PACK_CURRENCY,
     label: `pack ${pack.id}`,
   };
@@ -102,7 +113,8 @@ export type ChargeCheck =
 /**
  * Compare what MP says was paid against what the entitlement costs.
  *
- * Exact match on both, because the amount MP reports is the amount WE put on
+ * Exact match on both (or on a grandfathered pre-IVA price), because the
+ * amount MP reports is the amount WE put on
  * the preference — any difference means the reference was replayed against a
  * different (cheaper) payment, or the preference was built elsewhere. Neither
  * should grant anything.
@@ -116,7 +128,7 @@ export function checkCharge(
   if (paidCurrency !== expected.currency.toUpperCase()) {
     return { ok: false, reason: 'currency', expected, paidCents, paidCurrency };
   }
-  if (paidCents !== expected.amountCents) {
+  if (paidCents !== expected.amountCents && !(expected.alsoAcceptCents ?? []).includes(paidCents)) {
     return { ok: false, reason: 'amount', expected, paidCents, paidCurrency };
   }
   return { ok: true };

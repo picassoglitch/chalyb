@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { safeNextPath } from '@/lib/auth/safe-next';
+import { recordSignupConsent } from '@/lib/billing/signup-consent';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -53,8 +54,22 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // A Google sign-up creates the account here: record what the sign-up
+      // line said (recordSignupConsent ignores accounts older than 15 min
+      // and accounts that already have the event, so returning users and
+      // email confirmations are no-ops).
+      const user = data.user;
+      if (user && user.app_metadata?.provider === 'google') {
+        await recordSignupConsent({
+          userId: user.id,
+          marketing: false,
+          locale: next.startsWith('/en') ? 'en' : 'es',
+          timezone: null,
+          surface: 'web_signup_google',
+        }).catch(() => {});
+      }
       return NextResponse.redirect(`${url.origin}${next}`);
     }
     console.error('Auth callback error:', error.message);

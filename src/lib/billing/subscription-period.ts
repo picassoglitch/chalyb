@@ -28,7 +28,10 @@ export function periodEndFrom(paidAt: Date | string | null | undefined): Date | 
 }
 
 /** Has a scheduled end already passed? A null end never lapses. */
-export function hasLapsed(tierEndsAt: Date | string | null | undefined, now: Date = new Date()): boolean {
+export function hasLapsed(
+  tierEndsAt: Date | string | null | undefined,
+  now: Date = new Date(),
+): boolean {
   if (!tierEndsAt) return false;
   const end = tierEndsAt instanceof Date ? tierEndsAt : new Date(tierEndsAt);
   if (Number.isNaN(end.getTime())) return false;

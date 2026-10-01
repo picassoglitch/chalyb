@@ -111,11 +111,10 @@
       "title": "Start free. Scale when it pays.",
       "subtitle": "No contracts, no sales calls. Pick a plan and you're running in under a minute.",
       "badge": "Most popular",
-      "note": "Prices in MXN. Pro and VIP are billed monthly through Mercado Pago and can be cancelled any time.",
+      "note": "Prices in MXN, VAT (IVA) included. Pro and VIP are charged monthly through Mercado Pago and can be cancelled any time.",
       "tiers": {
         "free": {
           "name": "Free",
-          "amount": "$0",
           "per": " /forever",
           "tagline": "Create an account and explore the whole platform.",
           "features": {
@@ -128,8 +127,7 @@
         },
         "pro": {
           "name": "Pro",
-          "amount": "MXN $749",
-          "per": " /month",
+          "per": " MXN /mo",
           "tagline": "One tool, your choice.",
           "features": {
             "1": "Everything in Free",
@@ -142,8 +140,7 @@
         },
         "vip": {
           "name": "VIP",
-          "amount": "MXN $2,499",
-          "per": " /month",
+          "per": " MXN /mo",
           "tagline": "All of Chalyb unlocked. AI + Clip, no limits.",
           "features": {
             "1": "Everything in Pro",
@@ -178,7 +175,6 @@
       "googleFastNote": "Fastest way to start",
       "errorGeneric": "Something went wrong signing you in. Try again.",
       "errorMissingCode": "Sign-in flow incomplete. Try again.",
-      "fine": "By continuing you agree to the Terms and Privacy Policy.",
       "liveStatus": "Platform live · systems in production",
       "newTitle": "New here?",
       "newSubtitle": "Create your operator workspace in seconds.",
@@ -213,7 +209,14 @@
       "checkInboxTitle": "Check your inbox.",
       "checkInboxBody": "We sent a confirmation link to {email}. Click it to finish creating your account.",
       "forgotPassword": "Forgot password?",
-      "resetSuccess": "Password updated. Sign in with your new password."
+      "resetSuccess": "Password updated. Sign in with your new password.",
+      "nameLabel": "Your name",
+      "passwordHintSignup": "At least 8 letters or numbers",
+      "errorShortPassword": "Your password needs at least 8 letters or numbers.",
+      "marketing": "I want to get news, tips and offers from Chalyb by email. I can unsubscribe any time.",
+      "legalPublished": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and the <uso>Acceptable Use Policy</uso>, and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
+      "legalCurrent": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
+      "creating": "Creating your account…"
     },
     "forgotPassword": {
       "liveStatus": "Platform live · systems in production",
@@ -658,7 +661,8 @@
   },
   "usage": {
     "loadFailed": "We could not load your usage. Try again in a few minutes.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "priceSuffix": "MXN, IVA (VAT) included"
   },
   "clips": {
     "wizardNav": "Clips navigation",
@@ -816,6 +820,341 @@
       "arco": "My data (ARCO rights)",
       "charge": "Problem with a charge",
       "close": "Close my account"
+    },
+    "ivaIncluded": "IVA (VAT) included"
+  },
+  "billing": {
+    "price": {
+      "proYearBig": "{monto} MXN a year",
+      "proYearEq": "(that’s {mensual} a month)",
+      "renewYear": "Renews every year",
+      "renewMonth": "Renews every month",
+      "saveYear": "You save {ahorro} a year",
+      "vsMonth": "vs. {total_mensual} paying month to month",
+      "proMonthBig": "{monto} MXN a month",
+      "monthLine": "{monto} MXN a month · renews every month",
+      "tax": "Prices in MXN, IVA (VAT) included.",
+      "free": "No card · Forever"
+    },
+    "vars": {
+      "periodicidad": {
+        "year": "for 1 year of Pro",
+        "month": "for your first month of Pro"
+      },
+      "renovacion": {
+        "year": "every year ({monto} MXN)",
+        "month": "every month ({monto} MXN)"
+      },
+      "renovacionCorta": {
+        "year": "and every year after",
+        "month": "and every month after"
+      },
+      "cadaPeriodo": {
+        "year": "every year",
+        "month": "every month"
+      },
+      "tarjeta": {
+        "none": "the card you add",
+        "last4": "your card ending in {ultimos4}"
+      }
+    },
+    "disclosure": {
+      "today": "<b>You pay $0 today.</b> Your free month ends on <b>{fecha_fin_prueba}</b>.",
+      "charge": "If you don’t cancel before, on <b>{fecha_cobro}</b> we will charge <b>{monto} MXN</b> {periodicidad} to {tarjeta}, and it will renew automatically {renovacion} until you cancel.",
+      "reminder": "We will email you on <b>{fecha_recordatorio}</b> (7 days before).",
+      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep Pro until {fecha_fin_prueba} and pay nothing."
+    },
+    "pay": {
+      "consent": "I agree that, if I don’t cancel before <b>{fecha_cobro}</b>, Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
     }
+  },
+  "plans": {
+    "metaTitle": "Plans",
+    "metaDescription": "Free, Pro or VIP. Prices in MXN, IVA (VAT) included. Cancel any time.",
+    "title": "One plan. Every tool.",
+    "sub": "Try Pro free for 1 month. Cancel any time.",
+    "subNoTrial": "Cancel any time.",
+    "toggleAria": "How you want to pay",
+    "toggle": {
+      "month": "Monthly",
+      "year": "Yearly",
+      "save": "Save {ahorro}"
+    },
+    "gratis": {
+      "name": "Free",
+      "tag": "To get to know Chalyb",
+      "note": "No card · Forever",
+      "cta": "Create a free account",
+      "f1": "Clips to try",
+      "f2": "Your results saved",
+      "f3": "Help by email",
+      "fNo": "Señales, En vivo and the other tools"
+    },
+    "pro": {
+      "badge": "Recommended",
+      "name": "Pro",
+      "tag": "Every tool",
+      "cta": "Try Pro free for 1 month",
+      "ctaNoTrial": "Choose Pro",
+      "ctaReturn": "Back to Pro",
+      "note": "You pay $0 today. We tell you 7 days before the first charge.",
+      "monthAlt": "or {monto} MXN a month with Monthly",
+      "f1": "All {n} tools: {lista}",
+      "fCredits": "{creditos} credits every month",
+      "f3": "Clips without watermark"
+    },
+    "vip": {
+      "name": "VIP",
+      "tag": "For people who use it every day",
+      "noYear": "No yearly plan",
+      "cta": "Choose VIP",
+      "ctaUp": "Upgrade to VIP",
+      "f1": "Everything in Pro",
+      "f2": "Many more credits every month",
+      "f4": "First to get new tools"
+    },
+    "current": "Your current plan",
+    "trialing": "You’re already trying Pro",
+    "notIncluded": "Not included",
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "q1": "What happens when my free month ends?",
+      "a1": "You continue on the plan you chose (yearly or monthly) and your card is charged. We email you 7 days before. If you cancel before, you pay nothing.",
+      "q2": "Can I switch from yearly to monthly?",
+      "a2": "Yes, from My account → My plan, whenever you want.",
+      "q3": "What are credits?",
+      "a3": "They’re what the tools use to work, for example each clip. Your plan brings new credits every month.",
+      "q4": "Can I cancel whenever I want?",
+      "a4": "Yes. It’s 1 click from My account. You keep your plan until the end of the period you paid for."
+    },
+    "quebec": "Paid plans aren’t available in Quebec for now."
+  },
+  "checkout": {
+    "tool": "Pro free trial",
+    "toolPaid": "Pro plan",
+    "step": "Step {n} of 3",
+    "back": "Back",
+    "close": "Close and go back to Home",
+    "trial": {
+      "metaTitle": "Your trial",
+      "title": "Try Pro free for 1 month",
+      "sub": "Every tool included. Cancel any time.",
+      "q": "Which plan do you want when your free month ends?",
+      "year": "Pro yearly",
+      "month": "Pro monthly",
+      "recommended": "Recommended",
+      "cta": "Continue to payment"
+    },
+    "paid": {
+      "title": "Choose your Pro plan",
+      "today": "{monto} MXN is charged today",
+      "cta": "Pay and start",
+      "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+    },
+    "pay": {
+      "metaTitle": "Payment",
+      "title": "Add your card",
+      "oneLine": "You pay <b>$0</b> today. First charge: <b>{monto} MXN</b> on <b>{fecha_cobro}</b> and then <b>{cada_periodo}</b>, unless you cancel before.",
+      "oneLinePaid": "<b>{monto} MXN</b> is charged today and then <b>{cada_periodo}</b>, unless you cancel.",
+      "secure": "Secure payment with Mercado Pago. Chalyb doesn’t store your card number.",
+      "seller": "Who sells",
+      "cta": "Start my free month",
+      "ctaHint": "Tick the box to continue. You can cancel any time.",
+      "consentError": "Tick the box to confirm the automatic charge. You can cancel any time.",
+      "declined": "Your bank didn’t accept this card. Try another one or talk to your bank.",
+      "saving": "Saving your card…",
+      "cardUsed": "This card already had a free trial. You can pick a plan and start today.",
+      "review": "Ask a person to review it",
+      "unavailable": "This isn’t available right now. Try later or write to us.",
+      "error": "We couldn’t save your card. Try again in a moment.",
+      "where": "Where do you live?",
+      "whereOpts": {
+        "mx": "Mexico",
+        "us": "United States",
+        "qc": "Canada · Quebec",
+        "ca": "Canada · another province",
+        "other": "Another country"
+      }
+    },
+    "summary": {
+      "title": "Summary",
+      "planAfter": "Plan after the trial",
+      "trialEnds": "Your free month ends",
+      "remind": "We email you",
+      "first": "First charge",
+      "firstValue": "{monto} MXN · {fecha}",
+      "after": "After that",
+      "afterValue": "{monto} MXN {cada_periodo}",
+      "totalToday": "Total today",
+      "switchMonth": "Switch to Pro monthly ({monto} a month)",
+      "switchYear": "Switch to Pro yearly ({monto} a year)",
+      "ivaLabel": "IVA (VAT) included"
+    },
+    "done": {
+      "metaTitle": "Done",
+      "title": "All set, {nombre}!",
+      "titleAnon": "All set!",
+      "headline": "Your free month of Pro has started.",
+      "headlinePaid": "Your Pro plan is active.",
+      "sub": "It ends on {fecha_fin_prueba}. First charge: <b>{monto} MXN</b> on {fecha_cobro} to your card ••{ultimos4}.",
+      "paidToday": "You paid today",
+      "firstCharge": "First charge ({plan})",
+      "card": "{marca} ••{ultimos4} · renews {cada_periodo} until you cancel",
+      "cta": "Make my first clips",
+      "plan": "See my plan",
+      "footer": "We sent these details to {correo} · Your acceptance folio: {folio}"
+    }
+  },
+  "banner": {
+    "trial": "Pro free trial · {n} days left",
+    "last7": "Your trial ends on <b>{fecha_fin_prueba}</b>. <b>{monto} MXN</b> will be charged on <b>{fecha_cobro}</b>.",
+    "ended": "Your trial ended. You’re on the Free plan.",
+    "pastDue": "We couldn’t charge your plan. Update your card before <b>{fecha_gracia}</b> to keep Pro.",
+    "renew": "Your {plan} plan renews on <b>{fecha_cobro}</b> for <b>{monto} MXN</b>.",
+    "cta": {
+      "plan": "See my plan",
+      "return": "Back to Pro",
+      "card": "Update card"
+    }
+  },
+  "myplan": {
+    "title": "My plan",
+    "crumb": "My account",
+    "status": {
+      "active": "Your plan · active",
+      "trial": "Your plan · trial",
+      "cancelled": "Your plan · cancelled",
+      "pastDue": "Your plan · payment pending",
+      "free": "Your plan"
+    },
+    "heading": {
+      "pro_month": "Pro monthly — everything included",
+      "pro_year": "Pro yearly — everything included",
+      "vip_month": "VIP — everything included and more credits",
+      "trial": "Pro free trial",
+      "free": "Free"
+    },
+    "planName": {
+      "pro_month": "Pro monthly",
+      "pro_year": "Pro yearly",
+      "vip_month": "VIP"
+    },
+    "renewMonth": "Renews every month.",
+    "renewYear": "Renews every year.",
+    "nextCharge": "Next charge: {fecha}",
+    "priceMonth": "{monto} MXN a month",
+    "priceYear": "{monto} MXN a year",
+    "trialLeft": "{n} days left · ends on {fecha}",
+    "trialAfter": "After the trial: {plan} · {monto} MXN {periodo}",
+    "periodYear": "a year",
+    "periodMonth": "a month",
+    "cancelledUntil": "{plan} until {fecha}",
+    "noMoreCharges": "There will be no more charges.",
+    "reactivate": "Reactivate {plan}",
+    "pastDueAmount": "We couldn’t charge {monto} MXN",
+    "pastDueBody": "Update your card before {fecha} to keep {plan}.",
+    "updateCard": "Update card",
+    "changeCta": "Change plan",
+    "freeBody": "No card · Forever",
+    "freeCta": "See plans",
+    "next": {
+      "title": "Next charge",
+      "notice7": "Email notice 7 days before",
+      "notice30": "Email notice 30 and 7 days before",
+      "noticeOn": "Email notice on {fecha}",
+      "retry": "Mercado Pago will try again in the next few days",
+      "afterCancel": "After {fecha} you’ll move to the Free plan. Your results stay saved."
+    },
+    "method": "Payment method",
+    "methodSub": "Expires {exp}",
+    "methodChange": "Change card",
+    "credits": "This month’s credits",
+    "change": {
+      "title": "Change plan",
+      "toYear": "Move to Pro yearly",
+      "toYearSub": "Save {ahorro} a year. Starts on your next charge date",
+      "toMonth": "Move to Pro monthly",
+      "toMonthSubYear": "Starts when your paid year ends",
+      "toVip": "Upgrade to VIP",
+      "toVipSub": "Applies today; we show you the adjustment first",
+      "toFree": "Move to Free",
+      "toFreeSubMonth": "When your paid month ends",
+      "toFreeSubYear": "When your paid year ends",
+      "downMonth": "Move down to Pro monthly",
+      "downYear": "Move down to Pro yearly",
+      "nextDate": "Starts on your next charge date",
+      "trialSwitch": "Switch to {plan} (before the first charge)",
+      "priceYearShort": "{monto} a year",
+      "priceMonthShort": "{monto} a month"
+    },
+    "invoices": "Invoices",
+    "invoicesEmpty": "None yet",
+    "invoiceRow": "{fecha} · {plan} · {monto}",
+    "movement": {
+      "approved": "Charged",
+      "rejected": "Failed",
+      "refunded": "Refunded",
+      "pending": "Pending",
+      "pack": "Extra credits",
+      "plan": "Plan"
+    },
+    "cancelSub": "Cancel subscription",
+    "cancelTrial": "Cancel trial",
+    "cancelSubSub": "1 click, no calls. You keep {plan} until {fecha}.",
+    "cancelTrialSub": "1 click, no calls",
+    "loadError": "We couldn’t load your plan. Try again in a moment.",
+    "adminNote": "Admin accounts have VIP with no charge."
+  },
+  "cancel": {
+    "trial": {
+      "title": "Cancel your trial?",
+      "body": "You’ll keep Pro until <b>{fecha}</b>. After that you won’t be charged and you’ll move to the Free plan. Your clips and results stay saved."
+    },
+    "paid": {
+      "title": "Cancel your {plan} plan?",
+      "body": "You’ll keep {plan} until <b>{fecha}</b>. There will be no more charges. After that you’ll move to the Free plan and your results stay saved."
+    },
+    "offer": "Would you rather pay month to month?",
+    "offerCta": "Switch to {monto} a month",
+    "yes": "Yes, cancel",
+    "keep": "Keep {plan}",
+    "working": "Cancelling…",
+    "error": "We couldn’t cancel right now. Try again or write to us.",
+    "done": {
+      "title": "Done, you cancelled.",
+      "body": "You won’t be charged again. You have {plan} until <b>{fecha}</b>.",
+      "again": "If you change your mind, you can reactivate Pro any time.",
+      "home": "Back to Home",
+      "reactivate": "Reactivate Pro",
+      "folio": "Folio: {folio} · We sent the confirmation to {correo}"
+    },
+    "close": "Close"
+  },
+  "change": {
+    "metaTitle": "Change plan",
+    "title": "Change to {plan}",
+    "whenNow": "{monto} MXN is charged today and we refund {credito} MXN from your current plan. Then {mensual} MXN every month.",
+    "whenNowNoRefund": "{monto} MXN is charged today. Then {mensual} MXN every month.",
+    "whenLater": "Your change starts on {fecha}. Until then you keep {plan}.",
+    "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}.",
+    "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
+    "card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
+    "cta": "Confirm change",
+    "toFreeTitle": "Move to Free",
+    "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
+    "toFreeCta": "Go to cancel",
+    "done": "Done. Your change is recorded."
+  },
+  "seller": {
+    "title": "Who sells",
+    "name": "Legal name",
+    "rfc": "Tax ID (RFC)",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Support hours",
+    "complaints": "Complaints",
+    "pending": "These details are published before payments open.",
+    "close": "Close"
   }
 }

@@ -20,7 +20,22 @@ const users = {
   pro: { role: 'CLIENT', tier: 'PRO', name: 'Pablo Ruiz', selected: 'e-crypto' },
   vip: { role: 'CLIENT', tier: 'VIP', name: 'Valeria Gómez' },
   admin: { role: 'ADMIN', tier: 'FREE', name: 'Admin Chalyb' },
+  trial: { role: 'CLIENT', tier: 'PRO', name: 'Tere Prueba', trial: true },
+  pro_annual: { role: 'CLIENT', tier: 'PRO', name: 'Ana Anual' },
+  past_due: { role: 'CLIENT', tier: 'PRO', name: 'Pepe Pendiente' },
+  cancelled: { role: 'CLIENT', tier: 'PRO', name: 'Carla Cancelada' },
 };
+const DAY = 86400000;
+const iso = (ms) => new Date(Date.now() + ms).toISOString();
+const sub = (k, over) => ({
+  id: `s-${k}`, user_id: `u-${k}`, status: 'authorized', tier: 'PRO', plan_key: 'pro_month',
+  mp_preapproval_id: `pre-${k}`, external_reference: `sub|u-${k}|PRO`, amount_cents: 86884, currency: 'MXN',
+  started_at: iso(-40 * DAY), trial_ends_at: null, next_charge_at: iso(20 * DAY), next_payment_date: iso(20 * DAY),
+  grace_ends_at: null, access_until: null, card_brand: 'visa', card_last4: '4242', card_exp: '12/29',
+  cancel_at_period_end: false, cancelled_at: null, pending_plan_key: null, pending_effective_at: null,
+  reminder_delivered_at: null, charge_hold_until: null, last_charge_at: iso(-10 * DAY), consent_id: '8f3c2a1e-6b7d-4f0a-9e21-2c5d7a9b1f44',
+  created_at: iso(-40 * DAY), updated_at: new Date().toISOString(), ...over,
+});
 const user = (k) => ({
   id: `u-${k}`, aud: 'authenticated', role: 'authenticated', email: `${k}@example.com`,
   user_metadata: { full_name: users[k].name }, app_metadata: { provider: 'email' },
@@ -36,6 +51,18 @@ const eng = (id, slug, name, status, tier = 'PRO') => ({
   engine_health: [], engine_personas: [],
 });
 const tables = {
+  subscriptions: [
+    sub('pro', {}),
+    sub('vip', { tier: 'VIP', plan_key: 'vip_month', amount_cents: 289884 }),
+    sub('trial', { plan_key: 'pro_year', amount_cents: 868840, trial_ends_at: iso(25 * DAY), next_charge_at: iso(25 * DAY), next_payment_date: iso(25 * DAY), last_charge_at: null, started_at: iso(-5 * DAY) }),
+    sub('pro_annual', { plan_key: 'pro_year', amount_cents: 868840, next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY) }),
+    sub('past_due', { status: 'paused', next_charge_at: iso(-1 * DAY), next_payment_date: iso(-1 * DAY), grace_ends_at: iso(6 * DAY) }),
+    sub('cancelled', { status: 'cancelled', cancel_at_period_end: true, access_until: iso(12 * DAY), cancelled_at: iso(-2 * DAY) }),
+  ],
+  payments: [
+    { id: 'p1', user_id: 'u-pro', tier: 'PRO', kind: 'subscription', pack_id: null, tokens_granted: null, mp_payment_id: '1001', mp_preapproval_id: 'pre-pro', amount_cents: 86884, currency: 'MXN', status: 'approved', created_at: iso(-10 * DAY) },
+    { id: 'p2', user_id: 'u-past_due', tier: 'PRO', kind: 'subscription', pack_id: null, tokens_granted: null, mp_payment_id: '1002', mp_preapproval_id: 'pre-past_due', amount_cents: 86884, currency: 'MXN', status: 'rejected', created_at: iso(-1 * DAY) },
+  ],
   engines: [
     eng('e-clip', 'chalybclip', 'ChalyClip', 'active'),
     eng('e-crypto', 'chalybcrypto', 'ChalyCrypto', 'active'),
@@ -48,6 +75,7 @@ const tables = {
     id: `u-${k}`, email: `${k}@example.com`, full_name: users[k].name, role: users[k].role, tier: users[k].tier,
     tier_ends_at: null, org_id: ORG, selected_engine_id: users[k].selected ?? null,
     chalybclip_trial_started_at: null, welcome_gift_claimed_at: '2026-01-01T00:00:00Z', token_bonus_balance: 0, locale: 'es',
+    pro_trial_started_at: users[k].trial || k === 'cancelled' ? iso(-5 * DAY) : null, pro_trial_ends_at: null,
   })),
 };
 

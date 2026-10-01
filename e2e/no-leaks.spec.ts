@@ -48,7 +48,9 @@ test.describe('as admin', () => {
   asRole('admin');
   test('/app/billing does not show the admin as Free (B11)', async ({ page }) => {
     await page.goto('/app/billing');
-    await expect(page.getByText('VIP (admin)')).toBeVisible();
+    // Mi plan (P2) shows an admin's effective plan: VIP, without a charge.
+    await expect(page.getByRole('heading', { level: 2, name: /VIP/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /^(Gratis|Free)$/ })).toHaveCount(0);
   });
 });
 

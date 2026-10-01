@@ -20,12 +20,11 @@ export function freeIncludesClips(): boolean {
   return readBool('FREE_INCLUDES_CLIPS', true);
 }
 
-/** Q7 · Pro includes every active tool instead of one selected tool.
- *  Default `false` in P0: the product copy sells Pro as all tools, but the
- *  billing model still sells one live engine. P2 turns this on together with
- *  the new plans. TODO(owner): decide what differentiates VIP. */
+/** Q7 · Pro includes every active tool instead of one selected tool (owner
+ *  trial spec + every mockup; P2-1). Existing Pro users gain access, nobody
+ *  loses any. TODO(owner): decide what differentiates VIP besides credits. */
 export function proIncludesAllTools(): boolean {
-  return readBool('PRO_INCLUDES_ALL_TOOLS', false);
+  return readBool('PRO_INCLUDES_ALL_TOOLS', true);
 }
 
 /** Q4 · Whether the hub drives Clips jobs itself (`on`, through the
@@ -38,10 +37,52 @@ export function clipsHubMode(): ToolHubMode {
   return raw === 'on' || raw === 'mock' ? raw : 'off';
 }
 
-/** Whether the new trial path (P2) is live. Until then, trial offers point at
- *  the existing subscription page. */
+/** What still stops the trial path from going live, when it is requested.
+ *  Real charges wait for published legal texts (P6, OPS-10), the seller's
+ *  identity (art. 76 Bis fr. III, P2-13), and the evidence/cron secrets. */
+export function trialFlowBlockers(): string[] {
+  const blockers: string[] = [];
+  if (!readBool('LEGAL_PUBLISH', false)) blockers.push('LEGAL_PUBLISH');
+  for (const name of [
+    'LEGAL_ENTITY_NAME',
+    'LEGAL_ENTITY_RFC',
+    'LEGAL_ENTITY_ADDRESS',
+    'LEGAL_ENTITY_PHONE',
+    'LEGAL_ENTITY_EMAIL',
+    'LEGAL_ENTITY_HOURS',
+    'LEGAL_ENTITY_COMPLAINTS',
+    'CONSENT_ENCRYPTION_KEY',
+    'CRON_SECRET',
+  ]) {
+    if (!(process.env[name] ?? '').trim()) blockers.push(name);
+  }
+  return blockers;
+}
+
+/** Whether the new trial path (P2) is live: requested with
+ *  TRIAL_FLOW_ENABLED AND nothing in trialFlowBlockers(). Until then, trial
+ *  offers point at the existing subscription page. */
 export function trialFlowEnabled(): boolean {
+  return readBool('TRIAL_FLOW_ENABLED', false) && trialFlowBlockers().length === 0;
+}
+
+export function trialFlowRequested(): boolean {
   return readBool('TRIAL_FLOW_ENABLED', false);
+}
+
+/** D5 · the optional extra reminder the day before the trial charge. */
+export function trialDay29ReminderEnabled(): boolean {
+  return readBool('TRIAL_DAY29_REMINDER_ENABLED', false);
+}
+
+/** Q3 · whether the trial offers Mensual as well as Anual. */
+export function trialPlanChoiceEnabled(): boolean {
+  return readBool('TRIAL_PLAN_CHOICE_ENABLED', true);
+}
+
+/** Q11 · CFDI issuance. Until it exists, no "CFDI" anywhere. */
+export function cfdiEnabled(): boolean {
+  return readBool('CFDI_ENABLED', false);
 }
 
 /** Q16 · Whether the owner confirmed the "minutos" support promise. Until

@@ -55,16 +55,14 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
 
-      // Aliases people type (B14). /planes, /terminos and /privacidad are
-      // temporary: P2 builds /planes and P6 makes the legal slugs canonical.
+      // Aliases people type (B14). /terminos and /privacidad are temporary:
+      // P6 makes the legal slugs canonical. /planes is a real page since P2.
       { source: '/sign-up', destination: '/sign-in?mode=signup', permanent: true },
       {
         source: '/:locale(en|es)/sign-up',
         destination: '/:locale/sign-in?mode=signup',
         permanent: true,
       },
-      { source: '/planes', destination: '/#pricing', permanent: false },
-      { source: '/:locale(en|es)/planes', destination: '/:locale/#pricing', permanent: false },
       { source: '/terminos', destination: '/legal/terms', permanent: false },
       { source: '/:locale(en|es)/terminos', destination: '/:locale/legal/terms', permanent: false },
       { source: '/privacidad', destination: '/legal/privacy', permanent: false },

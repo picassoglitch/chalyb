@@ -26,6 +26,7 @@ import { effectiveTier, CHALYBCLIP_TRIAL_SLUG } from '@/lib/billing/tiers';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
 import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
 import { getEntitlements } from '@/lib/billing/entitlement';
+import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 
 export async function GET(
@@ -89,7 +90,10 @@ export async function GET(
 
   const engineId = engine.id as string;
 
-  if (slug === CHALYBCLIP_TRIAL_SLUG) {
+  // Q8: once the Pro trial is live, new accounts no longer get the legacy
+  // 7-day Clips trial / welcome gift (Clips is free anyway); active ones are
+  // honoured where they are.
+  if (slug === CHALYBCLIP_TRIAL_SLUG && !trialFlowEnabled()) {
     // Idempotent: first-timers get the welcome gift + 7-day trial started
     // and a ChalyClip tenant provisioned; returning users no-op. The audit
     // log's `via: chalybclip_landing_launch` marks the user as having

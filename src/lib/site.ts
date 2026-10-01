@@ -39,7 +39,14 @@ export function localizedUrl(path: string, locale: string): string {
  * Public, indexable pages. Single source shared by the sitemap and the
  * language switcher's list of pages that exist in both locales.
  */
-export const PUBLIC_PATHS = ['/', '/contacto', '/legal/terms', '/legal/privacy'] as const;
+export const PUBLIC_PATHS = [
+  '/',
+  '/planes',
+  '/contacto',
+  '/legal/terms',
+  '/legal/privacy',
+  '/quien-vende',
+] as const;
 
 /** hreflang map for a public path: es-MX unprefixed, en under /en, and
  *  x-default pointing at Spanish. */

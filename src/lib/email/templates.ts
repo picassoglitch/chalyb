@@ -20,7 +20,7 @@ const INK_FAINT = '#6c6d7c';
 const LINE = '#1f2230';
 
 /** Wrap content in the branded shell. `preview` shows in the inbox preview text. */
-function wrap(opts: { title: string; preview: string; body: string }): string {
+export function wrap(opts: { title: string; preview: string; body: string }): string {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>

@@ -3,6 +3,8 @@
 // Updating a tier's capabilities = edit this file. No magic numbers elsewhere.
 
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
+import { planPrice } from '@/config/pricing';
+import { formatMXN } from './format';
 
 /**
  * ROLE OVERRIDES TIER.
@@ -151,7 +153,8 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipDriveAutoIngest: true,
     clipConnectSocials: true,
     label: 'Pro',
-    price: 'MXN $749',
+    // Display only, IVA included; the amount charged comes from the same config.
+    price: `${formatMXN(planPrice('pro_month').totalCents)} MXN`,
     per: 'mes',
   },
   // PARTNER = PRO + 1 owned engine. The owned engine is ALWAYS live regardless
@@ -205,7 +208,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipDriveAutoIngest: true,
     clipConnectSocials: true,
     label: 'VIP',
-    price: 'MXN $2,499',
+    price: `${formatMXN(planPrice('vip_month').totalCents)} MXN`,
     per: 'mes',
   },
 };

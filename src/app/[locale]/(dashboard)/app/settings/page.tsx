@@ -19,6 +19,8 @@ import {
 import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { planLabelKey } from '@/lib/billing/plan-label';
+import { planPrice } from '@/config/pricing';
+import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { countUnreadForUser } from '@/lib/messages/messages-data';
 import { supportSlaConfirmed, trialFlowEnabled } from '@/lib/config/flags';
 import { Avatar, ButtonLink, Group, Row } from '@/components/ui/primitives';
@@ -38,6 +40,7 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
   setRequestLocale(locale);
   const t = await getTranslations('account');
   const tLang = await getTranslations('language');
+  const tPlan = await getTranslations('myplan');
 
   const session = await getSessionUser();
   if (!session) return null;
@@ -55,13 +58,24 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
   const tools = Object.values(entitlements.tools);
   const allIncluded = tools.length > 0 && tools.every((a) => a.state === 'included');
   const planKey = planLabelKey(entitlements.plan) as 'gratis' | 'pro' | 'vip';
-  // TODO(P2): "Ver mi plan" → Mi plan (SCR-30); Free → SCR-14 once the trial exists.
+  // "Ver mi plan" → Mi plan (SCR-30); Free → the trial (SCR-14) once it exists.
   const planHref =
     planKey === 'gratis'
       ? trialFlowEnabled()
         ? '/app/prueba'
         : '/app/subscription'
       : '/app/billing';
+  // "Se renueva el {fecha} · ${monto} MXN al {mes|año}, IVA incluido" — only
+  // with a real renewal behind it (Hard Rule 7: IVA always stated).
+  const b = entitlements.billing;
+  const renewal =
+    b && (b.state === 'pro' || b.state === 'trialing') && b.nextChargeAt && b.planKey
+      ? `${tPlan('nextCharge', { fecha: formatFechaLarga(b.nextChargeAt, locale) })} · ${
+          planPrice(b.planKey).interval === 'year'
+            ? tPlan('priceYear', { monto: formatMXN(planPrice(b.planKey).totalCents) })
+            : tPlan('priceMonth', { monto: formatMXN(planPrice(b.planKey).totalCents) })
+        }, ${t('ivaIncluded')}`
+      : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -84,6 +98,9 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
                 ? t('plan.nameAll', { plan: t(`plan.name.${planKey}`) })
                 : t(`plan.name.${planKey}`)}
             </h2>
+            {renewal && (
+              <p style={{ fontSize: 18, marginTop: 6, position: 'relative', zIndex: 1 }}>{renewal}</p>
+            )}
             <div className="ch-plan__foot">
               {allIncluded ? (
                 <span className="ch-plan__all">

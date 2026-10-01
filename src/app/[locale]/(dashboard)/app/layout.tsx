@@ -5,6 +5,7 @@ import { AppShell } from '@/components/app/app-shell';
 import { planLabelKey } from '@/components/app/shell-routes';
 import { WorkspaceProfileSubscriber } from '@/components/workspace/workspace-profile-subscriber';
 import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
+import { BillingBanner } from '@/components/app/billing/billing-banner';
 // The legacy dark theme is still needed by the /app screens later phases
 // rebuild (they render inside AppShell's legacy panel).
 import '../dashboard/dashboard.css';
@@ -47,7 +48,12 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
     <div className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>
       <BfcacheGuard />
       {session?.user.id && <WorkspaceProfileSubscriber userId={session.user.id} />}
-      <AppShell userName={fullName} planKey={planLabelKey(plan)} isAdmin={isAdminRole(role)}>
+      <AppShell
+        userName={fullName}
+        planKey={planLabelKey(plan)}
+        isAdmin={isAdminRole(role)}
+        banner={session && !isAdminRole(role) ? <BillingBanner session={session} /> : null}
+      >
         {children}
       </AppShell>
     </div>
