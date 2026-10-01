@@ -111,11 +111,10 @@
       "title": "Start free. Scale when it pays.",
       "subtitle": "No contracts, no sales calls. Pick a plan and you're running in under a minute.",
       "badge": "Most popular",
-      "note": "Prices in MXN. Pro and VIP are billed monthly through Mercado Pago and can be cancelled any time.",
+      "note": "Prices in MXN, VAT (IVA) included. Pro and VIP are charged monthly through Mercado Pago and can be cancelled any time.",
       "tiers": {
         "free": {
           "name": "Free",
-          "amount": "$0",
           "per": " /forever",
           "tagline": "Create an account and explore the whole platform.",
           "features": {
@@ -128,8 +127,7 @@
         },
         "pro": {
           "name": "Pro",
-          "amount": "MXN $749",
-          "per": " /month",
+          "per": " MXN /mo",
           "tagline": "One tool, your choice.",
           "features": {
             "1": "Everything in Free",
@@ -142,8 +140,7 @@
         },
         "vip": {
           "name": "VIP",
-          "amount": "MXN $2,499",
-          "per": " /month",
+          "per": " MXN /mo",
           "tagline": "All of Chalyb unlocked. AI + Clip, no limits.",
           "features": {
             "1": "Everything in Pro",
@@ -658,7 +655,8 @@
   },
   "usage": {
     "loadFailed": "We could not load your usage. Try again in a few minutes.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "priceSuffix": "MXN, IVA (VAT) included"
   },
   "clips": {
     "wizardNav": "Clips navigation",

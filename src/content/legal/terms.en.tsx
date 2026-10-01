@@ -1,5 +1,11 @@
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
+import { planPrice } from '@/config/pricing';
+import { formatMXN } from '@/lib/billing/format';
+
+// Amounts come from the one pricing source, IVA included (Q1); never typed here.
+const PRO = formatMXN(planPrice('pro_month').totalCents);
+const VIP = formatMXN(planPrice('vip_month').totalCents);
 
 /**
  * English terms of service. Faithful translation of terms.es.tsx — same
@@ -137,11 +143,11 @@ export function TermsDocumentEn() {
           execution. Reduced quotas.
         </li>
         <li>
-          <strong>Pro</strong>: $749 MXN / month. Live execution of ONE Engine of your choice,
+          <strong>Pro</strong>: {PRO} MXN / month, IVA (VAT) included. Live execution of ONE Engine of your choice,
           extended quotas, email support.
         </li>
         <li>
-          <strong>VIP</strong>: $2,499 MXN / month. Live execution of every active Engine, maximum
+          <strong>VIP</strong>: {VIP} MXN / month, IVA (VAT) included. Live execution of every active Engine, maximum
           quotas, priority support.
         </li>
       </ul>

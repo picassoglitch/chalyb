@@ -32,6 +32,7 @@ import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
 import { createClient } from '@/lib/supabase/server';
 import { TokenPackBuyButton } from '@/components/workspace/token-pack-buy-button';
 import { TOKEN_PACKS } from '@/lib/payments/pricing';
+import { formatMXN } from '@/lib/billing/format';
 import {
   getCurrentAccrualsForPartner,
   getPayoutsForPartner,
@@ -496,7 +497,7 @@ export default async function UsagePage({
                 <div className="cc-mod-card-head">
                   <h4 style={{ fontSize: 16 }}>{pack.label}</h4>
                   <span className="cc-mod-badge gr">
-                    ${(pack.amountCents / 100).toLocaleString('es-MX')} MXN
+                    {formatMXN(pack.amountCents)} {tUsage('priceSuffix')}
                   </span>
                 </div>
                 <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', minHeight: 36 }}>

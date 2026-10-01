@@ -111,11 +111,10 @@
       "title": "Empieza gratis. Escala cuando rinda.",
       "subtitle": "Sin contratos ni llamadas comerciales. Elige un plan y estás operando en menos de un minuto.",
       "badge": "El más elegido",
-      "note": "Precios en MXN. Pro y VIP se cobran mensualmente vía Mercado Pago y se cancelan cuando quieras.",
+      "note": "Precios en MXN, IVA incluido. Pro y VIP se cobran cada mes con Mercado Pago y se cancelan cuando quieras.",
       "tiers": {
         "free": {
           "name": "Gratis",
-          "amount": "$0",
           "per": " /siempre",
           "tagline": "Crea una cuenta y explora toda la plataforma.",
           "features": {
@@ -128,8 +127,7 @@
         },
         "pro": {
           "name": "Pro",
-          "amount": "MXN $749",
-          "per": " /mes",
+          "per": " MXN /mes",
           "tagline": "Una herramienta a tu elección.",
           "features": {
             "1": "Todo lo de Gratis",
@@ -142,8 +140,7 @@
         },
         "vip": {
           "name": "VIP",
-          "amount": "MXN $2,499",
-          "per": " /mes",
+          "per": " MXN /mes",
           "tagline": "Todo Chalyb desbloqueado. IA + Clip, sin límites.",
           "features": {
             "1": "Todo lo de Pro",
@@ -658,7 +655,8 @@
   },
   "usage": {
     "loadFailed": "No pudimos cargar tu consumo. Intenta de nuevo en unos minutos.",
-    "retry": "Intentar de nuevo"
+    "retry": "Intentar de nuevo",
+    "priceSuffix": "MXN, IVA incluido"
   },
   "clips": {
     "wizardNav": "Navegación de Clips",

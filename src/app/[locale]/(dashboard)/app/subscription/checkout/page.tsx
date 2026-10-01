@@ -76,7 +76,7 @@ export default async function SubscriptionCheckoutPage({
             <span
               style={{ fontSize: 13, color: 'var(--cc-txt-3)', fontWeight: 500, marginLeft: 4 }}
             >
-              /mes
+              /mes · IVA incluido
             </span>
           </div>
           <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginTop: 8, lineHeight: 1.5 }}>
