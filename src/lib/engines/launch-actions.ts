@@ -1,106 +1,134 @@
 'use server';
 
-// Server action that builds the engine launch URL (with signed SSO token
-// when applicable) and returns it to the client. Client then does
-// `window.location.href = url` or window.open() in a new tab.
+// Server action behind every "Abrir" button: checks access, creates the user's
+// account at the engine if it is missing, and returns the signed SSO URL.
 //
-// Separated from the workspace page so we can call it from a button click
-// without re-fetching the whole engine + access record on the client.
+// The order of those steps lives in launch-flow.ts (pure, unit-tested); this
+// file only wires the database, the integration registry and the audit log
+// into it. The client receives `{ ok: true, url }` or `{ ok: false, code }` —
+// never an error string (see lib/errors/customer-errors.ts).
 
 import { getSessionUser } from '@/lib/auth/session';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { effectiveTier as computeEffectiveTier } from '@/lib/billing/tiers';
+import { effectiveTier } from '@/lib/billing/tiers';
+import { getEntitlements } from '@/lib/billing/entitlement';
+import { logAudit } from '@/lib/audit/log';
+import type { Engine } from '@/lib/data/types';
 import { getIntegration } from './integrations/registry';
+import { provisionEngineAccess } from './subscriptions';
+import { runLaunch, type LaunchResult, type LaunchLogEvent } from './launch-flow';
 
-interface LaunchResult {
-  ok: boolean;
-  url?: string;
-  reason?: 'not_authed' | 'engine_not_found' | 'no_access' | 'not_configured' | 'integration_failed';
-  error?: string;
-}
+export type { LaunchResult } from './launch-flow';
 
 export async function getEngineLaunchUrl(engineId: string): Promise<LaunchResult> {
   const session = await getSessionUser();
-  if (!session) return { ok: false, reason: 'not_authed', error: 'No autenticado' };
+  if (!session) return { ok: false, code: 'SESSION_EXPIRED' };
 
   const admin = createAdminClient();
+  const userId = session.user.id;
+  const actorEmail = session.user.email ?? null;
+  const entitlements = await getEntitlements(session);
 
-  // Pull engine + the user's access record in parallel.
-  const [{ data: engineRow }, { data: accessRow }] = await Promise.all([
-    admin
-      .from('engines')
-      .select(
-        'id, slug, name, external_url, integration_mode, admin_api_base, requires_provisioning',
-      )
-      .eq('id', engineId)
-      .maybeSingle(),
-    admin
-      .from('engine_subscriptions')
-      .select('external_user_id, external_credentials')
-      .eq('user_id', session.user.id)
-      .eq('engine_id', engineId)
-      .maybeSingle(),
-  ]);
+  let engineForIntegration: Engine | null = null;
 
-  if (!engineRow) return { ok: false, reason: 'engine_not_found', error: 'Engine no encontrado' };
-
-  // Internal-placeholder engines have no real URL — return a sentinel so the
-  // client knows to stay on the workspace page instead of redirecting.
-  if (engineRow.integration_mode === 'internal_placeholder' || !engineRow.external_url) {
-    return {
-      ok: false,
-      reason: 'not_configured',
-      error: 'Este engine aún no tiene URL externa. Estás en modo placeholder.',
-    };
+  function log(event: LaunchLogEvent) {
+    const line = `[launch] ${event.slug} ${event.outcome}${event.code ? ` ${event.code}` : ''}`;
+    if (event.outcome === 'launched' || event.outcome === 'provisioned') console.info(line);
+    else console.error(line, event.detail ?? '');
+    if (event.outcome === 'launched') return;
+    void logAudit({
+      action: event.outcome === 'refused' ? 'engine.launch' : 'engine.provision',
+      actorId: userId,
+      actorEmail,
+      targetUserId: userId,
+      // The slug and a status code only: no tokens, no engine response body.
+      metadata: { slug: event.slug, outcome: event.outcome, code: event.code ?? null },
+    });
   }
 
-  if (!accessRow) {
-    return {
-      ok: false,
-      reason: 'no_access',
-      error: 'No tienes acceso provisionado a este engine. Actívalo desde /app/engines.',
-    };
-  }
+  return runLaunch({
+    defaultSource: entitlements.isAdmin ? 'admin_grant' : 'manual',
+    log,
+    toolAccess: (slug) => entitlements.tools[slug] ?? null,
 
-  const integration = getIntegration(engineRow.slug as string);
-  if (!integration) {
-    return {
-      ok: false,
-      reason: 'not_configured',
-      error: `No hay integración registrada para slug=${engineRow.slug}`,
-    };
-  }
+    async loadEngine() {
+      const { data } = await admin
+        .from('engines')
+        .select(
+          'id, slug, name, external_url, integration_mode, admin_api_base, requires_provisioning',
+        )
+        .eq('id', engineId)
+        .maybeSingle();
+      if (!data) return null;
+      // The integration only reads these fields.
+      engineForIntegration = {
+        id: data.id as string,
+        slug: data.slug as string,
+        name: data.name as string,
+        externalUrl: data.external_url as string | null,
+        adminApiBase: data.admin_api_base as string | null,
+        integrationMode: data.integration_mode as Engine['integrationMode'],
+        requiresProvisioning: data.requires_provisioning as boolean,
+      } as Engine;
+      return {
+        id: data.id as string,
+        slug: data.slug as string,
+        externalUrl: data.external_url as string | null,
+        integrationMode: data.integration_mode as string,
+        requiresProvisioning: Boolean(data.requires_provisioning),
+      };
+    },
 
-  const engineForIntegration = {
-    id: engineRow.id as string,
-    slug: engineRow.slug as string,
-    name: engineRow.name as string,
-    externalUrl: engineRow.external_url as string | null,
-    adminApiBase: engineRow.admin_api_base as string | null,
-    integrationMode: engineRow.integration_mode as 'internal_placeholder' | 'external_sso_redirect' | 'iframe_embed',
-    requiresProvisioning: engineRow.requires_provisioning as boolean,
-  } as Parameters<typeof integration.buildLaunchUrl>[0]['engine'];
+    async loadAccessRow() {
+      const { data } = await admin
+        .from('engine_subscriptions')
+        .select('external_user_id, source')
+        .eq('user_id', userId)
+        .eq('engine_id', engineId)
+        .maybeSingle();
+      if (!data) return null;
+      return {
+        externalUserId: (data.external_user_id as string | null) ?? null,
+        source: data.source as string,
+      };
+    },
 
-  // Effective tier — admin override applied. Admins always present as
-  // VIP to the engine, even if profiles.tier says FREE.
-  const tier = computeEffectiveTier(session.role, session.tier);
+    async provision(source) {
+      // Upserts on the (user_id, engine_id) unique key from migration 0011, so
+      // two concurrent clicks converge on one row; the engine treats a repeat
+      // tenant create as 409 = success, so they converge on one account too.
+      const result = await provisionEngineAccess(
+        userId,
+        engineId,
+        source as Parameters<typeof provisionEngineAccess>[2],
+      );
+      if (!result.ok) return { ok: false, reason: result.reason, error: result.error };
+      return { ok: true, externalUserId: result.externalUserId ?? null };
+    },
 
-  const result = await integration.buildLaunchUrl({
-    userId: session.user.id,
-    email: session.user.email ?? '',
-    effectiveTier: tier,
-    externalUserId: (accessRow.external_user_id as string | null) ?? null,
-    credentials: (accessRow.external_credentials as Record<string, unknown> | null) ?? null,
-    engine: engineForIntegration,
+    async buildUrl(externalUserId) {
+      const engine = engineForIntegration;
+      if (!engine) return { ok: false, reason: 'not_configured' };
+      const integration = getIntegration(engine.slug);
+      if (!integration) return { ok: false, reason: 'no_integration' };
+      const { data: row } = await admin
+        .from('engine_subscriptions')
+        .select('external_credentials')
+        .eq('user_id', userId)
+        .eq('engine_id', engineId)
+        .maybeSingle();
+      const result = await integration.buildLaunchUrl({
+        userId,
+        email: session.user.email ?? '',
+        // Admins present as VIP to the engine, whatever profiles.tier says.
+        effectiveTier: effectiveTier(session.role, session.tier),
+        externalUserId,
+        credentials: (row?.external_credentials as Record<string, unknown> | null) ?? null,
+        engine,
+      });
+      return result.ok && result.url
+        ? { ok: true, url: result.url }
+        : { ok: false, reason: result.reason, error: result.error };
+    },
   });
-
-  if (!result.ok || !result.url) {
-    return {
-      ok: false,
-      reason: 'integration_failed',
-      error: result.error ?? 'Integración falló al generar URL',
-    };
-  }
-
-  return { ok: true, url: result.url };
 }
