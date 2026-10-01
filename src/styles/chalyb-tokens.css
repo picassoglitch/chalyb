@@ -1687,3 +1687,51 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-adv__row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 .chalyb-app .ch-adv__row legend { font-weight: 600; font-size: 18px; margin-bottom: 8px; }
 .chalyb-app .ch-adv__row .ch-field span { display: block; font-weight: 500; margin-bottom: 6px; }
+
+/* ---------- Owner panel (P5) ---------- */
+.chalyb-app.ch-admin .ch-nav a { min-height: 50px; font-size: 17px; margin-bottom: 4px; }
+.chalyb-app.ch-admin .ch-nav a svg { width: 22px; height: 22px; }
+.chalyb-app .ch-wrap--wide { max-width: 1180px; }
+.chalyb-app .ch-adm-more { margin: 10px 0 16px; padding-top: 10px; border-top: 1px solid var(--line); }
+.chalyb-app .ch-adm-more summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; padding: 0 16px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-adm-more ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; }
+.chalyb-app .ch-adm-more a { display: flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; color: var(--ink2); font-size: 15px; }
+.chalyb-app .ch-adm-more a:hover { background: #f1f1f5; }
+.chalyb-app .ch-adm-mnav { display: none; }
+@media (max-width: 899px) {
+  .chalyb-app .ch-adm-mnav { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 4px; scrollbar-width: none; }
+  .chalyb-app .ch-adm-mnav a { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); }
+  .chalyb-app .ch-adm-mnav a svg { width: 18px; height: 18px; }
+  .chalyb-app .ch-adm-mnav a[aria-current='page'] { background: var(--tint); color: var(--accent-d); border-color: transparent; font-weight: 600; }
+  .chalyb-app.ch-admin .ch-content { padding-bottom: 40px; }
+}
+.chalyb-app .ch-kpis { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.chalyb-app .ch-kpi { padding: 20px; display: grid; gap: 6px; align-content: start; }
+.chalyb-app .ch-kpi__k { font-size: 15px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-kpi__v { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.chalyb-app .ch-kpi__s { font-size: 15px; color: var(--ink2); }
+.chalyb-app .ch-kpi__s--up { color: var(--ok-text); }
+.chalyb-app .ch-kpi__s--down { color: var(--bad); }
+.chalyb-app .ch-table-wrap { position: relative; overflow-x: auto; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+.chalyb-app .ch-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.chalyb-app .ch-table th { text-align: left; font-size: 14px; font-weight: 600; color: var(--ink2); padding: 14px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.chalyb-app .ch-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.chalyb-app .ch-table tr:last-child td { border-bottom: 0; }
+.chalyb-app .ch-table td.num, .chalyb-app .ch-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chalyb-app .ch-bars { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 16px 8px 0; }
+.chalyb-app .ch-bars li { flex: 1; list-style: none; display: grid; grid-template-rows: 1fr auto; gap: 6px; height: 100%; text-align: center; font-size: 13px; color: var(--ink2); }
+.chalyb-app .ch-bars__bar { align-self: end; background: var(--accent); border-radius: 8px 8px 2px 2px; min-height: 2px; }
+.chalyb-app .ch-funnel { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.chalyb-app .ch-funnel li { display: grid; grid-template-columns: minmax(130px, 200px) 1fr auto; gap: 12px; align-items: center; font-size: 16px; }
+.chalyb-app .ch-funnel__bar { height: 14px; border-radius: 99px; background: var(--tint); overflow: hidden; }
+.chalyb-app .ch-funnel__bar span { display: block; height: 100%; background: var(--accent); }
+.chalyb-app .ch-attn { list-style: none; margin: 0; padding: 0; }
+.chalyb-app .ch-section { display: grid; gap: 14px; }
+.chalyb-app .ch-section > h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+/* Page stacks: one column that can shrink, so wide tables scroll inside
+   .ch-table-wrap instead of widening the page (360px). :where keeps this
+   below any class that sets its own columns (.ch-kpis, inline grids). */
+:where(.chalyb-app.ch-admin .ch-wrap) > div,
+:where(.chalyb-app.ch-admin .ch-wrap) > div > div {
+  grid-template-columns: minmax(0, 1fr);
+}

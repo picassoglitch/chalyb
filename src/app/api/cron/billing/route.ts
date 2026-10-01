@@ -165,7 +165,7 @@ export async function GET(req: Request) {
             severity: 'warning',
             title: 'Cobro detenido: el aviso previo no se entregó',
             body: `Suscripción ${preapprovalId} · no se cobra hasta el ${formatFechaLarga(decision.until, 'es')}`,
-            href: '/dashboard/billing',
+            href: '/dashboard/dinero',
             source: 'billing.cron',
           });
           stats.holds += 1;

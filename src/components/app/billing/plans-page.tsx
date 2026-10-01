@@ -6,6 +6,7 @@ import { listEngines } from '@/lib/data/engines';
 import { isCustomerVisible } from '@/lib/billing/entitlement-core';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { trialFlowEnabled } from '@/lib/config/flags';
+import { billingToggleEnabled } from '@/lib/config/settings';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { plansCta } from '@/lib/billing/plans-cta';
 import { PlansView } from './plans-view';
@@ -31,5 +32,13 @@ export async function PlansSection() {
     billing: billing?.primary ?? null,
     quebecBlocked: false,
   });
-  return <PlansView tools={tools} cta={cta} trialOffered={flow && !(billing?.trialUsed ?? false)} quebecBlocked={false} />;
+  return (
+    <PlansView
+      tools={tools}
+      cta={cta}
+      trialOffered={flow && !(billing?.trialUsed ?? false)}
+      quebecBlocked={false}
+      monthlyOffered={await billingToggleEnabled()}
+    />
+  );
 }

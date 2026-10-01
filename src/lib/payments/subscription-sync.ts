@@ -173,7 +173,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
         severity: 'critical',
         title: 'Suscripción con monto que no corresponde — no se otorgó nada',
         body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
       return { ok: false, reason: 'amount_mismatch', retry: false };
@@ -245,7 +245,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
         severity: 'info',
         title: `Suscripción ${tier} activa — $${(amountMajor ?? 0).toFixed(2)} ${currency ?? ''}/mes`,
         body: `${email ?? userId} · MP suscripción ${preapprovalId}`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
       // A trial's welcome (Email 1, with the evidence) is sent by the trial
@@ -310,7 +310,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
           severity: status === 'paused' ? 'warning' : 'info',
           title: `Suscripción ${tier} ${why}`,
           body: `${email ?? userId} · acceso hasta ${formatDateEs(endsAtIso)} · MP ${preapprovalId}`,
-          href: '/dashboard/billing',
+          href: '/dashboard/dinero',
           source: 'mp.webhook',
         });
       }
@@ -430,7 +430,7 @@ export async function recordAuthorizedPayment(
         severity: 'warning',
         title: `Cobro mensual ${paymentStatus === 'rejected' ? 'rechazado' : 'cancelado'} — ${ref.tier}`,
         body: `MP pago #${String(paymentId)} · suscripción ${preapprovalId} · reintento ${ap.retry_attempt ?? 0}${ap.next_retry_date ? ` · próximo ${formatDateEs(ap.next_retry_date)}` : ''}`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
     }
@@ -534,7 +534,7 @@ export async function revokeSubscriptionForReversal(input: {
       severity: 'warning',
       title: `Plan ${tier} revocado — pago ${input.reason === 'charged_back' ? 'con contracargo' : 'reembolsado'}`,
       body: `${email ?? userId} · MP pago #${input.mpPaymentId} · suscripción ${input.preapprovalId}`,
-      href: '/dashboard/billing',
+      href: '/dashboard/dinero',
       source: 'mp.webhook',
     });
     if (email) {
@@ -610,7 +610,7 @@ async function cancelOtherLiveSubscriptions(
         severity: 'critical',
         title: 'Suscripción anterior sigue activa — cancélala en Mercado Pago',
         body: `usuario ${userId} · MP ${id} fue reemplazada por ${keepPreapprovalId} pero no se pudo cancelar`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
     }

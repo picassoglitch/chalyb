@@ -426,11 +426,19 @@
       },
       "chalybcrypto": {
         "tagline": "We tell you when it is a good moment to buy or sell crypto.",
-        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+        "bullets": [
+          "Backtested strategies",
+          "Real-time alerts",
+          "Emotion-free execution"
+        ]
       },
       "chalybobs": {
         "tagline": "Run your stream and your OBS scenes with big buttons.",
-        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Works with Clips"]
+        "bullets": [
+          "Dynamic scenes and overlays",
+          "Stream automation",
+          "Works with Clips"
+        ]
       }
     },
     "marketingCat": {
@@ -1551,5 +1559,283 @@
       "title": "Your stream ended",
       "body": "It lasted {duracion}. Shall we make clips?"
     }
+  },
+  "admin": {
+    "nav": {
+      "aria": "Owner panel",
+      "command": "Command center",
+      "people": "People",
+      "money": "Money",
+      "tools": "Tools",
+      "activity": "Activity",
+      "settings": "Settings",
+      "more": "More",
+      "owner": "Owner",
+      "viewApp": "View the app ›",
+      "menu": "Menu"
+    },
+    "more": {
+      "team": "Team, roles and credits",
+      "engines": "Engines (technical)",
+      "royalties": "Royalties",
+      "revenue": "Revenue by engine",
+      "audit": "Audit log",
+      "messages": "Messages",
+      "models": "AI Models",
+      "analytics": "Analytics",
+      "api": "API & Keys",
+      "labs": "Labs (not connected)",
+      "overview": "Technical view"
+    },
+    "hello": {
+      "morning": "Good morning 👋",
+      "afternoon": "Good afternoon 👋",
+      "night": "Good evening 👋"
+    },
+    "home": {
+      "metaTitle": "Command center",
+      "title": "Command center",
+      "sub": "How Chalyb is doing this month. What matters first.",
+      "range": "Period",
+      "today": "Today",
+      "week": "7 days",
+      "month": "This month",
+      "revenue": "Revenue this month",
+      "revenueSub": "VAT included · refunds already out",
+      "vsLast": "{delta} vs last month",
+      "noBase": "not enough data to compare",
+      "subscribers": "Active subscribers",
+      "subscribersSub": "+{n} this month",
+      "trials": "Active trials",
+      "trialsSub": "Ending this week: {n}",
+      "conversion": "Trial conversion",
+      "conversionSub": "Out of 10 trials, {n} stay",
+      "conversionNone": "not enough data ({n} trials finished)",
+      "attention": "Needs your attention",
+      "attentionNone": "Nothing pending. All good.",
+      "att": {
+        "failedCharges": "{n, plural, one {# failed charge} other {# failed charges}}",
+        "refundRequests": "{n, plural, one {# refund request} other {# refund requests}}",
+        "slowTools": "{n, plural, one {# slow tool} other {# slow tools}}",
+        "newIdeas": "{n, plural, one {# new idea} other {# new ideas}}",
+        "bouncedNotices": "{n, plural, one {# charge notice bounced} other {# charge notices bounced}}",
+        "chargesWithoutNotice": "{n, plural, one {# charge without a delivered notice (refundable)} other {# charges without a delivered notice (refundable)}}",
+        "cta": {
+          "failedCharges": "Review",
+          "refundRequests": "Reply",
+          "slowTools": "See",
+          "newIdeas": "Read",
+          "bouncedNotices": "See",
+          "chargesWithoutNotice": "Review"
+        }
+      },
+      "tools": "Tools",
+      "health": {
+        "ok": "Working well",
+        "slow": "Slow today",
+        "down": "Not working now"
+      },
+      "seeActivity": "See activity",
+      "noData": "no data",
+      "loadFailed": "We couldn’t read this data right now.",
+      "revenueToday": "Revenue today",
+      "revenueWeek": "Revenue, last 7 days"
+    },
+    "people": {
+      "metaTitle": "People",
+      "title": "People",
+      "sub": "All your subscribers in one place.",
+      "search": "Search by name or email",
+      "chips": {
+        "all": "All",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "cancelled": "Cancelled"
+      },
+      "col": {
+        "person": "Person",
+        "plan": "Plan",
+        "status": "Status",
+        "since": "Since",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "ending": "Ending soon",
+        "cancelled": "Cancelled",
+        "free": "Free"
+      },
+      "empty": "Nobody matches that search.",
+      "none": "No subscribers yet.",
+      "actionsFor": "Actions for {nombre}",
+      "act": {
+        "giftMonth": "Give 1 free month",
+        "changePlan": "Change their plan",
+        "resendAccess": "Resend sign-in email",
+        "refundLast": "Refund last charge",
+        "cancel": "Cancel their subscription"
+      },
+      "giftBlocked": "They have an active automatic charge: a free month wouldn’t stop it.",
+      "choosePlan": "Choose the plan to offer",
+      "confirm": {
+        "step": "Confirm · step 2 of 2",
+        "no": "No, go back",
+        "giftMonth": {
+          "q": "Give {nombre} 1 month of Pro?",
+          "body": "They get Pro for 30 more days, no charge. Logged with your name.",
+          "yes": "Yes, give it"
+        },
+        "changePlan": {
+          "q": "Offer {plan} to {nombre}?",
+          "body": "They get an email to review it. Nothing is charged until they accept with their checkbox. Logged with your name.",
+          "yes": "Yes, send"
+        },
+        "resendAccess": {
+          "q": "Resend the sign-in email to {nombre}?",
+          "body": "They get a short-lived, single-use sign-in link. Logged with your name.",
+          "yes": "Yes, resend"
+        },
+        "refundLast": {
+          "q": "Refund {monto} MXN to {nombre}?",
+          "body": "It goes back to their card through Mercado Pago in 5 to 10 days. Logged with your name.",
+          "yes": "Yes, refund"
+        },
+        "cancel": {
+          "q": "Cancel {nombre}’s subscription?",
+          "body": "No more charges. They keep what they paid for until the period ends and get their folio by email. Logged with your name.",
+          "yes": "Yes, cancel"
+        }
+      },
+      "done": "Done. It’s in Activity.",
+      "err": {
+        "FORBIDDEN": "Only an admin can do this.",
+        "NOT_ALLOWED": "This action doesn’t apply to this person.",
+        "NOT_FOUND": "We couldn’t find this person.",
+        "MP_ERROR": "Mercado Pago didn’t respond. Nothing changed.",
+        "EMAIL_ERROR": "We couldn’t send the email. Nothing changed."
+      }
+    },
+    "money": {
+      "metaTitle": "Money",
+      "title": "Money",
+      "sub": "One source of truth for your revenue.",
+      "source": "From Mercado Pago · updated hourly",
+      "revenue": "Revenue this month",
+      "revenueSub": "Refunds already deducted",
+      "trials": "Trials that convert",
+      "trialsSub": "{a} of {b} trials",
+      "failed": "Failed charges",
+      "failedSub": "{n, plural, one {# charge} other {# charges}} · retried automatically",
+      "refunds": "Refunds",
+      "refundsSub": "{n} this month",
+      "chart": "Revenue by month",
+      "chartAria": "{mes}: {monto}",
+      "funnel": "This month’s trials",
+      "funnelSteps": {
+        "started": "Started a trial",
+        "stillTrial": "Still on trial",
+        "paid": "Already paid",
+        "cancelled": "Cancelled"
+      },
+      "payments": "Payments",
+      "subscriptions": "Subscriptions",
+      "costs": "Costs",
+      "col": {
+        "date": "Date",
+        "person": "Person",
+        "concept": "Concept",
+        "amount": "Amount",
+        "state": "Status"
+      },
+      "state": {
+        "charged": "Charged",
+        "failed": "Failed",
+        "refunded": "Refunded",
+        "pending": "Pending"
+      },
+      "noMovements": "No movements this month yet.",
+      "subsBy": {
+        "active": "Active",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "cancelled": "Cancelled"
+      },
+      "costsNote": "Fixed costs set by hand, not measured. See src/lib/billing/operating-costs.ts.",
+      "iva": "Amounts include VAT."
+    },
+    "activity": {
+      "metaTitle": "Activity",
+      "title": "Activity",
+      "sub": "Everything that happened, in order. No sensitive personal data.",
+      "type": "Type",
+      "tool": "Tool",
+      "all": "All",
+      "types": {
+        "charge": "Charges",
+        "failed": "Failed",
+        "refund": "Refunds",
+        "cancel": "Cancellations",
+        "notice": "Notices",
+        "consent": "Consents",
+        "admin": "Team actions",
+        "tool": "Tools"
+      },
+      "empty": "Nothing with this filter in the last 30 days.",
+      "by": "by {quien}"
+    },
+    "tools": {
+      "metaTitle": "Tools",
+      "title": "Tools",
+      "sub": "What your customers see. Anything you hide disappears from Home, More tools, the landing page and counts.",
+      "visible": "Visible to customers",
+      "hidden": "Hidden",
+      "toggle": "Show {herramienta} to customers",
+      "failures": "{n, plural, one {# failure} other {# failures}} in 24 h",
+      "confirm": {
+        "q": "Hide {herramienta}?",
+        "body": "{n, plural, one {# paying person used it} other {# paying people used it}} in the last 30 days. The terms (§7.3) require notice in advance (30 days when possible) and an alternative or a refund. Logged with your name.",
+        "yes": "Yes, hide",
+        "no": "No, go back"
+      },
+      "err": "We couldn’t save the change. Try again."
+    },
+    "settings": {
+      "metaTitle": "Settings",
+      "title": "Settings",
+      "sub": "What you save here is logged with your name.",
+      "pricing": "Prices",
+      "pricingNote": "Read only. Changed in src/config/pricing.ts.",
+      "plan": {
+        "pro_month": "Pro monthly",
+        "pro_year": "Pro yearly",
+        "vip_month": "VIP monthly"
+      },
+      "toggle": "Offer Monthly as well as Yearly",
+      "toggleHelp": "If you turn it off, the trial and Plans offer Yearly only.",
+      "saved": "Saved.",
+      "saveError": "Couldn’t save.",
+      "seller": "Who sells",
+      "sellerMissing": "Not configured",
+      "legal": "Legal documents",
+      "version": "version {v}",
+      "account": "Your account",
+      "org": "Organization",
+      "security": "Security",
+      "readOnly": "Read only",
+      "rows": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "orgName": "Name",
+        "timezone": "Time zone",
+        "auth": "Sign-in",
+        "twofa": "Two-factor"
+      },
+      "authValue": "Supabase Auth",
+      "twofaValue": "Not connected"
+    },
+    "example": "Example"
   }
 }

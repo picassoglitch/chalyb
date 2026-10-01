@@ -43,13 +43,13 @@ export default defineConfig({
     {
       name: 'desktop-chromium',
       dependencies: ['setup'],
-      testIgnore: /smoke\//,
+      testIgnore: [/smoke\//, /admin-mutations\.spec\.ts/],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
       name: 'mobile-360',
       dependencies: ['setup'],
-      testIgnore: /smoke\//,
+      testIgnore: [/smoke\//, /admin-mutations\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 360, height: 740 },
@@ -63,6 +63,15 @@ export default defineConfig({
       dependencies: ['setup'],
       testMatch: /clips-launch\.spec\.ts/,
       use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      // Owner-panel actions that change shared state (hide a tool, the
+      // Mensual toggle, a gifted month) run once, after every other spec,
+      // so no parallel test sees the change (P5).
+      name: 'admin-mutations',
+      dependencies: ['desktop-chromium', 'mobile-360'],
+      testMatch: /admin-mutations\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
       name: 'smoke',

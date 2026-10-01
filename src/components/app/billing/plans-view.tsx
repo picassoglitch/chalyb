@@ -26,12 +26,15 @@ export interface PlansViewProps {
   };
   trialOffered: boolean;
   quebecBlocked: boolean;
+  /** P5-6 · Mensual next to Anual (owner toggle). Off → Anual only. */
+  monthlyOffered?: boolean;
 }
 
-export function PlansView({ tools, cta, trialOffered, quebecBlocked }: PlansViewProps) {
+export function PlansView({ tools, cta, trialOffered, quebecBlocked, monthlyOffered = true }: PlansViewProps) {
   const t = useTranslations('plans');
   const tb = useTranslations('billing');
-  const [yearly, setYearly] = useState(true);
+  const [yearlyChoice, setYearly] = useState(true);
+  const yearly = monthlyOffered ? yearlyChoice : true;
   const math = annualMath();
   const month = planPrice('pro_month').totalCents;
   const year = planPrice('pro_year').totalCents;
@@ -64,21 +67,23 @@ export function PlansView({ tools, cta, trialOffered, quebecBlocked }: PlansView
       <header style={{ textAlign: 'center', display: 'grid', gap: 10, justifyItems: 'center' }}>
         <h1 className="ch-h1">{t('title')}</h1>
         <p className="ch-sub">{trialOffered ? t('sub') : t('subNoTrial')}</p>
-        <div role="radiogroup" aria-label={t('toggleAria')} className="ch-seg" style={{ marginTop: 8 }}>
-          {([false, true] as const).map((y) => (
-            <button
-              key={String(y)}
-              type="button"
-              role="radio"
-              aria-checked={yearly === y}
-              className={`ch-chip${yearly === y ? ' ch-chip--on' : ''}`}
-              onClick={() => setYearly(y)}
-            >
-              {y ? t('toggle.year') : t('toggle.month')}
-              {y && <Pill kind={yearly ? 'ok' : 'acc'}>{t('toggle.save', { ahorro: formatMXN(math.yearSavingsCents) })}</Pill>}
-            </button>
-          ))}
-        </div>
+        {monthlyOffered && (
+          <div role="radiogroup" aria-label={t('toggleAria')} className="ch-seg" style={{ marginTop: 8 }}>
+            {([false, true] as const).map((y) => (
+              <button
+                key={String(y)}
+                type="button"
+                role="radio"
+                aria-checked={yearly === y}
+                className={`ch-chip${yearly === y ? ' ch-chip--on' : ''}`}
+                onClick={() => setYearly(y)}
+              >
+                {y ? t('toggle.year') : t('toggle.month')}
+                {y && <Pill kind={yearly ? 'ok' : 'acc'}>{t('toggle.save', { ahorro: formatMXN(math.yearSavingsCents) })}</Pill>}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       {quebecBlocked && (
@@ -117,7 +122,7 @@ export function PlansView({ tools, cta, trialOffered, quebecBlocked }: PlansView
           {yearly && <p className="ch-muted" style={{ fontSize: 15 }}>{tb('price.vsMonth', { total_mensual: formatMXN(math.yearVsMonthlyCents) })}</p>}
           {button(cta.pro.href, proLabel, true)}
           {trialOffered && cta.pro.label === 'trial' && <p className="ch-muted" style={{ fontSize: 15 }}>{t('pro.note')}</p>}
-          {yearly && <p className="ch-muted" style={{ fontSize: 15 }}>{t('pro.monthAlt', { monto: formatMXN(month) })}</p>}
+          {yearly && monthlyOffered && <p className="ch-muted" style={{ fontSize: 15 }}>{t('pro.monthAlt', { monto: formatMXN(month) })}</p>}
           <ul className="ch-feats">
             <li><Check aria-hidden="true" />{t('pro.f1', { n: tools.length, lista: list })}</li>
             <li><Check aria-hidden="true" />{t('pro.f3')}</li>

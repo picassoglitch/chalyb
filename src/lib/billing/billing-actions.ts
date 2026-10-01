@@ -34,7 +34,26 @@ export async function cancelSubscription(
   session: SessionUser,
   opts: { offerShown: boolean; locale: string },
 ): Promise<CancelResult> {
-  const userId = session.user.id;
+  return cancelForUser(
+    {
+      id: session.user.id,
+      email: session.user.email ?? null,
+      fullName: (session.user.user_metadata?.full_name as string | undefined) ?? null,
+    },
+    { ...opts, surface: 'web_my_plan', buttonLabel: 'Sí, cancelar' },
+  );
+}
+
+/**
+ * The cancel itself, for the subscriber (Mi plan) or for the owner acting on
+ * their behalf (/dashboard/personas, P5-2): same Mercado Pago cancel, same
+ * evidence, same email; `surface` says where it came from.
+ */
+export async function cancelForUser(
+  target: { id: string; email: string | null; fullName: string | null },
+  opts: { offerShown: boolean; locale: string; surface: string; buttonLabel: string },
+): Promise<CancelResult> {
+  const userId = target.id;
   const billing = await loadBilling(userId);
   const row = billing.primaryRow;
   if (!row || !['trialing', 'pro', 'past_due'].includes(billing.primary.state)) {
@@ -78,13 +97,13 @@ export async function cancelSubscription(
   const ctx = await requestContext();
   const base = {
     user_id: userId,
-    account_email: session.user.email ?? null,
+    account_email: target.email,
     documents: [] as ConsentEventInput['documents'],
     client_timezone: null,
     ip_address: ctx.ip,
     user_agent: ctx.userAgent,
     locale: opts.locale === 'es' ? 'es-MX' : 'en',
-    surface: 'web_my_plan',
+    surface: opts.surface,
     ui_version: UI_VERSION,
     disclosure_text: null,
     checkbox_text: null,
@@ -108,11 +127,11 @@ export async function cancelSubscription(
   const consent = await recordConsent({
     ...base,
     event_type: 'cancellation_requested',
-    button_label: 'Sí, cancelar',
+    button_label: opts.buttonLabel,
     details: { folio_cancelacion: folio, access_until: accessUntil },
   });
 
-  const email = session.user.email;
+  const email = target.email;
   let messageId: string | null = null;
   if (email) {
     const sent = await dispatchBillingEmail({
@@ -121,8 +140,7 @@ export async function cancelSubscription(
       kind: 'cancelled',
       periodKey: folio,
       vars: {
-        nombre:
-          ((session.user.user_metadata?.full_name as string | undefined) ?? '').split(' ')[0] ?? '',
+        nombre: (target.fullName ?? '').split(' ')[0] ?? '',
         plan: s.planKey === 'vip_month' ? 'VIP' : 'Pro',
         monto: '',
         folio_cancelacion: folio,

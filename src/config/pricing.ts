@@ -128,3 +128,12 @@ export function assertReminderWindows(p = PRICING): void {
   if (bad.length) throw new Error(`Charge notices must be ≥ 5 days before the charge (got ${bad.join(', ')})`);
 }
 assertReminderWindows();
+
+/**
+ * P5-6 · Whether Mensual is offered next to Anual (trial and Planes). The
+ * owner panel's saved override wins over TRIAL_PLAN_CHOICE_ENABLED; anything
+ * that isn't a boolean is ignored.
+ */
+export function resolveBillingToggle(override: unknown, envDefault: boolean): boolean {
+  return typeof override === 'boolean' ? override : envDefault;
+}

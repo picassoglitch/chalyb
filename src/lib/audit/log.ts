@@ -28,7 +28,16 @@ export type AuditAction =
   | 'promo.trial_revoke' // admin ended a user's ChalyClip trial early
   | 'engine.launch' // "Abrir" refused by entitlement (P0-3)
   | 'engine.provision' // account created (or failed) at an engine on launch (P0-2)
-  | 'clips.job_failed'; // a Clips job ended in failed(reason) (P0-16)
+  | 'clips.job_failed' // a Clips job ended in failed(reason) (P0-16)
+  // Owner panel (P5). Engine and settings actions have no subscriber: the
+  // admin is both actor and target, like engine.status before them.
+  | 'admin.gift_month' // a month of Pro with no charge
+  | 'admin.plan_offer' // emailed the user a plan change to accept (no charge until they do)
+  | 'admin.access_email' // resent the sign-in link
+  | 'admin.refund' // refunded the last charge through Mercado Pago
+  | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
+  | 'engine.visibility' // showed or hid a tool for customers
+  | 'settings.billing_toggle'; // Mensual/Anual offered or not
 
 export interface AuditPayload {
   action: AuditAction;

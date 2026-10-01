@@ -1559,5 +1559,283 @@
       "title": "Tu transmisión terminó",
       "body": "Duró {duracion}. ¿Hacemos clips?"
     }
+  },
+  "admin": {
+    "nav": {
+      "aria": "Panel del dueño",
+      "command": "Centro de mando",
+      "people": "Personas",
+      "money": "Dinero",
+      "tools": "Herramientas",
+      "activity": "Actividad",
+      "settings": "Ajustes",
+      "more": "Más",
+      "owner": "Dueño",
+      "viewApp": "Ver la app ›",
+      "menu": "Menú"
+    },
+    "more": {
+      "team": "Equipo, roles y créditos",
+      "engines": "Engines (técnico)",
+      "royalties": "Regalías",
+      "revenue": "Ingresos por engine",
+      "audit": "Registro de auditoría",
+      "messages": "Mensajes",
+      "models": "AI Models",
+      "analytics": "Analytics",
+      "api": "API & Keys",
+      "labs": "Labs (no conectado)",
+      "overview": "Vista técnica"
+    },
+    "hello": {
+      "morning": "Buenos días 👋",
+      "afternoon": "Buenas tardes 👋",
+      "night": "Buenas noches 👋"
+    },
+    "home": {
+      "metaTitle": "Centro de mando",
+      "title": "Centro de mando",
+      "sub": "Así va Chalyb este mes. Lo importante, primero.",
+      "range": "Periodo",
+      "today": "Hoy",
+      "week": "7 días",
+      "month": "Este mes",
+      "revenue": "Ingresos del mes",
+      "revenueSub": "IVA incluido · ya sin reembolsos",
+      "vsLast": "{delta} vs mes pasado",
+      "noBase": "sin datos suficientes para comparar",
+      "subscribers": "Suscriptores activos",
+      "subscribersSub": "+{n} este mes",
+      "trials": "Pruebas activas",
+      "trialsSub": "Terminan esta semana: {n}",
+      "conversion": "Conversión de prueba",
+      "conversionSub": "De cada 10 pruebas, {n} se quedan",
+      "conversionNone": "sin datos suficientes ({n} pruebas terminadas)",
+      "attention": "Necesita tu atención",
+      "attentionNone": "Nada pendiente. Todo en orden.",
+      "att": {
+        "failedCharges": "{n, plural, one {# cobro fallido} other {# cobros fallidos}}",
+        "refundRequests": "{n, plural, one {# reembolso pedido} other {# reembolsos pedidos}}",
+        "slowTools": "{n, plural, one {# herramienta lenta} other {# herramientas lentas}}",
+        "newIdeas": "{n, plural, one {# idea nueva} other {# ideas nuevas}}",
+        "bouncedNotices": "{n, plural, one {# aviso de cobro que rebotó} other {# avisos de cobro que rebotaron}}",
+        "chargesWithoutNotice": "{n, plural, one {# cobro sin aviso entregado (reembolsable)} other {# cobros sin aviso entregado (reembolsables)}}",
+        "cta": {
+          "failedCharges": "Revisar",
+          "refundRequests": "Responder",
+          "slowTools": "Ver",
+          "newIdeas": "Leer",
+          "bouncedNotices": "Ver",
+          "chargesWithoutNotice": "Revisar"
+        }
+      },
+      "tools": "Herramientas",
+      "health": {
+        "ok": "Funcionando bien",
+        "slow": "Lento hoy",
+        "down": "No funciona ahora"
+      },
+      "seeActivity": "Ver actividad",
+      "noData": "sin datos",
+      "loadFailed": "No pudimos leer estos datos ahora.",
+      "revenueToday": "Ingresos de hoy",
+      "revenueWeek": "Ingresos de 7 días"
+    },
+    "people": {
+      "metaTitle": "Personas",
+      "title": "Personas",
+      "sub": "Todos tus suscriptores en un solo lugar.",
+      "search": "Buscar por nombre o correo",
+      "chips": {
+        "all": "Todos",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "cancelled": "Cancelados"
+      },
+      "col": {
+        "person": "Persona",
+        "plan": "Plan",
+        "status": "Estado",
+        "since": "Desde",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Activo",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "ending": "Termina pronto",
+        "cancelled": "Cancelado",
+        "free": "Gratis"
+      },
+      "empty": "Nadie coincide con esa búsqueda.",
+      "none": "Aún no hay suscriptores.",
+      "actionsFor": "Acciones para {nombre}",
+      "act": {
+        "giftMonth": "Regalar 1 mes gratis",
+        "changePlan": "Cambiar su plan",
+        "resendAccess": "Reenviar correo de acceso",
+        "refundLast": "Reembolsar último cobro",
+        "cancel": "Cancelar su suscripción"
+      },
+      "giftBlocked": "Tiene un cobro automático activo: un mes gratis no evitaría el cobro.",
+      "choosePlan": "Elige el plan que le vas a proponer",
+      "confirm": {
+        "step": "Confirma · paso 2 de 2",
+        "no": "No, volver",
+        "giftMonth": {
+          "q": "¿Regalar 1 mes de Pro a {nombre}?",
+          "body": "Tendrá Pro 30 días más, sin cobro. Queda registrado con tu nombre.",
+          "yes": "Sí, regalar"
+        },
+        "changePlan": {
+          "q": "¿Proponer {plan} a {nombre}?",
+          "body": "Le llega un correo para revisarlo. No se cobra nada hasta que acepte con su casilla. Queda registrado con tu nombre.",
+          "yes": "Sí, enviar"
+        },
+        "resendAccess": {
+          "q": "¿Reenviar el correo de acceso a {nombre}?",
+          "body": "Le llega un enlace para entrar que dura poco y sirve una vez. Queda registrado con tu nombre.",
+          "yes": "Sí, reenviar"
+        },
+        "refundLast": {
+          "q": "¿Reembolsar {monto} MXN a {nombre}?",
+          "body": "Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre.",
+          "yes": "Sí, reembolsar"
+        },
+        "cancel": {
+          "q": "¿Cancelar la suscripción de {nombre}?",
+          "body": "No se le cobrará más. Conserva lo que ya pagó hasta el final del periodo y recibe su folio por correo. Queda registrado con tu nombre.",
+          "yes": "Sí, cancelar"
+        }
+      },
+      "done": "Listo. Ya está en Actividad.",
+      "err": {
+        "FORBIDDEN": "Solo un administrador puede hacer esto.",
+        "NOT_ALLOWED": "Esta acción no aplica a esta persona.",
+        "NOT_FOUND": "No encontramos a esta persona.",
+        "MP_ERROR": "Mercado Pago no respondió. No se hizo ningún cambio.",
+        "EMAIL_ERROR": "No pudimos enviar el correo. No se hizo ningún cambio."
+      }
+    },
+    "money": {
+      "metaTitle": "Dinero",
+      "title": "Dinero",
+      "sub": "Una sola fuente de verdad para tus ingresos.",
+      "source": "Viene de Mercado Pago · se actualiza cada hora",
+      "revenue": "Ingresos del mes",
+      "revenueSub": "Ya descontados los reembolsos",
+      "trials": "Pruebas que se convierten",
+      "trialsSub": "{a} de {b} pruebas",
+      "failed": "Cobros fallidos",
+      "failedSub": "{n, plural, one {# cobro} other {# cobros}} · se reintentan solos",
+      "refunds": "Reembolsos",
+      "refundsSub": "{n} este mes",
+      "chart": "Ingresos por mes",
+      "chartAria": "{mes}: {monto}",
+      "funnel": "Pruebas de este mes",
+      "funnelSteps": {
+        "started": "Empezaron prueba",
+        "stillTrial": "Siguen en prueba",
+        "paid": "Ya pagaron",
+        "cancelled": "Cancelaron"
+      },
+      "payments": "Pagos",
+      "subscriptions": "Suscripciones",
+      "costs": "Costos",
+      "col": {
+        "date": "Fecha",
+        "person": "Persona",
+        "concept": "Concepto",
+        "amount": "Monto",
+        "state": "Estado"
+      },
+      "state": {
+        "charged": "Cobrado",
+        "failed": "Falló",
+        "refunded": "Reembolsado",
+        "pending": "Pendiente"
+      },
+      "noMovements": "Aún no hay movimientos este mes.",
+      "subsBy": {
+        "active": "Activas",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "cancelled": "Canceladas"
+      },
+      "costsNote": "Costos fijos configurados a mano, no medidos. Ver src/lib/billing/operating-costs.ts.",
+      "iva": "Montos con IVA incluido."
+    },
+    "activity": {
+      "metaTitle": "Actividad",
+      "title": "Actividad",
+      "sub": "Todo lo que pasó, en orden. Sin datos personales sensibles.",
+      "type": "Tipo",
+      "tool": "Herramienta",
+      "all": "Todo",
+      "types": {
+        "charge": "Cobros",
+        "failed": "Fallidos",
+        "refund": "Reembolsos",
+        "cancel": "Cancelaciones",
+        "notice": "Avisos",
+        "consent": "Consentimientos",
+        "admin": "Acciones del equipo",
+        "tool": "Herramientas"
+      },
+      "empty": "Nada con este filtro en los últimos 30 días.",
+      "by": "por {quien}"
+    },
+    "tools": {
+      "metaTitle": "Herramientas",
+      "title": "Herramientas",
+      "sub": "Qué ven tus clientes. Lo que ocultes desaparece de Inicio, Más herramientas, la página principal y los conteos.",
+      "visible": "Visible para clientes",
+      "hidden": "Oculta",
+      "toggle": "Mostrar {herramienta} a clientes",
+      "failures": "{n, plural, one {# falla} other {# fallas}} en 24 h",
+      "confirm": {
+        "q": "¿Ocultar {herramienta}?",
+        "body": "{n, plural, one {# persona que paga la usó} other {# personas que pagan la usaron}} en los últimos 30 días. Los términos (§7.3) piden avisarles con anticipación (30 días cuando sea posible) y ofrecer una alternativa o un reembolso. Queda registrado con tu nombre.",
+        "yes": "Sí, ocultar",
+        "no": "No, volver"
+      },
+      "err": "No pudimos guardar el cambio. Intenta de nuevo."
+    },
+    "settings": {
+      "metaTitle": "Ajustes",
+      "title": "Ajustes",
+      "sub": "Lo que se guarda aquí queda registrado con tu nombre.",
+      "pricing": "Precios",
+      "pricingNote": "Solo lectura. Se cambian en src/config/pricing.ts.",
+      "plan": {
+        "pro_month": "Pro mensual",
+        "pro_year": "Pro anual",
+        "vip_month": "VIP mensual"
+      },
+      "toggle": "Ofrecer Mensual además de Anual",
+      "toggleHelp": "Si lo apagas, la prueba y Planes solo ofrecen Anual.",
+      "saved": "Guardado.",
+      "saveError": "No se pudo guardar.",
+      "seller": "Quién vende",
+      "sellerMissing": "Falta configurar",
+      "legal": "Documentos legales",
+      "version": "versión {v}",
+      "account": "Tu cuenta",
+      "org": "Organización",
+      "security": "Seguridad",
+      "readOnly": "Solo lectura",
+      "rows": {
+        "name": "Nombre",
+        "email": "Correo",
+        "role": "Rol",
+        "orgName": "Nombre",
+        "timezone": "Zona horaria",
+        "auth": "Inicio de sesión",
+        "twofa": "Doble factor"
+      },
+      "authValue": "Supabase Auth",
+      "twofaValue": "No conectado"
+    },
+    "example": "Ejemplo"
   }
 }
