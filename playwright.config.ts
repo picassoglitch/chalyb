@@ -9,9 +9,17 @@
 // Specs that change billing or engine state run only with E2E_ALLOW_MUTATIONS=1
 // against a preview using Mercado Pago sandbox — never against production.
 
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
+// Local secrets for e2e runs live in .env.e2e.local (gitignored by .env.*.local):
+// the E2E_* accounts, E2E_BASE_URL and, for a protected Vercel preview,
+// E2E_VERCEL_BYPASS (Project → Settings → Deployment Protection → Protection
+// Bypass for Automation).
+if (existsSync('.env.e2e.local')) process.loadEnvFile('.env.e2e.local');
+
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
+const bypass = process.env.E2E_VERCEL_BYPASS;
 
 export default defineConfig({
   testDir: './e2e',
@@ -24,6 +32,11 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    // Lets the runner through Vercel Deployment Protection on previews; the
+    // cookie variant keeps it for navigations the header doesn't reach.
+    extraHTTPHeaders: bypass
+      ? { 'x-vercel-protection-bypass': bypass, 'x-vercel-set-bypass-cookie': 'samesitenone' }
+      : undefined,
   },
   projects: [
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
