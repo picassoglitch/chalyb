@@ -1,4 +1,5 @@
-// POST /api/tools/consent — the risk notice and the AI likeness step. 422
+// POST /api/tools/consent — the risk notice, the AI likeness step and
+// autopublish (P3-3). 422
 // without the box ticked; the texts stored are the ones the page showed,
 // rendered again here from the same messages.
 
@@ -8,6 +9,10 @@ import { getSessionUser } from '@/lib/auth/session';
 import { RISK_TOOLS } from '@/lib/tools/routes';
 import { engineDisplayName } from '@/lib/engines/display-names';
 import { recordToolConsent, riskVersion } from '@/lib/tools/consents';
+import { getEntitlements } from '@/lib/billing/entitlement';
+import { TIER_CAPS } from '@/lib/billing/tiers';
+import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { decideAutopublish } from '@/lib/tools/autopublish';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,6 +23,8 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   if (body.checked !== true)
     return NextResponse.json({ ok: false, code: 'CONSENT_REQUIRED' }, { status: 422 });
+  // Every path below re-reads the plan and capabilities: the client's word
+  // is only the checkbox.
   const locale = body.locale === 'en' ? 'en' : 'es';
   const t = await getTranslations({ locale, namespace: 'consents' });
 
@@ -44,6 +51,30 @@ export async function POST(req: Request) {
       checkboxText: t('likeness.check'),
       buttonLabel: t('likeness.cta'),
       details: { feature },
+      locale,
+    });
+    return NextResponse.json({ ok: true, consentId: event.consent_id });
+  }
+  if (body.kind === 'autopublish') {
+    const account = String(body.account ?? '').slice(0, 120);
+    const ent = await getEntitlements(session);
+    const decision = decideAutopublish({
+      supportsConnect: getClipsAdapter()?.capabilities().supportsConnect ?? false,
+      account,
+      capAllows: TIER_CAPS[ent.plan].clipAutoPublish,
+      checked: body.checked,
+    });
+    if (!decision.ok)
+      return NextResponse.json(
+        { ok: false, code: decision.reason.toUpperCase() },
+        { status: decision.reason === 'consent_required' ? 422 : 403 },
+      );
+    const event = await recordToolConsent(session, {
+      type: 'autopublish_enabled',
+      surface: 'clips_autopublish',
+      checkboxText: t('autopublish.check', { cuenta: account }).replace(/<\/?b>/g, ''),
+      buttonLabel: t('autopublish.cta'),
+      details: { tool: 'chalybclip', account },
       locale,
     });
     return NextResponse.json({ ok: true, consentId: event.consent_id });

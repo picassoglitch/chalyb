@@ -5,7 +5,7 @@
 //   b/off→ null: the screens hand off to the engine's app over SSO
 
 import 'server-only';
-import { toolHubMode, type ToolHubMode } from '@/lib/config/flags';
+import { clipsHubMode, toolHubMode, type ToolHubMode } from '@/lib/config/flags';
 import { NotImplementedError } from './adapters/tools';
 import {
   createMockAsistente,
@@ -60,3 +60,14 @@ export const getInmuebles = () =>
   pick(TOOL_SLUGS.inmuebles, 'InmueblesAdapter', createMockInmuebles);
 export const getInversiones = () =>
   pick(TOOL_SLUGS.inversiones, 'InversionesAdapter', createMockInversiones);
+
+/**
+ * Whether the hub shows this tool's own screens. Clips has a real adapter.
+ * For the others, Mode A is a stub until the engine's API is documented
+ * (OPS-13), so only the mock runs them in-hub today; otherwise the card
+ * leads to the launch page as before.
+ */
+export function hubRunsTool(slug: string): boolean {
+  if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
+  return toolHubMode(slug) === 'mock';
+}

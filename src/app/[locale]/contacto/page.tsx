@@ -21,9 +21,21 @@ export async function generateMetadata({
   });
 }
 
-export default async function ContactRoute({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ContactRoute({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ categoria?: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await getCurrentUser();
-  return <ContactPage isAuthenticated={user !== null} />;
+  const { categoria } = await searchParams;
+  return (
+    <ContactPage
+      isAuthenticated={user !== null}
+      category={categoria === 'cobro' ? 'cobro' : undefined}
+    />
+  );
 }

@@ -6,7 +6,17 @@ import { asRole, type Role } from './utils/roles';
 import { expectNoLeaks } from './utils/no-leaks';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
-const PAGES = ['/app', '/app/engines', '/app/billing', '/app/usage', '/app/settings', '/app/clips'];
+const PAGES = [
+  '/app',
+  '/app/herramientas',
+  '/app/billing',
+  '/app/usage',
+  '/app/settings',
+  '/app/clips',
+  '/app/history',
+  '/app/help',
+  '/app/avisos',
+];
 
 for (const role of ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'admin'] as Role[]) {
   test.describe(`as ${role}`, () => {
@@ -22,16 +32,20 @@ for (const role of ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'ad
     }
 
     test('every tool page is clean', async ({ page }, testInfo) => {
-      await page.goto('/app/engines');
+      await page.goto('/app/herramientas');
+      // Each card's button: the tool's own screens, its launch page, or the
+      // way to Pro (P3-7).
       const hrefs = await page
-        .locator('a[href*="/app/engines/"]')
+        .locator('.ch-tools a')
         .evaluateAll((as) => [...new Set(as.map((a) => (a as HTMLAnchorElement).pathname))]);
       expect(hrefs.length).toBeGreaterThan(0);
+      if (role === 'admin') hrefs.push('/app/engines/chalybclip');
       for (const href of hrefs) {
         await page.goto(href);
         await expectNoLeaks(page);
         await expectNoOverflow(page, testInfo);
         await expectAccessible(page);
+        if (!new URL(page.url()).pathname.includes('/app/engines/')) continue;
         const diagnostics = page.getByTestId('admin-diagnostics');
         if (role === 'admin') {
           await expect(diagnostics).toHaveCount(1);

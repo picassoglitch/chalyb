@@ -140,14 +140,15 @@ test('the likeness guard refuses without consent; no ungated likeness option exi
 });
 
 // ── Forbidden words across messages, emails and the built bundle ────
-/** Message values, minus the legally required disclaimers (the risk notice
- *  must say "ni de apuestas" verbatim — aceptacion-ux §6). */
+/** Message values, minus the legally required disclaimers. */
 function customerMessages(locale: string): string {
   const out: string[] = [];
   const walk = (node: unknown, key: string) => {
     if (node && typeof node === 'object')
       for (const [k, v] of Object.entries(node)) walk(v, key ? `${key}.${k}` : k);
-    else if (!key.startsWith('consents.')) out.push(String(node));
+    // The required disclaimers negate the words on purpose ("no es asesoría
+    // de apuestas"): aceptacion-ux §6 and the Pronósticos footer (P3-9).
+    else if (!key.startsWith('consents.') && key !== 'forecasts.footer') out.push(String(node));
   };
   walk(JSON.parse(read(`messages/${locale}.json`)), '');
   return out.join('\n');

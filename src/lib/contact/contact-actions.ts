@@ -102,7 +102,9 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   const email = String(formData.get('email') ?? '')
     .trim()
     .toLowerCase();
-  const subject = String(formData.get('subject') ?? '').trim();
+  const rawSubject = String(formData.get('subject') ?? '').trim();
+  // Ayuda → "Tengo un problema con un cobro" tags the message (P3-15).
+  const category = formData.get('category') === 'cobro' ? 'cobro' : null;
   const message = String(formData.get('message') ?? '').trim();
   // Pane tags the lead source (client / partner / earn). The contact form
   // can include a hidden <input name="pane"> set from the URL or the
@@ -121,9 +123,10 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   if (!EMAIL_RE.test(email) || email.length > 200) {
     return { ok: false, fieldError: 'email', errorKey: 'email' };
   }
-  if (subject.length < 3 || subject.length > 200) {
+  if (rawSubject.length < 3 || rawSubject.length > 200) {
     return { ok: false, fieldError: 'subject', errorKey: 'subject' };
   }
+  const subject = category ? `[${category}] ${rawSubject}` : rawSubject;
   if (message.length < 10 || message.length > 5000) {
     return { ok: false, fieldError: 'message', errorKey: 'message' };
   }

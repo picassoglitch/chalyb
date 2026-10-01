@@ -39,13 +39,15 @@ const SAME_OK_KEYS = new Set([
   'clips.s2.formats.horizontal.detail', // "Horizontal"
   'workspace.pages.fallback.sub', // empty
   'clips.done.thumbAlt', // "Clip: {title}"
+  'invest.s1.exchange', // "Exchange"
+  'results.clipsTitle', // "{n} clips"
 ]);
 
 /** Values that are names, prices or URLs and never translate. */
 const SAME_OK_VALUES: RegExp[] = [
   /^(MXN )?\$[\d,.]+( MXN)?$/,
   /^https?:\/\//,
-  /^(Pro|VIP|Plan|Chalyb|Clips|Señales|En vivo|YouTube|Twitch|Kick|Facebook|Instagram|TikTok \/ Reels \/ Shorts)$/,
+  /^(Pro|VIP|Plan|Chalyb|Clips|Señales|En vivo|YouTube|Twitch|Kick|Facebook|Instagram|WhatsApp|Internet|OBS|TikTok \/ Reels \/ Shorts)$/,
 ];
 
 /** Pure templates — only placeholders, "MXN" and punctuation — read the same

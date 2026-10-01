@@ -49,3 +49,60 @@ for (const role of ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'ad
     });
   });
 }
+
+test.describe('as pro', () => {
+  asRole('pro');
+  test.skip(!MOCK, 'E2E_CLIPS_MODE=mock not set');
+
+  test('keyboard only: paste → format → creating (P3-1)', async ({ page }) => {
+    await page.goto('/app/clips');
+    for (let i = 0; i < 20; i++) {
+      await page.keyboard.press('Tab');
+      if (await page.evaluate(() => document.activeElement?.id === 'clip-link')) break;
+    }
+    await page.keyboard.type('https://www.youtube.com/watch?v=teclado');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/app\/clips\/formato\?link=/);
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press('Tab');
+      const name = await page.evaluate(() => document.activeElement?.textContent?.trim());
+      if (name === 'Crear mis clips') break;
+    }
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { name: /Estamos creando tus clips|Tus clips están listos/ })).toBeVisible();
+  });
+
+  test('refresh on step 2 keeps the link', async ({ page }) => {
+    await page.goto('/app/clips?link=' + encodeURIComponent('https://www.youtube.com/watch?v=refresh'));
+    await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.reload();
+    await expect(page.locator('input[name="link"]')).toHaveValue('https://www.youtube.com/watch?v=refresh');
+  });
+
+  test('advanced options in ≤ 2 taps; several videos at once', async ({ page }) => {
+    await page.goto('/app/clips/formato?link=' + encodeURIComponent('https://www.youtube.com/watch?v=varios'));
+    await page.getByText('Opciones avanzadas').click(); // tap 1
+    const more = page.getByLabel('Subir varios videos a la vez');
+    await more.click(); // tap 2
+    await more.fill('https://www.twitch.tv/videos/1\nhttps://kick.com/video/2');
+    await page.getByRole('button', { name: 'Crear mis clips' }).click();
+    await expect(page).toHaveURL(/\/app\/history$/);
+    await expect(page.locator('.ch-result')).not.toHaveCount(0);
+  });
+
+  test('the ✕ asks before dropping what was typed', async ({ page }) => {
+    await page.goto('/app/clips');
+    await page.getByLabel(/Pega el enlace/).fill('https://www.youtube.com/watch?v=x');
+    await page.getByRole('link', { name: 'Cerrar y volver a Inicio' }).click();
+    await expect(page.getByRole('dialog', { name: '¿Salir? Lo que escribiste no se guardará.' })).toBeVisible();
+    await page.getByRole('button', { name: 'Sí, salir' }).click();
+    await expect(page).toHaveURL(/\/app$/);
+  });
+
+  test('ready clips can be shared', async ({ page }) => {
+    await makeClips(page, 'https://www.youtube.com/watch?v=compartir');
+    await expect(page.getByRole('heading', { name: /Tus clips están listos/ })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: 'Compartir Clip 1' })).toBeVisible();
+  });
+});
+

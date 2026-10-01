@@ -105,3 +105,26 @@ export function cfdiEnabled(): boolean {
 export function supportSlaConfirmed(): boolean {
   return readBool('SUPPORT_SLA_CONFIRMED', false);
 }
+
+/** Whether the P6 legal texts are published (OPS-10). Until then the footer
+ *  links only the documents that exist and no JSON-LD Offer is emitted. */
+export function legalPublished(): boolean {
+  return readBool('LEGAL_PUBLISH', false);
+}
+
+function readUrl(name: string): string | null {
+  const raw = (process.env[name] ?? '').trim();
+  return /^https:\/\//.test(raw) ? raw : null;
+}
+
+/** Q16 · "Ayuda de una persona por WhatsApp" is only claimed when a support
+ *  WhatsApp link exists. TODO(owner): set SUPPORT_WHATSAPP_URL (https://wa.me/…). */
+export function supportWhatsappUrl(): string | null {
+  return readUrl('SUPPORT_WHATSAPP_URL');
+}
+
+/** D7/Q18 · the partner program's terms. Until they exist the Socios section
+ *  names no percentage or amount and shows no "Ver bases" link. */
+export function partnerProgramTermsUrl(): string | null {
+  return readUrl('PARTNER_PROGRAM_TERMS_URL');
+}

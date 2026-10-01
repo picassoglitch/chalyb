@@ -10,6 +10,8 @@ import { isAdminRole } from '@/lib/billing/tiers';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { isCustomerVisible } from '@/lib/billing/entitlement-core';
 import { trialFlowEnabled } from '@/lib/config/flags';
+import { hubRunsTool } from '@/lib/tools/registry';
+import { TOOL_ROUTES } from '@/lib/tools/routes';
 import { engineDisplayName } from '@/lib/engines/display-names';
 import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscriptions';
 import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
@@ -37,7 +39,7 @@ export async function generateMetadata({
 //   not visible   → this URL redirects to the tools list
 //
 // Admins additionally get a collapsed diagnostics block (P0-5). P3 replaces
-// this page with each tool's own screens (Señales, En vivo, …).
+// each tool's own screens for included tools the hub runs (redirect below).
 
 export default async function ToolPage({
   params,
@@ -54,13 +56,17 @@ export default async function ToolPage({
 
   const engine = (await listEngines()).find((e) => e.slug === slug);
   if (!engine) notFound();
-  if (!isCustomerVisible(engine)) return redirect({ href: '/app/engines', locale });
+  if (!isCustomerVisible(engine)) return redirect({ href: '/app/herramientas', locale });
 
   const isAdmin = isAdminRole(session.role);
   if (isAdmin) await ensureAdminEngineAccess(session.user.id, engine.id);
 
   const entitlements = await getEntitlements(session);
   const access = entitlements.tools[engine.slug] ?? { state: 'trial_offer' as const };
+  // P3: a tool the hub runs has its own screens. Admins stay here for the
+  // diagnostics block.
+  if (access.state === 'included' && !isAdmin && TOOL_ROUTES[slug] && hubRunsTool(slug))
+    return redirect({ href: TOOL_ROUTES[slug]!, locale });
   const name = engine.name;
   const tagline = tEngines.has(`marketing.${engine.slug}.tagline`)
     ? tEngines(`marketing.${engine.slug}.tagline`)
@@ -128,7 +134,7 @@ export default async function ToolPage({
             <>
               <h2 className="ch-h2">{t('switch.title')}</h2>
               <p className="ch-muted">{t('switch.body', { tool: name })}</p>
-              <ButtonLink href="/app/engines" size="xl">
+              <ButtonLink href="/app/herramientas" size="xl">
                 {t('switch.cta')}
               </ButtonLink>
             </>

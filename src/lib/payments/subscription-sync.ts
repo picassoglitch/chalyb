@@ -32,6 +32,7 @@ import {
 } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { dispatchBillingEmail } from '@/lib/billing/notices';
+import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { track } from '@/lib/analytics/track';
 import {
   entitlementFor,
@@ -654,6 +655,15 @@ async function chargeEmail(
   };
   const renew = (sub?.next_payment_date as string | null) ?? null;
   const grace = (sub?.grace_ends_at as string | null) ?? null;
+  if (kind === 'charge_failed')
+    await addUserNotice({
+      userId,
+      kind: 'pastDue',
+      ...(await noticeText('pastDue')),
+      href: '/app/billing/tarjeta',
+      dedupeKey: `pay:${paymentId}`,
+      keepUntil: grace,
+    });
   await dispatchBillingEmail({
     userId,
     email,

@@ -68,7 +68,7 @@ export async function GET(
     .eq('slug', slug)
     .maybeSingle();
   if (!engine) {
-    return NextResponse.redirect(new URL('/app/engines', origin));
+    return NextResponse.redirect(new URL('/app/herramientas', origin));
   }
 
   // Only `active` engines are actually serving. `coming_soon` / `deprecated`

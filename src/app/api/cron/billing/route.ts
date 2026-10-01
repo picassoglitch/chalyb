@@ -21,6 +21,8 @@ import { syncSubscription } from '@/lib/payments/subscription-sync';
 import { notify } from '@/lib/notifications/notify';
 import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-state';
 import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
+import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { inAppBillingNotice } from '@/lib/notifications/core';
 import { dispatchBillingEmail } from '@/lib/billing/notices';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { trialDay29ReminderEnabled } from '@/lib/config/flags';
@@ -127,6 +129,22 @@ export async function GET(req: Request) {
             },
           });
           if (sent.sent) stats.notices += 1;
+          // The same notice in Avisos; it can't be deleted before the charge.
+          const inApp = inAppBillingNotice(notice.kind, {
+            nextChargeAt,
+            fechaCobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : '',
+            monto: formatMXN(price.totalCents),
+            periodKey: notice.periodKey,
+          });
+          if (inApp)
+            await addUserNotice({
+              userId,
+              kind: inApp.kind,
+              ...(await noticeText(inApp.kind, inApp.vars)),
+              href: inApp.href,
+              dedupeKey: inApp.dedupeKey,
+              keepUntil: inApp.keepUntil,
+            });
         }
       }
 

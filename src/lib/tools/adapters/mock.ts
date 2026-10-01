@@ -73,6 +73,17 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
   }
 
   return {
+    capabilities: () => ({
+      sources: ['YouTube', 'Twitch', 'Kick', 'Facebook'],
+      bulkUpload: true,
+      captionStyles: true,
+      customDuration: true,
+      watermark: false,
+      fileUpload: false,
+      supportsConnect: false,
+      confirmsNoChargeOnFailure: true,
+    }),
+
     async createJob(input: CreateClipJobInput): Promise<CreateClipJobResult> {
       if (input.sourceUrl.toLowerCase().includes('nocredits'))
         return { ok: false, reason: 'no_credits' };
@@ -97,6 +108,14 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
       const stored = jobs.get(jobId);
       if (!stored || stored.job.userId !== userId) return null;
       return view(stored);
+    },
+
+    async listJobs(userId, limit = 50) {
+      return [...jobs.values()]
+        .filter((s) => s.job.userId === userId)
+        .map(view)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, limit);
     },
 
     async retryJob(userId, jobId) {

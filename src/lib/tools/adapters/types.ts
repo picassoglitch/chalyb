@@ -60,11 +60,41 @@ export interface ClipJob {
   createdAt: string;
 }
 
+export const CAPTION_STYLES = ['clasico', 'grande', 'ninguno'] as const;
+export type CaptionStyle = (typeof CAPTION_STYLES)[number];
+
+/** Opciones avanzadas (SCR-06). Every field optional: "si no tocas nada,
+ *  usamos la mejor configuración por ti". */
+export interface ClipJobOptions {
+  captionStyle?: CaptionStyle;
+  captionLang?: 'es' | 'en';
+  /** Seconds per clip, 15–60 (BUILD-SPEC §4.3). */
+  minSec?: number;
+  maxSec?: number;
+}
+
+/** What this engine can do; each SCR-06 row and each connect button shows
+ *  only when its flag is true (no button without an action). */
+export interface ClipsCapabilities {
+  /** Platforms whose links the engine reads ("Funciona con …"). */
+  sources: string[];
+  bulkUpload: boolean;
+  captionStyles: boolean;
+  customDuration: boolean;
+  watermark: boolean;
+  fileUpload: boolean;
+  /** Account connect (OAuth) and autopublish. */
+  supportsConnect: boolean;
+  /** Whether a finished job uses no credits when it fails (P0 rule). */
+  confirmsNoChargeOnFailure: boolean;
+}
+
 export interface CreateClipJobInput {
   userId: string;
   sourceUrl: string;
   format: ClipFormat;
   count: ClipCount;
+  options?: ClipJobOptions;
 }
 
 export type CreateClipJobResult =
@@ -72,9 +102,12 @@ export type CreateClipJobResult =
   | { ok: false; reason: ClipFailureReason };
 
 export interface ClipsAdapter {
+  capabilities(): ClipsCapabilities;
   createJob(input: CreateClipJobInput): Promise<CreateClipJobResult>;
   /** Null when the job doesn't exist or belongs to another user. */
   getJob(userId: string, jobId: string): Promise<ClipJob | null>;
+  /** The user's jobs, newest first (Mis resultados). */
+  listJobs(userId: string, limit?: number): Promise<ClipJob[]>;
   /** Resubmit a failed job in place (same id). */
   retryJob(userId: string, jobId: string): Promise<void>;
   /** Atomically mark a finished job settled (see ClipJob.settled). Returns

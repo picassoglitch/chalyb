@@ -3,6 +3,9 @@
 
 import 'server-only';
 import { logAudit } from '@/lib/audit/log';
+import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { track } from '@/lib/analytics/track';
 import { getClipsAdapter } from './adapters/clips';
 import { refreshClipJob, submitClipJob, type JobPolicyDeps } from './adapters/run-job';
 import type { ClipJob, ClipsAdapter, CreateClipJobInput } from './adapters/types';
@@ -16,6 +19,21 @@ function policyDeps(adapter: ClipsAdapter): JobPolicyDeps {
       // already writes the ledger — this is where a hub-side charge would go
       // if the job API leaves charging to the hub.
       console.info(`[clips] job ${job.id} ready · ${job.clips.length} clips · credits settled`);
+      // first_clip (§6.5): the user's first finished job. Deduped by the
+      // clips-ready notices: none yet means this is the first.
+      const { count } = await createAdminClient()
+        .from('user_notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', job.userId)
+        .eq('kind', 'clipsReady');
+      if (!count) await track('first_clip', { clips: job.clips.length, format: job.format });
+      await addUserNotice({
+        userId: job.userId,
+        kind: 'clipsReady',
+        ...(await noticeText('clipsReady', { n: job.clips.length })),
+        href: `/app/clips/${encodeURIComponent(job.id)}`,
+        dedupeKey: `clips:${job.id}`,
+      });
     },
     logFailure({ id, userId, reason, attempts }) {
       console.error(

@@ -4,7 +4,8 @@ import { redirect } from '@/i18n/routing';
 import { requireClipsAccess } from '@/lib/tools/clips-access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { checkSourceUrl } from '@/lib/tools/adapters/run-job';
-import { CLIP_COUNTS, CLIP_FORMATS } from '@/lib/tools/adapters/types';
+import { CAPTION_STYLES, CLIP_COUNTS, CLIP_FORMATS } from '@/lib/tools/adapters/types';
+import { MAX_EXTRA_LINKS } from '@/lib/tools/clips-options';
 import { createClipJob } from '@/lib/tools/clips-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { Pill } from '@/components/ui/primitives';
@@ -17,7 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Clips · Paso 2 (SCR-03): the shape and how many. Defaults are the
 // recommended ones (Vertical, 6), so "Crear mis clips" works untouched.
-// P3 adds Opciones avanzadas (SCR-06) below.
+// Opciones avanzadas (SCR-06) is closed by default and shows only the rows
+// the adapter supports; autopublish waits for supportsConnect (P3-3).
 
 export default async function ClipsStep2Page({
   params,
@@ -41,6 +43,7 @@ export default async function ClipsStep2Page({
   }
 
   const t = await getTranslations('clips');
+  const caps = getClipsAdapter()!.capabilities();
 
   return (
     <WizardShell
@@ -92,6 +95,73 @@ export default async function ClipsStep2Page({
             options={CLIP_COUNTS.map((n) => ({ value: n, label: String(n) }))}
           />
         </div>
+
+        {(caps.bulkUpload || caps.captionStyles || caps.customDuration) && (
+          <details className="ch-card ch-adv">
+            <summary>
+              <b>{t('adv.title')}</b> · <span className="ch-muted">{t('adv.sub')}</span>
+            </summary>
+            <div className="ch-adv__body">
+              {caps.bulkUpload && (
+                <div className="ch-field">
+                  <label htmlFor="adv-more">{t('adv.bulk')}</label>
+                  <textarea
+                    id="adv-more"
+                    name="more"
+                    rows={3}
+                    inputMode="url"
+                    className="ch-input ch-textarea"
+                    aria-describedby="adv-more-hint"
+                  />
+                  <p id="adv-more-hint" className="ch-muted" style={{ fontSize: 16, marginTop: 8 }}>
+                    {t('adv.bulkHint', { n: MAX_EXTRA_LINKS })}
+                  </p>
+                </div>
+              )}
+              {caps.captionStyles && (
+                <fieldset className="ch-fieldset ch-adv__row">
+                  <legend>{t('adv.captions')}</legend>
+                  <label className="ch-field">
+                    <span>{t('adv.captionStyle')}</span>
+                    <select name="captionStyle" className="ch-input" defaultValue="clasico">
+                      {CAPTION_STYLES.map((s) => (
+                        <option key={s} value={s}>
+                          {t(`adv.styles.${s}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="ch-field">
+                    <span>{t('adv.captionLang')}</span>
+                    <select name="captionLang" className="ch-input" defaultValue={locale === 'en' ? 'en' : 'es'}>
+                      {(['es', 'en'] as const).map((l) => (
+                        <option key={l} value={l}>
+                          {t(`adv.langs.${l}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </fieldset>
+              )}
+              {caps.customDuration && (
+                <fieldset className="ch-fieldset ch-adv__row">
+                  <legend>
+                    {t('adv.duration')} <span className="ch-muted">· {t('adv.durationHint')}</span>
+                  </legend>
+                  <label className="ch-field">
+                    <span>{t('adv.min')}</span>
+                    <input name="minSec" type="number" min={15} max={60} inputMode="numeric" className="ch-input" />
+                  </label>
+                  <label className="ch-field">
+                    <span>{t('adv.max')}</span>
+                    <input name="maxSec" type="number" min={15} max={60} inputMode="numeric" className="ch-input" />
+                  </label>
+                </fieldset>
+              )}
+              <p className="ch-muted">{t('adv.default')}</p>
+            </div>
+          </details>
+        )}
 
         <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
           {t('s2.cta')}

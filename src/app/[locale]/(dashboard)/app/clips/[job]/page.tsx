@@ -12,6 +12,7 @@ import { WizardShell } from '@/components/ui/wizard-shell';
 import { ButtonLink } from '@/components/ui/primitives';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { AutoRefresh } from '@/components/app/clips/auto-refresh';
+import { ShareButton } from '@/components/app/clips/share-button';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clips');
@@ -61,7 +62,11 @@ export default async function ClipJobPage({
   if (job.state === 'failed') {
     return (
       <WizardShell {...chrome} narrow>
-        <ClipError reason={job.reason ?? 'unknown'} sourceUrl={job.sourceUrl} />
+        <ClipError
+          reason={job.reason ?? 'unknown'}
+          sourceUrl={job.sourceUrl}
+          noCharge={getClipsAdapter()?.capabilities().confirmsNoChargeOnFailure ?? false}
+        />
       </WizardShell>
     );
   }
@@ -110,6 +115,13 @@ export default async function ClipJobPage({
                   <Download aria-hidden="true" />
                   {t('done.download')}
                 </a>
+                <ShareButton
+                  url={clip.downloadUrl}
+                  title={clip.title}
+                  label={t('done.share')}
+                  ariaLabel={t('done.shareClip', { title: clip.title })}
+                  copiedLabel={t('done.copied')}
+                />
               </li>
             ))}
           </ul>
