@@ -1,0 +1,112 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Notificaciones</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:var(--bg)}
+.phone{width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)}
+.status{height:50px;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 34px;font-size:17px;font-weight:600}
+.status .r{display:flex;gap:6px;align-items:center}
+.mtop{padding:4px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.mtop .logo{padding:0;gap:9px}.mtop .logo .mark{width:32px;height:32px;border-radius:10px}.mtop .logo .mark svg{width:18px;height:18px}
+.mtop .logo .word{font-size:20px}
+.mtop .avatar{width:38px;height:38px;font-size:14px}
+.mh{padding:18px 20px 0}
+.mh .eyebrow{font-size:18px;margin-bottom:4px}
+.mh h1{font-size:29px;line-height:1.12;letter-spacing:-.035em;white-space:nowrap}
+.mcards{padding:18px 16px 0;display:flex;flex-direction:column;gap:10px}
+.mc{display:flex;align-items:center;gap:14px;padding:14px 12px 14px 14px;border-radius:22px;background:#fff;box-shadow:var(--shadow);min-height:96px}
+.mc .big{width:54px;height:54px;border-radius:16px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.mc .big svg.i{width:28px;height:28px;stroke-width:1.9}
+.mc .t{flex:1;min-width:0}
+.mc .label{font-size:12.5px}
+.mc h2{font-size:18px;margin-top:1px;letter-spacing:-.025em;white-space:nowrap}
+.mc p{font-size:15px;color:var(--ink2);margin-top:2px;line-height:1.3}
+.mc .chev{color:#C4C4CC;width:20px;height:20px}
+.mc.first{box-shadow:0 0 0 2px var(--accent),var(--shadow-lg)}
+.mc.first .big{background:var(--accent);color:#fff}
+.mstrip{margin:14px 16px 0;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:var(--tint2);border:1px solid #E4E0FF;font-size:15px;color:var(--ink2)}
+.mstrip .ok{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.mstrip .ok svg{width:14px;height:14px;stroke-width:3}
+.mstrip b{color:var(--ink)}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:88px;background:rgba(250,250,252,.92);backdrop-filter:blur(20px);border-top:1px solid #E2E2E8;display:flex;justify-content:space-around;padding-top:9px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:600;color:#8E8E96;width:110px}
+.tab svg.i{width:28px;height:28px}
+.tab.on{color:var(--accent)}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111}
+
+.nh{padding:6px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.nh .bk{display:flex;align-items:center;gap:2px;font-size:17px;font-weight:600;color:var(--accent)}
+.nh .bk svg.i{width:24px;height:24px}
+.nh a{font-size:16px;color:var(--accent);font-weight:600}
+.nt{padding:10px 20px 0}
+.nt h1{font-size:34px}
+.sec{padding:16px 20px 6px;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.nl{display:flex;flex-direction:column;gap:8px;padding:0 12px}
+.nf{display:flex;gap:12px;padding:14px 14px;border-radius:20px;background:#fff;box-shadow:var(--shadow);position:relative}
+.nf .ni{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;flex:none}
+.nf .ni svg.i{width:22px;height:22px}
+.nf .tx{flex:1;min-width:0}
+.nf .t1{display:flex;align-items:baseline;gap:8px}
+.nf b{font-size:16.5px;font-weight:650;flex:1;line-height:1.25}
+.nf time{font-size:13.5px;color:var(--ink3);white-space:nowrap}
+.nf p{font-size:15px;color:var(--ink2);margin-top:2px;line-height:1.35}
+.nf.un::after{content:"";position:absolute;left:5px;top:50%;width:7px;height:7px;border-radius:50%;background:var(--accent);transform:translateY(-50%)}
+</style></head><body><div class="phone"><div class="status"><span>9:41</span><span class="r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#1D1D1F"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#1D1D1F"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#1D1D1F"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#1D1D1F"/></svg><svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2.2c2.4 0 4.6.9 6.3 2.5l1.2-1.2A10.6 10.6 0 0 0 8.5.5 10.6 10.6 0 0 0 1 3.5l1.2 1.2a9 9 0 0 1 6.3-2.5zm0 3.4c1.5 0 2.9.6 3.9 1.5l1.2-1.2a7.3 7.3 0 0 0-10.2 0l1.2 1.2c1-1 2.4-1.5 3.9-1.5zm0 3.4c.6 0 1.2.2 1.6.6L8.5 11.2 6.9 9.6c.4-.4 1-.6 1.6-.6z" fill="#1D1D1F"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#1D1D1F" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="#1D1D1F"/><path d="M25 4.5v4c.8-.3 1.5-1.1 1.5-2s-.7-1.7-1.5-2z" fill="#1D1D1F" opacity=".5"/></svg></span></div><div class="nh"><span class="bk"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Inicio</span><a>Marcar como leídos</a></div>
+<div class="nt"><h1>Avisos</h1></div><div class="sec">Hoy</div><div class="nl">
+<div class="nf un"><div class="ni" style="background:#5B4BFF"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><div class="t1"><b>Tus clips están listos</b><time>8:40 p.m.</time></div><p>Hicimos 6 clips de “Noche de preguntas”. Ya tienen subtítulos.</p></div></div>
+<div class="nf un"><div class="ni" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><div class="t1"><b>Tu prueba termina en 7 días</b><time>9:00 a.m.</time></div><p>El 30 de octubre de 2026 se cobrarán $7,490 MXN. Puedes cancelar en 1 clic.</p></div></div>
+<div class="nf"><div class="ni" style="background:#C77700"><svg class="i" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><div class="t1"><b>Bitcoin: buen momento para comprar</b><time>7:15 a.m.</time></div><p>Informativo, no es asesoría financiera.</p></div></div></div>
+<div class="sec">Esta semana</div><div class="nl">
+<div class="nf"><div class="ni" style="background:#FF375F"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div><div class="tx"><div class="t1"><b>Tu transmisión terminó</b><time>mar.</time></div><p>Duró 2 h 14 min. ¿Hacemos clips?</p></div></div>
+<div class="nf"><div class="ni" style="background:#30B0C7"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><div class="tx"><div class="t1"><b>Tu Asistente respondió 12 mensajes</b><time>lun.</time></div><p>Tus clientes ya tienen respuesta.</p></div></div></div>
+<nav class="tabs"><div class="tab"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg>Inicio</div><div class="tab"><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg>Resultados</div><div class="tab"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Cuenta</div></nav>
+<div class="homebar"></div></div></body></html>

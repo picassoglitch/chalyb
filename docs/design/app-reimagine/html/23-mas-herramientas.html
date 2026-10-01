@@ -1,0 +1,88 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Más herramientas</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding-top:44px}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.hrow .sub{margin-top:6px}
+.srch{display:flex;align-items:center;gap:12px;height:60px;width:380px;padding:0 20px;border-radius:18px;background:#fff;box-shadow:var(--shadow);font-size:18px;color:#A8A8B0}
+.srch svg.i{color:var(--ink3)}
+.chips{display:flex;gap:10px;margin-top:20px;flex-wrap:nowrap}
+.chips .chip{height:46px;padding:0 18px;font-size:17px}
+
+.main{overflow:visible}
+.app{height:auto;min-height:100vh;overflow:visible}
+.tg4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:26px}
+.t4{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:22px 20px 20px;display:flex;flex-direction:column;min-height:300px}
+.t4 p{margin-bottom:18px}
+.t4 h3{font-size:24px;font-weight:700;margin-top:18px;letter-spacing:-.02em}
+.t4 p{font-size:17.5px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.t4 .pill{align-self:flex-start;margin-top:auto}
+.t4 .btn{margin-top:12px;width:100%;height:58px}
+.free{margin-top:36px;padding:26px;border-radius:28px;box-shadow:inset 0 0 0 2px #DEDEE4;background:rgba(255,255,255,.4)}
+.free .fh{display:flex;align-items:center;gap:14px}
+.free .fh h2{font-size:22px}
+.free .fh .tag-ej{background:#EEEEF2;color:var(--ink2);border-color:#C9C9D2}
+.free .t4{min-height:290px}
+.free .t4 .btn{background:var(--tint);color:var(--accent);box-shadow:none}
+.promo{margin-top:18px;display:flex;align-items:center;gap:18px;padding:18px 22px;border-radius:20px;background:var(--tint2);box-shadow:inset 0 0 0 1.5px #E4E0FF}
+.promo b{font-size:19px;display:block}.promo small{font-size:16.5px;color:var(--ink2)}
+.promo .btn{margin-left:auto;height:56px}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap">
+<div class="eyebrow">Inicio ›</div><h1>Más herramientas</h1><p class="sub" style="margin-top:6px">Todo está incluido en tu plan Pro. Abre la que quieras.</p>
+<div class="tg4"><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#30B0C7"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><h3>Asistente</h3><p>Un bot que contesta a tus clientes y seguidores, de día y de noche.</p><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span><button class="btn btn-primary">Abrir</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#34A853"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></div><h3>Pronósticos</h3><p>Los pronósticos deportivos del día, explicados en simple.</p><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span><button class="btn btn-primary">Abrir</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#0A84FF"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div><h3>Inmuebles</h3><p>Publica tus propiedades y atiende a interesados sin perder tiempo.</p><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span><button class="btn btn-primary">Abrir</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#AF52DE"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="9" rx="1"/><rect x="17" y="5" width="3" height="12" rx="1"/></svg></div><h3>Inversiones</h3><p>Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero.</p><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span><button class="btn btn-primary">Abrir</button></div></div>
+<div class="free"><div class="fh"><h2>Así lo ve alguien con plan Gratis</h2><span class="tag-ej">Otro estado</span></div>
+<div class="tg4" style="margin-top:18px"><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#30B0C7"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><h3>Asistente</h3><p>Un bot que contesta a tus clientes y seguidores, de día y de noche.</p><span class="pill acc"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;stroke-width:0"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>Incluido en Pro</span><button class="btn">Pruébalo gratis</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#34A853"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></div><h3>Pronósticos</h3><p>Los pronósticos deportivos del día, explicados en simple.</p><span class="pill acc"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;stroke-width:0"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>Incluido en Pro</span><button class="btn">Pruébalo gratis</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#0A84FF"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div><h3>Inmuebles</h3><p>Publica tus propiedades y atiende a interesados sin perder tiempo.</p><span class="pill acc"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;stroke-width:0"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>Incluido en Pro</span><button class="btn">Pruébalo gratis</button></div><div class="t4"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#AF52DE"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="9" rx="1"/><rect x="17" y="5" width="3" height="12" rx="1"/></svg></div><h3>Inversiones</h3><p>Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero.</p><span class="pill acc"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;stroke-width:0"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>Incluido en Pro</span><button class="btn">Pruébalo gratis</button></div></div>
+<div class="promo"><div class="tico" style="width:48px;height:48px;border-radius:14px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></div><div><b>Prueba Pro gratis 1 mes</b><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div><button class="btn btn-primary">Prueba Pro gratis 1 mes</button></div></div>
+</div></main></div></body></html>

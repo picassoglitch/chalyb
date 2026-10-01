@@ -1,0 +1,197 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Planes</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:var(--bg)}
+.pg{width:1440px}
+.sec{max-width:1200px;margin:0 auto;padding:0 20px}
+.hero{display:grid;grid-template-columns:1fr 1.08fr;gap:48px;align-items:center;padding:80px 0 88px}
+.hero .kick{display:inline-flex;align-items:center;gap:10px;background:#fff;border-radius:999px;padding:8px 16px 8px 8px;font-size:17px;font-weight:600;color:var(--ink2);box-shadow:var(--shadow)}
+.hero .kick span{background:var(--tint);color:var(--accent);border-radius:999px;padding:4px 12px;font-size:15px;font-weight:700}
+.hero h1{font-size:66px;line-height:1.04;letter-spacing:-.045em;margin-top:24px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#5B4BFF,#9B5BFF);-webkit-background-clip:text;color:transparent}
+.hero .sub{font-size:22px;max-width:560px;margin-top:22px}
+.hero .cta{margin-top:36px;display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.hero .cta .btn-xl{width:auto;padding:0 40px;height:72px;font-size:22px}
+.hero .cta small{font-size:18px;color:var(--ink2)}
+.trust{display:flex;gap:22px;margin-top:30px;font-size:16px;color:var(--ink2);font-weight:550;flex-wrap:wrap}
+.trust span{display:flex;align-items:center;gap:7px}
+.trust svg.i{width:18px;height:18px;color:var(--accent);stroke-width:2.6}
+.vis{position:relative;height:540px}
+.vis .panel{position:absolute;left:150px;top:24px;right:0;z-index:2;background:#fff;border-radius:28px;box-shadow:var(--shadow-lg);padding:26px}
+.vis .panel h4{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.vis .it{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.vis .it:last-child{border-bottom:0;padding-bottom:4px}
+.vis .it b{font-size:19px;font-weight:650;display:block}
+.vis .it small{font-size:16px;color:var(--ink2)}
+.vis .it .tx{flex:1}
+.vis .float{position:absolute;left:-6px;top:190px;transform:rotate(-6deg);z-index:1;box-shadow:0 24px 50px rgba(20,20,50,.28);border-radius:20px}
+.vis .float2{position:absolute;right:-18px;bottom:30px;background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);padding:16px 18px;display:flex;gap:12px;align-items:center;width:300px}
+.vis .float2 b{font-size:17px;display:block}.vis .float2 small{font-size:15px;color:var(--ink2)}
+.shd{text-align:center;max-width:1000px;margin:0 auto}
+.shd .label{margin-bottom:12px}
+.shd h2{font-size:44px;letter-spacing:-.035em;line-height:1.1;font-weight:700}
+.shd p{font-size:21px;color:var(--ink2);margin-top:14px}
+.band{padding:88px 0}
+.band.white{background:#fff}
+.tg{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
+.tc{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:26px 24px 28px;min-height:248px;display:flex;flex-direction:column}
+.band.white .tc{background:var(--bg);box-shadow:none}
+.tc h3{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:20px}
+.tc p{font-size:18px;color:var(--ink2);margin-top:8px;line-height:1.42}
+.tc .inc{margin-top:auto;padding-top:16px;font-size:15px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:6px}
+.tc.idea{background:var(--tint2)!important;box-shadow:inset 0 0 0 1.5px #E4E0FF!important}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px}
+.st3{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:30px}
+.st3 .n{width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;font-size:26px;font-weight:700;display:grid;place-items:center}
+.st3 h3{font-size:25px;font-weight:700;margin-top:22px;letter-spacing:-.02em}
+.st3 p{font-size:19px;color:var(--ink2);margin-top:8px}
+.gall{display:flex;gap:18px;justify-content:center;margin-top:48px}
+.gall .g{text-align:center;width:176px}
+.gall .g b{display:block;font-size:17px;font-weight:650;margin-top:12px}
+.aud{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px}
+.au{border-radius:22px;background:var(--bg);padding:26px}
+.au .ai{width:52px;height:52px;border-radius:16px;background:#fff;color:var(--accent);display:grid;place-items:center;box-shadow:var(--shadow)}
+.au h3{font-size:22px;font-weight:700;margin-top:18px}
+.au p{font-size:17px;color:var(--ink2);margin-top:6px}
+.tstrip{display:flex;justify-content:center;gap:34px;margin-top:40px;font-size:18px;font-weight:600;color:var(--ink2)}
+.tstrip span{display:flex;align-items:center;gap:9px}
+.tstrip svg.i{color:var(--accent)}
+.plans{display:grid;grid-template-columns:1fr 1.12fr 1fr;gap:22px;margin-top:48px;align-items:center}
+.pl{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:30px;min-height:262px;display:flex;flex-direction:column}
+.pl .btn{margin-top:auto!important}
+.plans .pl:not(.hi){min-height:292px}
+.pl.hi .btn{margin-top:22px!important}
+.pl h3{font-size:24px;font-weight:700}
+.pl .pr{font-size:46px;font-weight:750;letter-spacing:-.04em;margin-top:10px}
+.pl .pr span{font-size:20px;font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pl .pn{font-size:18px;color:var(--ink2);margin-top:2px}
+.pl .pn b{color:var(--ink)}
+.pl .btn{width:100%;margin-top:22px}
+.pl.hi{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg);padding:38px 30px;position:relative}
+.pl.hi .tagx{position:absolute;top:-16px;left:30px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:6px 14px;border-radius:999px}
+.strike{text-decoration:line-through;color:var(--ink3)}
+.idea2{display:flex;align-items:center;gap:24px;padding:30px 34px;border-radius:24px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF}
+.idea2 .bi{width:64px;height:64px;border-radius:20px;background:#FFF4D6;color:#B07800;display:grid;place-items:center;flex:none}
+.idea2 .bi svg.i{width:32px;height:32px}
+.idea2 h3{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.idea2 p{font-size:19px;color:var(--ink2);margin-top:4px}
+.idea2 .btn{margin-left:auto}
+.faq{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px;margin-top:44px;align-items:start}
+.fq{background:#fff;border-radius:20px;box-shadow:var(--shadow);padding:22px 24px}
+.fq .q{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:650}
+.fq .q svg.i{margin-left:auto;color:var(--ink3)}
+.fq .a{font-size:18px;color:var(--ink2);margin-top:10px;line-height:1.5}
+.final{margin:0 auto;max-width:1160px;border-radius:32px;background:linear-gradient(135deg,#6B5CFF 0%,#5B4BFF 50%,#4632E6 100%);color:#fff;text-align:center;padding:64px 40px;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(91,75,255,.30)}
+.final::after{content:"";position:absolute;right:-90px;top:-120px;width:380px;height:380px;border-radius:50%;background:rgba(255,255,255,.10)}
+.final h2{font-size:46px;font-weight:750;letter-spacing:-.035em;color:#fff}
+.final p{font-size:21px;opacity:.9;margin-top:12px}
+.final .btn{margin-top:30px;height:72px;font-size:22px;padding:0 42px;background:#fff;color:var(--accent);border-radius:18px;position:relative;z-index:1}
+.final small{display:block;font-size:17px;opacity:.85;margin-top:14px}
+.foot{background:#fff;border-top:1px solid var(--line);margin-top:88px;padding:48px 0 40px}
+.foot .fr{display:flex;align-items:flex-start;gap:60px}
+.foot .fc h5{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:12px}
+.foot .fc a{display:block;font-size:17px;color:var(--ink);margin-bottom:9px}
+.foot .fb{display:flex;justify-content:space-between;margin-top:36px;padding-top:22px;border-top:1px solid var(--line);font-size:16px;color:var(--ink3)}
+.foot .logo{padding:0}
+.foot .lead{max-width:330px;font-size:17px;color:var(--ink2);margin-top:14px}
+
+.ph{text-align:center;padding:64px 0 0}
+.ph h1{font-size:52px;letter-spacing:-.04em}
+.ph .sub{font-size:21px}
+.tog{display:inline-flex;background:#E6E6EC;border-radius:18px;padding:5px;margin-top:30px;gap:4px}
+.tog span{height:56px;padding:0 26px;display:flex;align-items:center;gap:10px;border-radius:14px;font-size:19px;font-weight:600;color:var(--ink2)}
+.tog span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.tog .pill{font-size:13px}
+.pc{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:22px;margin-top:40px;align-items:stretch}
+.pk{background:#fff;border-radius:26px;box-shadow:var(--shadow);padding:32px 30px;display:flex;flex-direction:column;position:relative}
+.pk.hi{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.pk .tagx{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
+.pk h3{font-size:26px;font-weight:700}
+.pk .d{font-size:18px;color:var(--ink2);margin-top:4px}
+.pk .pr{font-size:54px;font-weight:750;letter-spacing:-.045em;margin-top:20px;line-height:1}
+.pk .pr span{font-size:21px;font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pk .pn{font-size:19px;color:var(--ink);margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:600}
+.pk .pn2{font-size:17px;color:var(--ink2);margin-top:6px}
+.pk .btn{width:100%;margin-top:24px}
+.pk .bn{font-size:16px;color:var(--ink2);text-align:center;margin-top:10px}
+.pk ul{list-style:none;margin-top:26px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:13px}
+.pk li{display:flex;gap:12px;font-size:18px;line-height:1.35}
+.pk li .ck{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.pk li .ck svg{width:15px;height:15px;stroke-width:3}
+.pk li.no{color:var(--ink3)} .pk li.no .ck{background:#F0F0F3;color:#B0B0B8}
+.pk .h5{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+.pnote{text-align:center;font-size:17px;color:var(--ink2);margin-top:28px}
+</style></head><body><div class="pg"><header class="pnav"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><nav class="links"><a class="">Herramientas</a><a class="">Cómo funciona</a><a class="on">Planes</a><a class="">Preguntas</a></nav>
+<div class="r"><a class="in">Entrar</a><button class="btn btn-primary">Prueba Pro gratis</button></div></header><section class="sec">
+<div class="ph"><h1>Un plan. Todas las herramientas.</h1><p class="sub">Prueba Pro gratis 1 mes. Cancela cuando quieras.</p>
+<div class="tog"><span>Mensual</span><span class="on">Anual <i class="pill acc" style="font-style:normal">Ahorras $1,498</i></span></div></div>
+<div class="pc">
+<div class="pk"><h3>Gratis</h3><div class="d">Para conocer Chalyb</div><div class="pr">$0</div><div class="pn">Sin tarjeta</div><div class="pn2">Para siempre</div>
+<button class="btn btn-secondary">Crear cuenta gratis</button><div class="bn">&nbsp;</div>
+<ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips para probar</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Tus resultados guardados</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Ayuda por correo</span></li><li class="no"><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>Señales, En vivo y las demás herramientas</span></li></ul></div>
+<div class="pk hi"><div class="tagx">Recomendado</div><h3>Pro</h3><div class="d">Todas las herramientas</div>
+<div class="pr">$7,490<span> MXN al año</span></div><div class="pn2" style="margin-top:6px">(equivale a $624 al mes)</div><div class="pn">Se renueva cada año</div><div class="pn2" style="display:flex;align-items:center;gap:8px;margin-top:8px"><span class="pill acc" style="margin:0">Ahorras $1,498 al año</span></div><div class="pn2" style="margin-top:6px">vs. $8,988 pagando mes a mes</div>
+<div class="pn2">o $749 MXN al mes con Mensual</div>
+<button class="btn btn-primary btn-xl" style="margin-top:24px">Prueba Pro gratis 1 mes</button><div class="bn">Hoy pagas $0. Te avisamos 7 días antes del primer cobro.</div>
+<ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Las 7 herramientas: Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>2,000 créditos cada mes</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips sin marca de agua</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Opciones avanzadas para profesionales</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Ayuda de una persona por WhatsApp</span></li></ul></div>
+<div class="pk"><h3>VIP</h3><div class="d">Para quien lo usa todos los días</div><div class="pr">$2,499<span> MXN al mes</span></div><div class="pn">Se renueva cada mes</div><div class="pn2">Sin plan anual</div>
+<button class="btn btn-secondary">Elegir VIP</button><div class="bn">&nbsp;</div>
+<ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Todo lo de Pro</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Muchos más créditos cada mes</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Atención prioritaria por WhatsApp</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>Primero en recibir herramientas nuevas</span></li></ul></div></div>
+<p class="pnote">Precios en pesos mexicanos (MXN), IVA incluido. Pago seguro con Mercado Pago.</p>
+<div class="shd" style="margin-top:80px"><h2>Preguntas sobre los planes</h2></div><div class="faq" style="margin-bottom:0"><div class="fq"><div class="q">¿Qué pasa cuando termina mi mes gratis?<svg class="i" viewBox="0 0 24 24" style="transform:rotate(180deg)"><path d="m6 9 6 6 6-6"/></svg></div><div class="a">Sigues con el plan que elegiste (anual o mensual) y se cobra a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada.</div></div><div class="fq"><div class="q">¿Puedo cambiar de anual a mensual?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div><div class="fq"><div class="q">¿Qué son los créditos?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div><div class="fq"><div class="q">¿Puedo cancelar cuando quiera?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div></div></section>
+<footer class="foot"><div class="sec"><div class="fr">
+<div style="flex:1"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><p class="lead">Herramientas que trabajan por ti. Un solo plan, todo incluido. Hecho en México para Latinoamérica.</p></div>
+<div class="fc"><h5>Herramientas</h5><a>Clips</a><a>Señales</a><a>En vivo</a><a>Ver todas</a></div>
+<div class="fc"><h5>Chalyb</h5><a>Planes</a><a>Ayuda</a><a>Proponer una idea</a><a>Entrar</a></div>
+<div class="fc"><h5>Legal</h5><a>Términos y Condiciones</a><a>Términos de Suscripción</a><a>Aviso de Privacidad</a><a>Uso aceptable</a></div></div>
+<div class="fb"><span>© 2026 Chalyb. Precios en pesos mexicanos (MXN), IVA incluido.</span><span>Pago seguro con Mercado Pago</span></div></div></footer></div></body></html>

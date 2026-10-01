@@ -1,0 +1,129 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Personas</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.side .logo{padding-bottom:12px}
+.own{margin:0 12px 22px;align-self:flex-start;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);background:#EEEEF2;padding:5px 10px;border-radius:8px}
+.nav a{height:54px;font-size:19px;margin-bottom:4px}
+.main{padding:40px 56px 32px}
+.wrap{max-width:1060px}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.hrow .sub{margin-top:6px;font-size:19px}
+.seg2{display:flex;background:#E6E6EC;border-radius:14px;padding:4px;gap:4px}
+.seg2 span{height:42px;padding:0 16px;display:grid;place-items:center;border-radius:11px;font-size:16px;font-weight:600;color:var(--ink2)}
+.seg2 span.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:24px}
+.kpi{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:20px 22px}
+.kpi .kt{font-size:16.5px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.kpi .kv{white-space:nowrap;font-size:33px;font-weight:750;letter-spacing:-.035em;margin-top:10px;font-variant-numeric:tabular-nums}
+.kpi .kv span{font-size:17px;font-weight:600;color:var(--ink3);letter-spacing:0}
+.kpi .kd{font-size:15.5px;color:var(--ink2);margin-top:8px;line-height:1.6}
+.kpi .kd .tag-ej{font-size:11.5px;padding:1px 6px;margin-right:4px;vertical-align:1px}
+.kpi .kd b{color:var(--accent)}
+.kpi .kd b.bad{color:var(--bad)}
+.c2{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;margin-top:22px;align-items:start}
+.gh2{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;font-size:18px;font-weight:650}
+.gh2 a{font-size:16px;color:var(--accent);font-weight:600}
+.row .btn{height:44px;font-size:16px;padding:0 16px;border-radius:12px;box-shadow:none}
+.stt{display:flex;align-items:center;gap:8px;font-size:16.5px;font-weight:600;white-space:nowrap}
+.stt i{width:10px;height:10px;border-radius:50%;display:block}
+
+.lay{display:grid;grid-template-columns:1fr 372px;gap:22px;margin-top:20px;align-items:start}
+.tools2{display:flex;gap:10px;align-items:center;margin-top:20px}
+.tools2 .srch{display:flex;align-items:center;gap:10px;height:52px;flex:1;padding:0 18px;border-radius:16px;background:#fff;box-shadow:var(--shadow);font-size:17px;color:#A8A8B0}
+.tools2 .srch svg.i{color:var(--ink3);width:20px;height:20px}
+.tools2 .chip{height:44px;font-size:16px;padding:0 16px}
+.tbl{background:#fff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.tr{display:grid;grid-template-columns:1.55fr .8fr 1.05fr .85fr 24px;align-items:center;gap:8px;padding:0 16px;height:64px;border-top:1px solid var(--line)}
+.tr.th{height:46px;border-top:0;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);background:#FAFAFC}
+.tr.sel{background:var(--tint2);box-shadow:inset 3px 0 0 var(--accent)}
+.pp{display:flex;align-items:center;gap:12px;min-width:0}
+.pp .avatar{width:38px;height:38px;font-size:14px}
+.pp b{font-size:17px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp small{font-size:14.5px;color:var(--ink3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .d{font-size:15.5px;color:var(--ink2);white-space:nowrap}
+.tr .dt svg.i{color:var(--ink3)}
+.sheet2{background:#fff;border-radius:24px;box-shadow:var(--shadow-lg);padding:18px}
+.sheet2 .who{display:flex;align-items:center;gap:14px}
+.sheet2 .who .avatar{width:56px;height:56px;font-size:20px}
+.sheet2 .who b{font-size:21px;display:block}.sheet2 .who small{font-size:15.5px;color:var(--ink2)}
+.sheet2 .who .x{margin-left:auto;width:38px;height:38px;border-radius:50%;background:var(--bg);display:grid;place-items:center;color:var(--ink2)}
+.sheet2 .meta{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.acts2{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.a2{display:flex;align-items:center;gap:12px;height:46px;padding:0 14px;border-radius:14px;background:var(--bg);font-size:17px;font-weight:600}
+.a2 svg.i{width:21px;height:21px;color:var(--accent)}
+.a2.on{background:var(--tint);box-shadow:inset 0 0 0 2px var(--accent)}
+.a2.red{color:var(--bad)} .a2.red svg.i{color:var(--bad)}
+.conf{margin-top:12px;padding:16px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 2px var(--accent),0 10px 26px rgba(91,75,255,.14)}
+.conf .st{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.conf h4{font-size:19px;font-weight:700;margin-top:4px;line-height:1.3}
+.conf p{font-size:15.5px;color:var(--ink2);margin-top:6px;line-height:1.45}
+.conf .bb{display:flex;gap:10px;margin-top:14px}
+.conf .bb .btn{flex:1;height:52px;font-size:17px;padding:0 12px;border-radius:14px}
+</style></head><body><div class="app"><aside class="side"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="own">Panel del dueño</div><nav class="nav"><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M12 14 15.5 9"/><path d="M3.3 17a9.5 9.5 0 1 1 17.4 0"/><circle cx="12" cy="14" r="1.6" fill="currentColor"/></svg><span>Centro de mando</span></a><a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.1a4 4 0 0 1 0 7.8M22 21a7 7 0 0 0-4.5-6.5"/></svg><span>Personas</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/></svg><span>Dinero</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Herramientas</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M22 12h-4l-3 8L9 4l-3 8H2"/></svg><span>Actividad</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Ajustes</span></a></nav>
+<div class="me"><div class="avatar" style="background:linear-gradient(135deg,#7B6CFF,#3F2FE0)">DC</div><div><div class="n">Dueño</div><div class="p">Ver la app ›</div></div></div></aside><main class="main"><div class="wrap" style="max-width:1100px">
+<div class="hrow"><div><h1>Personas</h1><p class="sub">Todos tus suscriptores en un solo lugar.</p></div><span class="tag-ej">Datos de ejemplo</span></div>
+<div class="tools2"><div class="srch"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar por nombre o correo</div><span class="chip on">Todos</span><span class="chip">En prueba</span><span class="chip">Pago pendiente</span><span class="chip">Cancelados</span></div>
+<div class="lay"><div class="tbl"><div class="tr th"><span>Persona</span><span>Plan</span><span>Estado</span><span>Desde</span><span></span></div><div class="tr sel"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#7DD3FC,#3B82F6)">LH</div><div style="min-width:0"><b>Luis Hernández</b><small>luis.h@correo.mx</small></div></div>
+<div><span class="pill acc">Pro</span></div><div><span class="pill acc">Activo</span></div><div class="d">12 mar 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#FFB86B,#FF7A8A)">ML</div><div style="min-width:0"><b>María López</b><small>maria.lopez@correo.mx</small></div></div>
+<div><span class="pill acc">Pro anual</span></div><div><span class="pill gray">En prueba</span></div><div class="d">30 sep 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#A7F3D0,#10B981)">JR</div><div style="min-width:0"><b>Jorge Ramírez</b><small>jorge.r@correo.mx</small></div></div>
+<div><span class="pill dark">VIP</span></div><div><span class="pill acc">Activo</span></div><div class="d">2 ene 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#FBCFE8,#EC4899)">AT</div><div style="min-width:0"><b>Ana Torres</b><small>ana.torres@correo.mx</small></div></div>
+<div><span class="pill acc">Pro</span></div><div><span class="pill bad">Pago pendiente</span></div><div class="d">18 jun 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#FDE68A,#F59E0B)">CM</div><div style="min-width:0"><b>Carlos Méndez</b><small>c.mendez@correo.mx</small></div></div>
+<div><span class="pill gray">Gratis</span></div><div><span class="pill acc">Activo</span></div><div class="d">9 sep 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#C7D2FE,#6366F1)">SC</div><div style="min-width:0"><b>Sofía Castillo</b><small>sofia.c@correo.mx</small></div></div>
+<div><span class="pill acc">Pro anual</span></div><div><span class="pill warn">Termina pronto</span></div><div class="d">1 oct 2025</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#FECACA,#EF4444)">DF</div><div style="min-width:0"><b>Diego Flores</b><small>diego.f@correo.mx</small></div></div>
+<div><span class="pill acc">Pro</span></div><div><span class="pill gray">Cancelado</span></div><div class="d">4 abr 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div><div class="tr"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,#DDD6FE,#8B5CF6)">LN</div><div style="min-width:0"><b>Lucía Navarro</b><small>lucia.n@correo.mx</small></div></div>
+<div><span class="pill gray">Gratis</span></div><div><span class="pill acc">Activo</span></div><div class="d">27 sep 2026</div><div class="dt"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></div></div></div><div class="sheet2"><div class="who"><div class="avatar" style="background:linear-gradient(135deg,#7DD3FC,#3B82F6)">LH</div><div><b>Luis Hernández</b><small>luis.h@correo.mx</small></div><span class="x"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+<div class="meta"><span class="pill acc">Pro mensual · $749</span><span class="pill gray">Cobro: 12 oct · Visa ••3307</span></div>
+<div class="acts2"><div class="a2"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>Regalar 1 mes gratis</div><div class="a2"><svg class="i" viewBox="0 0 24 24"><path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/></svg>Cambiar su plan</div><div class="a2"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Reenviar correo de acceso</div>
+<div class="a2 on"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>Reembolsar último cobro</div><div class="a2 red"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>Cancelar su suscripción</div></div>
+<div class="conf"><div class="st">Confirma · paso 2 de 2</div><h4>¿Reembolsar $749 MXN a Luis Hernández?</h4><p>Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre.</p>
+<div class="bb"><button class="btn btn-gray">No, volver</button><button class="btn btn-primary">Sí, reembolsar</button></div></div></div></div></div></main></div></body></html>

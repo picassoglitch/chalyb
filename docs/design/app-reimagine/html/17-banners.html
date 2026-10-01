@@ -1,0 +1,83 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Banners</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:#ECECF1}
+.sheet{width:1440px;padding:44px 56px 56px}
+.sh{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px}
+.sh h1{font-size:36px}.sh p{font-size:18px;color:var(--ink2);margin-top:6px}
+.fr{margin-top:22px}
+.fr .lab{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:18px;font-weight:650}
+.fr .lab .n{font-size:14px;font-weight:700;color:#fff;background:var(--accent);border-radius:7px;padding:2px 8px}
+.fr .lab small{font-size:16px;font-weight:500;color:var(--ink2)}
+.win{border-radius:20px;overflow:hidden;background:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.06),0 12px 32px rgba(20,20,50,.10);position:relative}
+.ghost{display:flex;height:150px;opacity:.45;filter:saturate(.6);pointer-events:none}
+.ghost .gs{width:272px;background:#FBFBFD;border-right:1px solid var(--line);padding:22px 20px}
+.ghost .gs .logo{padding:0 12px 22px}
+.ghost .gs .nv{height:48px;border-radius:14px;background:var(--tint);margin-bottom:8px}
+.ghost .gs .nv.o{background:#F0F0F4}
+.ghost .gm{flex:1;padding:28px 64px}
+.ghost .gm .e{font-size:18px;color:var(--ink2)}
+.ghost .gm h1{font-size:34px;margin-top:4px}
+.ghost .gm .cards{display:flex;gap:18px;margin-top:20px}
+.ghost .gm .cards div{flex:1;height:60px;border-radius:18px;background:#fff;box-shadow:var(--shadow)}
+.bnr{position:relative;z-index:2}
+.rules{margin-top:26px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.rules div{background:#fff;border-radius:18px;padding:16px 18px;font-size:16px;color:var(--ink2);box-shadow:var(--shadow)}
+.rules b{display:block;font-size:17px;color:var(--ink);margin-bottom:4px}
+</style></head><body><div class="sheet"><div class="sh"><div><h1>Avisos de tu prueba</h1><p>Una línea y un botón, arriba de todo. Solo se ve uno a la vez.</p></div></div><div class="fr"><div class="lab"><span class="n">1</span>Prueba activa<small>· Tranquilo, siempre visible, sin alarma</small></div><div class="win"><div class="bnr trial"><div class="bi"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></div><div class="bt"><b>Prueba Pro gratis</b> · te quedan 12 días</div><button class="btn">Ver mi plan</button></div><div class="ghost"><div class="gs"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="nv"></div><div class="nv o"></div></div>
+<div class="gm"><div class="e">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1><div class="cards"><div></div><div></div></div></div></div></div></div><div class="fr"><div class="lab"><span class="n">2</span>Últimos 7 días<small>· Ámbar, del día 23 al 30 de la prueba</small></div><div class="win"><div class="bnr warn"><div class="bi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg></div><div class="bt">Tu prueba termina el <b>30 de octubre de 2026</b>. Se cobrarán <b>$7,490 MXN</b> el <b>30 de octubre de 2026</b>.</div><button class="btn">Ver mi plan</button></div><div class="ghost"><div class="gs"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="nv"></div><div class="nv o"></div></div>
+<div class="gm"><div class="e">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1><div class="cards"><div></div><div></div></div></div></div></div></div><div class="fr"><div class="lab"><span class="n">3</span>Prueba terminada o cancelada<small>· Neutral, una sola invitación a volver</small></div><div class="win"><div class="bnr gray"><div class="bi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></div><div class="bt">Tu prueba terminó. Estás en el plan Gratis.</div><button class="btn">Volver a Pro</button></div><div class="ghost"><div class="gs"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="nv"></div><div class="nv o"></div></div>
+<div class="gm"><div class="e">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1><div class="cards"><div></div><div></div></div></div></div></div></div><div class="fr"><div class="lab"><span class="n">4</span>Pago pendiente<small>· Rojo, solo cuando falla el cobro</small></div><div class="win"><div class="bnr bad"><div class="bi"><svg class="i" viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17v.01"/></svg></div><div class="bt">No pudimos cobrar tu plan. Actualiza tu tarjeta antes del <b>7 de noviembre de 2026</b> para no perder Pro.</div><button class="btn">Actualizar tarjeta</button></div><div class="ghost"><div class="gs"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="nv"></div><div class="nv o"></div></div>
+<div class="gm"><div class="e">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1><div class="cards"><div></div><div></div></div></div></div></div></div>
+<div class="rules"><div><b>Siempre una línea</b>Fecha y monto en negritas, sin letra chiquita.</div><div><b>Un solo botón</b>Lleva directo a Mi plan o a cambiar la tarjeta.</div>
+<div><b>No se puede ocultar</b>Los avisos 2 y 4 se quedan hasta que pasen.</div><div><b>Mismo texto que el correo</b>El aviso 2 sale el mismo día que el correo de 7 días.</div></div></div></body></html>
