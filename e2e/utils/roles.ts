@@ -1,6 +1,5 @@
 // The QA accounts, from env only (rebuild prompt §7.2). Never inline them.
 
-import { existsSync } from 'node:fs';
 import { test } from '@playwright/test';
 
 export const ROLES = ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'admin'] as const;
@@ -29,12 +28,13 @@ export function storageStatePath(role: Role): string {
 /** Use inside a describe: signs the block in as `role`, or skips it with a
  *  clear reason when that role's account isn't configured. */
 export function asRole(role: Role) {
-  const path = storageStatePath(role);
+  // Only the credentials decide: the session file itself is written by the
+  // setup project, which runs after this is evaluated.
   test.skip(
-    !credentials(role) || !existsSync(path),
+    !credentials(role),
     `${ENV_PREFIX[role]}_EMAIL/_PASSWORD not set — skipping ${role} specs`,
   );
-  test.use({ storageState: path });
+  test.use({ storageState: storageStatePath(role) });
 }
 
 export const mutationsAllowed = () => process.env.E2E_ALLOW_MUTATIONS === '1';

@@ -65,3 +65,4 @@ __pycache__/
 /playwright-report/
 /blob-report/
 /screenshots/
+/e2e/*-snapshots/
