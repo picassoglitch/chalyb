@@ -67,7 +67,8 @@ for (const role of ['free', 'pro', 'vip', 'admin'] as Role[]) {
       await expectNoOverflow(page, info);
       await expectAccessible(page);
       await page.getByRole('link', { name: 'Ver mi plan' }).click();
-      await expect(page).toHaveURL(/\/app\/(billing|subscription)$/);
+      // Paid → Mi plan; Free → the trial once it exists, else the plans page.
+      await expect(page).toHaveURL(/\/app\/(billing|subscription|prueba)$/);
     });
 
     test('old /app routes still answer', async ({ request }) => {

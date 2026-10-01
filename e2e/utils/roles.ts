@@ -2,7 +2,16 @@
 
 import { test } from '@playwright/test';
 
-export const ROLES = ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'admin'] as const;
+export const ROLES = [
+  'free',
+  'trial',
+  'pro',
+  'pro_annual',
+  'past_due',
+  'cancelled',
+  'vip',
+  'admin',
+] as const;
 export type Role = (typeof ROLES)[number];
 
 const ENV_PREFIX: Record<Role, string> = {
@@ -11,6 +20,7 @@ const ENV_PREFIX: Record<Role, string> = {
   pro: 'E2E_PRO',
   pro_annual: 'E2E_PRO_ANNUAL',
   past_due: 'E2E_PAST_DUE',
+  cancelled: 'E2E_CANCELLED',
   vip: 'E2E_VIP',
   admin: 'E2E_ADMIN',
 };
