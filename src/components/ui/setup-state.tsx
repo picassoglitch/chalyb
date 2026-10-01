@@ -7,7 +7,9 @@
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import { Link2 } from 'lucide-react';
 import type { SetupStep } from '@/lib/billing/entitlement-core';
+import { ButtonLink } from './primitives';
 
 /** Where each step is resolved. A step without an entry has no resolver yet:
  *  the state renders without a button. The connection flows land in P3. */
@@ -25,46 +27,22 @@ export async function SetupState({
   const t = await getTranslations('setup');
   const resolver = RESOLVERS[step];
   return (
-    <section
-      aria-labelledby="setup-title"
-      style={{
-        padding: '24px 26px',
-        border: '1px solid var(--cc-line-2)',
-        background: 'var(--cc-panel)',
-        borderRadius: 'var(--cc-r-l)',
-        marginBottom: 28,
-      }}
-    >
-      <h2 id="setup-title" style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>
+    <section aria-labelledby="setup-title" className="ch-card ch-state">
+      <span className="ch-state__ic" aria-hidden="true">
+        <Link2 />
+      </span>
+      <h2 id="setup-title" className="ch-h2">
         {t(`${step}.title`)}
       </h2>
-      <p style={{ fontSize: 16, color: 'var(--cc-txt-2)', lineHeight: 1.5, marginBottom: 16 }}>
+      <p className="ch-muted" style={{ maxWidth: 520 }}>
         {t(`${step}.body`)}
       </p>
-      {resolver && (
-        <Link href={resolver as Route} className="cc-btn-primary" style={primaryStyle}>
-          {t('cta')}
-        </Link>
-      )}
+      {resolver && <ButtonLink href={resolver}>{t('cta')}</ButtonLink>}
       {alternativeHref && (
-        <p style={{ marginTop: 14 }}>
-          <Link href={alternativeHref as Route} style={{ color: 'var(--cc-green)' }}>
-            {t('alt')}
-          </Link>
-        </p>
+        <Link href={alternativeHref as Route} className="ch-lnk">
+          {t('alt')}
+        </Link>
       )}
     </section>
   );
 }
-
-const primaryStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  minHeight: 52,
-  padding: '12px 24px',
-  borderRadius: 12,
-  background: 'var(--cc-green)',
-  color: '#070809',
-  fontWeight: 600,
-  textDecoration: 'none',
-} as const;
