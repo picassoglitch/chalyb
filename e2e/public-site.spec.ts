@@ -51,8 +51,22 @@ test('prices sit in a block that says IVA incluido', async ({ page }) => {
 
 test('only the active tools are listed', async ({ page }) => {
   await page.goto('/');
-  const cards = page.locator('#herramientas .pub-tc h3');
-  await expect(cards).toHaveText(['Clips', 'Señales', 'En vivo', 'Tu idea']);
+  const names = await page.locator('#herramientas .pub-tc h3').allInnerTexts();
+  // The catalog decides how many; the order and the hidden ones are fixed.
+  const order = [
+    'Clips',
+    'Señales',
+    'En vivo',
+    'Asistente',
+    'Pronósticos',
+    'Inmuebles',
+    'Inversiones',
+  ];
+  const tools = names.slice(0, -1);
+  expect(names.at(-1)).toBe('Tu idea');
+  expect(tools.length).toBeGreaterThan(0);
+  expect(tools).toEqual(order.filter((n) => tools.includes(n)));
+  expect(names).not.toContain('Stream Manager');
 });
 
 for (const [from, to] of [
