@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { recordSignupConsent } from '@/lib/billing/signup-consent';
 
 type Mode = 'signin' | 'signup';
 
@@ -13,12 +14,22 @@ interface Props {
   initialMode?: Mode;
   next?: string;
   showModeTabs?: boolean;
+  /** The sign-up legal line, rendered on the server (it cites only the
+   *  documents that are published). Shown next to "Crear cuenta". */
+  legal?: React.ReactNode;
 }
+
+/** New accounts need 8+ characters (SCR-13; Supabase policy is OPS-16).
+ *  Existing accounts still sign in with what they set. */
+const SIGNUP_MIN_PASSWORD = 8;
 
 const ACCOUNT_ROUTE = '/account' as Route;
 
-export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = true }: Props) {
+export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = true, legal }: Props) {
   const t = useTranslations('auth.signIn');
+  const locale = useLocale();
+  const [name, setName] = useState('');
+  const [marketing, setMarketing] = useState(false);
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
@@ -51,6 +62,10 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
     setError(null);
     setCheckInboxEmail(null);
 
+    if (mode === 'signup' && password.length < SIGNUP_MIN_PASSWORD) {
+      setError(t('errorShortPassword'));
+      return;
+    }
     if (password.length < 6) {
       setError(t('errorWeakPassword'));
       return;
@@ -71,6 +86,7 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
           email,
           password,
           options: {
+            data: name.trim() ? { full_name: name.trim() } : undefined,
             emailRedirectTo: `${window.location.origin}/auth/callback${
               next ? `?next=${encodeURIComponent(next)}` : ''
             }`,
@@ -79,6 +95,17 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
         if (err) {
           setError(mapError(err.code, err.message));
           return;
+        }
+        // Evidence of what they accepted (and the marketing choice). The
+        // account exists now even before the email is confirmed.
+        if (data.user?.id) {
+          await recordSignupConsent({
+            userId: data.user.id,
+            marketing,
+            locale,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
+            surface: 'web_signup_email',
+          }).catch(() => {});
         }
         // If email confirmation is required (Supabase default), no session is returned.
         if (data.session) {
@@ -128,6 +155,19 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
         </div>
       )}
 
+      {mode === 'signup' && (
+        <div className="auth-field">
+          <label htmlFor="auth-name">{t('nameLabel')}</label>
+          <input
+            id="auth-name"
+            type="text"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      )}
+
       <div className="auth-field">
         <label htmlFor="auth-email">{t('emailLabel')}</label>
         <input
@@ -148,11 +188,17 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
           type="password"
           autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
           required
-          minLength={6}
+          minLength={mode === 'signup' ? SIGNUP_MIN_PASSWORD : 6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t('passwordPlaceholder')}
+          aria-describedby={mode === 'signup' ? 'auth-password-hint' : undefined}
         />
+        {mode === 'signup' && (
+          <p id="auth-password-hint" className="auth-hint">
+            {t('passwordHintSignup')}
+          </p>
+        )}
         {mode === 'signin' && (
           <Link href="/forgot-password" className="auth-forgot-link">
             {t('forgotPassword')}
@@ -160,11 +206,29 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
         )}
       </div>
 
+      {mode === 'signup' && (
+        <label className="auth-check">
+          <input
+            type="checkbox"
+            checked={marketing}
+            onChange={(e) => setMarketing(e.target.checked)}
+          />
+          <span>{t('marketing')}</span>
+        </label>
+      )}
+
       {error && <div className="auth-error">{error}</div>}
 
       <button type="submit" className="auth-submit" disabled={pending}>
-        {pending ? '...' : mode === 'signin' ? t('submitSignIn') : t('submitSignUp')}
+        {pending
+          ? mode === 'signup'
+            ? t('creating')
+            : '...'
+          : mode === 'signin'
+            ? t('submitSignIn')
+            : t('submitSignUp')}
       </button>
+      {mode === 'signup' && legal && <p className="auth-legal">{legal}</p>}
 
       {!showModeTabs && (
         <p className="auth-mode-switch">
