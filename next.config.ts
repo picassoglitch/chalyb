@@ -46,6 +46,34 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
 
+      // There is no public catalog page; the tools live in the landing's
+      // #herramientas section. Temporary until P4 makes it permanent (B09).
+      { source: '/engines', destination: '/#herramientas', permanent: false },
+      {
+        source: '/:locale(en|es)/engines',
+        destination: '/:locale/#herramientas',
+        permanent: false,
+      },
+
+      // Aliases people type (B14). /planes, /terminos and /privacidad are
+      // temporary: P2 builds /planes and P6 makes the legal slugs canonical.
+      { source: '/sign-up', destination: '/sign-in?mode=signup', permanent: true },
+      {
+        source: '/:locale(en|es)/sign-up',
+        destination: '/:locale/sign-in?mode=signup',
+        permanent: true,
+      },
+      { source: '/planes', destination: '/#pricing', permanent: false },
+      { source: '/:locale(en|es)/planes', destination: '/:locale/#pricing', permanent: false },
+      { source: '/terminos', destination: '/legal/terms', permanent: false },
+      { source: '/:locale(en|es)/terminos', destination: '/:locale/legal/terms', permanent: false },
+      { source: '/privacidad', destination: '/legal/privacy', permanent: false },
+      {
+        source: '/:locale(en|es)/privacidad',
+        destination: '/:locale/legal/privacy',
+        permanent: false,
+      },
+
       // The contact page is ES-canonical at /contacto. English visitors (and
       // anyone linking from English copy) reach for /contact, which 404'd.
       { source: '/contact', destination: '/contacto', permanent: true },

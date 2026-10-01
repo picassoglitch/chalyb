@@ -1,11 +1,12 @@
 import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
+import { DEFAULT_LOCALE, LOCALES } from './locales';
 
 export const routing = defineRouting({
-  locales: ['en', 'es'],
+  locales: LOCALES,
   // Mexican Spanish is the default. With 'as-needed', 'es' serves at the root
   // with no prefix and 'en' is served under /en.
-  defaultLocale: 'es',
+  defaultLocale: DEFAULT_LOCALE,
   localePrefix: 'as-needed',
   // The URL is the only thing that decides the language. Accept-Language and
   // cookie detection are OFF, so `/` is always Spanish and `/en` is always

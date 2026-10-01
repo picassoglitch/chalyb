@@ -4,6 +4,8 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Analytics } from '@vercel/analytics/next';
 import { routing } from '@/i18n/routing';
+import { HREFLANG } from '@/i18n/locales';
+import { canonicalOrigin } from '@/lib/site';
 import './globals.css';
 
 // Lock the [locale] segment to real locales. Without this, requests for
@@ -25,6 +27,8 @@ export async function generateMetadata({
   // render as "Engines · Chalyb" in the browser tab. Pages without a title
   // fall back to the locale-level meta.title (the marketing tagline).
   return {
+    // Relative metadata URLs resolve against the canonical www origin.
+    metadataBase: new URL(canonicalOrigin()),
     title: {
       default: messages.meta.title,
       template: '%s · Chalyb',
@@ -53,7 +57,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   return (
-    <html lang={locale} data-scroll-behavior="smooth">
+    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

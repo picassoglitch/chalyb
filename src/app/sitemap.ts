@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
-import { routing } from '@/i18n/routing';
-import { PUBLIC_PATHS, localizedUrl } from '@/lib/site';
+import { DEFAULT_LOCALE } from '@/i18n/locales';
+import { PUBLIC_PATHS, hreflangAlternates, localizedUrl } from '@/lib/site';
 
 /**
  * `/sitemap.xml` — previously a 404.
@@ -19,14 +19,10 @@ const PRIORITY: Record<string, number> = {
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   return PUBLIC_PATHS.map((path) => ({
-    url: localizedUrl(path, routing.defaultLocale),
+    url: localizedUrl(path, DEFAULT_LOCALE),
     lastModified,
     changeFrequency: path === '/' ? ('weekly' as const) : ('monthly' as const),
     priority: PRIORITY[path] ?? 0.5,
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, localizedUrl(path, locale)]),
-      ),
-    },
+    alternates: { languages: hreflangAlternates(path) },
   }));
 }

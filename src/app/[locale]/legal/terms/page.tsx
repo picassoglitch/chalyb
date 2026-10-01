@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getCurrentUser } from '@/lib/auth/session';
 import { LegalPage } from '@/components/legal/legal-page';
 import { termsDocument } from '@/content/legal';
+import { publicPageMetadata } from '@/lib/site';
 
 // The root layout's title template is '%s · Chalyb', so the title here is the
 // bare document name. Both title and description are per-locale, which a
@@ -14,10 +15,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'legal.terms' });
-  return {
+  return publicPageMetadata('/legal/terms', locale, {
     title: t('metaTitle'),
     description: t('metaDescription'),
-  };
+  });
 }
 
 // force-dynamic so Vercel's CDN never serves a stale 404 from before the

@@ -116,6 +116,8 @@ export function Pillars() {
 
   return (
     <section className="lp-section" id="features">
+      {/* /engines lands here (next.config.ts). */}
+      <span id="herramientas" aria-hidden="true" />
       <div className="lp-container">
         <div className="lp-section-head">
           <h2 className="lp-h2">{t('title')}</h2>
