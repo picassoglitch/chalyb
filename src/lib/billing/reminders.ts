@@ -15,6 +15,11 @@ import { PRICING } from '@/config/pricing';
 
 const DAY = 24 * 60 * 60 * 1000;
 
+/** How far ahead of a charge the bounce check looks. The cron runs daily
+ *  (Vercel Hobby allows daily jobs only; OPS-7), so two days guarantees at
+ *  least one run before every charge. */
+export const HOLD_LOOKAHEAD_MS = 2 * DAY;
+
 export type NoticeKind = 'trial_7d' | 'trial_1d' | 'renew_30d' | 'renew_7d' | 'annual_summary';
 
 export interface Notice {
@@ -48,15 +53,31 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
   const at = (days: number) => new Date(charge - days * DAY);
 
   if (sub.state === 'trialing') {
-    out.push({ kind: 'trial_7d', periodKey: `trial:${key}`, dueAt: at(p.trial.reminderDaysBefore), mandatory: true });
-    if (sub.day29Enabled) out.push({ kind: 'trial_1d', periodKey: `trial1:${key}`, dueAt: at(1), mandatory: false });
+    out.push({
+      kind: 'trial_7d',
+      periodKey: `trial:${key}`,
+      dueAt: at(p.trial.reminderDaysBefore),
+      mandatory: true,
+    });
+    if (sub.day29Enabled)
+      out.push({ kind: 'trial_1d', periodKey: `trial1:${key}`, dueAt: at(1), mandatory: false });
   } else if (sub.state === 'pro') {
     if (sub.interval === 'year') {
       const [early, late] = p.reminders.yearDaysBefore;
-      out.push({ kind: 'renew_30d', periodKey: `renew30:${key}`, dueAt: at(early), mandatory: false });
+      out.push({
+        kind: 'renew_30d',
+        periodKey: `renew30:${key}`,
+        dueAt: at(early),
+        mandatory: false,
+      });
       out.push({ kind: 'renew_7d', periodKey: `renew7:${key}`, dueAt: at(late), mandatory: true });
     } else {
-      out.push({ kind: 'renew_7d', periodKey: `renew7:${key}`, dueAt: at(p.reminders.monthDaysBefore), mandatory: true });
+      out.push({
+        kind: 'renew_7d',
+        periodKey: `renew7:${key}`,
+        dueAt: at(p.reminders.monthDaysBefore),
+        mandatory: true,
+      });
     }
   }
 
@@ -68,7 +89,12 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
       const anniversary = new Date(start);
       anniversary.setUTCFullYear(start.getUTCFullYear() + years);
       if (now >= anniversary) {
-        out.push({ kind: 'annual_summary', periodKey: `summary:${anniversary.getUTCFullYear()}`, dueAt: anniversary, mandatory: false });
+        out.push({
+          kind: 'annual_summary',
+          periodKey: `summary:${anniversary.getUTCFullYear()}`,
+          dueAt: anniversary,
+          mandatory: false,
+        });
       }
     }
   }
@@ -85,7 +111,7 @@ export type HoldDecision =
 /**
  * The bounce rule (Términos de Suscripción §2.7 bis): no charge until at
  * least 5 calendar days after an EFFECTIVE notice. If the mandatory notice
- * isn't confirmed delivered 24 h before the charge, hold the charge.
+ * isn't confirmed delivered by HOLD_LOOKAHEAD_MS before the charge, hold it.
  */
 export function holdDecision(input: {
   nextChargeAt: string | null;
@@ -100,7 +126,10 @@ export function holdDecision(input: {
     // Already holding. It ends 5 days after an effective notice, and not
     // before the hold date already promised.
     if (!input.noticeDeliveredAt) return { action: 'none' }; // keep holding
-    const resumeAt = Math.max(Date.parse(input.noticeDeliveredAt) + 5 * DAY, Date.parse(input.holdUntil));
+    const resumeAt = Math.max(
+      Date.parse(input.noticeDeliveredAt) + 5 * DAY,
+      Date.parse(input.holdUntil),
+    );
     if (now >= resumeAt) return { action: 'resume' };
     return resumeAt === Date.parse(input.holdUntil)
       ? { action: 'none' }
@@ -108,7 +137,7 @@ export function holdDecision(input: {
   }
   if (!input.nextChargeAt) return { action: 'none' };
   const charge = Date.parse(input.nextChargeAt);
-  if (now < charge - DAY) return { action: 'none' };
+  if (now < charge - HOLD_LOOKAHEAD_MS) return { action: 'none' };
 
   const delivered = input.noticeDeliveredAt ? Date.parse(input.noticeDeliveredAt) : NaN;
   if (!Number.isNaN(delivered) && charge >= delivered + 5 * DAY) return { action: 'none' };

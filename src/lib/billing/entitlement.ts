@@ -16,13 +16,18 @@ import { listEngines } from '@/lib/data/engines';
 import { getTokenBalance } from '@/lib/usage/tokens';
 import { freeIncludesClips, proIncludesAllTools } from '@/lib/config/flags';
 import { computeEntitlements, type Entitlements } from './entitlement-core';
+import { loadBilling } from './subscription-store';
 
 export type { Entitlements, ToolAccess, ToolAccessState, SetupStep } from './entitlement-core';
 
 export async function getEntitlements(session: SessionUser): Promise<Entitlements> {
-  const [engines, balance] = await Promise.all([
+  const [engines, balance, billing] = await Promise.all([
     listEngines().catch(() => []),
     getTokenBalance(session.user.id).catch(() => null),
+    loadBilling(session.user.id).catch((err) => {
+      console.error('[entitlements] billing read failed; using the stored tier only', err);
+      return null;
+    }),
   ]);
 
   return computeEntitlements({
@@ -41,6 +46,8 @@ export async function getEntitlements(session: SessionUser): Promise<Entitlement
       ownerUserId: e.ownerUserId,
     })),
     nowMs: Date.now(),
+    billing: billing?.primary ?? null,
+    trialUsed: billing?.trialUsed ?? false,
     flags: {
       freeIncludesClips: freeIncludesClips(),
       proIncludesAllTools: proIncludesAllTools(),

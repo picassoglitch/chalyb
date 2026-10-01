@@ -27,6 +27,9 @@ export interface SubscriptionRow {
   pending_plan_key: PlanKey | null;
   pending_effective_at: string | null;
   reminder_delivered_at: string | null;
+  /** Bounce hold (no charge until then); the preapproval is paused on
+   *  purpose, which is not the customer's failure. */
+  charge_hold_until?: string | null;
 }
 
 export interface BillingState {
@@ -71,7 +74,9 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
     trialEndsAt: row.trial_ends_at,
     nextChargeAt,
     graceEndsAt: row.grace_ends_at,
-    card: row.card_last4 ? { brand: row.card_brand, last4: row.card_last4, exp: row.card_exp } : null,
+    card: row.card_last4
+      ? { brand: row.card_brand, last4: row.card_last4, exp: row.card_exp }
+      : null,
     cancelAtPeriodEnd: !!row.cancel_at_period_end,
     pendingChange:
       row.pending_plan_key && row.pending_effective_at
@@ -88,9 +93,21 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
   if (status === 'cancelled' || row.cancel_at_period_end) {
     const until = row.access_until ?? (inTrial ? row.trial_ends_at : nextChargeAt);
     if (until && nowMs < ms(until)) {
-      return { ...base, state: 'cancelled_active', grantsTier: tier, accessUntil: until, cancelAtPeriodEnd: true };
+      return {
+        ...base,
+        state: 'cancelled_active',
+        grantsTier: tier,
+        accessUntil: until,
+        cancelAtPeriodEnd: true,
+      };
     }
     return { ...FREE, trialEndsAt: row.trial_ends_at };
+  }
+
+  // Held by us (the pre-charge notice bounced): the plan carries on, the
+  // charge waits.
+  if (status === 'paused' && row.charge_hold_until) {
+    return { ...base, state: inTrial ? 'trialing' : 'pro', grantsTier: tier };
   }
 
   // A failed charge: full access inside the grace window, then nothing.

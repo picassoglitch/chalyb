@@ -23,6 +23,7 @@ import {
   isChalybclipTrialActive,
 } from './tiers';
 import { HIDDEN_FROM_CUSTOMERS } from '@/lib/engines/display-names';
+import type { BillingState } from './billing-state';
 
 /** A step the user has to finish before a tool can run (BUILD-SPEC B2). Each
  *  one maps to exactly one button that resolves it. */
@@ -56,6 +57,12 @@ export interface EntitlementInput {
   engines: EntitlementEngine[];
   nowMs: number;
   flags: { freeIncludesClips: boolean; proIncludesAllTools: boolean };
+  /** P2: the subscription state, when known. Its grant counts alongside the
+   *  stored tier (a cancelled VIP keeps VIP until its period ends even after
+   *  a scheduled Pro downgrade was authorised). */
+  billing?: BillingState | null;
+  /** P2: whether the account already used its free Pro month. */
+  trialUsed?: boolean;
 }
 
 export interface Entitlements {
@@ -66,9 +73,10 @@ export interface Entitlements {
    *  replaces this with the Pro trial. */
   trial: { kind: 'clips_legacy'; daysLeft: number; grace: boolean } | null;
   /** Whether the user already spent their Pro trial — the offer then reads
-   *  "Volver a Pro". No Pro trial exists before P2, so this is always false.
-   *  TODO(P2): read it from the trial record. */
+   *  "Volver a Pro". */
   trialUsed: boolean;
+  /** Subscription state (P2), or null when unknown. */
+  billing: BillingState | null;
   /** One entry per tool the customer may see. A tool that is not active (or
    *  is hidden, Q32) has NO entry: it is not shown anywhere and its page
    *  redirects. */
@@ -87,8 +95,12 @@ export function isCustomerVisible(engine: Pick<EntitlementEngine, 'slug' | 'stat
   return engine.status === 'active' && !HIDDEN_FROM_CUSTOMERS.has(engine.slug);
 }
 
+const GRANT_RANK: Record<SubscriptionTier, number> = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 };
+
 export function computeEntitlements(input: EntitlementInput): Entitlements {
-  const plan = effectiveTier(input.role, input.storedTier);
+  const stored = effectiveTier(input.role, input.storedTier);
+  const granted = input.billing?.grantsTier ?? 'FREE';
+  const plan = GRANT_RANK[granted] > GRANT_RANK[stored] ? granted : stored;
   const isAdmin = isAdminRole(input.role);
   const trialActive = isChalybclipTrialActive(input.clipsTrialStartedAt, input.nowMs);
   const graceActive =
@@ -112,7 +124,8 @@ export function computeEntitlements(input: EntitlementInput): Entitlements {
             grace: graceActive,
           }
         : null,
-    trialUsed: false,
+    trialUsed: input.trialUsed ?? false,
+    billing: input.billing ?? null,
     tools,
     credits: input.credits,
   };

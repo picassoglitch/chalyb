@@ -9,14 +9,25 @@ export function quebecPaidBlock(): boolean {
 
 /** Whether what we know about the payer places them in Quebec: the card or
  *  billing address province from Mercado Pago, or what they declared. */
-export function isQuebec(input: { country?: string | null; province?: string | null; declared?: string | null }): boolean {
-  const norm = (s?: string | null) => (s ?? '').trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+export function isQuebec(input: {
+  country?: string | null;
+  province?: string | null;
+  declared?: string | null;
+}): boolean {
+  const norm = (s?: string | null) =>
+    (s ?? '').trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
   if (['qc', 'quebec', 'ca-qc'].includes(norm(input.declared))) return true;
   const country = norm(input.country);
   const province = norm(input.province);
-  return (country === '' || country === 'ca' || country === 'canada') && ['qc', 'quebec', 'ca-qc'].includes(province);
+  return (
+    (country === '' || country === 'ca' || country === 'canada') &&
+    ['qc', 'quebec', 'ca-qc'].includes(province)
+  );
 }
 
-export function paidPlansBlocked(input: Parameters<typeof isQuebec>[0], block = quebecPaidBlock()): boolean {
+export function paidPlansBlocked(
+  input: Parameters<typeof isQuebec>[0],
+  block = quebecPaidBlock(),
+): boolean {
   return block && isQuebec(input);
 }

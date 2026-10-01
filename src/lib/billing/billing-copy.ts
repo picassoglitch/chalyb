@@ -39,7 +39,9 @@ export function trialVars(t: Translate, input: DisclosureInput) {
     renovacion: t(year ? 'vars.renovacion.year' : 'vars.renovacion.month', { monto }),
     renovacion_corta: t(year ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month'),
     cada_periodo: t(year ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month'),
-    tarjeta: input.cardLast4 ? t('vars.tarjeta.last4', { ultimos4: input.cardLast4 }) : t('vars.tarjeta.none'),
+    tarjeta: input.cardLast4
+      ? t('vars.tarjeta.last4', { ultimos4: input.cardLast4 })
+      : t('vars.tarjeta.none'),
   };
 }
 
