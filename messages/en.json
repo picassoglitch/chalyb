@@ -365,11 +365,19 @@
       },
       "chalybcrypto": {
         "tagline": "We tell you when it is a good moment to buy or sell crypto.",
-        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+        "bullets": [
+          "Backtested strategies",
+          "Real-time alerts",
+          "Emotion-free execution"
+        ]
       },
       "chalybobs": {
         "tagline": "Run your stream and your OBS scenes with big buttons.",
-        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Works with Clips"]
+        "bullets": [
+          "Dynamic scenes and overlays",
+          "Stream automation",
+          "Works with Clips"
+        ]
       }
     },
     "marketingCat": {
@@ -382,7 +390,9 @@
     }
   },
   "language": {
-    "label": "Language"
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
   },
   "contact": {
     "metaTitle": "Contact",
@@ -526,21 +536,58 @@
     }
   },
   "home": {
-    "title": "Home",
-    "greeting": "Hi, {name}",
-    "greetingAnon": "Hi",
-    "sub": "Choose what you want to do today.",
-    "toolsHeading": "Your tools",
-    "open": "Open",
-    "see": "See",
-    "credits": {
-      "label": "Credits",
-      "sub": "left this month",
-      "unlimited": "unlimited"
+    "metaTitle": "Home",
+    "greeting": "Hi, {nombre} 👋",
+    "greetingAnon": "Hi 👋",
+    "title": "What do you want to do today?",
+    "task": {
+      "clips": {
+        "title": "Make clips from my stream",
+        "body": "Create short clips ready for TikTok, Reels and Shorts.",
+        "short": "For TikTok, Reels and Shorts."
+      },
+      "senales": {
+        "title": "Get crypto signals",
+        "body": "We tell you when to buy or sell, on your phone.",
+        "short": "We tell you when to buy or sell."
+      },
+      "envivo": {
+        "title": "Run my stream",
+        "body": "Control your OBS scenes from one place.",
+        "short": "Control OBS from your phone."
+      },
+      "mas": {
+        "label": "And much more",
+        "title": "More tools",
+        "short": "{tools} and more."
+      }
+    },
+    "included": {
+      "aria": "Your plan",
+      "all": "Everything included in your {plan} plan.",
+      "noExtra": "No extra payments.",
+      "single": "Your Pro plan includes {tools}.",
+      "toolsAria": "Included tools",
+      "more": "and {n} more",
+      "gratis": "Try Pro free for 1 month. Every tool included.",
+      "gratisPlans": "Pro gives you more tools.",
+      "cta": {
+        "trial": "Try Pro free for 1 month",
+        "return": "Back to Pro",
+        "plans": "See plans"
+      }
+    },
+    "latest": {
+      "title": "Latest"
+    },
+    "empty": {
+      "title": "You have no clips yet",
+      "body": "Make your first one in 1 minute. Just paste your stream link.",
+      "cta": "Make my first clip"
     }
   },
   "tool": {
-    "back": "Tools",
+    "back": "Home",
     "badge": {
       "included": "Included in your plan",
       "trialOffer": "Included in Pro · Try it free",
@@ -680,7 +727,8 @@
       "downloadClip": "Download {title}",
       "saved": "Your clips are saved in",
       "results": "My results",
-      "more": "Make more clips"
+      "more": "Make more clips",
+      "thumbAlt": "Clip: {title}"
     },
     "error": {
       "title": "We could not make your clips",
@@ -698,6 +746,76 @@
       "noCharge": "No credits were used.",
       "retry": "Try again",
       "help": "Talk to a person"
+    }
+  },
+  "app": {
+    "nav": {
+      "aria": "Main navigation",
+      "skip": "Skip to content",
+      "inicio": "Home",
+      "resultados": "My results",
+      "cuenta": "My account",
+      "admin": "Admin view",
+      "tab": {
+        "inicio": "Home",
+        "resultados": "Results",
+        "cuenta": "Account"
+      },
+      "plan": {
+        "gratis": "Free plan",
+        "prueba": "Pro trial",
+        "pro": "Pro plan",
+        "pro_anual": "Pro annual plan",
+        "vip": "VIP plan"
+      }
+    }
+  },
+  "account": {
+    "title": "My account",
+    "plan": {
+      "k": "Your plan",
+      "name": {
+        "gratis": "Free plan",
+        "pro": "Pro plan",
+        "vip": "VIP plan"
+      },
+      "nameAll": "{plan} — everything included",
+      "allTools": "Every tool",
+      "cta": "See my plan"
+    },
+    "billing": {
+      "title": "My plan and payments",
+      "credits": "Available credits",
+      "method": "Payment method",
+      "invoices": "Invoices"
+    },
+    "prefs": {
+      "title": "Preferences",
+      "language": "Language",
+      "profile": "Profile and password"
+    },
+    "help": {
+      "title": "Help",
+      "human": {
+        "title": "Talk to a person",
+        "body": "We answer as soon as we can, in Spanish or English.",
+        "bodyFast": "We answer within minutes, in Spanish or English.",
+        "cta": "Write"
+      }
+    },
+    "more": {
+      "title": "More",
+      "tools": "Tools",
+      "messages": "Messages",
+      "unread": "{n} unread",
+      "help": "Frequently asked questions"
+    },
+    "privacy": {
+      "title": "Privacy and account",
+      "notice": "Privacy and notifications",
+      "arco": "My data (ARCO rights)",
+      "charge": "Problem with a charge",
+      "close": "Close my account"
     }
   }
 }

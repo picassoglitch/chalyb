@@ -1,6 +1,6 @@
 'use server';
 
-// Self-serve profile edits from /app/settings.
+// Self-serve profile edits from /app/settings/perfil.
 //
 // Deliberately uses the USER-scoped Supabase client, not the service-role one:
 // display name and locale are exactly the columns migration 0032 left writable
@@ -23,7 +23,7 @@ export interface SaveProfileResult {
 
 /**
  * Saves the display name and preferred language, then sends the browser to the
- * settings page in the language just chosen (/en/app/settings or /app/settings).
+ * settings page in the language just chosen (/en/app/settings/perfil or /app/settings/perfil).
  *
  * The redirect is the whole point of the return type being `Promise<SaveProfileResult>`
  * only on the failure path: on success this never returns, the client follows
@@ -68,7 +68,10 @@ export async function saveProfileSettings(input: {
   // next-intl's redirect adds the prefix for the chosen language ('es' is the
   // default and stays unprefixed). `saved=1` lets the page confirm the save
   // once, since this action never returns to the form on success.
-  redirect({ href: { pathname: '/app/settings', query: { saved: '1' } }, locale: input.locale });
+  redirect({
+    href: { pathname: '/app/settings/perfil', query: { saved: '1' } },
+    locale: input.locale,
+  });
   // redirect() throws; this only satisfies the return type.
   return { ok: true };
 }

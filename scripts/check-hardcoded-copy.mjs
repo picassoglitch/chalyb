@@ -35,6 +35,9 @@ const DIRS = [
 
 const PROPS = new Set(['title', 'aria-label', 'placeholder', 'alt']);
 
+/** Not customer-facing: the development-only kitchen sink (404 in production). */
+const EXEMPT = [/\/%5Fui\//];
+
 /** Words that are the same in every language: brand, tool and plan names. */
 const ALLOWED = new Set([
   'Chalyb',
@@ -111,6 +114,7 @@ function scan(file) {
 const results = {};
 for (const dir of DIRS) {
   for (const file of walk(dir)) {
+    if (EXEMPT.some((re) => re.test(file))) continue;
     const hits = scan(file);
     if (hits.length) results[relative(ROOT, file)] = hits;
   }
