@@ -58,3 +58,9 @@ supabase/.temp/
 # python
 __pycache__/
 *.pyc
+
+# Playwright
+/e2e/.auth/
+/test-results/
+/playwright-report/
+/blob-report/
