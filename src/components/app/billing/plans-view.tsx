@@ -1,9 +1,11 @@
 'use client';
 
 // SCR-12 · Planes. Mensual/Anual toggle (Anual on), Gratis · Pro · VIP, "Qué
-// incluye" and the FAQ. Every amount comes from the pricing config; the
-// annual comparison appears only as "vs. … pagando mes a mes", never struck
-// through, and never "2 meses gratis".
+// incluye" and the FAQ. The free month comes only with Anual: on Mensual the
+// trial CTA becomes "Elegir Pro mensual" and goes straight to its payment.
+// Every amount comes from the pricing config; the annual comparison appears
+// only as "vs. … pagando mes a mes", never struck through, and never
+// "2 meses gratis".
 
 import { useState } from 'react';
 import type { Route } from 'next';
@@ -42,12 +44,14 @@ export function PlansView({ tools, cta, trialOffered, quebecBlocked, monthlyOffe
   const list = new Intl.ListFormat('es', { type: 'conjunction' }).format(tools);
 
   const proLabel = {
-    trial: t('pro.cta'),
+    trial: yearly ? t('pro.cta') : t('pro.ctaMonth'),
     noTrial: t('pro.ctaNoTrial'),
     return: t('pro.ctaReturn'),
     current: t('current'),
     trialing: t('trialing'),
   }[cta.pro.label];
+  // Mensual has no free month: skip the picker and go to its payment.
+  const proHref = !yearly && cta.pro.href === '/app/prueba' ? '/app/prueba/pago?plan=pro_month' : cta.pro.href;
   const vipLabel = { choose: t('vip.cta'), up: t('vip.ctaUp'), current: t('current') }[cta.vip.label];
   const gratisLabel = cta.gratis.label === 'current' ? t('current') : t('gratis.cta');
 
@@ -120,8 +124,10 @@ export function PlansView({ tools, cta, trialOffered, quebecBlocked, monthlyOffe
               : tb('price.renewMonth')}
           </p>
           {yearly && <p className="ch-muted" style={{ fontSize: 15 }}>{tb('price.vsMonth', { total_mensual: formatMXN(math.yearVsMonthlyCents) })}</p>}
-          {button(cta.pro.href, proLabel, true)}
-          {trialOffered && cta.pro.label === 'trial' && <p className="ch-muted" style={{ fontSize: 15 }}>{t('pro.note')}</p>}
+          {button(proHref, proLabel, true)}
+          {trialOffered && cta.pro.label === 'trial' && (
+            <p className="ch-muted" style={{ fontSize: 15 }}>{yearly ? t('pro.note') : t('pro.monthNoTrial')}</p>
+          )}
           {yearly && monthlyOffered && <p className="ch-muted" style={{ fontSize: 15 }}>{t('pro.monthAlt', { monto: formatMXN(month) })}</p>}
           <ul className="ch-feats">
             <li><Check aria-hidden="true" />{t('pro.f1', { n: tools.length, lista: list })}</li>

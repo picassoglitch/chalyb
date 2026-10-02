@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Chalyb — Bots que trabajan por ti mientras duermes",
-    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 1 mes. Precios en MXN, IVA incluido."
+    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 1 mes con el plan anual. Precios en MXN, IVA incluido."
   },
   "landing": {
     "nav": {
@@ -138,14 +138,20 @@
     "plans": {
       "label": "Planes",
       "title": "Un plan con todo incluido",
-      "sub": "Empieza gratis o prueba Pro un mes sin pagar.",
+      "sub": "Empieza gratis o llévate tu primer mes de Pro gratis con el plan anual.",
       "gratis": "Gratis",
       "gratisCta": "Crear cuenta gratis",
       "pro": "Pro",
       "badge": "Recomendado",
       "vip": "VIP",
       "vipCta": "Elegir VIP",
-      "seeAll": "Ver todos los planes y qué incluyen"
+      "seeAll": "Ver todos los planes y qué incluyen",
+      "proMonthNote": "Mes a mes · cancela cuando quieras",
+      "dealTitle": "Paga anual y tu 1er mes es gratis",
+      "dealEq": "Equivale a {mensual} al mes · ahorras {ahorro} al año",
+      "dealTotal": "Un solo cobro de {monto} MXN al año, al terminar tu mes gratis.",
+      "proCta": "Empieza con 1 mes gratis",
+      "perMonth": "MXN al mes"
     },
     "partner": {
       "label": "Socios",
@@ -173,7 +179,7 @@
       "label": "Preguntas",
       "title": "Preguntas frecuentes",
       "q1": "¿De verdad el primer mes es gratis?",
-      "a1": "Sí. Hoy pagas $0. Te avisamos por correo {dias} días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas.",
+      "a1": "Sí, con el plan anual. Hoy pagas $0. Te avisamos por correo {dias} días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas. Si prefieres pagar mes a mes, se cobra desde el primer mes.",
       "q2": "¿Necesito saber de tecnología?",
       "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
       "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
@@ -631,7 +637,7 @@
       "single": "Tu plan Pro incluye {tools}.",
       "toolsAria": "Herramientas incluidas",
       "more": "y {n} más",
-      "gratis": "Prueba Pro gratis 1 mes. Todas las herramientas incluidas.",
+      "gratis": "Prueba Pro gratis 1 mes con el plan anual. Todas las herramientas incluidas.",
       "gratisPlans": "Con Pro tienes más herramientas.",
       "cta": {
         "trial": "Prueba Pro gratis 1 mes",
@@ -961,13 +967,13 @@
     "metaTitle": "Planes",
     "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
     "title": "Un plan. Todas las herramientas.",
-    "sub": "Prueba Pro gratis 1 mes. Cancela cuando quieras.",
+    "sub": "Prueba Pro gratis 1 mes con el plan anual. Cancela cuando quieras.",
     "subNoTrial": "Cancela cuando quieras.",
     "toggleAria": "Cómo quieres pagar",
     "toggle": {
       "month": "Mensual",
       "year": "Anual",
-      "save": "Ahorras {ahorro}"
+      "save": "1 mes gratis"
     },
     "gratis": {
       "name": "Gratis",
@@ -990,7 +996,9 @@
       "monthAlt": "o {monto} MXN al mes con Mensual",
       "f1": "Las {n} herramientas: {lista}",
       "fCredits": "{creditos} créditos cada mes",
-      "f3": "Clips sin marca de agua"
+      "f3": "Clips sin marca de agua",
+      "ctaMonth": "Elegir Pro mensual",
+      "monthNoTrial": "El mes gratis viene con el plan anual."
     },
     "vip": {
       "name": "VIP",
@@ -1007,8 +1015,8 @@
     "notIncluded": "No incluye",
     "faqTitle": "Preguntas frecuentes",
     "faq": {
-      "q1": "¿Qué pasa cuando termina mi mes gratis?",
-      "a1": "Sigues con el plan que elegiste (anual o mensual) y se cobra a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada.",
+      "q1": "¿Cómo funciona el mes gratis?",
+      "a1": "Viene con el plan anual: hoy pagas $0 y al terminar tu mes gratis se cobra el año a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada. Con el plan mensual se cobra desde el primer mes.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -1027,12 +1035,14 @@
     "trial": {
       "metaTitle": "Tu prueba",
       "title": "Prueba Pro gratis 1 mes",
-      "sub": "Todas las herramientas incluidas. Cancela cuando quieras.",
-      "q": "¿Qué plan quieres cuando termine tu mes gratis?",
+      "sub": "El mes gratis viene con el plan anual. Cancela cuando quieras.",
+      "q": "¿Cómo quieres pagar Pro?",
       "year": "Pro anual",
       "month": "Pro mensual",
       "recommended": "Recomendado",
-      "cta": "Continuar al pago"
+      "cta": "Continuar al pago",
+      "yearFree": "1er mes gratis",
+      "monthNoTrial": "Se cobra hoy · sin mes gratis"
     },
     "paid": {
       "title": "Elige tu plan Pro",
@@ -1369,7 +1379,7 @@
     "setup": "Te falta un paso",
     "connect": "Conectar ahora",
     "open": "Abrir",
-    "strip": "Prueba Pro gratis 1 mes · Todas las herramientas incluidas. Cancela cuando quieras.",
+    "strip": "Prueba Pro gratis 1 mes con el plan anual · Todas las herramientas incluidas. Cancela cuando quieras.",
     "tagline": {
       "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
       "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",

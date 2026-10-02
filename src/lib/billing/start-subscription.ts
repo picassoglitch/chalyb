@@ -1,8 +1,8 @@
 // Creating a subscription from a card token, with its consent evidence
 // (rebuild P2-3, P2-4, P2-9; SCR-15). One path for:
 //
-//   trial    the free month: first charge when it ends
-//   paid     the account already used its trial: first charge today
+//   trial    the free month (Pro anual only): first charge when it ends
+//   paid     Pro mensual, VIP, or the trial was already used: first charge today
 //   change   a plan change (Mensual ↔ Anual, VIP, back to Pro): first charge
 //            on the effective date, the old subscription stops charging now
 //
@@ -19,7 +19,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { planPrice, type PlanKey, CURRENCY } from '@/config/pricing';
+import { planHasTrial, planPrice, type PlanKey, CURRENCY } from '@/config/pricing';
 import { getMercadoPago, getAppUrl, isCheckoutReady, mpGet } from '@/lib/payments/mercadopago';
 import {
   normalizePreapprovalStatus,
@@ -119,8 +119,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
-  const wantsTrial =
-    input.planKey !== 'vip_month' && !billing.trialUsed && input.intent !== 'change';
+  // The free month comes only with Pro anual; Mensual is charged today.
+  const wantsTrial = planHasTrial(input.planKey) && !billing.trialUsed && input.intent !== 'change';
   const mode: StartMode = input.intent === 'change' ? 'change' : wantsTrial ? 'trial' : 'paid';
   const firstChargeLater = mode === 'trial' || (mode === 'change' && !!input.effectiveAt);
 

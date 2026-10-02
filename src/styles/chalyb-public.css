@@ -480,6 +480,12 @@
   margin-top: 6px;
   line-height: 1.1;
 }
+.chalyb-app .pub-pl__per {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
 .chalyb-app .pub-pl__pn {
   font-size: 17px;
   color: var(--ink2);
@@ -509,6 +515,33 @@
   font-weight: 700;
   padding: 5px 14px;
   border-radius: 999px;
+}
+.chalyb-app .pub-pl__deal {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--accent) 10%, #fff);
+  display: grid;
+  gap: 4px;
+  font-size: 16px;
+  color: var(--ink2);
+}
+.chalyb-app .pub-pl__deal-t {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.chalyb-app .pub-pl__deal-t svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--accent);
+}
+.chalyb-app .pub-pl__deal-s {
+  font-size: 14px;
 }
 .chalyb-app .pub-plans__tax,
 .chalyb-app .pub-plans__all {

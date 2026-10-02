@@ -7,7 +7,7 @@ import { requireTrialFlow } from '@/lib/billing/trial-gate';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 import { getPublicKey } from '@/lib/payments/mercadopago';
-import { ivaPortion, planPrice, type PlanKey } from '@/config/pricing';
+import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { trialDates } from '@/lib/billing/trial-dates';
 import { consentSentence, trialVars, type Translate } from '@/lib/billing/billing-copy';
@@ -39,7 +39,8 @@ export default async function PagoPage({
   const { plan } = await searchParams;
   const monthlyOffered = await billingToggleEnabled();
   const planKey: PlanKey = plan === 'pro_month' && monthlyOffered ? 'pro_month' : 'pro_year';
-  const trial = !billing.trialUsed;
+  // The free month is Anual-only; Mensual is charged today.
+  const trial = !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
   const tbRaw = await getTranslations('billing');
