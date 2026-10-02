@@ -90,9 +90,8 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
         periodo: yearly ? t('periodYear') : t('periodMonth'),
       }),
     );
-    cta = flow
-      ? { href: changeHref(yearly ? 'pro_month' : 'pro_year'), label: t('changeCta') }
-      : null;
+    // An Anual trial can't turn into Mensual (the free month is Anual-only).
+    cta = flow && !yearly ? { href: changeHref('pro_year'), label: t('changeCta') } : null;
   } else if (s?.state === 'pro') {
     status = t('status.active');
     heading = t(`heading.${planKey!}`);
@@ -180,12 +179,12 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
         detail: t('change.toFreeSubMonth'),
       });
     }
-  } else if (s?.state === 'trialing') {
-    const other: PlanKey = yearly ? 'pro_month' : 'pro_year';
+  } else if (s?.state === 'trialing' && !yearly) {
+    // Only toward Anual: the free month doesn't carry over to Mensual.
     changes.push({
-      to: other,
-      title: t('change.trialSwitch', { plan: t(`planName.${other}`) }),
-      value: short(other),
+      to: 'pro_year',
+      title: t('change.trialSwitch', { plan: t('planName.pro_year') }),
+      value: short('pro_year'),
       detail: '',
     });
   }
@@ -346,8 +345,10 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
             planName={planName}
             accessDate={date(accessEnd)}
             email={session.user.email ?? ''}
+            reactivateHref={changeHref(planKey!)}
             offer={
-              yearly && flow
+              // No "switch to Mensual" during the free month: it's Anual-only.
+              yearly && flow && s!.state !== 'trialing'
                 ? {
                     href: changeHref('pro_month'),
                     label: tc('offerCta', { monto: formatMXN(planPrice('pro_month').totalCents) }),

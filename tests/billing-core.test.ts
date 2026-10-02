@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-state';
 import { trialDates, trialDaysLeft, addInterval } from '@/lib/billing/trial-dates';
 import { dueNotices, holdDecision } from '@/lib/billing/reminders';
-import { changeTiming, vipUpgradeQuote, unusedCredit } from '@/lib/billing/plan-change';
+import { changeTiming, reactivationStart, vipUpgradeQuote, unusedCredit } from '@/lib/billing/plan-change';
 import { isQuebec, paidPlansBlocked } from '@/lib/billing/quebec';
 import { buildConsentEvent, verifyChain, canonicalJson, type ConsentEventInput } from '@/lib/billing/consent-core';
 import { disclosureParagraphs, consentSentence, evidenceText, stripMarkup, type Translate } from '@/lib/billing/billing-copy';
@@ -154,7 +154,10 @@ test('change timing', () => {
   assert.equal(changeTiming('pro_month', 'vip_month', false), 'now');
   assert.equal(changeTiming('pro_month', 'pro_year', false), 'period_end');
   assert.equal(changeTiming('vip_month', 'pro_month', false), 'period_end');
-  assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
+  // The free month is Anual-only: an Anual trial can't turn into Mensual.
+  assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_annual_only');
+  assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
+  assert.equal(changeTiming('pro_year', 'vip_month', true), 'now');
 });
 
 test('VIP upgrade: full VIP today, refund of the unused days', () => {
@@ -253,4 +256,18 @@ test('annual disclosure, rendered exactly (IVA-inclusive totals)', () => {
 test('seller identity: every field is required before the trial can open', () => {
   for (const k of Object.keys(process.env)) if (k.startsWith('LEGAL_ENTITY_')) delete process.env[k];
   assert.equal(missingLegalEntityFields().length, 7);
+});
+
+test('reactivating after cancelling a free month: only Anual keeps the rest of it', () => {
+  const now = new Date('2026-10-10T12:00:00Z');
+  const accessUntil = '2026-10-30T12:00:00Z';
+  // Cancelled trial → Mensual or VIP: charged today, no leftover free days.
+  assert.equal(reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: true, now }), null);
+  assert.equal(reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now }), null);
+  // Cancelled trial → Anual: the free month continues.
+  assert.equal(reactivationStart({ to: 'pro_year', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-30T12:00:00.000Z');
+  // Paid access left over is always kept.
+  assert.equal(reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: false, now })?.toISOString(), '2026-10-30T12:00:00.000Z');
+  // Access already over: today.
+  assert.equal(reactivationStart({ to: 'pro_year', accessUntil: '2026-10-01T00:00:00Z', unpaidTrial: true, now }), null);
 });

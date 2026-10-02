@@ -39,14 +39,14 @@ export const NAV: NavGroup[] = [
       // Health, incidents, action now. Absorbed the old Overview.
       { id: 'command', href: '/dashboard', ic: '⬡', label: 'Centro de mando', live: true },
       // Team, roles, plans, invites.
-      { id: 'team', href: '/dashboard/team', ic: '👥', label: 'Personas' },
+      { id: 'team', href: '/dashboard/personas', ic: '👥', label: 'Personas' },
       // The one money hub: payments + P&L + royalties.
-      { id: 'money', href: '/dashboard/billing', ic: '$', label: 'Dinero' },
+      { id: 'money', href: '/dashboard/dinero', ic: '$', label: 'Dinero' },
       // Catalogue lifecycle. Models and integrations are sub-views, later.
-      { id: 'engines', href: '/dashboard/engines', ic: '◈', label: 'Engines' },
+      { id: 'engines', href: '/dashboard/herramientas', ic: '◈', label: 'Herramientas' },
       // Notifications + audit, nothing else.
-      { id: 'activity', href: '/dashboard/activity', ic: '◉', label: 'Actividad' },
-      { id: 'settings', href: '/dashboard/settings', ic: '⚙', label: 'Ajustes' },
+      { id: 'activity', href: '/dashboard/actividad', ic: '◉', label: 'Actividad' },
+      { id: 'settings', href: '/dashboard/ajustes', ic: '⚙', label: 'Ajustes' },
     ],
   },
   {
@@ -166,29 +166,19 @@ export function workspacePageKey(pathname: string): string {
  *  entries moved to the message catalogue — see workspacePageKey() above
  *  and `workspace.pages` in messages/*.json. */
 export const PAGE_META: Record<string, { title: string; sub: string }> = {
-  '/dashboard': {
-    title: 'Centro de mando',
-    sub: 'Salud, incidentes y lo que hay que atender ahora.',
+  // The six BUILD-SPEC routes render in the rebuilt shell (P5) with their
+  // own headers; these are main's screens that kept the old one.
+  '/dashboard/overview': {
+    title: 'Vista técnica',
+    sub: 'Salud, incidentes y tokens de IA de cada engine.',
   },
   '/dashboard/team': {
-    title: 'Personas',
+    title: 'Equipo, roles y créditos',
     sub: 'Equipo, roles, planes e invitaciones.',
-  },
-  '/dashboard/billing': {
-    title: 'Dinero',
-    sub: 'Lo que entró, lo que cuesta operar, y lo que se les debe a los socios.',
   },
   '/dashboard/engines': {
     title: 'Engines',
     sub: 'Catálogo de productos: status, tier requerido, visibilidad.',
-  },
-  '/dashboard/activity': {
-    title: 'Actividad',
-    sub: 'Notificaciones y registro de auditoría.',
-  },
-  '/dashboard/settings': {
-    title: 'Ajustes',
-    sub: 'Organización, idioma, zona horaria y seguridad.',
   },
 
   // Sub-views: reachable from the six above, not from the primary nav.

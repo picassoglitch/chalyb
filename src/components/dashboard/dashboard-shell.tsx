@@ -120,7 +120,7 @@ export function DashboardShell({
                 saying "No tienes notificaciones nuevas" whether or not that
                 was true. */}
             <Link
-              href={'/dashboard/activity' as Route}
+              href={'/dashboard/actividad' as Route}
               className="cc-ibtn"
               title={
                 unreadNotifications > 0

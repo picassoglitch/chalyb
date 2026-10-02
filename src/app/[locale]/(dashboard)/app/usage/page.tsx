@@ -22,6 +22,7 @@
 // zero balance. A second-level error.tsx in the parent dir is still the
 // backstop for anything I haven't anticipated.
 
+import { engineDisplayName } from '@/lib/engines/display-names';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import type { Route } from 'next';
@@ -226,7 +227,7 @@ async function loadUsagePageData(): Promise<PageData> {
       try {
         const enginesRes = await supabase
           .from('engines')
-          .select('id, name, icon')
+          .select('id, slug, name, icon')
           .in('id', engineIds);
         if (enginesRes.error) {
           console.warn('[/app/usage] engines lookup error:', enginesRes.error.message);
@@ -234,7 +235,8 @@ async function loadUsagePageData(): Promise<PageData> {
         } else {
           for (const e of enginesRes.data ?? []) {
             engineMap.set(e.id as string, {
-              name: (e.name as string) ?? 'Engine',
+              // Customer name ("Inmuebles"), never the internal one (P0-6).
+              name: engineDisplayName(e.slug as string, (e.name as string | null) ?? undefined),
               icon: (e.icon as string | null) ?? '◆',
             });
           }

@@ -5,12 +5,13 @@ import { redirect, Link } from '@/i18n/routing';
 import type { Route } from 'next';
 import { requireTrialFlow } from '@/lib/billing/trial-gate';
 import { loadBilling } from '@/lib/billing/subscription-store';
-import { trialPlanChoiceEnabled } from '@/lib/config/flags';
+
 import { getPublicKey } from '@/lib/payments/mercadopago';
-import { ivaPortion, planPrice, type PlanKey } from '@/config/pricing';
+import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { trialDates } from '@/lib/billing/trial-dates';
 import { consentSentence, trialVars, type Translate } from '@/lib/billing/billing-copy';
+import { billingToggleEnabled } from '@/lib/config/settings';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { Markup } from '@/components/ui/markup';
 import { PayForm } from '@/components/app/billing/pay-form';
@@ -36,8 +37,10 @@ export default async function PagoPage({
   const billing = await loadBilling(session.user.id);
   if (billing.primary.state !== 'free') return redirect({ href: '/app/billing', locale });
   const { plan } = await searchParams;
-  const planKey: PlanKey = plan === 'pro_month' && trialPlanChoiceEnabled() ? 'pro_month' : 'pro_year';
-  const trial = !billing.trialUsed;
+  const monthlyOffered = await billingToggleEnabled();
+  const planKey: PlanKey = plan === 'pro_month' && monthlyOffered ? 'pro_month' : 'pro_year';
+  // The free month is Anual-only; Mensual is charged today.
+  const trial = !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
   const tbRaw = await getTranslations('billing');
@@ -136,7 +139,7 @@ export default async function PagoPage({
               </dt>
               <dd>{trial ? '$0' : `${vars.monto} MXN`}</dd>
             </dl>
-            {trialPlanChoiceEnabled() && (
+            {monthlyOffered && (
               <Link href={`/app/prueba/pago?plan=${other}` as Route} className="ch-lnk">
                 {other === 'pro_month'
                   ? t('summary.switchMonth', { monto: formatMXN(planPrice('pro_month').totalCents) })

@@ -22,6 +22,14 @@ const nextConfig: NextConfig = {
       { source: '/:locale(en|es)/app/resultados', destination: '/:locale/app/history', permanent: false },
       { source: '/app/ayuda', destination: '/app/help', permanent: false },
       { source: '/:locale(en|es)/app/ayuda', destination: '/:locale/app/help', permanent: false },
+      // P5: main's Dinero, Actividad and Ajustes screens folded into the
+      // rebuilt owner panel.
+      { source: '/dashboard/billing', destination: '/dashboard/dinero', permanent: true },
+      { source: '/:locale(en|es)/dashboard/billing', destination: '/:locale/dashboard/dinero', permanent: true },
+      { source: '/dashboard/activity', destination: '/dashboard/actividad', permanent: true },
+      { source: '/:locale(en|es)/dashboard/activity', destination: '/:locale/dashboard/actividad', permanent: true },
+      { source: '/dashboard/settings', destination: '/dashboard/ajustes', permanent: true },
+      { source: '/:locale(en|es)/dashboard/settings', destination: '/:locale/dashboard/ajustes', permanent: true },
       { source: '/login', destination: '/sign-in', permanent: true },
       { source: '/register', destination: '/sign-in?mode=signup', permanent: true },
       { source: '/signup', destination: '/sign-in?mode=signup', permanent: true },
@@ -39,29 +47,20 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // The landing is a single page; pricing is the `#pricing` section of it,
-      // not a route. /pricing (and the Spanish /precios) used to 404 — people
-      // type them, and they are the obvious guess from a pricing CTA.
-      { source: '/pricing', destination: '/#pricing', permanent: false },
-      { source: '/precios', destination: '/#pricing', permanent: false },
-      {
-        source: '/:locale(en|es)/pricing',
-        destination: '/:locale/#pricing',
-        permanent: false,
-      },
-      {
-        source: '/:locale(en|es)/precios',
-        destination: '/:locale/#pricing',
-        permanent: false,
-      },
+      // Pricing lives at /planes (SCR-12). /pricing and the Spanish /precios
+      // are the obvious guesses, so they 308 there (P4-2).
+      { source: '/pricing', destination: '/planes', permanent: true },
+      { source: '/precios', destination: '/planes', permanent: true },
+      { source: '/:locale(en|es)/pricing', destination: '/:locale/planes', permanent: true },
+      { source: '/:locale(en|es)/precios', destination: '/:locale/planes', permanent: true },
 
       // There is no public catalog page; the tools live in the landing's
-      // #herramientas section. Temporary until P4 makes it permanent (B09).
-      { source: '/engines', destination: '/#herramientas', permanent: false },
+      // #herramientas section (P4-3, B09).
+      { source: '/engines', destination: '/#herramientas', permanent: true },
       {
         source: '/:locale(en|es)/engines',
         destination: '/:locale/#herramientas',
-        permanent: false,
+        permanent: true,
       },
 
       // Aliases people type (B14). /terminos and /privacidad are temporary:

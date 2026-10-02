@@ -1,21 +1,22 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { SectionHead } from './section-head';
 
-export function HowItWorks() {
-  const t = useTranslations('landing.how');
+// 3 · Cómo funciona (#como), 3 steps.
 
+export async function HowItWorks() {
+  const t = await getTranslations('landing.how');
   return (
-    <section className="lp-section lp-section-alt" id="how-it-works">
-      <div className="lp-container">
-        <div className="lp-section-head">
-          <h2 className="lp-h2">{t('title')}</h2>
-          <p className="lp-sub">{t('subtitle')}</p>
-        </div>
-        <ol className="lp-steps">
-          {[1, 2, 3].map((n) => (
-            <li key={n} className="lp-step">
-              <span className="lp-step-num">0{n}</span>
-              <h3>{t(`steps.${n}.title`)}</h3>
-              <p>{t(`steps.${n}.body`)}</p>
+    <section id="como" className="pub-band" aria-labelledby="how-title">
+      <div className="pub-wrap">
+        <SectionHead id="how-title" label={t('label')} title={t('title')} />
+        <ol className="pub-steps">
+          {(['1', '2', '3'] as const).map((n) => (
+            <li key={n} className="pub-step">
+              <span className="pub-step__n" aria-hidden="true">
+                {n}
+              </span>
+              <h3>{t(`s${n}`)}</h3>
+              <p>{t(`s${n}p`)}</p>
             </li>
           ))}
         </ol>

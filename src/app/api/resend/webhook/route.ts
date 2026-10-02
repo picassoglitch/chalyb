@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       severity: 'warning',
       title: 'Aviso previo al cobro rebotó — el cobro queda detenido',
       body: `usuario ${dispatch.user_id as string} · ${dispatch.kind as string} ${dispatch.period_key as string}`,
-      href: '/dashboard/billing',
+      href: '/dashboard/dinero',
       source: 'resend.webhook',
     });
   }

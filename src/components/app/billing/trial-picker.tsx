@@ -1,16 +1,17 @@
 'use client';
 
-// SCR-14 · Tu prueba: pick the plan the free month turns into. The billing
-// block under it updates on every change, with the real amount and period
-// (aceptacion-ux §3.1–3.2). Anual is preselected; its big number is the
-// yearly total, never the monthly equivalent.
+// SCR-14 · Tu prueba: pick how to pay Pro. The free month comes only with
+// Anual (planHasTrial); Mensual is charged today. The billing block under it
+// updates on every change, with the real amount and period (aceptacion-ux
+// §3.1–3.2). Anual is preselected; its big number is the yearly total, never
+// the monthly equivalent.
 
 import { useMemo, useState } from 'react';
 import type { Route } from 'next';
 import { useLocale, useTranslations } from 'next-intl';
 import { Info } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { annualMath, planPrice, type PlanKey } from '@/config/pricing';
+import { annualMath, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { trialDates } from '@/lib/billing/trial-dates';
 import { disclosureParagraphs } from '@/lib/billing/billing-copy';
@@ -31,6 +32,7 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
   // at submit, from its own clock).
   const dates = useMemo(() => trialDates(new Date()), []);
   const paragraphs = disclosureParagraphs(bt, { planKey: plan, dates, cardLast4: null, locale });
+  const trial = !trialUsed && planHasTrial(plan);
 
   const options: { key: PlanKey; show: boolean }[] = [
     { key: 'pro_year', show: true },
@@ -57,7 +59,8 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
                 <span style={{ flex: 1 }}>
                   <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <b style={{ fontSize: 20 }}>{key === 'pro_year' ? t('trial.year') : t('trial.month')}</b>
-                    {key === 'pro_year' && <Pill kind="acc">{t('trial.recommended')}</Pill>}
+                    {key === 'pro_year' && !trialUsed && <Pill kind="acc">{t('trial.yearFree')}</Pill>}
+                    {key === 'pro_year' && trialUsed && <Pill kind="acc">{t('trial.recommended')}</Pill>}
                     {key === 'pro_year' && (
                       <Pill kind="ok">{tb('price.saveYear', { ahorro: formatMXN(math.yearSavingsCents) })}</Pill>
                     )}
@@ -70,7 +73,9 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
                   <span className="ch-muted" style={{ display: 'block', fontSize: 16 }}>
                     {key === 'pro_year'
                       ? `${tb('price.proYearEq', { mensual: formatMXN(math.yearMonthlyEquivalentCents) })} · ${tb('price.renewYear')}`
-                      : tb('price.renewMonth')}
+                      : trialUsed
+                        ? tb('price.renewMonth')
+                        : `${t('trial.monthNoTrial')} · ${tb('price.renewMonth')}`}
                   </span>
                 </span>
               </label>
@@ -78,7 +83,7 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
         </div>
       </fieldset>
 
-      {!trialUsed ? (
+      {trial ? (
         <div className="ch-disc" aria-live="polite">
           <span className="ch-disc__ic" aria-hidden="true">
             <Info />

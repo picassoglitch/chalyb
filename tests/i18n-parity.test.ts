@@ -41,6 +41,10 @@ const SAME_OK_KEYS = new Set([
   'clips.done.thumbAlt', // "Clip: {title}"
   'invest.s1.exchange', // "Exchange"
   'results.clipsTitle', // "{n} clips"
+  'admin.more.models', // "AI Models"
+  'admin.more.analytics', // "Analytics"
+  'admin.more.api', // "API & Keys"
+  'admin.settings.authValue', // "Supabase Auth"
 ]);
 
 /** Values that are names, prices or URLs and never translate. */

@@ -92,7 +92,35 @@ tables.user_notifications = [
   { id: 'n-pro-1', user_id: 'u-pro', kind: 'renew', title: 'Tu plan se renueva en 7 días', body: 'El 21 de octubre de 2026 se cobrarán $868.84 MXN.', href: '/app/billing', keep_until: iso(20 * DAY), dedupe_key: 'renew7:pre-pro', read_at: null, created_at: iso(-1 * 3600000) },
   { id: 'n-pro-2', user_id: 'u-pro', kind: 'liveEnded', title: 'Tu transmisión terminó', body: 'Duró 42 min. ¿Hacemos clips?', href: '/app/clips', keep_until: null, dedupe_key: 'live:seed', read_at: null, created_at: iso(-3 * DAY) },
 ];
-const WRITABLE = new Set(['consent_events', 'exchange_connections', 'user_notifications']);
+// Owner panel (P5) fixtures: one unread idea and one billing request, a
+// bounced notice for past_due, tool usage by a paying user (so hiding
+// Inmuebles asks first), and a free person the e2e can gift a month to
+// without touching the role accounts.
+tables.partner_inquiries = [
+  { id: 'i-1', name: 'Lucía', email: 'lucia@example.com', message: 'Una herramienta para agendar citas', pane: 'idea', read_at_admin: null, created_at: iso(-2 * DAY) },
+  { id: 'i-2', name: 'Pepe Pendiente', email: 'past_due@example.com', message: '[cobro] Me cobraron dos veces\n\nRevisen por favor', pane: 'client', read_at_admin: null, created_at: iso(-1 * DAY) },
+];
+tables.email_dispatches = [
+  { id: 'd-1', user_id: 'u-past_due', kind: 'renew_7d', period_key: 'renew7:pre-past_due', template_id: 'billing.renew_7d', template_version: '1', sent_at: iso(-3 * DAY), delivery_status: 'bounced', bounced_at: iso(-3 * DAY) },
+];
+tables.cancellation_events = [
+  { folio_cancelacion: 'C-MOCK01', user_id: 'u-cancelled', subscription_id: 's-cancelled', requested_at: iso(-2 * DAY), access_until: iso(12 * DAY), consent_id: null, email_message_id: null },
+];
+tables.usage_events = [
+  { id: 'ue-1', user_id: 'u-pro', engine_id: 'e-realtor', kind: 'llm.tokens', amount: 1200, source_id: 'mock-1', occurred_at: iso(-3 * DAY), created_at: iso(-3 * DAY) },
+];
+tables.audit_events = [];
+tables.app_settings = [];
+tables.notifications = [];
+tables.profiles.push({
+  id: 'u-gift', email: 'gina@example.com', full_name: 'Gina Regalo', role: 'CLIENT', tier: 'FREE', tier_ends_at: null, org_id: ORG,
+  selected_engine_id: null, chalybclip_trial_started_at: null, welcome_gift_claimed_at: null, token_bonus_balance: 0, locale: 'es',
+  pro_trial_started_at: null, pro_trial_ends_at: null, created_at: iso(-9 * DAY),
+});
+const WRITABLE = new Set([
+  'consent_events', 'exchange_connections', 'user_notifications',
+  'audit_events', 'app_settings', 'engines', 'profiles',
+]);
 
 const field = (r, k) => {
   const j = /^(\w+)->>(\w+)$/.exec(k);
@@ -106,6 +134,22 @@ function filterRows(rows, params) {
     const m = /^eq\.(.*)$/.exec(v);
     if (m) out = out.filter((r) => String(field(r, k)) === m[1]);
     if (v === 'is.null') out = out.filter((r) => field(r, k) == null);
+    if (v === 'not.is.null') out = out.filter((r) => field(r, k) != null);
+    const cmp = /^(gte|gt|lte|lt|neq)\.(.*)$/.exec(v);
+    if (cmp) {
+      const [, op, want] = cmp;
+      out = out.filter((r) => {
+        const got = String(field(r, k) ?? '');
+        if (op === 'neq') return got !== want;
+        const c = got.localeCompare(want);
+        return op === 'gte' ? c >= 0 : op === 'gt' ? c > 0 : op === 'lte' ? c <= 0 : c < 0;
+      });
+    }
+    const like = /^ilike\.(.*)$/.exec(v);
+    if (like) {
+      const re = new RegExp(`^${like[1].replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/%/g, '.*')}$`, 'is');
+      out = out.filter((r) => re.test(String(field(r, k) ?? '')));
+    }
     const inm = /^in\.\((.*)\)$/.exec(v);
     if (inm) { const set = inm[1].split(',').map((s) => s.replace(/"/g, '')); out = out.filter((r) => set.includes(String(r[k]))); }
   }
@@ -164,7 +208,7 @@ http.createServer((req, res) => {
   if (req.method === 'HEAD') return send(200, undefined, headers);
   if (single) return rows[0] ? send(200, rows[0], headers) : send(406, { code: 'PGRST116', message: 'no rows' });
   send(200, rows, headers);
-}).listen(59999, () => console.log('mock supabase on :59999'));
+}).listen(Number(process.env.MOCK_SUPABASE_PORT ?? 59999), () => console.log(`mock supabase on :${process.env.MOCK_SUPABASE_PORT ?? 59999}`));
 
 
 function write(req, url, table, body, send) {

@@ -11,6 +11,8 @@
 //   know the client went away. Combined with the cancel() callback, we cover
 //   both client-side and server-side teardown paths.
 
+import { getSessionUser } from '@/lib/auth/session';
+import { isAdminRole } from '@/lib/billing/tiers';
 import { createClient } from '@/lib/supabase/server';
 import { nextActivityEvent, tickRail, tickStrip } from '@/lib/data/telemetry';
 
@@ -34,6 +36,12 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+  // The strip carries revenue and the rail carries audit events: owner
+  // panel only (it used to answer any signed-in user).
+  const session = await getSessionUser();
+  if (!session || !isAdminRole(session.role)) {
+    return new Response('Forbidden', { status: 403 });
   }
 
   const stream = new ReadableStream({

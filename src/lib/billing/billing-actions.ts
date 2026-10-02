@@ -13,7 +13,7 @@ import type { ConsentEventInput } from './consent-core';
 import { dispatchBillingEmail } from './notices';
 import { formatFechaLarga } from './format';
 import { loadBilling } from './subscription-store';
-import { changeTiming, vipUpgradeQuote } from './plan-change';
+import { changeTiming, reactivationStart, vipUpgradeQuote } from './plan-change';
 import { startSubscription, type StartResult } from './start-subscription';
 
 /** "C-K7Q2M9" — short, unambiguous, shown to the user and in the email. */
@@ -34,7 +34,26 @@ export async function cancelSubscription(
   session: SessionUser,
   opts: { offerShown: boolean; locale: string },
 ): Promise<CancelResult> {
-  const userId = session.user.id;
+  return cancelForUser(
+    {
+      id: session.user.id,
+      email: session.user.email ?? null,
+      fullName: (session.user.user_metadata?.full_name as string | undefined) ?? null,
+    },
+    { ...opts, surface: 'web_my_plan', buttonLabel: 'Sí, cancelar' },
+  );
+}
+
+/**
+ * The cancel itself, for the subscriber (Mi plan) or for the owner acting on
+ * their behalf (/dashboard/personas, P5-2): same Mercado Pago cancel, same
+ * evidence, same email; `surface` says where it came from.
+ */
+export async function cancelForUser(
+  target: { id: string; email: string | null; fullName: string | null },
+  opts: { offerShown: boolean; locale: string; surface: string; buttonLabel: string },
+): Promise<CancelResult> {
+  const userId = target.id;
   const billing = await loadBilling(userId);
   const row = billing.primaryRow;
   if (!row || !['trialing', 'pro', 'past_due'].includes(billing.primary.state)) {
@@ -78,13 +97,13 @@ export async function cancelSubscription(
   const ctx = await requestContext();
   const base = {
     user_id: userId,
-    account_email: session.user.email ?? null,
+    account_email: target.email,
     documents: [] as ConsentEventInput['documents'],
     client_timezone: null,
     ip_address: ctx.ip,
     user_agent: ctx.userAgent,
     locale: opts.locale === 'es' ? 'es-MX' : 'en',
-    surface: 'web_my_plan',
+    surface: opts.surface,
     ui_version: UI_VERSION,
     disclosure_text: null,
     checkbox_text: null,
@@ -108,11 +127,11 @@ export async function cancelSubscription(
   const consent = await recordConsent({
     ...base,
     event_type: 'cancellation_requested',
-    button_label: 'Sí, cancelar',
+    button_label: opts.buttonLabel,
     details: { folio_cancelacion: folio, access_until: accessUntil },
   });
 
-  const email = session.user.email;
+  const email = target.email;
   let messageId: string | null = null;
   if (email) {
     const sent = await dispatchBillingEmail({
@@ -121,8 +140,7 @@ export async function cancelSubscription(
       kind: 'cancelled',
       periodKey: folio,
       vars: {
-        nombre:
-          ((session.user.user_metadata?.full_name as string | undefined) ?? '').split(' ')[0] ?? '',
+        nombre: (target.fullName ?? '').split(' ')[0] ?? '',
         plan: s.planKey === 'vip_month' ? 'VIP' : 'Pro',
         monto: '',
         folio_cancelacion: folio,
@@ -146,6 +164,11 @@ export async function cancelSubscription(
   });
   void track('cancel', { plan: s.planKey === 'pro_year' ? 'anual' : 'mensual' });
   return { ok: true, folio, accessUntil };
+}
+
+/** The current subscription is a free month that never charged. */
+function unpaidTrial(billing: Awaited<ReturnType<typeof loadBilling>>): boolean {
+  return !!billing.primary.trialEndsAt && !billing.primaryRow?.last_charge_at;
 }
 
 export interface ChangeInput {
@@ -175,6 +198,8 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     s.state === 'free' || s.state === 'cancelled_active'
       ? 'reactivate'
       : changeTiming(from, input.planKey, trialing);
+  // The free month is Anual-only: a trial can't be switched to Mensual.
+  if (timing === 'trial_annual_only') return { ok: false, code: 'TRIAL_ANNUAL_ONLY' };
 
   const effectiveAt =
     timing === 'now'
@@ -184,9 +209,12 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
           ? new Date(s.trialEndsAt)
           : undefined
         : timing === 'reactivate'
-          ? s.accessUntil && Date.parse(s.accessUntil) > Date.now()
-            ? new Date(s.accessUntil)
-            : undefined
+          ? (reactivationStart({
+              to: input.planKey,
+              accessUntil: s.accessUntil,
+              unpaidTrial: unpaidTrial(billing),
+              now: new Date(),
+            }) ?? undefined)
           : s.nextChargeAt
             ? new Date(s.nextChargeAt)
             : undefined;
@@ -290,7 +318,12 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
       : timing === 'period_end'
         ? s.nextChargeAt
         : timing === 'reactivate'
-          ? s.accessUntil
+          ? (reactivationStart({
+              to,
+              accessUntil: s.accessUntil,
+              unpaidTrial: unpaidTrial(billing),
+              now: new Date(),
+            })?.toISOString() ?? null)
           : null;
   return { timing, effectiveAt, from, ...quote, billing };
 }

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Chalyb — Herramientas de IA listas para usar, en un solo lugar",
-    "description": "Haz clips de tus streams, recibe señales de cripto y maneja tu transmisión con herramientas de IA. Empieza gratis."
+    "title": "Chalyb — Bots que trabajan por ti mientras duermes",
+    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 1 mes con el plan anual. Precios en MXN, IVA incluido."
   },
   "landing": {
     "nav": {
@@ -9,163 +9,227 @@
       "signup": "Empezar",
       "app": "Abrir app"
     },
-    "hero": {
-      "kicker": "Plataforma de automatización con IA",
-      "h1": "Pon herramientas de IA a trabajar. Listas en menos de un minuto.",
-      "lead": "Chalyb reúne herramientas de IA listas para usar: haz clips de tus streams, recibe señales de cripto y maneja tu transmisión. Empieza gratis.",
-      "cta": "Empezar gratis",
-      "micro": "Plan gratis · Sin tarjeta de crédito · Regístrate con Google o correo",
-      "preview": {
-        "title": "Tus herramientas",
-        "live": "En vivo",
-        "stat1": "Herramientas",
-        "stat2": "Clips esta semana",
-        "stat3": "Créditos usados",
-        "chart": "Clips generados · últimos 14 días",
-        "statusLive": "En vivo",
-        "statusSim": "Incluido",
-        "statusSoon": "En Pro"
-      }
-    },
-    "proof": {
-      "label": "Corre sobre infraestructura de producción",
-      "metrics": {
-        "1": "objetivo de uptime",
-        "2": "sistemas monitoreados",
-        "3": "del registro a la primera corrida",
-        "4": "operando en LATAM y Norteamérica"
-      },
-      "stack": "Construido con"
-    },
-    "pillars": {
-      "title": "Todo lo que necesitas para operar IA. Nada que no.",
-      "subtitle": "Tres cosas que la plataforma hace bien, para que tú no tengas que construir ninguna.",
-      "items": {
-        "1": {
-          "kicker": "Herramientas",
-          "title": "Herramientas de IA listas, sin construir nada",
-          "body": "Elige entre herramientas que el equipo de Chalyb opera en producción. Cada una resuelve un trabajo concreto desde el día uno.",
-          "bullets": {
-            "1": "Clips convierte tus streams en clips verticales listos para publicar",
-            "2": "Señales te avisa cuándo es buen momento para comprar o vender cripto",
-            "3": "En vivo maneja tu transmisión y tus escenas de OBS con botones grandes"
-          }
-        },
-        "2": {
-          "kicker": "Empieza gratis",
-          "title": "Prueba todo gratis. Pasa a vivo cuando estés listo",
-          "body": "Clips viene incluido en el plan gratis. Cuando quieras más, cambia de plan con un clic.",
-          "bullets": {
-            "1": "Clips incluido en el plan gratis",
-            "2": "Pro incluye una herramienta a tu elección, VIP las incluye todas",
-            "3": "Cambia de herramienta o pausa cuando quieras, sin ataduras"
-          }
-        },
-        "3": {
-          "kicker": "Monitoreo y cobro",
-          "title": "Ve cada corrida. Paga solo lo que usas",
-          "body": "Historial y medidor de créditos vienen integrados. Son las mismas herramientas que el equipo de Chalyb usa en sus propios sistemas.",
-          "bullets": {
-            "1": "Dashboards en vivo e historial completo de ejecución",
-            "2": "Créditos mensuales incluidos, las recargas nunca caducan",
-            "3": "Pago seguro con Mercado Pago, cancela cuando quieras"
-          }
-        }
-      },
-      "visuals": {
-        "libraryTitle": "Herramientas",
-        "libraryClip": "Clips de streams",
-        "libraryCrypto": "Señales de trading",
-        "libraryObs": "Control de transmisión",
-        "ready": "Listo",
-        "soon": "En Pro",
-        "modeTitle": "Modo de ejecución",
-        "modeSim": "Gratis",
-        "modeLive": "En vivo · Pro",
-        "modeFoot": "Un clic para cambiar. Sin redeploy, sin caídas.",
-        "usageTitle": "Uso este mes",
-        "usageTokens": "Créditos",
-        "usageRun": "corrida",
-        "usageOk": "Completada"
-      }
-    },
-    "how": {
-      "title": "Operando en tres pasos",
-      "subtitle": "Sin llamada comercial, sin proyecto de onboarding.",
-      "steps": {
-        "1": {
-          "title": "Regístrate y conecta",
-          "body": "Crea tu cuenta con Google o correo. Tu espacio queda listo en menos de un minuto."
-        },
-        "2": {
-          "title": "Elige una herramienta",
-          "body": "Escoge una herramienta, conecta tu canal o pega un enlace, y listo."
-        },
-        "3": {
-          "title": "Obtén resultados",
-          "body": "Los clips se publican solos, las señales llegan en tiempo real y cada corrida queda registrada. Pasa a vivo con Pro cuando rinda."
-        }
-      }
-    },
-    "pricing": {
-      "title": "Empieza gratis. Escala cuando rinda.",
-      "subtitle": "Sin contratos ni llamadas comerciales. Elige un plan y estás operando en menos de un minuto.",
-      "badge": "El más elegido",
-      "note": "Precios en MXN, IVA incluido. Pro y VIP se cobran cada mes con Mercado Pago y se cancelan cuando quieras.",
-      "tiers": {
-        "free": {
-          "name": "Gratis",
-          "per": " /siempre",
-          "tagline": "Crea una cuenta y explora toda la plataforma.",
-          "features": {
-            "1": "Clips incluido",
-            "2": "50,000 créditos de regalo",
-            "3": "Acceso a la comunidad",
-            "4": "Clips con marca de agua · descarga manual"
-          },
-          "cta": "Empezar gratis"
-        },
-        "pro": {
-          "name": "Pro",
-          "per": " MXN /mes",
-          "tagline": "Una herramienta a tu elección.",
-          "features": {
-            "1": "Todo lo de Gratis",
-            "2": "1 herramienta incluida · tú eliges cuál",
-            "3": "1,000,000 de créditos al mes, se renuevan",
-            "4": "Clips sin marca de agua · ~12 streams al mes · 1 logo",
-            "5": "Comunidad premium"
-          },
-          "cta": "Empezar con Pro"
-        },
-        "vip": {
-          "name": "VIP",
-          "per": " MXN /mes",
-          "tagline": "Todo Chalyb desbloqueado. IA + Clip, sin límites.",
-          "features": {
-            "1": "Todo lo de Pro",
-            "2": "Todas las herramientas incluidas",
-            "3": "5 veces los créditos de Pro",
-            "4": "Clips completo para streamers",
-            "5": "Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea"
-          },
-          "cta": "Empezar con VIP"
-        }
-      }
-    },
-    "cta": {
-      "title": "Empieza hoy. Clips es gratis.",
-      "body": "Crea tu cuenta, pega el enlace de tu stream y ve tus clips antes de pagar nada.",
-      "btn": "Empezar hoy",
-      "micro": "Plan gratis · Sin tarjeta de crédito"
-    },
     "footer": {
       "rights": "© {year} Chalyb · Ciudad de México",
       "terms": "Términos",
       "privacy": "Privacidad",
       "status": "Estado",
       "contact": "Contacto"
-    }
+    },
+    "publicNav": {
+      "aria": "Secciones",
+      "tools": "Herramientas",
+      "how": "Cómo funciona",
+      "plans": "Planes",
+      "faq": "Preguntas",
+      "login": "Entrar",
+      "app": "Abrir Chalyb",
+      "cta": "Prueba Pro gratis",
+      "menu": "Abrir menú",
+      "skip": "Ir al contenido"
+    },
+    "hero": {
+      "eyebrowTag": "Todo incluido",
+      "eyebrow": "Un plan, todas las herramientas",
+      "title": "Bots que <em>trabajan por ti</em> mientras duermes",
+      "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.",
+      "subMobile": "Clips, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.",
+      "seal1": "En español",
+      "seal2": "Sin saber de tecnología",
+      "seal3": "Cancela en 1 clic",
+      "panel": "Mientras dormías",
+      "example": "Ejemplo",
+      "frameAlt": "Ejemplo de un clip vertical",
+      "rows": {
+        "chalybclip": {
+          "label": "Clips listos",
+          "detail": "De tu stream de anoche",
+          "pill": "Listo"
+        },
+        "chalybcrypto": {
+          "label": "Señal: Bitcoin",
+          "detail": "Buen momento para comprar",
+          "pill": "Nuevo"
+        },
+        "chalybobs": {
+          "label": "Tu transmisión",
+          "detail": "Escenas listas para mañana",
+          "pill": "Listo"
+        },
+        "chalybbot": {
+          "label": "Tu Asistente respondió",
+          "detail": "Contestó a tus clientes",
+          "pill": "Hecho"
+        },
+        "chalybpicks": {
+          "label": "Pronósticos del día",
+          "detail": "Listos para revisar",
+          "pill": "Nuevo"
+        },
+        "chalybrealtor": {
+          "label": "Inmuebles",
+          "detail": "Nuevos interesados",
+          "pill": "Nuevo"
+        },
+        "chalybtrade": {
+          "label": "Inversiones",
+          "detail": "Tus reglas siguen activas",
+          "pill": "Hecho"
+        }
+      }
+    },
+    "cta": "Prueba Pro gratis 1 mes",
+    "ctaSub": "Todas las herramientas incluidas. Cancela cuando quieras.",
+    "tools": {
+      "label": "Herramientas",
+      "title": "Todo lo que necesitas, en un solo lugar",
+      "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen en tu plan.",
+      "included": "Incluido en Pro",
+      "desc": {
+        "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
+        "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
+        "chalybobs": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
+        "chalybbot": "Un bot que contesta a tus clientes y seguidores, de día y de noche.",
+        "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
+        "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
+        "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
+      },
+      "ideaTitle": "Tu idea",
+      "ideaSub": "¿Necesitas otra herramienta? Propónla y nosotros la construimos.",
+      "ideaCta": "Proponer una idea"
+    },
+    "how": {
+      "label": "Cómo funciona",
+      "title": "Cómo funciona en 3 pasos",
+      "s1": "Crea tu cuenta",
+      "s1p": "Con Google o con tu correo. Toma 1 minuto.",
+      "s2": "Elige qué quieres hacer",
+      "s2p": "Clips, señales, tu transmisión… todo está en Inicio con botones grandes.",
+      "s3": "Listo, trabaja por ti",
+      "s3p": "Te avisamos cuando tus resultados estén listos. Tú solo los usas."
+    },
+    "gallery": {
+      "label": "Clips",
+      "title": "Así se ven tus clips",
+      "sub": "Pega el enlace de tu stream y recibe clips con subtítulos, listos para publicar.",
+      "c1": "El mejor momento del stream",
+      "c2": "Reacción épica",
+      "c3": "La jugada final",
+      "c4": "Respondiendo al chat",
+      "c5": "Risa con los amigos",
+      "c6": "El consejo del día",
+      "alt": "Ejemplo de clip: {titulo}"
+    },
+    "who": {
+      "title": "Hecho para streamers, creadores y negocios",
+      "sub": "Si no tienes tiempo de editar, contestar o vigilar el mercado, Chalyb lo hace por ti.",
+      "streamers": "Streamers",
+      "streamersP": "Clips de cada transmisión y control de OBS en un toque.",
+      "creators": "Creadores",
+      "creatorsP": "Publica todos los días sin pasar horas editando.",
+      "business": "Negocios",
+      "businessP": "Un asistente que atiende a tus clientes por ti.",
+      "investors": "Quien invierte",
+      "investorsP": "Avisos claros sobre cripto e inversiones, sin palabras raras.",
+      "strip1": "En español, para México y Latinoamérica",
+      "strip2": "Pago seguro con Mercado Pago",
+      "strip3": "Ayuda de una persona por WhatsApp"
+    },
+    "plans": {
+      "label": "Planes",
+      "title": "Un plan con todo incluido",
+      "sub": "Empieza gratis o llévate tu primer mes de Pro gratis con el plan anual.",
+      "gratis": "Gratis",
+      "gratisCta": "Crear cuenta gratis",
+      "pro": "Pro",
+      "badge": "Recomendado",
+      "vip": "VIP",
+      "vipCta": "Elegir VIP",
+      "seeAll": "Ver todos los planes y qué incluyen",
+      "proMonthNote": "Mes a mes · cancela cuando quieras",
+      "dealTitle": "Paga anual y tu 1er mes es gratis",
+      "dealEq": "Equivale a {mensual} al mes · ahorras {ahorro} al año",
+      "dealTotal": "Un solo cobro de {monto} MXN al año, al terminar tu mes gratis.",
+      "proCta": "Empieza con 1 mes gratis",
+      "perMonth": "MXN al mes"
+    },
+    "partner": {
+      "label": "Socios",
+      "title": "Tienes la idea, nosotros la construimos",
+      "sub": "Propón una herramienta. Si la hacemos, compartimos las ganancias contigo.",
+      "terms": "Ver bases"
+    },
+    "idea": {
+      "name": "Tu nombre",
+      "email": "Tu correo",
+      "idea": "¿Qué herramienta te gustaría?",
+      "submit": "Proponer mi idea",
+      "sending": "Enviando…",
+      "done": "¡Gracias! Recibimos tu idea. Si la hacemos, te escribimos a tu correo.",
+      "clickwrap": "Al enviar, aceptas que usemos tus datos para responderte, como dice el <aviso>Aviso de Privacidad</aviso>.",
+      "errors": {
+        "name": "Escribe tu nombre.",
+        "email": "Revisa tu correo.",
+        "idea": "Cuéntanos tu idea con un poco más de detalle.",
+        "rateLimited": "Recibimos varias ideas seguidas. Intenta de nuevo en unos minutos.",
+        "sendFailed": "No pudimos enviar tu idea. Intenta de nuevo."
+      }
+    },
+    "faq": {
+      "label": "Preguntas",
+      "title": "Preguntas frecuentes",
+      "q1": "¿De verdad el primer mes es gratis?",
+      "a1": "Sí, con el plan anual. Hoy pagas $0. Te avisamos por correo {dias} días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas. Si prefieres pagar mes a mes, se cobra desde el primer mes.",
+      "q2": "¿Necesito saber de tecnología?",
+      "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
+      "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
+      "q3": "¿Qué incluye el plan Pro?",
+      "a3": "Todas las herramientas: {lista}, con créditos cada mes.",
+      "q4": "¿Cómo cancelo?",
+      "a4": "Entra a Mi cuenta → Mi plan → Cancelar. Es 1 clic y 1 confirmación. Sigues con Pro hasta el final de tu periodo.",
+      "q5": "¿Cómo pago?",
+      "a5": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
+      "q6": "¿Me dan factura?",
+      "a6": "Sí. Pide tu factura desde Mi cuenta → Mi plan después de cada cobro."
+    },
+    "final": {
+      "title": "Fuiste por una cosa y te llevaste todo.",
+      "sub": "{lista}. Todo en un solo plan."
+    },
+    "publicFooter": {
+      "lead": "Herramientas que trabajan por ti, en español y sin saber de tecnología.",
+      "tools": "Herramientas",
+      "plans": "Planes",
+      "help": "Ayuda",
+      "idea": "Proponer una idea",
+      "login": "Entrar",
+      "legal": "Legal",
+      "legalDocs": {
+        "terms": "Términos y Condiciones",
+        "privacy": "Aviso de Privacidad"
+      },
+      "seller": "Quién vende",
+      "sellerLabel": "Quién vende:",
+      "copy": "© {year} Chalyb. Precios en pesos mexicanos (MXN), IVA incluido.",
+      "secure": "Pago seguro con Mercado Pago"
+    },
+    "cookies": {
+      "title": "Cookies",
+      "text": "Usamos cookies necesarias para que Chalyb funcione y, si aceptas, cookies de analítica y publicidad para mejorar y medir campañas.",
+      "privacy": "Aviso de Privacidad",
+      "acceptAll": "Aceptar todas",
+      "necessaryOnly": "Solo necesarias",
+      "configure": "Configurar",
+      "save": "Guardar mi elección",
+      "necessary": "Necesarias",
+      "necessaryHint": "Para iniciar sesión y recordar tus preferencias. Siempre activas.",
+      "analytics": "Analítica",
+      "analyticsHint": "Nos dicen qué páginas se usan para mejorarlas.",
+      "ads": "Publicidad",
+      "adsHint": "Miden si nuestros anuncios funcionan.",
+      "link": "Cookies"
+    },
+    "sticky": "Prueba Pro gratis 1 mes"
   },
   "auth": {
     "signIn": {
@@ -573,7 +637,7 @@
       "single": "Tu plan Pro incluye {tools}.",
       "toolsAria": "Herramientas incluidas",
       "more": "y {n} más",
-      "gratis": "Prueba Pro gratis 1 mes. Todas las herramientas incluidas.",
+      "gratis": "Prueba Pro gratis 1 mes con el plan anual. Todas las herramientas incluidas.",
       "gratisPlans": "Con Pro tienes más herramientas.",
       "cta": {
         "trial": "Prueba Pro gratis 1 mes",
@@ -903,13 +967,13 @@
     "metaTitle": "Planes",
     "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
     "title": "Un plan. Todas las herramientas.",
-    "sub": "Prueba Pro gratis 1 mes. Cancela cuando quieras.",
+    "sub": "Prueba Pro gratis 1 mes con el plan anual. Cancela cuando quieras.",
     "subNoTrial": "Cancela cuando quieras.",
     "toggleAria": "Cómo quieres pagar",
     "toggle": {
       "month": "Mensual",
       "year": "Anual",
-      "save": "Ahorras {ahorro}"
+      "save": "1 mes gratis"
     },
     "gratis": {
       "name": "Gratis",
@@ -932,7 +996,9 @@
       "monthAlt": "o {monto} MXN al mes con Mensual",
       "f1": "Las {n} herramientas: {lista}",
       "fCredits": "{creditos} créditos cada mes",
-      "f3": "Clips sin marca de agua"
+      "f3": "Clips sin marca de agua",
+      "ctaMonth": "Elegir Pro mensual",
+      "monthNoTrial": "El mes gratis viene con el plan anual."
     },
     "vip": {
       "name": "VIP",
@@ -949,8 +1015,8 @@
     "notIncluded": "No incluye",
     "faqTitle": "Preguntas frecuentes",
     "faq": {
-      "q1": "¿Qué pasa cuando termina mi mes gratis?",
-      "a1": "Sigues con el plan que elegiste (anual o mensual) y se cobra a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada.",
+      "q1": "¿Cómo funciona el mes gratis?",
+      "a1": "Viene con el plan anual: hoy pagas $0 y al terminar tu mes gratis se cobra el año a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada. Con el plan mensual se cobra desde el primer mes.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -969,12 +1035,14 @@
     "trial": {
       "metaTitle": "Tu prueba",
       "title": "Prueba Pro gratis 1 mes",
-      "sub": "Todas las herramientas incluidas. Cancela cuando quieras.",
-      "q": "¿Qué plan quieres cuando termine tu mes gratis?",
+      "sub": "El mes gratis viene con el plan anual. Cancela cuando quieras.",
+      "q": "¿Cómo quieres pagar Pro?",
       "year": "Pro anual",
       "month": "Pro mensual",
       "recommended": "Recomendado",
-      "cta": "Continuar al pago"
+      "cta": "Continuar al pago",
+      "yearFree": "1er mes gratis",
+      "monthNoTrial": "Se cobra hoy · sin mes gratis"
     },
     "paid": {
       "title": "Elige tu plan Pro",
@@ -1005,7 +1073,8 @@
         "qc": "Canadá · Quebec",
         "ca": "Canadá · otra provincia",
         "other": "Otro país"
-      }
+      },
+      "trialAnnualOnly": "Tu mes gratis es del plan anual: durante la prueba no se puede cambiar a mensual."
     },
     "summary": {
       "title": "Resumen",
@@ -1174,7 +1243,10 @@
     "toFreeTitle": "Pasar a Gratis",
     "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
     "toFreeCta": "Ir a cancelar",
-    "done": "Listo. Tu cambio quedó registrado."
+    "done": "Listo. Tu cambio quedó registrado.",
+    "trialAnnualOnlyTitle": "Tu mes gratis es del plan anual",
+    "trialAnnualOnlyBody": "Durante la prueba no se puede cambiar a Pro mensual. Si prefieres pagar mes a mes, cancela tu prueba (no se te cobra nada) y elige Pro mensual: se cobra desde hoy.",
+    "trialAnnualOnlyCta": "Volver a Mi plan"
   },
   "seller": {
     "title": "Quién vende",
@@ -1311,7 +1383,7 @@
     "setup": "Te falta un paso",
     "connect": "Conectar ahora",
     "open": "Abrir",
-    "strip": "Prueba Pro gratis 1 mes · Todas las herramientas incluidas. Cancela cuando quieras.",
+    "strip": "Prueba Pro gratis 1 mes con el plan anual · Todas las herramientas incluidas. Cancela cuando quieras.",
     "tagline": {
       "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
       "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
@@ -1501,5 +1573,283 @@
       "title": "Tu transmisión terminó",
       "body": "Duró {duracion}. ¿Hacemos clips?"
     }
+  },
+  "admin": {
+    "nav": {
+      "aria": "Panel del dueño",
+      "command": "Centro de mando",
+      "people": "Personas",
+      "money": "Dinero",
+      "tools": "Herramientas",
+      "activity": "Actividad",
+      "settings": "Ajustes",
+      "more": "Más",
+      "owner": "Dueño",
+      "viewApp": "Ver la app ›",
+      "menu": "Menú"
+    },
+    "more": {
+      "team": "Equipo, roles y créditos",
+      "engines": "Engines (técnico)",
+      "royalties": "Regalías",
+      "revenue": "Ingresos por engine",
+      "audit": "Registro de auditoría",
+      "messages": "Mensajes",
+      "models": "AI Models",
+      "analytics": "Analytics",
+      "api": "API & Keys",
+      "labs": "Labs (no conectado)",
+      "overview": "Vista técnica"
+    },
+    "hello": {
+      "morning": "Buenos días 👋",
+      "afternoon": "Buenas tardes 👋",
+      "night": "Buenas noches 👋"
+    },
+    "home": {
+      "metaTitle": "Centro de mando",
+      "title": "Centro de mando",
+      "sub": "Así va Chalyb este mes. Lo importante, primero.",
+      "range": "Periodo",
+      "today": "Hoy",
+      "week": "7 días",
+      "month": "Este mes",
+      "revenue": "Ingresos del mes",
+      "revenueSub": "IVA incluido · ya sin reembolsos",
+      "vsLast": "{delta} vs mes pasado",
+      "noBase": "sin datos suficientes para comparar",
+      "subscribers": "Suscriptores activos",
+      "subscribersSub": "+{n} este mes",
+      "trials": "Pruebas activas",
+      "trialsSub": "Terminan esta semana: {n}",
+      "conversion": "Conversión de prueba",
+      "conversionSub": "De cada 10 pruebas, {n} se quedan",
+      "conversionNone": "sin datos suficientes ({n} pruebas terminadas)",
+      "attention": "Necesita tu atención",
+      "attentionNone": "Nada pendiente. Todo en orden.",
+      "att": {
+        "failedCharges": "{n, plural, one {# cobro fallido} other {# cobros fallidos}}",
+        "refundRequests": "{n, plural, one {# reembolso pedido} other {# reembolsos pedidos}}",
+        "slowTools": "{n, plural, one {# herramienta lenta} other {# herramientas lentas}}",
+        "newIdeas": "{n, plural, one {# idea nueva} other {# ideas nuevas}}",
+        "bouncedNotices": "{n, plural, one {# aviso de cobro que rebotó} other {# avisos de cobro que rebotaron}}",
+        "chargesWithoutNotice": "{n, plural, one {# cobro sin aviso entregado (reembolsable)} other {# cobros sin aviso entregado (reembolsables)}}",
+        "cta": {
+          "failedCharges": "Revisar",
+          "refundRequests": "Responder",
+          "slowTools": "Ver",
+          "newIdeas": "Leer",
+          "bouncedNotices": "Ver",
+          "chargesWithoutNotice": "Revisar"
+        }
+      },
+      "tools": "Herramientas",
+      "health": {
+        "ok": "Funcionando bien",
+        "slow": "Lento hoy",
+        "down": "No funciona ahora"
+      },
+      "seeActivity": "Ver actividad",
+      "noData": "sin datos",
+      "loadFailed": "No pudimos leer estos datos ahora.",
+      "revenueToday": "Ingresos de hoy",
+      "revenueWeek": "Ingresos de 7 días"
+    },
+    "people": {
+      "metaTitle": "Personas",
+      "title": "Personas",
+      "sub": "Todos tus suscriptores en un solo lugar.",
+      "search": "Buscar por nombre o correo",
+      "chips": {
+        "all": "Todos",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "cancelled": "Cancelados"
+      },
+      "col": {
+        "person": "Persona",
+        "plan": "Plan",
+        "status": "Estado",
+        "since": "Desde",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Activo",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "ending": "Termina pronto",
+        "cancelled": "Cancelado",
+        "free": "Gratis"
+      },
+      "empty": "Nadie coincide con esa búsqueda.",
+      "none": "Aún no hay suscriptores.",
+      "actionsFor": "Acciones para {nombre}",
+      "act": {
+        "giftMonth": "Regalar 1 mes gratis",
+        "changePlan": "Cambiar su plan",
+        "resendAccess": "Reenviar correo de acceso",
+        "refundLast": "Reembolsar último cobro",
+        "cancel": "Cancelar su suscripción"
+      },
+      "giftBlocked": "Tiene un cobro automático activo: un mes gratis no evitaría el cobro.",
+      "choosePlan": "Elige el plan que le vas a proponer",
+      "confirm": {
+        "step": "Confirma · paso 2 de 2",
+        "no": "No, volver",
+        "giftMonth": {
+          "q": "¿Regalar 1 mes de Pro a {nombre}?",
+          "body": "Tendrá Pro 30 días más, sin cobro. Queda registrado con tu nombre.",
+          "yes": "Sí, regalar"
+        },
+        "changePlan": {
+          "q": "¿Proponer {plan} a {nombre}?",
+          "body": "Le llega un correo para revisarlo. No se cobra nada hasta que acepte con su casilla. Queda registrado con tu nombre.",
+          "yes": "Sí, enviar"
+        },
+        "resendAccess": {
+          "q": "¿Reenviar el correo de acceso a {nombre}?",
+          "body": "Le llega un enlace para entrar que dura poco y sirve una vez. Queda registrado con tu nombre.",
+          "yes": "Sí, reenviar"
+        },
+        "refundLast": {
+          "q": "¿Reembolsar {monto} MXN a {nombre}?",
+          "body": "Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre.",
+          "yes": "Sí, reembolsar"
+        },
+        "cancel": {
+          "q": "¿Cancelar la suscripción de {nombre}?",
+          "body": "No se le cobrará más. Conserva lo que ya pagó hasta el final del periodo y recibe su folio por correo. Queda registrado con tu nombre.",
+          "yes": "Sí, cancelar"
+        }
+      },
+      "done": "Listo. Ya está en Actividad.",
+      "err": {
+        "FORBIDDEN": "Solo un administrador puede hacer esto.",
+        "NOT_ALLOWED": "Esta acción no aplica a esta persona.",
+        "NOT_FOUND": "No encontramos a esta persona.",
+        "MP_ERROR": "Mercado Pago no respondió. No se hizo ningún cambio.",
+        "EMAIL_ERROR": "No pudimos enviar el correo. No se hizo ningún cambio."
+      }
+    },
+    "money": {
+      "metaTitle": "Dinero",
+      "title": "Dinero",
+      "sub": "Una sola fuente de verdad para tus ingresos.",
+      "source": "Viene de Mercado Pago · se actualiza cada hora",
+      "revenue": "Ingresos del mes",
+      "revenueSub": "Ya descontados los reembolsos",
+      "trials": "Pruebas que se convierten",
+      "trialsSub": "{a} de {b} pruebas",
+      "failed": "Cobros fallidos",
+      "failedSub": "{n, plural, one {# cobro} other {# cobros}} · se reintentan solos",
+      "refunds": "Reembolsos",
+      "refundsSub": "{n} este mes",
+      "chart": "Ingresos por mes",
+      "chartAria": "{mes}: {monto}",
+      "funnel": "Pruebas de este mes",
+      "funnelSteps": {
+        "started": "Empezaron prueba",
+        "stillTrial": "Siguen en prueba",
+        "paid": "Ya pagaron",
+        "cancelled": "Cancelaron"
+      },
+      "payments": "Pagos",
+      "subscriptions": "Suscripciones",
+      "costs": "Costos",
+      "col": {
+        "date": "Fecha",
+        "person": "Persona",
+        "concept": "Concepto",
+        "amount": "Monto",
+        "state": "Estado"
+      },
+      "state": {
+        "charged": "Cobrado",
+        "failed": "Falló",
+        "refunded": "Reembolsado",
+        "pending": "Pendiente"
+      },
+      "noMovements": "Aún no hay movimientos este mes.",
+      "subsBy": {
+        "active": "Activas",
+        "trial": "En prueba",
+        "past_due": "Pago pendiente",
+        "cancelled": "Canceladas"
+      },
+      "costsNote": "Costos fijos configurados a mano, no medidos. Ver src/lib/billing/operating-costs.ts.",
+      "iva": "Montos con IVA incluido."
+    },
+    "activity": {
+      "metaTitle": "Actividad",
+      "title": "Actividad",
+      "sub": "Todo lo que pasó, en orden. Sin datos personales sensibles.",
+      "type": "Tipo",
+      "tool": "Herramienta",
+      "all": "Todo",
+      "types": {
+        "charge": "Cobros",
+        "failed": "Fallidos",
+        "refund": "Reembolsos",
+        "cancel": "Cancelaciones",
+        "notice": "Avisos",
+        "consent": "Consentimientos",
+        "admin": "Acciones del equipo",
+        "tool": "Herramientas"
+      },
+      "empty": "Nada con este filtro en los últimos 30 días.",
+      "by": "por {quien}"
+    },
+    "tools": {
+      "metaTitle": "Herramientas",
+      "title": "Herramientas",
+      "sub": "Qué ven tus clientes. Lo que ocultes desaparece de Inicio, Más herramientas, la página principal y los conteos.",
+      "visible": "Visible para clientes",
+      "hidden": "Oculta",
+      "toggle": "Mostrar {herramienta} a clientes",
+      "failures": "{n, plural, one {# falla} other {# fallas}} en 24 h",
+      "confirm": {
+        "q": "¿Ocultar {herramienta}?",
+        "body": "{n, plural, one {# persona que paga la usó} other {# personas que pagan la usaron}} en los últimos 30 días. Los términos (§7.3) piden avisarles con anticipación (30 días cuando sea posible) y ofrecer una alternativa o un reembolso. Queda registrado con tu nombre.",
+        "yes": "Sí, ocultar",
+        "no": "No, volver"
+      },
+      "err": "No pudimos guardar el cambio. Intenta de nuevo."
+    },
+    "settings": {
+      "metaTitle": "Ajustes",
+      "title": "Ajustes",
+      "sub": "Lo que se guarda aquí queda registrado con tu nombre.",
+      "pricing": "Precios",
+      "pricingNote": "Solo lectura. Se cambian en src/config/pricing.ts.",
+      "plan": {
+        "pro_month": "Pro mensual",
+        "pro_year": "Pro anual",
+        "vip_month": "VIP mensual"
+      },
+      "toggle": "Ofrecer Mensual además de Anual",
+      "toggleHelp": "Si lo apagas, la prueba y Planes solo ofrecen Anual.",
+      "saved": "Guardado.",
+      "saveError": "No se pudo guardar.",
+      "seller": "Quién vende",
+      "sellerMissing": "Falta configurar",
+      "legal": "Documentos legales",
+      "version": "versión {v}",
+      "account": "Tu cuenta",
+      "org": "Organización",
+      "security": "Seguridad",
+      "readOnly": "Solo lectura",
+      "rows": {
+        "name": "Nombre",
+        "email": "Correo",
+        "role": "Rol",
+        "orgName": "Nombre",
+        "timezone": "Zona horaria",
+        "auth": "Inicio de sesión",
+        "twofa": "Doble factor"
+      },
+      "authValue": "Supabase Auth",
+      "twofaValue": "No conectado"
+    },
+    "example": "Ejemplo"
   }
 }

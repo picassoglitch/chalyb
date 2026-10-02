@@ -47,6 +47,9 @@ for (const locale of ['es', 'en']) {
   test(`messages/${locale}.json has no forbidden customer terms`, () => {
     const hits: string[] = [];
     for (const [key, value] of strings(locale)) {
+      // The owner panel may name things technically (rebuild P5: "Technical
+      // labels are allowed in admin"); customers never see admin.*.
+      if (key.startsWith('admin.')) continue;
       for (const { label, re } of FORBIDDEN) {
         if (re.test(value)) hits.push(`${key} (${label}): ${value}`);
       }

@@ -164,7 +164,7 @@ export default async function RevenuePage({ params }: { params: Promise<{ locale
       <div className="cc-mod-section">
         <p style={{ fontSize: 12.5 }}>
           <Link
-            href={'/dashboard/billing' as Route}
+            href={'/dashboard/dinero' as Route}
             style={{ color: 'var(--cc-green)', textDecoration: 'underline' }}
           >
             ← Volver a Dinero · P&amp;L, pagos y royalties

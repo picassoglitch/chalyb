@@ -12,6 +12,7 @@ export function statusForStartError(code: StartError): number {
     case 'QUEBEC':
       return 403;
     case 'CARD_TRIAL_USED':
+    case 'TRIAL_ANNUAL_ONLY':
       return 409;
     case 'BAD_TOKEN':
       return 400;

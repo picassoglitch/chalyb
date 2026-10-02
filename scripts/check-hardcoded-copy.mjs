@@ -26,9 +26,11 @@ const DIRS = [
   'src/app/[locale]/(auth)',
   'src/app/[locale]/page.tsx',
   'src/app/[locale]/contacto',
+  'src/app/[locale]/planes',
   'src/components/app',
   'src/components/ui',
   'src/components/landing',
+  'src/components/public',
   'src/components/workspace',
   'src/components/auth',
 ];

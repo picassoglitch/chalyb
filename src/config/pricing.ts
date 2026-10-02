@@ -108,7 +108,8 @@ export const PRICING = {
   currency: CURRENCY,
   /** Q3 · Mensual/Anual choice in the trial. */
   defaultInterval: 'year' as const,
-  /** Owner trial spec: 1 month free on Pro, card required. Q26: shown as
+  /** Owner trial spec: 1 month free on Pro ANUAL only (owner, 2026-10-02:
+   *  Mensual pays from the first month), card required. Q26: shown as
    *  whatever MP applies. */
   trial: { days: 30, plan: 'pro' as const, requiresCard: true, reminderDaysBefore: 7 },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
@@ -121,6 +122,12 @@ export const PRICING = {
   maxVideoHours: { gratis: null, pro: null, vip: null } as Record<string, number | null>,
 };
 
+/** Whether choosing this plan opens the free month (if the account hasn't
+ *  used it). Only Pro anual does; Pro mensual and VIP charge from day one. */
+export function planHasTrial(key: PlanKey): boolean {
+  return key === 'pro_year';
+}
+
 /** Fails fast on a notice window shorter than the law's 5 calendar days. */
 export function assertReminderWindows(p = PRICING): void {
   const days = [p.trial.reminderDaysBefore, p.reminders.monthDaysBefore, ...p.reminders.yearDaysBefore];
@@ -128,3 +135,12 @@ export function assertReminderWindows(p = PRICING): void {
   if (bad.length) throw new Error(`Charge notices must be ≥ 5 days before the charge (got ${bad.join(', ')})`);
 }
 assertReminderWindows();
+
+/**
+ * P5-6 · Whether Mensual is offered next to Anual (trial and Planes). The
+ * owner panel's saved override wins over TRIAL_PLAN_CHOICE_ENABLED; anything
+ * that isn't a boolean is ignored.
+ */
+export function resolveBillingToggle(override: unknown, envDefault: boolean): boolean {
+  return typeof override === 'boolean' ? override : envDefault;
+}

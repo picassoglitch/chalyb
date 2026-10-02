@@ -6,15 +6,35 @@
 //   recurring one). Both numbers are shown before confirming.
 // - Downgrades and Mensual ↔ Anual: at the end of the paid period.
 // - During the trial: changes the plan the trial converts into; no charge.
+//   The free month is Anual-only, so a trial can't turn into Mensual: that
+//   would be a free month followed by monthly billing.
 
-import { planPrice, type PlanKey } from '@/config/pricing';
+import { planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 
-export type ChangeTiming = 'now' | 'period_end' | 'trial_end';
+export type ChangeTiming = 'now' | 'period_end' | 'trial_end' | 'trial_annual_only';
 
 export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): ChangeTiming {
-  if (trialing && to !== 'vip_month') return 'trial_end';
+  if (trialing && to !== 'vip_month') return planHasTrial(to) ? 'trial_end' : 'trial_annual_only';
   if (to === 'vip_month' && from !== 'vip_month') return 'now';
   return 'period_end';
+}
+
+/**
+ * When a reactivated plan (after a cancel) starts charging, or null for
+ * today. Paid access left over is kept: the new plan starts after it. Access
+ * left from an unpaid free month carries over only to a plan that has the
+ * free month (Anual); Mensual and VIP start charging today.
+ */
+export function reactivationStart(input: {
+  to: PlanKey;
+  accessUntil: string | null;
+  /** The cancelled subscription never charged: its access is the trial. */
+  unpaidTrial: boolean;
+  now: Date;
+}): Date | null {
+  if (!input.accessUntil || Date.parse(input.accessUntil) <= input.now.getTime()) return null;
+  if (input.unpaidTrial && !planHasTrial(input.to)) return null;
+  return new Date(input.accessUntil);
 }
 
 /** Refund owed for the unused part of the current period, in centavos. */

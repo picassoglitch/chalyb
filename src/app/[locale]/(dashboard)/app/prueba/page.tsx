@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { requireTrialFlow } from '@/lib/billing/trial-gate';
 import { loadBilling } from '@/lib/billing/subscription-store';
-import { trialPlanChoiceEnabled } from '@/lib/config/flags';
+import { billingToggleEnabled } from '@/lib/config/settings';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { TrialPicker } from '@/components/app/billing/trial-picker';
 
@@ -34,7 +34,7 @@ export default async function TuPruebaPage({ params }: { params: Promise<{ local
       closeLabel={t('close')}
       narrow
     >
-      <TrialPicker choiceEnabled={trialPlanChoiceEnabled()} trialUsed={billing.trialUsed} />
+      <TrialPicker choiceEnabled={await billingToggleEnabled()} trialUsed={billing.trialUsed} />
     </WizardShell>
   );
 }

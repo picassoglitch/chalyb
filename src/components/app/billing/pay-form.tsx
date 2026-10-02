@@ -11,7 +11,11 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Route } from 'next';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { MpCardBrick, type CardSubmission, type CardSubmitResult } from '@/components/payments/mp-card-brick';
+import {
+  MpCardBrick,
+  type CardSubmission,
+  type CardSubmitResult,
+} from '@/components/payments/mp-card-brick';
 import { Markup } from '@/components/ui/markup';
 import type { PlanKey } from '@/config/pricing';
 
@@ -68,9 +72,15 @@ export function PayForm({
             locale,
           }),
         });
-        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; code?: string; consentId?: string };
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          code?: string;
+          consentId?: string;
+        };
         if (res.ok && body.ok) {
-          router.push(`${successHref}${successHref.includes('?') ? '&' : '?'}folio=${body.consentId ?? ''}` as Route);
+          router.push(
+            `${successHref}${successHref.includes('?') ? '&' : '?'}folio=${body.consentId ?? ''}` as Route,
+          );
           return { ok: true, outcome: 'approved' };
         }
         const message =
@@ -82,9 +92,11 @@ export function PayForm({
                 ? t('declined')
                 : body.code === 'QUEBEC'
                   ? tPlans('quebec')
-                  : body.code === 'NOT_AVAILABLE' || body.code === 'NOT_CONFIGURED'
-                    ? t('unavailable')
-                    : t('error');
+                  : body.code === 'TRIAL_ANNUAL_ONLY'
+                    ? t('trialAnnualOnly')
+                    : body.code === 'NOT_AVAILABLE' || body.code === 'NOT_CONFIGURED'
+                      ? t('unavailable')
+                      : t('error');
         return { ok: false, error: message };
       } catch {
         return { ok: false, error: t('error') };
@@ -123,9 +135,15 @@ export function PayForm({
       </div>
 
       {askWhere && (
-        <label style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', fontSize: 17 }}>
+        <label
+          style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', fontSize: 17 }}
+        >
           {t('where')}
-          <select className="ch-select" value={province} onChange={(e) => setProvince(e.target.value)}>
+          <select
+            className="ch-select"
+            value={province}
+            onChange={(e) => setProvince(e.target.value)}
+          >
             {(['mx', 'us', 'qc', 'ca', 'other'] as const).map((o) => (
               <option key={o} value={o}>
                 {t(`whereOpts.${o}`)}
@@ -136,21 +154,21 @@ export function PayForm({
       )}
 
       {needsConsent && (
-      <label className="ch-check">
-        <input
-          type="checkbox"
-          name="consent"
-          checked={checked}
-          onChange={(e) => {
-            setChecked(e.target.checked);
-            setNudge(false);
-          }}
-          aria-describedby="consent-hint"
-        />
-        <span>
-          <Markup text={consentText!} />
-        </span>
-      </label>
+        <label className="ch-check">
+          <input
+            type="checkbox"
+            name="consent"
+            checked={checked}
+            onChange={(e) => {
+              setChecked(e.target.checked);
+              setNudge(false);
+            }}
+            aria-describedby="consent-hint"
+          />
+          <span>
+            <Markup text={consentText!} />
+          </span>
+        </label>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -164,7 +182,12 @@ export function PayForm({
           {busy ? t('saving') : buttonLabel}
         </button>
         {needsConsent && (
-          <p id="consent-hint" role={nudge ? 'alert' : undefined} className="ch-muted" style={{ fontSize: 16, textAlign: 'center' }}>
+          <p
+            id="consent-hint"
+            role={nudge ? 'alert' : undefined}
+            className="ch-muted"
+            style={{ fontSize: 16, textAlign: 'center' }}
+          >
             {nudge ? t('consentError') : t('ctaHint')}
           </p>
         )}

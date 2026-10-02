@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { annualMath, ivaPortion, packPriceCents, planPrice, withIva } from '@/config/pricing';
+import { annualMath, ivaPortion, packPriceCents, planHasTrial, planPrice, withIva } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { TIER_PRICING, TOKEN_PACKS } from '@/lib/payments/pricing';
 import { checkCharge, expectedChargeForPack, expectedChargeForTier } from '@/lib/payments/webhook-verify';
@@ -100,4 +100,10 @@ test('forbidden price claims appear nowhere (messages, emails, built bundle)', (
     }
   }
   assert.deepEqual(hits, []);
+});
+
+test('the free month comes only with Pro anual', () => {
+  assert.equal(planHasTrial('pro_year'), true);
+  assert.equal(planHasTrial('pro_month'), false);
+  assert.equal(planHasTrial('vip_month'), false);
 });

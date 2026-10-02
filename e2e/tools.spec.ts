@@ -187,7 +187,8 @@ test.describe('as pro', () => {
     await expect(page.getByRole('button', { name: /^Borrar: / }).first()).toBeVisible();
     const markRead = page.getByRole('button', { name: 'Marcar como leídos' });
     if (await markRead.isVisible().catch(() => false)) await markRead.click();
-    await expect(markRead).toHaveCount(0);
+    // Other specs may add notices meanwhile; the ones that were here are read.
+    await expect(page.locator('.ch-notice', { hasText: 'Tu plan se renueva en 7 días' })).toHaveAttribute('data-unread', 'false');
     await expect(page.getByRole('link', { name: 'Avisos', exact: true }).first()).toBeAttached();
     await clean(page, info);
   });

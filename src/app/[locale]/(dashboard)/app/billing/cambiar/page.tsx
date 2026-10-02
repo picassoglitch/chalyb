@@ -54,6 +54,20 @@ export default async function CambiarPlanPage({
   }
   const to: PlanKey = plan === 'pro_month' || plan === 'vip_month' ? plan : 'pro_year';
   const quote = await quoteChange(session, to);
+  // The free month is Anual-only: a trial can't turn into Mensual.
+  if (quote.timing === 'trial_annual_only') {
+    return (
+      <WizardShell {...chrome}>
+        <div className="ch-center-col">
+          <h1 className="ch-h1">{t('trialAnnualOnlyTitle')}</h1>
+          <p className="ch-sub">{t('trialAnnualOnlyBody')}</p>
+          <ButtonLink href="/app/billing" size="xl">
+            {t('trialAnnualOnlyCta')}
+          </ButtonLink>
+        </div>
+      </WizardShell>
+    );
+  }
   const price = planPrice(to);
   const monto = formatMXN(price.totalCents);
   const fromName = quote.billing.primary.planKey ? tPlan(quote.billing.primary.planKey) : '';
@@ -67,7 +81,9 @@ export default async function CambiarPlanPage({
         : t('whenNowNoRefund', { monto, mensual: monto })
       : quote.timing === 'trial_end'
         ? t('trialSwitch', { fecha: effective, monto, periodo })
-        : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
+        : quote.timing === 'reactivate' && !quote.effectiveAt
+          ? t('whenNowNoRefund', { monto, mensual: monto })
+          : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
 
   const consentText = t.markup('consent', {
     monto,
