@@ -66,6 +66,7 @@ export type StartError =
   | 'ADMIN'
   | 'QUEBEC'
   | 'CARD_TRIAL_USED'
+  | 'TRIAL_ANNUAL_ONLY'
   | 'BAD_TOKEN'
   | 'DECLINED'
   | 'MP_ERROR';

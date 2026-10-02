@@ -1073,7 +1073,8 @@
         "qc": "Canada · Quebec",
         "ca": "Canada · another province",
         "other": "Another country"
-      }
+      },
+      "trialAnnualOnly": "Your free month is part of the yearly plan: you can’t switch to monthly during the trial."
     },
     "summary": {
       "title": "Summary",
@@ -1242,7 +1243,10 @@
     "toFreeTitle": "Move to Free",
     "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
     "toFreeCta": "Go to cancel",
-    "done": "Done. Your change is recorded."
+    "done": "Done. Your change is recorded.",
+    "trialAnnualOnlyTitle": "Your free month is part of the yearly plan",
+    "trialAnnualOnlyBody": "You can’t switch to Pro monthly during the trial. If you’d rather pay month to month, cancel your trial (you won’t be charged) and choose Pro monthly: it’s charged from today.",
+    "trialAnnualOnlyCta": "Back to My plan"
   },
   "seller": {
     "title": "Who sells",

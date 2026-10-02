@@ -18,6 +18,7 @@ export function CancelSheet({
   accessDate,
   email,
   offer,
+  reactivateHref,
   triggerLabel,
   triggerSub,
 }: {
@@ -26,6 +27,8 @@ export function CancelSheet({
   accessDate: string;
   email: string;
   offer: { href: string; label: string } | null;
+  /** "Reactivar": back to the plan just cancelled. */
+  reactivateHref: string;
   triggerLabel: string;
   triggerSub: string;
 }) {
@@ -83,7 +86,7 @@ export function CancelSheet({
               <Link href={'/app' as Route} className="ch-btn ch-btn--gray">
                 {t('done.home')}
               </Link>
-              <Link href={'/app/billing/cambiar?plan=pro_month' as Route} className="ch-btn ch-btn--primary">
+              <Link href={reactivateHref as Route} className="ch-btn ch-btn--primary">
                 {t('done.reactivate')}
               </Link>
             </div>

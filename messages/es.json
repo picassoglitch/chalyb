@@ -1073,7 +1073,8 @@
         "qc": "Canadá · Quebec",
         "ca": "Canadá · otra provincia",
         "other": "Otro país"
-      }
+      },
+      "trialAnnualOnly": "Tu mes gratis es del plan anual: durante la prueba no se puede cambiar a mensual."
     },
     "summary": {
       "title": "Resumen",
@@ -1242,7 +1243,10 @@
     "toFreeTitle": "Pasar a Gratis",
     "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
     "toFreeCta": "Ir a cancelar",
-    "done": "Listo. Tu cambio quedó registrado."
+    "done": "Listo. Tu cambio quedó registrado.",
+    "trialAnnualOnlyTitle": "Tu mes gratis es del plan anual",
+    "trialAnnualOnlyBody": "Durante la prueba no se puede cambiar a Pro mensual. Si prefieres pagar mes a mes, cancela tu prueba (no se te cobra nada) y elige Pro mensual: se cobra desde hoy.",
+    "trialAnnualOnlyCta": "Volver a Mi plan"
   },
   "seller": {
     "title": "Quién vende",

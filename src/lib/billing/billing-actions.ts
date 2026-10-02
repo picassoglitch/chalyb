@@ -13,7 +13,7 @@ import type { ConsentEventInput } from './consent-core';
 import { dispatchBillingEmail } from './notices';
 import { formatFechaLarga } from './format';
 import { loadBilling } from './subscription-store';
-import { changeTiming, vipUpgradeQuote } from './plan-change';
+import { changeTiming, reactivationStart, vipUpgradeQuote } from './plan-change';
 import { startSubscription, type StartResult } from './start-subscription';
 
 /** "C-K7Q2M9" — short, unambiguous, shown to the user and in the email. */
@@ -166,6 +166,11 @@ export async function cancelForUser(
   return { ok: true, folio, accessUntil };
 }
 
+/** The current subscription is a free month that never charged. */
+function unpaidTrial(billing: Awaited<ReturnType<typeof loadBilling>>): boolean {
+  return !!billing.primary.trialEndsAt && !billing.primaryRow?.last_charge_at;
+}
+
 export interface ChangeInput {
   session: SessionUser;
   planKey: PlanKey;
@@ -193,6 +198,8 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     s.state === 'free' || s.state === 'cancelled_active'
       ? 'reactivate'
       : changeTiming(from, input.planKey, trialing);
+  // The free month is Anual-only: a trial can't be switched to Mensual.
+  if (timing === 'trial_annual_only') return { ok: false, code: 'TRIAL_ANNUAL_ONLY' };
 
   const effectiveAt =
     timing === 'now'
@@ -202,9 +209,12 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
           ? new Date(s.trialEndsAt)
           : undefined
         : timing === 'reactivate'
-          ? s.accessUntil && Date.parse(s.accessUntil) > Date.now()
-            ? new Date(s.accessUntil)
-            : undefined
+          ? (reactivationStart({
+              to: input.planKey,
+              accessUntil: s.accessUntil,
+              unpaidTrial: unpaidTrial(billing),
+              now: new Date(),
+            }) ?? undefined)
           : s.nextChargeAt
             ? new Date(s.nextChargeAt)
             : undefined;
@@ -308,7 +318,12 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
       : timing === 'period_end'
         ? s.nextChargeAt
         : timing === 'reactivate'
-          ? s.accessUntil
+          ? (reactivationStart({
+              to,
+              accessUntil: s.accessUntil,
+              unpaidTrial: unpaidTrial(billing),
+              now: new Date(),
+            })?.toISOString() ?? null)
           : null;
   return { timing, effectiveAt, from, ...quote, billing };
 }
