@@ -282,6 +282,10 @@
   background: url('/landing/clip-6.webp') center / cover no-repeat,
     linear-gradient(165deg, #2a1240 0%, #b23a8e 50%, #ffc371 100%);
 }
+.chalyb-app .pub-thumb--hero {
+  background: url('/landing/clip-hero.webp') center / cover no-repeat,
+    linear-gradient(160deg, #2b1b6b 0%, #6a2cc9 45%, #ff6b9a 100%);
+}
 .chalyb-app .pub-thumb__tag {
   position: absolute;
   top: 10px;

@@ -71,7 +71,7 @@ export async function Hero({ tools, trialHref }: { tools: PublicTool[]; trialHre
           </ul>
         </div>
         <div
-          className="pub-vis__float pub-thumb pub-thumb--1"
+          className="pub-vis__float pub-thumb pub-thumb--hero"
           role="img"
           aria-label={t('hero.frameAlt')}
         />
