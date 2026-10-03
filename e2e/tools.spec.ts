@@ -189,7 +189,8 @@ test.describe('as pro', () => {
     if (await markRead.isVisible().catch(() => false)) await markRead.click();
     // Other specs may add notices meanwhile; the ones that were here are read.
     await expect(page.locator('.ch-notice', { hasText: 'Tu plan se renueva en 7 días' })).toHaveAttribute('data-unread', 'false');
-    await expect(page.getByRole('link', { name: 'Avisos', exact: true }).first()).toBeAttached();
+    // The bell says "Avisos", or "Avisos (n sin leer)" if another spec just added one.
+    await expect(page.getByRole('link', { name: /^Avisos( \(\d+ sin leer\))?$/ }).first()).toBeAttached();
     await clean(page, info);
   });
 

@@ -28,7 +28,13 @@ export interface PersonVM {
   plan: 'Gratis' | 'Pro' | 'VIP';
   status: PersonStatus;
   since: string;
-  actions: { giftMonth: boolean; changePlan: boolean; resendAccess: boolean; refundLast: boolean; cancel: boolean };
+  actions: {
+    giftMonth: boolean;
+    changePlan: boolean;
+    resendAccess: boolean;
+    refundLast: boolean;
+    cancel: boolean;
+  };
   refundCents: number | null;
 }
 
@@ -57,14 +63,24 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const shown = useMemo(
-    () => filterPeople(people.map((p) => ({ ...p, sub: null })), chip, q).map((r) => people.find((p) => p.id === r.id)!),
+    () =>
+      filterPeople(
+        people.map((p) => ({ ...p, sub: null })),
+        chip,
+        q,
+      ).map((r) => people.find((p) => p.id === r.id)!),
     [people, chip, q],
   );
   const date = (iso: string) =>
     iso && !Number.isNaN(Date.parse(iso))
-      ? new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+      ? new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        }).format(new Date(iso))
       : '—';
-  const money = (c: number) => `$${(c / 100).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+  const money = (c: number) =>
+    `$${(c / 100).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
 
   async function run() {
     if (!row || !action) return;
@@ -88,25 +104,50 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
     <div style={{ display: 'grid', gap: 16 }}>
       <div className="ch-search">
         <Search aria-hidden="true" />
-        <label htmlFor="pq" className="ch-sr">{t('search')}</label>
-        <input id="pq" type="search" className="ch-input" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <label htmlFor="pq" className="ch-sr">
+          {t('search')}
+        </label>
+        <input
+          id="pq"
+          type="search"
+          className="ch-input"
+          placeholder={t('search')}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
-      <div role="group" aria-label={t('title')} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div
+        role="group"
+        aria-label={t('title')}
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+      >
         {(['all', 'trial', 'past_due', 'cancelled'] as const).map((c) => (
-          <button key={c} type="button" aria-pressed={chip === c} className={`ch-chip${chip === c ? ' ch-chip--on' : ''}`} onClick={() => setChip(c)}>
+          <button
+            key={c}
+            type="button"
+            aria-pressed={chip === c}
+            className={`ch-chip${chip === c ? ' ch-chip--on' : ''}`}
+            onClick={() => setChip(c)}
+          >
             {t(`chips.${c}`)}
           </button>
         ))}
       </div>
       {msg && (
-        <p role={msg.ok ? 'status' : 'alert'} className="ch-card" style={{ padding: 14, color: msg.ok ? undefined : 'var(--bad)' }}>
+        <p
+          role={msg.ok ? 'status' : 'alert'}
+          className="ch-card"
+          style={{ padding: 14, color: msg.ok ? undefined : 'var(--bad)' }}
+        >
           {msg.text}
         </p>
       )}
       {shown.length === 0 ? (
-        <p className="ch-card" style={{ padding: 20 }}>{people.length ? t('empty') : t('none')}</p>
+        <p className="ch-card" style={{ padding: 20 }}>
+          {people.length ? t('empty') : t('none')}
+        </p>
       ) : (
-        <div className="ch-table-wrap">
+        <div className="ch-table-wrap" role="region" aria-label={t('title')} tabIndex={0}>
           <table className="ch-table">
             <thead>
               <tr>
@@ -114,7 +155,9 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
                 <th scope="col">{t('col.plan')}</th>
                 <th scope="col">{t('col.status')}</th>
                 <th scope="col">{t('col.since')}</th>
-                <th scope="col"><span className="ch-sr">{t('col.actions')}</span></th>
+                <th scope="col">
+                  <span className="ch-sr">{t('col.actions')}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -123,13 +166,25 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
                   <td>
                     <b>{p.name}</b>
                     <br />
-                    <small className="ch-muted" style={{ overflowWrap: 'anywhere' }}>{p.email}</small>
+                    <small className="ch-muted" style={{ overflowWrap: 'anywhere' }}>
+                      {p.email}
+                    </small>
                   </td>
                   <td>{p.plan}</td>
-                  <td><Pill kind={PILL[p.status]}>{t(`status.${p.status}`)}</Pill></td>
+                  <td>
+                    <Pill kind={PILL[p.status]}>{t(`status.${p.status}`)}</Pill>
+                  </td>
                   <td style={{ whiteSpace: 'nowrap' }}>{date(p.since)}</td>
                   <td>
-                    <button type="button" className="ch-iconbtn" aria-label={t('actionsFor', { nombre: p.name })} onClick={() => { setMsg(null); setRow(p); }}>
+                    <button
+                      type="button"
+                      className="ch-iconbtn"
+                      aria-label={t('actionsFor', { nombre: p.name })}
+                      onClick={() => {
+                        setMsg(null);
+                        setRow(p);
+                      }}
+                    >
                       <MoreHorizontal aria-hidden="true" />
                     </button>
                   </td>
@@ -140,20 +195,42 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
         </div>
       )}
 
-      <Sheet open={!!row && !action} onClose={() => setRow(null)} title={row ? t('actionsFor', { nombre: row.name }) : ''} closeLabel={t('confirm.no')}>
+      <Sheet
+        open={!!row && !action}
+        onClose={() => setRow(null)}
+        title={row ? t('actionsFor', { nombre: row.name }) : ''}
+        closeLabel={t('confirm.no')}
+      >
         <div style={{ display: 'grid', gap: 10 }}>
           {row &&
             ACTIONS.filter((a) => row.actions[a]).map((a) => (
-              <button key={a} type="button" className={`ch-btn ${a === 'cancel' ? 'ch-btn--danger' : 'ch-btn--secondary'}`} onClick={() => setAction(a)}>
+              <button
+                key={a}
+                type="button"
+                className={`ch-btn ${a === 'cancel' ? 'ch-btn--danger' : 'ch-btn--secondary'}`}
+                onClick={() => setAction(a)}
+              >
                 {t(`act.${a}`)}
               </button>
             ))}
-          {row && !row.actions.giftMonth && <p className="ch-muted" style={{ fontSize: 15 }}>{t('giftBlocked')}</p>}
+          {row && !row.actions.giftMonth && (
+            <p className="ch-muted" style={{ fontSize: 15 }}>
+              {t('giftBlocked')}
+            </p>
+          )}
           {row && (
             <label className="ch-field">
               <span>{t('choosePlan')}</span>
-              <select className="ch-input" value={plan} onChange={(e) => setPlan(e.target.value as (typeof PLANS)[number])}>
-                {PLANS.map((k) => <option key={k} value={k}>{ts(k)}</option>)}
+              <select
+                className="ch-input"
+                value={plan}
+                onChange={(e) => setPlan(e.target.value as (typeof PLANS)[number])}
+              >
+                {PLANS.map((k) => (
+                  <option key={k} value={k}>
+                    {ts(k)}
+                  </option>
+                ))}
               </select>
             </label>
           )}

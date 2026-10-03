@@ -1718,6 +1718,7 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-kpi__s--up { color: var(--ok-text); }
 .chalyb-app .ch-kpi__s--down { color: var(--bad); }
 .chalyb-app .ch-table-wrap { position: relative; overflow-x: auto; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+.chalyb-app .ch-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .chalyb-app .ch-table { width: 100%; border-collapse: collapse; font-size: 16px; }
 .chalyb-app .ch-table th { text-align: left; font-size: 14px; font-weight: 600; color: var(--ink2); padding: 14px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .chalyb-app .ch-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
