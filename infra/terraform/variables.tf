@@ -259,6 +259,7 @@ variable "engines" {
       shared_secrets = {
         CHALYBOBS_SUPABASE_SECRET_KEY = "supabase-secret-key"
         CHALYBOBS_SESSION_SECRET      = "chalybobs-session-secret"
+        CHALYBOBS_RELAY_SECRET        = "chalybobs-relay-secret"
       }
     }
 

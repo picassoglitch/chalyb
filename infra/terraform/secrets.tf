@@ -23,6 +23,9 @@ locals {
     # ChalyOBS signs its own session cookie with this. Engine-private: nothing
     # else reads it, and rotating it just logs every ChalyOBS user out.
     "chalybobs-session-secret" = "HMAC key ChalyOBS signs its session cookie with."
+    # Bearer the RTMP relay presents on ChalyOBS's /api/internal/live/*.
+    # Read by ChalyOBS (env) and by the relay VM (Secret Manager, relay.tf).
+    "chalybobs-relay-secret" = "Shared bearer between the ChalyOBS RTMP relay and ChalyOBS."
   }
 
   # drive-token-key and chalybobs-session-secret are keys nothing outside
@@ -30,7 +33,7 @@ locals {
   # issued elsewhere, so they get a placeholder the runbook has you replace.
   # Every secret needs SOME version: Cloud Run refuses to create a revision
   # whose referenced secret is empty.
-  shared_generated   = ["drive-token-key", "chalybobs-session-secret"]
+  shared_generated   = ["drive-token-key", "chalybobs-session-secret", "chalybobs-relay-secret"]
   shared_placeholder = ["zernio-api-key", "assemblyai-api-key", "anthropic-api-key", "supabase-secret-key"]
 }
 

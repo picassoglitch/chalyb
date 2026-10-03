@@ -33,7 +33,10 @@ module "engine" {
       CHALYB_BASE_URL = coalesce(var.hub_url, "https://www.${var.domain}")
     },
     each.value.env,
+    each.key == local.relay_engine ? local.relay_engine_env : {},
   )
+
+  vpc_egress = each.key == local.relay_engine ? local.relay_vpc_egress : null
 
   secret_env_names          = each.value.secret_env_names
   object_storage_env_prefix = each.value.object_storage_env_prefix

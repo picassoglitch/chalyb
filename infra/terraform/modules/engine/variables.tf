@@ -156,3 +156,17 @@ variable "jobs" {
   }))
   default = {}
 }
+
+variable "vpc_egress" {
+  description = <<-EOT
+    Direct VPC egress for the API service: { network, subnetwork }. Private
+    ranges only, so the engine reaches a VM's internal IP (ChalyOBS → the
+    relay's HLS preview) while everything else still leaves directly. No
+    connector, so no idle cost. Null = no VPC.
+  EOT
+  type = object({
+    network    = string
+    subnetwork = string
+  })
+  default = null
+}
