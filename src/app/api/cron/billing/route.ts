@@ -86,7 +86,7 @@ export async function GET(req: Request) {
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, last_charge_at, mp_preapproval_id, updated_at',
+      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_due_at, reminder_delivered_at, charge_hold_until, last_charge_at, mp_preapproval_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -109,6 +109,7 @@ export async function GET(req: Request) {
           nextChargeAt,
           startedAt: (row.started_at as string | null) ?? null,
           day29Enabled: trialDay29ReminderEnabled(),
+          trialReminderDueAt: (row.reminder_due_at as string | null) ?? null,
         },
         now,
       );

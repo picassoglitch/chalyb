@@ -42,6 +42,9 @@ export interface NoticeInput {
   /** When the subscription started (for the yearly summary). */
   startedAt: string | null;
   day29Enabled: boolean;
+  /** The trial notice date the user was shown at signup (reminder_due_at).
+   *  Wins over today's rule, so a trial keeps the date it consented to. */
+  trialReminderDueAt?: string | null;
 }
 
 /** Notices due at `now` (already due, not yet necessarily sent). */
@@ -57,7 +60,9 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
     out.push({
       kind: 'trial_7d',
       periodKey: `trial:${key}`,
-      dueAt: noticeRunBefore(new Date(charge), p.trial.reminderDaysBefore),
+      dueAt: sub.trialReminderDueAt
+        ? new Date(sub.trialReminderDueAt)
+        : noticeRunBefore(new Date(charge), p.trial.reminderDaysBefore),
       mandatory: true,
     });
     if (sub.day29Enabled)

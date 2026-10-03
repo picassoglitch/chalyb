@@ -148,6 +148,14 @@ test('trial: the notice is due at the cron run ≥ 5 days before, and is deliver
   assert.equal(dueNotices({ ...sub, day29Enabled: true }, new Date(d.chargeAt.getTime() - DAY / 2)).length, 2);
 });
 
+test('a trial keeps the notice date it was shown at signup (30-day trials: day 23)', () => {
+  const end = new Date(T0.getTime() + 30 * DAY);
+  const promised = new Date(T0.getTime() + 23 * DAY);
+  const sub = { state: 'trialing', interval: 'year' as const, nextChargeAt: end.toISOString(), startedAt: T0.toISOString(), day29Enabled: false, trialReminderDueAt: promised.toISOString() };
+  assert.deepEqual(dueNotices(sub, new Date(promised.getTime() - 1)), []);
+  assert.deepEqual(dueNotices(sub, promised).map((n) => n.kind), ['trial_7d']);
+});
+
 test('monthly renewal: 7 days before EVERY charge', () => {
   const sub = { state: 'pro', interval: 'month' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day29Enabled: false };
   assert.deepEqual(dueNotices(sub, at(7)).map((n) => n.kind), ['renew_7d']);
