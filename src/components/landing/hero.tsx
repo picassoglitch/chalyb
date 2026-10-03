@@ -6,8 +6,9 @@ import { ToolTile } from './tool-tile';
 import { heroRows, type PublicTool } from '@/lib/tools/public-tools';
 
 // 1 · Hero. The "Mientras dormías" panel is an illustration: one example row
-// per active tool (at most 4), a gradient clip frame, and the "Ejemplo" tag
-// (P4-4). No photos, names or invented numbers.
+// per active tool (at most 4), an example clip still, and the "Ejemplo" tag
+// (P4-4). No real names or invented numbers. The clip still is a Kick-style
+// stream reaction (neon green), without any platform logo or UI.
 
 const OK_PILL = new Set(['chalybclip', 'chalybobs', 'chalybbot', 'chalybtrade']);
 
@@ -71,7 +72,7 @@ export async function Hero({ tools, trialHref }: { tools: PublicTool[]; trialHre
           </ul>
         </div>
         <div
-          className="pub-vis__float pub-thumb pub-thumb--1"
+          className="pub-vis__float pub-thumb pub-thumb--hero"
           role="img"
           aria-label={t('hero.frameAlt')}
         />

@@ -244,13 +244,16 @@
   flex: none;
 }
 
-/* Gradient clip frames: illustrations, never photos (P4-4). */
+/* Clip frames: AI-generated example stills (public/landing/clip-N.webp,
+   Gemini), each over its gradient as the loading/fallback color. They stay
+   tagged "Ejemplo" (P4-4); no real people or clips. */
 .chalyb-app .pub-thumb {
   position: relative;
   aspect-ratio: 9 / 16;
   border-radius: 20px;
   overflow: hidden;
-  background: linear-gradient(160deg, #2b1b6b 0%, #6a2cc9 45%, #ff6b9a 100%);
+  background: url('/landing/clip-1.webp') center / cover no-repeat,
+    linear-gradient(160deg, #2b1b6b 0%, #6a2cc9 45%, #ff6b9a 100%);
 }
 .chalyb-app .pub-thumb::after {
   content: '';
@@ -260,19 +263,28 @@
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.5));
 }
 .chalyb-app .pub-thumb--2 {
-  background: linear-gradient(170deg, #0c2d48 0%, #1478a8 50%, #38e1c4 100%);
+  background: url('/landing/clip-2.webp') center / cover no-repeat,
+    linear-gradient(170deg, #0c2d48 0%, #1478a8 50%, #38e1c4 100%);
 }
 .chalyb-app .pub-thumb--3 {
-  background: linear-gradient(165deg, #3a0d12 0%, #c2362c 50%, #ffb347 100%);
+  background: url('/landing/clip-3.webp') center / cover no-repeat,
+    linear-gradient(165deg, #3a0d12 0%, #c2362c 50%, #ffb347 100%);
 }
 .chalyb-app .pub-thumb--4 {
-  background: linear-gradient(160deg, #101935 0%, #2e3dba 50%, #8fa2ff 100%);
+  background: url('/landing/clip-4.webp') center / cover no-repeat,
+    linear-gradient(160deg, #101935 0%, #2e3dba 50%, #8fa2ff 100%);
 }
 .chalyb-app .pub-thumb--5 {
-  background: linear-gradient(170deg, #0f2a1d 0%, #1f8a4c 50%, #c8f169 100%);
+  background: url('/landing/clip-5.webp') center / cover no-repeat,
+    linear-gradient(170deg, #0f2a1d 0%, #1f8a4c 50%, #c8f169 100%);
 }
 .chalyb-app .pub-thumb--6 {
-  background: linear-gradient(165deg, #2a1240 0%, #b23a8e 50%, #ffc371 100%);
+  background: url('/landing/clip-6.webp') center / cover no-repeat,
+    linear-gradient(165deg, #2a1240 0%, #b23a8e 50%, #ffc371 100%);
+}
+.chalyb-app .pub-thumb--hero {
+  background: url('/landing/clip-hero.webp') center / cover no-repeat,
+    linear-gradient(160deg, #2b1b6b 0%, #6a2cc9 45%, #ff6b9a 100%);
 }
 .chalyb-app .pub-thumb__tag {
   position: absolute;
