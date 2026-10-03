@@ -1,6 +1,6 @@
 'use client';
 
-// SCR-14 · Tu prueba: pick how to pay Pro. The free month comes only with
+// SCR-14 · Tu prueba: pick how to pay Pro. The 7-day trial comes only with
 // Anual (planHasTrial); Mensual is charged today. The billing block under it
 // updates on every change, with the real amount and period (aceptacion-ux
 // §3.1–3.2). Anual is preselected; its big number is the yearly total, never

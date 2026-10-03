@@ -10,7 +10,7 @@ import { SectionHead } from './section-head';
 // 6 · Planes (#planes, alias #pricing), the summary. Every amount comes from
 // the pricing config. Pro leads with its monthly price (owner, 2026-10-02:
 // a yearly total next to VIP's monthly one read as "Pro costs more"); the
-// annual offer sits under it — 1er mes gratis, the monthly equivalent, the
+// annual offer sits under it — 7 días gratis, the monthly equivalent, the
 // savings and the yearly total. The block says "IVA incluido". Never
 // "2 meses gratis" and never a struck-through price.
 // On mobile, Pro comes first (CSS order).

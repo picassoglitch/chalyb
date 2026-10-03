@@ -2,7 +2,7 @@
 // §11.3, aceptacion-ux §4). Pure: the cron job feeds it a subscription and
 // the clock, and acts on what comes back.
 //
-//   trial         7 days before the first charge (day 23)
+//   trial         the last cron run ≥ 5 days before the first charge
 //   trial day 29  optional, TRIAL_DAY29_REMINDER_ENABLED (D5)
 //   monthly       7 days before EVERY renewal
 //   annual        30 and 7 days before every renewal
@@ -12,6 +12,7 @@
 // (user_id, kind, period_key) is what makes two cron runs send once.
 
 import { PRICING } from '@/config/pricing';
+import { noticeRunBefore } from './trial-dates';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -41,6 +42,9 @@ export interface NoticeInput {
   /** When the subscription started (for the yearly summary). */
   startedAt: string | null;
   day29Enabled: boolean;
+  /** The trial notice date the user was shown at signup (reminder_due_at).
+   *  Wins over today's rule, so a trial keeps the date it consented to. */
+  trialReminderDueAt?: string | null;
 }
 
 /** Notices due at `now` (already due, not yet necessarily sent). */
@@ -56,7 +60,9 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
     out.push({
       kind: 'trial_7d',
       periodKey: `trial:${key}`,
-      dueAt: at(p.trial.reminderDaysBefore),
+      dueAt: sub.trialReminderDueAt
+        ? new Date(sub.trialReminderDueAt)
+        : noticeRunBefore(new Date(charge), p.trial.reminderDaysBefore),
       mandatory: true,
     });
     if (sub.day29Enabled)

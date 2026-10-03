@@ -166,7 +166,7 @@ export async function cancelForUser(
   return { ok: true, folio, accessUntil };
 }
 
-/** The current subscription is a free month that never charged. */
+/** The current subscription is a 7-day trial that never charged. */
 function unpaidTrial(billing: Awaited<ReturnType<typeof loadBilling>>): boolean {
   return !!billing.primary.trialEndsAt && !billing.primaryRow?.last_charge_at;
 }
@@ -198,7 +198,7 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     s.state === 'free' || s.state === 'cancelled_active'
       ? 'reactivate'
       : changeTiming(from, input.planKey, trialing);
-  // The free month is Anual-only: a trial can't be switched to Mensual.
+  // The 7-day trial is Anual-only: a trial can't be switched to Mensual.
   if (timing === 'trial_annual_only') return { ok: false, code: 'TRIAL_ANNUAL_ONLY' };
 
   const effectiveAt =

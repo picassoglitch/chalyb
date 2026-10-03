@@ -102,7 +102,7 @@ test('forbidden price claims appear nowhere (messages, emails, built bundle)', (
   assert.deepEqual(hits, []);
 });
 
-test('the free month comes only with Pro anual', () => {
+test('the 7-day trial comes only with Pro anual', () => {
   assert.equal(planHasTrial('pro_year'), true);
   assert.equal(planHasTrial('pro_month'), false);
   assert.equal(planHasTrial('vip_month'), false);

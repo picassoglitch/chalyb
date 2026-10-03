@@ -2,12 +2,13 @@
 // one customer state. Pure; the dates are UTC instants.
 //
 //   free              no paid plan
-//   trialing          in the free month (full Pro)
+//   trialing          in the 7-day trial (full Pro)
 //   pro               paying, renewing (Pro or VIP — `plan` says which)
 //   past_due          a charge failed; full access until graceEndsAt
 //   cancelled_active  cancelled, but paid (or trial) access runs to accessUntil
 
-import type { PlanKey } from '@/config/pricing';
+import { PRICING, type PlanKey } from '@/config/pricing';
+import { addInterval } from './trial-dates';
 
 export type BillingStateName = 'free' | 'trialing' | 'pro' | 'past_due' | 'cancelled_active';
 
@@ -30,6 +31,8 @@ export interface SubscriptionRow {
   /** Bounce hold (no charge until then); the preapproval is paused on
    *  purpose, which is not the customer's failure. */
   charge_hold_until?: string | null;
+  /** When a charge of this subscription last went through (null: never). */
+  last_charge_at?: string | null;
 }
 
 export interface BillingState {
@@ -63,6 +66,66 @@ const FREE: BillingState = {
 };
 
 const ms = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
+const DAY = 24 * 60 * 60 * 1000;
+
+export interface UnpaidCharge {
+  /** When the charge was due: the trial end or the end of the paid period,
+   *  pushed back only by a bounce hold. */
+  dueAt: string;
+  /** When Pro stops if no charge has landed by then. */
+  deadline: string;
+}
+
+/**
+ * The charge this subscription is waiting on, judged from OUR record of the
+ * last charge that went through — never from Mercado Pago's
+ * next_payment_date, which it moves forward while it retries a failed card.
+ *
+ *   7-day trial, never charged   due at the trial end, no grace
+ *                                (PRICING.trial.firstChargeGraceDays)
+ *   renewal                      due one period after the last charge,
+ *                                PRICING.graceDays of grace
+ *
+ * The due date only moves for a bounce hold (no charge until 5 days after an
+ * effective notice). Null when nothing is owed yet that we can date: a paid
+ * start or plan change that hasn't charged for the first time.
+ */
+export function unpaidCharge(
+  row: Pick<
+    SubscriptionRow,
+    | 'tier'
+    | 'plan_key'
+    | 'trial_ends_at'
+    | 'last_charge_at'
+    | 'charge_hold_until'
+    | 'reminder_delivered_at'
+  >,
+  p = PRICING,
+): UnpaidCharge | null {
+  let scheduled: number;
+  let graceDays: number;
+  if (row.last_charge_at) {
+    const planKey = row.plan_key ?? (row.tier === 'VIP' ? 'vip_month' : 'pro_month');
+    const interval = planKey === 'pro_year' ? 'year' : 'month';
+    scheduled = addInterval(new Date(row.last_charge_at), interval).getTime();
+    graceDays = p.graceDays;
+  } else if (row.trial_ends_at) {
+    scheduled = ms(row.trial_ends_at);
+    graceDays = p.trial.firstChargeGraceDays;
+  } else {
+    return null;
+  }
+  const dueAt = Math.max(
+    scheduled,
+    ms(row.charge_hold_until) || 0,
+    ms(row.reminder_delivered_at) + 5 * DAY || 0,
+  );
+  if (Number.isNaN(dueAt)) return null;
+  return {
+    dueAt: new Date(dueAt).toISOString(),
+    deadline: new Date(dueAt + graceDays * DAY).toISOString(),
+  };
+}
 
 export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): BillingState {
   if (!row) return FREE;
@@ -110,8 +173,16 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
     return { ...base, state: inTrial ? 'trialing' : 'pro', grantsTier: tier };
   }
 
+  // A charge is overdue past its deadline (the trial's annual charge, or a
+  // renewal): no Pro, whatever state Mercado Pago still reports.
+  const unpaid = unpaidCharge(row);
+  if (unpaid && nowMs >= ms(unpaid.deadline)) {
+    return { ...FREE, trialEndsAt: row.trial_ends_at };
+  }
+
   // A failed charge: full access inside the grace window, then nothing.
-  if (status === 'paused' || (row.grace_ends_at && nowMs >= ms(nextChargeAt))) {
+  const overdue = !!unpaid && nowMs >= ms(unpaid.dueAt);
+  if (status === 'paused' || (row.grace_ends_at && (overdue || nowMs >= ms(nextChargeAt)))) {
     if (row.grace_ends_at && nowMs < ms(row.grace_ends_at)) {
       return { ...base, state: 'past_due', grantsTier: tier };
     }

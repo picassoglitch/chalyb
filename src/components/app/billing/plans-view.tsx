@@ -1,7 +1,7 @@
 'use client';
 
 // SCR-12 · Planes. Mensual/Anual toggle (Anual on), Gratis · Pro · VIP, "Qué
-// incluye" and the FAQ. The free month comes only with Anual: on Mensual the
+// incluye" and the FAQ. The 7-day trial comes only with Anual: on Mensual the
 // trial CTA becomes "Elegir Pro mensual" and goes straight to its payment.
 // Every amount comes from the pricing config; the annual comparison appears
 // only as "vs. … pagando mes a mes", never struck through, and never
@@ -50,7 +50,7 @@ export function PlansView({ tools, cta, trialOffered, quebecBlocked, monthlyOffe
     current: t('current'),
     trialing: t('trialing'),
   }[cta.pro.label];
-  // Mensual has no free month: skip the picker and go to its payment.
+  // Mensual has no 7-day trial: skip the picker and go to its payment.
   const proHref = !yearly && cta.pro.href === '/app/prueba' ? '/app/prueba/pago?plan=pro_month' : cta.pro.href;
   const vipLabel = { choose: t('vip.cta'), up: t('vip.ctaUp'), current: t('current') }[cta.vip.label];
   const gratisLabel = cta.gratis.label === 'current' ? t('current') : t('gratis.cta');

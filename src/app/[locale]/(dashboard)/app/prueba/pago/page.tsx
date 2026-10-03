@@ -39,7 +39,7 @@ export default async function PagoPage({
   const { plan } = await searchParams;
   const monthlyOffered = await billingToggleEnabled();
   const planKey: PlanKey = plan === 'pro_month' && monthlyOffered ? 'pro_month' : 'pro_year';
-  // The free month is Anual-only; Mensual is charged today.
+  // The 7-day trial is Anual-only; Mensual is charged today.
   const trial = !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');

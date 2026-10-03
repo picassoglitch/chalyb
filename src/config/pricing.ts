@@ -108,10 +108,21 @@ export const PRICING = {
   currency: CURRENCY,
   /** Q3 · Mensual/Anual choice in the trial. */
   defaultInterval: 'year' as const,
-  /** Owner trial spec: 1 month free on Pro ANUAL only (owner, 2026-10-02:
-   *  Mensual pays from the first month), card required. Q26: shown as
-   *  whatever MP applies. */
-  trial: { days: 30, plan: 'pro' as const, requiresCard: true, reminderDaysBefore: 7 },
+  /** Owner trial spec: 7 days free on Pro ANUAL only (owner, 2026-10-03,
+   *  replacing the 7-day trial; Mensual pays from the first month), card
+   *  required. Q26: shown as whatever MP applies. */
+  trial: {
+    days: 7,
+    plan: 'pro' as const,
+    requiresCard: true,
+    /** The legal minimum (art. 76 Bis fr. VIII): the notice goes out at the
+     *  last daily cron run at least this many days before the charge. */
+    reminderDaysBefore: 5,
+    /** Owner, 2026-10-03: none. When the 7 days end, Pro is off until the
+     *  annual charge lands — however Mercado Pago retries, and whether or
+     *  not a webhook arrives. */
+    firstChargeGraceDays: 0,
+  },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
   reminders: { monthDaysBefore: 7, yearDaysBefore: [30, 7] as const },
   /** Q12 · terms [DÍAS DE GRACIA]. */
@@ -122,7 +133,7 @@ export const PRICING = {
   maxVideoHours: { gratis: null, pro: null, vip: null } as Record<string, number | null>,
 };
 
-/** Whether choosing this plan opens the free month (if the account hasn't
+/** Whether choosing this plan opens the 7-day trial (if the account hasn't
  *  used it). Only Pro anual does; Pro mensual and VIP charge from day one. */
 export function planHasTrial(key: PlanKey): boolean {
   return key === 'pro_year';

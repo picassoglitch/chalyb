@@ -57,7 +57,7 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
   let html: string[];
   switch (kind) {
     case 'trial_welcome':
-      subject = 'Tu mes de Pro gratis ya empezó 🎉';
+      subject = 'Tus 7 días de Pro gratis ya empezaron 🎉';
       html = [
         p(
           `Hola ${e(v.nombre)}, ya tienes Chalyb Pro completo: Clips, Señales, En vivo y todo lo demás.`,
@@ -81,10 +81,10 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
       ];
       break;
     case 'trial_7d':
-      subject = 'Tu prueba gratis termina en 7 días';
+      subject = v.fecha_fin_prueba ? `Tu prueba gratis termina el ${v.fecha_fin_prueba}` : 'Tu prueba gratis está por terminar';
       html = [
         p(
-          `Hola ${e(v.nombre)}, tu mes de Pro gratis termina el ${b(v.fecha_fin_prueba)}. El ${b(v.fecha_cobro)} se cobrarán ${b(`${v.monto} MXN`)} (${e(v.periodicidad)}, IVA incluido)${card(v)} para seguir con Pro, y se renovará automáticamente hasta que canceles.`,
+          `Hola ${e(v.nombre)}, tu prueba gratis de Pro termina el ${b(v.fecha_fin_prueba)}. El ${b(v.fecha_cobro)} se cobrarán ${b(`${v.monto} MXN`)} (${e(v.periodicidad)}, IVA incluido)${card(v)} para seguir con Pro, y se renovará automáticamente hasta que canceles.`,
         ),
         p('No tienes que hacer nada para seguir con Pro.'),
         btn(plan, 'Ver mi plan') + btn(plan, 'Cancelar en 1 clic'),
