@@ -41,6 +41,37 @@ export function parseSubscriptionReference(
   return { userId, tier };
 }
 
+/** Prefix of a token-pack order's reference. */
+export const PACK_REF_PREFIX = 'pack';
+
+/** external_reference for a token-pack order: "pack_<userId>_<packId>".
+ *  The Orders API only takes letters, digits, "-" and "_" here (a "|" is a
+ *  400), and a user id is a UUID, so the first two "_" are the separators. */
+export function packReference(userId: string, packId: string): string {
+  return `${PACK_REF_PREFIX}_${userId}_${packId}`;
+}
+
+export interface ParsedPackReference {
+  userId: string;
+  packId: string;
+}
+
+/** The inverse, also reading "pack|<userId>|<packId>" from payments made
+ *  through the old preferences flow. null for anything else. */
+export function parsePackReference(ref: string | null | undefined): ParsedPackReference | null {
+  if (!ref) return null;
+  const legacy = ref.split('|');
+  if (legacy.length === 3 && legacy[0] === PACK_REF_PREFIX) {
+    return legacy[1] && legacy[2] ? { userId: legacy[1], packId: legacy[2] } : null;
+  }
+  const head = `${PACK_REF_PREFIX}_`;
+  if (!ref.startsWith(head)) return null;
+  const rest = ref.slice(head.length);
+  const sep = rest.indexOf('_');
+  if (sep <= 0 || sep === rest.length - 1) return null;
+  return { userId: rest.slice(0, sep), packId: rest.slice(sep + 1) };
+}
+
 /** Mercado Pago's preapproval statuses, normalised. They spell the last one
  *  both "cancelled" and "canceled" depending on the endpoint. */
 export type PreapprovalStatus = 'pending' | 'authorized' | 'paused' | 'cancelled' | 'unknown';

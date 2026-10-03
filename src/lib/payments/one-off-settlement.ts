@@ -25,6 +25,7 @@ import {
 } from './webhook-verify';
 import { isDispute, type NormalizedCharge } from './order-charge';
 import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
+import { parsePackReference } from './subscription-reference';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -54,12 +55,14 @@ export async function settleOneOffCharge(
 
   // external_reference is one of two shapes:
   //   1. Legacy one-off tier purchase: "<userId>|<TIER>"  (e.g. "abc|PRO")
-  //   2. Token pack:                   "pack|<userId>|<packId>"
+  //   2. Token pack:                   "pack_<userId>_<packId>" (orders), or
+  //                                    "pack|<userId>|<packId>" (preferences)
+  const packRef = parsePackReference(externalRef);
   const refParts = externalRef.split('|');
-  const isPackPurchase = refParts[0] === 'pack';
-  const userId = isPackPurchase ? refParts[1] : refParts[0];
+  const isPackPurchase = packRef !== null;
+  const userId = packRef ? packRef.userId : refParts[0];
   const tierRaw = isPackPurchase ? null : refParts[1];
-  const packIdRaw = isPackPurchase ? refParts[2] : null;
+  const packIdRaw = packRef ? packRef.packId : null;
   const tier = tierRaw as SubscriptionTier | null;
 
   if (!userId) return ok({ error: 'bad external_reference', externalRef });
