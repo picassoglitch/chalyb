@@ -48,11 +48,16 @@ import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
   checkoutNotReadyMessage,
-  checkoutConfigProblems,
+  isAllowedMpUrl,
   missingCheckoutConfig,
+  mpCredentials,
+  mpEnvProblems,
+  mpErrorCode,
   readAccessToken,
-  readPublicKey,
-  readWebhookSecret,
+  mpUrl,
+  mpWebhookUrl,
+  payerEmailFor,
+  type MpEnv,
 } from './mp-config';
 
 let cached: {
@@ -65,18 +70,63 @@ let cached: {
   order: Order;
 } | null = null;
 
+// Every credential below comes out of mpCredentials() (mp-config.ts), the
+// only reader of the MERCADOPAGO_* / MP_* variables, so the token, the card
+// form's public key and the webhook secret always belong to one environment.
+
+/** 'prod' or 'test' (MP_ENV; Vercel Production defaults to prod). */
+export function getMpEnv(): MpEnv {
+  return mpCredentials(process.env).mpEnv;
+}
+
 function getAccessToken(): string | undefined {
-  return readAccessToken(process.env);
+  return mpCredentials(process.env).accessToken;
 }
 
 export function getWebhookSecret(): string | undefined {
-  return readWebhookSecret(process.env);
+  return mpCredentials(process.env).webhookSecret;
 }
 
 /** The Bricks public key. Not a secret: it initialises the card form in the
  *  browser, so a server page may pass it down to a client component. */
 export function getPublicKey(): string | undefined {
-  return readPublicKey(process.env);
+  return mpCredentials(process.env).publicKey;
+}
+
+/** The seller the access token must belong to (MP_EXPECTED_SELLER_ID). */
+export function getExpectedSellerId(): string | undefined {
+  return mpCredentials(process.env).expectedSellerId;
+}
+
+/** The access token exactly as configured (untrimmed), for /api/diag/mp to
+ *  spot stray whitespace. Everything else uses the trimmed one. */
+export function getRawAccessTokenForDiag(): string {
+  return readAccessToken(process.env) ?? '';
+}
+
+let sellerCheck: { token: string; ok: boolean } | null = null;
+
+/**
+ * When MP_EXPECTED_SELLER_ID is set, the access token must belong to that
+ * seller (GET /users/me, cached per token). A token from another account —
+ * the other half of a mixed pair — fails closed. Unset = no check.
+ */
+export async function sellerMatches(): Promise<boolean> {
+  const expected = getExpectedSellerId();
+  const token = getAccessToken();
+  if (!expected || !token) return true;
+  if (sellerCheck?.token === token) return sellerCheck.ok;
+  try {
+    const me = await mpGet<{ id?: number | string }>('/users/me');
+    const ok = String(me.id ?? '') === expected;
+    if (!ok) console.error('[mp] access token belongs to another seller', { mp_env: getMpEnv() });
+    sellerCheck = { token, ok };
+    return ok;
+  } catch (err) {
+    // Not cached: a blip at Mercado Pago must not lock checkout out for good.
+    console.error('[mp] could not verify the seller of the access token', err);
+    return false;
+  }
 }
 
 /** The access token is present. Enough to READ from Mercado Pago (the webhook
@@ -91,20 +141,77 @@ export function missingCheckoutVars(): string[] {
   return missingCheckoutConfig(process.env);
 }
 
-/** Set-but-wrong credentials (swapped, or test paired with production).
- *  Names, never values. Empty = nothing obviously wrong. */
+/** Set-but-wrong credentials (swapped, test paired with production, a
+ *  production deployment on test keys, a test deployment with no test
+ *  buyer). Names, never values. Empty = nothing obviously wrong. */
 export function checkoutConfigWarnings(): string[] {
-  return checkoutConfigProblems(process.env);
+  return mpEnvProblems(process.env);
 }
 
-/** Everything a checkout needs to both start AND be credited afterwards. */
+/** Everything a checkout needs to both start AND be credited afterwards, in
+ *  ONE environment. A mixed pair fails closed: nothing is created. */
 export function isCheckoutReady(): boolean {
-  return missingCheckoutVars().length === 0;
+  return missingCheckoutVars().length === 0 && checkoutConfigWarnings().length === 0;
 }
 
-/** The message a caller returns instead of starting a checkout. */
+/** The message a caller returns instead of starting a checkout. Missing
+ *  variables are named for the operator; a mixed or wrong pair gets the
+ *  generic payment error (the reason goes to the log). */
 export function checkoutNotReadyError(): string {
-  return checkoutNotReadyMessage(missingCheckoutVars());
+  const missing = missingCheckoutVars();
+  if (missing.length) return checkoutNotReadyMessage(missing);
+  console.error('[mp] checkout refused, credentials inconsistent:', checkoutConfigWarnings());
+  return MP_GENERIC_ERROR;
+}
+
+/** The generic payment error customers see when we refuse on our side. */
+export const MP_GENERIC_ERROR =
+  'No pudimos iniciar el pago en este momento. No se hizo ningún cargo; inténtalo de nuevo más tarde.';
+
+/** The payer email for a create call (test buyer in `test`, the user in
+ *  `prod`). null = refuse to create anything. */
+export function mpPayerEmail(userEmail: string | null | undefined): string | null {
+  return payerEmailFor(userEmail, process.env);
+}
+
+/**
+ * Absolute URL for a back_url / return URL on a payment object. Throws in
+ * `prod` if it would not be https://www.chalyb.com/… — Mercado Pago follows
+ * no redirects, and the caller's try/catch turns the throw into the
+ * generic error before anything is created.
+ */
+export function mpReturnUrl(path: string): string {
+  const url = mpUrl(path, process.env, appUrl());
+  if (!isAllowedMpUrl(url, process.env)) {
+    throw new Error(`[mp] refusing a non-canonical return URL in ${getMpEnv()}`);
+  }
+  return url;
+}
+
+/** Where the Mercado Pago dashboard must send notifications (OPS-4). The
+ *  preapproval and Orders APIs take no per-object notification_url, so this
+ *  is shown by /api/diag/mp for the operator to compare. */
+export function mpExpectedWebhookUrl(): string {
+  return mpWebhookUrl(process.env, appUrl());
+}
+
+/** The Mercado Pago error code of a failed call, for logs only. */
+export function mpErrorCodeOf(err: unknown): string | null {
+  return mpErrorCode(err);
+}
+
+/** One log line per object created at Mercado Pago: the environment, the
+ *  MP id and our reference. Never tokens, card data or emails. */
+export function logMpCreate(
+  kind: string,
+  fields: { id?: string | null; externalReference?: string | null },
+) {
+  console.info('[mp] created', {
+    kind,
+    mp_env: getMpEnv(),
+    mp_id: fields.id ?? null,
+    external_reference: fields.externalReference ?? null,
+  });
 }
 
 export function getMercadoPago() {
