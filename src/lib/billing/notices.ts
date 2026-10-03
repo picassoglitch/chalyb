@@ -33,7 +33,8 @@ const DOC_LABELS: Record<string, string> = {
 
 /**
  * Every value the trial's charge notice (and the optional day-6 reminder)
- * prints, from the subscription itself: the day-0 send and the cron fill it
+ * prints, from the subscription itself: the signup confirmation, a
+ * switch's immediate notice and the cron fill it
  * the same way. Amounts from the pricing config.
  */
 export function trialNoticeVars(input: {
@@ -46,6 +47,8 @@ export function trialNoticeVars(input: {
   consentId: string | null;
   appUrl: string;
   now?: Date;
+  /** When the charge notice will go out (the signup confirmation says so). */
+  reminderAt?: Date | string | null;
 }): BillingEmailVars {
   const price = planPrice(input.planKey);
   const year = price.interval === 'year';
@@ -55,10 +58,13 @@ export function trialNoticeVars(input: {
     plan: PLAN_NAMES[input.planKey],
     monto,
     renovacion: `${year ? 'cada año' : 'cada mes'} (${monto} MXN)`,
-    periodicidad: year ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
+    periodicidad: year
+      ? 'por 1 año de Pro'
+      : `por tu primer mes de ${price.tier === 'VIP' ? 'VIP' : 'Pro'}`,
     fecha_inicio: formatFechaLarga(input.startedAt, 'es'),
     fecha_fin_prueba: formatFechaLarga(input.trialEndsAt, 'es'),
     fecha_cobro: formatFechaLarga(input.chargeAt, 'es'),
+    fecha_recordatorio: input.reminderAt ? formatFechaLarga(input.reminderAt, 'es') : undefined,
     dias: PRICING.trial.days,
     faltan: Math.max(
       0,

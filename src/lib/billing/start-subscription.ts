@@ -359,18 +359,22 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     console.error('[billing/start] immediate sync failed; the webhook will finish it', err);
   }
 
-  // The charge notice, sent now (aceptacion-ux §3.6): on day 0 it is 7 days
-  // before the charge, the legal ≥5-day notice AND the confirmation. Nothing
-  // else goes in it (no welcome, no marketing: C1a). Its delivery gates the
-  // charge (the hold rule); the cron uses the same key, so it goes out once.
+  // A new trial gets its confirmation now; the charge notice itself goes out
+  // at the last cron run ≥ 5 days before the charge (owner, 2026-10-03), on
+  // the date the confirmation states (reminder_due_at). A switch during the
+  // trial changes the amount, so its notice goes out now — the hold rule
+  // keeps the charge until 5 days after it lands. Nothing else goes in
+  // either (no marketing: C1a).
   if (trialLike) {
     const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
     await dispatchBillingEmail({
       userId,
       email,
-      kind: 'trial_7d',
-      periodKey: trialNoticeKey(dates.chargeAt, preapprovalId),
-      evidence: 'charge_notice_sent',
+      kind: trialSwitch ? 'trial_7d' : 'trial_welcome',
+      periodKey: trialSwitch
+        ? trialNoticeKey(dates.chargeAt, preapprovalId)
+        : `welcome:${consent.consent_id}`,
+      evidence: trialSwitch ? 'charge_notice_sent' : undefined,
       vars: trialNoticeVars({
         nombre: name,
         planKey: input.planKey,
@@ -382,6 +386,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         last4: card.last_four_digits ?? null,
         consentId: consent.consent_id,
         appUrl: getAppUrl(),
+        reminderAt: trialSwitch ? null : dates.reminderAt,
       }),
     });
     if (mode === 'trial') {

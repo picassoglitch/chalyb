@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PRICING, assertReminderWindows, planHasTrial } from '@/config/pricing';
-import { trialDates } from '@/lib/billing/trial-dates';
+import { BILLING_CRON_UTC_HOUR, trialDates } from '@/lib/billing/trial-dates';
 import { dueNotices, holdDecision, trialNoticeKey } from '@/lib/billing/reminders';
 import { billingEmail } from '@/lib/email/billing-templates';
 import { initialTrialPlan } from '@/lib/billing/trial-choice';
@@ -22,16 +22,16 @@ const H = 3_600_000;
 
 // ── Config (1–4) ───────────────────────────────────────────────────────────
 
-test('1–2 · 7 days, on Pro mensual and Pro anual only', () => {
+test('1–2 · 7 days, on whichever plan a first-time customer picks (owner, 2026-10-03)', () => {
   assert.equal(PRICING.trial.days, 7);
   assert.equal(planHasTrial('pro_month'), true);
   assert.equal(planHasTrial('pro_year'), true);
-  assert.equal(planHasTrial('vip_month'), false);
-  assert.deepEqual([...PRICING.trial.plans], ['pro_month', 'pro_year']);
+  assert.equal(planHasTrial('vip_month'), true);
+  assert.deepEqual([...PRICING.trial.plans], ['pro_month', 'pro_year', 'vip_month']);
 });
 
-test('3 · the notice is due at trial start; a 3-day trial can never ship', () => {
-  assert.equal(PRICING.trial.reminderDaysBefore, 7);
+test('3 · the notice goes out ≥ 5 days before the charge; a 3-day trial can never ship', () => {
+  assert.equal(PRICING.trial.reminderDaysBefore, 5);
   assert.doesNotThrow(() => assertReminderWindows());
   assert.throws(() =>
     assertReminderWindows({
@@ -54,12 +54,27 @@ test('4 · renewal windows unchanged and ≥ 5 days', () => {
 
 // ── Dates and notices (5–7) ────────────────────────────────────────────────
 
-test('5 · trialDates: end = charge = start + 7 d; notice at start (3 oct → 10 oct 2026)', () => {
+const NOTICE = new Date('2026-10-05T15:00:00Z'); // the last cron run ≥ 5 d (+1 h) before
+
+test('5 · trialDates: end = charge = start + 7 d; notice at the last cron run ≥ 5 d before (3 oct → 5 oct → 10 oct 2026)', () => {
   const d = trialDates(START);
   assert.equal(d.trialEndsAt.toISOString(), CHARGE.toISOString());
   assert.equal(d.chargeAt.toISOString(), CHARGE.toISOString());
-  assert.equal(d.reminderAt.toISOString(), START.toISOString());
+  assert.equal(d.reminderAt.toISOString(), NOTICE.toISOString());
   assert.equal(d.chargeAt.toISOString().slice(0, 10), '2026-10-10');
+  // Whatever the signup hour: between 5 and ~6 days ahead, at a cron run, after signup.
+  for (const h of [0, 6, 14, 15, 16, 23]) {
+    const start = new Date(Date.UTC(2026, 9, 1, h, 30));
+    const { trialEndsAt, reminderAt } = trialDates(start);
+    const lead = trialEndsAt.getTime() - reminderAt.getTime();
+    assert.ok(lead >= 5 * DAY && lead < 6 * DAY + 2 * H, `signup ${h}:30 → lead ${lead / H}h`);
+    assert.equal(reminderAt.getUTCHours(), BILLING_CRON_UTC_HOUR);
+    assert.ok(reminderAt > start);
+  }
+  const cron = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8')).crons.find(
+    (c: { path: string }) => c.path === '/api/cron/billing',
+  );
+  assert.equal(cron.schedule, `0 ${BILLING_CRON_UTC_HOUR} * * *`);
 });
 
 const trialing = {
@@ -71,11 +86,29 @@ const trialing = {
   subKey: 'pre-1',
 };
 
-test('6 · at trial start only the mandatory trial_7d is due; trial_1d only with the flag, at charge − 1 d', () => {
-  const now = dueNotices(trialing, START);
+test('6 · the mandatory trial_7d is due at the notice run (not at signup); trial_1d only with the flag, at charge − 1 d', () => {
+  assert.deepEqual(dueNotices(trialing, START), []);
+  assert.deepEqual(dueNotices(trialing, new Date(NOTICE.getTime() - 1)), []);
+  const now = dueNotices(trialing, NOTICE);
   assert.deepEqual(
     now.map((n) => [n.kind, n.mandatory, n.dueAt.toISOString()]),
-    [['trial_7d', true, START.toISOString()]],
+    [['trial_7d', true, NOTICE.toISOString()]],
+  );
+  // A trial keeps the notice date it was shown at signup (reminder_due_at).
+  const promised = new Date(START.getTime() + DAY).toISOString();
+  assert.equal(
+    dueNotices({ ...trialing, trialReminderDueAt: promised }, new Date(promised))[0]?.kind,
+    'trial_7d',
+  );
+  // Delivered at that run: no bounce hold on the charge.
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: CHARGE.toISOString(),
+      noticeDeliveredAt: new Date(NOTICE.getTime() + 5 * 60_000).toISOString(),
+      holdUntil: null,
+      now: new Date(CHARGE.getTime() - DAY),
+    }),
+    { action: 'none' },
   );
   assert.equal(now[0]!.periodKey, trialNoticeKey(CHARGE, 'pre-1'));
   const dayBefore = new Date(CHARGE.getTime() - DAY);
@@ -196,7 +229,7 @@ const VARS = {
   appUrl: 'https://www.chalyb.com',
 };
 
-test('8 · the day-0 email: "Aviso de cobro", every fact, and nothing else', () => {
+test('8 · the charge notice email: "Aviso de cobro", every fact, and nothing else', () => {
   const mail = billingEmail('trial_7d', VARS);
   assert.equal(
     mail.subject,
@@ -209,7 +242,7 @@ test('8 · the day-0 email: "Aviso de cobro", every fact, and nothing else', () 
     '4821',
     '/app/billing?cancelar=1',
     VARS.consent_id,
-    'Hoy pagaste $0.',
+    'Hasta hoy has pagado $0.',
     'Faltan 7 días',
     'Cambiar a Pro mensual: $997 MXN al mes',
     'Documentos que aceptaste',
@@ -235,6 +268,14 @@ test('8 · the day-0 email: "Aviso de cobro", every fact, and nothing else', () 
   });
   assert.ok(monthly.text.includes('cada mes'));
   assert.ok(!monthly.text.includes('Cambiar a Pro mensual'), 'the switch link is annual-only');
+});
+
+test('8 · the signup confirmation: every fact, the notice date, and it is not the notice', () => {
+  const mail = billingEmail('trial_welcome', { ...VARS, fecha_recordatorio: '5 de octubre de 2026' });
+  assert.ok(!mail.subject.includes('Aviso de cobro'));
+  for (const must of ['10 de octubre de 2026', '$9,970 MXN', 'Hoy pagaste $0.', VARS.consent_id, 'Te enviaremos el aviso de cobro el 5 de octubre de 2026']) {
+    assert.ok(mail.text.includes(must) || mail.html.includes(must), must);
+  }
 });
 
 test('8 · day 6 email (flagged)', () => {
@@ -376,10 +417,10 @@ test('11 · the consent record stores the 7-day trial, its texts, the plan and t
   }
 });
 
-test('T-6 · during the trial, Pro mensual ↔ Pro anual keep the charge date', () => {
+test('T-6 · during the trial, any switch keeps the charge date (every plan has the trial)', () => {
   assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
   assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
-  assert.equal(changeTiming('pro_month', 'vip_month', true), 'now');
+  assert.equal(changeTiming('pro_month', 'vip_month', true), 'trial_end');
 });
 
 test('C6 · TRIAL_DAY29_REMINDER_ENABLED is gone', () => {

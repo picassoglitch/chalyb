@@ -179,7 +179,7 @@
       "label": "Preguntas",
       "title": "Preguntas frecuentes",
       "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Pruebas Pro {dias} días gratis, con el plan mensual o con el anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
+      "a1": "Pruebas {dias} días gratis el plan que elijas: Pro mensual, Pro anual o VIP. Hoy pagas $0 y te enviamos por correo el aviso de cobro al menos 5 días antes del cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
       "q2": "¿Necesito saber de tecnología?",
       "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
       "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
@@ -941,7 +941,8 @@
     "vars": {
       "periodicidad": {
         "year": "por 1 año de Pro",
-        "month": "por tu primer mes de Pro"
+        "month": "por tu primer mes de Pro",
+        "vipMonth": "por tu primer mes de VIP"
       },
       "renovacion": {
         "year": "cada año ({monto} MXN)",
@@ -963,9 +964,9 @@
     "disclosure": {
       "today": "<b>Hoy pagas $0.</b>",
       "charge": "Si no cancelas antes, el <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b> {periodicidad} a {tarjeta}, y se renovará automáticamente {renovacion} hasta que canceles.",
-      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada.",
+      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con {nivel} hasta el {fecha_fin_prueba} y no se te cobra nada.",
       "ends": "Tu prueba gratis de {dias} días termina el <b>{fecha_fin_prueba}</b>.",
-      "notice": "Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto."
+      "notice": "Te enviaremos por correo el aviso de cobro con esta fecha y este monto el <b>{fecha_recordatorio}</b>, al menos 5 días antes del cobro."
     },
     "pay": {
       "consent": "Acepto que, si no cancelo antes del <b>{fecha_cobro}</b>, Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
@@ -975,7 +976,7 @@
     "metaTitle": "Planes",
     "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
     "title": "Un plan. Todas las herramientas.",
-    "sub": "Prueba Pro gratis 7 días: mensual o anual. Cancela cuando quieras.",
+    "sub": "Prueba gratis 7 días el plan que elijas. Cancela cuando quieras.",
     "subNoTrial": "Cancela cuando quieras.",
     "toggleAria": "Cómo quieres pagar",
     "toggle": {
@@ -1023,7 +1024,7 @@
     "faqTitle": "Preguntas frecuentes",
     "faq": {
       "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Eliges Pro mensual o Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus 7 días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta; VIP no tiene prueba.",
+      "a1": "Eliges Pro mensual, Pro anual o VIP. Hoy pagas $0 y te enviamos por correo el aviso de cobro al menos 5 días antes del cobro. Si no cancelas antes de que terminen tus 7 días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -1051,6 +1052,7 @@
       "monthRow": "Pro mensual — {monto} MXN al mes",
       "yearRow": "Pro anual — {monto} MXN al año",
       "yearOnce": "(un solo cobro al año)",
+      "vipRow": "VIP — {monto} MXN al mes",
       "yearSave": "Ahorras {ahorro} al año frente a 12 meses de Pro mensual",
       "cameFromYear": "Elegiste Pro anual en la tarjeta",
       "pickFirst": "Elige un plan para continuar."

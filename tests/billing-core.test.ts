@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-state';
+import { deriveBillingState, unpaidCharge, type SubscriptionRow } from '@/lib/billing/billing-state';
 import { trialDates, trialDaysLeft, addInterval } from '@/lib/billing/trial-dates';
 import { dueNotices, holdDecision } from '@/lib/billing/reminders';
 import { changeTiming, reactivationStart, vipUpgradeQuote, unusedCredit } from '@/lib/billing/plan-change';
@@ -40,11 +40,11 @@ function row(over: Partial<SubscriptionRow> = {}): SubscriptionRow {
 
 // ── State ────────────────────────────────────────────────────────────
 test('trialing, then paying', () => {
-  const end = new Date(T0.getTime() + 30 * DAY).toISOString();
-  const r = row({ trial_ends_at: end, next_charge_at: end });
-  assert.equal(deriveBillingState(r, T0.getTime()).state, 'trialing');
-  assert.equal(deriveBillingState(r, T0.getTime()).grantsTier, 'PRO');
-  assert.equal(deriveBillingState(r, T0.getTime() + 31 * DAY).state, 'pro');
+  const end = new Date(T0.getTime() + 7 * DAY).toISOString();
+  const r = row({ trial_ends_at: end, next_charge_at: end, last_charge_at: end });
+  assert.equal(deriveBillingState({ ...r, last_charge_at: null }, T0.getTime()).state, 'trialing');
+  assert.equal(deriveBillingState({ ...r, last_charge_at: null }, T0.getTime()).grantsTier, 'PRO');
+  assert.equal(deriveBillingState(r, T0.getTime() + 8 * DAY).state, 'pro');
 });
 
 test('past_due keeps access inside grace only', () => {
@@ -53,6 +53,68 @@ test('past_due keeps access inside grace only', () => {
   assert.equal(deriveBillingState(r, T0.getTime() + DAY).grantsTier, 'PRO');
   assert.equal(deriveBillingState(r, T0.getTime() + 8 * DAY).state, 'free');
 });
+
+test('7-day trial → annual charge: Pro ends at the charge date unless it lands', () => {
+  const end = new Date(T0.getTime() + 7 * DAY).toISOString();
+  const r = row({ trial_ends_at: end, next_charge_at: end });
+  assert.equal(PRICING.trial.firstChargeGraceDays, 0);
+  assert.deepEqual(unpaidCharge(r), { dueAt: end, deadline: end });
+  assert.equal(deriveBillingState(r, T0.getTime() + 7 * DAY - 1).state, 'trialing');
+  // Mercado Pago still says authorized (processing, retrying, or no webhook): no Pro.
+  assert.equal(deriveBillingState(r, T0.getTime() + 7 * DAY).state, 'free');
+  // MP moving next_payment_date while it retries doesn't push the deadline.
+  const moved = { ...r, next_charge_at: new Date(T0.getTime() + 12 * DAY).toISOString() };
+  assert.equal(deriveBillingState(moved, T0.getTime() + 8 * DAY).state, 'free');
+  // A rejected charge's grace doesn't apply to the trial's charge.
+  const failed = { ...r, grace_ends_at: new Date(T0.getTime() + 14 * DAY).toISOString() };
+  assert.equal(deriveBillingState(failed, T0.getTime() + 8 * DAY).state, 'free');
+  // The annual charge landed (even late): Pro for the year.
+  const paid = { ...r, last_charge_at: new Date(T0.getTime() + 9 * DAY).toISOString(), next_charge_at: new Date(T0.getTime() + 372 * DAY).toISOString() };
+  assert.equal(unpaidCharge(paid)?.dueAt, new Date(T0.getTime() + 9 * DAY + 365 * DAY).toISOString());
+  assert.equal(deriveBillingState(paid, T0.getTime() + 200 * DAY).state, 'pro');
+  // Paid plans with no trial are untouched.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_month' })), null);
+});
+
+test('a bounce hold moves the trial deadline with the charge', () => {
+  const end = new Date(T0.getTime() + 7 * DAY).toISOString();
+  // Notice only confirmed on day 4: no charge before day 9, Pro until then.
+  const r = row({
+    trial_ends_at: end,
+    next_charge_at: end,
+    reminder_delivered_at: new Date(T0.getTime() + 4 * DAY).toISOString(),
+  });
+  assert.equal(unpaidCharge(r)?.deadline, new Date(T0.getTime() + 9 * DAY).toISOString());
+  assert.equal(deriveBillingState(r, T0.getTime() + 8 * DAY).grantsTier, 'PRO');
+  assert.equal(deriveBillingState(r, T0.getTime() + 9 * DAY).state, 'free');
+});
+
+test('renewal: due one period after the last charge, then PRICING.graceDays, whatever MP says', () => {
+  assert.equal(PRICING.graceDays, 7);
+  const last = T0.toISOString();
+  const monthDue = new Date('2026-10-30T18:00:00Z').getTime();
+  // Mensual, MP still "authorized" and has moved next_payment_date to a retry.
+  const m = row({ plan_key: 'pro_month', last_charge_at: last, next_charge_at: new Date(monthDue + 3 * DAY).toISOString() });
+  assert.deepEqual(unpaidCharge(m), {
+    dueAt: new Date(monthDue).toISOString(),
+    deadline: new Date(monthDue + 7 * DAY).toISOString(),
+  });
+  assert.equal(deriveBillingState(m, monthDue + 6 * DAY).grantsTier, 'PRO');
+  assert.equal(deriveBillingState(m, monthDue + 7 * DAY).state, 'free');
+  // A rejection we heard about shows as past_due inside grace, even with
+  // next_payment_date already moved forward.
+  const failed = { ...m, grace_ends_at: new Date(monthDue + 7 * DAY).toISOString() };
+  assert.equal(deriveBillingState(failed, monthDue + 2 * DAY).state, 'past_due');
+  // Anual: a year after the last charge. VIP (and legacy rows): monthly.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_year', last_charge_at: last }))?.dueAt, '2027-09-30T18:00:00.000Z');
+  assert.equal(unpaidCharge(row({ tier: 'VIP', plan_key: null, last_charge_at: last }))?.dueAt, '2026-10-30T18:00:00.000Z');
+  // The renewal landed: due moves a period ahead, Pro carries on.
+  const renewed = { ...m, last_charge_at: new Date(monthDue + DAY).toISOString() };
+  assert.equal(deriveBillingState(renewed, monthDue + 10 * DAY).state, 'pro');
+  // A never-charged paid start or plan change has nothing we can date.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_month' })), null);
+});
+
 
 test('cancelled keeps access until the period (or trial) ends', () => {
   const until = new Date(T0.getTime() + 10 * DAY).toISOString();
@@ -70,11 +132,11 @@ test('VIP grants VIP; pending grants nothing; no row is free', () => {
 });
 
 // ── Dates ────────────────────────────────────────────────────────────
-test('trial dates: 7 days, charge at the end, the notice the moment it starts', () => {
+test('trial dates: 7 days, charge at the end, notice at the last cron run ≥ 5 days before', () => {
   const d = trialDates(T0);
   assert.equal(d.trialEndsAt.toISOString(), '2026-10-07T18:00:00.000Z');
   assert.equal(d.chargeAt.toISOString(), d.trialEndsAt.toISOString());
-  assert.equal(d.reminderAt.toISOString(), T0.toISOString());
+  assert.equal(d.reminderAt.toISOString(), '2026-10-02T15:00:00.000Z');
   assert.equal(trialDaysLeft(d.trialEndsAt, T0.getTime()), 7);
   assert.equal(addInterval(new Date('2026-01-31T00:00:00Z'), 'year').toISOString(), '2027-01-31T00:00:00.000Z');
 });
@@ -88,10 +150,12 @@ test('notice windows are never shorter than 5 days', () => {
 const charge = new Date(T0.getTime() + 30 * DAY).toISOString();
 const at = (days: number) => new Date(Date.parse(charge) - days * DAY);
 
-test('trial: the charge notice is due 7 days before the charge (day 0 of the trial)', () => {
+test('trial: the charge notice is due at the last cron run ≥ 5 days before the charge', () => {
   const sub = { state: 'trialing', interval: 'year' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day6Enabled: false };
-  assert.deepEqual(dueNotices(sub, at(8)), []);
-  const due = dueNotices(sub, at(7));
+  // Charge 30 Oct 18:00 UTC → the 25 Oct 15:00 UTC run (5 d 3 h before).
+  const run = new Date('2026-10-25T15:00:00Z');
+  assert.deepEqual(dueNotices(sub, new Date(run.getTime() - 1)), []);
+  const due = dueNotices(sub, run);
   assert.deepEqual(due.map((n) => [n.kind, n.periodKey, n.mandatory]), [['trial_7d', 'trial:2026-10-30', true]]);
   assert.equal(dueNotices({ ...sub, day6Enabled: true }, at(0.5)).length, 2);
 });
@@ -157,7 +221,7 @@ test('change timing', () => {
   // During the 7-day trial, Pro mensual ↔ Pro anual both keep the charge date (T-6).
   assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
   assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
-  assert.equal(changeTiming('pro_year', 'vip_month', true), 'now');
+  assert.equal(changeTiming('pro_year', 'vip_month', true), 'trial_end');
 });
 
 test('VIP upgrade: full VIP today, refund of the unused days', () => {
@@ -246,7 +310,7 @@ test('the charge block renders Law’s examples exactly (aceptacion-ux §3.2–3
       'Hoy pagas $0.',
       'Tu prueba gratis de 7 días termina el 10 de octubre de 2026.',
       'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $9,970 MXN por 1 año de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada año ($9,970 MXN) hasta que canceles.',
-      'Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto.',
+      'Te enviaremos por correo el aviso de cobro con esta fecha y este monto el 5 de octubre de 2026, al menos 5 días antes del cobro.',
       'Cancela en 1 clic desde Mi cuenta → Mi plan, sin llamadas. Si cancelas, sigues con Pro hasta el 10 de octubre de 2026 y no se te cobra nada.',
     ].join('\n'),
   );
@@ -256,7 +320,7 @@ test('the charge block renders Law’s examples exactly (aceptacion-ux §3.2–3
       'Hoy pagas $0.',
       'Tu prueba gratis de 7 días termina el 10 de octubre de 2026.',
       'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $997 MXN por tu primer mes de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada mes ($997 MXN) hasta que canceles.',
-      'Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto.',
+      'Te enviaremos por correo el aviso de cobro con esta fecha y este monto el 5 de octubre de 2026, al menos 5 días antes del cobro.',
       'Cancela en 1 clic desde Mi cuenta → Mi plan, sin llamadas. Si cancelas, sigues con Pro hasta el 10 de octubre de 2026 y no se te cobra nada.',
     ].join('\n'),
   );
@@ -275,11 +339,11 @@ test('seller identity: every field is required before the trial can open', () =>
   assert.equal(missingLegalEntityFields().length, 7);
 });
 
-test('reactivating after cancelling a trial: Pro keeps the rest of it, VIP is charged today', () => {
+test('reactivating after cancelling a trial: the rest of it carries over to any plan', () => {
   const now = new Date('2026-10-05T12:00:00Z');
   const accessUntil = '2026-10-10T12:00:00Z';
-  // Cancelled trial → VIP: charged today, no leftover free days.
-  assert.equal(reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now }), null);
+  // Cancelled trial → VIP: VIP has the trial too, so it continues.
+  assert.equal(reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-10T12:00:00.000Z');
   // Cancelled trial → Pro mensual or Pro anual: the trial continues.
   assert.equal(reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-10T12:00:00.000Z');
   assert.equal(reactivationStart({ to: 'pro_year', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-10T12:00:00.000Z');

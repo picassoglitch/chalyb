@@ -36,10 +36,14 @@ export function plansCta(input: {
           href: quebecBlocked
             ? null
             : !signedIn
-              ? signup
-              : flow
-                ? '/app/billing/cambiar?plan=vip_month'
-                : '/app/subscription',
+              ? `${signup}&next=${encodeURIComponent('/app/prueba?interval=vip')}`
+              : !flow
+                ? '/app/subscription'
+                : paid
+                  ? '/app/billing/cambiar?plan=vip_month'
+                  : // Not on a plan yet: VIP through Tu prueba (its 7 days
+                    // free when the account hasn't used them).
+                    '/app/prueba?interval=vip',
           label: paid ? 'up' : 'choose',
         };
   const gratis: PlansViewProps['cta']['gratis'] =

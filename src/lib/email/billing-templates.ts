@@ -9,10 +9,11 @@
 import { escapeHtml } from './escape';
 import { wrap } from './templates';
 
-export const TEMPLATE_VERSION = '2';
+export const TEMPLATE_VERSION = '3';
 
 export type BillingEmailKind =
-  | 'trial_7d' // 1 · "Aviso de cobro", day 0 (mandatory)
+  | 'trial_welcome' // 0 · confirmation at signup (not the notice)
+  | 'trial_7d' // 1 · "Aviso de cobro", ≥ 5 days before the charge (mandatory)
   | 'trial_1d' // 2 · day 6, only with TRIAL_DAY6_REMINDER
   | 'charge_ok' // 3
   | 'charge_failed' // 3b
@@ -62,22 +63,29 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
   let subject: string;
   let html: string[];
   switch (kind) {
+    case 'trial_welcome':
     case 'trial_7d': {
-      // aceptacion-ux §3.6, verbatim: the legal ≥5-day charge notice and the
-      // confirmation, nothing else (no welcome, no marketing).
+      // aceptacion-ux §3.6: the confirmation at signup, and the legal ≥5-day
+      // charge notice — the same facts, nothing else (no marketing).
+      const notice = kind === 'trial_7d';
       const cancel = `${v.appUrl}/app/billing?cancelar=1`;
-      subject = `Aviso de cobro: el ${v.fecha_cobro} se cobrarán ${v.monto} MXN si no cancelas`;
+      subject = notice
+        ? `Aviso de cobro: el ${v.fecha_cobro} se cobrarán ${v.monto} MXN si no cancelas`
+        : `Tu prueba gratis de Chalyb ${v.plan} empezó · primer cobro el ${v.fecha_cobro}`;
       html = [
         p(`Hola ${e(v.nombre)}:`),
         p(
-          `Tu prueba gratis de ${e(String(v.dias ?? ''))} días de Chalyb Pro empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`,
+          `Tu prueba gratis de ${e(String(v.dias ?? ''))} días de Chalyb ${e(v.plan)} empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`,
         ),
         p(
-          `${b('Hoy pagaste $0.')} Si no cancelas antes, el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (${e(v.plan)})${card(v)}, y después ${b(v.renovacion)} hasta que canceles.`,
+          `${b(notice ? 'Hasta hoy has pagado $0.' : 'Hoy pagaste $0.')} Si no cancelas antes, el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (${e(v.plan)})${card(v)}, y después ${b(v.renovacion)} hasta que canceles.`,
         ),
         p(
           `Faltan ${b(`${v.faltan ?? v.dias ?? ''} ${v.faltan === 1 ? 'día' : 'días'}`)} para el cobro.`,
         ),
+        ...(!notice && v.fecha_recordatorio
+          ? [p(`Te enviaremos el aviso de cobro el ${e(v.fecha_recordatorio)}.`)]
+          : []),
         ...(v.switch_mensual
           ? [
               p('¿Prefieres pagar mes a mes?') +

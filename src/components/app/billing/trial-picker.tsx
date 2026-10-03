@@ -1,7 +1,7 @@
 'use client';
 
 // SCR-14 · Tu prueba (aceptacion-ux §3.1–3.2, verbatim): pick the plan that
-// starts when the 7 days end, Pro mensual or Pro anual. The charge block
+// starts when the 7 days end: Pro mensual, Pro anual or VIP. The charge block
 // under it updates live with the real amount and period.
 //
 // Preselection (C9, Law §16.2): never the annual charge. Coming from a
@@ -39,7 +39,7 @@ export function TrialPicker({
   choiceEnabled: boolean;
   trialUsed: boolean;
   /** The interval of the CTA that opened this screen, if any. */
-  cameFrom: 'month' | 'year' | null;
+  cameFrom: 'month' | 'year' | 'vip' | null;
   /** C4: "Todas las herramientas incluidas." only when true. */
   allToolsClaim: boolean;
 }) {
@@ -51,6 +51,7 @@ export function TrialPicker({
   const math = annualMath('pro');
   const year = planPrice('pro_year').totalCents;
   const month = planPrice('pro_month').totalCents;
+  const vip = planPrice('vip_month').totalCents;
   // The dates the block promises, from now (the server recomputes them at
   // submit, from its own clock).
   const dates = useMemo(() => trialDates(new Date()), []);
@@ -62,6 +63,7 @@ export function TrialPicker({
   const options: { key: PlanKey; show: boolean }[] = [
     { key: 'pro_month', show: choiceEnabled },
     { key: 'pro_year', show: true },
+    { key: 'vip_month', show: true },
   ];
 
   return (
@@ -102,7 +104,9 @@ export function TrialPicker({
                     <b style={{ fontSize: 20, display: 'block' }}>
                       {key === 'pro_year'
                         ? t('trial.yearRow', { monto: formatMXN(year) })
-                        : t('trial.monthRow', { monto: formatMXN(month) })}
+                        : key === 'vip_month'
+                          ? t('trial.vipRow', { monto: formatMXN(vip) })
+                          : t('trial.monthRow', { monto: formatMXN(month) })}
                     </b>
                     {key === 'pro_year' && (
                       <span

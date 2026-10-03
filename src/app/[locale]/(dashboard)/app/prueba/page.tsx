@@ -45,7 +45,9 @@ export default async function TuPruebaPage({
       <TrialPicker
         choiceEnabled={await billingToggleEnabled()}
         trialUsed={billing.trialUsed}
-        cameFrom={interval === 'month' || interval === 'year' ? interval : null}
+        cameFrom={
+          interval === 'month' || interval === 'year' || interval === 'vip' ? interval : null
+        }
         allToolsClaim={allToolsClaimAllowed()}
       />
     </WizardShell>

@@ -251,15 +251,21 @@ export const PRICING = {
   currency: CURRENCY,
   /** Q3 · Mensual/Anual choice in the trial. */
   defaultInterval: 'year' as const,
-  /** 7-day Pro trial on Pro mensual AND Pro anual (owner + Law, 2026-10-03;
-   *  PRICING-CARDS-SPEC §16.1). Card required; one per account, person and
-   *  card. The charge notice goes out on day 0, i.e. `reminderDaysBefore`
-   *  (= days) before the charge: Law's ≥5-day minimum is met by one email. */
+  /** 7-day trial for anyone signing up for the first time, on whichever
+   *  plan they choose (owner, 2026-10-03). Card required; one per account,
+   *  person and card. */
   trial: {
     days: 7,
-    reminderDaysBefore: 7,
-    plans: ['pro_month', 'pro_year'] as readonly PlanKey[],
+    /** The charge notice goes out at the last daily cron run at least this
+     *  many days before the charge (owner, 2026-10-03: the legal minimum,
+     *  art. 76 Bis fr. VIII). Signing up gets a confirmation, not the notice. */
+    reminderDaysBefore: 5,
+    plans: ['pro_month', 'pro_year', 'vip_month'] as readonly PlanKey[],
     requiresCard: true,
+    /** Owner, 2026-10-03: none. When the 7 days end, the plan is off until
+     *  the first charge lands — however Mercado Pago retries, and whether
+     *  or not a webhook arrives. */
+    firstChargeGraceDays: 0,
   },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
   reminders: { monthDaysBefore: 7, yearDaysBefore: [30, 7] as const },
@@ -272,9 +278,9 @@ export const PRICING = {
 };
 
 /** Whether choosing this plan opens the 7-day trial (if the account hasn't
- *  used it): Pro mensual and Pro anual. VIP (and Pro Lealtad) never. */
+ *  used it): every plan in PRICING.trial.plans. */
 export function planHasTrial(key: PlanKey): boolean {
-  return key === 'pro_month' || key === 'pro_year';
+  return PRICING.trial.plans.includes(key);
 }
 
 /** LFPC art. 76 Bis VIII: every charge notice at least this many calendar

@@ -61,7 +61,7 @@ export function selectBanner(
         cta: 'plan',
       };
     }
-    // Amber from day 0: the whole trial is inside the notice window.
+    // Amber for the whole trial: the charge is never more than 7 days away.
     return { kind: 'trial', tone: 'warn', closable: false, mandatoryNotice: true, cta: 'plan' };
   }
   if (s.state === 'pro' && s.nextChargeAt) {

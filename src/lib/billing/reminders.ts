@@ -2,8 +2,8 @@
 // §11.3, aceptacion-ux §4). Pure: the cron job feeds it a subscription and
 // the clock, and acts on what comes back.
 //
-//   trial         the charge notice, due the moment the 7-day trial starts
-//                 (7 days before the first charge; Law's ≥5 days)
+//   trial         the charge notice, at the last cron run ≥ 5 days before the
+//                 first charge (or the date shown at signup, reminder_due_at)
 //   trial day 6   optional, TRIAL_DAY6_REMINDER (O-11), the day before
 //   monthly       7 days before EVERY renewal
 //   annual        30 and 7 days before every renewal
@@ -13,6 +13,7 @@
 // (user_id, kind, period_key) is what makes two cron runs send once.
 
 import { MIN_NOTICE_DAYS, PRICING } from '@/config/pricing';
+import { noticeRunBefore } from './trial-dates';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -47,6 +48,9 @@ export interface NoticeInput {
    *  between Pro mensual and Pro anual keeps its charge date but is a new
    *  subscription with a new amount, so it needs its own notice. */
   subKey?: string;
+  /** The trial notice date the user was shown at signup (reminder_due_at).
+   *  Wins over today's rule, so a trial keeps the date it consented to. */
+  trialReminderDueAt?: string | null;
 }
 
 /** Notices due at `now` (already due, not yet necessarily sent). */
@@ -62,7 +66,9 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
     out.push({
       kind: 'trial_7d',
       periodKey: trialNoticeKey(sub.nextChargeAt, sub.subKey),
-      dueAt: at(p.trial.reminderDaysBefore),
+      dueAt: sub.trialReminderDueAt
+        ? new Date(sub.trialReminderDueAt)
+        : noticeRunBefore(new Date(charge), p.trial.reminderDaysBefore),
       mandatory: true,
     });
     if (sub.day6Enabled)
@@ -112,7 +118,7 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
   return out.filter((n) => now >= n.dueAt);
 }
 
-/** The dedupe key of a trial's charge notice: the day-0 send at trial start
+/** The dedupe key of a trial's charge notice: a switch's immediate send
  *  and the cron use the same one, so it goes out once. */
 export function trialNoticeKey(chargeAt: string | Date, subKey?: string): string {
   const day = new Date(chargeAt).toISOString().slice(0, 10);
