@@ -37,7 +37,8 @@ export type AuditAction =
   | 'admin.refund' // refunded the last charge through Mercado Pago
   | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
   | 'engine.visibility' // showed or hid a tool for customers
-  | 'settings.billing_toggle'; // Mensual/Anual offered or not
+  | 'settings.billing_toggle' // Mensual/Anual offered or not
+  | 'settings.usage_margin'; // margin charged on top of provider cost
 
 export interface AuditPayload {
   action: AuditAction;

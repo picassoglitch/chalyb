@@ -89,6 +89,7 @@ const DEFAULT_BALANCE: TokenBalance = {
   monthlyAllocation: 0,
   bonus: 0,
   monthlyUsed: 0,
+  reserved: 0,
   periodStart: new Date().toISOString(),
 };
 

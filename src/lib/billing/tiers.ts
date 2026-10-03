@@ -63,6 +63,18 @@ export interface TierCapabilities {
   historyDays: number;
   /** Whether advanced analytics dashboards unlock. */
   hasAdvancedAnalytics: boolean;
+  /** Largest single file an engine accepts for this tier (MB). */
+  maxUploadMB: number;
+  /** Longest single video/VOD an engine will process (minutes). */
+  maxSourceMinutes: number;
+  /** Media minutes processed per calendar month, across engines. */
+  sourceMinutesPerMonth: number;
+  /** Jobs (uploads, renders, analyses) running at once, across engines. */
+  maxConcurrentJobs: number;
+  /** Boost lane (a dedicated big instance per job, gone when it ends):
+   *  'included' = every job runs there at no fee; 'paid' = on request, for
+   *  BOOST_FEE_TOKENS per successful job. */
+  boost: 'included' | 'paid';
   /** Whether the user gets priority support. */
   hasPrioritySupport: boolean;
   /** Whether the user sees alpha / preview features. */
@@ -111,6 +123,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     tokensPerMonth: 50_000,
     storageMB: 500,
     activeStreams: 0,
+    maxUploadMB: 500,
+    maxSourceMinutes: 30,
+    sourceMinutesPerMonth: 60,
+    maxConcurrentJobs: 1,
+    boost: 'paid',
     historyDays: 7,
     hasAdvancedAnalytics: false,
     hasPrioritySupport: false,
@@ -136,6 +153,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     tokensPerMonth: 1_000_000,
     storageMB: 5_000,
     activeStreams: 1,
+    maxUploadMB: 4096,
+    maxSourceMinutes: 180,
+    sourceMinutesPerMonth: 1200,
+    maxConcurrentJobs: 2,
+    boost: 'paid',
     historyDays: 90,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: false,
@@ -169,6 +191,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     tokensPerMonth: 1_000_000,
     storageMB: 5_000,
     activeStreams: 1,
+    maxUploadMB: 4096,
+    maxSourceMinutes: 180,
+    sourceMinutesPerMonth: 1200,
+    maxConcurrentJobs: 2,
+    boost: 'paid',
     historyDays: 180,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
@@ -194,6 +221,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     tokensPerMonth: 5_000_000,
     storageMB: 50_000,
     activeStreams: 5,
+    maxUploadMB: 20_480,
+    maxSourceMinutes: 480,
+    sourceMinutesPerMonth: 6000,
+    maxConcurrentJobs: 4,
+    boost: 'included',
     historyDays: 365,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
@@ -212,6 +244,12 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     per: 'mes',
   },
 };
+
+/** What a non-VIP job pays to run on the boost lane, in billable tokens
+ *  (≈ $0.20 at 4 micros/token), charged only when the job succeeds. The
+ *  instance's compute is metered separately as compute.seconds, so this is
+ *  the convenience premium, not the machine cost. */
+export const BOOST_FEE_TOKENS = 50_000;
 
 /**
  * Returns whether a specific engine is allowed in LIVE mode for the given user state.
@@ -347,32 +385,56 @@ export function tierLabelShort(tier: SubscriptionTier): string {
 /** Quotas formatted as the UI list expects them. */
 export interface QuotaRow {
   label: string;
-  used: number;
+  /** null = not measured by the hub (the engine holds it). */
+  used: number | null;
   cap: number;
   unit: string;
   sub?: string;
 }
 
-export function buildQuotaRows(tier: SubscriptionTier): QuotaRow[] {
+export interface QuotaUsage {
+  tokensUsed: number;
+  jobs: number;
+  sourceMinutes: number;
+  running: number;
+}
+
+const NO_USAGE: QuotaUsage = { tokensUsed: 0, jobs: 0, sourceMinutes: 0, running: 0 };
+
+export function buildQuotaRows(tier: SubscriptionTier, usage: QuotaUsage = NO_USAGE): QuotaRow[] {
   const caps = TIER_CAPS[tier];
   return [
     {
       label: 'Trabajos IA · este mes',
-      used: 0,
+      used: usage.jobs,
       cap: caps.jobsPerMonth,
       unit: 'trabajos',
       sub: 'Reinicia el día 1',
     },
     {
       label: 'Tokens IA · este mes',
-      used: 0,
+      used: usage.tokensUsed,
       cap: caps.tokensPerMonth,
       unit: 'tokens',
       sub: 'Across all sistemas',
     },
     {
+      label: 'Minutos de video · este mes',
+      used: usage.sourceMinutes,
+      cap: caps.sourceMinutesPerMonth,
+      unit: 'min',
+      sub: `Hasta ${caps.maxSourceMinutes} min y ${caps.maxUploadMB.toLocaleString('es-MX')} MB por archivo`,
+    },
+    {
+      label: 'Trabajos en curso',
+      used: usage.running,
+      cap: caps.maxConcurrentJobs,
+      unit: 'a la vez',
+      sub: caps.boost === 'included' ? 'Cada trabajo corre en su propio servidor dedicado' : undefined,
+    },
+    {
       label: 'Almacenamiento',
-      used: 0,
+      used: null,
       cap: caps.storageMB,
       unit: 'MB',
       sub: 'Clips · VODs · uploads',

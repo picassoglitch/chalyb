@@ -4,10 +4,10 @@
 // actual payments offline.
 //
 // The platform doesn't auto-pay partners. Workflow:
-//   1. Admin visits /dashboard/royalties at end of month.
+//   1. Admin visits /dashboard/royalties after a month has closed.
 //   2. Reviews accruals (computed live from usage_events).
-//   3. Clicks "Finalize period" → snapshots accruals into
-//      engine_royalty_payouts rows (status='pending').
+//   3. Clicks "Finalize period" → snapshots the CLOSED month's accruals
+//      into engine_royalty_payouts rows (status='pending').
 //   4. Pays partners offline (bank transfer, MP one-shot, etc).
 //   5. Comes back, clicks "Mark paid" on each row + pastes the
 //      payment_reference.
@@ -21,7 +21,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { logAudit } from '@/lib/audit/log';
-import { getCurrentPeriodAccruals } from './royalties';
+import { getCurrentPeriodAccruals, previousPeriodStartIso } from './royalties';
 
 interface ActionResult {
   ok: boolean;
@@ -34,17 +34,19 @@ interface ActionResult {
   };
 }
 
-/** Snapshot the current period's accruals into engine_royalty_payouts.
- *  Idempotent on (engine_id, period_start) — re-running adds payouts for
- *  any new engines that started accruing since the last finalize. */
-export async function finalizeCurrentPeriod(): Promise<ActionResult> {
+/** Snapshot the last closed month's accruals into engine_royalty_payouts.
+ *  Closed, because a payout cut from the open month misses everything used
+ *  after it, and the unique (engine_id, period_start) means that usage could
+ *  never be paid later. Idempotent: re-running adds only engines not yet
+ *  finalized for that month. */
+export async function finalizeClosedPeriod(): Promise<ActionResult> {
   const session = await getSessionUser();
   if (!session) return { ok: false, error: 'No autenticado' };
   if (!isAdminRole(session.role)) {
     return { ok: false, error: 'Solo admins pueden finalizar pagos' };
   }
 
-  const summary = await getCurrentPeriodAccruals();
+  const summary = await getCurrentPeriodAccruals(previousPeriodStartIso());
   const admin = createAdminClient();
 
   // Insert only engines that have a non-zero accrual AND aren't already

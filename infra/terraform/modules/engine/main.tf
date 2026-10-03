@@ -33,6 +33,23 @@ locals {
 
   secrets = merge(local.generated, local.placeholders)
 
+  boost_enabled = var.boost != null
+
+  # Where the API (and worker) find the boost job: its name, and the project
+  # and region the Cloud Run Admin API call is addressed to.
+  boost_dispatch_env = local.boost_enabled ? {
+    (var.boost.name_env_var) = "${var.slug}-boost"
+    GOOGLE_CLOUD_PROJECT     = var.project_id
+    CLOUD_RUN_REGION         = var.region
+  } : {}
+
+  # The boost job does what the worker does and also reports usage and
+  # settles with the hub itself, so it carries the admin token too.
+  boost_secret_env = merge(
+    local.worker_secret_env,
+    { (var.secret_env_names.admin_token) = google_secret_manager_secret.own["admin_token"].secret_id },
+  )
+
   # Wire the API to its worker, if the engine wants to know the URL.
   worker_endpoint_env = (
     local.worker_enabled && var.worker.endpoint_env_var != null
@@ -239,7 +256,7 @@ resource "google_cloud_run_v2_service" "engine" {
       }
 
       dynamic "env" {
-        for_each = merge(var.env, local.worker_endpoint_env, local.object_storage_env)
+        for_each = merge(var.env, local.worker_endpoint_env, local.object_storage_env, local.boost_dispatch_env)
         content {
           name  = env.key
           value = env.value
@@ -341,7 +358,7 @@ resource "google_cloud_run_v2_service" "worker" {
       }
 
       dynamic "env" {
-        for_each = merge(var.env, var.worker.env, local.object_storage_env)
+        for_each = merge(var.env, var.worker.env, local.object_storage_env, local.boost_dispatch_env)
         content {
           name  = env.key
           value = env.value
@@ -411,6 +428,99 @@ resource "google_cloud_run_v2_service_iam_member" "worker_invoker" {
     ? "allUsers"
     : "serviceAccount:${google_service_account.engine.email}"
   )
+}
+
+# ---------------------------------------------------------------------------
+# Boost job (optional): one big machine per paid job, gone when it ends.
+#
+# Not a service: nothing sits idle waiting for traffic. The API starts one
+# execution per admitted boost job (docs/engines/consumption-contract.md),
+# passing the job id as an env override; the container runs that job, reports
+# usage, settles with the hub and exits. Billing is per second of execution,
+# so with no paid jobs in flight this costs nothing.
+# ---------------------------------------------------------------------------
+
+resource "google_cloud_run_v2_job" "boost" {
+  count = local.boost_enabled ? 1 : 0
+
+  name     = "${var.slug}-boost"
+  location = var.region
+
+  deletion_protection = false
+
+  template {
+    task_count = 1
+
+    template {
+      service_account = google_service_account.engine.email
+      timeout         = var.boost.timeout
+      # A failed paid job is settled as failed (no fee) and the user retries
+      # deliberately; an automatic retry would run — and meter — it twice.
+      max_retries = 0
+
+      containers {
+        image   = var.image
+        command = var.boost.command
+        args    = var.boost.args
+
+        resources {
+          limits = {
+            cpu    = var.boost.cpu
+            memory = var.boost.memory
+          }
+        }
+
+        dynamic "env" {
+          for_each = merge(var.env, var.boost.env, local.object_storage_env)
+          content {
+            name  = env.key
+            value = env.value
+          }
+        }
+
+        dynamic "env" {
+          for_each = local.boost_secret_env
+          content {
+            name = env.key
+            value_source {
+              secret_key_ref {
+                secret  = env.value
+                version = "latest"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].template[0].containers[0].image,
+      client,
+      client_version,
+    ]
+  }
+
+  depends_on = [
+    google_secret_manager_secret_version.generated,
+    google_secret_manager_secret_version.placeholder,
+    google_secret_manager_secret_iam_member.own,
+    google_secret_manager_secret_iam_member.shared,
+  ]
+}
+
+# The engine's own account starts executions with a per-run env override
+# (the job id). Plain run.invoker can't override; this role can, and only on
+# this one job.
+resource "google_cloud_run_v2_job_iam_member" "boost_executor" {
+  count = local.boost_enabled ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_job.boost[0].name
+  role     = "roles/run.jobsExecutorWithOverrides"
+  member   = "serviceAccount:${google_service_account.engine.email}"
 }
 
 # ---------------------------------------------------------------------------

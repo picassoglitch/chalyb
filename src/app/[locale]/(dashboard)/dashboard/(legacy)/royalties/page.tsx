@@ -2,7 +2,7 @@
 // Only ADMIN/SUPER_ADMIN reach here (dashboard layout gates the whole tree).
 
 import { setRequestLocale } from 'next-intl/server';
-import { getCurrentPeriodAccruals, getPayoutHistory } from '@/lib/usage/royalties';
+import { getCurrentPeriodAccruals, getPayoutHistory, previousPeriodStartIso } from '@/lib/usage/royalties';
 import { RoyaltyFinalizeButton } from '@/components/dashboard/royalty-finalize-button';
 import { RoyaltyPayoutActions } from '@/components/dashboard/royalty-payout-actions';
 
@@ -36,8 +36,10 @@ export default async function RoyaltiesPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [summary, history] = await Promise.all([
+  // The live view is the open month; the button finalizes the closed one.
+  const [summary, closed, history] = await Promise.all([
     getCurrentPeriodAccruals(),
+    getCurrentPeriodAccruals(previousPeriodStartIso()),
     getPayoutHistory(50),
   ]);
 
@@ -97,7 +99,7 @@ export default async function RoyaltiesPage({
           <div className="cc-mod-sl" style={{ marginBottom: 0 }}>
             Ganancias en vivo · {formatPeriod(summary.periodStart)}
           </div>
-          <RoyaltyFinalizeButton accruableCount={summary.accruals.filter((a) => a.accruedCents > 0 && !a.alreadyFinalized).length} />
+          <RoyaltyFinalizeButton accruableCount={closed.accruals.filter((a) => a.accruedCents > 0 && !a.alreadyFinalized).length} />
         </div>
         <p
           style={{

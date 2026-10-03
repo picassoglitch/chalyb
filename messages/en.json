@@ -1848,7 +1848,10 @@
         "twofa": "Two-factor"
       },
       "authValue": "Supabase Auth",
-      "twofaValue": "Not connected"
+      "twofaValue": "Not connected",
+      "margin": "Margin on usage cost",
+      "marginHelp": "Users' balances are charged the real provider cost plus this percentage. Applies to new usage; what's already recorded doesn't change.",
+      "marginSave": "Save"
     },
     "example": "Example"
   }

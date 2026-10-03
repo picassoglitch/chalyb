@@ -1848,7 +1848,10 @@
         "twofa": "Doble factor"
       },
       "authValue": "Supabase Auth",
-      "twofaValue": "No conectado"
+      "twofaValue": "No conectado",
+      "margin": "Margen sobre el costo de uso",
+      "marginHelp": "Se cobra al saldo del usuario el costo real del proveedor más este porcentaje. Aplica al uso nuevo; lo ya registrado no cambia.",
+      "marginSave": "Guardar"
     },
     "example": "Ejemplo"
   }

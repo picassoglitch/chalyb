@@ -28,8 +28,9 @@ module "engine" {
 
   env = merge(
     {
-      ENGINE_SLUG = each.key
-      PUBLIC_URL  = "https://${each.key}.${var.domain}"
+      ENGINE_SLUG     = each.key
+      PUBLIC_URL      = "https://${each.key}.${var.domain}"
+      CHALYB_BASE_URL = coalesce(var.hub_url, "https://${var.domain}")
     },
     each.value.env,
   )
@@ -43,6 +44,7 @@ module "engine" {
   }
 
   worker = each.value.worker
+  boost  = each.value.boost
   jobs   = each.value.jobs
 
   enable_domain_mapping = var.enable_domain_mappings

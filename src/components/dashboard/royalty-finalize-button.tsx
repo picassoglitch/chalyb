@@ -1,14 +1,14 @@
 'use client';
 
 // "Finalize period" button at the top of /dashboard/royalties.
-// Snapshots current period accruals as engine_royalty_payouts rows.
+// Snapshots the last closed month's accruals as engine_royalty_payouts rows.
 // Idempotent on (engine_id, period_start), so re-clicks just add any newly
 // accruing engines without double-paying old ones.
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDashboard } from '@/lib/dashboard/store';
-import { finalizeCurrentPeriod } from '@/lib/usage/royalty-actions';
+import { finalizeClosedPeriod } from '@/lib/usage/royalty-actions';
 
 interface Props {
   /** How many engines have accruable balance — drives whether we show the
@@ -24,7 +24,7 @@ export function RoyaltyFinalizeButton({ accruableCount }: Props) {
 
   function finalize() {
     startTransition(async () => {
-      const res = await finalizeCurrentPeriod();
+      const res = await finalizeClosedPeriod();
       if (!res.ok) {
         showToast(`<b>No se pudo finalizar</b> · ${res.error ?? 'sin detalle'}`);
         return;

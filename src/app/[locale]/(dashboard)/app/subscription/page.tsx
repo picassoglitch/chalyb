@@ -9,6 +9,7 @@ import {
 import { normalizePreapprovalStatus } from '@/lib/payments/subscription-reference';
 import { syncSubscription } from '@/lib/payments/subscription-sync';
 import { TIER_CAPS, buildQuotaRows, effectiveTier, isAdminRole } from '@/lib/billing/tiers';
+import { getConsumptionUsage } from '@/lib/usage/consumption';
 import { checkoutNotReadyError, missingCheckoutVars } from '@/lib/payments/mercadopago';
 
 export const metadata = { title: 'Suscripción' };
@@ -35,7 +36,11 @@ export default async function SubscriptionPage({
   const tier = effectiveTier(role, storedTier);
   const caps = TIER_CAPS[tier];
   const storedCaps = TIER_CAPS[storedTier];
-  const quotaRows = buildQuotaRows(tier);
+  const usage = await getConsumptionUsage(session.user.id).catch((err) => {
+    console.error('[/app/subscription] getConsumptionUsage failed', err);
+    return undefined;
+  });
+  const quotaRows = buildQuotaRows(tier, usage);
   // Decided here, on the server, so the client can fail soft before calling
   // the checkout action at all. Only names are sent down, never values.
   const missingPaymentVars = missingCheckoutVars();
@@ -216,7 +221,7 @@ export default async function SubscriptionPage({
         <div className="cc-mod-sl">Uso este período · {caps.label}</div>
         <div className="cc-mod-list">
           {quotaRows.map((row) => {
-            const pct = row.cap > 0 ? Math.min(100, (row.used / row.cap) * 100) : 0;
+            const pct = row.cap > 0 && row.used !== null ? Math.min(100, (row.used / row.cap) * 100) : 0;
             const fill = pct > 85 ? 'r' : pct > 60 ? 'am' : 'gr';
             return (
               <div key={row.label} className="cc-mod-row">
@@ -226,13 +231,21 @@ export default async function SubscriptionPage({
                     className="cc-mod-sub"
                     style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 6 }}
                   >
-                    <span>
-                      {row.used.toLocaleString()} / {row.cap.toLocaleString()} {row.unit}
-                    </span>
-                    <span className="cc-bar-track" style={{ maxWidth: 220 }}>
-                      <span className={`cc-bar-fill ${fill}`} style={{ width: `${pct}%` }} />
-                    </span>
-                    <span>{Math.round(pct)}%</span>
+                    {row.used === null ? (
+                      <span>
+                        ≤ {row.cap.toLocaleString()} {row.unit}
+                      </span>
+                    ) : (
+                      <>
+                        <span>
+                          {row.used.toLocaleString()} / {row.cap.toLocaleString()} {row.unit}
+                        </span>
+                        <span className="cc-bar-track" style={{ maxWidth: 220 }}>
+                          <span className={`cc-bar-fill ${fill}`} style={{ width: `${pct}%` }} />
+                        </span>
+                        <span>{Math.round(pct)}%</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
