@@ -142,6 +142,27 @@ export function mpPauseInTrialVerified(): boolean {
   return readBool('MP_PAUSE_IN_TRIAL_VERIFIED', false); // TODO(owner O-6)
 }
 
+/** O-2 · send the 30-day price-increase notices (WS-6). While off, nothing
+ *  is sent and every grandfathered subscriber keeps renewing at their
+ *  current amount. */
+export function priceIncreaseNoticesEnabled(): boolean {
+  return readBool('PRICE_INCREASE_NOTICES_ENABLED', false); // TODO(owner O-2)
+}
+
+/** O-2 · a subscriber who doesn't accept: 'gratis' (default; Términos §5.3
+ *  as written, mockup 89) or 'keep_old' (needs the §5.3 bracket swapped). */
+export function priceIncreaseNoAnswer(): 'gratis' | 'keep_old' {
+  return process.env.PRICE_INCREASE_NO_ANSWER === 'keep_old' ? 'keep_old' : 'gratis'; // TODO(owner O-2)
+}
+
+/** O-6 / OPS-14 · whether PUT /preapproval/{id} with a new
+ *  auto_recurring.transaction_amount is verified in the MP sandbox (no payer
+ *  re-authorization; does MP email the payer?). Until then no running
+ *  preapproval's amount is ever changed by code: an admin item instead. */
+export function mpPreapprovalAmountPutVerified(): boolean {
+  return readBool('MP_PREAPPROVAL_AMOUNT_PUT_VERIFIED', false); // TODO(owner O-6)
+}
+
 /** Q3 · whether the trial offers Mensual as well as Anual. */
 export function trialPlanChoiceEnabled(): boolean {
   return readBool('TRIAL_PLAN_CHOICE_ENABLED', true);

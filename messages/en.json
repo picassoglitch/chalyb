@@ -1881,5 +1881,21 @@
       "twofaValue": "Not connected"
     },
     "example": "Example"
+  },
+  "priceChange": {
+    "eyebrow": "Price change notice · {fecha}",
+    "title": "The price of your {plan} plan is changing",
+    "today": "Today",
+    "from": "From {fecha}",
+    "line1": "Today you pay {anterior} MXN a {periodo}. From {fecha}: <b>{nuevo} MXN a {periodo}</b>, VAT included.",
+    "line2Gratis": "You’ll only be charged if you accept. If not, you keep {plan} until {fecha} and then move to Free, with no charge.",
+    "line2KeepOld": "You’ll only be charged if you accept. If not, you’ll keep paying {anterior} MXN a {periodo}.",
+    "remind": "We’ll remind you on {fecha} if you haven’t decided.",
+    "accept": "I accept the new price",
+    "decline": "No, thanks",
+    "cancel": "Cancel my plan",
+    "error": "We couldn’t save your answer. Please try again.",
+    "periodMonth": "month",
+    "periodYear": "year"
   }
 }

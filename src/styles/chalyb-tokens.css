@@ -1809,3 +1809,13 @@ html body:has(.ch-flow) {
 :where(.chalyb-app.ch-admin .ch-wrap) > div > div {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* ---------- Price-change notice (mockup 89) ---------- */
+.chalyb-app .ch-pcm {
+  display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 20px;
+  background: var(--bg); flex-wrap: wrap;
+}
+.chalyb-app .ch-pcm small { font-size: 15.5px; color: var(--ink2); }
+.chalyb-app .ch-pcm svg { width: 24px; height: 24px; color: var(--ink2); }
+.chalyb-app .ch-pcm__old { font-size: 26px; font-weight: 700; color: var(--ink2); }
+.chalyb-app .ch-pcm__new { font-size: 30px; font-weight: 750; letter-spacing: -0.02em; }

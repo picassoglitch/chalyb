@@ -9,8 +9,11 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import type { SessionUser } from '@/lib/auth/session';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { selectBanner } from '@/lib/billing/banner';
-import { trialDay6ReminderEnabled } from '@/lib/config/flags';
-import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
+import { priceIncreaseNoAnswer, trialDay6ReminderEnabled } from '@/lib/config/flags';
+import { pendingIncrease, type PendingIncrease } from '@/lib/billing/price-change-server';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
+import { PriceChangeModal, type PriceChangeView } from './price-change-modal';
+import { formatFechaCorta, formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { planPrice } from '@/config/pricing';
 import { recordConsent, UI_VERSION } from '@/lib/billing/consent';
 import { Markup } from '@/components/ui/markup';
@@ -20,6 +23,46 @@ export async function BillingBanner({ session }: { session: SessionUser }) {
   const billing = await loadBilling(session.user.id).catch(() => null);
   const renderNow = new Date().getTime();
   if (!billing) return null;
+  // WS-6 · a pending price increase: the notice modal (mockup 89) on every
+  // app page until it is answered.
+  const increase = await pendingIncrease(session.user.id, billing.primaryRow).catch(() => null);
+  const modal =
+    increase && !increase.answer && renderNow >= increase.schedule.noticeAt.getTime() ? (
+      <PriceChangeModal v={await priceChangeView(increase)} />
+    ) : null;
+  const banner = await renderBanner(session, billing, renderNow);
+  return modal ? (
+    <>
+      {banner}
+      {modal}
+    </>
+  ) : (
+    banner
+  );
+}
+
+async function priceChangeView(p: PendingIncrease): Promise<PriceChangeView> {
+  const locale = await getLocale();
+  const year = planPrice(p.increase.planKey).interval === 'year';
+  return {
+    plan: PLAN_NAMES[p.increase.planKey].split(' ')[0]!,
+    oldPrice: formatMXN(p.increase.oldCents),
+    newPrice: formatMXN(p.increase.newCents),
+    pct: p.increase.pct,
+    periodKey: year ? 'periodYear' : 'periodMonth',
+    noticeDate: formatFechaLarga(p.schedule.noticeAt, locale),
+    renewalDate: formatFechaLarga(p.schedule.renewalAt, locale),
+    renewalShort: formatFechaCorta(p.schedule.renewalAt, locale),
+    reminderDate: formatFechaLarga(p.schedule.reminderAt, locale),
+    keepOld: priceIncreaseNoAnswer() === 'keep_old',
+  };
+}
+
+async function renderBanner(
+  session: SessionUser,
+  billing: NonNullable<Awaited<ReturnType<typeof loadBilling>>>,
+  renderNow: number,
+) {
   const s = billing.primary;
   const choice = selectBanner(s, billing.trialUsed, renderNow, {
     day6Enabled: trialDay6ReminderEnabled(),

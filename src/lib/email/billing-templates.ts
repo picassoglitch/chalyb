@@ -19,7 +19,9 @@ export type BillingEmailKind =
   | 'renew_7d' // 4 (and the -7 annual)
   | 'renew_30d' // 5
   | 'annual_summary' // 6
-  | 'cancelled'; // 7
+  | 'cancelled' // 7
+  | 'price_change' // 8 · 30 days before (aceptacion-ux §4.1)
+  | 'price_change_7d'; // 9 · reminder if unanswered
 
 export interface BillingEmailVars {
   nombre: string;
@@ -44,6 +46,15 @@ export interface BillingEmailVars {
   ultimos4?: string;
   consent_id?: string;
   folio_cancelacion?: string;
+  /** Price change (WS-6). */
+  precio_anterior?: string;
+  precio_nuevo?: string;
+  porcentaje?: number;
+  periodo?: string; // "mes" | "año"
+  fecha_aplicacion?: string;
+  fecha_fin_periodo?: string;
+  /** PRICE_INCREASE_NO_ANSWER = keep_old. */
+  keep_old?: boolean;
   documentos?: { label: string; version: string; url: string }[];
   appUrl: string;
 }
@@ -162,6 +173,31 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
         btn(plan, 'Ver mi plan'),
       ];
       break;
+    case 'price_change':
+    case 'price_change_7d': {
+      // aceptacion-ux §4.1, verbatim. Accepting is an express act in the app
+      // (the button there records it); the email links to it.
+      const decide = `${v.appUrl}/app/billing?precio=1`;
+      subject = `Tu plan ${v.plan} cambia de precio: acepta o decide antes del ${v.fecha_aplicacion}`;
+      html = [
+        p(`Hola ${e(v.nombre)}:`),
+        p(
+          `El precio de ${e(v.plan)} sube de ${b(`${v.precio_anterior} MXN`)} a ${b(`${v.precio_nuevo} MXN al ${v.periodo}`)} (IVA incluido), un aumento de ${e(String(v.porcentaje))}%.`,
+        ),
+        p(
+          `${b('Solo se te cobrará el nuevo precio si lo aceptas.')} Si lo aceptas, se aplicará a partir de tu renovación del ${b(v.fecha_aplicacion)}.`,
+        ),
+        p(
+          v.keep_old
+            ? `Si no lo aceptas antes de esa fecha, seguirás pagando ${b(`${v.precio_anterior} MXN`)}.`
+            : `Si no lo aceptas antes de esa fecha, ${b('tu plan no se renovará al nuevo precio')}: conservas ${e(v.plan)} hasta el ${e(v.fecha_fin_periodo)} y después pasas al plan Gratis, sin ningún cobro.`,
+        ),
+        btn(decide, 'Acepto el nuevo precio') +
+          btn(`${v.appUrl}/app/billing?cancelar=1`, 'Cancelar sin costo') +
+          btn(plan, 'Ver mi plan'),
+      ];
+      break;
+    }
     case 'cancelled':
       subject = `Cancelaste tu plan · Folio ${v.folio_cancelacion}`;
       html = [

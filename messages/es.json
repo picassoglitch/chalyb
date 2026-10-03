@@ -1881,5 +1881,21 @@
       "twofaValue": "No conectado"
     },
     "example": "Ejemplo"
+  },
+  "priceChange": {
+    "eyebrow": "Aviso de cambio de precio · {fecha}",
+    "title": "Cambia el precio de tu plan {plan}",
+    "today": "Hoy",
+    "from": "Desde el {fecha}",
+    "line1": "Hoy pagas {anterior} MXN al {periodo}. A partir del {fecha}: <b>{nuevo} MXN al {periodo}</b>, IVA incluido.",
+    "line2Gratis": "Solo se te cobrará si lo aceptas. Si no, conservas {plan} hasta el {fecha} y después pasas a Gratis, sin cobro.",
+    "line2KeepOld": "Solo se te cobrará si lo aceptas. Si no, seguirás pagando {anterior} MXN al {periodo}.",
+    "remind": "Te lo recordamos el {fecha} si aún no decides.",
+    "accept": "Acepto el nuevo precio",
+    "decline": "No, gracias",
+    "cancel": "Cancelar mi plan",
+    "error": "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
+    "periodMonth": "mes",
+    "periodYear": "año"
   }
 }

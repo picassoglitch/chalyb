@@ -28,10 +28,22 @@ import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
 import { dispatchBillingEmail, trialNoticeVars } from '@/lib/billing/notices';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { mpPauseInTrialVerified, trialDay6ReminderEnabled } from '@/lib/config/flags';
+import {
+  mpPauseInTrialVerified,
+  priceIncreaseNoAnswer,
+  trialDay6ReminderEnabled,
+} from '@/lib/config/flags';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
+import { nextStep } from '@/lib/billing/price-change';
+import {
+  endAtPeriod,
+  pendingIncrease,
+  recordNotice,
+  renewalDay,
+  shownText,
+} from '@/lib/billing/price-change-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -66,12 +78,20 @@ export async function GET(req: Request) {
 
   const admin = createAdminClient();
   const now = new Date();
-  const stats = { notices: 0, holds: 0, resumes: 0, tierMoves: 0, synced: 0, errors: 0 };
+  const stats = {
+    notices: 0,
+    holds: 0,
+    resumes: 0,
+    tierMoves: 0,
+    synced: 0,
+    priceChanges: 0,
+    errors: 0,
+  };
 
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, consent_id, updated_at',
+      'id, user_id, status, tier, plan_key, amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, consent_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -160,6 +180,60 @@ export async function GET(req: Request) {
               dedupeKey: inApp.dedupeKey,
               keepUntil: inApp.keepUntil,
             });
+        }
+      }
+
+      // 1b. Price increase (WS-6, behind PRICE_INCREASE_NOTICES_ENABLED):
+      // the notice exactly 30 days before, the reminder at 7, and an
+      // unanswered one settled the day before the renewal.
+      const pc = await pendingIncrease(userId, row, now);
+      if (pc) {
+        const step = nextStep({
+          now,
+          schedule: pc.schedule,
+          noticeSent: pc.noticeSent,
+          reminderSent: pc.reminderSent,
+          answer: pc.answer,
+          noAnswer: priceIncreaseNoAnswer(),
+        });
+        if (step.kind === 'notice' || step.kind === 'reminder') {
+          const { data: profile } = await admin
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .maybeSingle();
+          const email = profile?.email as string | null;
+          const per = planPrice(pc.increase.planKey).interval === 'year' ? 'año' : 'mes';
+          const plan = PLAN_NAMES[pc.increase.planKey].split(' ')[0]!;
+          const fecha = formatFechaLarga(pc.schedule.renewalAt, 'es');
+          if (email) {
+            const sent = await dispatchBillingEmail({
+              userId,
+              email,
+              kind: step.kind === 'notice' ? 'price_change' : 'price_change_7d',
+              periodKey: `price:${renewalDay(pc.schedule.renewalAt)}:${preapprovalId}`,
+              vars: {
+                nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
+                plan,
+                monto: formatMXN(pc.increase.newCents),
+                precio_anterior: formatMXN(pc.increase.oldCents),
+                precio_nuevo: formatMXN(pc.increase.newCents),
+                porcentaje: pc.increase.pct,
+                periodo: per,
+                fecha_aplicacion: fecha,
+                fecha_fin_periodo: fecha,
+                keep_old: priceIncreaseNoAnswer() === 'keep_old',
+                appUrl: getAppUrl(),
+              },
+            });
+            if (sent.sent) {
+              await recordNotice(pc, userId, email, step.kind, shownText(pc));
+              stats.priceChanges += 1;
+            }
+          }
+        } else if (step.kind === 'end_at_period' && !pc.answer) {
+          await endAtPeriod(pc, userId, 'price_change_no_answer', 'Sin respuesta');
+          stats.priceChanges += 1;
         }
       }
 
