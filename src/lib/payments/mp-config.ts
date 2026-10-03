@@ -98,3 +98,156 @@ export function checkoutConfigProblems(env: Env): string[] {
   }
   return problems;
 }
+
+// ── Which Mercado Pago environment this deployment talks to (B33) ──────────
+//
+// Mercado Pago refuses a payment where the seller side (the access token that
+// created the preapproval, the public key that tokenised the card) and the
+// buyer side (payer_email, the card) belong to different environments: "Una
+// de las partes con la que intentas hacer el pago es de prueba". So the
+// deployment names its environment once, in MP_ENV, and everything that talks
+// to Mercado Pago (server client, card form, webhook secret, payer email)
+// follows it. Production on Vercel defaults to `prod`; every other deployment
+// (previews, local) defaults to `test`, so a preview can never charge a real
+// card by accident.
+
+export type MpEnv = 'test' | 'prod';
+export const MP_ENV_VAR = 'MP_ENV';
+export const MP_TEST_PAYER_EMAIL_VAR = 'MP_TEST_PAYER_EMAIL';
+export const MP_EXPECTED_SELLER_ID_VAR = 'MP_EXPECTED_SELLER_ID';
+
+export function getMpEnv(env: Env): MpEnv {
+  const explicit = env[MP_ENV_VAR]?.trim().toLowerCase();
+  if (explicit === 'test' || explicit === 'prod') return explicit;
+  return env.VERCEL_ENV === 'production' ? 'prod' : 'test';
+}
+
+export interface MpCredentials {
+  mpEnv: MpEnv;
+  accessToken: string | undefined;
+  publicKey: string | undefined;
+  webhookSecret: string | undefined;
+  /** Seller id the access token must belong to, when configured. */
+  expectedSellerId: string | undefined;
+}
+
+/** Every Mercado Pago credential, read in one place, for one environment. */
+export function mpCredentials(env: Env): MpCredentials {
+  return {
+    mpEnv: getMpEnv(env),
+    accessToken: readAccessToken(env)?.trim() || undefined,
+    publicKey: readPublicKey(env)?.trim() || undefined,
+    webhookSecret: readWebhookSecret(env)?.trim() || undefined,
+    expectedSellerId: env[MP_EXPECTED_SELLER_ID_VAR]?.trim() || undefined,
+  };
+}
+
+/**
+ * Everything that would make a checkout fail at Mercado Pago (or charge the
+ * wrong side) although every variable is set: the shape problems above, plus
+ * the environment rules. Operator-facing, names only. Empty = consistent.
+ */
+export function mpEnvProblems(env: Env): string[] {
+  const problems = checkoutConfigProblems(env);
+  const { mpEnv, accessToken, publicKey } = mpCredentials(env);
+  if (mpEnv === 'prod') {
+    for (const [name, value] of [
+      [MP_ACCESS_TOKEN_VAR, accessToken],
+      [MP_PUBLIC_KEY_VAR, publicKey],
+    ] as const) {
+      if (value && !value.startsWith('APP_USR-')) {
+        problems.push(
+          `${MP_ENV_VAR}=prod pero ${name} no es una credencial de producción (APP_USR-)`,
+        );
+      }
+    }
+  } else if (!env[MP_TEST_PAYER_EMAIL_VAR]?.trim()) {
+    problems.push(
+      `${MP_ENV_VAR}=test necesita ${MP_TEST_PAYER_EMAIL_VAR} (el correo del comprador de prueba)`,
+    );
+  }
+  return problems;
+}
+
+/** Mercado Pago's test buyers live on this domain. */
+const TEST_BUYER_DOMAIN = /@testuser\.com$/i;
+
+/**
+ * The payer email sent to Mercado Pago. In `test` it is the test buyer
+ * (MP_TEST_PAYER_EMAIL), never the user's real address; in `prod` it is the
+ * user's own email, and a test-buyer address is refused. null = don't create
+ * anything (fail closed).
+ */
+export function payerEmailFor(userEmail: string | null | undefined, env: Env): string | null {
+  if (getMpEnv(env) === 'test') return env[MP_TEST_PAYER_EMAIL_VAR]?.trim() || null;
+  const email = userEmail?.trim();
+  if (!email || TEST_BUYER_DOMAIN.test(email)) return null;
+  return email;
+}
+
+// ── URLs we hand to Mercado Pago (B35) ─────────────────────────────────────
+
+/** The production host. Non-www 308s here, and Mercado Pago does not follow
+ *  redirects, so anything it calls or sends the buyer to must already be it. */
+export const MP_PROD_ORIGIN = 'https://www.chalyb.com';
+export const MP_WEBHOOK_PATH = '/api/mp/webhook';
+
+/**
+ * Absolute URL for a path on this deployment, for a back_url / return URL.
+ * `prod` always uses the production host; `test` uses the deployment's own
+ * origin so a preview's buyer comes back to the preview.
+ */
+export function mpUrl(path: string, env: Env, deploymentOrigin: string): string {
+  const origin = getMpEnv(env) === 'prod' ? MP_PROD_ORIGIN : deploymentOrigin.replace(/\/+$/, '');
+  return `${origin}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+/** The URL the Mercado Pago dashboard must notify (OPS-4). */
+export function mpWebhookUrl(env: Env, deploymentOrigin: string): string {
+  return mpUrl(MP_WEBHOOK_PATH, env, deploymentOrigin);
+}
+
+/** Guard for every URL put on a payment object: in `prod` only the
+ *  production host over HTTPS. */
+export function isAllowedMpUrl(url: string, env: Env): boolean {
+  if (getMpEnv(env) !== 'prod') return /^https?:\/\//.test(url);
+  return url === MP_PROD_ORIGIN || url.startsWith(`${MP_PROD_ORIGIN}/`);
+}
+
+// ── Mercado Pago errors (B36) ──────────────────────────────────────────────
+
+/**
+ * The machine code out of whatever the SDK threw or MP answered, for logs:
+ * e.g. "CC_VAL_433" from "CC_VAL_433 Credit card validation has failed", or
+ * a `cause[].code`. null when there is none. Never shown to a customer.
+ */
+export function mpErrorCode(err: unknown): string | null {
+  const e = err as {
+    message?: string;
+    code?: string | number;
+    cause?: unknown;
+    error?: string;
+  } | null;
+  if (!e) return null;
+  const causes = Array.isArray(e.cause)
+    ? e.cause
+    : e.cause && typeof e.cause === 'object'
+      ? [e.cause]
+      : [];
+  for (const c of causes as { code?: string | number; description?: string }[]) {
+    if (c?.code !== undefined && c.code !== null && String(c.code).trim()) return String(c.code);
+  }
+  if (e.code !== undefined && e.code !== null && String(e.code).trim()) return String(e.code);
+  const text = [e.message, e.error].filter(Boolean).join(' ');
+  const m = /\b([A-Z]{2,}(?:_[A-Z0-9]+)+|cc_rejected_[a-z_]+)\b/.exec(text);
+  return m?.[1] ?? null;
+}
+
+/** Card-side failures (validation, rejections, card-token field errors):
+ *  the customer can fix them with other card details or another card. */
+const CARD_ERROR_CODE =
+  /^(?:CC_VAL_\w+|cc_rejected_\w+|E30[12]|E203|20[589]|21[234]|22[014]|316|32[2-6])$/i;
+
+export function isCardErrorCode(code: string | null): boolean {
+  return Boolean(code && CARD_ERROR_CODE.test(code));
+}

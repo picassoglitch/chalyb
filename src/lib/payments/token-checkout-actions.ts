@@ -36,11 +36,20 @@ import {
 import { settleOneOffCharge } from './one-off-settlement';
 import {
   getMercadoPago,
-  getAppUrl,
   isCheckoutReady,
   checkoutNotReadyError,
-  describeMpError,
+  logMpCreate,
+  mpErrorCodeOf,
+  mpPayerEmail,
+  mpReturnUrl,
+  MP_GENERIC_ERROR,
+  sellerMatches,
 } from './mercadopago';
+import { isCardErrorCode } from './mp-config';
+
+/** What a customer reads when the card itself was the problem. */
+const CARD_ERROR =
+  'No pudimos validar tu tarjeta. Revisa los datos o prueba con otra; no se hizo ningún cargo.';
 
 export interface PackCheckoutResult {
   ok: boolean;
@@ -82,9 +91,13 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
       console.error('[mp/token-checkout] refusing to start checkout:', checkoutNotReadyError());
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
+    if (!(await sellerMatches())) {
+      return { ok: false, reason: 'not_configured', error: MP_GENERIC_ERROR };
+    }
 
+    // B33: the test buyer in `test`, the user (if any) in `prod`.
+    const payerEmail = mpPayerEmail(session.user.email);
     const { order } = getMercadoPago();
-    const appUrl = getAppUrl();
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
 
@@ -100,7 +113,7 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         total_amount: amount,
         external_reference: `pack|${session.user.id}|${pack.id}`,
         description: title,
-        ...(session.user.email ? { payer: { email: session.user.email } } : {}),
+        ...(payerEmail ? { payer: { email: payerEmail } } : {}),
         items: [
           {
             title,
@@ -112,9 +125,9 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         ],
         config: {
           online: {
-            success_url: `${appUrl}/app/usage?status=success`,
-            pending_url: `${appUrl}/app/usage?status=pending`,
-            failure_url: `${appUrl}/app/usage?status=failure`,
+            success_url: mpReturnUrl('/app/usage?status=success'),
+            pending_url: mpReturnUrl('/app/usage?status=pending'),
+            failure_url: mpReturnUrl('/app/usage?status=failure'),
           },
         },
       },
@@ -133,6 +146,10 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
 
     // checkout_url is documented for Checkout Pro via Orders but the SDK's
     // OrderResponse type (2.12) predates it, hence the widening.
+    logMpCreate('order', {
+      id: result.id,
+      externalReference: `pack|${session.user.id}|${pack.id}`,
+    });
     const url = (result as typeof result & { checkout_url?: string }).checkout_url;
     if (!result.id || !url) {
       console.error('[token-pack-checkout] order returned no id/checkout_url', result);
@@ -168,15 +185,15 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
       cause?: { error?: { message?: string }; status?: number };
       name?: string;
     };
-    const detail = describeMpError(err);
     console.error('[token-pack-checkout] uncaught', {
       packId,
+      mp_code: mpErrorCodeOf(err),
       errorName: e?.name,
       errorMessage: e?.message,
       causeStatus: e?.cause?.status,
       causeMessage: e?.cause?.error?.message,
     });
-    return { ok: false, reason: 'mp_error', error: detail };
+    return { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
 }
 
@@ -241,6 +258,9 @@ export async function payTokenPackWithCard(input: {
       console.error('[token-pack-card] refusing to charge:', checkoutNotReadyError());
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
+    if (!(await sellerMatches())) {
+      return { ok: false, reason: 'not_configured', error: MP_GENERIC_ERROR };
+    }
     const token = typeof input.token === 'string' ? input.token.trim() : '';
     const paymentMethodId =
       typeof input.paymentMethodId === 'string' ? input.paymentMethodId.trim() : '';
@@ -257,6 +277,7 @@ export async function payTokenPackWithCard(input: {
         ? input.paymentTypeId
         : 'credit_card';
 
+    const payerEmail = mpPayerEmail(session.user.email);
     const { order } = getMercadoPago();
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
@@ -272,7 +293,7 @@ export async function payTokenPackWithCard(input: {
         external_reference: externalReference,
         description: title,
         payer: {
-          ...(session.user.email ? { email: session.user.email } : {}),
+          ...(payerEmail ? { email: payerEmail } : {}),
           ...(input.identification ? { identification: input.identification } : {}),
         },
         items: [
@@ -311,6 +332,7 @@ export async function payTokenPackWithCard(input: {
       },
     });
 
+    logMpCreate('order', { id: result.id, externalReference });
     if (!result.id) {
       console.error('[token-pack-card] order returned no id', { status: result.status ?? null });
       return {
@@ -343,19 +365,16 @@ export async function payTokenPackWithCard(input: {
           'Mercado Pago dejó el pago en revisión; los tokens se acreditan en cuanto lo apruebe.',
       };
     }
-    const detail = (result as { status_detail?: string }).status_detail;
-    return {
-      ok: false,
-      reason: 'rejected',
+    console.error('[token-pack-card] payment not approved', {
       status: charge.status,
-      error: `Mercado Pago rechazó el pago${detail ? ` (${detail.replace(/_/g, ' ')})` : ''}. Prueba con otra tarjeta.`,
-    };
+      status_detail: (result as { status_detail?: string }).status_detail ?? null,
+    });
+    return { ok: false, reason: 'rejected', status: charge.status, error: CARD_ERROR };
   } catch (err) {
-    console.error('[token-pack-card] order.create failed', err);
-    return {
-      ok: false,
-      reason: 'mp_error',
-      error: `Mercado Pago no pudo procesar el pago: ${describeMpError(err)}`,
-    };
+    const code = mpErrorCodeOf(err);
+    console.error('[token-pack-card] order.create failed', { mp_code: code }, err);
+    return isCardErrorCode(code)
+      ? { ok: false, reason: 'rejected', error: CARD_ERROR }
+      : { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
 }
