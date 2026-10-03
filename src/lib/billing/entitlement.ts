@@ -30,10 +30,14 @@ export async function getEntitlements(session: SessionUser): Promise<Entitlement
     }),
   ]);
 
+  // WS-8 · after a bad-faith chargeback, and only with the measures flag on:
+  // paid features off (Términos §10.6). Content download is not gated here
+  // and always stays.
+  const suspended = billing?.restriction.paidSuspended ?? false;
   return computeEntitlements({
     userId: session.user.id,
     role: session.role,
-    storedTier: session.tier,
+    storedTier: suspended ? 'FREE' : session.tier,
     selectedEngineId: session.selectedEngineId,
     clipsTrialStartedAt: session.chalybclipTrialStartedAt,
     bonusCredits: balance && !balance.unlimited ? balance.bonus : 0,
@@ -46,7 +50,7 @@ export async function getEntitlements(session: SessionUser): Promise<Entitlement
       ownerUserId: e.ownerUserId,
     })),
     nowMs: Date.now(),
-    billing: billing?.primary ?? null,
+    billing: suspended ? null : (billing?.primary ?? null),
     trialUsed: billing?.trialUsed ?? false,
     flags: {
       freeIncludesClips: freeIncludesClips(),

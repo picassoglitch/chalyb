@@ -17,6 +17,7 @@ export type ChargeStatus =
   | 'cancelled'
   | 'refunded'
   | 'charged_back'
+  | 'in_mediation'
   | 'unknown';
 
 export interface NormalizedCharge {
@@ -107,6 +108,7 @@ export function paymentStatusToChargeStatus(status: string | null | undefined): 
     case 'cancelled':
     case 'refunded':
     case 'charged_back':
+    case 'in_mediation':
       return s;
     // Mercado Pago reports a settled charge as `accredited` on some
     // integrations (it is normally the status_detail). Same money.
@@ -187,7 +189,13 @@ export function chargeFromPayment(payment: PaymentLike, fallbackId: string): Nor
 
 /** A charge Mercado Pago has reversed: the buyer got the money back. */
 export function isReversal(status: ChargeStatus): boolean {
-  return status === 'refunded' || status === 'charged_back';
+  return status === 'refunded' || isDispute(status);
+}
+
+/** A dispute at the buyer's bank or Mercado Pago (WS-8). Opening one changes
+ *  nothing on the account (Términos de Suscripción §10.2). */
+export function isDispute(status: ChargeStatus): boolean {
+  return status === 'charged_back' || status === 'in_mediation';
 }
 
 // ── Idempotency ──────────────────────────────────────────────────────────

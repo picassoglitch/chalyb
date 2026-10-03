@@ -10,6 +10,7 @@ import { mpPreapprovalAmountPutVerified } from '@/lib/config/flags';
 import { lealtadPriceCents } from '@/config/pricing';
 import { recordConsent, UI_VERSION } from './consent';
 import { formatMXN } from './format';
+import { issueRefund } from './disputes-server';
 import { lealtadGate, stepAfterCharge } from './lealtad';
 
 /**
@@ -108,14 +109,15 @@ export async function onLealtadCharge(input: {
   if (gate.action === 'refund_difference') {
     // Access stays; the difference goes back automatically (Términos §7.2(d))
     // and the step is unaffected.
-    try {
-      await getMercadoPago().refund.create({
-        payment_id: input.paymentId,
-        body: { amount: gate.refundCents / 100 },
-      });
-    } catch (err) {
-      console.error('[lealtad] automatic refund of an overcharge failed', input.paymentId, err);
-    }
+    const r = await issueRefund({
+      userId: input.userId,
+      mpPaymentId: input.paymentId,
+      cents: gate.refundCents,
+      reason: 'legal_7_2_d',
+      surface: 'mp_webhook',
+      actor: null,
+    });
+    if (!r.ok) console.error('[lealtad] automatic refund of an overcharge failed', input.paymentId);
     await notify({
       severity: 'warning',
       title: 'Pro Lealtad: cobro mayor al del calendario, se reembolsó la diferencia',

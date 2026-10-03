@@ -3,7 +3,8 @@ import type { Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { requireAdminPage } from '@/lib/admin/guard';
-import { loadPayments, loadPeople, loadSubscriptions } from '@/lib/admin/data';
+import { loadDisputes, loadPayments, loadPeople, loadSubscriptions } from '@/lib/admin/data';
+import { DisputesPanel } from '@/components/dashboard/admin/disputes-panel';
 import { moneyPage, monthWindow, movementState, type MovementState } from '@/lib/admin/kpis';
 import { personStatus } from '@/lib/admin/people';
 import { formatMxn, FX_MANUAL_NOTE } from '@/lib/billing/money';
@@ -43,10 +44,11 @@ export default async function DineroPage({
   const t = await getTranslations('admin');
   const { estado } = await searchParams;
   const now = new Date();
-  const [pays, subs, people] = await Promise.all([
+  const [pays, subs, people, disputes] = await Promise.all([
     loadPayments(now),
     loadSubscriptions(),
     loadPeople(now),
+    loadDisputes(),
   ]);
   const failed = pays.failed || subs.failed;
   const m = moneyPage(pays.data, subs.data, now);
@@ -222,6 +224,12 @@ export default async function DineroPage({
             </table>
           </div>
         )}
+      </section>
+
+      <section className="ch-section" id="disputas" aria-labelledby="disputas-t">
+        <h2 id="disputas-t">{t('disputes.title')}</h2>
+        <p className="ch-muted">{t('disputes.sub')}</p>
+        <DisputesPanel rows={disputes.data} />
       </section>
 
       <section className="ch-section" aria-labelledby="subs-t">

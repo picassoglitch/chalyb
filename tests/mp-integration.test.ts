@@ -299,7 +299,7 @@ test('IPN format: merchant_order with an empty body, form body, and resource URL
 
 test('unknown topics and junk are unhandled (the route answers 200), never thrown on', () => {
   for (const [url, body] of [
-    ['/api/mp/webhook?topic=chargebacks&id=1', ''],
+    ['/api/mp/webhook?topic=point_integration_wh&id=1', ''],
     [
       '/api/mp/webhook',
       JSON.stringify({ type: 'subscription_preapproval_plan', data: { id: 'x' } }),

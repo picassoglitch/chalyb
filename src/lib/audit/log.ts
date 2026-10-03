@@ -35,6 +35,7 @@ export type AuditAction =
   | 'admin.plan_offer' // emailed the user a plan change to accept (no charge until they do)
   | 'admin.access_email' // resent the sign-in link
   | 'admin.refund' // refunded the last charge through Mercado Pago
+  | 'admin.dispute' // a step of a chargeback case (WS-8, aceptacion-ux §10.5)
   | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
   | 'engine.visibility' // showed or hid a tool for customers
   | 'settings.billing_toggle'; // Mensual/Anual offered or not

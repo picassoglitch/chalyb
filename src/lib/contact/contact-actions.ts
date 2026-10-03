@@ -37,6 +37,8 @@ const VALID_PANES: ContactPane[] = ['client', 'partner', 'earn'];
 export type ContactErrorKey =
   | 'name'
   | 'email'
+  | 'chargeDate'
+  | 'chargeAmount'
   | 'subject'
   | 'message'
   | 'rateLimited'
@@ -45,7 +47,7 @@ export type ContactErrorKey =
 export interface ContactResult {
   ok: boolean;
   /** Field name that failed validation, if any. */
-  fieldError?: 'name' | 'email' | 'subject' | 'message';
+  fieldError?: 'name' | 'email' | 'subject' | 'message' | 'chargeDate' | 'chargeAmount';
   /** `contact.errors.*` key the form renders. */
   errorKey?: ContactErrorKey;
 }
@@ -117,18 +119,46 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     ? (paneRaw as ContactPane)
     : 'client';
 
-  if (name.length < 2 || name.length > 120) {
-    return { ok: false, fieldError: 'name', errorKey: 'name' };
-  }
-  if (!EMAIL_RE.test(email) || email.length > 200) {
-    return { ok: false, fieldError: 'email', errorKey: 'email' };
-  }
-  if (rawSubject.length < 3 || rawSubject.length > 200) {
-    return { ok: false, fieldError: 'subject', errorKey: 'subject' };
-  }
-  const subject = category ? `[${category}] ${rawSubject}` : rawSubject;
-  if (message.length < 10 || message.length > 5000) {
-    return { ok: false, fieldError: 'message', errorKey: 'message' };
+  // Problema con un cobro (Términos de Suscripción §7.5): email, date and
+  // amount are all we ask for. Name and message are optional, and writing
+  // first is never a condition for anything.
+  let subject: string;
+  let body = message;
+  let sender = name;
+  if (category === 'cobro') {
+    const chargeDate = String(formData.get('chargeDate') ?? '').trim();
+    const chargeAmount = String(formData.get('chargeAmount') ?? '')
+      .trim()
+      .replace(/[$,\s]/g, '');
+    if (!EMAIL_RE.test(email) || email.length > 200) {
+      return { ok: false, fieldError: 'email', errorKey: 'email' };
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(chargeDate) || Number.isNaN(Date.parse(chargeDate))) {
+      return { ok: false, fieldError: 'chargeDate', errorKey: 'chargeDate' };
+    }
+    if (!/^\d{1,7}(\.\d{1,2})?$/.test(chargeAmount) || Number(chargeAmount) <= 0) {
+      return { ok: false, fieldError: 'chargeAmount', errorKey: 'chargeAmount' };
+    }
+    if (name.length > 120 || message.length > 5000) {
+      return { ok: false, fieldError: 'message', errorKey: 'message' };
+    }
+    sender = name || email;
+    subject = `[cobro] ${chargeDate} · $${chargeAmount} MXN`;
+    body = `Fecha del cobro: ${chargeDate}\nMonto: $${chargeAmount} MXN${message ? `\n\n${message}` : ''}`;
+  } else {
+    if (name.length < 2 || name.length > 120) {
+      return { ok: false, fieldError: 'name', errorKey: 'name' };
+    }
+    if (!EMAIL_RE.test(email) || email.length > 200) {
+      return { ok: false, fieldError: 'email', errorKey: 'email' };
+    }
+    if (rawSubject.length < 3 || rawSubject.length > 200) {
+      return { ok: false, fieldError: 'subject', errorKey: 'subject' };
+    }
+    subject = rawSubject;
+    if (message.length < 10 || message.length > 5000) {
+      return { ok: false, fieldError: 'message', errorKey: 'message' };
+    }
   }
 
   // Rate limit by best-guess IP. x-forwarded-for is what Vercel/most proxies set;
@@ -142,8 +172,8 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
 
   // Templates live in src/lib/email/templates.ts — branded shell with dark
   // theme, Chalyb wordmark, acid-green accents. HTML escaping is handled inside.
-  const inbox = contactInboxTemplate({ name, email, subject, message, ip });
-  const confirm = contactConfirmTemplate({ name, subject, message });
+  const inbox = contactInboxTemplate({ name: sender, email, subject, message: body, ip });
+  const confirm = contactConfirmTemplate({ name: sender, subject, message: body });
 
   const inboxResult = await sendEmail({
     to: getContactInbox(),
@@ -178,9 +208,9 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   try {
     const admin = createAdminClient();
     const { error: dbError } = await admin.from('partner_inquiries').insert({
-      name,
+      name: sender,
       email,
-      message: subject ? `${subject}\n\n${message}` : message,
+      message: subject ? `${subject}\n\n${body}` : body,
       pane,
       ip_addr: ip === 'local' ? null : ip,
       user_agent: userAgent,

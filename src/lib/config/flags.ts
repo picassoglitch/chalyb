@@ -182,6 +182,28 @@ export function lealtadReturnWindowDays(): number {
   return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0; // TODO(owner O-15)
 }
 
+/** WS-8 · R-4 · automatic measures after a bad-faith chargeback
+ *  (account_restricted / account_closed / prepayment_required). Off: the
+ *  system records, triages, builds the evidence and queues the notice for an
+ *  admin, and never restricts, closes or asks for prepayment. Waits for the
+ *  attorney (OPS-10, REVISION S.3). */
+export function chargebackMeasuresEnabled(): boolean {
+  return readBool('CHARGEBACK_MEASURES_ENABLED', false);
+}
+
+/** WS-8 · Términos §10.8 refusal of new paid subscriptions after a repeat
+ *  or fraud case. The highest legal risk (S.3 #1): its own flag, off. */
+export function chargebackRefuseNewSubscriptions(): boolean {
+  return readBool('CHARGEBACK_REFUSE_NEW_SUBSCRIPTIONS', false);
+}
+
+/** WS-8 · Términos §10.6(b): days unpaid after account_restricted before the
+ *  account can close. Bracketed in the Términos [30]. TODO(owner/attorney). */
+export function chargebackCloseAfterDays(): number {
+  const n = Number(process.env.CHARGEBACK_CLOSE_AFTER_DAYS ?? '30');
+  return Number.isFinite(n) && n >= 30 ? Math.trunc(n) : 30;
+}
+
 /** Q3 · whether the trial offers Mensual as well as Anual. */
 export function trialPlanChoiceEnabled(): boolean {
   return readBool('TRIAL_PLAN_CHOICE_ENABLED', true);

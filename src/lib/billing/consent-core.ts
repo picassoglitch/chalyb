@@ -36,6 +36,17 @@ export const CONSENT_EVENT_TYPES = [
   'lealtad_step_notice_sent',
   'lealtad_step_advanced',
   'lealtad_reset',
+  // WS-8 · refunds and chargebacks (aceptacion-ux §10.1, §10.5)
+  'chargeback_opened',
+  'chargeback_triaged',
+  'chargeback_evidence_submitted',
+  'chargeback_resolved',
+  'chargeback_notice_sent',
+  'chargeback_response_received',
+  'chargeback_bad_faith_decided',
+  'account_restricted',
+  'account_closed',
+  'prepayment_required',
   'arco_request_received',
   // BUILD-SPEC §11.6
   'voice_likeness_consent',

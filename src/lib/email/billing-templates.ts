@@ -9,7 +9,7 @@
 import { escapeHtml } from './escape';
 import { wrap } from './templates';
 
-export const TEMPLATE_VERSION = '2';
+export const TEMPLATE_VERSION = '3';
 
 export type BillingEmailKind =
   | 'trial_7d' // 1 · "Aviso de cobro", day 0 (mandatory)
@@ -24,7 +24,8 @@ export type BillingEmailKind =
   | 'price_change_7d' // 9 · reminder if unanswered
   | 'lealtad_started' // 10 · Pro Lealtad confirmation with the calendar
   | 'lealtad_7d' // 11 · before EVERY Pro Lealtad charge (mandatory)
-  | 'lealtad_failed'; // 12 · a failed Pro Lealtad charge (day 0 and day 5)
+  | 'lealtad_failed' // 12 · a failed Pro Lealtad charge (day 0 and day 5)
+  | 'chargeback_notice'; // 13 · bad-faith chargeback notice, 10 business days (aceptacion-ux §10.5 step 3)
 
 export interface BillingEmailVars {
   nombre: string;
@@ -58,6 +59,16 @@ export interface BillingEmailVars {
   precio_nuevo?: string;
   porcentaje?: number;
   periodo?: string; // "mes" | "año"
+  /** Chargeback notice (WS-8). */
+  fecha_consentimiento?: string;
+  fecha_aviso?: string;
+  resumen_uso?: string;
+  /** Resolved in the user's favor: the amount is owed. */
+  pendiente?: boolean;
+  /** suspender | cerrar (Términos §10.6). */
+  medida?: 'suspender' | 'cerrar';
+  pagar_url?: string;
+  responder_url?: string;
   fecha_aplicacion?: string;
   fecha_fin_periodo?: string;
   /** PRICE_INCREASE_NO_ANSWER = keep_old. */
@@ -265,6 +276,25 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
           `Hola ${e(v.nombre)}: el cobro de ${b(`${v.monto} MXN`)} del ${e(v.fecha_cobro)} no pasó. Actualiza tu tarjeta antes del ${b(v.fecha_limite)} (7 días) y conservas tu mes ${e(String(v.mes))} del calendario. Si no se cubre, tu suscripción termina y, si vuelves, empiezas en ${e(v.reinicio)}.`,
         ),
         btn(`${v.appUrl}/app/billing/tarjeta`, 'Actualizar tarjeta'),
+      ];
+      break;
+    case 'chargeback_notice':
+      // Verbatim, aceptacion-ux §10.5 step 3. Sent by an admin, never alone.
+      subject = `Aviso sobre el contracargo del cargo de ${v.monto} MXN del ${v.fecha_cobro}`;
+      html = [
+        p(
+          `Hola ${e(v.nombre)}: disputaste ante tu banco el cargo de ${b(`${v.monto} MXN`)} del ${b(v.fecha_cobro)} por ${e(v.plan)}. Según nuestros registros, lo autorizaste el ${e(v.fecha_consentimiento)} (folio ${e(v.consent_id)}), te enviamos el aviso de cobro el ${e(v.fecha_aviso)} y usaste Chalyb en ese periodo (${e(v.resumen_uso)}).`,
+        ),
+        ...(v.pendiente ? [p(`El monto de ${e(v.monto)} MXN está pendiente de pago.`)] : []),
+        p(
+          `Tienes ${b(`10 días hábiles, hasta el ${v.fecha_limite}`)}, para: ${b('(1)')} <a href="${escapeHtml(v.pagar_url ?? `${v.appUrl}/app/billing`)}" style="color:#e8bb7f;">pagar el monto pendiente</a>, o ${b('(2)')} <a href="${escapeHtml(v.responder_url ?? `${v.appUrl}/contacto?categoria=cobro`)}" style="color:#e8bb7f;">responder</a> y explicarnos por qué el cargo no te correspondía (por ejemplo, si no lo autorizaste).`,
+        ),
+        p(
+          `Si no pagas ni respondes en ese plazo, podríamos ${v.medida === 'cerrar' ? 'cerrar tu cuenta' : 'suspender las funciones de pago de tu cuenta hasta que se pague'}, y para volver a contratar un plan de pago te pediríamos el pago por adelantado, sin prueba gratis. Siempre podrás descargar tu contenido.`,
+        ),
+        p(
+          'Pedir un reembolso o disputar un cargo no autorizado nunca tiene consecuencias. Si crees que esto es un error, responde a este correo.',
+        ),
       ];
       break;
     case 'cancelled':

@@ -477,7 +477,11 @@
       "submitting": "Enviando…",
       "genericError": "No se pudo enviar el mensaje.",
       "successTitle": "● Mensaje recibido",
-      "successBody": "Gracias por escribirnos. Te respondemos al correo que dejaste en menos de 24 horas hábiles. Revisa tu bandeja de entrada (y la carpeta de spam, por si acaso) para la confirmación."
+      "successBody": "Gracias por escribirnos. Te respondemos al correo que dejaste en menos de 24 horas hábiles. Revisa tu bandeja de entrada (y la carpeta de spam, por si acaso) para la confirmación.",
+      "nameOptional": "Nombre (opcional)",
+      "messageOptional": "¿Qué pasó? (opcional)",
+      "chargeDate": "Fecha del cobro",
+      "chargeAmount": "Monto del cobro (MXN)"
     },
     "errors": {
       "name": "Nombre requerido (2–120 caracteres).",
@@ -485,9 +489,12 @@
       "subject": "Asunto requerido (3–200 caracteres).",
       "message": "Mensaje requerido (10–5000 caracteres).",
       "rateLimited": "Recibimos muchos mensajes desde tu conexión. Espera unos minutos y vuelve a intentarlo.",
-      "sendFailed": "No pudimos enviar tu mensaje. Vuelve a intentarlo en unos minutos."
+      "sendFailed": "No pudimos enviar tu mensaje. Vuelve a intentarlo en unos minutos.",
+      "chargeDate": "Escribe la fecha del cobro.",
+      "chargeAmount": "Escribe el monto del cobro, por ejemplo 997."
     },
-    "cobroSubject": "Problema con un cobro"
+    "cobroSubject": "Problema con un cobro",
+    "cobroIntro": "Solo necesitamos tu correo, la fecha y el monto del cobro. Te respondemos por escrito en un máximo de 5 días hábiles. Pedir un reembolso nunca te perjudica: no cambia tu plan, tu precio ni tu cuenta."
   },
   "legal": {
     "eyebrow": "Legal",
@@ -1160,7 +1167,9 @@
         "other": "Otro país"
       },
       "periodYear": "por 1 año",
-      "periodMonth": "cada mes"
+      "periodMonth": "cada mes",
+      "accountClosed": "Esta cuenta está cerrada por un contracargo de mala fe sin pagar (Términos de Suscripción §10.6). Siempre puedes descargar tu contenido. Si crees que es un error, escríbenos.",
+      "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis."
     },
     "summary": {
       "title": "Resumen",
@@ -1630,8 +1639,8 @@
       "planA": "Desde Mi cuenta → Mi plan. Cancelar es 1 clic, sin llamadas.",
       "planCta": "Ver mi plan",
       "charge": "Tengo un problema con un cobro",
-      "chargeA": "Escríbenos y cuéntanos qué pasó. Lo revisa una persona.",
-      "chargeCta": "Escribir sobre un cobro"
+      "chargeA": "Solo necesitamos tu correo, la fecha y el monto. Te respondemos por escrito en un máximo de 5 días hábiles, y pedir un reembolso nunca te perjudica. También puedes acudir a la PROFECO o a tu banco cuando quieras.",
+      "chargeCta": "Problema con un cobro"
     }
   },
   "notif": {
@@ -1821,6 +1830,19 @@
         "NOT_FOUND": "No encontramos a esta persona.",
         "MP_ERROR": "Mercado Pago no respondió. No se hizo ningún cambio.",
         "EMAIL_ERROR": "No pudimos enviar el correo. No se hizo ningún cambio."
+      },
+      "refundReason": {
+        "label": "Caso legal del reembolso (Términos de Suscripción §7.2)",
+        "pick": "Elige el caso",
+        "legal_7_2_a": "(a) Cobro no autorizado o sin consentimiento",
+        "legal_7_2_b": "(b) Cobro sin aviso entregado con 5 días o más",
+        "legal_7_2_c": "(c) Cobro después de cancelar",
+        "legal_7_2_d": "(d) Duplicado, error o monto mayor al informado",
+        "legal_7_2_e": "(e) Servicio no prestado o deficiente por Chalyb",
+        "legal_7_2_f": "(f) Oferta o condiciones no respetadas",
+        "legal_7_2_g": "(g) Cierre sin causa o retiro de una función esencial",
+        "legal_7_2_h": "(h) Revocación (art. 56 LFPC)",
+        "legal_7_2_i": "(i) Lo ordena la ley, la PROFECO o una autoridad"
       }
     },
     "money": {
@@ -1944,7 +1966,59 @@
       "authValue": "Supabase Auth",
       "twofaValue": "No conectado"
     },
-    "example": "Ejemplo"
+    "example": "Ejemplo",
+    "disputes": {
+      "title": "Disputas y contracargos",
+      "sub": "Mientras una disputa se resuelve, la cuenta, el plan y el precio no cambian. Los casos de la sección 7.2 no se impugnan.",
+      "empty": "No hay disputas.",
+      "col": {
+        "opened": "Abierta",
+        "person": "Persona",
+        "amount": "Monto",
+        "stage": "Etapa",
+        "deadline": "Plazo",
+        "actions": "Acciones"
+      },
+      "stage": {
+        "legal_closed": "Caso legal: no impugnar",
+        "awaiting_resolution": "Esperando a Mercado Pago",
+        "ready_for_notice": "Lista para el aviso",
+        "notice_running": "Corren los 10 días hábiles",
+        "decided_none": "Cerrada sin medida",
+        "decided_bad_faith": "Mala fe decidida"
+      },
+      "hint": {
+        "legal_closed": "Acepta la disputa en Mercado Pago. Sin aviso ni medida.",
+        "awaiting_resolution": "Genera el paquete de evidencia, súbelo a Mercado Pago y registra el resultado.",
+        "ready_for_notice": "Envía el aviso solo si se cumple la sección 10.4 de los Términos de Suscripción.",
+        "notice_running": "Registra si pagó o respondió. Al vencer el plazo se decide por escrito.",
+        "decided_none": "Caso cerrado sin ninguna medida.",
+        "decided_bad_faith": "Las medidas solo se aplican con CHARGEBACK_MEASURES_ENABLED. La descarga de contenido siempre sigue."
+      },
+      "open": "Ver caso",
+      "close": "Cerrar",
+      "sheetTitle": "Disputa del pago {pago}",
+      "nothingChanges": "La cuenta no cambia por la disputa: ni acceso, ni plan, ni precio, ni calendario de Pro Lealtad.",
+      "evidence": "Generar paquete de evidencia (PDF)",
+      "won": "Mercado Pago la resolvió a favor de Chalyb",
+      "lost": "Mercado Pago la resolvió a favor del usuario",
+      "legal": "Es un caso legal: cerrar sin aviso ni medida",
+      "payUrl": "Enlace de pago de Mercado Pago para el monto pendiente",
+      "medida": "Medida que menciona el aviso",
+      "medidaSuspender": "Suspender las funciones de pago hasta que se pague",
+      "medidaCerrar": "Cerrar la cuenta (solo casos reiterados)",
+      "sendNotice": "Enviar aviso de 10 días hábiles",
+      "responseOk": "Respondió: el cargo no le correspondía",
+      "responseNo": "Respondió: no lo demuestra",
+      "paid": "Pagó el monto",
+      "done": "Listo. Quedó registrado.",
+      "err": {
+        "FORBIDDEN": "No tienes permiso.",
+        "NOT_ALLOWED": "Ese paso no aplica a este caso.",
+        "PAY_URL": "Falta un enlace de pago de Mercado Pago válido.",
+        "EMAIL": "No se pudo enviar el correo."
+      }
+    }
   },
   "priceChange": {
     "eyebrow": "Aviso de cambio de precio · {fecha}",

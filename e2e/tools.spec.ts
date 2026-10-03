@@ -218,7 +218,14 @@ test.describe('as pro', () => {
     await expect(page.getByRole('heading', { name: 'Hablar con una persona' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveCount(0);
     await page.getByText('Tengo un problema con un cobro').click();
-    await expect(page.getByRole('link', { name: 'Escribir sobre un cobro' })).toHaveAttribute('href', /\/contacto\?categoria=cobro$/);
+    const cobro = page.getByRole('link', { name: 'Problema con un cobro' });
+    await expect(cobro).toHaveAttribute('href', /\/contacto\?categoria=cobro$/);
+    // Términos §7.5: email, date and amount; name and message optional.
+    await cobro.click();
+    await expect(page.getByLabel('Fecha del cobro')).toBeVisible();
+    await expect(page.getByLabel('Monto del cobro (MXN)')).toBeVisible();
+    await expect(page.getByLabel('Nombre (opcional)')).not.toHaveAttribute('required', '');
+    await expect(page.getByText(/Pedir un reembolso nunca te perjudica/)).toBeVisible();
     await clean(page, info);
   });
 });

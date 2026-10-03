@@ -55,22 +55,24 @@ export type ResetCause =
   | 'unpaid_after_grace'
   | 'paid_within_grace'
   | 'refund'
-  | 'chargeback_filed'
-  | 'chargeback_won_by_user'
-  | 'chargeback_lost_unpaid_after_grace'
+  | 'chargeback_opened'
+  | 'chargeback_resolved'
+  | 'bad_faith_unpaid_after_notice'
   | 'card_change'
   | 'chalyb_or_mp_cause'
   | 'hold';
 
 /** Spec §15.12.5 / Términos 4 bis.4–4 bis.5: whether this resets the
  *  schedule. A reset always ends the subscription; coming back is a new
- *  one at month 1 with a fresh checkbox. */
+ *  one at month 1 with a fresh checkbox. Refunds and disputes never reset
+ *  it (§7.3, §10.2); only a bad-faith chargeback left unpaid after the
+ *  10-business-day notice ends the subscription for non-payment (WS-8). */
 export function resets(cause: ResetCause): boolean {
   return (
     cause === 'cancel_effective' ||
     cause === 'plan_change' ||
     cause === 'unpaid_after_grace' ||
-    cause === 'chargeback_lost_unpaid_after_grace'
+    cause === 'bad_faith_unpaid_after_notice'
   );
 }
 

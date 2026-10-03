@@ -23,7 +23,8 @@ import {
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import { isReversal, type NormalizedCharge } from './order-charge';
+import { isDispute, type NormalizedCharge } from './order-charge';
+import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -130,15 +131,23 @@ export async function settleOneOffCharge(
     });
   }
 
-  // ── Reversals: the buyer has the money back ───────────────────────────
-  // POLICY. A refund or a chargeback undoes the purchase: a pack's tokens
-  // come off the balance (clamped at zero — clawback_token_pack, migration
-  // 0038) and a legacy one-off plan drops to FREE at once. Both are keyed
-  // to the payment id, so a retried notification changes nothing, and both
-  // refuse when no grant is on file for that payment.
-  if (isReversal(status)) {
-    const reason = status as 'refunded' | 'charged_back';
-    const reversedLabel = reason === 'charged_back' ? 'con contracargo' : 'reembolsado';
+  // ── Disputes: nothing changes (Términos de Suscripción §10.2, WS-8) ───
+  // A chargeback or a mediation is recorded, triaged and handed to an admin.
+  // No tokens come off and no plan drops while it is open.
+  if (isDispute(status)) {
+    const opened = await onChargebackOpened({ mpPaymentId: mpId, mpStatus: status });
+    if (!opened.ok) return retry({ error: 'chargeback record failed' });
+    return ok({ ok: true, status, dispute: true });
+  }
+
+  // ── Refunds ───────────────────────────────────────────────────────────
+  // POLICY. A refunded PACK is a purchase undone: its tokens come off the
+  // balance (clamped at zero — clawback_token_pack, migration 0038), keyed to
+  // the payment id so a retry changes nothing. A refund never changes a
+  // plan, price or the account (Términos §7.3): a legacy one-off plan stays.
+  if (status === 'refunded') {
+    const reason = 'refunded' as const;
+    const reversedLabel = 'reembolsado';
     const { data: profile } = await admin
       .from('profiles')
       .select('email, tier, tier_ends_at')
@@ -208,60 +217,9 @@ export async function settleOneOffCharge(
       });
     }
 
-    // Legacy one-off plan. Only if this payment is the one behind the tier
-    // the user holds — never touch a plan bought by a different payment.
-    if (profile?.tier === tier) {
-      const { data: grant } = await admin
-        .from('audit_events')
-        .select('id')
-        .eq('action', 'tier.payment')
-        .eq('target_user_id', userId)
-        .contains('metadata', { mp_payment_id: mpId })
-        .limit(1)
-        .maybeSingle();
-      if (!grant) {
-        return ok({ ok: true, status, reversal: 'no_grant_on_file' });
-      }
-      const { error } = await admin
-        .from('profiles')
-        .update({ tier: 'FREE', tier_ends_at: null })
-        .eq('id', userId);
-      if (error) return retry({ error: 'db tier revoke failed' });
-      await logAudit({
-        action: 'tier.downgrade',
-        actorId: null,
-        actorEmail: null,
-        targetUserId: userId,
-        targetEmail: email,
-        before: { tier, tier_ends_at: (profile?.tier_ends_at as string | null) ?? null },
-        after: { tier: 'FREE', tier_ends_at: null },
-        metadata: { mp_payment_id: mpId, source: charge.source, kind: `tier.${reason}` },
-      });
-      await notify({
-        severity: 'warning',
-        title: `Plan ${tier} revocado — pago ${reversedLabel}`,
-        body: `${email ?? userId} · MP ${charge.mpReference} · $${amountMajor} ${currency}`,
-        href: '/dashboard/billing',
-        source: 'mp.webhook',
-      });
-      if (email) {
-        const tmpl = paymentReversedTemplate({
-          reason,
-          what: `tu plan ${TIER_CAPS[tier!].label}`,
-          amountMajor,
-          currency,
-          paymentId: mpId,
-          appUrl: getAppUrl(),
-        });
-        void sendEmail({
-          to: email,
-          subject: `Tu plan ${TIER_CAPS[tier!].label} fue retirado · Chalyb`,
-          html: tmpl.html,
-          text: tmpl.text,
-        }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
-      }
-    }
-    return ok({ ok: true, status, reversal: 'done' });
+    // Legacy one-off plan: the plan stays (§7.3); a person classifies it.
+    await onRefundReported({ userId, mpPaymentId: mpId, amountMajor: Number(amountMajor) || null });
+    return ok({ ok: true, status, reversal: 'recorded' });
   }
 
   // ── Amount + currency gate ───────────────────────────────────────────
@@ -343,6 +301,18 @@ export async function settleOneOffCharge(
         href: '/dashboard/billing',
         source: 'mp.webhook',
       });
+      // Nothing was granted, so the whole amount goes back (Términos
+      // §7.2(d): an amount other than the one shown), within 5 business days.
+      if (userId && check.paidCents > 0) {
+        await issueRefund({
+          userId,
+          mpPaymentId: mpId,
+          cents: check.paidCents,
+          reason: 'legal_7_2_d',
+          surface: 'mp_webhook',
+          actor: null,
+        });
+      }
       return ok({
         error: 'amount mismatch',
         expected: expected.amountCents,

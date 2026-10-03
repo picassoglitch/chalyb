@@ -8,12 +8,13 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
-import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
+import { getAppUrl } from '@/lib/payments/mercadopago';
 import { sendEmail } from '@/lib/email/resend';
 import { escapeHtml } from '@/lib/email/escape';
 import { wrap } from '@/lib/email/templates';
 import { cancelForUser } from '@/lib/billing/billing-actions';
-import { recordConsent, UI_VERSION } from '@/lib/billing/consent';
+import { issueRefund } from '@/lib/billing/disputes-server';
+import { isRefundReason } from '@/lib/billing/disputes';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { PLAN_KEYS } from '@/lib/billing/api';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
@@ -180,60 +181,34 @@ export async function resendAccessEmail(userId: string): Promise<PeopleActionRes
 }
 
 /** "Reembolsar último cobro": the unrefunded rest of the last settled
- *  charge, back to the card through Mercado Pago. */
-export async function refundLastCharge(userId: string): Promise<PeopleActionResult> {
+ *  charge, back to the card through Mercado Pago, for one of the legal cases
+ *  of Términos de Suscripción §7.2 (there is no courtesy refund, §7.4). The
+ *  refund changes nothing else: plan, price, Lealtad step, account (§7.3). */
+export async function refundLastCharge(
+  userId: string,
+  reason: string,
+): Promise<PeopleActionResult> {
   const actor = await adminSession();
   if (!actor) return { ok: false, code: 'FORBIDDEN' };
+  if (!isRefundReason(reason)) return { ok: false, code: 'NOT_ALLOWED' };
   const t = await target(userId);
   if (!t?.pay || !t.allowed.refundLast || !t.pay.mp_payment_id)
     return { ok: false, code: 'NOT_ALLOWED' };
-  try {
-    await getMercadoPago().refund.create({
-      payment_id: t.pay.mp_payment_id as string,
-      body: { amount: t.left / 100 },
-    });
-  } catch (err) {
-    console.error('[admin/refund] Mercado Pago refused', t.pay.mp_payment_id, err);
-    return { ok: false, code: 'MP_ERROR' };
-  }
-  const db = createAdminClient();
-  await db
-    .from('payments')
-    .update({ refunded_cents: ((t.pay.refunded_cents as number | null) ?? 0) + t.left })
-    .eq('id', t.pay.id as string);
-  await recordConsent({
-    event_type: 'refund_issued',
-    user_id: userId,
-    account_email: (t.profile.email as string | null) ?? null,
-    documents: [],
-    client_timezone: null,
-    ip_address: null,
-    user_agent: null,
-    locale: 'es-MX',
+  const r = await issueRefund({
+    userId,
+    mpPaymentId: t.pay.mp_payment_id as string,
+    cents: t.left,
+    reason,
     surface: 'admin_people',
-    ui_version: UI_VERSION,
-    disclosure_text: null,
-    checkbox_text: null,
-    checkbox_checked: null,
-    button_label: 'Sí, reembolsar',
-    plan_id: null,
-    amount_mxn: t.left / 100,
-    currency: 'MXN',
-    tax_included: true,
-    billing_interval: null,
-    trial_end_utc: null,
-    charge_date_utc: null,
-    reminder_date_utc: null,
-    payment_method: null,
-    marketing_opt_in: false,
-    details: { payment_id: t.pay.mp_payment_id as string, admin: adminName(actor) },
-  }).catch((e) => console.error('[admin/refund] evidence not stored', e));
+    actor: adminName(actor),
+  });
+  if (!r.ok) return { ok: false, code: 'MP_ERROR' };
   await audit(
     actor,
     'admin.refund',
     { id: userId, email: t.profile.email as string },
     {
-      metadata: { payment_id: t.pay.mp_payment_id, amount_cents: t.left },
+      metadata: { payment_id: t.pay.mp_payment_id, amount_cents: t.left, reason },
     },
   );
   return { ok: true };

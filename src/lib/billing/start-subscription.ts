@@ -53,6 +53,7 @@ import {
   lealtadOpenToNewCustomers,
   lealtadReturnWindowDays,
   trialFlowEnabled,
+  chargebackRefuseNewSubscriptions,
 } from '@/lib/config/flags';
 import {
   consentSentence,
@@ -96,6 +97,8 @@ export type StartError =
   | 'ADMIN'
   | 'QUEBEC'
   | 'CARD_TRIAL_USED'
+  | 'ACCOUNT_CLOSED'
+  | 'PAID_REFUSED'
   | 'BAD_TOKEN'
   | 'DECLINED'
   | 'MP_ERROR';
@@ -156,6 +159,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
+  // WS-8 · only after a bad-faith chargeback, and only with the flags on
+  // (rows exist only then): a closed account can't start a paid plan
+  // (Términos §10.6); refusing new paid plans is its own flag (§10.8).
+  // prepayment_required already counts as trialUsed (no trial, pay today).
+  if (billing.restriction.closed) return { ok: false, code: 'ACCOUNT_CLOSED' };
+  if (billing.restriction.prepaymentRequired && chargebackRefuseNewSubscriptions())
+    return { ok: false, code: 'PAID_REFUSED' };
   // 7 days free on Pro mensual and Pro anual, once per account (and card).
   const wantsTrial =
     trialFlowEnabled() &&

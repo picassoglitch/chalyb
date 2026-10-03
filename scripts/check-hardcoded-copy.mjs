@@ -154,3 +154,40 @@ if (shrinkable.length)
     `check:copy ok · baseline can shrink for ${shrinkable.length} file(s): run pnpm check:copy --update`,
   );
 else console.log('check:copy ok');
+
+// WS-8 · REVISION §S: no copy offers a courtesy refund, says a dispute
+// suspends the account (the removed Términos §10.2(a)), or makes writing to
+// us first a condition (LFPC art. 90 fr. V). Scans the messages, the emails
+// and every source string.
+const PHRASES = [
+  [/reembolsos? de cortes[ií]a/i, 'courtesy refund (Términos §7.4)'],
+  [/cr[eé]ditos de cortes[ií]a/i, 'courtesy credits offered as a refund (Términos §7.4)'],
+  [/suspender temporalmente[^.]{0,160}mientras se resuelve/i, 'a dispute suspends the account (old §10.2(a))'],
+  [/(antes de (disputar|acudir a tu banco|ir a tu banco)[^.]{0,80}(debes|tienes que|es obligatorio)|(debes|tienes que) escribirnos (primero|antes))/i, 'writing first as a condition (art. 90 fr. V)'],
+];
+function* walkSource(path) {
+  const abs = join(ROOT, path);
+  if (statSync(abs).isFile()) {
+    if (/\.(tsx?|mjs)$/.test(abs) && !/\.test\./.test(abs)) yield abs;
+    return;
+  }
+  for (const name of readdirSync(abs)) yield* walkSource(join(path, name));
+}
+const phraseFiles = [
+  join(ROOT, 'messages/es.json'),
+  join(ROOT, 'messages/en.json'),
+  ...walkSource('src'),
+];
+const phraseHits = [];
+for (const file of phraseFiles) {
+  const text = readFileSync(file, 'utf8');
+  const rules = file.endsWith('en.json')
+    ? [...PHRASES, [/courtesy refund/i, 'courtesy refund (Terms §7.4)']]
+    : PHRASES;
+  for (const [re, why] of rules) if (re.test(text)) phraseHits.push(`${relative(ROOT, file)}: ${why}`);
+}
+if (phraseHits.length) {
+  console.error('Refund/dispute copy that REVISION §S forbids:\n');
+  console.error(phraseHits.join('\n'));
+  process.exit(1);
+}

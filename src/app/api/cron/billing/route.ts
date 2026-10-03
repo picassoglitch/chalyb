@@ -33,6 +33,7 @@ import {
   trialNoticeVars,
 } from '@/lib/billing/notices';
 import { reconcileLealtad } from '@/lib/billing/lealtad-server';
+import { sweepChargebacks } from '@/lib/billing/disputes-server';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   mpPauseInTrialVerified,
@@ -375,6 +376,13 @@ export async function GET(req: Request) {
       console.error('[cron/billing] subscription failed', preapprovalId, err);
     }
   }
+
+  // 5. Chargebacks (WS-8): decide cases whose 10 business days ran out;
+  // measures only with CHARGEBACK_MEASURES_ENABLED.
+  await sweepChargebacks(now).catch((err) => {
+    stats.errors += 1;
+    console.error('[cron/billing] chargeback sweep failed', err);
+  });
 
   console.info('[cron/billing]', stats);
   return NextResponse.json({ ok: true, ...stats });

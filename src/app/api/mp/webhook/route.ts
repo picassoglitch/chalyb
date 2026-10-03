@@ -2,7 +2,7 @@
 //
 // MP posts here when something changes, in two shapes: Webhooks (JSON,
 // signed) and the legacy IPN (`?id=&topic=`, empty or form body, usually
-// unsigned) — webhook-notification.ts reads both. Five topics matter:
+// unsigned) — webhook-notification.ts reads both. Six topics matter:
 //
 //   subscription_preapproval          a Pro/VIP subscription changed state
 //                                     (authorised, paused, cancelled) →
@@ -18,6 +18,8 @@
 //                                     charge reported on this topic too
 //   merchant_order                    IPN only: a legacy Checkout order; each
 //                                     of its payments goes through `payment`
+//   chargebacks                       a dispute (WS-8): recorded and triaged,
+//                                     the account never changes
 //
 // For every one of them:
 //   1. Validate the signature when there is one. NO SECRET = NO ENTRY (see
@@ -49,6 +51,7 @@ import {
   mpGet,
 } from '@/lib/payments/mercadopago';
 import {
+  chargebackPaymentIds,
   merchantOrderPaymentIds,
   parseMpNotification,
   unsignedAllowed,
@@ -56,15 +59,12 @@ import {
 } from '@/lib/payments/webhook-notification';
 import { checkMpSignature } from '@/lib/payments/webhook-verify';
 import { manifestId, parseSubscriptionReference } from '@/lib/payments/subscription-reference';
-import {
-  recordAuthorizedPayment,
-  revokeSubscriptionForReversal,
-  syncSubscription,
-} from '@/lib/payments/subscription-sync';
+import { recordAuthorizedPayment, syncSubscription } from '@/lib/payments/subscription-sync';
+import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import {
   chargeFromOrder,
   chargeFromPayment,
-  isReversal,
+  isDispute,
   type NormalizedCharge,
 } from '@/lib/payments/order-charge';
 import { settleOneOffCharge } from '@/lib/payments/one-off-settlement';
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
   const n = parseMpNotification(req.url, bodyText, req.headers.get('content-type'));
   const log = { mp_env: getMpEnv(), topic: n.topic, format: n.format };
 
-  // Anything we don't handle (subscription_preapproval_plan, chargebacks,
+  // Anything we don't handle (subscription_preapproval_plan,
   // point_integration_wh, …) is acknowledged so MP stops retrying.
   if (!n.handled) {
     console.info('[mp/webhook] ignored', log);
@@ -150,6 +150,8 @@ async function processNotification(n: MpNotification): Promise<NextResponse> {
     case 'payment':
     case 'orders':
       return handleCharge(n.topic, dataId);
+    case 'chargebacks':
+      return handleChargeback(dataId);
     default:
       return NextResponse.json({ ignored: n.topic }, { status: 200 });
   }
@@ -178,6 +180,32 @@ async function handleSubscription(
     // Likely MP's API not answering. 500 → MP retries.
     return NextResponse.json({ error: 'subscription fetch failed' }, { status: 500 });
   }
+}
+
+// ── Chargebacks (WS-8) ───────────────────────────────────────────────
+// Recorded and triaged per payment; nothing on the account changes
+// (Términos de Suscripción §10.2). Idempotent per payment id.
+async function handleChargeback(chargebackId: string): Promise<NextResponse> {
+  let ids: string[];
+  try {
+    ids = chargebackPaymentIds(await mpGet(`/v1/chargebacks/${encodeURIComponent(chargebackId)}`));
+  } catch (err) {
+    console.error('[mp/webhook] failed to fetch chargeback', chargebackId, err);
+    return NextResponse.json({ error: 'mp fetch failed' }, { status: 500 });
+  }
+  let failed = false;
+  for (const id of ids) {
+    const r = await onChargebackOpened({
+      mpPaymentId: id,
+      mpStatus: 'chargeback',
+      mpChargebackId: chargebackId,
+    });
+    if (!r.ok) failed = true;
+  }
+  return NextResponse.json(
+    { topic: 'chargebacks', payments: ids.length },
+    { status: failed ? 500 : 200 },
+  );
 }
 
 // ── Legacy merchant orders (IPN) ─────────────────────────────────────
@@ -262,21 +290,29 @@ async function handleCharge(topic: 'payment' | 'orders', dataId: string): Promis
       console.error('[mp/webhook] payments upsert failed', ledgerErr);
       return NextResponse.json({ error: 'db payments insert failed' }, { status: 500 });
     }
-    if (sub?.mp_preapproval_id && isReversal(charge.status)) {
-      // Refund / chargeback of a monthly charge: the plan is revoked now
-      // (policy in revokeSubscriptionForReversal).
-      const revoked = await revokeSubscriptionForReversal({
-        preapprovalId: sub.mp_preapproval_id as string,
+    if (isDispute(charge.status)) {
+      // A dispute changes nothing on the account (Términos §10.2, WS-8).
+      const opened = await onChargebackOpened({
         mpPaymentId: charge.mpPaymentId,
-        reason: charge.status as 'refunded' | 'charged_back',
-        amountMajor: charge.amountMajor,
-        currency: charge.currency,
+        mpStatus: charge.status,
       });
-      if (!revoked.ok) {
-        return NextResponse.json({ error: 'subscription revoke failed' }, { status: 500 });
+      if (!opened.ok) {
+        return NextResponse.json({ error: 'chargeback record failed' }, { status: 500 });
       }
       return NextResponse.json(
-        { ok: true, kind: 'subscription_payment', status: charge.status, revoked: true },
+        { ok: true, kind: 'subscription_payment', status: charge.status, dispute: true },
+        { status: 200 },
+      );
+    }
+    if (charge.status === 'refunded') {
+      // A refund never changes the plan, price, step or account (§7.3).
+      await onRefundReported({
+        userId: subRef.userId,
+        mpPaymentId: charge.mpPaymentId,
+        amountMajor: charge.amountMajor,
+      });
+      return NextResponse.json(
+        { ok: true, kind: 'subscription_payment', status: charge.status },
         { status: 200 },
       );
     }

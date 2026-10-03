@@ -256,7 +256,7 @@ test('8–11 · what resets (and ends) the schedule, and what never does', () =>
     'cancel_effective',
     'plan_change',
     'unpaid_after_grace',
-    'chargeback_lost_unpaid_after_grace',
+    'bad_faith_unpaid_after_notice',
   ] as const) {
     assert.equal(resets(c), true, c);
   }
@@ -264,8 +264,8 @@ test('8–11 · what resets (and ends) the schedule, and what never does', () =>
     'cancel_undone',
     'paid_within_grace',
     'refund',
-    'chargeback_filed',
-    'chargeback_won_by_user',
+    'chargeback_opened',
+    'chargeback_resolved',
     'card_change',
     'chalyb_or_mp_cause',
     'hold',

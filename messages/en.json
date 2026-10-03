@@ -477,7 +477,11 @@
       "submitting": "Sending…",
       "genericError": "The message could not be sent.",
       "successTitle": "● Message received",
-      "successBody": "Thanks for writing. We will reply to the address you left within 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation."
+      "successBody": "Thanks for writing. We will reply to the address you left within 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation.",
+      "nameOptional": "Name (optional)",
+      "messageOptional": "What happened? (optional)",
+      "chargeDate": "Date of the charge",
+      "chargeAmount": "Amount charged (MXN)"
     },
     "errors": {
       "name": "Name is required (2–120 characters).",
@@ -485,9 +489,12 @@
       "subject": "Subject is required (3–200 characters).",
       "message": "Message is required (10–5000 characters).",
       "rateLimited": "We have received a lot of messages from your connection. Wait a few minutes and try again.",
-      "sendFailed": "We couldn't send your message. Try again in a few minutes."
+      "sendFailed": "We couldn't send your message. Try again in a few minutes.",
+      "chargeDate": "Enter the date of the charge.",
+      "chargeAmount": "Enter the amount charged, for example 997."
     },
-    "cobroSubject": "Problem with a charge"
+    "cobroSubject": "Problem with a charge",
+    "cobroIntro": "All we need is your email, the date and the amount of the charge. We answer in writing within 5 business days. Asking for a refund never works against you: it doesn’t change your plan, your price or your account."
   },
   "legal": {
     "eyebrow": "Legal",
@@ -1160,7 +1167,9 @@
         "other": "Another country"
       },
       "periodYear": "for 1 year",
-      "periodMonth": "every month"
+      "periodMonth": "every month",
+      "accountClosed": "This account is closed because of an unpaid bad-faith chargeback (Subscription Terms §10.6). You can always download your content. If you think this is a mistake, write to us.",
+      "paidRefused": "We can’t start a paid plan on this account for now (Subscription Terms §10.8). You can always use the Free plan."
     },
     "summary": {
       "title": "Summary",
@@ -1630,8 +1639,8 @@
       "planA": "From My account → My plan. Cancelling is 1 click, no calls.",
       "planCta": "See my plan",
       "charge": "I have a problem with a charge",
-      "chargeA": "Write to us and tell us what happened. A person will review it.",
-      "chargeCta": "Write about a charge"
+      "chargeA": "All we need is your email, the date and the amount. We answer in writing within 5 business days, and asking for a refund never works against you. You can also go to PROFECO or your bank at any time.",
+      "chargeCta": "Problem with a charge"
     }
   },
   "notif": {
@@ -1821,6 +1830,19 @@
         "NOT_FOUND": "We couldn’t find this person.",
         "MP_ERROR": "Mercado Pago didn’t respond. Nothing changed.",
         "EMAIL_ERROR": "We couldn’t send the email. Nothing changed."
+      },
+      "refundReason": {
+        "label": "Legal case for the refund (Subscription Terms §7.2)",
+        "pick": "Pick the case",
+        "legal_7_2_a": "(a) Unauthorized charge or no consent",
+        "legal_7_2_b": "(b) Charge without a notice delivered 5+ days before",
+        "legal_7_2_c": "(c) Charge after cancelling",
+        "legal_7_2_d": "(d) Duplicate, error or more than the amount shown",
+        "legal_7_2_e": "(e) Service not provided or deficient because of Chalyb",
+        "legal_7_2_f": "(f) Offer or conditions not honored",
+        "legal_7_2_g": "(g) Closure without cause or removal of an essential feature",
+        "legal_7_2_h": "(h) Revocation (LFPC art. 56)",
+        "legal_7_2_i": "(i) Ordered by law, PROFECO or an authority"
       }
     },
     "money": {
@@ -1944,7 +1966,59 @@
       "authValue": "Supabase Auth",
       "twofaValue": "Not connected"
     },
-    "example": "Example"
+    "example": "Example",
+    "disputes": {
+      "title": "Disputes and chargebacks",
+      "sub": "While a dispute is open, the account, plan and price don’t change. Section 7.2 cases are never contested.",
+      "empty": "No disputes.",
+      "col": {
+        "opened": "Opened",
+        "person": "Person",
+        "amount": "Amount",
+        "stage": "Stage",
+        "deadline": "Deadline",
+        "actions": "Actions"
+      },
+      "stage": {
+        "legal_closed": "Legal case: don’t contest",
+        "awaiting_resolution": "Waiting on Mercado Pago",
+        "ready_for_notice": "Ready for the notice",
+        "notice_running": "10 business days running",
+        "decided_none": "Closed, no measure",
+        "decided_bad_faith": "Bad faith decided"
+      },
+      "hint": {
+        "legal_closed": "Accept the dispute in Mercado Pago. No notice, no measure.",
+        "awaiting_resolution": "Generate the evidence package, upload it to Mercado Pago and record the result.",
+        "ready_for_notice": "Send the notice only if Subscription Terms §10.4 is met.",
+        "notice_running": "Record a payment or an answer. When the deadline passes, the written decision is made.",
+        "decided_none": "Case closed with no measure.",
+        "decided_bad_faith": "Measures apply only with CHARGEBACK_MEASURES_ENABLED. Content download always stays."
+      },
+      "open": "View case",
+      "close": "Close",
+      "sheetTitle": "Dispute for payment {pago}",
+      "nothingChanges": "The dispute changes nothing on the account: no access, plan, price or Pro Lealtad schedule change.",
+      "evidence": "Generate evidence package (PDF)",
+      "won": "Mercado Pago resolved it for Chalyb",
+      "lost": "Mercado Pago resolved it for the user",
+      "legal": "It’s a legal case: close with no notice or measure",
+      "payUrl": "Mercado Pago payment link for the amount owed",
+      "medida": "Measure the notice mentions",
+      "medidaSuspender": "Suspend paid features until paid",
+      "medidaCerrar": "Close the account (repeat cases only)",
+      "sendNotice": "Send the 10-business-day notice",
+      "responseOk": "Answered: the charge wasn’t theirs",
+      "responseNo": "Answered: not shown",
+      "paid": "Paid the amount",
+      "done": "Done. It’s on record.",
+      "err": {
+        "FORBIDDEN": "You don’t have permission.",
+        "NOT_ALLOWED": "That step doesn’t apply to this case.",
+        "PAY_URL": "A valid Mercado Pago payment link is missing.",
+        "EMAIL": "The email couldn’t be sent."
+      }
+    }
   },
   "priceChange": {
     "eyebrow": "Price change notice · {fecha}",

@@ -208,6 +208,7 @@ const AUDIT_TITLES: Record<string, string> = {
   'admin.plan_offer': 'Envió un cambio de plan para aceptar',
   'admin.access_email': 'Reenvió el correo de acceso',
   'admin.refund': 'Reembolsó el último cobro',
+  'admin.dispute': 'Registró un paso de una disputa',
   'admin.cancel': 'Canceló la suscripción',
   'engine.visibility': 'Cambió la visibilidad de una herramienta',
   'settings.billing_toggle': 'Cambió Mensual/Anual',
@@ -229,6 +230,16 @@ const CONSENT_TITLES: Record<string, string> = {
   voice_likeness_consent: 'Aceptó el uso de voz/imagen',
   signup_terms_accepted: 'Aceptó términos al registrarse',
   refund_issued: 'Reembolso registrado',
+  chargeback_opened: 'Abrió una disputa (la cuenta no cambia)',
+  chargeback_triaged: 'Disputa revisada',
+  chargeback_evidence_submitted: 'Paquete de evidencia generado',
+  chargeback_resolved: 'Disputa resuelta por Mercado Pago',
+  chargeback_notice_sent: 'Aviso de 10 días hábiles enviado',
+  chargeback_response_received: 'Respondió al aviso de la disputa',
+  chargeback_bad_faith_decided: 'Decisión escrita sobre la disputa',
+  account_restricted: 'Funciones de pago suspendidas',
+  account_closed: 'Cuenta cerrada',
+  prepayment_required: 'Pago por adelantado requerido',
 };
 
 export async function loadActivity(now = new Date()) {
@@ -274,5 +285,45 @@ export async function loadActivity(now = new Date()) {
       id: `k:${c.consent_id}`, at: c.inserted_at, type: 'consent', tool: null, title: CONSENT_TITLES[c.event_type] ?? c.event_type, detail: `Folio ${c.consent_id.slice(0, 8)}`, who: who(c.user_id),
     }));
     return [auditEvents, payEvents, cancelEvents, bounceEvents, consentEvents];
+  });
+}
+
+// ── Disputas (WS-8) ───────────────────────────────────────────────────
+export interface DisputeRow {
+  id: string;
+  user_id: string;
+  person: string;
+  mp_payment_id: string;
+  amount_cents: number;
+  charged_at: string | null;
+  opened_at: string;
+  triage: string | null;
+  triage_reason: string | null;
+  resolution: string | null;
+  evidence_sha256: string | null;
+  notice_sent_at: string | null;
+  deadline_utc: string | null;
+  response_accepted: boolean | null;
+  paid_at: string | null;
+  decision: string | null;
+}
+
+export async function loadDisputes() {
+  return safe('disputes', [] as DisputeRow[], async (db) => {
+    const list = rows<Omit<DisputeRow, 'person'>>(
+      await db
+        .from('chargebacks')
+        .select('id, user_id, mp_payment_id, amount_cents, charged_at, opened_at, triage, triage_reason, resolution, evidence_sha256, notice_sent_at, deadline_utc, response_accepted, paid_at, decision')
+        .order('opened_at', { ascending: false })
+        .limit(100),
+    );
+    const ids = [...new Set(list.map((c) => c.user_id))];
+    const people = ids.length
+      ? rows<{ id: string; email: string | null; full_name: string | null }>(
+          await db.from('profiles').select('id, email, full_name').in('id', ids),
+        )
+      : [];
+    const names = new Map(people.map((p) => [p.id, p.full_name || p.email || p.id]));
+    return list.map((c) => ({ ...c, person: names.get(c.user_id) ?? c.user_id }));
   });
 }

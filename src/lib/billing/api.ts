@@ -20,6 +20,8 @@ export function statusForStartError(code: StartError): number {
       return 422;
     case 'ADMIN':
     case 'QUEBEC':
+    case 'ACCOUNT_CLOSED':
+    case 'PAID_REFUSED':
       return 403;
     case 'CARD_TRIAL_USED':
       return 409;

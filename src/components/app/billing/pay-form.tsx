@@ -92,6 +92,8 @@ export function PayForm({
                 ? t('declined')
                 : body.code === 'QUEBEC'
                   ? tPlans('quebec')
+                  : body.code === 'ACCOUNT_CLOSED' || body.code === 'PAID_REFUSED'
+                    ? t(body.code === 'ACCOUNT_CLOSED' ? 'accountClosed' : 'paidRefused')
                   : body.code === 'NOT_AVAILABLE' || body.code === 'NOT_CONFIGURED'
                     ? t('unavailable')
                     : t('error');

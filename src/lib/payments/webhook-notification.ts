@@ -18,7 +18,8 @@ export type MpTopic =
   | 'merchant_order'
   | 'subscription_preapproval'
   | 'subscription_authorized_payment'
-  | 'orders';
+  | 'orders'
+  | 'chargebacks';
 
 export interface MpNotification {
   format: 'webhook' | 'ipn';
@@ -38,6 +39,9 @@ const ALIASES: Readonly<Record<string, MpTopic>> = {
   authorized_payment: 'subscription_authorized_payment',
   orders: 'orders',
   order: 'orders',
+  chargebacks: 'chargebacks',
+  chargeback: 'chargebacks',
+  topic_chargebacks_wh: 'chargebacks',
 };
 
 const HANDLED: ReadonlySet<string> = new Set<MpTopic>([
@@ -46,6 +50,7 @@ const HANDLED: ReadonlySet<string> = new Set<MpTopic>([
   'subscription_preapproval',
   'subscription_authorized_payment',
   'orders',
+  'chargebacks',
 ]);
 
 /** The topic we handle under this name, or the name itself. */
@@ -137,4 +142,13 @@ export function merchantOrderPaymentIds(order: unknown): string[] {
   if (!Array.isArray(payments)) return [];
   const ids = payments.map((p) => clean((p as { id?: unknown })?.id)).filter(Boolean) as string[];
   return [...new Set(ids)];
+}
+
+/** The payment ids a GET /v1/chargebacks/{id} names (WS-8). */
+export function chargebackPaymentIds(body: unknown): string[] {
+  const payments = (body as { payments?: unknown } | null)?.payments;
+  if (!Array.isArray(payments)) return [];
+  return payments
+    .map((p) => clean(typeof p === 'object' && p !== null ? (p as { id?: unknown }).id : p))
+    .filter((id): id is string => id !== null);
 }

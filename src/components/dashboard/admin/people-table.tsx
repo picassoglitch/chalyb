@@ -20,6 +20,7 @@ import {
 import { Sheet } from '@/components/ui/sheet';
 import { Pill } from '@/components/ui/primitives';
 import { ConfirmStep } from './confirm-step';
+import { REFUND_REASONS } from '@/lib/billing/disputes';
 
 export interface PersonVM {
   id: string;
@@ -61,6 +62,8 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
   const [action, setAction] = useState<ActionKey | null>(null);
   const [plan, setPlan] = useState<(typeof PLANS)[number]>('pro_year');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // Términos §7.2: a refund names its legal case; there is no courtesy one.
+  const [reason, setReason] = useState<string>('');
 
   const shown = useMemo(
     () =>
@@ -88,7 +91,7 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
     if (action === 'giftMonth') r = await giftMonth(row.id);
     else if (action === 'changePlan') r = await offerPlanChange(row.id, plan);
     else if (action === 'resendAccess') r = await resendAccessEmail(row.id);
-    else if (action === 'refundLast') r = await refundLastCharge(row.id);
+    else if (action === 'refundLast') r = await refundLastCharge(row.id, reason);
     else r = await cancelForPerson(row.id);
     setAction(null);
     setRow(null);
@@ -249,8 +252,29 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
           onNo={() => {
             setAction(null);
             setRow(null);
+            setReason('');
           }}
-        />
+          yesDisabled={action === 'refundLast' && !reason}
+        >
+          {action === 'refundLast' && (
+            <label className="ch-field" style={{ marginBottom: 18 }}>
+              <span>{t('refundReason.label')}</span>
+              <select
+                className="ch-input"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                required
+              >
+                <option value="">{t('refundReason.pick')}</option>
+                {REFUND_REASONS.map((r) => (
+                  <option key={r} value={r}>
+                    {t(`refundReason.${r}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </ConfirmStep>
       )}
     </div>
   );

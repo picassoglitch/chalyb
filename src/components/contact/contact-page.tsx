@@ -80,6 +80,11 @@ export function ContactPage({
               WebkitBackdropFilter: 'blur(8px)',
             }}
           >
+            {category === 'cobro' && (
+              <p style={{ margin: '0 0 18px', fontSize: 15, lineHeight: 1.55, color: 'var(--ink)' }}>
+                {t('cobroIntro')}
+              </p>
+            )}
             <ContactForm
               category={category}
               defaultSubject={category === 'cobro' ? t('cobroSubject') : undefined}
