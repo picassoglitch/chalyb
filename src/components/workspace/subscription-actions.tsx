@@ -39,7 +39,7 @@ const TIER_MARKETING: Record<
       'Todo lo de Free',
       '1 herramienta incluida · tú eliges cuál',
       '8,000,000 de créditos al mes (se renuevan)',
-      'Clips sin marca de agua · ~12 streams al mes · 1 logo',
+      'Clips sin marca de agua · 1 logo',
       'Comunidad premium',
     ],
   },

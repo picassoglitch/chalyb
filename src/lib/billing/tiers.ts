@@ -157,7 +157,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     activeStreams: 1,
     maxUploadMB: 4096,
     maxSourceMinutes: 180,
-    sourceMinutesPerMonth: 1200,
+    sourceMinutesPerMonth: 3_000,
     maxConcurrentJobs: 2,
     boost: 'paid',
     historyDays: 90,
@@ -165,12 +165,12 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     hasPrioritySupport: false,
     hasEarlyAccess: false,
     community: 'premium',
-    // ChalyClip Pro ("el streamer"): no watermark, ~12 streams/mo, HD-only
+    // ChalyClip Pro ("el streamer"): no watermark, HD-only
     // export, one brand kit. Auto-publish stays a VIP-only perk. Out of tokens
     // before month end → prompted to buy a top-up pack (TOKEN_PACKS).
     clipWatermark: false,
     clipVodRetentionDays: 90,
-    clipStreamsPerMonth: 12,
+    clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
@@ -195,7 +195,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     activeStreams: 1,
     maxUploadMB: 4096,
     maxSourceMinutes: 180,
-    sourceMinutesPerMonth: 1200,
+    sourceMinutesPerMonth: 3_000,
     maxConcurrentJobs: 2,
     boost: 'paid',
     historyDays: 180,
@@ -205,7 +205,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     community: 'premium',
     clipWatermark: false,
     clipVodRetentionDays: 90,
-    clipStreamsPerMonth: 12,
+    clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
@@ -225,7 +225,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     activeStreams: 5,
     maxUploadMB: 20_480,
     maxSourceMinutes: 480,
-    sourceMinutesPerMonth: 6000,
+    sourceMinutesPerMonth: 12_000,
     maxConcurrentJobs: 4,
     boost: 'included',
     historyDays: 365,
@@ -259,13 +259,15 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
  * buy the tier (Pro anual: 7,490 MXN / 12), before IVA, at a deliberately
  * weak peso so a currency move doesn't eat the margin.
  *
- *   Pro:  624 MXN ÷ 19.5 = $32/mo → 8M tokens   (~19 typical runs; the
- *         1,200-min cap binds first, ~13 runs)
- *   VIP: 2,499 MXN ÷ 19.5 = $128/mo → 32M tokens (~77 runs; 6,000-min cap
- *         binds first, ~67 runs)
+ *   Pro:  624 MXN ÷ 19.5 = $32/mo → 8M tokens   (~28 typical runs)
+ *   VIP: 2,499 MXN ÷ 19.5 = $128/mo → 32M tokens (~114 typical runs)
  *
- * A typical ChalyClip run (prod data Jun–Aug 2026: 89-min VOD) costs us
- * ~$0.64 → ~416k tokens billed. tests/consumption.test.ts holds the rule.
+ * A typical ChalyClip run (89-min VOD, prod data Jun–Aug 2026 re-priced at
+ * today's rates) costs us ~$0.43 — transcription $0.34, Claude $0.04,
+ * compute ~$0.05 — so ~280k tokens billed. Credits are what limit volume;
+ * the monthly-minutes caps sit above what the credits buy and only stop
+ * abuse (Pro 3,000 min, VIP 12,000). No stream counts are promised.
+ * tests/consumption.test.ts holds the rule.
  */
 export const USAGE_ECONOMICS = {
   usdPerMillionBillable: 4,
