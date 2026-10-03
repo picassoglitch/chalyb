@@ -81,6 +81,8 @@ export function proCard(input: CardInput, interval: Interval): ProCard {
 }
 
 export interface VipCard {
+  /** "7 días gratis" for a first-time customer (owner, 2026-10-03). */
+  chip: boolean;
   amountCents: number;
   unit: Interval;
   /** VIP has no annual option yet: "Solo plan mensual". */
@@ -91,8 +93,10 @@ export interface VipCard {
   savePct: number;
   switchYear: boolean;
   href: string | null;
-  ctaKey: 'current' | 'vip.ctaUp' | 'vip.cta' | 'vip.ctaYear' | 'vip.ctaMonth';
+  ctaKey: 'current' | 'vip.ctaUp' | 'vip.ctaTrial' | 'vip.cta' | 'vip.ctaYear' | 'vip.ctaMonth';
   notePaid: boolean;
+  /** The trial's dated note (pro.note / pro.noteMonth, with VIP's amount). */
+  noteKey: 'pro.note' | 'pro.noteMonth' | null;
 }
 
 export function vipCard(input: CardInput, interval: Interval): VipCard {
@@ -100,7 +104,9 @@ export function vipCard(input: CardInput, interval: Interval): VipCard {
   const math = annualMath('vip');
   const href = yearly ? input.cta.vip.hrefYear : input.cta.vip.hrefMonth;
   const label = input.cta.vip.label;
+  const trial = label === 'trial';
   return {
+    chip: trial,
     amountCents: yearly ? PRICE_CENTS.vip.year : planPrice('vip_month').totalCents,
     unit: yearly ? 'year' : 'month',
     noYear: !input.vipYearOffered && input.intervals.includes('year'),
@@ -118,12 +124,15 @@ export function vipCard(input: CardInput, interval: Interval): VipCard {
         ? 'current'
         : label === 'up'
           ? 'vip.ctaUp'
-          : !input.vipYearOffered
-            ? 'vip.cta'
-            : yearly
-              ? 'vip.ctaYear'
-              : 'vip.ctaMonth',
-    notePaid: label !== 'current' && !!href,
+          : trial
+            ? 'vip.ctaTrial'
+            : !input.vipYearOffered
+              ? 'vip.cta'
+              : yearly
+                ? 'vip.ctaYear'
+                : 'vip.ctaMonth',
+    notePaid: !trial && label !== 'current' && !!href,
+    noteKey: trial ? (yearly ? 'pro.note' : 'pro.noteMonth') : null,
   };
 }
 

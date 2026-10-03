@@ -168,7 +168,7 @@
       "label": "Questions",
       "title": "Frequently asked questions",
       "q1": "How does the free trial work?",
-      "a1": "You try Pro free for {dias} days, on the monthly or the yearly plan. You pay $0 today and we email you the charge notice today. If you cancel before they end, you pay nothing: it’s 1 click from My account, no calls.",
+      "a1": "You try any plan free for {dias} days, monthly or yearly, first time only. You pay $0 today and we email you the charge notice today. If you cancel before they end, you pay nothing: it’s 1 click from My account, no calls.",
       "q2": "Do I need tech skills?",
       "a2": "No. Each tool guides you step by step, with big buttons and simple words.",
       "a2help": "If you get stuck, a real person helps you on WhatsApp.",
@@ -934,8 +934,8 @@
     },
     "vars": {
       "periodicidad": {
-        "year": "for 1 year of Pro",
-        "month": "for your first month of Pro"
+        "year": "for 1 year of {plan}",
+        "month": "for your first month of {plan}"
       },
       "renovacion": {
         "year": "every year ({monto} MXN)",
@@ -957,7 +957,7 @@
     "disclosure": {
       "today": "<b>You pay $0 today.</b>",
       "charge": "If you don’t cancel before, on <b>{fecha_cobro}</b> we will charge <b>{monto} MXN</b> {periodicidad} to {tarjeta}, and it will renew automatically {renovacion} until you cancel.",
-      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep Pro until {fecha_fin_prueba} and pay nothing.",
+      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep {plan} until {fecha_fin_prueba} and you aren’t charged.",
       "ends": "Your {dias}-day free trial ends on <b>{fecha_fin_prueba}</b>.",
       "notice": "Today we email you the charge notice with this date and this amount."
     },
@@ -1012,7 +1012,8 @@
       "save": "Save {ahorro} a year · {pct}%",
       "switchYear": "Switch to yearly and save {ahorro} a year",
       "ctaYear": "Choose VIP yearly",
-      "ctaMonth": "Choose VIP monthly"
+      "ctaMonth": "Choose VIP monthly",
+      "ctaTrial": "Start my 7-day free trial"
     },
     "current": "Your current plan",
     "trialing": "You’re on your Pro trial",
@@ -1020,7 +1021,7 @@
     "faqTitle": "Frequently asked questions",
     "faq": {
       "q1": "How does the free trial work?",
-      "a1": "You pick Pro monthly or Pro yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your {dias} free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card; VIP has no trial.",
+      "a1": "You pick your plan and whether you pay monthly or yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your {dias} free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card, first time only.",
       "q2": "Can I switch from yearly to monthly?",
       "a2": "Yes, from My account → My plan, whenever you want.",
       "q3": "What are credits?",
@@ -1030,7 +1031,7 @@
     },
     "quebec": "Paid plans aren’t available in Quebec for now.",
     "trialChip": "{dias} days free",
-    "trialFootnote": "Free Pro trial, {dias} days: monthly or yearly, once per account and per card. VIP has no trial.",
+    "trialFootnote": "Free {dias}-day trial on any plan, monthly or yearly: first time only, once per account and per card.",
     "yourPlan": "Your plan",
     "featsTitle": "What you get:",
     "notePaid": "Charged today. Cancel online anytime.",
@@ -1048,25 +1049,25 @@
     }
   },
   "checkout": {
-    "tool": "Pro free trial",
+    "tool": "Free trial",
     "toolPaid": "Pro plan",
     "step": "Step {n} of 3",
     "back": "Back",
     "close": "Close and go back to Home",
     "trial": {
       "metaTitle": "Your trial",
-      "title": "Try Pro free for {dias} days",
+      "title": "Try {plan} free for {dias} days",
       "sub": "Cancel any time.",
       "q": "Which plan do you want when your {dias} free days end?",
       "year": "Pro yearly",
       "month": "Pro monthly",
       "cta": "Continue to payment",
       "subAllTools": "Every tool included. Cancel any time.",
-      "monthRow": "Pro monthly — {monto} MXN a month",
-      "yearRow": "Pro yearly — {monto} MXN a year",
+      "monthRow": "{plan} monthly — {monto} MXN a month",
+      "yearRow": "{plan} yearly — {monto} MXN a year",
       "yearOnce": "(one charge a year)",
-      "yearSave": "You save {ahorro} a year compared with 12 months of Pro monthly",
-      "cameFromYear": "You picked Pro yearly on the card",
+      "yearSave": "You save {ahorro} a year compared with 12 months of {plan} monthly",
+      "cameFromYear": "You picked {plan} yearly on the card",
       "pickFirst": "Pick a plan to continue."
     },
     "paid": {
@@ -1112,15 +1113,15 @@
       "after": "After that",
       "afterValue": "{monto} MXN {cada_periodo}",
       "totalToday": "Total today",
-      "switchMonth": "Switch to Pro monthly ({monto} a month)",
-      "switchYear": "Switch to Pro yearly ({monto} a year)",
+      "switchMonth": "Switch to {plan} monthly ({monto} a month)",
+      "switchYear": "Switch to {plan} yearly ({monto} a year)",
       "ivaLabel": "IVA (VAT) included"
     },
     "done": {
       "metaTitle": "Done",
       "title": "All set, {nombre}!",
       "titleAnon": "All set!",
-      "headline": "Your {dias} free days of Pro have started.",
+      "headline": "Your {dias} free days of {plan} have started.",
       "headlinePaid": "Your Pro plan is active.",
       "sub": "They end on {fecha_fin_prueba}. First charge: <b>{monto} MXN</b> on {fecha_cobro} to your card ••{ultimos4}. We sent the charge notice to {correo}.",
       "paidToday": "You paid today",
@@ -1132,7 +1133,7 @@
     }
   },
   "banner": {
-    "trial": "<b>Free Pro trial</b> · On <b>{fecha_cobro}</b> you’ll be charged <b>{monto} MXN</b>, unless you cancel before.",
+    "trial": "<b>Free {plan} trial</b> · On <b>{fecha_cobro}</b> you’ll be charged <b>{monto} MXN</b>, unless you cancel before.",
     "ended": "Your trial ended. You’re on the Free plan.",
     "pastDue": "We couldn’t charge your plan. Update your card before <b>{fecha_gracia}</b> to keep Pro.",
     "renew": "Your {plan} plan renews on <b>{fecha_cobro}</b> for <b>{monto} MXN</b>.",
@@ -1159,7 +1160,7 @@
       "pro_month": "Pro monthly — everything included",
       "pro_year": "Pro yearly — everything included",
       "vip_month": "VIP — everything included and more credits",
-      "trial": "Pro free trial",
+      "trial": "Free {plan} trial",
       "free": "Free",
       "vip_year": "VIP yearly — everything included and more credits"
     },

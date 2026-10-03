@@ -297,8 +297,9 @@ test('change timing (Términos §4.4–4.5, C13)', () => {
   // During the 7-day trial, Pro mensual ↔ Pro anual both keep the charge date (T-6).
   assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
   assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
-  assert.equal(changeTiming('pro_year', 'vip_month', true), 'now');
-  assert.equal(changeTiming('pro_year', 'vip_year', true), 'now');
+  // Every plan has the trial (owner, 2026-10-03): a switch to VIP keeps the date too.
+  assert.equal(changeTiming('pro_year', 'vip_month', true), 'trial_end');
+  assert.equal(changeTiming('pro_year', 'vip_year', true), 'trial_end');
 });
 
 test('VIP upgrade: full VIP today, refund of the unused days', () => {
@@ -464,11 +465,14 @@ test('seller identity: every field is required before the trial can open', () =>
   assert.equal(missingLegalEntityFields().length, 7);
 });
 
-test('reactivating after cancelling a trial: Pro keeps the rest of it, VIP is charged today', () => {
+test('reactivating after cancelling a trial: any plan keeps the rest of it', () => {
   const now = new Date('2026-10-05T12:00:00Z');
   const accessUntil = '2026-10-10T12:00:00Z';
-  // Cancelled trial → VIP: charged today, no leftover free days.
-  assert.equal(reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now }), null);
+  // Every plan has the trial (owner, 2026-10-03), so the trial continues on VIP too.
+  assert.equal(
+    reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now })?.toISOString(),
+    '2026-10-10T12:00:00.000Z',
+  );
   // Cancelled trial → Pro mensual or Pro anual: the trial continues.
   assert.equal(
     reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: true, now })?.toISOString(),

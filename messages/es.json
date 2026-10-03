@@ -168,7 +168,7 @@
       "label": "Preguntas",
       "title": "Preguntas frecuentes",
       "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Pruebas Pro {dias} días gratis, con el plan mensual o con el anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
+      "a1": "Pruebas cualquier plan {dias} días gratis, mensual o anual, solo la primera vez. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
       "q2": "¿Necesito saber de tecnología?",
       "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
       "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
@@ -934,8 +934,8 @@
     },
     "vars": {
       "periodicidad": {
-        "year": "por 1 año de Pro",
-        "month": "por tu primer mes de Pro"
+        "year": "por 1 año de {plan}",
+        "month": "por tu primer mes de {plan}"
       },
       "renovacion": {
         "year": "cada año ({monto} MXN)",
@@ -957,7 +957,7 @@
     "disclosure": {
       "today": "<b>Hoy pagas $0.</b>",
       "charge": "Si no cancelas antes, el <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b> {periodicidad} a {tarjeta}, y se renovará automáticamente {renovacion} hasta que canceles.",
-      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada.",
+      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con {plan} hasta el {fecha_fin_prueba} y no se te cobra nada.",
       "ends": "Tu prueba gratis de {dias} días termina el <b>{fecha_fin_prueba}</b>.",
       "notice": "Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto."
     },
@@ -1012,7 +1012,8 @@
       "save": "Ahorras {ahorro} al año · {pct}%",
       "switchYear": "Cambia a Anual y ahorra {ahorro} al año",
       "ctaYear": "Elegir VIP anual",
-      "ctaMonth": "Elegir VIP mensual"
+      "ctaMonth": "Elegir VIP mensual",
+      "ctaTrial": "Empezar mis 7 días gratis"
     },
     "current": "Tu plan actual",
     "trialing": "Ya estás probando Pro",
@@ -1020,7 +1021,7 @@
     "faqTitle": "Preguntas frecuentes",
     "faq": {
       "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Eliges Pro mensual o Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus {dias} días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta; VIP no tiene prueba.",
+      "a1": "Eliges tu plan y si lo pagas mes a mes o al año. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus {dias} días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta, solo la primera vez.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -1030,7 +1031,7 @@
     },
     "quebec": "Por ahora los planes de pago no están disponibles en Quebec.",
     "trialChip": "{dias} días gratis",
-    "trialFootnote": "Prueba Pro gratis {dias} días: mensual o anual, una vez por cuenta y por tarjeta. VIP no tiene prueba.",
+    "trialFootnote": "Prueba gratis {dias} días en cualquier plan, mensual o anual: solo la primera vez, una vez por cuenta y por tarjeta.",
     "yourPlan": "Tu plan",
     "featsTitle": "Incluye:",
     "notePaid": "Se cobra hoy. Cancela en 1 clic, sin llamadas.",
@@ -1048,25 +1049,25 @@
     }
   },
   "checkout": {
-    "tool": "Prueba Pro gratis",
+    "tool": "Prueba gratis",
     "toolPaid": "Plan Pro",
     "step": "Paso {n} de 3",
     "back": "Atrás",
     "close": "Cerrar y volver a Inicio",
     "trial": {
       "metaTitle": "Tu prueba",
-      "title": "Prueba Pro gratis de {dias} días",
+      "title": "Prueba {plan} gratis de {dias} días",
       "sub": "Cancela cuando quieras.",
       "q": "¿Qué plan quieres cuando terminen tus {dias} días gratis?",
       "year": "Pro anual",
       "month": "Pro mensual",
       "cta": "Continuar al pago",
       "subAllTools": "Todas las herramientas incluidas. Cancela cuando quieras.",
-      "monthRow": "Pro mensual — {monto} MXN al mes",
-      "yearRow": "Pro anual — {monto} MXN al año",
+      "monthRow": "{plan} mensual — {monto} MXN al mes",
+      "yearRow": "{plan} anual — {monto} MXN al año",
       "yearOnce": "(un solo cobro al año)",
-      "yearSave": "Ahorras {ahorro} al año frente a 12 meses de Pro mensual",
-      "cameFromYear": "Elegiste Pro anual en la tarjeta",
+      "yearSave": "Ahorras {ahorro} al año frente a 12 meses de {plan} mensual",
+      "cameFromYear": "Elegiste {plan} anual en la tarjeta",
       "pickFirst": "Elige un plan para continuar."
     },
     "paid": {
@@ -1112,15 +1113,15 @@
       "after": "Después",
       "afterValue": "{monto} MXN {cada_periodo}",
       "totalToday": "Total hoy",
-      "switchMonth": "Cambiar a Pro mensual ({monto} al mes)",
-      "switchYear": "Cambiar a Pro anual ({monto} al año)",
+      "switchMonth": "Cambiar a {plan} mensual ({monto} al mes)",
+      "switchYear": "Cambiar a {plan} anual ({monto} al año)",
       "ivaLabel": "IVA incluido"
     },
     "done": {
       "metaTitle": "Listo",
       "title": "¡Listo, {nombre}!",
       "titleAnon": "¡Listo!",
-      "headline": "Tus {dias} días de Pro gratis ya empezaron.",
+      "headline": "Tus {dias} días de {plan} gratis ya empezaron.",
       "headlinePaid": "Tu plan Pro ya está activo.",
       "sub": "Terminan el {fecha_fin_prueba}. Primer cobro: <b>{monto} MXN</b> el {fecha_cobro} a tu tarjeta ••{ultimos4}. Te enviamos el aviso de cobro a {correo}.",
       "paidToday": "Hoy pagaste",
@@ -1132,7 +1133,7 @@
     }
   },
   "banner": {
-    "trial": "<b>Prueba Pro gratis</b> · El <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b>, salvo que canceles antes.",
+    "trial": "<b>Prueba {plan} gratis</b> · El <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b>, salvo que canceles antes.",
     "ended": "Tu prueba terminó. Estás en el plan Gratis.",
     "pastDue": "No pudimos cobrar tu plan. Actualiza tu tarjeta antes del <b>{fecha_gracia}</b> para no perder Pro.",
     "renew": "Tu plan {plan} se renueva el <b>{fecha_cobro}</b> por <b>{monto} MXN</b>.",
@@ -1159,7 +1160,7 @@
       "pro_month": "Pro mensual — todo incluido",
       "pro_year": "Pro anual — todo incluido",
       "vip_month": "VIP — todo incluido y más créditos",
-      "trial": "Prueba Pro gratis",
+      "trial": "Prueba {plan} gratis",
       "free": "Gratis",
       "vip_year": "VIP anual — todo incluido y más créditos"
     },

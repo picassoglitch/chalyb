@@ -253,14 +253,15 @@ export const PRICING = {
   currency: CURRENCY,
   /** Q3 · Mensual/Anual choice in the trial. */
   defaultInterval: 'year' as const,
-  /** 7-day Pro trial on Pro mensual AND Pro anual (owner + Law, 2026-10-03;
-   *  PRICING-CARDS-SPEC §16.1). Card required; one per account, person and
-   *  card. The charge notice goes out on day 0, i.e. `reminderDaysBefore`
-   *  (= days) before the charge: Law's ≥5-day minimum is met by one email. */
+  /** 7-day trial on EVERY plan, for first-time customers only (owner,
+   *  2026-10-03, over Law's Pro-only rule: Términos §4.1 needs updating and
+   *  Law's OK). Card required; one per account, person and card. The charge
+   *  notice goes out on day 0, i.e. `reminderDaysBefore` (= days) before the
+   *  charge: Law's ≥5-day minimum is met by one email. */
   trial: {
     days: 7,
     reminderDaysBefore: 7,
-    plans: ['pro_month', 'pro_year'] as readonly PlanKey[],
+    plans: ['pro_month', 'pro_year', 'vip_month', 'vip_year'] as readonly PlanKey[],
     requiresCard: true,
   },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
@@ -273,10 +274,11 @@ export const PRICING = {
   maxVideoHours: { gratis: null, pro: null, vip: null } as Record<string, number | null>,
 };
 
-/** Whether choosing this plan opens the 7-day trial (if the account hasn't
- *  used it): Pro mensual and Pro anual. VIP (and Pro Lealtad) never. */
+/** Whether choosing this plan opens the 7-day trial (if the account and the
+ *  card haven't used one): every plan in PRICING.trial.plans (owner,
+ *  2026-10-03). Pro Lealtad (WS-7) stays out. */
 export function planHasTrial(key: PlanKey): boolean {
-  return key === 'pro_month' || key === 'pro_year';
+  return PRICING.trial.plans.includes(key);
 }
 
 /** LFPC art. 76 Bis VIII: every charge notice at least this many calendar

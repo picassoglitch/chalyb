@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: 'ADMIN' }, { status: 403 });
   const planKey = String(body.planKey ?? '');
   // Mensual only while the owner offers it (P5-6).
-  if (planKey === 'pro_month' && !(await billingToggleEnabled())) {
+  if ((planKey === 'pro_month' || planKey === 'vip_month') && !(await billingToggleEnabled())) {
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 409 });
   }
   if (!planOnSale(planKey, vipYearEnabled())) {

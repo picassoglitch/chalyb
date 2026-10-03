@@ -4,7 +4,7 @@ import { redirect } from '@/i18n/routing';
 import { requireTrialFlow } from '@/lib/billing/trial-gate';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { billingToggleEnabled } from '@/lib/config/settings';
-import { allToolsClaimAllowed } from '@/lib/config/flags';
+import { allToolsClaimAllowed, vipYearEnabled } from '@/lib/config/flags';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { TrialPicker } from '@/components/app/billing/trial-picker';
 
@@ -20,10 +20,12 @@ export default async function TuPruebaPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ interval?: string }>;
+  searchParams: Promise<{ interval?: string; plan?: string }>;
 }) {
   const { locale } = await params;
-  const { interval } = await searchParams;
+  const { interval, plan } = await searchParams;
+  // The trial covers every plan (owner, 2026-10-03); ?plan=vip opens VIP's.
+  const tier = plan === 'vip' ? 'vip' : 'pro';
   setRequestLocale(locale);
   const session = await requireTrialFlow(locale, '/app/prueba');
   const billing = await loadBilling(session.user.id);
@@ -43,6 +45,8 @@ export default async function TuPruebaPage({
       narrow
     >
       <TrialPicker
+        tier={tier}
+        annualOffered={tier === 'pro' || vipYearEnabled()}
         choiceEnabled={await billingToggleEnabled()}
         trialUsed={billing.trialUsed}
         cameFrom={interval === 'month' || interval === 'year' ? interval : null}

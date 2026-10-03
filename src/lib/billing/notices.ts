@@ -51,7 +51,7 @@ export function trialNoticeVars(input: {
     plan: PLAN_NAMES[input.planKey],
     monto,
     renovacion: `${year ? 'cada año' : 'cada mes'} (${monto} MXN)`,
-    periodicidad: year ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
+    periodicidad: `${year ? 'por 1 año de' : 'por tu primer mes de'} ${price.tier === 'VIP' ? 'VIP' : 'Pro'}`,
     fecha_inicio: formatFechaLarga(input.startedAt, 'es'),
     fecha_fin_prueba: formatFechaLarga(input.trialEndsAt, 'es'),
     fecha_cobro: formatFechaLarga(input.chargeAt, 'es'),
@@ -64,7 +64,11 @@ export function trialNoticeVars(input: {
     ),
     ultimos4: input.last4 ?? undefined,
     consent_id: input.consentId ?? undefined,
-    switch_mensual: year ? formatMXN(planPrice('pro_month').totalCents) : undefined,
+    plan_corto: price.tier === 'VIP' ? 'VIP' : 'Pro',
+    switch_plan: price.tier === 'VIP' ? 'vip_month' : 'pro_month',
+    switch_mensual: year
+      ? formatMXN(planPrice(price.tier === 'VIP' ? 'vip_month' : 'pro_month').totalCents)
+      : undefined,
     documentos: legalDocuments('terminos', 'suscripcion', 'privacidad').map((d) => ({
       label: DOC_LABELS[d.doc] ?? d.doc,
       version: d.version,

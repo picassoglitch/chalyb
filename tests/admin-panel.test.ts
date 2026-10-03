@@ -30,12 +30,30 @@ const at = (ms: number) => new Date(NOW.getTime() + ms).toISOString();
 
 let n = 0;
 const pay = (over: Partial<PaymentFact>): PaymentFact => ({
-  id: `p${n++}`, user_id: 'u1', amount_cents: 86884, currency: 'MXN', status: 'approved', refunded_cents: 0,
-  kind: 'subscription', plan_key: 'pro_month', mp_preapproval_id: null, created_at: at(-DAY), ...over,
+  id: `p${n++}`,
+  user_id: 'u1',
+  amount_cents: 86884,
+  currency: 'MXN',
+  status: 'approved',
+  refunded_cents: 0,
+  kind: 'subscription',
+  plan_key: 'pro_month',
+  mp_preapproval_id: null,
+  created_at: at(-DAY),
+  ...over,
 });
 const sub = (over: Partial<SubscriptionFact>): SubscriptionFact => ({
-  user_id: 'u1', status: 'authorized', plan_key: 'pro_month', tier: 'PRO', mp_preapproval_id: null, trial_ends_at: null,
-  started_at: at(-40 * DAY), created_at: at(-40 * DAY), cancel_at_period_end: false, cancelled_at: null, ...over,
+  user_id: 'u1',
+  status: 'authorized',
+  plan_key: 'pro_month',
+  tier: 'PRO',
+  mp_preapproval_id: null,
+  trial_ends_at: null,
+  started_at: at(-40 * DAY),
+  created_at: at(-40 * DAY),
+  cancel_at_period_end: false,
+  cancelled_at: null,
+  ...over,
 });
 
 test('month windows are cut in Mexico City time', () => {
@@ -78,7 +96,14 @@ test('Centro de mando KPIs on fixtures', () => {
     sub({ user_id: 'd', trial_ends_at: at(20 * DAY) }), // trial
     sub({ user_id: 'e', status: 'cancelled', cancel_at_period_end: true }),
     // finished trials: 6 of them, 3 paid → "de cada 10, 5 se quedan"
-    ...[0, 1, 2, 3, 4, 5].map((i) => sub({ user_id: `t${i}`, mp_preapproval_id: `pt${i}`, status: i < 3 ? 'authorized' : 'cancelled', trial_ends_at: at(-(i + 1) * DAY) })),
+    ...[0, 1, 2, 3, 4, 5].map((i) =>
+      sub({
+        user_id: `t${i}`,
+        mp_preapproval_id: `pt${i}`,
+        status: i < 3 ? 'authorized' : 'cancelled',
+        trial_ends_at: at(-(i + 1) * DAY),
+      }),
+    ),
   ];
   const pays = [
     pay({ mp_preapproval_id: 'pa', created_at: at(-2 * DAY) }),
@@ -106,13 +131,22 @@ test('Dinero: failed, refunds, six months, funnel, movement states', () => {
   ];
   const subs = [
     sub({ user_id: 'x', started_at: at(-5 * DAY), trial_ends_at: at(25 * DAY) }),
-    sub({ user_id: 'y', started_at: at(-6 * DAY), trial_ends_at: at(24 * DAY), status: 'cancelled', cancel_at_period_end: true }),
+    sub({
+      user_id: 'y',
+      started_at: at(-6 * DAY),
+      trial_ends_at: at(24 * DAY),
+      status: 'cancelled',
+      cancel_at_period_end: true,
+    }),
   ];
   const m = moneyPage(pays, subs, NOW);
   assert.equal(m.failedCharges, 1);
   assert.equal(m.refunds, 2);
   assert.equal(m.byMonth.length, 6);
-  assert.ok(m.byMonth.every((b, i, a) => i === 0 || b.start > a[i - 1]!.start), 'oldest first');
+  assert.ok(
+    m.byMonth.every((b, i, a) => i === 0 || b.start > a[i - 1]!.start),
+    'oldest first',
+  );
   assert.deepEqual(m.funnel, { started: 2, stillTrial: 1, paid: 0, cancelled: 1 });
   assert.equal(movementState({ status: 'approved', refunded_cents: 0 }), 'charged');
   assert.equal(movementState({ status: 'approved', refunded_cents: 5 }), 'refunded');
@@ -121,8 +155,15 @@ test('Dinero: failed, refunds, six months, funnel, movement states', () => {
 });
 
 test('the panel never reads plans to compute revenue', () => {
-  const src = readFileSync(fileURLToPath(new URL('../src/lib/admin/kpis.ts', import.meta.url)), 'utf8');
-  assert.doesNotMatch(src, /planPrice|PRICING|amount_cents\s*\*\s*/, 'revenue only from payments rows');
+  const src = readFileSync(
+    fileURLToPath(new URL('../src/lib/admin/kpis.ts', import.meta.url)),
+    'utf8',
+  );
+  assert.doesNotMatch(
+    src,
+    /planPrice|PRICING|amount_cents\s*\*\s*/,
+    'revenue only from payments rows',
+  );
 });
 
 test('people: status chips, search, and only actions that make sense', () => {
@@ -130,26 +171,84 @@ test('people: status chips, search, and only actions that make sense', () => {
   assert.equal(personStatus(null, t), 'free');
   assert.equal(personStatus(sub({}), t), 'active');
   assert.equal(personStatus(sub({ trial_ends_at: at(5 * DAY) }), t), 'trial');
-  assert.equal(personStatus({ ...sub({ status: 'paused' }), grace_ends_at: at(3 * DAY) }, t), 'past_due');
-  assert.equal(personStatus({ ...sub({ status: 'cancelled', cancel_at_period_end: true }), access_until: at(5 * DAY) }, t), 'ending');
-  assert.equal(personStatus({ ...sub({ status: 'cancelled', cancel_at_period_end: true }), access_until: at(-5 * DAY) }, t), 'cancelled');
+  assert.equal(
+    personStatus({ ...sub({ status: 'paused' }), grace_ends_at: at(3 * DAY) }, t),
+    'past_due',
+  );
+  assert.equal(
+    personStatus(
+      { ...sub({ status: 'cancelled', cancel_at_period_end: true }), access_until: at(5 * DAY) },
+      t,
+    ),
+    'ending',
+  );
+  assert.equal(
+    personStatus(
+      { ...sub({ status: 'cancelled', cancel_at_period_end: true }), access_until: at(-5 * DAY) },
+      t,
+    ),
+    'cancelled',
+  );
 
-  const row = (id: string, name: string, s: PersonRow['status'], sb: PersonRow['sub']): PersonRow => ({ id, name, email: `${id}@x.mx`, plan: 'Pro', status: s, since: at(0), sub: sb });
-  const rows = [row('ana', 'Ana', 'trial', null), row('beto', 'Beto', 'past_due', null), row('caro', 'Caro', 'ending', null)];
-  assert.deepEqual(filterPeople(rows, 'cancelled', '').map((r) => r.id), ['caro']);
-  assert.deepEqual(filterPeople(rows, 'all', 'BETO@').map((r) => r.id), ['beto']);
+  const row = (
+    id: string,
+    name: string,
+    s: PersonRow['status'],
+    sb: PersonRow['sub'],
+  ): PersonRow => ({
+    id,
+    name,
+    email: `${id}@x.mx`,
+    plan: 'Pro',
+    status: s,
+    since: at(0),
+    sub: sb,
+  });
+  const rows = [
+    row('ana', 'Ana', 'trial', null),
+    row('beto', 'Beto', 'past_due', null),
+    row('caro', 'Caro', 'ending', null),
+  ];
+  assert.deepEqual(
+    filterPeople(rows, 'cancelled', '').map((r) => r.id),
+    ['caro'],
+  );
+  assert.deepEqual(
+    filterPeople(rows, 'all', 'BETO@').map((r) => r.id),
+    ['beto'],
+  );
 
   const active = personActions(row('a', 'A', 'active', sub({})), 86884);
   assert.equal(active.giftMonth, false, 'a free month would not stop an automatic charge');
   assert.equal(active.cancel, true);
   assert.equal(active.refundLast, true);
   const free = personActions(row('f', 'F', 'free', null), null);
-  assert.deepEqual(free, { giftMonth: true, changePlan: true, resendAccess: true, refundLast: false, cancel: false });
+  assert.deepEqual(free, {
+    giftMonth: true,
+    changePlan: true,
+    resendAccess: true,
+    refundLast: false,
+    cancel: false,
+  });
 });
 
 test('attention: only pending items, each with a target', () => {
-  const items = attentionItems({ failedCharges: 2, refundRequests: 0, slowTools: 1, newIdeas: 0, bouncedNotices: 1, chargesWithoutNotice: 0 });
-  assert.deepEqual(items.map((i) => [i.key, i.n]), [['failedCharges', 2], ['slowTools', 1], ['bouncedNotices', 1]]);
+  const items = attentionItems({
+    failedCharges: 2,
+    refundRequests: 0,
+    slowTools: 1,
+    newIdeas: 0,
+    bouncedNotices: 1,
+    chargesWithoutNotice: 0,
+  });
+  assert.deepEqual(
+    items.map((i) => [i.key, i.n]),
+    [
+      ['failedCharges', 2],
+      ['slowTools', 1],
+      ['bouncedNotices', 1],
+    ],
+  );
   assert.ok(items.every((i) => i.href.startsWith('/dashboard/')));
   assert.equal(toolHealth({ engineState: null, failures24h: 0 }), 'ok', 'no report is not "down"');
   assert.equal(toolHealth({ engineState: 'HEALTHY', failures24h: SLOW_FAILURES_24H }), 'slow');
@@ -158,14 +257,31 @@ test('attention: only pending items, each with a target', () => {
 });
 
 test('activity: merged, newest first, deduped, filtered by type and tool', () => {
-  const e = (id: string, at: string, type: ActivityEvent['type'], tool: string | null = null): ActivityEvent => ({ id, at, type, tool, title: id, detail: null, who: null });
+  const e = (
+    id: string,
+    at: string,
+    type: ActivityEvent['type'],
+    tool: string | null = null,
+  ): ActivityEvent => ({ id, at, type, tool, title: id, detail: null, who: null });
   const merged = mergeActivity([
     [e('a', '2026-10-01T10:00:00Z', 'charge'), e('b', '2026-10-03T10:00:00Z', 'admin')],
-    [e('c', '2026-10-02T10:00:00Z', 'tool', 'chalybclip'), e('a', '2026-10-01T10:00:00Z', 'charge')],
+    [
+      e('c', '2026-10-02T10:00:00Z', 'tool', 'chalybclip'),
+      e('a', '2026-10-01T10:00:00Z', 'charge'),
+    ],
   ]);
-  assert.deepEqual(merged.map((x) => x.id), ['b', 'c', 'a']);
-  assert.deepEqual(mergeActivity([merged], { type: 'tool' }).map((x) => x.id), ['c']);
-  assert.deepEqual(mergeActivity([merged], { tool: 'chalybclip' }).map((x) => x.id), ['c']);
+  assert.deepEqual(
+    merged.map((x) => x.id),
+    ['b', 'c', 'a'],
+  );
+  assert.deepEqual(
+    mergeActivity([merged], { type: 'tool' }).map((x) => x.id),
+    ['c'],
+  );
+  assert.deepEqual(
+    mergeActivity([merged], { tool: 'chalybclip' }).map((x) => x.id),
+    ['c'],
+  );
 });
 
 test('the Mensual/Anual override is what pricing reads', () => {
@@ -176,13 +292,18 @@ test('the Mensual/Anual override is what pricing reads', () => {
 });
 
 test('six nav items, exactly', () => {
-  assert.deepEqual(ADMIN_NAV.map((x) => x.key), ['command', 'people', 'money', 'tools', 'activity', 'settings']);
+  assert.deepEqual(
+    ADMIN_NAV.map((x) => x.key),
+    ['command', 'people', 'money', 'tools', 'activity', 'settings'],
+  );
   assert.equal(activeAdminNav('/en/dashboard/dinero?estado=failed'), 'money');
   assert.equal(activeAdminNav('/dashboard/team'), null);
 });
 
 test('no sample number on the owner panel without "Ejemplo" (P5-7)', () => {
-  const dir = fileURLToPath(new URL('../src/app/[locale]/(dashboard)/dashboard/(admin)/', import.meta.url));
+  const dir = fileURLToPath(
+    new URL('../src/app/[locale]/(dashboard)/dashboard/(admin)/', import.meta.url),
+  );
   const files: string[] = [];
   const walk = (d: string) => {
     for (const f of readdirSync(d)) {
@@ -195,6 +316,7 @@ test('no sample number on the owner panel without "Ejemplo" (P5-7)', () => {
   for (const f of files) {
     const src = readFileSync(f, 'utf8');
     assert.doesNotMatch(src, /value=["'{]\s*["'`][^"'`]*\d/, `${f}: a KPI with a literal number`);
-    if (/MONTHLY_OPERATING_COSTS/.test(src)) assert.match(src, /<ExampleTag>/, `${f}: configured costs need "Ejemplo"`);
+    if (/MONTHLY_OPERATING_COSTS/.test(src))
+      assert.match(src, /<ExampleTag>/, `${f}: configured costs need "Ejemplo"`);
   }
 });

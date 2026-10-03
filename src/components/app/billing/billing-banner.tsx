@@ -84,7 +84,12 @@ async function renderBanner(
       case 'trialTomorrow':
         return t.markup('trialTomorrow', { fecha_cobro: date(s.nextChargeAt), monto, b });
       case 'trial':
-        return t.markup('trial', { fecha_cobro: date(s.nextChargeAt), monto, b });
+        return t.markup('trial', {
+          fecha_cobro: date(s.nextChargeAt),
+          monto,
+          plan: s.planKey && planPrice(s.planKey).tier === 'VIP' ? 'VIP' : 'Pro',
+          b,
+        });
       case 'renew':
         return t.markup('renew', {
           plan: s.planKey ? tPlan(s.planKey) : '',

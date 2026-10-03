@@ -106,10 +106,11 @@ test('Planes CTAs per state (K-2, spec §4.3)', () => {
     hrefMonth: '/sign-in?mode=signup&intent=trial&interval=month',
     label: 'trial',
   });
+  // VIP has the trial too, for a first-time customer (owner, 2026-10-03).
   assert.deepEqual(anon.vip, {
     hrefYear: null,
-    hrefMonth: '/sign-in?mode=signup&plan=vip&interval=month',
-    label: 'choose',
+    hrefMonth: '/sign-in?mode=signup&intent=trial&plan=vip&interval=month',
+    label: 'trial',
   });
   // Flow off: monthly only, the legacy checkout, no trial (mockup 85, PC-B1/B4).
   const off = plansCta({
@@ -181,7 +182,20 @@ test('Planes CTAs per state (K-2, spec §4.3)', () => {
     trialUsed: false,
     billing: state({}),
   });
-  assert.equal(vipYear.vip.hrefYear, '/app/billing/cambiar?plan=vip_year');
+  assert.equal(vipYear.vip.hrefYear, '/app/prueba?plan=vip&interval=year');
+  const vipPaid = plansCta({
+    ...base,
+    vipYearOffered: true,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({}),
+  });
+  assert.equal(vipPaid.vip.hrefYear, '/app/billing/cambiar?plan=vip_year');
+  assert.equal(
+    signupNext({ intent: 'trial', plan: 'vip', interval: 'year', flow: true }),
+    '/app/prueba?plan=vip&interval=year',
+  );
 });
 
 test('sign-up keeps the card’s interval (K-2)', () => {

@@ -38,13 +38,13 @@ function translatorFor(locale: 'es' | 'en'): Translate {
   };
 }
 
-test('vip_year: $36,325 a year, no trial, saves $9,263 · 20%', () => {
+test('vip_year: $36,325 a year, the trial like every plan, saves $9,263 · 20%', () => {
   delete process.env.PRICES_INCLUDE_IVA;
   const p = planPrice('vip_year');
   assert.deepEqual(p, { key: 'vip_year', tier: 'VIP', interval: 'year', totalCents: 3_632_500 });
   assert.equal(formatMXN(p.totalCents), '$36,325');
   assert.deepEqual(annualMath('vip'), { yearVsMonthlyCents: 4_558_800, yearSavingsCents: 926_300 });
-  assert.equal(planHasTrial('vip_year'), false);
+  assert.equal(planHasTrial('vip_year'), true);
   assert.equal(PLAN_NAMES.vip_year, 'VIP anual');
 });
 

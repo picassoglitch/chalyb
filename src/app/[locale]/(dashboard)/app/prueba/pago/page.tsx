@@ -4,7 +4,7 @@ import { Lock } from 'lucide-react';
 import { redirect, Link } from '@/i18n/routing';
 import type { Route } from 'next';
 import { requirePaidCheckout } from '@/lib/billing/trial-gate';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { trialFlowEnabled, vipYearEnabled } from '@/lib/config/flags';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
@@ -47,14 +47,19 @@ export default async function PagoPage({
   const { plan } = await searchParams;
   const monthlyOffered = await billingToggleEnabled();
   // Never a default plan here (C9): the plan comes from the picker.
-  if (plan !== 'pro_year' && !(plan === 'pro_month' && monthlyOffered)) {
+  const onSale =
+    plan === 'pro_year' ||
+    (plan === 'vip_year' && vipYearEnabled()) ||
+    ((plan === 'pro_month' || plan === 'vip_month') && monthlyOffered);
+  if (!onSale) {
     return redirect({ href: '/app/prueba', locale });
   }
-  const planKey: PlanKey = plan;
+  const planKey = plan as PlanKey;
   // 7 days free on Pro mensual and Pro anual, once per account.
   const trial = trialFlowEnabled() && !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
+  const tPlan = await getTranslations('myplan.planName');
   const tbRaw = await getTranslations('billing');
   const tb: Translate = (key, values) =>
     tbRaw.markup(
@@ -80,7 +85,17 @@ export default async function PagoPage({
     ? consentSentence(tb, { planKey, dates, cardLast4: null, locale })
     : paidConsentSentence(tb, paidInput);
   const paidBlock = trial ? [] : paidParagraphs(tb, paidInput);
-  const other: PlanKey = planKey === 'pro_year' ? 'pro_month' : 'pro_year';
+  // The same plan's other interval (Pro ↔ Pro anual, VIP ↔ VIP anual).
+  const vip = planPrice(planKey).tier === 'VIP';
+  const other: PlanKey =
+    planPrice(planKey).interval === 'year'
+      ? vip
+        ? 'vip_month'
+        : 'pro_month'
+      : vip
+        ? 'vip_year'
+        : 'pro_year';
+  const otherOnSale = other !== 'vip_year' || vipYearEnabled();
   const publicKey = getPublicKey();
 
   return (
@@ -163,7 +178,7 @@ export default async function PagoPage({
               {trial && (
                 <>
                   <dt>{t('summary.planAfter')}</dt>
-                  <dd>{planKey === 'pro_year' ? t('trial.year') : t('trial.month')}</dd>
+                  <dd>{tPlan(planKey)}</dd>
                   <dt>{t('summary.trialEnds')}</dt>
                   <dd>{formatFechaLarga(dates.trialEndsAt, locale)}</dd>
                   <dt>{t('summary.remind')}</dt>
@@ -183,13 +198,17 @@ export default async function PagoPage({
               </dt>
               <dd>{trial ? '$0' : `${vars.monto} MXN`}</dd>
             </dl>
-            {monthlyOffered && (
+            {monthlyOffered && otherOnSale && (
               <Link href={`/app/prueba/pago?plan=${other}` as Route} className="ch-lnk">
-                {other === 'pro_month'
+                {planPrice(other).interval === 'month'
                   ? t('summary.switchMonth', {
-                      monto: formatMXN(planPrice('pro_month').totalCents),
+                      monto: formatMXN(planPrice(other).totalCents),
+                      plan: vip ? 'VIP' : 'Pro',
                     })
-                  : t('summary.switchYear', { monto: formatMXN(planPrice('pro_year').totalCents) })}
+                  : t('summary.switchYear', {
+                      monto: formatMXN(planPrice(other).totalCents),
+                      plan: vip ? 'VIP' : 'Pro',
+                    })}
               </Link>
             )}
           </aside>

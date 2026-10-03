@@ -19,7 +19,7 @@ export interface PlansCta {
   vip: {
     hrefYear: string | null;
     hrefMonth: string | null;
-    label: 'choose' | 'up' | 'current';
+    label: 'trial' | 'choose' | 'up' | 'current';
   };
 }
 
@@ -75,13 +75,18 @@ export function plansCta(input: {
             label: trial ? 'trial' : 'paid',
           };
 
-  // ── VIP (never a trial) ──────────────────────────────────────────
+  // ── VIP: the trial too, for a first-time customer (owner, 2026-10-03) ──
+  const vipTrial = trial && !paid;
   const vipTarget = (interval: Interval): string | null => {
     if (blocked) return null;
     if (interval === 'year' && !(input.annualOffered && input.vipYearOffered)) return null;
-    const paid = input.annualOffered;
-    if (!signedIn) return paid ? `${SIGNUP}&plan=vip&interval=${interval}` : `${SIGNUP}&plan=vip`;
-    if (!paid) return interval === 'month' ? '/app/subscription' : null;
+    const paidCheckout = input.annualOffered;
+    if (!signedIn) {
+      if (vipTrial) return `${SIGNUP}&intent=trial&plan=vip&interval=${interval}`;
+      return paidCheckout ? `${SIGNUP}&plan=vip&interval=${interval}` : `${SIGNUP}&plan=vip`;
+    }
+    if (vipTrial) return `/app/prueba?plan=vip&interval=${interval}`;
+    if (!paidCheckout) return interval === 'month' ? '/app/subscription' : null;
     return `/app/billing/cambiar?plan=vip_${interval}`;
   };
   const vip: PlansCta['vip'] =
@@ -90,7 +95,7 @@ export function plansCta(input: {
       : {
           hrefYear: vipTarget('year'),
           hrefMonth: vipTarget('month'),
-          label: paid ? 'up' : 'choose',
+          label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
         };
 
   const gratis: PlansCta['gratis'] =
@@ -116,10 +121,13 @@ export function signupNext(input: {
   const paid = input.paid ?? input.flow;
   const interval: Interval | null =
     input.interval === 'month' || input.interval === 'year' ? input.interval : null;
-  if (input.intent === 'trial' && input.flow) {
-    return interval ? `/app/prueba?interval=${interval}` : '/app/prueba';
-  }
   const plan = input.plan?.toLowerCase();
+  if (input.intent === 'trial' && input.flow) {
+    const qs = [plan === 'vip' ? 'plan=vip' : null, interval ? `interval=${interval}` : null]
+      .filter(Boolean)
+      .join('&');
+    return qs ? `/app/prueba?${qs}` : '/app/prueba';
+  }
   if (plan === 'free') return '/app';
   if (plan === 'pro') {
     return paid && interval ? `/app/prueba/pago?plan=pro_${interval}` : '/app/billing';

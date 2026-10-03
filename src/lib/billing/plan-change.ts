@@ -6,8 +6,8 @@
 //   the month.
 // - Pro → VIP (either interval): immediate, with the same proration.
 // - Annual → monthly, and VIP → Pro: at the end of the paid period.
-// - During the trial: Pro mensual ↔ Pro anual keeps the charge date (T-6,
-//   owner O-17); to VIP, charged today (VIP has no trial).
+// - During the trial: any switch keeps the charge date and gets its own
+//   charge notice (T-6, owner O-17); every plan has the trial now.
 // The credit is a refund on the last charge (Mercado Pago can't charge a
 // first amount different from the recurring one); both are shown before
 // confirming.
@@ -21,7 +21,6 @@ export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): Cha
   if (trialing && planHasTrial(to)) return 'trial_end';
   const a = planPrice(from);
   const b = planPrice(to);
-  if (trialing) return 'now'; // to VIP: no trial, charged today
   if (a.tier === 'PRO' && b.tier === 'VIP') return 'now';
   if (a.tier === b.tier && a.interval === 'month' && b.interval === 'year') return 'now';
   return 'period_end';

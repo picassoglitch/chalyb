@@ -232,7 +232,7 @@ export function PlanCards(props: Props) {
           {feats(props.features.pro, t('featsTitle'))}
         </section>
 
-        {/* VIP (never a trial) */}
+        {/* VIP (the trial too, for a first-time customer) */}
         <section
           className={`ch-pc${props.current === 'vip' ? ' ch-pc--current' : ''}`}
           aria-labelledby="pc-vip"
@@ -245,6 +245,12 @@ export function PlanCards(props: Props) {
               {t('vip.name')}
             </H>
             <p className="ch-pc__tag">{t('vip.tag')}</p>
+            {vip.chip && (
+              <span className="ch-pc__chip">
+                <Gift aria-hidden="true" />
+                {t('trialChip', { dias: PRICING.trial.days })}
+              </span>
+            )}
           </div>
           {price(vip.amountCents, vip.unit)}
           <div className="ch-pc__vl">
@@ -272,9 +278,26 @@ export function PlanCards(props: Props) {
             )}
           </div>
           <div className="ch-pc__ct">
-            {button(vip.href, t(vip.ctaKey), false, vip.unit === 'year' ? 'vip_year' : 'vip_month')}
+            {button(
+              vip.href,
+              t(vip.ctaKey),
+              false,
+              `${vip.unit === 'year' ? 'vip_year' : 'vip_month'}${vip.chip ? '_trial' : ''}`,
+            )}
           </div>
-          <div className="ch-pc__bn">{vip.notePaid ? t('notePaid') : null}</div>
+          <div className="ch-pc__bn">
+            {vip.noteKey ? (
+              <Markup
+                text={t.markup(vip.noteKey, {
+                  fecha: props.trialChargeDate,
+                  monto: formatMXN(vip.amountCents),
+                  b: (c) => `<b>${c}</b>`,
+                })}
+              />
+            ) : vip.notePaid ? (
+              t('notePaid')
+            ) : null}
+          </div>
           {feats(props.features.vip, t('vip.featsTitle'))}
         </section>
       </div>

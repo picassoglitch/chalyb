@@ -22,12 +22,13 @@ const H = 3_600_000;
 
 // ── Config (1–4) ───────────────────────────────────────────────────────────
 
-test('1–2 · 7 days, on Pro mensual and Pro anual only', () => {
+test('1–2 · 7 days, on every plan for first-time customers (owner, 2026-10-03; Law said Pro only)', () => {
   assert.equal(PRICING.trial.days, 7);
   assert.equal(planHasTrial('pro_month'), true);
   assert.equal(planHasTrial('pro_year'), true);
-  assert.equal(planHasTrial('vip_month'), false);
-  assert.deepEqual([...PRICING.trial.plans], ['pro_month', 'pro_year']);
+  assert.equal(planHasTrial('vip_month'), true);
+  assert.equal(planHasTrial('vip_year'), true);
+  assert.deepEqual([...PRICING.trial.plans], ['pro_month', 'pro_year', 'vip_month', 'vip_year']);
 });
 
 test('3 · the notice is due at trial start; a 3-day trial can never ship', () => {
@@ -333,8 +334,16 @@ test('10 · checkout never preselects the annual charge (C9)', () => {
     join(ROOT, 'src/app/[locale]/(dashboard)/app/prueba/pago/page.tsx'),
     'utf8',
   );
-  assert.match(pago, /redirect\(\{ href: '\/app\/prueba', locale \}\)/, 'a missing plan goes back to the picker');
-  assert.doesNotMatch(pago, /monthlyOffered \? 'pro_month' : 'pro_year'/, 'no default plan on the payment page');
+  assert.match(
+    pago,
+    /redirect\(\{ href: '\/app\/prueba', locale \}\)/,
+    'a missing plan goes back to the picker',
+  );
+  assert.doesNotMatch(
+    pago,
+    /monthlyOffered \? 'pro_month' : 'pro_year'/,
+    'no default plan on the payment page',
+  );
 });
 
 test('no "o paga mes a mes" line inside checkout components (Q5)', () => {
@@ -375,10 +384,11 @@ test('11 · the consent record stores the 7-day trial, its texts, the plan and t
   }
 });
 
-test('T-6 · during the trial, Pro mensual ↔ Pro anual keep the charge date', () => {
+test('T-6 · during the trial, any switch keeps the charge date', () => {
   assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
   assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
-  assert.equal(changeTiming('pro_month', 'vip_month', true), 'now');
+  assert.equal(changeTiming('pro_month', 'vip_month', true), 'trial_end');
+  assert.equal(changeTiming('vip_year', 'vip_month', true), 'trial_end');
 });
 
 test('C6 · TRIAL_DAY29_REMINDER_ENABLED is gone', () => {
@@ -389,4 +399,20 @@ test('C6 · TRIAL_DAY29_REMINDER_ENABLED is gone', () => {
 
 test('Quebec still blocks the trial and paid plans', () => {
   assert.equal(paidPlansBlocked({ country: 'CA', province: 'QC' }, true), true);
+});
+
+test('the day-0 notice names the plan: a VIP anual trial says VIP and offers VIP mensual', async () => {
+  const mail = billingEmail('trial_7d', {
+    ...VARS,
+    plan: 'VIP anual',
+    monto: '$36,325',
+    renovacion: 'cada año ($36,325 MXN)',
+    plan_corto: 'VIP',
+    switch_plan: 'vip_month',
+    switch_mensual: '$3,799',
+  });
+  assert.ok(mail.text.includes('días de Chalyb VIP empezó'));
+  assert.ok(mail.text.includes('Cambiar a VIP mensual: $3,799 MXN al mes'));
+  assert.ok(mail.html.includes('cambiar?plan=vip_month'));
+  assert.ok(!mail.text.includes('Chalyb Pro'));
 });

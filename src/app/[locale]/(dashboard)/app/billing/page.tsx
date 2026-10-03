@@ -84,7 +84,7 @@ export default async function MiPlanPage({
     cta = null;
   } else if (s?.state === 'trialing') {
     status = t('status.trial');
-    heading = t('heading.trial');
+    heading = t('heading.trial', { plan: price?.tier === 'VIP' ? 'VIP' : 'Pro' });
     lines.push(
       t('trialLeft', {
         n: s.trialEndsAt ? trialDaysLeft(s.trialEndsAt, renderNow) : 0,
@@ -173,13 +173,21 @@ export default async function MiPlanPage({
   } else if (s?.state === 'trialing' && !entitlements.isAdmin) {
     // Términos §2.4: during the trial, Pro mensual ↔ Pro anual. The charge
     // date stays; the new amount gets its own charge notice (T-6).
-    const other: PlanKey = yearly ? 'pro_month' : 'pro_year';
-    changes.push({
-      to: other,
-      title: t('change.trialSwitch', { plan: t(`planName.${other}`) }),
-      value: short(other),
-      detail: '',
-    });
+    const vipTier = price?.tier === 'VIP';
+    const other: PlanKey = yearly
+      ? vipTier
+        ? 'vip_month'
+        : 'pro_month'
+      : vipTier
+        ? 'vip_year'
+        : 'pro_year';
+    if (other !== 'vip_year' || vipYearEnabled())
+      changes.push({
+        to: other,
+        title: t('change.trialSwitch', { plan: t(`planName.${other}`) }),
+        value: short(other),
+        detail: '',
+      });
   }
 
   // ── Movements ────────────────────────────────────────────────────

@@ -120,13 +120,25 @@ test('badge: "Recomendado" by default, "Más popular" only with its flag, "Tu pl
   assert.doesNotMatch(all, /Mejor oferta|Best value/);
 });
 
-test('VIP: never a trial; "Solo plan mensual" until VIP anual is offered', () => {
+test('VIP: the trial for a first-time customer; "Solo plan mensual" until VIP anual is offered', () => {
   const c = vipCard(input(), 'year');
   assert.equal(c.noYear, true);
   assert.equal(c.unit, 'month');
   assert.equal(formatMXN(c.amountCents), '$3,799');
-  assert.equal(c.ctaKey, 'vip.cta');
-  const offered = input({ vipYearOffered: true });
+  assert.equal(c.chip, true);
+  assert.equal(c.ctaKey, 'vip.ctaTrial');
+  assert.equal(c.noteKey, 'pro.noteMonth');
+  assert.equal(c.notePaid, false);
+  // Trial used: no chip, the paid wording.
+  const used = vipCard(input({ trialUsed: true, signedIn: true, trialOffered: false }), 'year');
+  assert.equal(used.chip, false);
+  assert.equal(used.ctaKey, 'vip.cta');
+  const offered = input({
+    vipYearOffered: true,
+    trialUsed: true,
+    signedIn: true,
+    trialOffered: false,
+  });
   const y = vipCard(offered, 'year');
   assert.equal(formatMXN(y.amountCents), '$36,325');
   assert.equal(y.savePct, 20);

@@ -31,12 +31,18 @@ import { Markup } from '@/components/ui/markup';
 import { useBillingT } from './use-billing-t';
 
 export function TrialPicker({
+  tier,
   choiceEnabled,
+  annualOffered,
   trialUsed,
   cameFrom,
   allToolsClaim,
 }: {
+  /** Which plan's card opened it (?plan=vip); the trial covers every plan. */
+  tier: 'pro' | 'vip';
   choiceEnabled: boolean;
+  /** VIP anual may be off (VIP_YEAR_ENABLED). Pro anual always exists here. */
+  annualOffered: boolean;
   trialUsed: boolean;
   /** The interval of the CTA that opened this screen, if any. */
   cameFrom: 'month' | 'year' | null;
@@ -47,10 +53,17 @@ export function TrialPicker({
   const t = useTranslations('checkout');
   const tb = useTranslations('billing');
   const bt = useBillingT();
-  const [plan, setPlan] = useState<PlanKey | null>(initialTrialPlan(cameFrom, choiceEnabled));
-  const math = annualMath('pro');
-  const year = planPrice('pro_year').totalCents;
-  const month = planPrice('pro_month').totalCents;
+  const monthKey: PlanKey = tier === 'vip' ? 'vip_month' : 'pro_month';
+  const yearKey: PlanKey = tier === 'vip' ? 'vip_year' : 'pro_year';
+  const name = tier === 'vip' ? 'VIP' : 'Pro';
+  // With only one interval on offer, that one is the only answer.
+  const monthOffered = choiceEnabled || !annualOffered;
+  const [plan, setPlan] = useState<PlanKey | null>(
+    initialTrialPlan(cameFrom, monthOffered, annualOffered, tier),
+  );
+  const math = annualMath(tier);
+  const year = planPrice(yearKey).totalCents;
+  const month = planPrice(monthKey).totalCents;
   // The dates the block promises, from now (the server recomputes them at
   // submit, from its own clock).
   const dates = useMemo(() => trialDates(new Date()), []);
@@ -60,15 +73,15 @@ export function TrialPicker({
   const trial = !trialUsed && !!plan && planHasTrial(plan);
 
   const options: { key: PlanKey; show: boolean }[] = [
-    { key: 'pro_month', show: choiceEnabled },
-    { key: 'pro_year', show: true },
+    { key: monthKey, show: monthOffered },
+    { key: yearKey, show: annualOffered },
   ];
 
   return (
     <div className="ch-center-col" style={{ alignItems: 'stretch', textAlign: 'left' }}>
       <header style={{ textAlign: 'center' }}>
         <h1 className="ch-h1">
-          {trialUsed ? t('paid.title') : t('trial.title', { dias: PRICING.trial.days })}
+          {trialUsed ? t('paid.title') : t('trial.title', { dias: PRICING.trial.days, plan: name })}
         </h1>
         {!trialUsed && (
           <p className="ch-sub">{allToolsClaim ? t('trial.subAllTools') : t('trial.sub')}</p>
@@ -83,7 +96,8 @@ export function TrialPicker({
           {options
             .filter((o) => o.show)
             .map(({ key }) => {
-              const highlighted = key === 'pro_year' && cameFrom === 'year' && plan === null;
+              const isYear = key === yearKey;
+              const highlighted = isYear && cameFrom === 'year' && plan === null;
               return (
                 <label
                   key={key}
@@ -100,11 +114,11 @@ export function TrialPicker({
                   />
                   <span style={{ flex: 1 }}>
                     <b style={{ fontSize: 20, display: 'block' }}>
-                      {key === 'pro_year'
-                        ? t('trial.yearRow', { monto: formatMXN(year) })
-                        : t('trial.monthRow', { monto: formatMXN(month) })}
+                      {isYear
+                        ? t('trial.yearRow', { monto: formatMXN(year), plan: name })
+                        : t('trial.monthRow', { monto: formatMXN(month), plan: name })}
                     </b>
-                    {key === 'pro_year' && (
+                    {isYear && (
                       <span
                         className="ch-muted"
                         style={{ display: 'block', fontSize: 16, marginTop: 4 }}
@@ -112,12 +126,12 @@ export function TrialPicker({
                         {t('trial.yearOnce')}
                         {choiceEnabled &&
                           math.yearSavingsCents > 0 &&
-                          ` · ${t('trial.yearSave', { ahorro: formatMXN(floorToPeso(math.yearSavingsCents)) })}`}
+                          ` · ${t('trial.yearSave', { ahorro: formatMXN(floorToPeso(math.yearSavingsCents)), plan: name })}`}
                       </span>
                     )}
                     {highlighted && (
                       <span style={{ display: 'block', fontSize: 15, marginTop: 6 }}>
-                        {t('trial.cameFromYear')}
+                        {t('trial.cameFromYear', { plan: name })}
                       </span>
                     )}
                   </span>

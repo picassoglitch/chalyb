@@ -36,7 +36,10 @@ export function trialVars(t: Translate, input: DisclosureInput) {
     fecha_fin_prueba: date(input.dates.trialEndsAt),
     fecha_cobro: date(input.dates.chargeAt),
     fecha_recordatorio: date(input.dates.reminderAt),
-    periodicidad: t(year ? 'vars.periodicidad.year' : 'vars.periodicidad.month'),
+    plan: price.tier === 'VIP' ? 'VIP' : 'Pro',
+    periodicidad: t(year ? 'vars.periodicidad.year' : 'vars.periodicidad.month', {
+      plan: price.tier === 'VIP' ? 'VIP' : 'Pro',
+    }),
     renovacion: t(year ? 'vars.renovacion.year' : 'vars.renovacion.month', { monto }),
     renovacion_corta: t(year ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month'),
     cada_periodo: t(year ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month'),

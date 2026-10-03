@@ -30,6 +30,7 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
     return redirect({ href: '/app/billing', locale });
 
   const t = await getTranslations('checkout');
+  const tPlan = await getTranslations('myplan.planName');
   const planKey = s.planKey ?? 'pro_year';
   const price = planPrice(planKey);
   const monto = formatMXN(price.totalCents);
@@ -63,7 +64,9 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
           {first ? t('done.title', { nombre: first }) : t('done.titleAnon')}
         </h1>
         <p className="ch-h2">
-          {trial ? t('done.headline', { dias: PRICING.trial.days }) : t('done.headlinePaid')}
+          {trial
+            ? t('done.headline', { dias: PRICING.trial.days, plan: price.tier === 'VIP' ? 'VIP' : 'Pro' })
+            : t('done.headlinePaid')}
         </p>
         {trial && s.trialEndsAt && s.nextChargeAt && (
           <p className="ch-sub">
@@ -104,12 +107,7 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
           )}
           <dt>
             {t('done.firstCharge', {
-              plan:
-                planKey === 'pro_year'
-                  ? t('trial.year')
-                  : planKey === 'pro_month'
-                    ? t('trial.month')
-                    : 'VIP',
+              plan: tPlan(planKey),
             })}
           </dt>
           <dd>

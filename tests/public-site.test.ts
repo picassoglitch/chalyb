@@ -192,7 +192,11 @@ test('the plan summary renders the config totals, IVA included', () => {
     new URL('../src/components/landing/plans-summary.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(summary, /tb\(props\.priceDisplay\.taxKey\)/, 'the plans block carries the tax footer');
+  assert.match(
+    summary,
+    /tb\(props\.priceDisplay\.taxKey\)/,
+    'the plans block carries the tax footer',
+  );
   assert.match(summary, /<PlanCards /, 'the landing renders the same cards as /planes (K-1)');
   const cards = readFileSync(
     new URL('../src/components/app/billing/plan-cards.tsx', import.meta.url),

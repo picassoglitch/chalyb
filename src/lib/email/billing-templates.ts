@@ -33,8 +33,12 @@ export interface BillingEmailVars {
   dias?: number;
   /** Whole days left until the charge ("Faltan 7 días"). */
   faltan?: number;
-  /** Pro mensual's price, for the annual-only switch link. */
+  /** The same plan's monthly price, for the annual-only switch link. */
   switch_mensual?: string;
+  /** "Pro" | "VIP": the plan the trial is on. */
+  plan_corto?: string;
+  /** cambiar?plan=… target of the switch link (pro_month | vip_month). */
+  switch_plan?: string;
   fecha_inicio?: string;
   fecha_fin_prueba?: string;
   fecha_cobro?: string;
@@ -81,7 +85,7 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
       html = [
         p(`Hola ${e(v.nombre)}:`),
         p(
-          `Tu prueba gratis de ${e(String(v.dias ?? ''))} días de Chalyb Pro empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`,
+          `Tu prueba gratis de ${e(String(v.dias ?? ''))} días de Chalyb ${e(v.plan_corto ?? 'Pro')} empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`,
         ),
         p(
           `${b('Hoy pagaste $0.')} Si no cancelas antes, el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (${e(v.plan)})${card(v)}, y después ${b(v.renovacion)} hasta que canceles.`,
@@ -93,8 +97,8 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
           ? [
               p('¿Prefieres pagar mes a mes?') +
                 btn(
-                  `${v.appUrl}/app/billing/cambiar?plan=pro_month`,
-                  `Cambiar a Pro mensual: ${v.switch_mensual} MXN al mes`,
+                  `${v.appUrl}/app/billing/cambiar?plan=${v.switch_plan ?? 'pro_month'}`,
+                  `Cambiar a ${v.plan_corto ?? 'Pro'} mensual: ${v.switch_mensual} MXN al mes`,
                 ),
             ]
           : []),
@@ -126,7 +130,7 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
           ? [
               p('¿Prefieres pagar mes a mes?') +
                 btn(
-                  `${v.appUrl}/app/billing/cambiar?plan=pro_month`,
+                  `${v.appUrl}/app/billing/cambiar?plan=${v.switch_plan ?? 'pro_month'}`,
                   `Cambiar a ${v.switch_mensual} MXN al mes`,
                 ),
             ]
