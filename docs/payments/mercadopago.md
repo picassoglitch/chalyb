@@ -200,7 +200,14 @@ API with **test users** whose money is not real.
    carries the test buyer as payer, whatever account you sign in with, so
    Mercado Pago never sees a real payer next to test credentials ("Una de
    las partes con la que intentas hacer el pago es de prueba"). Pay at
-   Mercado Pago as that test buyer.
+   Mercado Pago as that test buyer, in a private window: a browser signed
+   in to your real Mercado Pago account pays as you, and the checkout fails.
+   `MERCADOPAGO_WEBHOOK_SECRET` in test is **the test vendedor's application
+   secret** (sign in to Developers as the test vendedor → its application →
+   Webhooks → Clave secreta), not the one in your own application's panel.
+   Real test-mode notifications are signed with it; only the panel's
+   "Simular notificación" uses the shown secret. With the wrong one every
+   real notification is a 401 "signature rejected".
 4. Expose the dev server over HTTPS and point `NEXT_PUBLIC_APP_URL` and the
    test webhook URL at it:
    ```sh
