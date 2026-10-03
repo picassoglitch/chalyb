@@ -70,13 +70,25 @@ export function CancelSheet({
           setOpen(false);
           if (state === 'done') window.location.reload();
         }}
-        title={state === 'done' ? t('done.title') : trial ? t('trial.title') : t('paid.title', { plan: planName })}
+        title={
+          state === 'done'
+            ? t('done.title')
+            : trial
+              ? t('trial.title')
+              : t('paid.title', { plan: planName })
+        }
         closeLabel={t('close')}
       >
         {state === 'done' ? (
           <div style={{ display: 'grid', gap: 14 }}>
             <p>
-              <Markup text={t.markup('done.body', { plan: planName, fecha: accessDate, b: (c) => `<b>${c}</b>` })} />
+              <Markup
+                text={t.markup('done.body', {
+                  plan: planName,
+                  fecha: accessDate,
+                  b: (c) => `<b>${c}</b>`,
+                })}
+              />
             </p>
             <p className="ch-muted">{t('done.again')}</p>
             <p className="ch-muted" style={{ fontSize: 15 }}>
@@ -98,14 +110,24 @@ export function CancelSheet({
                 text={
                   trial
                     ? t.markup('trial.body', { fecha: accessDate, b: (c) => `<b>${c}</b>` })
-                    : t.markup('paid.body', { plan: planName, fecha: accessDate, b: (c) => `<b>${c}</b>` })
+                    : t.markup('paid.body', {
+                        plan: planName,
+                        fecha: accessDate,
+                        b: (c) => `<b>${c}</b>`,
+                      })
                 }
               />
             </p>
             {offer && (
-              <div className="ch-disc" style={{ padding: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div
+                className="ch-disc"
+                style={{ padding: 16, alignItems: 'center', flexWrap: 'wrap' }}
+              >
                 <span style={{ flex: 1 }}>{t('offer')}</span>
-                <Link href={offer.href as Route} className="ch-btn ch-btn--secondary ch-btn--compact">
+                <Link
+                  href={offer.href as Route}
+                  className="ch-btn ch-btn--secondary ch-btn--compact"
+                >
                   {offer.label}
                 </Link>
               </div>
@@ -116,10 +138,19 @@ export function CancelSheet({
               </p>
             )}
             <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
-              <button type="button" className="ch-btn ch-btn--dark" onClick={confirm} disabled={state === 'working'}>
+              <button
+                type="button"
+                className="ch-btn ch-btn--dark"
+                onClick={confirm}
+                disabled={state === 'working'}
+              >
                 {state === 'working' ? t('working') : t('yes')}
               </button>
-              <button type="button" className="ch-btn ch-btn--primary" onClick={() => setOpen(false)}>
+              <button
+                type="button"
+                className="ch-btn ch-btn--primary"
+                onClick={() => setOpen(false)}
+              >
                 {t('keep', { plan: trial ? 'Pro' : planName })}
               </button>
             </div>

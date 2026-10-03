@@ -11,7 +11,7 @@ import type { Route } from 'next';
 import { useLocale, useTranslations } from 'next-intl';
 import { Info } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { annualMath, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
+import { annualMath, floorToPeso, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { trialDates } from '@/lib/billing/trial-dates';
 import { disclosureParagraphs } from '@/lib/billing/billing-copy';
@@ -19,7 +19,13 @@ import { Markup } from '@/components/ui/markup';
 import { Pill } from '@/components/ui/primitives';
 import { useBillingT } from './use-billing-t';
 
-export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boolean; trialUsed: boolean }) {
+export function TrialPicker({
+  choiceEnabled,
+  trialUsed,
+}: {
+  choiceEnabled: boolean;
+  trialUsed: boolean;
+}) {
   const locale = useLocale();
   const t = useTranslations('checkout');
   const tb = useTranslations('billing');
@@ -55,14 +61,30 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
             .filter((o) => o.show)
             .map(({ key }) => (
               <label key={key} className="ch-plan-opt" data-on={plan === key}>
-                <input type="radio" name="plan" value={key} checked={plan === key} onChange={() => setPlan(key)} />
+                <input
+                  type="radio"
+                  name="plan"
+                  value={key}
+                  checked={plan === key}
+                  onChange={() => setPlan(key)}
+                />
                 <span style={{ flex: 1 }}>
                   <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <b style={{ fontSize: 20 }}>{key === 'pro_year' ? t('trial.year') : t('trial.month')}</b>
-                    {key === 'pro_year' && !trialUsed && <Pill kind="acc">{t('trial.yearFree')}</Pill>}
-                    {key === 'pro_year' && trialUsed && <Pill kind="acc">{t('trial.recommended')}</Pill>}
-                    {key === 'pro_year' && (
-                      <Pill kind="ok">{tb('price.saveYear', { ahorro: formatMXN(math.yearSavingsCents) })}</Pill>
+                    <b style={{ fontSize: 20 }}>
+                      {key === 'pro_year' ? t('trial.year') : t('trial.month')}
+                    </b>
+                    {key === 'pro_year' && !trialUsed && (
+                      <Pill kind="acc">{t('trial.yearFree')}</Pill>
+                    )}
+                    {key === 'pro_year' && trialUsed && (
+                      <Pill kind="acc">{t('trial.recommended')}</Pill>
+                    )}
+                    {key === 'pro_year' && math.yearSavingsCents > 0 && (
+                      <Pill kind="acc">
+                        {tb('price.saveYear', {
+                          ahorro: formatMXN(floorToPeso(math.yearSavingsCents)),
+                        })}
+                      </Pill>
                     )}
                   </span>
                   <span style={{ display: 'block', fontSize: 22, fontWeight: 700, marginTop: 6 }}>
@@ -72,7 +94,7 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
                   </span>
                   <span className="ch-muted" style={{ display: 'block', fontSize: 16 }}>
                     {key === 'pro_year'
-                      ? `${tb('price.proYearEq', { mensual: formatMXN(math.yearMonthlyEquivalentCents) })} · ${tb('price.renewYear')}`
+                      ? tb('price.renewYear')
                       : trialUsed
                         ? tb('price.renewMonth')
                         : `${t('trial.monthNoTrial')} · ${tb('price.renewMonth')}`}
@@ -108,7 +130,10 @@ export function TrialPicker({ choiceEnabled, trialUsed }: { choiceEnabled: boole
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-        <Link href={`/app/prueba/pago?plan=${plan}` as Route} className="ch-btn ch-btn--primary ch-btn--xl">
+        <Link
+          href={`/app/prueba/pago?plan=${plan}` as Route}
+          className="ch-btn ch-btn--primary ch-btn--xl"
+        >
           {t('trial.cta')}
         </Link>
         <p className="ch-muted" style={{ fontSize: 16 }}>

@@ -2,7 +2,9 @@ import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Gift } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { annualMath, planPrice } from '@/config/pricing';
+import { annualMath, floorToPeso, pct, planPrice } from '@/config/pricing';
+import { loadPriceDisplay } from '@/lib/billing/price-display';
+import { ReferencePrice } from '@/components/app/billing/reference-price';
 import { formatMXN } from '@/lib/billing/format';
 import { PLANES_HREF, freeCtaHref, vipCtaHref } from './links';
 import { SectionHead } from './section-head';
@@ -23,6 +25,7 @@ export async function PlansSummary({
   trialHref: Route;
 }) {
   const t = await getTranslations('landing');
+  const priceDisplay = await loadPriceDisplay({});
   const tb = await getTranslations('billing.price');
   const math = annualMath();
   const year = planPrice('pro_year').totalCents;
@@ -59,17 +62,19 @@ export async function PlansSummary({
               {formatMXN(month)} <span className="pub-pl__per">{t('plans.perMonth')}</span>
             </p>
             <p className="pub-pl__pn">{t('plans.proMonthNote')}</p>
+            <ReferencePrice state={priceDisplay.reference} />
             <div className="pub-pl__deal" data-price="pro_year">
               <p className="pub-pl__deal-t">
                 <Gift aria-hidden="true" />
                 {t('plans.dealTitle')}
               </p>
               <p>
-                {t('plans.dealEq', {
-                  mensual: formatMXN(math.yearMonthlyEquivalentCents),
-                  // Whole pesos, rounded down: never claim more than is saved.
-                  ahorro: formatMXN(Math.floor(math.yearSavingsCents / 100) * 100),
-                })}
+                {math.yearSavingsCents > 0 &&
+                  t('plans.dealSave', {
+                    // Whole pesos, rounded down: never claim more than is saved.
+                    ahorro: formatMXN(floorToPeso(math.yearSavingsCents)),
+                    pct: pct('pro'),
+                  })}
               </p>
               <p className="pub-pl__deal-s">{t('plans.dealTotal', { monto: formatMXN(year) })}</p>
             </div>
@@ -89,7 +94,7 @@ export async function PlansSummary({
             </Link>
           </section>
         </div>
-        <p className="pub-plans__tax">{tb('tax')}</p>
+        <p className="pub-plans__tax">{tb(priceDisplay.taxKey)}</p>
         <p className="pub-plans__all">
           <Link href={PLANES_HREF} className="ch-lnk">
             {t('plans.seeAll')}

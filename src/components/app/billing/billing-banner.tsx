@@ -34,9 +34,19 @@ export async function BillingBanner({ session }: { session: SessionUser }) {
     choice.kind === 'pastDue'
       ? t.markup('pastDue', { fecha_gracia: date(s.graceEndsAt), b })
       : choice.kind === 'last7'
-        ? t.markup('last7', { fecha_fin_prueba: date(s.trialEndsAt), monto, fecha_cobro: date(s.nextChargeAt), b })
+        ? t.markup('last7', {
+            fecha_fin_prueba: date(s.trialEndsAt),
+            monto,
+            fecha_cobro: date(s.nextChargeAt),
+            b,
+          })
         : choice.kind === 'renew'
-          ? t.markup('renew', { plan: s.planKey ? tPlan(s.planKey) : '', fecha_cobro: date(s.nextChargeAt), monto, b })
+          ? t.markup('renew', {
+              plan: s.planKey ? tPlan(s.planKey) : '',
+              fecha_cobro: date(s.nextChargeAt),
+              monto,
+              b,
+            })
           : choice.kind === 'trial'
             ? t('trial', { n: s.trialEndsAt ? trialDaysLeft(s.trialEndsAt, renderNow) : 0 })
             : t('ended');
@@ -47,9 +57,17 @@ export async function BillingBanner({ session }: { session: SessionUser }) {
     void markInAppNotice(session, billing.primaryRow.mp_preapproval_id as string, text);
   }
 
-  const href = choice.cta === 'return' ? '/app/planes' : choice.cta === 'card' ? '/app/billing/tarjeta' : '/app/billing';
+  const href =
+    choice.cta === 'return'
+      ? '/app/planes'
+      : choice.cta === 'card'
+        ? '/app/billing/tarjeta'
+        : '/app/billing';
   const content = (
-    <div className={`ch-bnr ch-bnr--${choice.tone}`} role={choice.tone === 'bad' ? 'alert' : 'status'}>
+    <div
+      className={`ch-bnr ch-bnr--${choice.tone}`}
+      role={choice.tone === 'bad' ? 'alert' : 'status'}
+    >
       <span className="ch-bnr__ic" aria-hidden="true">
         {choice.tone === 'trial' ? <Info /> : <TriangleAlert />}
       </span>
@@ -61,7 +79,11 @@ export async function BillingBanner({ session }: { session: SessionUser }) {
       </Link>
     </div>
   );
-  return choice.closable ? <ClosableBanner id={`${choice.kind}`}>{content}</ClosableBanner> : content;
+  return choice.closable ? (
+    <ClosableBanner id={`${choice.kind}`}>{content}</ClosableBanner>
+  ) : (
+    content
+  );
 }
 
 async function markInAppNotice(session: SessionUser, preapprovalId: string, text: string) {

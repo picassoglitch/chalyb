@@ -9,6 +9,7 @@ import { trialFlowEnabled } from '@/lib/config/flags';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { plansCta } from '@/lib/billing/plans-cta';
+import { loadPriceDisplay } from '@/lib/billing/price-display';
 import { PlansView } from './plans-view';
 
 export async function PlansSection() {
@@ -32,8 +33,12 @@ export async function PlansSection() {
     billing: billing?.primary ?? null,
     quebecBlocked: false,
   });
+  const priceDisplay = await loadPriceDisplay({
+    currentAmountCents: (billing?.primaryRow?.amount_cents as number | undefined) ?? null,
+  });
   return (
     <PlansView
+      priceDisplay={priceDisplay}
       tools={tools}
       cta={cta}
       trialOffered={flow && !(billing?.trialUsed ?? false)}

@@ -10,7 +10,9 @@ import { SellerSheetButton } from './seller-sheet';
 export async function SellerDetails() {
   const t = await getTranslations('seller');
   const entity = legalEntity();
-  const rows = (['name', 'rfc', 'address', 'phone', 'email', 'hours', 'complaints'] as const).filter((k) => entity[k]);
+  const rows = (
+    ['name', 'rfc', 'address', 'phone', 'email', 'hours', 'complaints'] as const
+  ).filter((k) => entity[k]);
   if (rows.length === 0) return <p className="ch-muted">{t('pending')}</p>;
   return (
     <dl style={{ display: 'grid', gap: 10 }}>

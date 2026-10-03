@@ -270,7 +270,7 @@ export async function settleOneOffCharge(
   //
   // Without it, external_reference is the only input deciding entitlements and
   // it is attacker-chosen: pay for the $149 token pack, then have the webhook
-  // processed against "<myUserId>|VIP" and walk away with a $2,499 plan. The
+  // processed against "<myUserId>|VIP" and walk away with a VIP plan. The
   // payment row above is already written either way, so a mismatch is visible
   // in /dashboard/billing and the audit log.
   //

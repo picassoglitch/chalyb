@@ -1,7 +1,7 @@
 // Money and date formatting for everything billing shows (rebuild prompt
 // P2-10). Pure.
 
-/** "$868.84", "$7,490": whole pesos print without decimals. Never a currency
+/** "$172.84", "$9,970": whole pesos print without decimals. Never a currency
  *  code here — copy adds "MXN" where the rules ask for it. */
 export function formatMXN(cents: number): string {
   const whole = cents % 100 === 0;
