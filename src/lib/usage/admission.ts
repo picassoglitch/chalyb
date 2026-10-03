@@ -4,9 +4,11 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_CAPS } from '@/lib/billing/tiers';
+import { usageMarginPercent } from '@/lib/config/settings';
 import {
   checkItemCaps,
   publicLimits,
+  reserveWithMargin,
   resolveLane,
   sqlCaps,
   type AdmitRequest,
@@ -56,6 +58,7 @@ export async function admitUsage(
   if (itemRefusal) return { status: 200, allowed: false, reason: itemRefusal, limits };
 
   const { lane, feeTokens } = resolveLane(req, caps, subject.unlimited);
+  const estTokens = reserveWithMargin(req.estTokens, await usageMarginPercent());
 
   const admin = createAdminClient();
   const { data, error } = await admin.rpc('admit_usage', {
@@ -65,7 +68,7 @@ export async function admitUsage(
     p_class: req.class,
     p_operation: req.operation,
     p_lane: lane,
-    p_est_tokens: req.estTokens,
+    p_est_tokens: estTokens,
     p_fee_tokens: feeTokens,
     p_source_minutes: req.sourceMinutes,
     p_upload_mb: req.uploadMb,

@@ -35,7 +35,7 @@ to push the expiry out again.
   "external_job_id": "stream_123", // engine's id; re-admitting the same id returns the same reservation
   "class": "job", // "job" (uploads, renders, analyses) | "stream" (live)
   "operation": "clips.pipeline",
-  "est_tokens": 40000, // best estimate of billable tokens the job will spend
+  "est_tokens": 40000, // estimated provider cost ÷ 4 µ$, BEFORE margin (the hub adds it when reserving)
   "upload_mb": 812.4, // size of the file about to be uploaded/processed (0 if none)
   "source_minutes": 95.5, // duration of the media to process (0 if unknown/none)
   "storage_mb_after": 3120, // what the user will hold on this engine after this job

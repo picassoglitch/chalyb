@@ -174,3 +174,11 @@ export function sqlCaps(caps: TierCapabilities, allocation: number, unlimited: b
     streams_per_month: capNum(caps.clipStreamsPerMonth),
   };
 }
+
+/** Engines estimate a job's provider cost in raw cost tokens
+ *  (cost_usd_micros / 4); what it will actually draw is that plus the
+ *  margin. Reserving the raw figure let a job reserve ~3× less than it
+ *  spends (a 1.4-min test run: 22.6k reserved, 70.4k billed). */
+export function reserveWithMargin(estTokens: number, marginPercent: number): number {
+  return Math.ceil(estTokens * (1 + Math.max(0, marginPercent) / 100));
+}

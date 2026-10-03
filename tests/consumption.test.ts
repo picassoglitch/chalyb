@@ -9,6 +9,7 @@ import {
   checkItemCaps,
   parseAdmitBody,
   publicLimits,
+  reserveWithMargin,
   resolveLane,
   sqlCaps,
   type AdmitRequest,
@@ -222,4 +223,10 @@ test('the margin default is 160% everywhere', async () => {
   assert.match(settings, /DEFAULT_USAGE_MARGIN_PERCENT = 160;/);
   assert.match(sql, /\n    160\)\n/);
   assert.equal(USAGE_ECONOMICS.defaultMarginPercent, 160);
+});
+
+test('reservations hold the estimate plus the margin', () => {
+  assert.equal(reserveWithMargin(22_612, 160), 58_792);
+  assert.equal(reserveWithMargin(1000, 0), 1000);
+  assert.equal(reserveWithMargin(1000, -5), 1000);
 });
