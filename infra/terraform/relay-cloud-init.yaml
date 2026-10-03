@@ -40,5 +40,9 @@ write_files:
       WantedBy=multi-user.target
 
 runcmd:
+  # COS's host firewall drops all inbound but SSH; the VPC firewall rules in
+  # relay.tf are the real gate (1935 public, 8888 subnet-only).
+  - iptables -w -A INPUT -p tcp --dport 1935 -j ACCEPT
+  - iptables -w -A INPUT -p tcp --dport 8888 -j ACCEPT
   - systemctl daemon-reload
   - systemctl start chalyb-relay.service
