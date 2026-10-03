@@ -3,11 +3,13 @@
 // `Authorization: Bearer ${CRON_SECRET}`; 401 otherwise (rebuild P2-8).
 //
 // Every run is idempotent. It:
-//   1. sends the notices that are due (trial day 23, renewals −7, annual −30)
+//   1. sends the notices that are due (trial −5 days, renewals −7, annual −30)
 //      — email_dispatches' unique key makes a second run send nothing;
 //   2. enforces the bounce rule: no charge until 5 days after an effective
 //      notice (pauses the preapproval, resumes it after);
 //   3. moves profiles.tier when a scheduled plan change takes effect;
+//   3b. ends Pro at the 7-day trial's deadline when its annual charge never
+//      landed (PRICING.trial.firstChargeGraceDays after the charge date);
 //   4. re-reads stale subscriptions from Mercado Pago (the webhook keeps them
 //      current in between).
 // Grace and cancelled periods lapse on their own: the session reads
@@ -19,7 +21,11 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
 import { syncSubscription } from '@/lib/payments/subscription-sync';
 import { notify } from '@/lib/notifications/notify';
-import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-state';
+import {
+  deriveBillingState,
+  unpaidTrialDeadline,
+  type SubscriptionRow,
+} from '@/lib/billing/billing-state';
 import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
@@ -67,12 +73,20 @@ export async function GET(req: Request) {
 
   const admin = createAdminClient();
   const now = new Date();
-  const stats = { notices: 0, holds: 0, resumes: 0, tierMoves: 0, synced: 0, errors: 0 };
+  const stats = {
+    notices: 0,
+    holds: 0,
+    resumes: 0,
+    tierMoves: 0,
+    unpaidTrials: 0,
+    synced: 0,
+    errors: 0,
+  };
 
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, updated_at',
+      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, last_charge_at, mp_preapproval_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -208,6 +222,31 @@ export async function GET(req: Request) {
             .neq('tier', row.tier)
             .select('id');
           if (moved?.length) stats.tierMoves += 1;
+        }
+      }
+
+      // 3b. The 7-day trial ended and its annual charge hasn't landed: give
+      // the profile the deadline as its end (the session lapses it then).
+      // Doesn't wait on Mercado Pago: a missing webhook or endless retries
+      // can't keep Pro on. The charge landing clears it (sync re-activates).
+      const unpaidUntil = unpaidTrialDeadline(row);
+      if (unpaidUntil && row.trial_ends_at && now.getTime() >= Date.parse(row.trial_ends_at)) {
+        const { data: ended } = await admin
+          .from('profiles')
+          .update({ tier_ends_at: unpaidUntil })
+          .eq('id', userId)
+          .eq('tier', row.tier)
+          .is('tier_ends_at', null)
+          .select('id');
+        if (ended?.length) {
+          stats.unpaidTrials += 1;
+          await notify({
+            severity: 'warning',
+            title: 'Prueba terminada sin cobro anual',
+            body: `Suscripción ${preapprovalId} · Pro hasta el ${formatFechaLarga(unpaidUntil, 'es')} si no entra el cobro`,
+            href: '/dashboard/dinero',
+            source: 'billing.cron',
+          });
         }
       }
 

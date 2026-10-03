@@ -159,7 +159,7 @@ test('landing copy has none of the forbidden claims (B31, §0.3, §11)', () => {
   }
 });
 
-test('landing copy writes no amounts by hand (only $0 for the free month)', () => {
+test('landing copy writes no amounts by hand (only $0 for the 7-day trial)', () => {
   for (const locale of ['es', 'en']) {
     for (const [key, value] of Object.entries(landing(locale))) {
       const amounts = value.match(/\$\s?\d[\d,]*(\.\d+)?/g) ?? [];

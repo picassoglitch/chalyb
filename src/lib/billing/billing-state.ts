@@ -2,12 +2,12 @@
 // one customer state. Pure; the dates are UTC instants.
 //
 //   free              no paid plan
-//   trialing          in the free month (full Pro)
+//   trialing          in the 7-day trial (full Pro)
 //   pro               paying, renewing (Pro or VIP — `plan` says which)
 //   past_due          a charge failed; full access until graceEndsAt
 //   cancelled_active  cancelled, but paid (or trial) access runs to accessUntil
 
-import type { PlanKey } from '@/config/pricing';
+import { PRICING, type PlanKey } from '@/config/pricing';
 
 export type BillingStateName = 'free' | 'trialing' | 'pro' | 'past_due' | 'cancelled_active';
 
@@ -30,6 +30,8 @@ export interface SubscriptionRow {
   /** Bounce hold (no charge until then); the preapproval is paused on
    *  purpose, which is not the customer's failure. */
   charge_hold_until?: string | null;
+  /** When a charge of this subscription last went through (null: never). */
+  last_charge_at?: string | null;
 }
 
 export interface BillingState {
@@ -63,6 +65,33 @@ const FREE: BillingState = {
 };
 
 const ms = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * The 7-day trial's deadline: when a Pro anual trial has ended and its first
+ * (annual) charge still hasn't gone through, Pro stops at this instant. Null
+ * when it doesn't apply (no trial, or a charge already landed).
+ *
+ * Anchored on the charge date the user was promised — the trial end, pushed
+ * back only by a bounce hold (no charge until 5 days after an effective
+ * notice), never by Mercado Pago moving next_payment_date while it retries.
+ */
+export function unpaidTrialDeadline(
+  row: Pick<
+    SubscriptionRow,
+    'trial_ends_at' | 'last_charge_at' | 'charge_hold_until' | 'reminder_delivered_at'
+  >,
+  p = PRICING,
+): string | null {
+  if (!row.trial_ends_at || row.last_charge_at) return null;
+  const chargeAt = Math.max(
+    ms(row.trial_ends_at),
+    ms(row.charge_hold_until) || 0,
+    ms(row.reminder_delivered_at) + 5 * DAY || 0,
+  );
+  if (Number.isNaN(chargeAt)) return null;
+  return new Date(chargeAt + p.trial.firstChargeGraceDays * DAY).toISOString();
+}
 
 export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): BillingState {
   if (!row) return FREE;
@@ -108,6 +137,13 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
   // charge waits.
   if (status === 'paused' && row.charge_hold_until) {
     return { ...base, state: inTrial ? 'trialing' : 'pro', grantsTier: tier };
+  }
+
+  // The 7-day trial ended and the annual charge never landed: no Pro past
+  // the deadline, whatever state Mercado Pago still reports.
+  const unpaidUntil = unpaidTrialDeadline(row);
+  if (unpaidUntil && nowMs >= ms(unpaidUntil)) {
+    return { ...FREE, trialEndsAt: row.trial_ends_at };
   }
 
   // A failed charge: full access inside the grace window, then nothing.

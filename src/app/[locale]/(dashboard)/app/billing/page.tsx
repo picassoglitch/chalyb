@@ -90,7 +90,7 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
         periodo: yearly ? t('periodYear') : t('periodMonth'),
       }),
     );
-    // An Anual trial can't turn into Mensual (the free month is Anual-only).
+    // An Anual trial can't turn into Mensual (the 7-day trial is Anual-only).
     cta = flow && !yearly ? { href: changeHref('pro_year'), label: t('changeCta') } : null;
   } else if (s?.state === 'pro') {
     status = t('status.active');
@@ -180,7 +180,7 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
       });
     }
   } else if (s?.state === 'trialing' && !yearly) {
-    // Only toward Anual: the free month doesn't carry over to Mensual.
+    // Only toward Anual: the 7-day trial doesn't carry over to Mensual.
     changes.push({
       to: 'pro_year',
       title: t('change.trialSwitch', { plan: t('planName.pro_year') }),
@@ -347,7 +347,7 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
             email={session.user.email ?? ''}
             reactivateHref={changeHref(planKey!)}
             offer={
-              // No "switch to Mensual" during the free month: it's Anual-only.
+              // No "switch to Mensual" during the 7-day trial: it's Anual-only.
               yearly && flow && s!.state !== 'trialing'
                 ? {
                     href: changeHref('pro_month'),

@@ -6,8 +6,8 @@
 //   recurring one). Both numbers are shown before confirming.
 // - Downgrades and Mensual ↔ Anual: at the end of the paid period.
 // - During the trial: changes the plan the trial converts into; no charge.
-//   The free month is Anual-only, so a trial can't turn into Mensual: that
-//   would be a free month followed by monthly billing.
+//   The 7-day trial is Anual-only, so a trial can't turn into Mensual: that
+//   would be a 7-day trial followed by monthly billing.
 
 import { planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 
@@ -22,8 +22,8 @@ export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): Cha
 /**
  * When a reactivated plan (after a cancel) starts charging, or null for
  * today. Paid access left over is kept: the new plan starts after it. Access
- * left from an unpaid free month carries over only to a plan that has the
- * free month (Anual); Mensual and VIP start charging today.
+ * left from an unpaid 7-day trial carries over only to a plan that has the
+ * 7-day trial (Anual); Mensual and VIP start charging today.
  */
 export function reactivationStart(input: {
   to: PlanKey;

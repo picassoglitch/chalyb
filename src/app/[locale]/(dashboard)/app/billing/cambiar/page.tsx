@@ -54,7 +54,7 @@ export default async function CambiarPlanPage({
   }
   const to: PlanKey = plan === 'pro_month' || plan === 'vip_month' ? plan : 'pro_year';
   const quote = await quoteChange(session, to);
-  // The free month is Anual-only: a trial can't turn into Mensual.
+  // The 7-day trial is Anual-only: a trial can't turn into Mensual.
   if (quote.timing === 'trial_annual_only') {
     return (
       <WizardShell {...chrome}>

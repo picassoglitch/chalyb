@@ -46,7 +46,7 @@ test.describe('trial path, as free', () => {
     await page.goto('/app/prueba/pago?plan=pro_year');
     const box = page.getByRole('checkbox');
     await expect(box).not.toBeChecked();
-    await expect(page.getByRole('button', { name: 'Empezar mi mes gratis' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Empezar mis 7 días gratis' })).toBeDisabled();
     await expect(page.getByText(/Primer cobro:/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Quién vende' })).toBeVisible();
   });
