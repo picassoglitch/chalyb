@@ -114,7 +114,7 @@ try {
   const bt = Object.fromEntries((await db.query(
     `select source_id, billable_tokens from public.usage_events where user_id = $1`, [u2])).rows
     .map((r) => [r.source_id, Number(r.billable_tokens)]));
-  check('billable_tokens = cost or tokens plus the 50% default margin, floor 1', bt.b1 === 1500 && bt.b2 === 3000 && bt.b3 === 1 && bt.b4 === 1, JSON.stringify(bt));
+  check('billable_tokens = cost or tokens plus the 160% default margin, floor 1', bt.b1 === 2600 && bt.b2 === 5200 && bt.b3 === 1 && bt.b4 === 1, JSON.stringify(bt));
 
   // The margin is frozen per row: re-pricing a row means changing its own
   // margin_percent, never the setting. Run the admission math at 0%.

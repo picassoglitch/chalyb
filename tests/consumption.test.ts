@@ -191,3 +191,35 @@ test('usage events: malformed fields are 400, with the failing index', () => {
   assert.equal(r.status, 400);
   assert.equal(r.index, 1);
 });
+
+test('a fully spent allowance never costs more than the plan earns ÷ (1 + margin)', async () => {
+  const { USAGE_ECONOMICS } = await import('@/lib/billing/tiers');
+  const { planPrice, ivaPortion } = await import('@/config/pricing');
+  const DEFAULT_USAGE_MARGIN_PERCENT = USAGE_ECONOMICS.defaultMarginPercent;
+  // Cheapest monthly revenue per tier, before IVA, in USD at a weak peso.
+  const monthlyUsd = (key: 'pro_month' | 'pro_year' | 'vip_month') => {
+    const p = planPrice(key);
+    const net = p.totalCents - ivaPortion(p.totalCents);
+    return net / 100 / (p.interval === 'year' ? 12 : 1) / USAGE_ECONOMICS.conservativeMxnPerUsd;
+  };
+  const cases = [
+    { tier: 'PRO' as const, revenue: Math.min(monthlyUsd('pro_month'), monthlyUsd('pro_year')) },
+    { tier: 'VIP' as const, revenue: monthlyUsd('vip_month') },
+  ];
+  for (const { tier, revenue } of cases) {
+    const billedUsd = (TIER_CAPS[tier].tokensPerMonth / 1e6) * USAGE_ECONOMICS.usdPerMillionBillable;
+    const costUsd = billedUsd / (1 + DEFAULT_USAGE_MARGIN_PERCENT / 100);
+    assert.ok(billedUsd <= revenue, `${tier}: allowance billed at $${billedUsd} exceeds $${revenue.toFixed(2)}/mo`);
+    assert.ok(revenue >= costUsd * 2.6 - 1e-9, `${tier}: under 160% over cost`);
+  }
+});
+
+test('the margin default is 160% everywhere', async () => {
+  const { USAGE_ECONOMICS } = await import('@/lib/billing/tiers');
+  const { readFileSync } = await import('node:fs');
+  const settings = readFileSync('src/lib/config/settings.ts', 'utf8');
+  const sql = readFileSync('supabase/migrations/0049_usage_margin_160.sql', 'utf8');
+  assert.match(settings, /DEFAULT_USAGE_MARGIN_PERCENT = 160;/);
+  assert.match(sql, /\n    160\)\n/);
+  assert.equal(USAGE_ECONOMICS.defaultMarginPercent, 160);
+});

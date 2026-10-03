@@ -106,7 +106,7 @@ no-op.
 
 One balance, in **billable tokens**, priced at real cost plus the platform
 margin (owner panel → Ajustes, `app_settings.usage_margin_percent`,
-default **50%**):
+default **160%** — every unit consumed earns 160% over its cost):
 
 ```
 billable_tokens = max(1, ceil(cost_usd_micros × (1 + margin) / 4))  when cost_usd_micros is sent

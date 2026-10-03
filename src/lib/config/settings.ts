@@ -15,7 +15,7 @@ export const SETTING_KEYS = {
 /** Margin on top of real provider cost when usage is charged to a balance.
  *  Postgres reads the same key when it prices each usage event
  *  (usage_margin_percent(), migration 0046); this default must match. */
-export const DEFAULT_USAGE_MARGIN_PERCENT = 50;
+export const DEFAULT_USAGE_MARGIN_PERCENT = 160;
 export const MAX_USAGE_MARGIN_PERCENT = 500;
 
 const readSetting = cache(async (key: string): Promise<unknown> => {

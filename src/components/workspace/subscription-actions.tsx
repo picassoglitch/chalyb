@@ -38,7 +38,7 @@ const TIER_MARKETING: Record<
     features: [
       'Todo lo de Free',
       '1 herramienta incluida · tú eliges cuál',
-      '1,000,000 de créditos al mes (se renuevan)',
+      '8,000,000 de créditos al mes (se renuevan)',
       'Clips sin marca de agua · ~12 streams al mes · 1 logo',
       'Comunidad premium',
     ],
@@ -62,7 +62,7 @@ const TIER_MARKETING: Record<
     features: [
       'Todo lo de Pro',
       'Todas las herramientas incluidas',
-      '5 veces los créditos de Pro (5,000,000 al mes)',
+      '4 veces los créditos de Pro (32,000,000 al mes)',
       'Clips completo para streamers',
       'Soporte prioritario · el equipo Chalyb te ayuda a construir tu idea',
     ],

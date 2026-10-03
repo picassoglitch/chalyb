@@ -148,9 +148,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   },
   PRO: {
     liveEnginesCount: 1,
-    // 1,000,000 tokens/month, regenerated on the 1st (see lib/usage/tokens.ts).
+    // Regenerated on the 1st (see lib/usage/tokens.ts). Sized by
+    // USAGE_ECONOMICS below: what the allowance is worth at billed prices
+    // never exceeds what the plan earns in a month.
     jobsPerMonth: 2_000,
-    tokensPerMonth: 1_000_000,
+    tokensPerMonth: 8_000_000,
     storageMB: 5_000,
     activeStreams: 1,
     maxUploadMB: 4096,
@@ -188,7 +190,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   PARTNER: {
     liveEnginesCount: 1,
     jobsPerMonth: 2_000,
-    tokensPerMonth: 1_000_000,
+    tokensPerMonth: 8_000_000, // mirrors Pro
     storageMB: 5_000,
     activeStreams: 1,
     maxUploadMB: 4096,
@@ -218,7 +220,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   VIP: {
     liveEnginesCount: Infinity,
     jobsPerMonth: 20_000,
-    tokensPerMonth: 5_000_000,
+    tokensPerMonth: 32_000_000,
     storageMB: 50_000,
     activeStreams: 5,
     maxUploadMB: 20_480,
@@ -244,6 +246,32 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     per: 'mes',
   },
 };
+
+/**
+ * How the token allowances are sized (owner, 2026-10-03: every unit a user
+ * consumes must earn 160% over what we pay for it).
+ *
+ * Usage is charged at real provider cost × (1 + margin), with the margin in
+ * Ajustes (default 160%), at $4 per 1M billable tokens. So an allowance of T
+ * tokens is worth T × $4/1M at billed prices, and costs us that ÷ 2.6. Sizing
+ * T so its billed value ≤ the plan's monthly revenue means a user who spends
+ * every token still leaves the full margin. Revenue is the CHEAPEST way to
+ * buy the tier (Pro anual: 7,490 MXN / 12), before IVA, at a deliberately
+ * weak peso so a currency move doesn't eat the margin.
+ *
+ *   Pro:  624 MXN ÷ 19.5 = $32/mo → 8M tokens   (~19 typical runs; the
+ *         1,200-min cap binds first, ~13 runs)
+ *   VIP: 2,499 MXN ÷ 19.5 = $128/mo → 32M tokens (~77 runs; 6,000-min cap
+ *         binds first, ~67 runs)
+ *
+ * A typical ChalyClip run (prod data Jun–Aug 2026: 89-min VOD) costs us
+ * ~$0.64 → ~416k tokens billed. tests/consumption.test.ts holds the rule.
+ */
+export const USAGE_ECONOMICS = {
+  usdPerMillionBillable: 4,
+  conservativeMxnPerUsd: 19.5,
+  defaultMarginPercent: 160,
+} as const;
 
 /** What a non-VIP job pays to run on the boost lane, in billable tokens
  *  (≈ $0.20 at 4 micros/token), charged only when the job succeeds. The
