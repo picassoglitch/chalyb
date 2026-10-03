@@ -24,8 +24,8 @@ export type BillingEmailKind =
 export interface BillingEmailVars {
   nombre: string;
   plan: string; // "Pro anual", "Pro mensual", "VIP"
-  monto: string; // "$8,688.40"
-  renovacion?: string; // "cada año ($8,688.40 MXN)"
+  monto: string; // "$9,970"
+  renovacion?: string; // "cada año ($9,970 MXN)"
   periodicidad?: string; // "por 1 año de Pro"
   fecha_inicio?: string;
   fecha_fin_prueba?: string;

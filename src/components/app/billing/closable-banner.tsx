@@ -31,7 +31,16 @@ export function ClosableBanner({ id, children }: { id: string; children: ReactNo
             window.sessionStorage.setItem(key, '1');
           } catch {}
         }}
-        style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', width: 44, height: 44, display: 'grid', placeItems: 'center' }}
+        style={{
+          position: 'absolute',
+          right: 6,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 44,
+          height: 44,
+          display: 'grid',
+          placeItems: 'center',
+        }}
       >
         <X aria-hidden="true" width={18} height={18} />
       </button>

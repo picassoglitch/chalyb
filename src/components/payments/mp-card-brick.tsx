@@ -50,7 +50,7 @@ export type CardSubmitResult =
 
 interface Props {
   publicKey: string;
-  /** Major units, e.g. 749 for $749.00 MXN. */
+  /** Major units, e.g. 997 for $997.00 MXN. */
   amount: number;
   payerEmail?: string | null;
   /** 1 for subscriptions (a monthly charge has no installments). */

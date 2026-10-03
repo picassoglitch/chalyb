@@ -24,7 +24,7 @@ import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
 import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
 import { checkCharge, expectedChargeForTier, type ExpectedCharge } from './webhook-verify';
 import {
-  GRANDFATHERED_CENTS,
+  grandfatheredFor,
   PRICING,
   ivaPortion,
   planPrice,
@@ -139,8 +139,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     const expected: ExpectedCharge | null = planKey
       ? {
           amountCents: planPrice(planKey).totalCents,
-          alsoAcceptCents:
-            planKey === 'pro_year' ? [] : GRANDFATHERED_CENTS[planPrice(planKey).tier],
+          alsoAcceptCents: grandfatheredFor(planKey),
           currency: PRICING.currency,
           label: `plan ${planKey}`,
         }
@@ -378,7 +377,7 @@ export async function recordAuthorizedPayment(
     if (paymentStatus === 'approved') {
       const { data: subRow } = await admin
         .from('subscriptions')
-        .select('last_charge_at, trial_ends_at')
+        .select('last_charge_at, trial_ends_at, plan_key')
         .eq('mp_preapproval_id', preapprovalId)
         .maybeSingle();
       await admin
@@ -394,7 +393,9 @@ export async function recordAuthorizedPayment(
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
       if (!subRow?.last_charge_at && subRow?.trial_ends_at) {
         void track('conversion', {
-          plan: (ap.transaction_amount ?? 0) > 3000 ? 'anual' : 'mensual',
+          // From the plan, not the amount: VIP mensual costs more than any
+          // threshold that once told the two Pro intervals apart.
+          plan: subRow.plan_key && planPrice(subRow.plan_key as PlanKey).interval === 'year' ? 'anual' : 'mensual',
         });
       }
     } else if (paymentStatus === 'rejected') {

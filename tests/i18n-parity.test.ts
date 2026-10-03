@@ -32,6 +32,9 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  // Law §16.7: the US/CA footers exist only in English (USD market, flag off).
+  'billing.price.taxUS',
+  'billing.price.taxCA',
   'legal.eyebrow', // "Legal"
   'workspace.nav.planSuffix', // "plan"
   'workspace.settings.saveErrorPrefix', // "Error"

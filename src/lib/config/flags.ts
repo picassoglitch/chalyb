@@ -20,6 +20,12 @@ export function freeIncludesClips(): boolean {
   return readBool('FREE_INCLUDES_CLIPS', true);
 }
 
+/** O-5 / O-7 · USD prices, US/CA tax footers and English USD copy. Off:
+ *  MXN everywhere (MP charging in USD is unverified, OPS-14). */
+export function usdMarketEnabled(): boolean {
+  return readBool('USD_MARKET_ENABLED', false);
+}
+
 /** Q7 · Pro includes every active tool instead of one selected tool (owner
  *  trial spec + every mockup; P2-1). Existing Pro users gain access, nobody
  *  loses any. TODO(owner): decide what differentiates VIP besides credits. */

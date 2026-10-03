@@ -148,7 +148,7 @@
       "seeAll": "Ver todos los planes y qué incluyen",
       "proMonthNote": "Mes a mes · cancela cuando quieras",
       "dealTitle": "Paga anual y tu 1er mes es gratis",
-      "dealEq": "Equivale a {mensual} al mes · ahorras {ahorro} al año",
+      "dealSave": "Ahorras {ahorro} al año · {pct}%",
       "dealTotal": "Un solo cobro de {monto} MXN al año, al terminar tu mes gratis.",
       "proCta": "Empieza con 1 mes gratis",
       "perMonth": "MXN al mes"
@@ -921,15 +921,22 @@
   "billing": {
     "price": {
       "proYearBig": "{monto} MXN al año",
-      "proYearEq": "(equivale a {mensual} al mes)",
       "renewYear": "Se renueva cada año",
       "renewMonth": "Se renueva cada mes",
       "saveYear": "Ahorras {ahorro} al año",
-      "vsMonth": "vs. {total_mensual} pagando mes a mes",
+      "monthlyRef": "o paga mes a mes: {monto} MXN al mes (plan mensual)",
       "proMonthBig": "{monto} MXN al mes",
       "monthLine": "{monto} MXN al mes · se renueva cada mes",
       "tax": "Precios en MXN, IVA incluido.",
-      "free": "Sin tarjeta · Para siempre"
+      "free": "Sin tarjeta · Para siempre",
+      "ref": {
+        "wasSr": "Precio anterior:",
+        "labelA1": "Precio anterior en <b>{sitio}</b> hasta el <b>{fecha}</b>. Aquí pagas {pct}% menos.",
+        "labelA2": "Precio de lanzamiento vigente hasta el <b>{fecha_fin_promo}</b>.",
+        "launch": "Precio de lanzamiento: {monto} MXN al mes"
+      },
+      "taxUS": "Prices in US dollars. Sales tax, if any, is added at checkout and shown before you pay.",
+      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay."
     },
     "vars": {
       "periodicidad": {

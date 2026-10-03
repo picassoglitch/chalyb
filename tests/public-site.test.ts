@@ -185,15 +185,14 @@ test('landing components contain no amounts or struck-through prices', () => {
 
 test('the plan summary renders the config totals, IVA included', () => {
   delete process.env.PRICES_INCLUDE_IVA;
-  assert.equal(formatMXN(planPrice('pro_year').totalCents), '$8,688.40');
-  assert.equal(formatMXN(annualMath().yearMonthlyEquivalentCents), '$724');
-  assert.equal(formatMXN(annualMath().yearSavingsCents), '$1,737.68');
-  assert.equal(formatMXN(planPrice('vip_month').totalCents), '$2,898.84');
+  assert.equal(formatMXN(planPrice('pro_year').totalCents), '$9,970');
+  assert.equal(formatMXN(annualMath().yearSavingsCents), '$1,994');
+  assert.equal(formatMXN(planPrice('vip_month').totalCents), '$3,799');
   const src = readFileSync(
     new URL('../src/components/landing/plans-summary.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(src, /tb\('tax'\)/, 'the plans block carries "Precios en MXN, IVA incluido."');
+  assert.match(src, /tb\(priceDisplay\.taxKey\)/, 'the plans block carries the tax footer ("Precios en MXN, IVA incluido.")');
   assert.match(src, /planPrice\('pro_year'\)/);
   assert.match(src, /annualMath\(\)/);
 });
@@ -329,7 +328,7 @@ test('JSON-LD offers are the IVA-inclusive MXN totals', () => {
   };
   assert.deepEqual(
     product.offers.map((o) => o.price),
-    ['8688.40', '868.84', '2898.84'],
+    ['9970.00', '997.00', '3799.00'],
   );
   for (const o of product.offers) {
     assert.equal(o.priceCurrency, 'MXN');

@@ -86,7 +86,8 @@ export function checkMpSignature(opts: {
 export interface ExpectedCharge {
   amountCents: number;
   /** Earlier prices still honoured: subscriptions and checkouts created
-   *  before IVA was added keep charging them (config GRANDFATHERED_CENTS). */
+   *  before the current prices keep charging them (config
+   *  GRANDFATHERED_CENTS) until the subscriber accepts the new price. */
   alsoAcceptCents?: readonly number[];
   currency: string;
   /** What is being bought, for logs and audit metadata. */
@@ -113,7 +114,7 @@ export function expectedChargeForPack(packId: string): ExpectedCharge | null {
   if (!pack) return null;
   return {
     amountCents: pack.amountCents,
-    alsoAcceptCents: [GRANDFATHERED_CENTS.packs[pack.id]],
+    alsoAcceptCents: GRANDFATHERED_CENTS.packs[pack.id],
     currency: TOKEN_PACK_CURRENCY,
     label: `pack ${pack.id}`,
   };

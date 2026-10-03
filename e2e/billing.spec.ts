@@ -17,7 +17,7 @@ test.describe('public /planes', () => {
     await expect(page.getByText('Precios en MXN, IVA incluido.')).toBeVisible();
     const body = await page.locator('body').innerText();
     expect(body).not.toMatch(FORBIDDEN_PRICE);
-    expect(body).toMatch(/\$8,688\.40 MXN al año|\$7,490 MXN al año/);
+    expect(body).toMatch(/\$9,970 MXN al año/);
     await page.getByRole('radio', { name: 'Mensual' }).click();
     await expect(page.getByText(/MXN al mes/).first()).toBeVisible();
     await expectNoOverflow(page, info);
