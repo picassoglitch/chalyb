@@ -2,7 +2,7 @@
 
 > Plan para implementar el rediseño en el código real de Chalyb (Next.js: área de suscriptor `/app`, panel del dueño `/dashboard`, acceso `/sign-in`, pagos con Mercado Pago).
 > Mockups: `mockups/01-…30-*.png` (vista general en `mockups/09-overview-completo.png`). HTML de referencia en `html/` (generado con `build.py` + `more_*.py` y capturado con `render.py`).
-> Textos de cobro y prueba: `trial-to-paid-path.md` y **`legal/aceptacion-ux.md` (manda en todo lo legal)**. Documentos legales: `legal/` (hallazgos en `legal/REVISION-LEGAL.md`). **Los requisitos legales obligatorios están en §11.**
+> **Precios: ver PRICING-CARDS-SPEC.md (fuente única)** (montos, prueba de 7 días solo Pro, insignia, pies de IVA). Textos de cobro y prueba: `trial-to-paid-path.md` y **`legal/aceptacion-ux.md` (manda en todo lo legal)**. Documentos legales: `legal/` (hallazgos en `legal/REVISION-LEGAL.md`). **Los requisitos legales obligatorios están en §11.**
 
 ---
 
@@ -19,8 +19,8 @@
 9. **Precios** siempre en MXN y con IVA incluido (ver §0.1).
 10. **Accesibilidad:** contraste AA mínimo; texto de cobro ≥ 14 px (usamos 17–18 px); objetivos táctiles ≥ 48 px; foco visible; todo usable con teclado; `lang="es-MX"`.
 
-### 0.1 Nota de precios e IVA (bloqueante para Fase 2)
-Los precios que se muestran **deben ser el total con IVA incluido** (art. 7 Bis LFPC). **El dueño debe confirmar** con su contador si $749 / $7,490 / $2,499 **ya incluyen IVA**. Si no lo incluyen, los precios visibles pasan a ser $868.84 / $8,688.40 / $2,898.84 (y se recalculan "equivale a $624 al mes", "Ahorras $1,498" y "vs. $8,988"). Todos los montos salen de **una sola configuración** (`pricing config`, ver Fase 2), nunca escritos a mano en componentes. Mientras no se confirme, la leyenda es "Precios en MXN, IVA incluido." y la confirmación queda como decisión abierta del dueño.
+### 0.1 Precios e IVA
+**Precios: ver PRICING-CARDS-SPEC.md (fuente única).** Resumen (no copiar montos de aquí al código): Pro $997 MXN al mes · Pro anual $9,970 MXN al año · VIP $3,799 MXN al mes · VIP anual $36,325 MXN al año · Pro Lealtad (precio por meses, §15 de ese archivo). Son **totales con IVA incluido** (`PRICES_INCLUDE_IVA=true`); pie "Precios en MXN, IVA incluido." Todos los montos salen de **una sola configuración** (`src/config/pricing.ts`); ningún monto escrito a mano.
 
 ---
 
@@ -136,7 +136,7 @@ Todo el texto visible vive en `messages/es-MX.json` (o el sistema i18n existente
 | API key | **Acceso API** (solo en Opciones avanzadas) |
 | Past due, dunning | **Pago pendiente** |
 | Churn, cancel subscription | **Cancelar** |
-| Trial | **Prueba gratis / mes gratis** |
+| Trial | **Prueba gratis / Prueba Pro gratis 7 días** (nunca "mes gratis") |
 | Invoice | **Factura (CFDI)** |
 | Payment method | **Método de pago / tarjeta** |
 | Support ticket | **Hablar con una persona** |
@@ -196,7 +196,7 @@ Todo el texto visible vive en `messages/es-MX.json` (o el sistema i18n existente
   - `home.task.senales` "Señales" · "Recibir señales de cripto" · "Te avisamos cuándo comprar o vender, en tu celular." (móvil: "Te avisamos cuándo comprar o vender.")
   - `home.task.envivo` "En vivo" · "Manejar mi transmisión" · "Controla tus escenas de OBS desde un solo lugar." (móvil: "Controla OBS desde tu celular.")
   - `home.task.mas` "Y mucho más" · "Más herramientas" · "Asistente, Pronósticos, Inmuebles e Inversiones." (móvil: "Asistente, Pronósticos y más.")
-  - `home.included.pro` "**Todo incluido en tu plan Pro.** Sin pagos extra." · `home.included.gratis` "**Prueba Pro gratis 1 mes.** Todas las herramientas incluidas." + botón "Prueba Pro gratis 1 mes"
+  - `home.included.pro` "**Todo incluido en tu plan Pro.** Sin pagos extra." · `home.included.gratis` "**Prueba Pro gratis 7 días.** Todas las herramientas incluidas." + botón "Empezar mis 7 días gratis"
   - `home.latest.title` "Lo último" · `home.latest.all` "Ver todo" · `home.latest.clips` "Tus {n} clips están listos" · `home.latest.from` "De tu stream “{titulo}” · {hace}" · `home.latest.cta` "Ver mis clips"
 - **Estados:** vacío (se oculta "Lo último" y se muestra `empty.clips` de 7.6) · cargando (esqueletos de tarjeta, sin girador a pantalla completa) · error (banner gris "No pudimos cargar tus resultados." + "Intentar otra vez") · Gratis (franja de prueba en vez de "Todo incluido").
 - **Aceptación:** abuela identifica la tarea en < 5 s y la abre con 1 toque · pro: "Mis resultados" a 1 toque.
@@ -212,98 +212,76 @@ Todo el texto visible vive en `messages/es-MX.json` (o el sistema i18n existente
 **Mockups:** 12, 13, 14, 15, 16, 17, 18, 30 (y 26 para avisos). **Fuente de textos:** `legal/aceptacion-ux.md` §1–§5 (manda) y `trial-to-paid-path.md` (ya alineado con la revisión legal).
 
 ### 6.1 Configuración única de precios y planes (`pricing config`)
-Un solo archivo/tabla del servidor; **ningún monto escrito a mano en componentes, correos ni textos legales**.
-```ts
-// config/pricing.ts (nombre propuesto; si ya existe una config de planes, se extiende)
-export const PRICING = {
-  currency: 'MXN', taxIncluded: true,            // §0.1: confirmar IVA con el contador
-  billingToggleEnabled: true,                    // toggle Mensual/Anual. Default ON
-  defaultInterval: 'year',                       // Anual preseleccionado
-  trial: { days: 30, plan: 'pro', requiresCard: true, reminderDaysBefore: 7 },
-  plans: {
-    gratis: { month: 0 },
-    pro:    { month: 749, year: 7490, yearMonthlyEquivalent: 624, yearSavings: 1498, yearVsMonthly: 8988 },
-    vip:    { month: 2499 },                     // sin anual
-  },
-  reminders: { monthDaysBefore: 7, yearDaysBefore: [30, 7] }, // §11 Requisitos legales
-  graceDays: 7,                                  // pago pendiente
-};
-```
-- `billingToggleEnabled=false` oculta el toggle y deja solo el plan de `defaultInterval`; **el bloque de cobro sigue mostrando el monto real y la periodicidad**.
-- `yearSavings` y `yearVsMonthly` se **calculan** (`12×month − year`, `12×month`) y se validan en una prueba unitaria.
-- Mercado Pago: un `preapproval_plan` por combinación (`pro_month`, `pro_year`, `vip_month`) con `free_trial` de 30 días para Pro. Los IDs viven en variables de entorno existentes (no renombrar).
+**Precios: ver PRICING-CARDS-SPEC.md (fuente única).** Un solo archivo del servidor (`src/config/pricing.ts`); **ningún monto escrito a mano en componentes, correos ni textos legales**. Resumen de lo que define ese archivo (ver PRICING-CARDS-SPEC §13 y §16):
+- Planes `pro_month` $997 · `pro_year` $9,970 · `vip_month` $3,799 · `vip_year` $36,325 · `pro_lealtad` (calendario §15). Totales con IVA (`PRICES_INCLUDE_IVA=true`).
+- Prueba: `PRICING.trial = { days: 7, reminderDaysBefore: 7 }`; `planHasTrial()` solo `pro_month` y `pro_year` (VIP, VIP anual y Pro Lealtad sin prueba). Una vez por cuenta y por tarjeta.
+- Flags: `SHOW_REFERENCE_PRICE` (default **false**; apagado muestra "Precio de lanzamiento: $997 MXN al mes") · `TRIAL_DAY6_REMINDER` (default **false**).
+- Ahorros y porcentajes se **calculan** y se redondean hacia abajo (Pro anual "Ahorras $1,994 al año · 16%", VIP anual "Ahorras $9,263 al año · 20%"); ahorro 0 se oculta.
+- Mercado Pago: un `preapproval_plan` por plan; prueba de 7 días en Pro (`start_date = inicio + 7 días`). Los IDs viven en variables de entorno existentes (no renombrar).
 
 ### 6.2 Reglas de precio en pantalla (obligatorias, ver §11.1)
-| Caso | Número grande | Debajo, en chico | Nunca |
-|---|---|---|---|
-| Pro anual | **"$7,490 MXN al año"** | "(equivale a $624 al mes)" · "Se renueva cada año" · pill "Ahorras $1,498 al año" · opcional "vs. $8,988 pagando mes a mes" | "$624/mes" como número grande; "2 meses gratis"; "$8,988" tachado sin rótulo |
-| Pro mensual | **"$749 MXN al mes"** | "Se renueva cada mes" | — |
-| VIP | **"$2,499 MXN al mes"** | "Se renueva cada mes" | — |
-| Gratis | **"$0"** | "Sin tarjeta · Para siempre" | — |
-Junto al formulario de tarjeta y en cualquier bloque de cobro **nunca aparece $624**: solo el total real.
-
-Llaves: `price.pro.year.big` "${monto} MXN al año" · `price.pro.year.eq` "(equivale a ${mensual} al mes)" · `price.renew.year` "Se renueva cada año" · `price.renew.month` "Se renueva cada mes" · `price.save.year` "Ahorras ${ahorro} al año" · `price.vs.month` "vs. ${total_mensual} pagando mes a mes" · `price.pro.month.big` "${monto} MXN al mes" · `price.month.line` "${monto} MXN al mes · se renueva cada mes" · `price.tax` "Precios en MXN, IVA incluido."
+**Precios: ver PRICING-CARDS-SPEC.md (fuente única).** Tarjetas, textos, toggle ("Ahorra hasta 20%"), insignia "Más popular", línea "o paga mes a mes: $997 MXN al mes (plan mensual)" (solo en tarjetas, nunca en el cobro) y pie "Precios en MXN, IVA incluido." están en PRICING-CARDS-SPEC §6, §12.2 y §16. Regla que se queda aquí: el número grande es siempre el cobro real con su periodicidad; nunca "equivale a … al mes", nunca "2 meses gratis".
 
 ### 6.3 Planes · `/planes` (público) y `/app/planes` · mockup **12**
 - **Para qué:** entender en 10 segundos qué cuesta y qué incluye.
-- **Componentes:** `PublicNav`, `Segmented` Mensual/Anual (Anual activo; pill "Ahorras $1,498"), 3 tarjetas (Gratis · Pro resaltado con etiqueta "Recomendado" · VIP), checklist "Qué incluye", FAQ, `PublicFooter`.
-- **Copia:** `plans.title` "Un plan. Todas las herramientas." · `plans.sub` "Prueba Pro gratis 1 mes. Cancela cuando quieras." · `plans.toggle.month` "Mensual" · `plans.toggle.year` "Anual" · `plans.gratis.name` "Gratis" · "Para conocer Chalyb" · "Sin tarjeta" · "Para siempre" · `plans.gratis.cta` "Crear cuenta gratis" · `plans.pro.badge` "Recomendado" · `plans.pro.name` "Pro" · "Todas las herramientas" · precios de 6.2 · `plans.pro.cta` "Prueba Pro gratis 1 mes" · `plans.pro.note` "Hoy pagas $0. Te avisamos 7 días antes del primer cobro." · `plans.vip.name` "VIP" · "Para quien lo usa todos los días" · "Sin plan anual" · `plans.vip.cta` "Elegir VIP" · `plans.pro.monthAlt` (con toggle en Anual) "o ${749} MXN al mes con Mensual".
-- **Con toggle en Mensual:** Pro muestra "$749 MXN al mes" + "Se renueva cada mes" y desaparece "Ahorras"; el CTA no cambia.
+- **Componentes:** `PublicNav`, `Segmented` Mensual/Anual (Anual activo; pill "Ahorra hasta 20%"), 3 tarjetas (Gratis · Pro resaltado con etiqueta "Más popular" · VIP con anual y mensual), FAQ, `PublicFooter`.
+- **Copia:** `plans.title` "Empieza gratis, crece con Pro" · `plans.sub` "Prueba Pro gratis 7 días. Cancela en 1 clic, sin llamadas." · CTA Pro "Empezar mis 7 días gratis" · VIP "Elegir VIP anual" / "Elegir VIP mensual" ("Se cobra hoy. Sin prueba gratis."). **Precios: ver PRICING-CARDS-SPEC.md (fuente única).** (llaves y textos exactos: PRICING-CARDS-SPEC §6 y §16).
+- **Con toggle en Mensual:** Pro muestra "$997 MXN al mes" + "Se renueva cada mes" y desaparece "Ahorras"; el CTA no cambia (mockups 43 / 43b).
 - **Estados:** usuario con sesión → los CTA dicen "Tu plan actual" (deshabilitado) en su plan · Pro en prueba → "Ya estás probando Pro" · VIP desde Pro → "Subir a VIP".
-- **Aceptación:** abuela dice cuánto pagará al año sin ayuda (lee "$7,490") · pro cambia a Mensual en 1 toque · prueba automática: el texto "2 meses gratis" no existe en el bundle.
+- **Aceptación:** abuela dice cuánto pagará al año sin ayuda (lee "$9,970") · pro cambia a Mensual en 1 toque · prueba automática: el texto "2 meses gratis" no existe en el bundle.
 
 ### 6.4 Paso 1 · Crear cuenta · `/sign-in?mode=signup&intent=trial` (ruta existente `/sign-in`) · mockup **13**
-- **Componentes:** `WizardShell` ("Prueba Pro gratis", "Paso 1 de 3"), botón Google, separador, 3 `Field`, `Checkbox` de marketing, recuadro lateral "Tu mes de Pro gratis".
-- **Copia:** `signup.title` "Crea tu cuenta" · `signup.sub` "Toma 1 minuto. No necesitas tarjeta en este paso." · `signup.google` "Continuar con Google" · `signup.or` "o con tu correo" · `signup.name` "Tu nombre" · `signup.email` "Correo" · `signup.password` "Contraseña" · `signup.password.hint` "Mínimo 8 letras o números" · `signup.cta` "Crear cuenta" · `signup.legal` "Al crear tu cuenta aceptas los [Términos y Condiciones] y la [Política de Uso Aceptable], y confirmas que leíste el [Aviso de Privacidad]. Debes tener 18 años o más." · `signup.marketing` "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera." (**desmarcada**) · `signup.side.title` "Tu mes de Pro gratis" · "Todo incluido" · "Hoy pagas $0" · "Te avisamos 7 días antes de cualquier cobro. Cancela en 1 clic." · `signup.have` "¿Ya tienes cuenta?" · "Entrar".
+- **Componentes:** `WizardShell` ("Prueba Pro gratis", "Paso 1 de 3"), botón Google, separador, 3 `Field`, `Checkbox` de marketing, recuadro lateral "Tus 7 días de Pro gratis".
+- **Copia:** `signup.title` "Crea tu cuenta" · `signup.sub` "Toma 1 minuto. No necesitas tarjeta en este paso." · `signup.google` "Continuar con Google" · `signup.or` "o con tu correo" · `signup.name` "Tu nombre" · `signup.email` "Correo" · `signup.password` "Contraseña" · `signup.password.hint` "Mínimo 8 letras o números" · `signup.cta` "Crear cuenta" · `signup.legal` "Al crear tu cuenta aceptas los [Términos y Condiciones] y la [Política de Uso Aceptable], y confirmas que leíste el [Aviso de Privacidad]. Debes tener 18 años o más." · `signup.marketing` "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera." (**desmarcada**) · `signup.side.title` "Tus 7 días de Pro gratis" · "Todo incluido" · "Hoy pagas $0" · "Hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Cancela en 1 clic." · `signup.have` "¿Ya tienes cuenta?" · "Entrar".
 - **Estados:** correo ya registrado ("Ya tienes cuenta con este correo. [Entrar]") · contraseña corta (texto bajo el campo, sin rojo hasta salir del campo) · Google cancelado (vuelve sin error) · cargando (botón con "Creando tu cuenta…").
 - **Registro:** evento `signup_terms_accepted` con versiones de Términos, Uso aceptable y Aviso (ver §10.3). Marketing solo si se marcó (`marketing_opt_in`).
 - **Aceptación:** abuela termina con Google en 2 toques · ningún campo extra (teléfono, empresa, etc.).
 
 ### 6.5 Paso 2 · Tu prueba · `/app/prueba` · mockup **14**
-- **Componentes:** `WizardShell` ("Paso 2 de 3"), 2 tarjetas-radio (Anual preseleccionado, Mensual), `DisclosureBlock` que se actualiza en vivo, `btn-xl` "Continuar al pago", leyenda de IVA.
-- **Copia:** `trial.title` "Prueba Pro gratis 1 mes" · `trial.sub` "Todas las herramientas incluidas. Cancela cuando quieras." · `trial.q` "¿Qué plan quieres cuando termine tu mes gratis?" · opción anual: "Pro anual" + 6.2 + pills "Recomendado" y "Ahorras $1,498 al año" · opción mensual: "Pro mensual" + "$749 MXN al mes" + "Se renueva cada mes" · `trial.cta` "Continuar al pago" · `price.tax`.
+- **Componentes:** `WizardShell` ("Paso 2 de 3"), 2 tarjetas-radio (**Pro mensual preseleccionado** y primero; Pro anual segundo. Nunca preseleccionar el anual, PRICING-CARDS-SPEC §16.2), `DisclosureBlock` que se actualiza en vivo, `btn-xl` "Continuar al pago", leyenda de IVA.
+- **Copia:** `trial.title` "Prueba Pro gratis 7 días" · `trial.sub` "Hoy pagas $0. Cancela en 1 clic, sin llamadas." · `trial.q` "¿Qué plan quieres cuando terminen tus 7 días gratis?" · opción mensual: "Pro mensual" + "$997 MXN al mes" + "Se renueva cada mes" · opción anual: "Pro anual" + "$9,970 MXN al año" + "Se renueva cada año" + pill "Ahorras $1,994 al año · 16%" (sin insignia) · `trial.cta` "Continuar al pago" · `price.tax`.
 - **`DisclosureBlock` (texto exacto de `aceptacion-ux.md` §3.2):**
-  `disclosure.today` "**Hoy pagas $0.** Tu mes gratis termina el **{fecha_fin_prueba}**."
+  `disclosure.today` "**Hoy pagas $0.** Tu prueba gratis de 7 días termina el **{fecha_fin_prueba}**."
   `disclosure.charge` "Si no cancelas antes, el **{fecha_cobro}** se cobrarán **${monto} MXN** {periodicidad} a {tarjeta}, y se renovará automáticamente {renovacion} hasta que canceles."
-  `disclosure.reminder` "Te avisaremos por correo el **{fecha_recordatorio}** (7 días antes)."
+  `disclosure.notice` "Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto." (aviso del día 0, PRICING-CARDS-SPEC §16.3)
   `disclosure.cancel` "Cancela en 1 clic desde **Mi cuenta → Mi plan**, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada."
-  Variables: `{periodicidad}` anual "por 1 año de Pro" / mensual "por tu primer mes de Pro" · `{renovacion}` anual "cada año ($7,490 MXN)" / mensual "cada mes ($749 MXN)" · `{tarjeta}` sin tarjeta "la tarjeta que registres" / con tarjeta "tu tarjeta terminación {ultimos4}".
+  Variables: `{periodicidad}` anual "por 1 año de Pro" / mensual "por tu primer mes de Pro" · `{renovacion}` anual "cada año ($9,970 MXN)" / mensual "cada mes ($997 MXN)" · `{tarjeta}` sin tarjeta "la tarjeta que registres" / con tarjeta "tu tarjeta terminación {ultimos4}".
 - **Estados:** usuario que ya usó su prueba → título "Elige tu plan Pro", sin "gratis", bloque "Hoy se cobran ${monto} MXN" · antifraude rechaza la prueba (tarjeta ya usada) → "Esta tarjeta ya tuvo una prueba gratis. Puedes elegir un plan y empezar hoy." + revisión humana disponible (Aviso de Privacidad §5.1) · Quebec → ver §11.8.
 - **Aceptación:** al cambiar de plan el bloque cambia monto y periodicidad en < 100 ms · abuela dice cuándo y cuánto se le cobra · el monto grande siempre es el cobro real.
 
 ### 6.6 Paso 3 · Pago (Mercado Pago) · `/app/prueba/pago` · mockup **15**
-- **Componentes:** `WizardShell` ("Paso 3 de 3"), aviso de 1 línea, **Card Payment Brick de Mercado Pago embebido** (sin redirección si es posible) con estilos del tema (radio 12 px, fuente Inter), línea de seguridad + enlace "Quién vende", **`Checkbox` obligatoria desmarcada**, `btn-xl` "Empezar mi mes gratis" (deshabilitado hasta marcar), tarjeta "Resumen".
+- **Componentes:** `WizardShell` ("Paso 3 de 3"), aviso de 1 línea, **Card Payment Brick de Mercado Pago embebido** (sin redirección si es posible) con estilos del tema (radio 12 px, fuente Inter), línea de seguridad + enlace "Quién vende", **`Checkbox` obligatoria desmarcada**, `btn-xl` "Empezar mis 7 días gratis" (deshabilitado hasta marcar), tarjeta "Resumen".
 - **Copia:**
   `pay.title` "Agrega tu tarjeta"
   `pay.oneLine` "Hoy pagas **$0**. Primer cobro: **${monto} MXN** el **{fecha_cobro}** y después **{cada_periodo}**, salvo que canceles antes." (`{cada_periodo}`: "cada año" / "cada mes") — **monto Y periodicidad** obligatorios.
   `pay.secure` "Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta." · `pay.seller` "Quién vende" (abre hoja con razón social, domicilio, teléfono y correo, art. 76 Bis fr. III LFPC)
   `pay.consent` (texto exacto `aceptacion-ux.md` §3.3) "Acepto que, si no cancelo antes del **{fecha_cobro}**, Chalyb cobre automáticamente **${monto} MXN** {renovacion_corta} a mi tarjeta, y acepto los [Términos de Suscripción](/suscripcion)." · `{renovacion_corta}` "y cada año después" / "y cada mes después"
-  `pay.cta` "Empezar mi mes gratis" · `pay.cta.hint` "Marca la casilla para continuar. Puedes cancelar cuando quieras." · `pay.consent.error` "Marca la casilla para confirmar el cobro automático. Puedes cancelar cuando quieras."
-  Resumen: "Resumen" · "Plan al terminar la prueba" {plan} · "Tu mes gratis termina" {fecha_fin_prueba} · "Te avisamos por correo" {fecha_recordatorio} · "Primer cobro" ${monto} MXN / {fecha_cobro} · "Después" "${monto} MXN cada año|cada mes" · "Total hoy" "$0" · enlace "Cambiar a Pro mensual ($749 al mes)" / "Cambiar a Pro anual ($7,490 al año)".
+  `pay.cta` "Empezar mis 7 días gratis" · `pay.cta.hint` "Marca la casilla para continuar. Puedes cancelar cuando quieras." · `pay.consent.error` "Marca la casilla para confirmar el cobro automático. Puedes cancelar cuando quieras."
+  Resumen: "Resumen" · "Plan al terminar la prueba" {plan} · "Tu prueba de 7 días termina" {fecha_fin_prueba} · "Aviso de cobro por correo" "Hoy" · "Primer cobro" ${monto} MXN / {fecha_cobro} · "Después" "${monto} MXN cada año|cada mes" · "Total hoy" "$0" · enlace "Cambiar a Pro mensual ($997 al mes)" / "Cambiar a Pro anual ($9,970 al año)". La línea "o paga mes a mes…" de las tarjetas **no** va aquí.
 - **Estados:** tarjeta rechazada ("Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.") · validación de MP (se muestran los mensajes del Brick en español) · cargando ("Guardando tu tarjeta…", botón bloqueado contra doble clic) · 3DS (modal del banco; al volver, sigue el flujo).
 - **Servidor:** al confirmar se crea la suscripción (`preapproval`) con `free_trial` y se guarda `consent_events` (§10.3) con: versión de Términos de Suscripción, texto exacto mostrado (hash), monto, periodicidad, fechas, últimos 4, IP, user-agent, `checkbox=true`. **Sin casilla marcada el endpoint responde 422** (la regla vive en el servidor, no solo en el botón).
 - **Aceptación:** prueba E2E: botón deshabilitado sin casilla; con casilla crea suscripción y evento · abuela entiende que hoy no paga nada · la casilla nunca viene marcada (prueba automática).
 
 ### 6.7 Listo · `/app/prueba/listo` · mockup **16**
-- **Copia:** `done.title` "¡Listo, {nombre}!" (salto de línea) "Tu mes de Pro gratis ya empezó." · `done.sub` "Termina el {fecha_fin_prueba}. Primer cobro: **${monto} MXN** el {fecha_cobro} a tu tarjeta ••{ultimos4}." · recap: "Hoy pagaste" "$0" · "Tu mes gratis termina" · "Te avisamos por correo" · "Primer cobro ({plan})" "{marca} ••{ultimos4} · se renueva {cada_periodo} hasta que canceles" · `done.cta` "Hacer mis primeros clips" (va directo a Clips paso 1) · `done.plan` "Ver mi plan" · `done.footer` "Te enviamos estos datos a {correo} · Folio de tu aceptación: {consent_id}".
-- **Efecto:** se envía el Correo 1 (6.11) en ese momento.
+- **Copia:** `done.title` "¡Listo, {nombre}!" (salto de línea) "Tus 7 días de Pro gratis ya empezaron." (texto exacto `aceptacion-ux.md` §3.6) · `done.sub` "Primer cobro: **${monto} MXN** el {fecha_cobro}, a tu tarjeta ••{ultimos4}. Ya te enviamos el aviso de cobro." · recap: "Hoy pagaste" "$0" · "Tu prueba gratis termina" · "Aviso de cobro enviado" (asunto del correo) "Hoy" · "Primer cobro ({plan})" "{marca} ••{ultimos4} · se renueva {cada_periodo} hasta que canceles" · `done.cta` "Hacer mis primeros clips" (va directo a Clips paso 1) · `done.plan` "Ver mi plan" · `done.footer` "Te enviamos estos datos a {correo} · Folio de tu aceptación: {consent_id}".
+- **Efecto:** se envía el Correo 1 (aviso de cobro del día 0, 6.11) en ese momento.
 - **Aceptación:** 1 toque a Clips paso 1 · el folio coincide con `consent_events.id`.
 
 ### 6.8 Avisos de prueba (banners) · componente `TrialBanner` · mockup **17**
-Una línea + un botón, arriba del contenido, **uno a la vez** (prioridad: pago pendiente > últimos 7 días > terminada > activa).
+Una línea + un botón, arriba del contenido, **uno a la vez** (prioridad: pago pendiente > aviso sin entregar > terminada > activa). La prueba dura 7 días, así que no hay fase "tranquila".
 | Estado | Cuándo | Estilo | Copia | Botón |
 |---|---|---|---|---|
-| `trial_active` | días 0–22 | tranquilo (`--tint2`) | `banner.trial` "Prueba Pro gratis · te quedan {n} días" | "Ver mi plan" |
-| `trial_last7` | días 23–30 | ámbar | `banner.last7` "Tu prueba termina el **{fecha_fin_prueba}**. Se cobrarán **${monto} MXN** el **{fecha_cobro}**." | "Ver mi plan" |
+| `trial_active` | días 0–7 | ámbar | `banner.trial` "**Prueba Pro gratis** · El **{fecha_cobro}** se cobrarán **${monto} MXN**, salvo que canceles antes." | "Ver mi plan" |
+| `notice_undelivered` | el aviso del día 0 rebota o no se confirma para el día 2 | ámbar | `banner.noticeHold` "No pudimos enviarte el aviso de cobro a **{correo}**. Confírmalo o actualízalo: **no te cobraremos** hasta 5 días después de avisarte." (texto de `trial-to-paid-path.md` §2; **falta OK de Legal**) | "Revisar correo" |
 | `trial_ended` | terminada o cancelada y ya vencida | neutral | `banner.ended` "Tu prueba terminó. Estás en el plan Gratis." | "Volver a Pro" |
 | `past_due` | cobro fallido | rojo | `banner.pastDue` "No pudimos cobrar tu plan. Actualiza tu tarjeta antes del **{fecha_gracia}** para no perder Pro." | "Actualizar tarjeta" |
-- `trial_last7` y `past_due` **no se pueden cerrar**. Los otros se cierran por sesión.
+- `trial_active`, `notice_undelivered` y `past_due` **no se pueden cerrar**. `trial_ended` se cierra por sesión.
 - Renovaciones de planes pagados: el mismo banner ámbar aparece 7 días antes de **cada** renovación: `banner.renew` "Tu plan {plan} se renueva el **{fecha_cobro}** por **${monto} MXN**." [Ver mi plan].
-- **Aceptación:** banner y correo de 7 días salen el mismo día y dicen lo mismo.
+- **Aceptación:** el banner `trial_active` y el aviso de cobro del día 0 dicen lo mismo (fecha y monto).
 
 ### 6.9 Cancelar · hoja desde Mi plan · mockup **18**
 - **Regla:** 2 clics (Cancelar → Sí, cancelar). Máximo **una** oferta de retención y **el botón "Sí, cancelar" siempre visible en la misma pantalla** que la oferta, con el **mismo peso visual** que "Seguir con Pro" (`btn-dark` vs `btn-primary`, mismo tamaño). Sin llamadas, sin encuestas obligatorias.
-- **Copia (prueba):** `cancel.trial.title` "¿Cancelar tu prueba?" · `cancel.trial.body` "Seguirás teniendo Pro hasta el **{fecha_fin_prueba}**. Después no se te cobrará nada y pasarás al plan Gratis. Tus clips y resultados se quedan guardados." · oferta opcional (solo si el plan elegido es anual) `cancel.offer` "¿Prefieres pagar mes a mes?" [Cambiar a $749 al mes] · `cancel.yes` "Sí, cancelar" · `cancel.keep` "Seguir con Pro".
+- **Copia (prueba):** `cancel.trial.title` "¿Cancelar tu prueba?" · `cancel.trial.body` "Seguirás teniendo Pro hasta el **{fecha_fin_prueba}**. Después no se te cobrará nada y pasarás al plan Gratis. Tus clips y resultados se quedan guardados." · oferta opcional (solo si el plan elegido es anual) `cancel.offer` "¿Prefieres pagar mes a mes?" [Cambiar a $997/mes] · `cancel.yes` "Sí, cancelar" · `cancel.keep` "Seguir con Pro".
 - **Copia (plan pagado):** `cancel.paid.title` "¿Cancelar tu plan {plan}?" · `cancel.paid.body` "Seguirás teniendo {plan} hasta el **{fecha_fin_periodo}**. No habrá más cobros. Después pasarás al plan Gratis y tus resultados se quedan guardados."
 - **Hecho:** `cancel.done.title` "Listo, cancelaste." · `cancel.done.body` "No se te volverá a cobrar. Tienes Pro hasta el **{fecha_fin}**." · "Si cambias de opinión, puedes volver a activar Pro en cualquier momento." · [Volver a Inicio] [Volver a activar Pro] · `cancel.done.folio` "Folio: {folio_cancelacion} · Te enviamos la confirmación a {correo}".
 - **Servidor:** se cancela el `preapproval` en Mercado Pago **inmediatamente** (sin cobros futuros); el acceso sigue hasta fin de periodo; se guarda `cancellation_events` con folio; se envía correo con folio.
@@ -314,34 +292,34 @@ Estructura fija para todos los estados: tarjeta "Tu plan" (degradado) · grupo "
 
 | Estado | Tarjeta "Tu plan" | Próximo cobro | Cambiar de plan | Cancelar |
 |---|---|---|---|---|
-| **Pro mensual** | "TU PLAN · ACTIVO" · "Pro mensual — todo incluido" · "Se renueva cada mes." / "Próximo cobro: {fecha_cobro}" · "$749 MXN al mes" · [Cambiar plan] | "{fecha_cobro}" · "$749 MXN" · "Aviso por correo 7 días antes" | "Pasar a Pro anual" · "$7,490 al año" · "Ahorras $1,498 al año. Empieza en tu próxima fecha de cobro" · "Subir a VIP" · "$2,499 al mes" · "Se aplica hoy; te mostramos el ajuste antes" · "Pasar a Gratis" · "$0" · "Al terminar tu mes pagado" | "Cancelar suscripción" |
-| **Pro anual** (mockup 30) | "Pro anual — todo incluido" · "Se renueva cada año." / "Próximo cobro: {fecha_cobro}" · "$7,490 MXN al año" | "{fecha_cobro}" · "$7,490 MXN" · "Aviso por correo 30 y 7 días antes" | "Pasar a Pro mensual" · "$749 al mes" · "Empieza cuando termine tu año pagado" · "Subir a VIP" · "Pasar a Gratis" · "Al terminar tu año pagado" | "Cancelar suscripción" |
-| **VIP** | "VIP — todo incluido y más créditos" · "Se renueva cada mes." · "$2,499 MXN al mes" | "{fecha_cobro}" · "$2,499 MXN" · "Aviso por correo 7 días antes" | "Bajar a Pro mensual" · "$749 al mes" · "Empieza en tu próxima fecha de cobro" · "Bajar a Pro anual" · "$7,490 al año" · "Pasar a Gratis" | "Cancelar suscripción" |
-| **Prueba activa** | "TU PLAN · PRUEBA" · "Prueba Pro gratis" · "Te quedan {n} días · termina el {fecha_fin_prueba}" · "Después de la prueba: {plan} · ${monto} MXN {al año\|al mes}" [Cambiar] | "{fecha_cobro}" · "${monto} MXN" · "Aviso por correo el {fecha_recordatorio}" | "Cambiar a Pro mensual/anual (antes del primer cobro)" | "Cancelar prueba" · "1 clic, sin llamadas" |
+| **Pro mensual** | "TU PLAN · ACTIVO" · "Pro mensual — todo incluido" · "Se renueva cada mes." / "Próximo cobro: {fecha_cobro}" · "$997 MXN al mes" · [Cambiar plan] | "{fecha_cobro}" · "$997 MXN" · "Aviso por correo 7 días antes" | "Pasar a Pro anual" · "$9,970 al año" · "Ahorras $1,994 al año. Empieza en tu próxima fecha de cobro" · "Subir a VIP" · "$3,799 al mes" · "Se aplica hoy; te mostramos el ajuste antes" · "Pasar a Gratis" · "$0" · "Al terminar tu mes pagado" | "Cancelar suscripción" |
+| **Pro anual** (mockup 30) | "Pro anual — todo incluido" · "Se renueva cada año." / "Próximo cobro: {fecha_cobro}" · "$9,970 MXN al año" | "{fecha_cobro}" · "$9,970 MXN" · "Aviso por correo 30 y 7 días antes" | "Pasar a Pro mensual" · "$997 al mes" · "Empieza cuando termine tu año pagado" · "Subir a VIP" · "Pasar a Gratis" · "Al terminar tu año pagado" | "Cancelar suscripción" |
+| **VIP** | "VIP — todo incluido y más créditos" · "Se renueva cada mes." · "$3,799 MXN al mes" (VIP anual: "$36,325 MXN al año", aviso 30 y 7 días antes) | "{fecha_cobro}" · "$3,799 MXN" · "Aviso por correo 7 días antes" | "Bajar a Pro mensual" · "$997 al mes" · "Empieza en tu próxima fecha de cobro" · "Bajar a Pro anual" · "$9,970 al año" · "Pasar a Gratis" | "Cancelar suscripción" |
+| **Prueba activa** | "TU PLAN · PRUEBA" · "Prueba Pro gratis" · "Te quedan {n} días · termina el {fecha_fin_prueba}" · "Después de la prueba: {plan} · ${monto} MXN {al año\|al mes}" [Cambiar] | "{fecha_cobro}" · "${monto} MXN" · "Aviso de cobro enviado el {fecha_inicio}" | "Cambiar a Pro mensual/anual (antes del primer cobro)" | "Cancelar prueba" · "1 clic, sin llamadas" |
 | **Cancelado, activo hasta** | "TU PLAN · CANCELADO" · "{plan} hasta el {fecha_fin_periodo}" · "No habrá más cobros." · [Volver a activar {plan}] | se oculta; en su lugar "Después del {fecha_fin_periodo} pasarás al plan Gratis. Tus resultados se quedan guardados." | se oculta | se oculta |
 | **Pago pendiente** | rojo: "TU PLAN · PAGO PENDIENTE" · "No pudimos cobrar ${monto} MXN" · "Actualiza tu tarjeta antes del {fecha_gracia} para no perder {plan}." · [Actualizar tarjeta] | "Intentaremos de nuevo el {fecha_reintento}" · método de pago resaltado | visible | "Cancelar suscripción" (también aquí; nunca se bloquea cancelar por deuda) |
-- **Cambios de plan:** subir a VIP = inmediato con prorrateo mostrado **antes** de confirmar ("Hoy se cobrarán ${ajuste} MXN. Después, $2,499 MXN cada mes.") + `ConfirmStep` con casilla de cobro recurrente (mismo texto de §3.3 con el nuevo monto) · bajar o cambiar periodicidad = al final del periodo pagado, con confirmación "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}." · cada cambio registra un `consent_event`.
+- **Cambios de plan:** subir a VIP = inmediato con prorrateo mostrado **antes** de confirmar ("Hoy se cobrarán ${ajuste} MXN. Después, $3,799 MXN cada mes.") + `ConfirmStep` con casilla de cobro recurrente (mismo texto de §3.3 con el nuevo monto) · bajar o cambiar periodicidad = al final del periodo pagado, con confirmación "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}." · cada cambio registra un `consent_event`.
 - **Aceptación:** los 6 estados tienen fixture y captura · ningún estado sin botón de cancelar mientras haya cobros futuros · abuela encuentra "cuándo me cobran y cuánto" en < 5 s.
 
 ### 6.11 Correos y avisos de cobro (texto exacto en `trial-to-paid-path.md` §2 y `aceptacion-ux.md` §4)
 | Correo | Cuándo | Asunto |
 |---|---|---|
-| 1 Bienvenida | al empezar la prueba | "Tu mes de Pro gratis ya empezó 🎉" (incluye versiones aceptadas y folio) |
-| 2 Recordatorio de prueba | **7 días antes** del cobro (día 23) | "Tu prueba gratis termina en 7 días" |
-| 3 Cobro realizado | día 30 | "Bienvenido a Chalyb Pro" |
+| 1 Aviso de cobro (= confirmación) | **día 0**, al empezar la prueba (entregado a más tardar el día 2) | "Aviso de cobro: el {fecha_cobro} se cobrarán ${monto} MXN si no cancelas" (texto `aceptacion-ux.md` §3.6; versiones aceptadas y folio; sin bienvenida ni marketing) |
+| 2 Recordatorio día 6 | **apagado** (`TRIAL_DAY6_REMINDER=false`; opcional, Legal lo recomienda para Pro anual) | "Mañana termina tu prueba gratis" |
+| 3 Cobro realizado | día 7 | "Bienvenido a Chalyb Pro" |
 | 3b Cobro fallido | al fallar | "No pudimos cobrar tu plan Pro" |
 | 4 Renovación mensual | **7 días antes de cada** cobro mensual | "Tu plan {plan} se renueva el {fecha_cobro}" |
 | 5 Renovación anual | **30 y 7 días antes** | "Tu plan Pro anual se renueva el {fecha_cobro}" |
 | 6 Resumen anual (mensuales) | 1 vez al año | "Tu resumen anual de Chalyb" (producto, frecuencia, monto, cómo cancelar) |
 | 7 Cancelación | al cancelar | "Cancelaste tu plan · Folio {folio}" |
-- **Regla de rebote (obligatoria):** si un aviso previo al cobro rebota o falla, se muestra banner + aviso en app/WhatsApp y **no se cobra hasta 5 días naturales después de un aviso efectivo** (Términos de Suscripción §2.7 bis). Implementar como bloqueo en el job de cobro (`reminder_delivered_at` requerido).
-- Notificación en app (mockup 26): `notif.trial7.title` "Tu prueba termina en 7 días" · `notif.trial7.body` "El {fecha_cobro} se cobrarán ${monto} MXN. Puedes cancelar en 1 clic."
+- **Regla de rebote (obligatoria):** si el aviso de cobro del día 0 (o uno de renovación) rebota o falla, se muestra banner + aviso en app/WhatsApp y **no se cobra hasta 5 días naturales después de un aviso efectivo** (Términos de Suscripción §2.7 bis). Implementar como bloqueo en el job de cobro (`reminder_delivered_at` requerido).
+- Notificación en app (mockup 26), día 0: `notif.trialNotice.title` "Aviso de cobro: tu prueba Pro empezó" · `notif.trialNotice.body` "El {fecha_cobro} se cobrarán ${monto} MXN si no cancelas. Puedes cancelar en 1 clic."
 
 ### 6.12 Criterios de aceptación de Fase 2
-- [ ] Ninguna cadena "2 meses gratis", "$624/mes" como precio principal, ni "$8,988" sin "vs. … pagando mes a mes".
+- [ ] Ninguna cadena "2 meses gratis", "mes gratis", "1 mes" (como prueba), "equivale" ni "Mejor oferta" (PRICING-CARDS-SPEC §16.1, §16.6).
 - [ ] La casilla de cobro recurrente es obligatoria, viene desmarcada y el servidor rechaza sin ella.
 - [ ] El bloque de cobro dice monto **y** periodicidad **y** fecha en las pantallas 14, 15, 16 y en el Correo 1.
-- [ ] Recordatorios: 7 días antes de prueba, de cada mensual y de cada anual (+30 días en anual). El cobro se bloquea sin aviso entregado.
+- [ ] Avisos: aviso de cobro el día 0 de la prueba; 7 días antes de cada mensual y de cada anual (+30 días en anual). El cobro se bloquea sin aviso entregado.
 - [ ] Cancelar en 2 clics con "Sí, cancelar" visible junto a la oferta.
 - [ ] Los montos salen de `PRICING`; cambiar un precio cambia pantallas, correos y textos legales.
 - [ ] Prueba de la abuela: de la landing a "¡Listo!" sin ayuda en ≤ 6 toques (Google). Prueba del profesional: cambiar a Mensual y luego cancelar en ≤ 4 toques desde Inicio.
@@ -381,7 +359,7 @@ Estructura fija para todos los estados: tarjeta "Tu plan" (degradado) · grupo "
 ### 7.4 Más herramientas · `/app/herramientas` · mockup **23**
 - Rejilla de 4: **Asistente** "Un bot que contesta a tus clientes y seguidores, de día y de noche." · **Pronósticos** "Los pronósticos deportivos del día, explicados en simple." · **Inmuebles** "Publica tus propiedades y atiende a interesados sin perder tiempo." · **Inversiones** "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
 - Estado `included`: pill verde `tools.included` "Incluido en tu plan" + [Abrir].
-- Estado `trial_offer` (Gratis): pill acento `tools.inPro` "Incluido en Pro" + botón secundario `tools.try` "Pruébalo gratis" (→ 14). Franja inferior "Prueba Pro gratis 1 mes · Todas las herramientas incluidas. Cancela cuando quieras." **Nunca** candado ni "Disponible".
+- Estado `trial_offer` (Gratis): pill acento `tools.inPro` "Incluido en Pro" + botón secundario `tools.try` "Pruébalo gratis" (→ 14). Franja inferior "Prueba Pro gratis 7 días · Hoy pagas $0. Cancela en 1 clic, sin llamadas." [Empezar mis 7 días gratis] **Nunca** candado ni "Disponible".
 - Estado `setup_needed`: pill ámbar "Te falta un paso" + [Conectar ahora] (va directo al paso que falta).
 - **Asistente:** asistente de 3 pasos ("¿Dónde contesta?" WhatsApp/Instagram/web · "¿Qué debe saber?" pegar textos o enlace · "Pruébalo"). Sin clonación de voz ni de persona; si se ofrece "voz" o "avatar", ver §11.6. El bot se presenta como asistente automático ("Soy el asistente de {negocio}").
 - **Pronósticos:** solo lectura de pronósticos explicados (partido, pronóstico, por qué, confianza). **Prohibido en UI:** apostar, montos, momios para apostar, quinielas, concursos, premios, sorteos, tablas de usuarios, "comparte y gana", enlaces a casas de apuestas (si algún día se agregan, solo con permiso SEGOB y mensajes del Reglamento LFJS, previa validación legal). Primera activación: modal de riesgo de §7.2 con `{Herramienta}`="Pronósticos". Pie fijo: "Esto es informativo. No es asesoría de apuestas."
@@ -415,18 +393,19 @@ Estructura fija para todos los estados: tarjeta "Tu plan" (degradado) · grupo "
 **Mockups:** 10 (escritorio, página completa), 11 (móvil 390), 12 (planes, ver 6.3).
 
 ### 8.1 Landing · `/` · mockups **10** y **11**
+> **Reemplazado por `LANDING-SPEC.md` (mockups 40–44, oct 2026).** Lo de abajo queda como historial de la primera pasada; si hay diferencias, manda LANDING-SPEC.
 Secciones en este orden (ancla en `PublicNav`: Herramientas · Cómo funciona · Planes · Preguntas · Entrar · [Prueba Pro gratis]):
-1. **Hero:** eyebrow `land.hero.eyebrow` "Todo incluido · Un plan, todas las herramientas" · `land.hero.title` "Bots que trabajan por ti mientras duermes" · `land.hero.sub` "Clips para tus redes, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo." · CTA único `land.cta` "Prueba Pro gratis 1 mes" · `land.cta.sub` "Todas las herramientas incluidas. Cancela cuando quieras." · 3 sellos "En español" · "Sin saber de tecnología" · "Cancela en 1 clic" · panel "Mientras dormías" con 4 resultados de ejemplo (clips listos, señal, Asistente, Pronósticos) y un marco de clip con gradiente (sin fotos de personas).
+1. **Hero:** eyebrow `land.hero.eyebrow` "Todo incluido · Un plan, todas las herramientas" · `land.hero.title` "Bots que trabajan por ti mientras duermes" · `land.hero.sub` "Clips para tus redes, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo." · CTA único `land.cta` "Empezar mis 7 días gratis" · `land.cta.sub` "Cancela cuando quieras. Hoy pagas $0." · 3 sellos "En español" · "Sin saber de tecnología" · "Cancela en 1 clic" · panel "Mientras dormías" con 4 resultados de ejemplo (clips listos, señal, Asistente, Pronósticos) y un marco de clip con gradiente (sin fotos de personas).
 2. **Herramientas:** `land.tools.title` "Todo lo que necesitas, en un solo lugar" · `land.tools.sub` "Cada herramienta hace una cosa y la hace por ti. Todas vienen en tu plan." · 7 tarjetas con las frases de §7.4 y pill "Incluido en Pro" + tarjeta "Tu idea" ("¿Necesitas otra herramienta? Propónla y nosotros la construimos." [Proponer una idea]). Señales: "Te avisamos cuándo es buen momento para comprar o vender cripto." · Clips: "Convierte tu stream en clips cortos para TikTok, Reels y Shorts." · En vivo: "Maneja tu transmisión y tus escenas de OBS con botones grandes."
 3. **Cómo funciona en 3 pasos:** "Crea tu cuenta" (Con Google o con tu correo. Toma 1 minuto.) · "Elige qué quieres hacer" (Clips, señales, tu transmisión… todo está en Inicio con botones grandes.) · "Listo, trabaja por ti" (Te avisamos cuando tus resultados estén listos. Tú solo los usas.)
 4. **Galería de clips:** `land.gallery.title` "Así se ven tus clips" · "Pega el enlace de tu stream y recibe clips con subtítulos, listos para publicar." · 6 marcos con gradiente.
 5. **Para quién (sin nombres, logos ni cifras inventadas):** `land.who.title` "Hecho para streamers, creadores y negocios" · "Si no tienes tiempo de editar, contestar o vigilar el mercado, Chalyb lo hace por ti." · Streamers / Creadores / Negocios / Quien invierte · franja "En español, para México y Latinoamérica · Pago seguro con Mercado Pago · Ayuda de una persona por WhatsApp".
-6. **Planes (resumen):** precios según 6.2 (Pro anual "$7,490 MXN al año" grande) + "Ver todos los planes y qué incluyen".
+6. **Planes (resumen):** precios según PRICING-CARDS-SPEC.md (fuente única; Pro anual "$9,970 MXN al año" grande) + "Ver todos los planes y qué incluyen".
 7. **Socios (ligero):** `land.partner.title` "Tienes la idea, nosotros la construimos" · "Propón una herramienta. Si la hacemos, compartimos las ganancias contigo." [Proponer mi idea] → formulario simple (nombre, correo, idea) que llega a Panel → Necesita tu atención. Requiere bases del programa (decisión D7).
 8. **FAQ:** "¿De verdad el primer mes es gratis?" (Sí. Hoy pagas $0. Te avisamos por correo 7 días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas.) · "¿Necesito saber de tecnología?" · "¿Qué incluye el plan Pro?" · "¿Cómo cancelo?" · "¿Cómo pago?" · "¿Me dan factura?" (respuestas cortas en `land.faq.*`).
 9. **CTA final** "Fuiste por una cosa y te llevaste todo." + lista de las 7 herramientas + CTA.
 10. **`PublicFooter`:** columnas Herramientas / Chalyb (Planes, Ayuda, Proponer una idea, Entrar) / **Legal: Términos y Condiciones · Términos de Suscripción · Aviso de Privacidad · Uso aceptable** · datos de "Quién vende" (razón social, domicilio, teléfono, correo) · "© {año} Chalyb. Precios en pesos mexicanos (MXN), IVA incluido." · "Pago seguro con Mercado Pago".
-- **Móvil (11):** misma estructura en una columna; menú hamburguesa; CTA fijo inferior "Prueba Pro gratis 1 mes" tras el hero.
+- **Móvil (11):** misma estructura en una columna; menú hamburguesa; CTA fijo inferior "Empezar mis 7 días gratis" tras el hero.
 - **Técnico:** SSR/estático, `lang="es-MX"`, metadatos OG, sin cookies no esenciales antes del banner de cookies (`aceptacion-ux.md` §9), Lighthouse ≥ 90 en móvil.
 - **Aceptación:** abuela encuentra el botón de prueba sin scroll en 390×844 · pro llega a precios en 1 toque · prueba automática de textos prohibidos (§0.3, §11).
 
@@ -446,7 +425,7 @@ Secciones en este orden (ancla en `PublicNav`: Herramientas · Cómo funciona ·
 
 ### 9.2 Personas · `/dashboard/personas` · mockup **28**
 - `admin.people.title` "Personas" · "Todos tus suscriptores en un solo lugar." · búsqueda "Buscar por nombre o correo" · chips Todos / En prueba / Pago pendiente / Cancelados · `DataTable` (Persona, Plan, Estado, Desde) con chips de estado: Activo (verde) · En prueba (acento) · Pago pendiente (rojo) · Termina pronto (ámbar) · Cancelado (gris).
-- **Hoja de acciones** de la fila: "Regalar 1 mes gratis" · "Cambiar su plan" · "Reenviar correo de acceso" · "Reembolsar último cobro" · "Cancelar su suscripción" (rojo) → **`ConfirmStep` "Confirma · paso 2 de 2"**: p. ej. "¿Reembolsar $749 MXN a Luis Hernández?" · "Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre." [No, volver] [Sí, reembolsar].
+- **Hoja de acciones** de la fila: "Regalar 1 mes de Pro" · "Cambiar su plan" · "Reenviar correo de acceso" · "Reembolsar último cobro" · "Cancelar su suscripción" (rojo) → **`ConfirmStep` "Confirma · paso 2 de 2"**: p. ej. "¿Reembolsar $997 MXN a Luis Hernández?" · "Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre." [No, volver] [Sí, reembolsar].
 - Cada acción queda en Actividad con el admin que la hizo. Cambiar plan desde el panel **no** cobra más sin el consentimiento del usuario (se le envía un enlace para aceptar).
 
 ### 9.3 Dinero · `/dashboard/dinero` · mockup **29**
@@ -489,21 +468,17 @@ Usar `aceptacion-ux.md` §11 completa + "Para firma de abogado mexicano" de `REV
 Fuente: `legal/REVISION-LEGAL.md` (30-sep-2026) y `legal/aceptacion-ux.md`. **No es asesoría legal:** los puntos marcados requieren firma de abogado mexicano antes de lanzar. Cada punto tiene una **prueba automática** (unitaria, E2E o de contenido) que bloquea el despliegue si falla.
 
 ### 11.1 Precio real como número principal (art. 7 Bis, 32 y 76 Bis fr. VIII LFPC)
-- Anual: **"$7,490 MXN al año"** grande; "(equivale a $624 al mes)" pequeño debajo; "Se renueva cada año".
-- Mensual: **"$749 MXN al mes · se renueva cada mes"**. VIP: "$2,499 MXN al mes · se renueva cada mes".
-- **Prohibido "2 meses gratis"** en cualquier lugar (UI, correos, anuncios, metadatos). Se usa "Ahorras $1,498 al año".
-- $8,988 tachado o mencionado **solo** como "vs. $8,988 pagando mes a mes".
-- Cerca del formulario de tarjeta y en bloques de cobro nunca aparece $624.
+**Precios: ver PRICING-CARDS-SPEC.md (fuente única).** Regla que se prueba aquí: el número grande es el cobro real con su periodicidad ("$9,970 MXN al año", "$997 MXN al mes"); sin "equivale a … al mes"; **prohibido "2 meses gratis"** en cualquier lugar (UI, correos, anuncios, metadatos); la línea "o paga mes a mes…" solo en tarjetas, nunca junto al formulario de tarjeta ni en bloques de cobro; precio de referencia solo con `SHOW_REFERENCE_PRICE`.
 - Prueba: escaneo de cadenas del bundle y de plantillas de correo.
 
 ### 11.2 Consentimiento expreso del cobro recurrente (art. 76 Bis fr. VIII LFPC; ROSCA/California)
-- Casilla **obligatoria y desmarcada** en el paso de pago con el texto de `aceptacion-ux.md` §3.3; el botón "Empezar mi mes gratis" queda deshabilitado hasta marcarla y **el servidor rechaza (422)** sin ella.
-- El aviso del paso de pago dice **monto y periodicidad** ("$7,490 MXN … y después cada año"), además de la fecha.
+- Casilla **obligatoria y desmarcada** en el paso de pago con el texto de `aceptacion-ux.md` §3.3; el botón "Empezar mis 7 días gratis" queda deshabilitado hasta marcarla y **el servidor rechaza (422)** sin ella.
+- El aviso del paso de pago dice **monto y periodicidad** ("$9,970 MXN … y después cada año"; checkout con Pro mensual preseleccionado, nunca el anual), además de la fecha.
 - Mismo patrón (casilla + monto + periodicidad) al subir a VIP o cambiar de plan con cobro.
 - Botón como aceptación (sin casilla) solo si el abogado lo aprueba (`aceptacion-ux.md` §3.4).
 
 ### 11.3 Avisos previos y cancelación (art. 76 Bis fr. VIII y IX LFPC; California §17602; NY §527-a; Quebec Ley 10)
-- Aviso **7 días antes de cada renovación**: fin de prueba, **cada** cobro mensual y **cada** cobro anual (el anual además a 30 días). Correo + banner + notificación.
+- Prueba: **aviso de cobro el día 0** (7 días antes del cobro; mínimo legal 5). Renovaciones: aviso **7 días antes de cada** cobro mensual y anual (el anual además a 30 días). Correo + banner + notificación. Recordatorio del día 6 apagado (opcional). Detalle: PRICING-CARDS-SPEC §16.3–§16.4.
 - Si el aviso rebota o no se entrega: **no se cobra** hasta 5 días naturales después de un aviso efectivo (`reminder_delivered_at` requerido por el job de cobro).
 - Cancelación inmediata en línea, 1 clic + 1 confirmación, sin llamadas. **Si hay oferta de retención, el botón "Sí, cancelar" sigue visible en la misma pantalla** y con el mismo peso visual. Máximo una oferta.
 - Cambios de precio: solo con aceptación expresa y aviso de 30 días; sin aceptación, el plan termina al final del periodo sin cobro nuevo.
@@ -528,8 +503,8 @@ Fuente: `legal/REVISION-LEGAL.md` (30-sep-2026) y `legal/aceptacion-ux.md`. **No
   `ai.likeness.title` "Antes de usar una voz o imagen con IA" · `ai.likeness.body` "Vas a crear una voz o imagen con inteligencia artificial que se parece a una persona real. Solo puedes hacerlo con tu propia voz o imagen, o con el **acuerdo previo y por escrito** de la persona que aparece. Está prohibido usarla para engañar o hacerte pasar por alguien." · `ai.likeness.check` "☐ Confirmo que es mi voz o imagen, o que tengo el acuerdo por escrito de la persona, y acepto la [Política de Uso Aceptable]." · `ai.likeness.cta` "Continuar" · opcional: subir el acuerdo firmado.
 - El Asistente se identifica como asistente automático; nunca se presenta como una persona real.
 
-### 11.7 IVA (pregunta abierta, **bloquea el lanzamiento de cobros**)
-- Los precios visibles deben ser el total con IVA (art. 7 Bis LFPC). **El dueño debe confirmar con su contador** si $749 / $7,490 / $2,499 ya incluyen IVA. Si no: $868.84 / $8,688.40 / $2,898.84 y se recalculan equivalencia, ahorro y comparación. También falta definir la residencia fiscal del operador y la emisión de CFDI.
+### 11.7 IVA
+**Precios: ver PRICING-CARDS-SPEC.md (fuente única).** Los montos visibles son totales con IVA incluido (`PRICES_INCLUDE_IVA=true`, PRICING-CARDS-SPEC §13.2); pie "Precios en MXN, IVA incluido." Sigue pendiente: residencia fiscal del operador y emisión de CFDI.
 
 ### 11.8 Quebec (decisión del dueño, **bloquea vender a residentes de Quebec**)
 - Opción A: **traducir al francés** los documentos y el flujo de compra, aplicar las cláusulas especiales (Términos §16.4, 60 días de aviso para cierre, 30 días para cambios, Ley 25: persona responsable, evaluación s.17 antes de transferir datos fuera de Quebec).
@@ -544,9 +519,9 @@ Fuente: `legal/REVISION-LEGAL.md` (30-sep-2026) y `legal/aceptacion-ux.md`. **No
 ## 12. Decisiones abiertas para el dueño
 | # | Decisión | Por qué importa | Default del build |
 |---|---|---|---|
-| D1 | ¿$749 / $7,490 / $2,499 incluyen IVA? | Precio total visible obligatorio | Bloquea cobros reales; UI dice "IVA incluido" |
+| D1 | ~~¿Los precios incluyen IVA?~~ Resuelto: $997 / $9,970 / $3,799 / $36,325 son totales con IVA. Precios: ver PRICING-CARDS-SPEC.md (fuente única) | Precio total visible obligatorio | UI dice "Precios en MXN, IVA incluido." |
 | D2 | Quebec: traducir o bloquear planes de pago | LPC/Ley 25/Carta | Bloquear detrás de flag |
-| D3 | Casilla en "Tu prueba" (paso 2) **o** en "Pago" (paso 3) | `trial-to-paid-path.md` §1 la pone en el paso 2 ("Continuar al pago" deshabilitado); `aceptacion-ux.md` §3.3 y los mockups 14/15 la ponen junto a "Empezar mi mes gratis" | Paso 3 (junto al botón que crea la suscripción); si el abogado lo pide, también en paso 2 |
+| D3 | Casilla en "Tu prueba" (paso 2) **o** en "Pago" (paso 3) | `trial-to-paid-path.md` §1 la pone en el paso 2 ("Continuar al pago" deshabilitado); `aceptacion-ux.md` §3.3 y los mockups 14/15 la ponen junto a "Empezar mis 7 días gratis" | Paso 3 (junto al botón que crea la suscripción); si el abogado lo pide, también en paso 2 |
 | D4 | Botón como aceptación sin casilla | Solo con aprobación del abogado | Casilla obligatoria |
 | D5 | Recordatorio extra el día 29 | Opcional | Apagado |
 | D6 | Horario y SLA reales de "Hablar con una persona" | "Te respondemos en minutos" debe ser cierto | Usar `help.human.sub.alt` sin SLA |
@@ -593,5 +568,10 @@ Fuente: `legal/REVISION-LEGAL.md` (30-sep-2026) y `legal/aceptacion-ux.md`. **No
 | 28 | `mockups/28-admin-personas.png` | Panel · Personas + confirmación | 5 |
 | 29 | `mockups/29-admin-dinero.png` | Panel · Dinero | 5 |
 | 30 | `mockups/30-mi-plan.png` | Mi plan · Pro anual pagado | 2 |
+| 40 | `mockups/40-landing.png` | Landing v2 (página completa, ver LANDING-SPEC.md) | 4 |
+| 41 | `mockups/41-landing-movil.png` | Landing v2 móvil | 4 |
+| 42 | `mockups/42-landing-hero.png` | Landing v2 · primera pantalla 1440×900 | 4 |
+| 43 | `mockups/43-landing-precios.png` (+ `43b-…-mensual`) | Landing v2 · Precios Anual / Mensual | 4 |
+| 44 | `mockups/44-landing-movil-cta-fijo.png` | Landing v2 · botón fijo móvil | 4 |
 
 **Orden de trabajo sugerido:** Fase 0 → 1 → 2 (con §11.1–11.3 y §10.3 en el mismo PR que el cobro) → 3 → 4 → 5 → 6. Ningún cobro real se activa antes de cerrar D1, D2 y la firma del abogado.

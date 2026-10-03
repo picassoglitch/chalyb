@@ -200,7 +200,7 @@ b23 = f'''<div class="app">{sidebar("inicio")}<main class="main"><div class="wra
 <div class="tg4">{"".join(t4(*t) for t in MORE)}</div>
 <div class="free"><div class="fh"><h2>Así lo ve alguien con plan Gratis</h2><span class="tag-ej">Otro estado</span></div>
 <div class="tg4" style="margin-top:18px">{"".join(t4(*t, locked=True) for t in MORE)}</div>
-<div class="promo">{toolicon("gift","#5B4BFF",48,14,24)}<div><b>Prueba Pro gratis 1 mes</b><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div><button class="btn btn-primary">Prueba Pro gratis 1 mes</button></div></div>
+<div class="promo">{toolicon("gift","#5B4BFF",48,14,24)}<div><b>Prueba Pro gratis 7 días</b><small>Hoy pagas $0. Cancela en 1 clic, sin llamadas.</small></div><button class="btn btn-primary">{TRIAL_CTA}</button></div></div>
 </div></main></div>'''
 write("23-mas-herramientas.html", page2("Más herramientas", b23, css23))
 
@@ -299,7 +299,7 @@ def nf(icon, col, title, body, t, un=False):
 b26 = f'''<div class="phone">{statusbar()}<div class="nh"><span class="bk">{ic("chevl")}Inicio</span><a>Marcar como leídos</a></div>
 <div class="nt"><h1>Avisos</h1></div><div class="sec">Hoy</div><div class="nl">
 {nf("scissors","#5B4BFF","Tus clips están listos","Hicimos 6 clips de “Noche de preguntas”. Ya tienen subtítulos.","8:40 p.m.",True)}
-{nf("clock","#FF9F0A","Tu prueba termina en 7 días",f"El {COBRO} se cobrarán $7,490 MXN. Puedes cancelar en 1 clic.","9:00 a.m.",True)}
+{nf("clock","#FF9F0A","Aviso de cobro: tu prueba Pro empezó",f"El {COBRO} se cobrarán {P_PRO_M} MXN si no cancelas. Puedes cancelar en 1 clic.","9:00 a.m.",True)}
 {nf("trend","#C77700","Bitcoin: buen momento para comprar","Informativo, no es asesoría financiera.","7:15 a.m.")}</div>
 <div class="sec">Esta semana</div><div class="nl">
 {nf("live","#FF375F","Tu transmisión terminó","Duró 2 h 14 min. ¿Hacemos clips?","mar.")}
@@ -324,19 +324,19 @@ css30 = css07 + '''
 b30 = f'''<div class="app">{sidebar("cuenta")}<main class="main"><div class="wrap">
 <div class="crumb">Mi cuenta ›</div><h1>Mi plan</h1>
 <div class="cols"><div class="colx">
-<div class="plan"><div class="k">Tu plan · Activo</div><h2>Pro anual — todo incluido</h2><p>Se renueva cada año.<br>Próximo cobro: 30 de octubre de 2027</p>
-<div class="big">$7,490 <span>MXN al año</span></div><div class="pb"><span class="inc">{ic("check")}Las 7 herramientas</span><button class="btn">Cambiar plan</button></div></div>
+<div class="plan"><div class="k">Tu plan · Activo</div><h2>Pro anual — todo incluido</h2><p>Se renueva cada año.<br>Próximo cobro: 2 de octubre de 2027</p>
+<div class="big">{P_PRO_Y} <span>MXN al año</span></div><div class="pb"><span class="inc">{ic("check")}Las 7 herramientas</span><button class="btn">Cambiar plan</button></div></div>
 <div><div class="ghead">Próximo cobro</div><div class="group">
-{grow(icb("cal","#5B4BFF"),"30 de octubre de 2027",'<span class="val"><b>$7,490 MXN</b></span>',"Aviso por correo 30 y 7 días antes")}
+{grow(icb("cal","#5B4BFF"),"2 de octubre de 2027",f'<span class="val"><b>{P_PRO_Y} MXN</b></span>',"Aviso por correo 30 y 7 días antes")}
 {grow(icb("card","#34C759"),"Método de pago",'<span class="val">Visa ••4821</span>',"Vence 08/29")}
 <div class="row cred" style="display:block"><div class="top">{icb("coins","#FF9F0A")}<div class="tx"><b>Créditos de este mes</b></div><span class="num">1,200</span></div>
-<div class="meter"><i></i></div><div class="mt"><span>Usaste 800 de 2,000</span><span>Se renuevan el día 30 de cada mes</span></div></div></div></div></div>
+<div class="meter"><i></i></div><div class="mt"><span>Usaste 800 de 2,000</span><span>Se renuevan el día 2 de cada mes</span></div></div></div></div></div>
 <div class="colx"><div><div class="ghead">Cambiar de plan</div><div class="group">
-{grow(icb("swap","#0A84FF"),"Pasar a Pro mensual",'<span class="act">$749/mes</span>',"Empieza cuando termine tu año pagado")}
-{grow(icb("star","#AF52DE"),"Subir a VIP",'<span class="act">$2,499/mes</span>',"Se aplica hoy; te mostramos el ajuste antes")}
+{grow(icb("swap","#0A84FF"),"Pasar a Pro mensual",f'<span class="act">{P_PRO_M}/mes</span>',"Empieza cuando termine tu año pagado")}
+{grow(icb("star","#AF52DE"),"Subir a VIP",f'<span class="act">{P_VIP_M}/mes</span>',"Se aplica hoy; te mostramos el ajuste antes")}
 {grow(icb("down","#8E8E93"),"Pasar a Gratis",'<span class="act">$0</span>',"Al terminar tu año pagado")}</div></div>
 <div><div class="ghead">Facturas</div><div class="group">
-{grow(icb("receipt","#8E8E93"),"30 de octubre de 2026",'<span class="val">$7,490 · CFDI</span>',"Pro anual")}</div></div>
-<div><div class="group"><div class="row cancel">{icb("x","#FF3B30")}<div class="tx"><b>Cancelar suscripción</b><small>1 clic, sin llamadas. Sigues con Pro hasta el 30 de octubre de 2027.</small></div>{ic("chev","i chev")}</div></div></div>
+{grow(icb("receipt","#8E8E93"),"2 de octubre de 2026",f'<span class="val">{P_PRO_Y} · CFDI</span>',"Pro anual")}</div></div>
+<div><div class="group"><div class="row cancel">{icb("x","#FF3B30")}<div class="tx"><b>Cancelar suscripción</b><small>1 clic, sin llamadas. Sigues con Pro hasta el 2 de octubre de 2027.</small></div>{ic("chev","i chev")}</div></div></div>
 </div></div></div></main></div>'''
 write("30-mi-plan.html", page2("Mi plan", b30, css30))

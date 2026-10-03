@@ -1,0 +1,169 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Señales · aviso</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding:34px 64px 30px}
+.crumb{font-size:17px;color:var(--ink2);font-weight:500;margin-bottom:8px}
+.th{display:flex;align-items:center;gap:18px}
+.th .tt{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.th h1{font-size:36px;line-height:1.02}
+.ttabs{margin-left:auto;display:flex;background:#EBEBF0;border-radius:16px;padding:4px;gap:4px}
+.ttabs a{height:50px;padding:0 22px;display:flex;align-items:center;border-radius:13px;font-size:18px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.ttabs a.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.tb{margin-top:24px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 12px}
+.sec h3{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.sec a{font-size:17px;color:var(--accent);font-weight:600}
+.sec small{font-size:16px;color:var(--ink3)}
+.advbar{display:flex;align-items:center;gap:14px;padding:0 22px 0 24px;height:66px;border-radius:20px;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.advbar .ic2{color:var(--ink2)} .advbar b{font-size:19px;font-weight:600;white-space:nowrap}
+.advbar .pro{background:var(--tint);color:var(--accent);font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.advbar small{font-size:16px;color:var(--ink3);margin-left:auto;margin-right:4px;white-space:nowrap}
+.advbar .chev{color:var(--ink3)}
+.gh2{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;font-size:17px;font-weight:650}
+.gh2 a{font-size:16px;color:var(--accent);font-weight:600}
+.ok2{color:var(--ok);font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ok2 svg{width:18px;height:18px;stroke-width:3}
+.conn2{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.row .brand{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#F2F2F6}
+.dfoot{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 2px #E4E0FF;font-size:17px;line-height:1.4}
+.dfoot svg.i{color:var(--accent);width:24px;height:24px}
+.dfoot a{margin-left:auto;white-space:nowrap;font-size:16.5px}
+.note2{font-size:16px;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.note2 svg.i{width:18px;height:18px}
+.vpill{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:700;letter-spacing:-.02em;padding:6px 14px 6px 10px;border-radius:12px;white-space:nowrap}
+.vpill svg.i{width:21px;height:21px;stroke-width:2.6}
+.v-buy{background:var(--tint);color:var(--accent)} .v-sell{background:var(--warn-tint);color:var(--warn)} .v-wait{background:#EEEEF2;color:var(--ink2)}
+.btn-okl{background:#fff;color:var(--ok);box-shadow:inset 0 0 0 1.5px #BFE6CD}
+
+.chips{display:flex;gap:10px;align-items:center}
+.chips .chip{height:46px;padding:0 18px 0 8px;font-size:17px}
+.chips .chip.all{padding:0 20px}
+.chips .chip i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-size:14px;font-weight:800}
+.chips .tag-ej{margin-left:auto}
+.l54{display:grid;grid-template-columns:1fr 340px;gap:22px;margin-top:16px;align-items:start}
+.feed{display:flex;flex-direction:column;gap:12px}
+.sg{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:16px 22px 16px 18px;display:flex;gap:16px;align-items:flex-start}
+.sg.new{box-shadow:0 0 0 2px var(--accent),var(--shadow-lg)}
+.sg .tx{flex:1;min-width:0}
+.sg .top{display:flex;align-items:center;gap:10px}
+.sg .top b{font-size:19px}.sg .top .sy{font-size:15px;color:var(--ink3);font-weight:600}
+.sg .top small{font-size:16px;color:var(--ink3);margin-left:auto;white-space:nowrap}
+.sg .mid{display:flex;align-items:center;gap:18px;margin-top:8px}
+.sg .ref{font-size:15.5px;color:var(--ink3);line-height:1.2}.sg .ref b{display:block;font-size:19px;color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+.sg p{font-size:17.5px;color:var(--ink2);margin-top:8px}
+.sg p b{color:var(--ink);font-weight:650}
+.sg .bt{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.sg .bt{gap:18px}.sg .bt p{flex:1}
+.sg .bt a{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.sg .bt .btn{height:48px;font-size:17px;padding:0 20px;border-radius:14px}
+.sg .newp{margin-left:4px}
+.r54 > * + *{margin-top:14px}
+.r54 .row{min-height:58px}
+.r54 .row .tx b{font-size:18px}
+.leg{padding:14px 18px 16px}
+.leg h4{font-size:17px;font-weight:650;margin-bottom:10px}
+.leg .li{display:flex;flex-direction:column;gap:2px;margin-top:10px}
+.leg .li .vpill{font-size:16px;padding:4px 10px 4px 8px;align-self:flex-start}
+.leg .li .vpill svg.i{width:17px;height:17px}
+.leg .li small{font-size:15.5px;color:var(--ink2);padding-left:2px}
+.dfoot{margin-top:14px}
+
+.app{position:relative}
+.app .main{filter:blur(1.5px)}
+.dim{z-index:5}
+.modal{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;padding:30px 34px 26px}
+.modal .mh{display:flex;align-items:center;gap:16px}
+.modal h2{font-size:30px;font-weight:700;letter-spacing:-.025em}
+.modal .mh p{font-size:17.5px;color:var(--ink2);margin-top:2px}
+.bul{margin-top:20px;display:flex;flex-direction:column;gap:14px}
+.bu{display:flex;gap:16px;align-items:flex-start}
+.bu .n{width:44px;height:44px;border-radius:14px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.bu .n svg.i{width:23px;height:23px}
+.bu b{display:block;font-size:20px;font-weight:650;letter-spacing:-.015em;line-height:1.25}
+.bu small{display:block;font-size:16.5px;color:var(--ink2);margin-top:2px}
+.legal{margin-top:18px;padding:13px 16px;border-radius:14px;background:var(--bg);font-size:15px;line-height:1.45;color:var(--ink2)}
+.legal b{color:var(--ink)}
+.legal .k{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.legal .k a{text-transform:none;letter-spacing:0;font-size:15.5px}
+.modal .cbx{margin-top:16px;font-size:18px;color:var(--ink);font-weight:550;padding:14px 16px;border-radius:16px;box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.modal .btn-xl{margin-top:14px;opacity:.42;box-shadow:none}
+.modal .hint{text-align:center;font-size:15.5px;color:var(--ink3);margin-top:10px}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap"><div class="crumb">Inicio ›</div><div class="th"><div class="tico" style="width:64px;height:64px;border-radius:18px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:32px;height:32px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+<div class="tt"><h1>Señales</h1><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span></div>
+<nav class="ttabs"><a class="on">Señales</a><a class="">Historial</a><a class="">Ajustes</a></nav></div><div class="tb"><div class="chips"><span class="chip on all">Todas</span><span class="chip"><i style="background:#F7931A">₿</i>Bitcoin</span><span class="chip"><i style="background:#627EEA">Ξ</i>Ethereum</span><span class="chip"><i style="background:linear-gradient(135deg,#14F195,#9945FF)">S</i>Solana</span><span class="tag-ej">Datos de ejemplo</span></div><div class="l54"><div class="feed"><div class="sg new"><div class="coin" style="background:#F7931A">₿</div><div class="tx">
+<div class="top"><b>Bitcoin</b><span class="sy">BTC</span><span class="pill acc newp">Nueva</span><small>Hoy, 7:15 a.m.</small></div>
+<div class="mid"><span class="vpill v-buy"><svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg>Momento de compra</span><div class="ref">Precio de referencia<b>$1,186,400 MXN</b></div></div>
+<div class="bt"><p><b>Por qué:</b> Lleva varios días subiendo poco a poco, sin saltos bruscos.</p><button class="btn btn-primary">Ver detalle</button></div></div></div><div class="sg"><div class="coin" style="background:linear-gradient(135deg,#14F195,#9945FF)">S</div><div class="tx">
+<div class="top"><b>Solana</b><span class="sy">SOL</span><small>Ayer, 6:02 p.m.</small></div>
+<div class="mid"><span class="vpill v-sell"><svg class="i" viewBox="0 0 24 24"><path d="M7 7l10 10M17 8v9H8"/></svg>Momento de venta</span><div class="ref">Precio de referencia<b>$3,412 MXN</b></div></div>
+<div class="bt"><p><b>Por qué:</b> Subió muy rápido esta semana. A veces, después de eso, baja.</p><a>Ver detalle ›</a></div></div></div><div class="sg"><div class="coin" style="background:#627EEA">Ξ</div><div class="tx">
+<div class="top"><b>Ethereum</b><span class="sy">ETH</span><small>Ayer, 9:30 a.m.</small></div>
+<div class="mid"><span class="vpill v-wait"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>Sin señal clara</span><div class="ref">Precio de referencia<b>$46,980 MXN</b></div></div>
+<div class="bt"><p><b>Por qué:</b> Se mueve mucho para los dos lados. Te avisamos cuando se calme.</p><a>Ver detalle ›</a></div></div></div></div><div class="r54"><div class="group"><div class="gh2">Mis avisos<a>Cambiar</a></div>
+<div class="row "><div class="ic" style="background:#25D366"><svg class="i" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></div><div class="tx"><b>WhatsApp</b></div><span class="ok2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Sí</span></div>
+<div class="row "><div class="ic" style="background:#0A84FF"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div><div class="tx"><b>Correo</b></div><span class="val">No</span></div>
+<div class="row "><div class="ic" style="background:#5B4BFF"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="tx"><b>En la app</b></div><span class="ok2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Sí</span></div>
+<div class="row "><div class="ic" style="background:#8E8E93"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><b>Horario</b></div><span class="val">8 a.m. a 10 p.m.</span></div></div>
+<div class="card leg"><h4>¿Qué significa cada una?</h4>
+<div class="li"><span class="vpill v-buy"><svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg>Momento de compra</span><small>El precio va subiendo de forma estable.</small></div>
+<div class="li"><span class="vpill v-sell"><svg class="i" viewBox="0 0 24 24"><path d="M7 7l10 10M17 8v9H8"/></svg>Momento de venta</span><small>Subió rápido y podría bajar.</small></div>
+<div class="li"><span class="vpill v-wait"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>Sin señal clara</span><small>No hay nada claro por ahora.</small></div></div></div></div><div class="dfoot"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg><span><b>Esto es informativo, no es asesoría financiera.</b> Las señales son iguales para todos y no usan tus saldos ni tus inversiones. Tú decides.</span><a class="lnk">Leer aviso completo</a></div></div></div></main><div class="dim"></div><div class="sheetc modal"><div class="mh"><div class="tico" style="width:60px;height:60px;border-radius:18px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:30px;height:30px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div><h2>Antes de empezar</h2><p>Léelo una vez. Son 3 cosas.</p></div></div>
+<div class="bul">
+<div class="bu"><div class="n"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></div><div><b>Son ideas informativas, no consejos personales.</b><small>No es asesoría financiera ni una recomendación para ti.</small></div></div>
+<div class="bu"><div class="n"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.1a4 4 0 0 1 0 7.8M22 21a7 7 0 0 0-4.5-6.5"/></svg></div><div><b>Las señales son iguales para todos en tu plan.</b><small>No usamos tus saldos, tus inversiones ni tus metas.</small></div></div>
+<div class="bu"><div class="n"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><div><b>Tú decides y el riesgo es tuyo.</b><small>No garantizamos resultados. Puedes perder dinero.</small></div></div></div>
+<div class="legal"><div class="k">El aviso, palabra por palabra<a class="lnk">Leer aviso completo</a></div><b>Señales</b> da <b>información general</b> generada con IA, igual para todos los usuarios de tu plan. <b>No es asesoría financiera, de inversión ni de apuestas</b>, no es una recomendación personal para ti y no toma en cuenta tus saldos, posiciones ni objetivos. No garantizamos resultados y <b>puedes perder todo tu dinero</b>. Chalyb no es asesor en inversiones registrado ante la CNBV, ni casa de bolsa, exchange o casa de apuestas.</div>
+<label class="cbx"><span class="b"></span><span>Entiendo y acepto que las decisiones y los riesgos son míos.</span></label>
+<button class="btn btn-primary btn-xl">Entendido, continuar</button><div class="hint">Marca la casilla para continuar. Solo te lo pedimos esta vez.</div></div></div></body></html>

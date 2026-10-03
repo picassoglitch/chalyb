@@ -92,7 +92,7 @@ css28 = ADM + '''
 .conf .bb .btn{flex:1;height:52px;font-size:17px;padding:0 12px;border-radius:14px}
 '''
 PPL = [("Luis Hernández","luis.h@correo.mx","Pro","acc","Activo","acc","12 mar 2026",True,"#7DD3FC,#3B82F6"),
-       ("María López","maria.lopez@correo.mx","Pro anual","acc","En prueba","gray","30 sep 2026",False,"#FFB86B,#FF7A8A"),
+       ("María López","maria.lopez@correo.mx","Pro anual","acc","En prueba","gray","3 oct 2026",False,"#FFB86B,#FF7A8A"),
        ("Jorge Ramírez","jorge.r@correo.mx","VIP","dark","Activo","acc","2 ene 2026",False,"#A7F3D0,#10B981"),
        ("Ana Torres","ana.torres@correo.mx","Pro","acc","Pago pendiente","bad","18 jun 2026",False,"#FBCFE8,#EC4899"),
        ("Carlos Méndez","c.mendez@correo.mx","Gratis","gray","Activo","acc","9 sep 2026",False,"#FDE68A,#F59E0B"),
@@ -105,10 +105,10 @@ for n,e,pl,pk,es,ek,d,sel,g in PPL:
     rows += f'''<div class="tr{" sel" if sel else ""}"><div class="pp"><div class="avatar" style="background:linear-gradient(135deg,{g})">{ini(n)}</div><div style="min-width:0"><b>{n}</b><small>{e}</small></div></div>
 <div><span class="pill {pk}">{pl}</span></div><div><span class="pill {ek}">{es}</span></div><div class="d">{d}</div><div class="dt">{ic("dots")}</div></div>'''
 sheet28 = f'''<div class="sheet2"><div class="who"><div class="avatar" style="background:linear-gradient(135deg,#7DD3FC,#3B82F6)">LH</div><div><b>Luis Hernández</b><small>luis.h@correo.mx</small></div><span class="x">{ic("x","i","width:18px;height:18px")}</span></div>
-<div class="meta"><span class="pill acc">Pro mensual · $749</span><span class="pill gray">Cobro: 12 oct · Visa ••3307</span></div>
-<div class="acts2"><div class="a2">{ic("gift")}Regalar 1 mes gratis</div><div class="a2">{ic("swap")}Cambiar su plan</div><div class="a2">{ic("mail")}Reenviar correo de acceso</div>
+<div class="meta"><span class="pill acc">Pro mensual · {P_PRO_M}</span><span class="pill gray">Cobro: 12 oct · Visa ••3307</span></div>
+<div class="acts2"><div class="a2">{ic("gift")}Regalar 1 mes de Pro</div><div class="a2">{ic("swap")}Cambiar su plan</div><div class="a2">{ic("mail")}Reenviar correo de acceso</div>
 <div class="a2 on">{ic("refresh")}Reembolsar último cobro</div><div class="a2 red">{ic("x")}Cancelar su suscripción</div></div>
-<div class="conf"><div class="st">Confirma · paso 2 de 2</div><h4>¿Reembolsar $749 MXN a Luis Hernández?</h4><p>Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre.</p>
+<div class="conf"><div class="st">Confirma · paso 2 de 2</div><h4>¿Reembolsar {P_PRO_M} MXN a Luis Hernández?</h4><p>Regresa a su tarjeta por Mercado Pago en 5 a 10 días. Queda registrado con tu nombre.</p>
 <div class="bb"><button class="btn btn-gray">No, volver</button><button class="btn btn-primary">Sí, reembolsar</button></div></div></div>'''
 b28 = f'''<div class="app">{adminside("personas")}<main class="main"><div class="wrap" style="max-width:1100px">
 <div class="hrow"><div><h1>Personas</h1><p class="sub">Todos tus suscriptores en un solo lugar.</p></div><span class="tag-ej">Datos de ejemplo</span></div>
@@ -142,8 +142,8 @@ months = [("may",52),("jun",61),("jul",66),("ago",74),("sep",88),("oct",100)]
 bars = "".join(f'<div><i style="height:{h}%"></i><span>{m}</span></div>' for m,h in months)
 fun = [("Empezaron prueba",100,"420"),("Siguen en prueba",74,"312"),("Ya pagaron",62,"261"),("Cancelaron",21,"88")]
 funr = "".join(f'<div class="fr2"><b>{t}</b><div class="bar"><i style="width:{w}%"></i></div><span>{n}</span></div>' for t,w,n in fun)
-MV = [("Hoy","Luis Hernández","Pro mensual","$749","ok","Cobrado"),("Hoy","Ana Torres","Pro mensual","$749","bad","Falló"),
-      ("Ayer","Sofía Castillo","Pro anual","$7,490","ok","Cobrado"),("Ayer","Diego Flores","Pro mensual","$749","gray","Reembolsado")]
+MV = [("Hoy","Luis Hernández","Pro mensual",P_PRO_M,"ok","Cobrado"),("Hoy","Ana Torres","Pro mensual",P_PRO_M,"bad","Falló"),
+      ("Ayer","Sofía Castillo","Pro anual",P_PRO_Y,"ok","Cobrado"),("Ayer","Diego Flores","Pro mensual",P_PRO_M,"gray","Reembolsado")]
 mv = "".join(f'<div class="mr"><span style="color:var(--ink2)">{d}</span><span>{n}</span><span style="color:var(--ink2)">{c}</span><span class="m">{m}</span><span><span class="pill {k}">{s}</span></span></div>' for d,n,c,m,k,s in MV)
 b29 = f'''<div class="app">{adminside("dinero")}<main class="main"><div class="wrap">
 <div class="hrow"><div><h1>Dinero</h1><p class="sub">Una sola fuente de verdad para tus ingresos.</p></div><div class="src">{ic("refresh")}Viene de Mercado Pago · se actualiza cada hora</div></div>

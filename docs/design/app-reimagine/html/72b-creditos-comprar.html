@@ -1,0 +1,189 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Conseguir más créditos</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding-top:48px}
+.wrap{max-width:1080px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px;align-items:start}
+.colx > * + *{margin-top:24px}
+.plan{padding:26px;background:linear-gradient(135deg,#6B5CFF 0%,#5B4BFF 50%,#4632E6 100%);color:#fff;border-radius:24px;box-shadow:0 12px 32px rgba(91,75,255,.30);position:relative;overflow:hidden}
+.plan::after{content:"";position:absolute;right:-60px;top:-80px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.10)}
+.plan .k{font-size:15px;font-weight:600;opacity:.85;letter-spacing:.04em;text-transform:uppercase}
+.plan h2{font-size:28px;margin-top:6px;color:#fff}
+.plan p{font-size:17px;opacity:.9;margin-top:6px}
+.plan .pb{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.plan .btn{height:52px;background:#fff;color:var(--accent);font-size:18px;box-shadow:none;position:relative;z-index:1}
+.plan .inc{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;opacity:.95}
+.plan .inc svg{width:18px;height:18px;stroke-width:3}
+.cred{padding:14px 20px 18px}
+.cred .top{display:flex;align-items:center;gap:16px}
+.cred .num{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.meter{height:10px;border-radius:5px;background:#ECEBF3;margin:12px 0 0 54px;overflow:hidden}
+.meter i{display:block;height:100%;width:60%;border-radius:5px;background:linear-gradient(90deg,#8A7DFF,#5B4BFF)}
+.cred .mt{display:flex;justify-content:space-between;font-size:15px;color:var(--ink3);margin:8px 0 0 54px}
+.ok2{color:var(--ok);font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px}
+.ok2 svg{width:18px;height:18px;stroke-width:3}
+.conn{font-size:17px;color:var(--accent);font-weight:600}
+.row .brand{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#F2F2F6}
+.human{display:flex;align-items:center;gap:16px;padding:20px;border-radius:20px;background:#fff;box-shadow:0 0 0 2px var(--ok),var(--shadow)}
+.human .hi{width:52px;height:52px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;flex:none}
+.human .hi svg{width:26px;height:26px}
+.human b{font-size:20px;display:block}
+.human small{font-size:16px;color:var(--ink2)}
+.human .btn{margin-left:auto;height:50px;background:var(--ok);color:#fff;font-size:17px;padding:0 20px}
+.prof{display:flex;align-items:center;gap:16px}
+.prof .avatar{width:64px;height:64px;font-size:24px}
+.prof .em{font-size:18px;color:var(--ink2)}
+
+:root{--ink3-text:#6C6C74;--ok-text:#167A3E}
+.main{padding-top:38px}
+.crumb{font-size:18px;color:var(--ink2);margin-bottom:4px;font-weight:500}
+/* AA (Q28 del código real): texto secundario nunca en --ink3 */
+.ghead{color:var(--ink3-text)}
+.row .tx small,.row .val,.cred .mt,.rowsub{color:var(--ink3-text)}
+.row .tx small{font-size:16px}
+.ok2{color:var(--ok-text)}
+.plan .k,.plan p{opacity:1}
+.row .val b{color:var(--ink);font-weight:650}
+.act{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.cancel b{color:var(--bad)!important}
+.lnk2{color:var(--accent);font-weight:600;font-size:17px;white-space:nowrap}
+/* Opciones avanzadas (copiado de build_tools.py TS · componente AdvancedOptions/.ch-adv) */
+.advbar{display:flex;align-items:center;gap:14px;padding:0 22px 0 24px;height:66px;border-radius:20px;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.advbar .ic2{color:var(--ink2)} .advbar b{font-size:19px;font-weight:600;white-space:nowrap}
+.advbar .pro{background:var(--tint);color:var(--accent);font-size:16px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.advbar small{font-size:16px;color:var(--ink3-text);margin-left:auto;margin-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.advbar{min-width:0}
+.advbar .chev{color:var(--ink3);margin-left:auto}
+.pill{font-size:16px;padding:4px 12px}
+.pill svg.i{width:16px;height:16px}
+.btn:disabled,.btn.dis{background:#EBEBF0;color:#6C6C74;box-shadow:none}
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:14px 22px 14px 14px;border-radius:16px;box-shadow:var(--shadow-lg);font-size:18px;white-space:nowrap;z-index:5}
+.toast .ti{width:32px;height:32px;border-radius:50%;background:var(--ok);display:grid;place-items:center}
+.toast .ti svg{width:18px;height:18px;stroke-width:3;color:#fff}
+
+.main{padding-top:34px}
+.hsub{font-size:19px;color:var(--ink2);margin-top:6px}
+.cols{grid-template-columns:470px minmax(0,1fr);gap:26px;margin-top:20px}
+.colx > * + *{margin-top:20px}
+.bal{padding:24px 26px 24px}
+.bal .k{font-size:19px;color:var(--ink2);font-weight:500}
+.bal .n{font-size:60px;font-weight:750;letter-spacing:-.04em;line-height:1.05;margin-top:2px}
+.bal .n span{font-size:22px;font-weight:650;letter-spacing:-.01em;color:var(--ink2)}
+.bal .m{height:14px;border-radius:7px;background:#ECEBF3;margin-top:16px;overflow:hidden}
+.bal .m i{display:block;height:100%;width:59%;border-radius:7px;background:linear-gradient(90deg,#8A7DFF,#5B4BFF)}
+.bal .l{display:flex;justify-content:space-between;font-size:17px;color:var(--ink2);margin-top:8px}
+.bal .facts{margin-top:16px;display:grid;gap:10px}
+.bal .f{display:flex;gap:12px;align-items:center;font-size:17.5px}
+.bal .f .fi{width:34px;height:34px;border-radius:10px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.bal .f .fi svg{width:19px;height:19px}
+.bal .btn{margin-top:18px;width:100%}
+.tool .ic{border-radius:11px}
+.hist .row{min-height:64px}
+.amt{font-size:18px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
+.amt.plus{color:var(--accent)}
+.gh{display:flex;justify-content:space-between;align-items:baseline}
+.gh a{font-size:16px;color:var(--accent);font-weight:600;padding:0 20px 10px}
+
+.app{position:relative}
+.sheetwrap{position:absolute;inset:0;display:grid;place-items:center;z-index:4}
+.sheetc{width:660px;padding:30px 32px 26px;position:relative}
+.sheetc .close{position:absolute;right:22px;top:22px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.sheetc h2{font-size:30px;font-weight:700;letter-spacing:-.025em}
+.sheetc .s{font-size:18px;color:var(--ink2);margin-top:6px;padding-right:50px}
+.opts{display:grid;gap:12px;margin-top:20px}
+.opt{display:flex;align-items:center;gap:16px;min-height:84px;padding:14px 20px;border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3}
+.opt.sel{box-shadow:inset 0 0 0 2.5px var(--accent);background:var(--tint2)}
+.opt .rd{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 2px #C9C9D2;flex:none;display:grid;place-items:center}
+.opt.sel .rd{box-shadow:inset 0 0 0 9px var(--accent)}
+.opt .tx{flex:1}.opt .tx b{display:block;font-size:21px;font-weight:650}.opt .tx small{font-size:16.5px;color:var(--ink2)}
+.opt .pr{text-align:right}.opt .pr b{display:block;font-size:22px;font-weight:750;letter-spacing:-.02em}.opt .pr small{font-size:15px;color:var(--ink2)}
+.terms{margin-top:16px;font-size:16.5px;color:var(--ink2);line-height:1.45}
+.payw{display:flex;align-items:center;gap:12px;margin-top:14px;font-size:17px}
+.payw .lnk2{margin-left:auto}
+.payw .pi{width:38px;height:38px;border-radius:10px;background:#34C759;color:#fff;display:grid;place-items:center}.payw .pi svg{width:21px;height:21px}
+.sheetc .btn-xl{margin-top:16px}
+.later{display:block;text-align:center;margin-top:12px;font-size:18px;font-weight:600;color:var(--ink2)}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap"><div class="crumb">Mi cuenta ›</div><h1>Mis créditos</h1>
+<p class="hsub">Los créditos se usan cuando tus herramientas trabajan por ti.</p>
+<div class="cols"><div class="colx">
+<div class="card bal"><div class="k">Te quedan</div><div class="n">587,500 <span>créditos</span></div>
+<div class="m"><i></i></div><div class="l"><span>Usaste 412,500 de 1,000,000 este mes</span></div>
+<div class="facts"><div class="f"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg></span><span>Se renuevan el <b>1 de noviembre de 2026</b>. Vuelves a tener 1,000,000.</span></div>
+<div class="f"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span>Créditos extra comprados: <b>0</b>. Se usan después de los de tu plan.</span></div></div>
+<button class="btn btn-primary"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Conseguir más créditos</button></div>
+<div><div class="ghead">En qué los usaste este mes</div><div class="group tool">
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><b>Clips</b><small>Hiciste 18 clips</small></div><span class="amt">360,000</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><b>Señales</b><small>Te mandamos 42 avisos</small></div><span class="amt">42,000</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#FF375F"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div><div class="tx"><b>En vivo</b><small>Manejaste 3 transmisiones</small></div><span class="amt">10,500</span></div></div></div>
+</div><div class="colx">
+<div><div class="gh"><div class="ghead">Historial</div><a>Ver todo</a></div><div class="group hist">
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><b>6 clips de “Noche de preguntas”</b><small>Clips · hoy, 8:40 p.m.</small></div><span class="amt">−120,000</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><b>Aviso de Bitcoin</b><small>Señales · hoy, 7:15 a.m.</small></div><span class="amt">−1,000</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#FF375F"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div><div class="tx"><b>Transmisión del martes</b><small>En vivo · 29 de septiembre</small></div><span class="amt">−3,500</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><b>4 clips de “Torneo del viernes”</b><small>Clips · 25 de septiembre</small></div><span class="amt">−80,000</span></div>
+<div class="row"><div class="tico" style="width:38px;height:38px;border-radius:10px;background:#8E8E93"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg></div><div class="tx"><b>Se renovaron tus créditos</b><small>Plan Pro · 1 de octubre</small></div><span class="amt plus">+1,000,000</span></div></div></div>
+<div class="advbar"><svg class="i ic2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg><b>Opciones avanzadas</b><span class="pro">Para profesionales</span><small></small><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+</div></div></div></main>
+<div class="dim"></div><div class="sheetwrap"><div class="sheetc">
+<button class="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button><h2>Conseguir más créditos</h2>
+<p class="s">Se suman a los que ya tienes. Tu plan y tu fecha de cobro no cambian.</p>
+<div class="opts"><div class="opt"><span class="rd"></span><div class="tx"><b>100,000 créditos</b><small>Para unos cuantos clips más</small></div>
+<div class="pr"><b>$172.84 MXN</b><small>Pago único</small></div></div><div class="opt sel"><span class="rd"></span><div class="tx"><b>500,000 créditos</b><small>Cada crédito te sale más barato</small></div>
+<div class="pr"><b>$694.84 MXN</b><small>Pago único</small></div></div><div class="opt"><span class="rd"></span><div class="tx"><b>2,000,000 créditos</b><small>El más barato por crédito, para uso diario</small></div>
+<div class="pr"><b>$2,318.84 MXN</b><small>Pago único</small></div></div></div>
+<p class="terms">Es un <b>pago único</b>, no una suscripción. Los créditos extra se usan después de los de tu plan y <b>no vencen</b>. Precios en MXN, IVA incluido.</p>
+<div class="payw"><span class="pi"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></span><span>En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.</span></div>
+<button class="btn btn-primary btn-xl">Continuar al pago · $694.84 MXN</button><span class="later">Ahora no</span>
+</div></div></div></body></html>

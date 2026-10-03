@@ -25,12 +25,27 @@ export type SignatureCheck = { ok: true } | { ok: false; reason: SignatureFailur
 /**
  * MP signs the webhook with HMAC-SHA256 over the manifest
  *   `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
- * where ts comes out of the x-signature header itself.
+ * where ts comes out of the x-signature header itself. A part whose value
+ * is absent (no data.id, no x-request-id) is left out of the manifest, as
+ * MP's docs say; ts is always required.
  * https://www.mercadopago.com/developers/en/docs/your-integrations/notifications/webhooks
  */
+export function signatureManifest(opts: {
+  dataId: string | null | undefined;
+  requestId: string | null | undefined;
+  ts: string;
+}): string {
+  return (
+    (opts.dataId ? `id:${opts.dataId};` : '') +
+    (opts.requestId ? `request-id:${opts.requestId};` : '') +
+    `ts:${opts.ts};`
+  );
+}
+
 export function checkMpSignature(opts: {
   secret: string | undefined | null;
-  paymentId: string;
+  /** data.id as it goes into the manifest (manifestId(): lowercased). */
+  paymentId: string | null;
   requestId: string | null;
   signatureHeader: string | null;
 }): SignatureCheck {
@@ -39,9 +54,7 @@ export function checkMpSignature(opts: {
   // The only safe answer is no.
   if (!secret) return { ok: false, reason: 'not_configured' };
 
-  if (!opts.signatureHeader || !opts.requestId) {
-    return { ok: false, reason: 'missing_headers' };
-  }
+  if (!opts.signatureHeader) return { ok: false, reason: 'missing_headers' };
 
   // x-signature looks like: "ts=1733520000,v1=abc123..."
   const parts = Object.fromEntries(
@@ -56,7 +69,7 @@ export function checkMpSignature(opts: {
     return { ok: false, reason: 'malformed_signature' };
   }
 
-  const manifest = `id:${opts.paymentId};request-id:${opts.requestId};ts:${ts};`;
+  const manifest = signatureManifest({ dataId: opts.paymentId, requestId: opts.requestId, ts });
   const expected = createHmac('sha256', secret).update(manifest).digest('hex');
   try {
     const a = Buffer.from(expected, 'hex');
@@ -108,7 +121,13 @@ export function expectedChargeForPack(packId: string): ExpectedCharge | null {
 
 export type ChargeCheck =
   | { ok: true }
-  | { ok: false; reason: 'amount' | 'currency'; expected: ExpectedCharge; paidCents: number; paidCurrency: string };
+  | {
+      ok: false;
+      reason: 'amount' | 'currency';
+      expected: ExpectedCharge;
+      paidCents: number;
+      paidCurrency: string;
+    };
 
 /**
  * Compare what MP says was paid against what the entitlement costs.

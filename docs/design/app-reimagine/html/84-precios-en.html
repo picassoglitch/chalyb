@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pricing · EN/USD · US visitor</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><style>
+body{font-family:"Inter",-apple-system,system-ui,sans-serif;background:#fff}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap;font-style:normal}
+.pill svg.i{width:16px;height:16px}
+.pill.acc{background:var(--tint);color:var(--accent)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)}
+.pill.dark{background:var(--ink);color:#fff}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:3px 8px;border-radius:7px;white-space:nowrap}
+.band{background:#fff;padding:96px 0 88px}
+.sec{max-width:1280px;margin:0 auto;padding:0 40px}
+.shd{text-align:center;max-width:880px;margin:0 auto}
+.shd .label{margin-bottom:14px}
+.shd h2{font-size:48px;letter-spacing:-.04em;line-height:1.08;font-weight:750}
+.shd p{font-size:21px;color:var(--ink2);margin-top:14px;line-height:1.45}
+.ejbar{display:flex;justify-content:center;margin-top:18px}
+/* toggle — sits ABOVE the cards, centred */
+.tog{display:inline-flex;background:#EBEBF0;border-radius:18px;padding:5px;margin-top:30px;gap:4px}
+.tog span{height:54px;padding:0 26px;display:flex;align-items:center;gap:10px;border-radius:14px;font-size:19px;font-weight:600;color:var(--ink2)}
+.tog span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.tog .pill{font-size:13.5px;padding:4px 10px}
+/* cards: one grid, subgrid rows => equal heights + every row (price, CTA, list) aligned */
+.pc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(6,auto);column-gap:24px;row-gap:0;margin-top:52px;align-items:stretch}
+.pk{grid-row:span 6;display:grid;grid-template-rows:subgrid;row-gap:0;background:var(--bg);border-radius:28px;padding:34px 28px 32px;position:relative;min-width:0}
+.pk.hi{background:#fff;box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.pk .tagx{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
+.pk .tagx.cur{background:var(--ink)}
+.pk .hd h3{font-size:26px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.pk .hd .who{font-size:17.5px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.pk .hd .chip{margin-top:14px;font-size:15px;padding:7px 14px 7px 11px}
+.pk .pb{margin-top:24px;container-type:inline-size}
+.pk .pr{display:flex;align-items:baseline;gap:8px;white-space:nowrap;flex-wrap:nowrap}
+.pk .pr b{font-size:clamp(30px,12.2cqi,46px);font-weight:750;letter-spacing:-.045em;line-height:1}
+.pk .pr span{font-size:clamp(14px,5cqi,18.5px);font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pk .pn{font-size:17.5px;color:var(--ink);font-weight:650;margin-top:10px}
+.pk .pb .tag-ej{margin-bottom:10px}
+.pk .ref{font-size:15.5px;color:var(--ink2);margin-top:6px}
+.pk .vl .save-g{font-size:16px;color:var(--ink2);font-weight:600}
+.lnk.mute{color:var(--ink2)}
+.pk .vl{margin-top:14px;min-height:30px}
+.pk .vl .pill{font-size:15px}
+.pk .vl .muted2{font-size:16.5px;color:var(--ink2)}
+.pk .vl .swy{font-size:16.5px}
+.pk .vl .was{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pk .vl .was s{font-size:18px;font-weight:600;color:var(--ink2);text-decoration-thickness:1.5px}
+.pk .vl .refl{font-size:15.5px;color:var(--ink2);line-height:1.45;margin-top:4px}
+.pk .vl .refl b{color:var(--ink);font-weight:650}
+.ph{font-style:normal;font-weight:700;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:0 5px;border-radius:5px;white-space:nowrap}
+.pk .vl .launch{font-size:16px;font-weight:650;color:var(--ink)}
+.pk .ct{margin-top:24px}
+.pk .btn{width:100%}
+.pk .btn.cur{background:#EBEBF0;color:var(--ink2);box-shadow:none}
+.pk .bn{font-size:15.5px;color:var(--ink2);text-align:center;margin-top:12px;line-height:1.45}
+.pk .bn b{color:var(--ink);font-weight:650}
+.pk .ft{margin-top:24px;padding-top:22px;border-top:1px solid #E1E1E8;align-self:start}
+.pk.hi .ft{border-top-color:var(--line)}
+.pk .ft h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:-.005em}
+.pk ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+.pk li{display:flex;gap:12px;font-size:17.5px;line-height:1.38}
+.pk li .ck{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.pk li .ck svg{width:15px;height:15px;stroke-width:3}
+.pk li.no{color:var(--ink3)} .pk li.no .ck{background:#E9E9EE;color:#A8A8B0}
+.pnote{text-align:center;font-size:17px;color:var(--ink2);margin-top:40px;line-height:1.6}
+.pnote small{display:block;font-size:15px;color:var(--ink2);margin-top:4px}
+.pnote a{display:table;margin:10px auto 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* ---------- mobile 390 ---------- */
+body.m .band{padding:56px 0 48px}
+body.m .sec{padding:0 20px}
+body.m .shd h2{font-size:31px;line-height:1.12}
+body.m .shd p{font-size:18px}
+body.m .tog{display:flex;width:100%;margin-top:22px;border-radius:16px;padding:4px}
+body.m .tog span{flex:1;justify-content:center;height:52px;padding:0 10px;font-size:18px;border-radius:13px}
+body.m .tog .pill{font-size:12.5px;padding:3px 8px}
+body.m .pc{display:flex;flex-direction:column;gap:30px;margin-top:40px}
+body.m .pk{display:block;padding:30px 22px 26px;border-radius:26px}
+body.m .pk .vl{min-height:0}
+body.m .pk .btn{height:60px}
+body.m .pnote{font-size:16px;margin-top:30px}
+</style></head><body class=""><section class="band" id="precios"><div class="sec"><div class="shd"><div class="label">Pricing</div><h2>Start free, grow with Pro</h2><p>Try Pro free for 7 days. Cancel online anytime.</p><div class="tog" role="radiogroup"><span class="" role="radio" aria-checked="false">Monthly</span><span class="on" role="radio" aria-checked="true">Yearly <i class="pill acc">Save up to 16%</i></span></div></div><div class="pc"><section class="pk" aria-labelledby="pl-gratis"><div class="hd"><h3 id="pl-gratis">Free</h3><div class="who">See what Chalyb can do</div></div><div class="pb"><div class="pr"><b>$0</b></div><div class="pn">No card needed · Free forever</div></div><div class="vl"></div><div class="ct"><button class="btn btn-secondary">Create free account</button></div><div class="bn"></div><div class="ft"><h4>What you get:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Test clips (SD, watermarked)</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>7 days of history</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>500 MB of storage</span></li><li class="no"><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M18 6 6 18M6 6l12 12"/></svg></span><span><span class="sr">Not included: </span>Clips from your live streams</span></li></ul></div></section><section class="pk hi" aria-labelledby="pl-pro"><div class="tagx">Most popular</div><div class="hd"><h3 id="pl-pro">Pro</h3><div class="who">For creators who post every week</div><div><span class="pill acc chip"><svg class="i" viewBox="0 0 24 24" style=""><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>7 days free</span></div></div><div class="pb"><div class="pr"><b>$500</b><span>USD / year</span></div><div class="pn">Renews every year</div><div class="ref">or pay month to month: US$50/month (monthly plan)</div></div><div class="vl"><span class="pill acc">Save $100 a year · 16%</span></div><div class="ct"><button class="btn btn-primary">Start my 7-day free trial</button></div><div class="bn"><b>$0 today.</b> On October 10 you’ll be charged US$500 for the full year, plus any sales tax, and it renews every year until you cancel. Cancel anytime.</div><div class="ft"><h4>What you get:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Watermark-free clips in HD</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Clip up to 12 live streams a month</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>90 days of history</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>5 GB of storage</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Cancel online anytime, no calls</span></li></ul></div></section><section class="pk" aria-labelledby="pl-vip"><div class="hd"><h3 id="pl-vip">VIP</h3><div class="who">For daily streamers and multi-channel creators</div></div><div class="pb"><div class="pr"><b>$2,000</b><span>USD / year</span></div><div class="pn">Renews every year</div><div class="ref">or pay month to month: US$200/month (monthly plan)</div></div><div class="vl"><span class="save-g">Save $400 a year · 16%</span></div><div class="ct"><button class="btn btn-secondary">Choose VIP yearly</button></div><div class="bn">Charged today: US$2,000 for the full year, plus any sales tax. Renews every year. Cancel online anytime.</div><div class="ft"><h4>Everything in Pro, plus:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>4K clip exports</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Unlimited live streams to clip</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>A full year of history</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>50 GB of storage</span></li></ul></div></section></div><div class="pnote">Prices in US dollars. Sales tax, if any, is added at checkout and shown before you pay.<small>Free trial: 7 days, Pro monthly or yearly, one per account and card. No trial on VIP.</small><a class="lnk">Compare all plans</a></div></div></section></body></html>

@@ -1,0 +1,133 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Clips · Ajustes</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding:34px 64px 30px}
+.crumb{font-size:17px;color:var(--ink2);font-weight:500;margin-bottom:8px}
+.th{display:flex;align-items:center;gap:18px}
+.th .tt{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.th h1{font-size:36px;line-height:1.02}
+.ttabs{margin-left:auto;display:flex;background:#EBEBF0;border-radius:16px;padding:4px;gap:4px}
+.ttabs a{height:50px;padding:0 22px;display:flex;align-items:center;border-radius:13px;font-size:18px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.ttabs a.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.tb{margin-top:24px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 12px}
+.sec h3{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.sec a{font-size:17px;color:var(--accent);font-weight:600}
+.sec small{font-size:16px;color:var(--ink3)}
+.advbar{display:flex;align-items:center;gap:14px;padding:0 22px 0 24px;height:66px;border-radius:20px;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.advbar .ic2{color:var(--ink2)} .advbar b{font-size:19px;font-weight:600;white-space:nowrap}
+.advbar .pro{background:var(--tint);color:var(--accent);font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.advbar small{font-size:16px;color:var(--ink3);margin-left:auto;margin-right:4px;white-space:nowrap}
+.advbar .chev{color:var(--ink3)}
+.gh2{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;font-size:17px;font-weight:650}
+.gh2 a{font-size:16px;color:var(--accent);font-weight:600}
+.ok2{color:var(--ok);font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ok2 svg{width:18px;height:18px;stroke-width:3}
+.conn2{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.row .brand{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#F2F2F6}
+.dfoot{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 2px #E4E0FF;font-size:17px;line-height:1.4}
+.dfoot svg.i{color:var(--accent);width:24px;height:24px}
+.dfoot a{margin-left:auto;white-space:nowrap;font-size:16.5px}
+.note2{font-size:16px;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.note2 svg.i{width:18px;height:18px}
+.vpill{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:700;letter-spacing:-.02em;padding:6px 14px 6px 10px;border-radius:12px;white-space:nowrap}
+.vpill svg.i{width:21px;height:21px;stroke-width:2.6}
+.v-buy{background:var(--tint);color:var(--accent)} .v-sell{background:var(--warn-tint);color:var(--warn)} .v-wait{background:#EEEEF2;color:var(--ink2)}
+.btn-okl{background:#fff;color:var(--ok);box-shadow:inset 0 0 0 1.5px #BFE6CD}
+
+.c2{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+.c2 > div > * + *{margin-top:20px}
+.ghead{padding-left:6px}
+.c2 .row{min-height:64px}
+.c2 .row + .row::before{left:74px}
+.presets{padding:16px 16px 16px}
+.presets .h{font-size:17px;color:var(--ink2);padding:0 4px 12px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pr{border-radius:16px;padding:6px;position:relative}
+.pr .thumb .cap{bottom:18%;font-size:15px}
+.pr b{display:block;text-align:center;font-size:16.5px;font-weight:650;margin-top:8px}
+.pr.on{box-shadow:0 0 0 3px var(--accent)}
+.pr .chk{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;z-index:3;box-shadow:0 0 0 3px #fff}
+.pr .chk svg{width:16px;height:16px;stroke-width:3}
+.cap.c-white em{color:#fff}
+.cap.c-box{text-shadow:none!important}
+.cap.c-box span{background:#111;padding:2px 6px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone;line-height:1.5}
+.cap.c-box em{color:#fff}
+.foot52{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap"><div class="crumb">Inicio ›</div><div class="th"><div class="tico" style="width:64px;height:64px;border-radius:18px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:32px;height:32px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div>
+<div class="tt"><h1>Clips</h1><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span></div>
+<nav class="ttabs"><a class="">Hacer clips</a><a class="">Mis clips</a><a class="on">Ajustes</a></nav></div><div class="tb"><div class="c2"><div><div><div class="ghead">Cuentas conectadas</div><div class="group">
+<div class="row "><div class="brand"><svg viewBox="0 0 28 20" width="34" height="24"><rect width="28" height="20" rx="6" fill="#FF0033"/><path d="M11.2 5.6v8.8l7.6-4.4z" fill="#fff"/></svg></div><div class="tx"><b>YouTube</b><small>@MariaEnVivo</small></div><span class="ok2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Conectado</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row "><div class="brand"><svg viewBox="0 0 24 26" width="26" height="28"><path d="M3.5 1 1.8 5.4v16h5.4v3h3l3-3h4.4l5.6-5.6V1z" fill="#9146FF"/><path d="M5.5 3h15v11.8l-3.4 3.4h-5.4l-3 3v-3H5.5z" fill="#fff"/><path d="M11 6.6h2v5.6h-2zM16.2 6.6h2v5.6h-2z" fill="#9146FF"/></svg></div><div class="tx"><b>Twitch</b></div><span class="conn2">Conectar</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row "><div class="brand"><svg viewBox="0 0 24 24" width="26" height="26"><rect width="24" height="24" rx="6" fill="#111"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#25F4EE" transform="translate(-.5 -.4)"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#FE2C55" transform="translate(.5 .4)"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#fff"/></svg></div><div class="tx"><b>TikTok</b><small>Para publicar con un toque</small></div><span class="conn2">Conectar</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div>
+<div><div class="ghead">Subtítulos</div><div class="group">
+<div class="row "><div class="ic" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="M7 15h4M15 15h2M7 11h2M13 11h4"/></svg></div><div class="tx"><b>Poner subtítulos en mis clips</b></div><div class="sw on"></div></div>
+<div class="row "><div class="ic" style="background:#0A84FF"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div><div class="tx"><b>Idioma de los subtítulos</b></div><span class="val">Español (México)</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div></div><div><div><div class="ghead">Estilo de subtítulos</div><div class="card presets"><div class="h">Toca uno. Lo usamos en tus próximos clips.</div><div class="pg"><div class="pr"><div class="thumb" style="width:100%;height:150px;border-radius:12px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#101935 0%,#2E3DBA 50%,#8FA2FF 100%)"></div>
+<div style="position:absolute;width:154.0px;height:154.0px;left:49.0px;top:-35.0px;border-radius:50%;background:radial-gradient(circle,#E2E7FFcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:16.8px;right:16.8px;top:27.0px;height:45.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:51.00000000000001px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:30.0px;height:24.0px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="cap c-white">ESTO FUE <em>ÉPICO</em></div></div><b>Clásico</b></div><div class="pr on"><div class="chk"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="thumb" style="width:100%;height:150px;border-radius:12px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#2B1B6B 0%,#6A2CC9 45%,#FF6B9A 100%)"></div>
+<div style="position:absolute;width:154.0px;height:154.0px;left:49.0px;top:-35.0px;border-radius:50%;background:radial-gradient(circle,#FFD36Bcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:16.8px;right:16.8px;top:27.0px;height:45.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:51.00000000000001px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:30.0px;height:24.0px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="cap ">ESTO FUE <em>ÉPICO</em></div></div><b>Amarillo</b></div><div class="pr"><div class="thumb" style="width:100%;height:150px;border-radius:12px"><div style="position:absolute;inset:0;background:linear-gradient(170deg,#0C2D48 0%,#1478A8 50%,#38E1C4 100%)"></div>
+<div style="position:absolute;width:154.0px;height:154.0px;left:49.0px;top:-35.0px;border-radius:50%;background:radial-gradient(circle,#B9FFF1cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:16.8px;right:16.8px;top:27.0px;height:45.0px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:51.00000000000001px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:30.0px;height:24.0px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="cap c-box"><span>ESTO FUE <em>ÉPICO</em></span></div></div><b>Con fondo</b></div></div></div></div>
+<div><div class="ghead">Tu marca</div><div class="group">
+<div class="row "><div class="ic" style="background:#FF375F"><svg class="i" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.69 0-3 1-3 3s1 2 1 3.5V13"/></svg></div><div class="tx"><b>Marca de agua / logo</b><small>Tu logo en una esquina de cada clip</small></div><div class="sw"></div></div>
+<div class="row "><div class="ic" style="background:#8E8E93"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></div><div class="tx"><b>Subir mi logo</b></div><span class="val">PNG o JPG</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div></div></div>
+<div class="foot52"><div class="advbar"><svg class="i ic2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg><b>Opciones avanzadas</b><span class="pro">Para creadores profesionales</span><small>Publicar automáticamente, duración y Acceso API</small><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><div class="note2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Los cambios se guardan solos y se usan en tus próximos clips.</div></div></div></div></main></div></body></html>

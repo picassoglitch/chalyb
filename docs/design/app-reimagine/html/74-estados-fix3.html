@@ -1,0 +1,153 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Estados fix 3</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+:root{--ink3-text:#6C6C74;--ok-text:#167A3E}
+.main{padding-top:38px}
+.crumb{font-size:18px;color:var(--ink2);margin-bottom:4px;font-weight:500}
+/* AA (Q28 del código real): texto secundario nunca en --ink3 */
+.ghead{color:var(--ink3-text)}
+.row .tx small,.row .val,.cred .mt,.rowsub{color:var(--ink3-text)}
+.row .tx small{font-size:16px}
+.ok2{color:var(--ok-text)}
+.plan .k,.plan p{opacity:1}
+.row .val b{color:var(--ink);font-weight:650}
+.act{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.cancel b{color:var(--bad)!important}
+.lnk2{color:var(--accent);font-weight:600;font-size:17px;white-space:nowrap}
+/* Opciones avanzadas (copiado de build_tools.py TS · componente AdvancedOptions/.ch-adv) */
+.advbar{display:flex;align-items:center;gap:14px;padding:0 22px 0 24px;height:66px;border-radius:20px;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.advbar .ic2{color:var(--ink2)} .advbar b{font-size:19px;font-weight:600;white-space:nowrap}
+.advbar .pro{background:var(--tint);color:var(--accent);font-size:16px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.advbar small{font-size:16px;color:var(--ink3-text);margin-left:auto;margin-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.advbar{min-width:0}
+.advbar .chev{color:var(--ink3);margin-left:auto}
+.pill{font-size:16px;padding:4px 12px}
+.pill svg.i{width:16px;height:16px}
+.btn:disabled,.btn.dis{background:#EBEBF0;color:#6C6C74;box-shadow:none}
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:14px 22px 14px 14px;border-radius:16px;box-shadow:var(--shadow-lg);font-size:18px;white-space:nowrap;z-index:5}
+.toast .ti{width:32px;height:32px;border-radius:50%;background:var(--ok);display:grid;place-items:center}
+.toast .ti svg{width:18px;height:18px;stroke-width:3;color:#fff}
+
+body{background:var(--bg)}
+.board{padding:40px 48px 44px;width:1440px}
+.board h1{font-size:34px}.board .bs{font-size:18px;color:var(--ink2);margin-top:6px}
+.sec{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font-size:19px;font-weight:650}
+.sec .n{width:26px;height:26px;border-radius:7px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;display:grid;place-items:center}
+.sec small{font-size:16px;color:var(--ink3-text);font-weight:500}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:22px 24px;position:relative;overflow:hidden}
+.panel .cap{font-size:15px;font-weight:650;color:var(--ink3-text);margin-bottom:12px}
+.savebar{display:flex;align-items:center;gap:14px;padding:10px 10px 10px 18px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line)}
+.savebar .tx{flex:1;font-size:16.5px;color:var(--ink2);display:flex;gap:8px;align-items:center;line-height:1.3}
+.savebar .tx svg{width:20px;height:20px;flex:none}
+.savebar .btn{height:54px;font-size:18px;min-width:200px}
+.savebar.err{box-shadow:inset 0 0 0 1.5px var(--bad-line);background:var(--bad-tint)}
+.savebar.err .tx{color:var(--bad)}
+.spin{width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,.4);border-top-color:#fff}
+.st{display:grid;gap:12px}
+.toastx{display:inline-flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:14px 22px 14px 14px;border-radius:16px;font-size:18px}
+.toastx .ti{width:32px;height:32px;border-radius:50%;background:var(--ok);display:grid;place-items:center}.toastx .ti svg{width:18px;height:18px;stroke-width:3;color:#fff}
+.empty{text-align:center;padding:10px 6px 4px}
+.empty .ei{width:64px;height:64px;border-radius:20px;background:var(--tint);color:var(--accent);display:grid;place-items:center;margin:0 auto}
+.empty .ei svg{width:32px;height:32px}
+.empty h3{font-size:22px;margin-top:12px}.empty p{font-size:17px;color:var(--ink2);margin-top:6px}
+.empty .btn{margin-top:14px;height:54px;font-size:18px}
+.sk{height:18px;border-radius:9px;background:linear-gradient(90deg,#EEEEF3,#F6F6F9,#EEEEF3)}
+.err2 .ei{background:#EEEEF2;color:var(--ink2)}
+.offer2 h3{font-size:24px;font-weight:700}
+.offer2 .p{margin-top:10px;font-size:17px;color:var(--ink2)}
+.offer2 .n{font-size:26px;font-weight:750;color:var(--ink);letter-spacing:-.02em}
+.offer2 .btn{margin-top:14px;width:100%;height:58px}
+.field .in{height:56px}
+.field .in.err{box-shadow:inset 0 0 0 2px var(--bad)}
+.field .em{font-size:16px;color:var(--bad);margin-top:6px}
+.lang p{font-size:17px;color:var(--ink2);margin-top:8px}
+.bnr{border-radius:16px;flex-wrap:wrap;row-gap:10px;padding:12px 14px}
+.panel .bnr .bt{flex:1 1 220px}
+.panel .bnr .btn{margin-left:48px}
+</style></head><body><div class="board"><h1>Estados · Mi plan, Mis créditos y Mi perfil</h1>
+<p class="bs">Lo que ve la persona en cada caso. Un solo botón principal por estado; nunca un botón sin acción.</p>
+<div class="sec"><span class="n">1</span>Mi perfil · botón “Guardar cambios” <small>· uno solo, abajo, para toda la página</small></div>
+<div class="g2"><div class="panel st"><div class="cap">Sin cambios (deshabilitado) · Con cambios</div>
+<div class="savebar "><div class="tx"><svg class="i" viewBox="0 0 24 24" style="color:var(--ok-text)"><path d="M20 6 9 17l-5-5"/></svg>Todo se guarda en tu cuenta.</div><button class="btn dis">Guardar cambios</button></div>
+<div class="savebar "><div class="tx"><svg class="i" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Tienes cambios sin guardar.</div><button class="btn btn-primary">Guardar cambios</button></div></div>
+<div class="panel st"><div class="cap">Guardando · No se pudo guardar</div>
+<div class="savebar "><div class="tx"><svg class="i" viewBox="0 0 24 24" style="color:var(--ink2)"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg>Guardando tus cambios…</div><button class="btn btn-primary" style="opacity:.75"><span class="spin"></span>Guardando…</button></div>
+<div class="savebar err"><div class="tx"><svg class="i" viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17v.01"/></svg>No pudimos guardar. Revisa tu internet e intenta otra vez. Tus cambios siguen aquí.</div><button class="btn btn-primary">Intentar otra vez</button></div></div></div>
+<div class="g3" style="margin-top:20px">
+<div class="panel"><div class="cap">Guardado (aviso 3 s, sin salir de la página)</div><div class="toastx"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>Listo, guardamos tus cambios.</div>
+<div class="lang"><p style="margin-top:14px">Si cambió el idioma, la página se vuelve a mostrar en el idioma nuevo <b>sin cerrar tu sesión</b> y el aviso sale ya traducido: “Done, your changes are saved.”</p></div></div>
+<div class="panel"><div class="cap">Error en un campo (al salir del campo)</div>
+<div class="field" style="margin-top:0"><label>Tu nombre</label><div class="in val err">M</div><div class="em">Escribe tu nombre (mínimo 2 letras).</div></div></div>
+<div class="panel"><div class="cap">Cargando (esqueleto, sin girador a pantalla completa)</div>
+<div style="display:grid;gap:12px"><div class="sk" style="width:40%;height:22px"></div><div class="sk" style="height:56px;border-radius:16px"></div><div class="sk" style="height:56px;border-radius:16px"></div><div class="sk" style="width:60%"></div></div></div></div>
+
+<div class="sec"><span class="n">2</span>Mis créditos <small>· vacío, error, compra recibida, casi sin créditos</small></div>
+<div class="g3">
+<div class="panel empty"><div class="ei"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/></svg></div><h3>Aún no usas tus créditos</h3><p>Cuando hagas tu primer clip, aquí verás en qué se usaron.</p><button class="btn btn-primary">Hacer mi primer clip</button></div>
+<div class="panel empty err2"><div class="ei"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg></div><h3>No pudimos cargar tus créditos</h3><p>Tus créditos están bien; solo no pudimos mostrarlos ahora.</p><button class="btn btn-primary">Intentar otra vez</button></div>
+<div class="panel st" style="align-content:start"><div class="cap">Arriba del contenido (Banner)</div>
+<div class="bnr trial" style="border:0"><div class="bi"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="bt"><b>Pago recibido.</b> Tus créditos se suman en unos minutos.</div></div>
+<div class="bnr warn" style="border:0"><div class="bi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg></div><div class="bt">Te queda poco: <b>8%</b> de tus créditos. Se renuevan el 1 de noviembre.</div><button class="btn">Conseguir más</button></div></div></div>
+
+<div class="sec"><span class="n">3</span>Mi plan · Gratis <small>· si ya usó su prueba de 7 días no se ofrece otra vez</small></div>
+<div class="g3">
+<div class="panel offer2"><div class="cap">Ya usó su prueba</div><h3>Elige tu plan Pro</h3><p class="p">Hoy se cobran</p><div class="n">$997 MXN al mes</div><p class="p">Se renueva cada mes hasta que canceles. O $9,970 MXN al año.</p><button class="btn btn-primary">Elegir Pro</button></div>
+<div class="panel offer2"><div class="cap">Su prueba terminó (banner gris arriba)</div>
+<div class="bnr gray" style="border:0;padding-left:14px"><div class="bi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></div><div class="bt">Tu prueba terminó. Estás en el plan Gratis.</div><button class="btn">Volver a Pro</button></div>
+<p class="p">El resto de la página es igual a 70, con “Volver a Pro” en vez de “Empezar mis 7 días gratis”.</p></div>
+<div class="panel offer2"><div class="cap">Administrador (no es suscriptor)</div>
+<div class="bnr gray" style="border:0;padding-left:14px"><div class="bi"><svg class="i" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><div class="bt">Eres administrador: tienes todo incluido, sin importar el plan.</div></div>
+<p class="p">Sin botones de compra. El plan guardado se ve en Opciones avanzadas.</p></div></div>
+</div></body></html>

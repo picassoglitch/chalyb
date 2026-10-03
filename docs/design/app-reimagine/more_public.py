@@ -103,7 +103,7 @@ def toolcards(n=7, idea=True):
         o += f'<div class="tc idea">{toolicon("bulb","#E8A600")}<h3>Tu idea</h3><p>¿Necesitas otra herramienta? Propónla y nosotros la construimos.</p><div class="inc">Proponer una idea {ic("arrow","i","width:16px;height:16px")}</div></div>'
     return o
 FAQS = [
- ("¿De verdad el primer mes es gratis?","Sí. Hoy pagas $0. Te avisamos por correo 7 días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas."),
+ ("¿De verdad los primeros 7 días son gratis?","Sí, en Pro mensual y Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Puedes cancelar en 1 clic desde Mi cuenta, sin llamadas."),
  ("¿Necesito saber de tecnología?","No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples. Si te atoras, te ayuda una persona por WhatsApp."),
  ("¿Qué incluye el plan Pro?","Todas las herramientas: Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones, con créditos cada mes."),
  ("¿Cómo cancelo?","Entra a Mi cuenta → Mi plan → Cancelar. Es 1 clic y 1 confirmación. Sigues con Pro hasta el final de tu periodo."),
@@ -135,7 +135,7 @@ b10 = f'''<div class="pg">{pubnav()}
 <div class="kick"><span>Todo incluido</span>Un plan, todas las herramientas</div>
 <h1>Bots que <em>trabajan por ti</em> mientras duermes</h1>
 <p class="sub">Clips para tus redes, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.</p>
-<div class="cta"><button class="btn btn-primary btn-xl">Prueba Pro gratis 1 mes</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
+<div class="cta"><button class="btn btn-primary btn-xl">{TRIAL_CTA}</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
 <div class="trust"><span>{ic("check")}En español</span><span>{ic("check")}Sin saber de tecnología</span><span>{ic("check")}Cancela en 1 clic</span></div></div>
 <div class="vis"><div class="panel"><h4>Mientras dormías</h4>{vis_items}</div>
 <div class="float">{thumb(0,150,266,dur="0:42",cap="¡NO LO PUEDO <em>CREER</em>!",radius=20,playsize=46)}</div></div></div></section>
@@ -154,16 +154,16 @@ b10 = f'''<div class="pg">{pubnav()}
 <div class="au" style="background:#fff;box-shadow:var(--shadow)"><div class="ai">{ic("bot")}</div><h3>Negocios</h3><p>Un asistente que atiende a tus clientes por ti.</p></div>
 <div class="au" style="background:#fff;box-shadow:var(--shadow)"><div class="ai">{ic("trend")}</div><h3>Quien invierte</h3><p>Avisos claros sobre cripto e inversiones, sin palabras raras.</p></div></div>
 <div class="tstrip"><span>{ic("globe")}En español, para México y Latinoamérica</span><span>{ic("shield")}Pago seguro con Mercado Pago</span><span>{ic("chat")}Ayuda de una persona por WhatsApp</span></div></div></section>
-<section class="band white"><div class="sec"><div class="shd"><div class="label">Planes</div><h2>Un plan, todo el kit</h2><p>Empieza gratis o prueba Pro un mes sin pagar nada hoy.</p></div>
+<section class="band white"><div class="sec"><div class="shd"><div class="label">Planes</div><h2>Empieza gratis, crece con Pro</h2><p>Prueba Pro gratis 7 días, sin pagar nada hoy.</p></div>
 <div class="plans">
 <div class="pl" style="background:var(--bg);box-shadow:none"><h3>Gratis</h3><div class="pr">$0</div><div class="pn">Para conocer Chalyb</div><button class="btn btn-secondary">Crear cuenta gratis</button></div>
-<div class="pl hi"><div class="tagx">Recomendado · Ahorras $1,498 al año</div><h3>Pro anual</h3><div class="pr">$7,490<span> MXN al año</span></div><div class="pn">(equivale a $624 al mes)</div><div class="pn"><b>Se renueva cada año</b></div><div class="pn" style="font-size:16px;margin-top:4px">o $749 MXN al mes · se renueva cada mes</div><button class="btn btn-primary btn-xl" style="margin-top:22px">Prueba Pro gratis 1 mes</button></div>
-<div class="pl" style="background:var(--bg);box-shadow:none"><h3>VIP</h3><div class="pr">$2,499<span> MXN al mes</span></div><div class="pn">Todo Pro, más créditos y atención prioritaria</div><button class="btn btn-secondary">Ver VIP</button></div></div>
+<div class="pl hi"><div class="tagx">{BADGE_PRO}</div><h3>Pro anual</h3><div class="pr">{P_PRO_Y}<span> MXN al año</span></div><div class="pn"><b>Se renueva cada año</b></div><div class="pn" style="font-size:16px;margin-top:4px">o paga mes a mes: {P_PRO_M} MXN al mes (plan mensual)</div><div class="pn" style="font-size:16px;color:var(--accent);font-weight:650">Ahorras {P_SAVE_PRO} al año · {P_PCT_PRO}%</div><button class="btn btn-primary btn-xl" style="margin-top:22px">{TRIAL_CTA}</button></div>
+<div class="pl" style="background:var(--bg);box-shadow:none"><h3>VIP</h3><div class="pr">{P_VIP_M}<span> MXN al mes</span></div><div class="pn">Todo Pro, más créditos y atención prioritaria. Sin prueba gratis.</div><button class="btn btn-secondary">Ver VIP</button></div></div>
 <div style="text-align:center;margin-top:26px"><a class="lnk" style="font-size:19px">Ver todos los planes y qué incluyen</a></div></div></section>
 <section class="band" style="padding-bottom:0"><div class="sec"><div class="idea2"><div class="bi">{ic("bulb")}</div><div><h3>Tienes la idea, nosotros la construimos</h3><p>Propón una herramienta. Si la hacemos, compartimos las ganancias contigo.</p></div><button class="btn btn-secondary">Proponer mi idea</button></div></div></section>
 <section class="band"><div class="sec"><div class="shd"><div class="label">Preguntas</div><h2>Preguntas frecuentes</h2></div><div class="faq">{faqs(FAQS)}</div></div></section>
 <section style="padding:0 20px"><div class="final"><h2>Fuiste por una cosa y te llevaste todo.</h2><p>Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones.</p>
-<button class="btn">Prueba Pro gratis 1 mes</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div></section>
+<button class="btn">{TRIAL_CTA}</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div></section>
 {footer()}</div>'''
 write("10-landing.html", page2("Chalyb", b10, css10))
 
@@ -241,7 +241,7 @@ mtools = "".join(f'<div class="mtc">{toolicon(i,c,52,15,26)}<div><b>{n}</b><p>{d
 b11 = f'''<div class="pg">{statusbar()}<div class="mn">{logo()}<div class="r"><a class="in">Entrar</a><div class="bur">{ic("menu")}</div></div></div>
 <div class="mh"><span class="kick">Un plan, todas las herramientas</span><h1>Bots que <em>trabajan por ti</em> mientras duermes</h1>
 <p class="sub">Clips, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.</p>
-<button class="btn btn-primary btn-xl">Prueba Pro gratis 1 mes</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
+<button class="btn btn-primary btn-xl">{TRIAL_CTA}</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
 <div class="mvis"><h4>Mientras dormías</h4>{m_vis}</div>
 <section class="ms"><div class="hd"><div class="label">Herramientas</div><h2>Todo lo que necesitas, en un solo lugar</h2></div><div class="mt">{mtools}</div></section>
 <section class="ms"><div class="hd"><div class="label">Cómo funciona</div><h2>Cómo funciona en 3 pasos</h2></div><div class="mt">
@@ -253,17 +253,17 @@ b11 = f'''<div class="pg">{statusbar()}<div class="mn">{logo()}<div class="r"><a
 <section class="ms"><div class="hd"><h2>Hecho para streamers, creadores y negocios</h2></div><div class="maud">
 <div>{ic("live")}Streamers<small>Clips y control de OBS</small></div><div>{ic("scissors")}Creadores<small>Publica sin editar</small></div>
 <div>{ic("bot")}Negocios<small>Atiende a tus clientes</small></div><div>{ic("trend")}Quien invierte<small>Avisos claros</small></div></div></section>
-<section class="ms"><div class="hd"><div class="label">Planes</div><h2>Un plan, todo el kit</h2></div>
-<div class="mpl"><div class="tagx">Recomendado · Ahorras $1,498 al año</div><h3>Pro anual</h3><div class="pr">$7,490<span> MXN al año</span></div>
-<div class="pn">(equivale a $624 al mes)</div><div class="pn"><b>Se renueva cada año</b></div><div class="pn" style="font-size:15px">o $749 MXN al mes · se renueva cada mes</div>
-<button class="btn btn-primary btn-xl" style="margin-top:18px;font-size:19px">Prueba Pro gratis 1 mes</button></div>
-<div class="mpl2"><div><b>Gratis</b><span>$0</span><small style="display:block">Para conocer Chalyb</small></div><div><b>VIP</b><span>$2,499</span><small style="display:block">MXN al mes · más créditos</small></div></div>
+<section class="ms"><div class="hd"><div class="label">Planes</div><h2>Empieza gratis, crece con Pro</h2></div>
+<div class="mpl"><div class="tagx">{BADGE_PRO}</div><h3>Pro anual</h3><div class="pr">{P_PRO_Y}<span> MXN al año</span></div>
+<div class="pn"><b>Se renueva cada año</b></div><div class="pn" style="font-size:15px">o paga mes a mes: {P_PRO_M} MXN al mes (plan mensual)</div><div class="pn" style="font-size:15px;color:var(--accent);font-weight:650">Ahorras {P_SAVE_PRO} al año · {P_PCT_PRO}%</div>
+<button class="btn btn-primary btn-xl" style="margin-top:18px;font-size:19px">{TRIAL_CTA}</button></div>
+<div class="mpl2"><div><b>Gratis</b><span>$0</span><small style="display:block">Para conocer Chalyb</small></div><div><b>VIP</b><span>{P_VIP_M}</span><small style="display:block">MXN al mes · más créditos</small></div></div>
 <div style="text-align:center;margin-top:16px"><a class="lnk" style="font-size:17px">Ver todos los planes</a></div>
 <div class="midea">{toolicon("bulb","#E8A600",48,14,24)}<div><b>Tienes la idea, nosotros la construimos</b><p>Propón una herramienta y compartimos las ganancias.</p></div></div></section>
 <section class="ms"><div class="hd"><h2>Preguntas frecuentes</h2></div><div class="mfq">
 <div class="q">{FAQS[0][0]}{ic("chevd","i","transform:rotate(180deg)")}</div><div class="a">{FAQS[0][1]}</div>
 {"".join(f'<div class="q">{q}{ic("chevd")}</div>' for q,a in FAQS[1:5])}</div></section>
-<div class="mfin"><h2>Fuiste por una cosa y te llevaste todo.</h2><button class="btn">Prueba Pro gratis 1 mes</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
+<div class="mfin"><h2>Fuiste por una cosa y te llevaste todo.</h2><button class="btn">{TRIAL_CTA}</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
 <footer class="mfoot">{logo()}<div class="lk"><a>Términos y Condiciones</a><a>Términos de Suscripción</a><a>Aviso de Privacidad</a><a>Uso aceptable</a><a>Planes</a><a>Ayuda</a></div>
 <div class="cp">© 2026 Chalyb · Hecho en México.<br>Precios en MXN, IVA incluido. Pago seguro con Mercado Pago.</div></footer></div>'''
 write("11-landing-movil.html", page2("Chalyb móvil", b11, css11))
@@ -283,8 +283,8 @@ css12 = css10 + '''
 .pk .tagx{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
 .pk h3{font-size:26px;font-weight:700}
 .pk .d{font-size:18px;color:var(--ink2);margin-top:4px}
-.pk .pr{font-size:54px;font-weight:750;letter-spacing:-.045em;margin-top:20px;line-height:1}
-.pk .pr span{font-size:21px;font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pk .pr{font-size:48px;font-weight:750;letter-spacing:-.045em;margin-top:20px;line-height:1;white-space:nowrap}
+.pk .pr span{font-size:19px;font-weight:600;color:var(--ink2);letter-spacing:-.01em}
 .pk .pn{font-size:19px;color:var(--ink);margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:600}
 .pk .pn2{font-size:17px;color:var(--ink2);margin-top:6px}
 .pk .btn{width:100%;margin-top:24px}
@@ -304,27 +304,26 @@ def lis(items):
         o += f'<li class="{"no" if no else ""}"><span class="ck">{ic("x" if no else "check")}</span><span>{t.lstrip("-")}</span></li>'
     return f"<ul>{o}</ul>"
 PFAQ = [
- ("¿Qué pasa cuando termina mi mes gratis?","Sigues con el plan que elegiste (anual o mensual) y se cobra a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada."),
+ ("¿Qué pasa cuando terminan mis 7 días gratis?","Sigues con el plan que elegiste (mensual o anual) y se cobra a tu tarjeta. El día que empiezas te enviamos por correo el aviso de cobro, con la fecha y el monto. Si cancelas antes, no pagas nada."),
  ("¿Puedo cambiar de anual a mensual?","Sí, desde Mi cuenta → Mi plan, cuando quieras."),
  ("¿Qué son los créditos?","Son lo que usan las herramientas para trabajar, por ejemplo, cada clip. Tu plan trae créditos nuevos cada mes."),
  ("¿Puedo cancelar cuando quiera?","Sí. Es 1 clic desde Mi cuenta. Sigues con tu plan hasta el final del periodo que pagaste."),
 ]
 b12 = f'''<div class="pg">{pubnav("planes")}<section class="sec">
-<div class="ph"><h1>Un plan. Todas las herramientas.</h1><p class="sub">Prueba Pro gratis 1 mes. Cancela cuando quieras.</p>
-<div class="tog"><span>Mensual</span><span class="on">Anual <i class="pill acc" style="font-style:normal">Ahorras $1,498</i></span></div></div>
+<div class="ph"><h1>Empieza gratis, crece con Pro</h1><p class="sub">Prueba Pro gratis 7 días. Cancela en 1 clic, sin llamadas.</p>
+<div class="tog"><span>Mensual</span><span class="on">Anual <i class="pill acc" style="font-style:normal">Ahorra hasta {P_PCT_MAX}%</i></span></div></div>
 <div class="pc">
 <div class="pk"><h3>Gratis</h3><div class="d">Para conocer Chalyb</div><div class="pr">$0</div><div class="pn">Sin tarjeta</div><div class="pn2">Para siempre</div>
 <button class="btn btn-secondary">Crear cuenta gratis</button><div class="bn">&nbsp;</div>
 {lis(["Clips para probar","Tus resultados guardados","Ayuda por correo","-Señales, En vivo y las demás herramientas"])}</div>
-<div class="pk hi"><div class="tagx">Recomendado</div><h3>Pro</h3><div class="d">Todas las herramientas</div>
-<div class="pr">$7,490<span> MXN al año</span></div><div class="pn2" style="margin-top:6px">(equivale a $624 al mes)</div><div class="pn">Se renueva cada año</div><div class="pn2" style="display:flex;align-items:center;gap:8px;margin-top:8px"><span class="pill acc" style="margin:0">Ahorras $1,498 al año</span></div><div class="pn2" style="margin-top:6px">vs. $8,988 pagando mes a mes</div>
-<div class="pn2">o $749 MXN al mes con Mensual</div>
-<button class="btn btn-primary btn-xl" style="margin-top:24px">Prueba Pro gratis 1 mes</button><div class="bn">Hoy pagas $0. Te avisamos 7 días antes del primer cobro.</div>
+<div class="pk hi"><div class="tagx">{BADGE_PRO}</div><h3>Pro</h3><div class="d">Todas las herramientas</div>
+<div class="pr">{P_PRO_Y}<span> MXN al año</span></div><div class="pn">Se renueva cada año</div><div class="pn2" style="margin-top:6px">o paga mes a mes: {P_PRO_M} MXN al mes (plan mensual)</div><div class="pn2" style="display:flex;align-items:center;gap:8px;margin-top:8px"><span class="pill acc" style="margin:0">Ahorras {P_SAVE_PRO} al año · {P_PCT_PRO}%</span></div>
+<button class="btn btn-primary btn-xl" style="margin-top:24px">{TRIAL_CTA}</button><div class="bn"><b>Hoy pagas $0.</b> El {FIN_CORTO} se cobran {P_PRO_Y} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.</div>
 {lis(["Las 7 herramientas: Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones","2,000 créditos cada mes","Clips sin marca de agua","Opciones avanzadas para profesionales","Ayuda de una persona por WhatsApp"])}</div>
-<div class="pk"><h3>VIP</h3><div class="d">Para quien lo usa todos los días</div><div class="pr">$2,499<span> MXN al mes</span></div><div class="pn">Se renueva cada mes</div><div class="pn2">Sin plan anual</div>
-<button class="btn btn-secondary">Elegir VIP</button><div class="bn">&nbsp;</div>
+<div class="pk"><h3>VIP</h3><div class="d">Para quien lo usa todos los días</div><div class="pr">{P_VIP_Y}<span> MXN al año</span></div><div class="pn">Se renueva cada año</div><div class="pn2" style="margin-top:6px">o paga mes a mes: {P_VIP_M} MXN al mes (plan mensual)</div><div class="pn2" style="margin-top:8px"><b>Ahorras {P_SAVE_VIP} al año · {P_PCT_VIP}%</b></div>
+<button class="btn btn-secondary" style="margin-top:24px">Elegir VIP anual</button><div class="bn">Se cobra hoy. Sin prueba gratis. Cancela en 1 clic, sin llamadas.</div>
 {lis(["Todo lo de Pro","Muchos más créditos cada mes","Atención prioritaria por WhatsApp","Primero en recibir herramientas nuevas"])}</div></div>
-<p class="pnote">Precios en pesos mexicanos (MXN), IVA incluido. Pago seguro con Mercado Pago.</p>
+<p class="pnote">Precios en MXN, IVA incluido. Pago seguro con Mercado Pago.<br>{TRIAL_FOOT}</p>
 <div class="shd" style="margin-top:80px"><h2>Preguntas sobre los planes</h2></div><div class="faq" style="margin-bottom:0">{faqs(PFAQ)}</div></section>
 {footer()}</div>'''
 write("12-planes.html", page2("Planes", b12, css12))
