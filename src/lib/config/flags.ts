@@ -75,10 +75,11 @@ export function clipsHubMode(): ToolHubMode {
   return toolHubMode('chalybclip');
 }
 
-/** What still stops the trial path from going live, when it is requested.
- *  Real charges wait for published legal texts (P6, OPS-10), the seller's
- *  identity (art. 76 Bis fr. III, P2-13), and the evidence/cron secrets. */
-export function trialFlowBlockers(): string[] {
+/** What still stops paid checkout (and so the trial) from going live:
+ *  published legal texts (P6, OPS-10), the seller's identity (art. 76 Bis
+ *  fr. III, P2-13), and the evidence/cron secrets (consent log, renewal
+ *  notices). */
+export function paidCheckoutBlockers(): string[] {
   const blockers: string[] = [];
   if (!readBool('LEGAL_PUBLISH', false)) blockers.push('LEGAL_PUBLISH');
   for (const name of [
@@ -97,15 +98,34 @@ export function trialFlowBlockers(): string[] {
   return blockers;
 }
 
-/** Whether the new trial path (P2) is live: requested with
- *  TRIAL_FLOW_ENABLED AND nothing in trialFlowBlockers(). Until then, trial
- *  offers point at the existing subscription page. */
+/**
+ * V-1 · paid checkout without the trial: annual plans (Pro anual, VIP anual),
+ * the paid consent path and plan changes. Requested with
+ * PAID_CHECKOUT_ENABLED (default false) and refused while anything in
+ * paidCheckoutBlockers() is missing. Off: only the legacy monthly
+ * /app/subscription sells, and the cards show monthly only.
+ */
+export function paidCheckoutEnabled(): boolean {
+  return readBool('PAID_CHECKOUT_ENABLED', false) && paidCheckoutBlockers().length === 0;
+}
+
+export function paidCheckoutRequested(): boolean {
+  return readBool('PAID_CHECKOUT_ENABLED', false);
+}
+
+/** The 7-day trial path: paid checkout AND TRIAL_FLOW_ENABLED. Until then,
+ *  no trial is offered anywhere. */
 export function trialFlowEnabled(): boolean {
-  return readBool('TRIAL_FLOW_ENABLED', false) && trialFlowBlockers().length === 0;
+  return readBool('TRIAL_FLOW_ENABLED', false) && paidCheckoutEnabled();
 }
 
 export function trialFlowRequested(): boolean {
   return readBool('TRIAL_FLOW_ENABLED', false);
+}
+
+/** VIP anual is sold wherever annual is (still needs paid checkout). */
+export function vipYearEnabled(): boolean {
+  return readBool('VIP_YEAR_ENABLED', true) && paidCheckoutEnabled();
 }
 
 /** O-11 · the optional "Mañana termina tu prueba gratis" email + amber

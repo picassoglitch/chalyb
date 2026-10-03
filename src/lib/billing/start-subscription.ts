@@ -39,10 +39,14 @@ import { cancelPreapproval, syncSubscription } from '@/lib/payments/subscription
 import { track } from '@/lib/analytics/track';
 import { legalDocuments } from '@/lib/legal/documents';
 import type { SessionUser } from '@/lib/auth/session';
-import { trialDates, type TrialDates } from './trial-dates';
+import { addInterval, trialDates, type TrialDates } from './trial-dates';
+import { formatFechaLarga, formatMXN } from './format';
+import { trialFlowEnabled } from '@/lib/config/flags';
 import {
   consentSentence,
   disclosureParagraphs,
+  paidConsentSentence,
+  paidParagraphs,
   evidenceText,
   stripMarkup,
   type Translate,
@@ -52,6 +56,7 @@ import { dispatchBillingEmail, trialNoticeVars } from './notices';
 import { trialNoticeKey } from './reminders';
 import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -109,12 +114,6 @@ function fingerprint(card: CardToken): string | null {
     .digest('hex');
 }
 
-const PLAN_NAMES: Record<PlanKey, string> = {
-  pro_year: 'Pro anual',
-  pro_month: 'Pro mensual',
-  vip_month: 'VIP',
-};
-
 export async function startSubscription(input: StartInput): Promise<StartResult> {
   if (input.consentChecked !== true) return { ok: false, code: 'CONSENT_REQUIRED' };
   if (!isCheckoutReady()) return { ok: false, code: 'NOT_CONFIGURED' };
@@ -137,8 +136,15 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
   // 7 days free on Pro mensual and Pro anual, once per account (and card).
-  const wantsTrial = planHasTrial(input.planKey) && !billing.trialUsed && input.intent !== 'change';
-  const mode: StartMode = input.intent === 'change' ? 'change' : wantsTrial ? 'trial' : 'paid';
+  const wantsTrial =
+    trialFlowEnabled() &&
+    planHasTrial(input.planKey) &&
+    !billing.trialUsed &&
+    input.intent !== 'change';
+  // Buying a plan from Gratis through the change page (e.g. VIP anual) is a
+  // new subscription, not a change: subscription_started, charged today.
+  const changing = input.intent === 'change' && billing.primary.state !== 'free';
+  const mode: StartMode = changing ? 'change' : wantsTrial ? 'trial' : 'paid';
   // T-6 · switching Pro mensual ↔ Pro anual during the trial: same charge
   // date, the new plan's amount, the trial's own disclosure and checkbox,
   // and a fresh charge notice (a new amount is a new notice).
@@ -191,8 +197,39 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       } as never,
     );
   const disclosure = { planKey: input.planKey, dates, cardLast4: null, locale: input.locale };
-  const disclosureText = trialLike ? evidenceText(disclosureParagraphs(t, disclosure)) : null;
-  const checkboxText = trialLike ? stripMarkup(consentSentence(t, disclosure)) : null;
+  // What the page showed, by path: the trial block; a charge today (new
+  // plan, or a change that applies now): Law's paid block and checkbox; a
+  // change at a later date: the change checkbox.
+  const paidInput = {
+    planKey: input.planKey,
+    renewalAt: addInterval(now, price.interval),
+    cardLast4: null,
+    locale: input.locale,
+  };
+  const chargedToday = !trialLike && (mode === 'paid' || !firstChargeLater);
+  const tChangeText = await getTranslations({ locale: input.locale, namespace: 'change' });
+  const disclosureText = trialLike
+    ? evidenceText(disclosureParagraphs(t, disclosure))
+    : chargedToday
+      ? evidenceText(paidParagraphs(t, paidInput))
+      : null;
+  const checkboxText = trialLike
+    ? stripMarkup(consentSentence(t, disclosure))
+    : chargedToday
+      ? stripMarkup(paidConsentSentence(t, paidInput))
+      : stripMarkup(
+          tChangeText.markup('consent', {
+            monto: formatMXN(price.totalCents),
+            renovacion_corta: tb(
+              price.interval === 'year'
+                ? 'vars.renovacionCorta.year'
+                : 'vars.renovacionCorta.month',
+            ),
+            fecha: formatFechaLarga(dates.chargeAt, input.locale),
+            b: (c: string) => `<b>${c}</b>`,
+            terms: (c: string) => `<terms>${c}</terms>`,
+          }),
+        );
   const tPay = await getTranslations({ locale: input.locale, namespace: 'checkout' });
   const tChange = await getTranslations({ locale: input.locale, namespace: 'change' });
   const buttonLabel =

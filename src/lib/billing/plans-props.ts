@@ -5,7 +5,13 @@
 import 'server-only';
 import { getCurrentUser, getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from './tiers';
-import { freeIncludesClips, proBadgeMostPopular, trialFlowEnabled } from '@/lib/config/flags';
+import {
+  freeIncludesClips,
+  paidCheckoutEnabled,
+  proBadgeMostPopular,
+  trialFlowEnabled,
+  vipYearEnabled,
+} from '@/lib/config/flags';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { loadBilling } from './subscription-store';
 import { plansCta, type Interval, type PlansCta } from './plans-cta';
@@ -41,10 +47,9 @@ export async function loadPlansProps(locale: string): Promise<PlansProps> {
   const billing = session ? await loadBilling(session.user.id).catch(() => null) : null;
   const isAdmin = session ? isAdminRole(session.role) : false;
   const flow = trialFlowEnabled();
-  // Annual plans are only sold through the new checkout today; WS-5 splits
-  // it from the trial (PAID_CHECKOUT_ENABLED).
-  const annualOffered = flow;
-  const vipYearOffered = false;
+  // Annual plans need the new paid checkout (V-1); the trial needs it too.
+  const annualOffered = paidCheckoutEnabled();
+  const vipYearOffered = vipYearEnabled();
   const monthlyOffered = await billingToggleEnabled();
   const quebecBlocked = false;
   const intervals: Interval[] = annualOffered

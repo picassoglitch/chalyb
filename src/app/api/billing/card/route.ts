@@ -17,21 +17,30 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ ok: false, code: 'SESSION_EXPIRED' }, { status: 401 });
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const token = String(body.cardTokenId ?? '').trim();
-  if (!token || token.length > 128) return NextResponse.json({ ok: false, code: 'BAD_TOKEN' }, { status: 400 });
+  if (!token || token.length > 128)
+    return NextResponse.json({ ok: false, code: 'BAD_TOKEN' }, { status: 400 });
   const billing = await loadBilling(session.user.id);
   const row = billing.primaryRow;
   if (!row || !['trialing', 'pro', 'past_due'].includes(billing.primary.state)) {
     return NextResponse.json({ ok: false, code: 'NOTHING_TO_UPDATE' }, { status: 409 });
   }
   const preapprovalId = row.mp_preapproval_id as string;
-  let card: { last_four_digits?: string; expiration_month?: number; expiration_year?: number; payment_method_id?: string } = {};
+  let card: {
+    last_four_digits?: string;
+    expiration_month?: number;
+    expiration_year?: number;
+    payment_method_id?: string;
+  } = {};
   try {
     card = await mpGet(`/v1/card_tokens/${encodeURIComponent(token)}`);
   } catch {
     // details are cosmetic; the update is what matters
   }
   try {
-    await getMercadoPago().preapproval.update({ id: preapprovalId, body: { card_token_id: token } });
+    await getMercadoPago().preapproval.update({
+      id: preapprovalId,
+      body: { card_token_id: token },
+    });
   } catch (err) {
     console.error('[billing/card] update refused', preapprovalId, err);
     return NextResponse.json({ ok: false, code: 'DECLINED' }, { status: 402 });

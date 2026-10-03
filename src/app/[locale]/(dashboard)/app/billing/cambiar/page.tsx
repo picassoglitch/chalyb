@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
@@ -11,6 +11,9 @@ import { quoteChange } from '@/lib/billing/billing-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { ButtonLink, DisclosureBlock } from '@/components/ui/primitives';
 import { PayForm } from '@/components/app/billing/pay-form';
+import { Markup } from '@/components/ui/markup';
+import { paidConsentSentence, paidParagraphs, type Translate } from '@/lib/billing/billing-copy';
+import { addInterval } from '@/lib/billing/trial-dates';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('change');
@@ -31,7 +34,7 @@ export default async function CambiarPlanPage({
   setRequestLocale(locale);
   const session = await getSessionUser();
   if (!session) return redirect({ href: '/sign-in?next=/app/billing', locale });
-  if (!trialFlowEnabled() || isAdminRole(session.role))
+  if (!paidCheckoutEnabled() || isAdminRole(session.role))
     return redirect({ href: '/app/subscription', locale });
   const { plan } = await searchParams;
   const t = await getTranslations('change');
@@ -60,7 +63,10 @@ export default async function CambiarPlanPage({
       </WizardShell>
     );
   }
-  const to: PlanKey = plan === 'pro_month' || plan === 'vip_month' ? plan : 'pro_year';
+  const to: PlanKey =
+    plan === 'pro_month' || plan === 'vip_month' || (plan === 'vip_year' && vipYearEnabled())
+      ? plan
+      : 'pro_year';
   const quote = await quoteChange(session, to);
   const price = planPrice(to);
   const monto = formatMXN(price.totalCents);
@@ -71,16 +77,35 @@ export default async function CambiarPlanPage({
   const periodo =
     price.interval === 'year' ? tb('vars.cadaPeriodo.year') : tb('vars.cadaPeriodo.month');
 
-  const what =
-    quote.timing === 'now'
-      ? quote.refundCents > 0
-        ? t('whenNow', { monto, credito: formatMXN(quote.refundCents), mensual: monto })
-        : t('whenNowNoRefund', { monto, mensual: monto })
-      : quote.timing === 'trial_end'
-        ? t('trialSwitch', { fecha: effective, monto, periodo })
-        : quote.timing === 'reactivate' && !quote.effectiveAt
-          ? t('whenNowNoRefund', { monto, mensual: monto })
-          : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
+  // A change that charges today (an upgrade, monthly → annual, or buying a
+  // plan from Gratis) shows Law's paid block and checkbox (VIP anual: Q4,
+  // verbatim); a later change, its date; a trial switch, the trial's checkbox.
+  const chargedToday =
+    quote.timing === 'now' || (quote.timing === 'reactivate' && !quote.effectiveAt);
+  const billingT: Translate = (key, values) =>
+    tb.markup(
+      key as never,
+      {
+        ...(values ?? {}),
+        b: (c: string) => `<b>${c}</b>`,
+        terms: (c: string) => `<terms>${c}</terms>`,
+      } as never,
+    );
+  const paidInput = {
+    planKey: to,
+    renewalAt: addInterval(new Date(), price.interval),
+    cardLast4: null,
+    locale,
+  };
+  const paidBlock = chargedToday ? paidParagraphs(billingT, paidInput) : [];
+
+  const what = chargedToday
+    ? quote.refundCents > 0
+      ? t('credit', { credito: formatMXN(quote.refundCents) })
+      : null
+    : quote.timing === 'trial_end'
+      ? t('trialSwitch', { fecha: effective, monto, periodo })
+      : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
 
   // Switching during the trial is consent to the trial's charge with the new
   // amount: Law's trial checkbox, with the same charge date (T-6).
@@ -95,15 +120,19 @@ export default async function CambiarPlanPage({
           b: (c) => `<b>${c}</b>`,
           terms: (c) => `<terms>${c}</terms>`,
         })
-      : t.markup('consent', {
-          monto,
-          renovacion_corta: tb(
-            price.interval === 'year' ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month',
-          ),
-          fecha: effective,
-          b: (c) => `<b>${c}</b>`,
-          terms: (c) => `<terms>${c}</terms>`,
-        });
+      : chargedToday
+        ? paidConsentSentence(billingT, paidInput)
+        : t.markup('consent', {
+            monto,
+            renovacion_corta: tb(
+              price.interval === 'year'
+                ? 'vars.renovacionCorta.year'
+                : 'vars.renovacionCorta.month',
+            ),
+            fecha: effective,
+            b: (c) => `<b>${c}</b>`,
+            terms: (c) => `<terms>${c}</terms>`,
+          });
   const publicKey = getPublicKey();
 
   return (
@@ -113,7 +142,12 @@ export default async function CambiarPlanPage({
           {t('title', { plan: tPlan(to) })}
         </h1>
         <DisclosureBlock>
-          <p>{what}</p>
+          {paidBlock.map((p, i) => (
+            <p key={i}>
+              <Markup text={p} />
+            </p>
+          ))}
+          {what && <p>{what}</p>}
           <p className="ch-muted" style={{ marginTop: 8 }}>
             {t('card')}
           </p>

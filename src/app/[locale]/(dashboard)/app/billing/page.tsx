@@ -19,8 +19,8 @@ import { loadBilling } from '@/lib/billing/subscription-store';
 import { loadPayments, paymentKind } from '@/lib/billing/payments-data';
 import { trialDaysLeft } from '@/lib/billing/trial-dates';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { annualMath, planPrice, type PlanKey } from '@/config/pricing';
-import { cfdiEnabled, trialFlowEnabled } from '@/lib/config/flags';
+import { annualMath, floorToPeso, planPrice, type PlanKey } from '@/config/pricing';
+import { cfdiEnabled, paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
 import { ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { CancelSheet } from '@/components/app/billing/cancel-sheet';
 
@@ -54,7 +54,8 @@ export default async function MiPlanPage({
   const s = billing?.primary ?? null;
   const renderNow = new Date().getTime();
   const date = (iso: string | null | undefined) => (iso ? formatFechaLarga(iso, locale) : '');
-  const flow = trialFlowEnabled();
+  // Plan changes go through the new checkout only while it is live.
+  const flow = paidCheckoutEnabled();
   // Plan changes create charges: they go through the new flow only when it
   // is live; otherwise the existing subscription page keeps handling them.
   const changeHref = (to: PlanKey) =>
@@ -65,7 +66,6 @@ export default async function MiPlanPage({
   const price = planKey ? planPrice(planKey) : null;
   const monto = price ? formatMXN(price.totalCents) : '';
   const yearly = price?.interval === 'year';
-  const math = annualMath();
 
   // ── "Tu plan" card ────────────────────────────────────────────────
   let status = t('status.free');
@@ -129,63 +129,46 @@ export default async function MiPlanPage({
       ? t('change.priceYearShort', { monto: formatMXN(planPrice(k).totalCents) })
       : t('change.priceMonthShort', { monto: formatMXN(planPrice(k).totalCents) });
   if (!entitlements.isAdmin && s && (s.state === 'pro' || s.state === 'past_due')) {
+    // Términos §4.4–4.5: monthly → annual and Pro → VIP apply today (with
+    // credit); annual → monthly and VIP → Pro at the end of the paid period.
+    const vipYear = vipYearEnabled();
+    const row = (to: PlanKey | 'gratis', title: string, detail: string) =>
+      changes.push({ to, title, value: to === 'gratis' ? '$0' : short(to), detail });
+    const toVip = () => {
+      row('vip_month', t('change.toVip'), t('change.toVipSub'));
+      if (vipYear) row('vip_year', t('change.toVipYear'), t('change.toVipSub'));
+    };
     if (planKey === 'pro_month') {
-      changes.push({
-        to: 'pro_year',
-        title: t('change.toYear'),
-        value: short('pro_year'),
-        detail: t('change.toYearSub', { ahorro: formatMXN(math.yearSavingsCents) }),
-      });
-      changes.push({
-        to: 'vip_month',
-        title: t('change.toVip'),
-        value: short('vip_month'),
-        detail: t('change.toVipSub'),
-      });
-      changes.push({
-        to: 'gratis',
-        title: t('change.toFree'),
-        value: '$0',
-        detail: t('change.toFreeSubMonth'),
-      });
+      row(
+        'pro_year',
+        t('change.toYear'),
+        t('change.toYearSub', {
+          ahorro: formatMXN(floorToPeso(annualMath('pro').yearSavingsCents)),
+        }),
+      );
+      toVip();
+      row('gratis', t('change.toFree'), t('change.toFreeSubMonth'));
     } else if (planKey === 'pro_year') {
-      changes.push({
-        to: 'pro_month',
-        title: t('change.toMonth'),
-        value: short('pro_month'),
-        detail: t('change.toMonthSubYear'),
-      });
-      changes.push({
-        to: 'vip_month',
-        title: t('change.toVip'),
-        value: short('vip_month'),
-        detail: t('change.toVipSub'),
-      });
-      changes.push({
-        to: 'gratis',
-        title: t('change.toFree'),
-        value: '$0',
-        detail: t('change.toFreeSubYear'),
-      });
+      row('pro_month', t('change.toMonth'), t('change.toMonthSubYear'));
+      toVip();
+      row('gratis', t('change.toFree'), t('change.toFreeSubYear'));
+    } else if (planKey === 'vip_month') {
+      if (vipYear)
+        row(
+          'vip_year',
+          t('change.toVipYearFromMonth'),
+          t('change.toYearSub', {
+            ahorro: formatMXN(floorToPeso(annualMath('vip').yearSavingsCents)),
+          }),
+        );
+      row('pro_month', t('change.downMonth'), t('change.nextDate'));
+      row('pro_year', t('change.downYear'), t('change.nextDate'));
+      row('gratis', t('change.toFree'), t('change.toFreeSubMonth'));
     } else {
-      changes.push({
-        to: 'pro_month',
-        title: t('change.downMonth'),
-        value: short('pro_month'),
-        detail: t('change.nextDate'),
-      });
-      changes.push({
-        to: 'pro_year',
-        title: t('change.downYear'),
-        value: short('pro_year'),
-        detail: t('change.nextDate'),
-      });
-      changes.push({
-        to: 'gratis',
-        title: t('change.toFree'),
-        value: '$0',
-        detail: t('change.toFreeSubMonth'),
-      });
+      row('vip_month', t('change.toVipMonth'), t('change.toMonthSubYear'));
+      row('pro_month', t('change.downMonth'), t('change.toMonthSubYear'));
+      row('pro_year', t('change.downYear'), t('change.toMonthSubYear'));
+      row('gratis', t('change.toFree'), t('change.toFreeSubYear'));
     }
   } else if (s?.state === 'trialing' && !entitlements.isAdmin) {
     // Términos §2.4: during the trial, Pro mensual ↔ Pro anual. The charge

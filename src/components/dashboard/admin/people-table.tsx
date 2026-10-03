@@ -40,7 +40,7 @@ export interface PersonVM {
 
 type ActionKey = keyof PersonVM['actions'];
 const ACTIONS: ActionKey[] = ['giftMonth', 'changePlan', 'resendAccess', 'refundLast', 'cancel'];
-const PLANS = ['pro_month', 'pro_year', 'vip_month'] as const;
+const PLANS = ['pro_month', 'pro_year', 'vip_month', 'vip_year'] as const;
 const PILL: Record<PersonStatus, 'ok' | 'acc' | 'bad' | 'warn' | 'gray'> = {
   active: 'ok',
   trial: 'acc',

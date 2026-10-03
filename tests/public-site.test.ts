@@ -247,7 +247,7 @@ test('the components gate each owner claim behind its flag', () => {
   assert.match(read('faq.tsx'), /cfdiEnabled\(\) \?/);
   assert.match(read('faq.tsx'), /whatsapp \? t\('a2help'\)/);
   assert.match(read('partner.tsx'), /partnerProgramTermsUrl\(\)/);
-  assert.match(read('json-ld.tsx'), /trialFlowEnabled\(\) && legalPublished\(\)/);
+  assert.match(read('json-ld.tsx'), /paidCheckoutEnabled\(\) && legalPublished\(\)/);
 });
 
 test('the partner section names no percentage or amount (D7)', () => {

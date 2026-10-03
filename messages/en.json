@@ -963,6 +963,12 @@
     },
     "pay": {
       "consent": "I agree that, if I don’t cancel before <b>{fecha_cobro}</b>, Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+    },
+    "paid": {
+      "chargeYear": "<b>{monto} MXN is charged today</b> (VAT included) for 1 year of {plan} to {tarjeta}. It renews automatically on <b>{fecha_renovacion}</b> and every year after for {monto} MXN until you cancel. We’ll remind you 30 and 7 days before. Cancel in 1 click from My account → My plan; you keep {plan} until the end of the paid year.",
+      "consentYear": "I accept the charge of {monto} MXN today and its automatic renewal every year, and I accept the <terms>Subscription Terms</terms>.",
+      "chargeMonth": "<b>{monto} MXN is charged today</b> (VAT included) to {tarjeta}, and it renews automatically {cada_periodo} for {monto} MXN until you cancel. We’ll remind you 7 days before each charge. Cancel in 1 click from My account → My plan.",
+      "consentMonth": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
     }
   },
   "plans": {
@@ -1067,7 +1073,6 @@
       "title": "Choose your Pro plan",
       "today": "{monto} MXN is charged today",
       "cta": "Pay and start",
-      "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>.",
       "q": "Which plan do you want?"
     },
     "pay": {
@@ -1155,12 +1160,14 @@
       "pro_year": "Pro yearly — everything included",
       "vip_month": "VIP — everything included and more credits",
       "trial": "Pro free trial",
-      "free": "Free"
+      "free": "Free",
+      "vip_year": "VIP yearly — everything included and more credits"
     },
     "planName": {
       "pro_month": "Pro monthly",
       "pro_year": "Pro yearly",
-      "vip_month": "VIP"
+      "vip_month": "VIP",
+      "vip_year": "VIP yearly"
     },
     "renewMonth": "Renews every month.",
     "renewYear": "Renews every year.",
@@ -1195,7 +1202,7 @@
     "change": {
       "title": "Change plan",
       "toYear": "Move to Pro yearly",
-      "toYearSub": "Save {ahorro} a year. Starts on your next charge date",
+      "toYearSub": "Save {ahorro} a year. Applies today, with credit for the unused part of your month",
       "toMonth": "Move to Pro monthly",
       "toMonthSubYear": "Starts when your paid year ends",
       "toVip": "Upgrade to VIP",
@@ -1208,7 +1215,10 @@
       "nextDate": "Starts on your next charge date",
       "trialSwitch": "Switch to {plan} (before the first charge)",
       "priceYearShort": "{monto} a year",
-      "priceMonthShort": "{monto} a month"
+      "priceMonthShort": "{monto} a month",
+      "toVipYear": "Upgrade to VIP yearly",
+      "toVipYearFromMonth": "Switch to VIP yearly",
+      "toVipMonth": "Switch to VIP monthly"
     },
     "invoices": "Invoices",
     "invoicesEmpty": "None yet",
@@ -1256,8 +1266,6 @@
   "change": {
     "metaTitle": "Change plan",
     "title": "Change to {plan}",
-    "whenNow": "{monto} MXN is charged today and we refund {credito} MXN from your current plan. Then {mensual} MXN every month.",
-    "whenNowNoRefund": "{monto} MXN is charged today. Then {mensual} MXN every month.",
     "whenLater": "Your change starts on {fecha}. Until then you keep {plan}.",
     "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount.",
     "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
@@ -1266,7 +1274,8 @@
     "toFreeTitle": "Move to Free",
     "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
     "toFreeCta": "Go to cancel",
-    "done": "Done. Your change is recorded."
+    "done": "Done. Your change is recorded.",
+    "credit": "We refund {credito} MXN for the unused part of your current plan."
   },
   "seller": {
     "title": "Who sells",
@@ -1844,7 +1853,8 @@
       "plan": {
         "pro_month": "Pro monthly",
         "pro_year": "Pro yearly",
-        "vip_month": "VIP monthly"
+        "vip_month": "VIP monthly",
+        "vip_year": "VIP yearly"
       },
       "toggle": "Offer Monthly as well as Yearly",
       "toggleHelp": "If you turn it off, the trial and Plans offer Yearly only.",

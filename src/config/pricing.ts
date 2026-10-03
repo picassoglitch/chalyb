@@ -56,7 +56,7 @@ export const USD_CENTS = {
   vip: { month: 20_000, year: 200_000 },
 } as const;
 
-export type PlanKey = 'pro_month' | 'pro_year' | 'vip_month';
+export type PlanKey = 'pro_month' | 'pro_year' | 'vip_month' | 'vip_year';
 export type PackId = keyof typeof PACK_CENTS;
 
 function readBool(name: string, fallback: boolean): boolean {
@@ -99,6 +99,8 @@ export function planPrice(key: PlanKey): PlanPrice {
       return { key, tier: 'PRO', interval: 'year', totalCents: withIva(PRICE_CENTS.pro.year) };
     case 'vip_month':
       return { key, tier: 'VIP', interval: 'month', totalCents: withIva(PRICE_CENTS.vip.month) };
+    case 'vip_year':
+      return { key, tier: 'VIP', interval: 'year', totalCents: withIva(PRICE_CENTS.vip.year) };
   }
 }
 

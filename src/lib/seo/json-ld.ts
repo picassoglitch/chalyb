@@ -4,7 +4,8 @@
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { canonicalOrigin } from '@/lib/site';
 
-export function jsonLdData(origin = canonicalOrigin()) {
+/** `vipYear`: VIP anual is on sale (vipYearEnabled()). */
+export function jsonLdData(origin = canonicalOrigin(), vipYear = false) {
   const offer = (key: PlanKey, name: string) => ({
     '@type': 'Offer',
     name,
@@ -37,6 +38,7 @@ export function jsonLdData(origin = canonicalOrigin()) {
           offer('pro_year', 'Chalyb Pro · Anual'),
           offer('pro_month', 'Chalyb Pro · Mensual'),
           offer('vip_month', 'Chalyb VIP'),
+          ...(vipYear ? [offer('vip_year', 'Chalyb VIP · Anual')] : []),
         ],
       },
     ],

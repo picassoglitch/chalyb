@@ -3,14 +3,21 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Lock } from 'lucide-react';
 import { redirect, Link } from '@/i18n/routing';
 import type { Route } from 'next';
-import { requireTrialFlow } from '@/lib/billing/trial-gate';
+import { requirePaidCheckout } from '@/lib/billing/trial-gate';
+import { trialFlowEnabled } from '@/lib/config/flags';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { trialDates } from '@/lib/billing/trial-dates';
-import { consentSentence, trialVars, type Translate } from '@/lib/billing/billing-copy';
+import { addInterval, trialDates } from '@/lib/billing/trial-dates';
+import {
+  consentSentence,
+  paidConsentSentence,
+  paidParagraphs,
+  trialVars,
+  type Translate,
+} from '@/lib/billing/billing-copy';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { Markup } from '@/components/ui/markup';
@@ -33,7 +40,8 @@ export default async function PagoPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await requireTrialFlow(locale, '/app/prueba');
+  // Paid path and trial path share this page; the trial only with its flag.
+  const session = await requirePaidCheckout(locale, '/app/prueba');
   const billing = await loadBilling(session.user.id);
   if (billing.primary.state !== 'free') return redirect({ href: '/app/billing', locale });
   const { plan } = await searchParams;
@@ -44,7 +52,7 @@ export default async function PagoPage({
   }
   const planKey: PlanKey = plan;
   // 7 days free on Pro mensual and Pro anual, once per account.
-  const trial = !billing.trialUsed && planHasTrial(planKey);
+  const trial = trialFlowEnabled() && !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
   const tbRaw = await getTranslations('billing');
@@ -60,14 +68,18 @@ export default async function PagoPage({
   const price = planPrice(planKey);
   const dates = trialDates(new Date());
   const vars = trialVars(tb, { planKey, dates, cardLast4: null, locale });
+  // Paid (trial used, or the trial flow off): Law's paid charge block and
+  // checkbox; the server renders the same text as evidence.
+  const paidInput = {
+    planKey,
+    renewalAt: addInterval(new Date(), price.interval),
+    cardLast4: null,
+    locale,
+  };
   const consentText = trial
     ? consentSentence(tb, { planKey, dates, cardLast4: null, locale })
-    : t.markup('paid.consent', {
-        monto: vars.monto,
-        renovacion_corta: vars.renovacion_corta,
-        b: (c) => `<b>${c}</b>`,
-        terms: (c) => `<terms>${c}</terms>`,
-      });
+    : paidConsentSentence(tb, paidInput);
+  const paidBlock = trial ? [] : paidParagraphs(tb, paidInput);
   const other: PlanKey = planKey === 'pro_year' ? 'pro_month' : 'pro_year';
   const publicKey = getPublicKey();
 
@@ -106,6 +118,11 @@ export default async function PagoPage({
 
         <div className="ch-pay">
           <div style={{ display: 'grid', gap: 16 }}>
+            {paidBlock.map((p, i) => (
+              <p key={i} className="ch-disc">
+                <Markup text={p} />
+              </p>
+            ))}
             {publicKey ? (
               <PayForm
                 publicKey={publicKey}

@@ -8,9 +8,9 @@ import { NextResponse } from 'next/server';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
 import { startSubscription } from '@/lib/billing/start-subscription';
-import { PLAN_KEYS, statusForStartError } from '@/lib/billing/api';
+import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -27,7 +27,9 @@ export async function POST(req: Request) {
   if (body.consentChecked !== true) {
     return NextResponse.json({ ok: false, code: 'CONSENT_REQUIRED' }, { status: 422 });
   }
-  if (!trialFlowEnabled())
+  // The trial and the paid checkout share this route; the trial itself is
+  // decided in startSubscription (TRIAL_FLOW_ENABLED + unused trial).
+  if (!paidCheckoutEnabled())
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 404 });
   if (isAdminRole(session.role))
     return NextResponse.json({ ok: false, code: 'ADMIN' }, { status: 403 });
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
   if (planKey === 'pro_month' && !(await billingToggleEnabled())) {
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 409 });
   }
-  if (!(PLAN_KEYS as readonly string[]).includes(planKey)) {
+  if (!planOnSale(planKey, vipYearEnabled())) {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   }
 

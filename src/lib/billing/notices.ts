@@ -19,12 +19,8 @@ import type { ConsentEventType } from './consent-core';
 import { legalDocuments } from '@/lib/legal/documents';
 import { PRICING, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from './format';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
-const PLAN_NAMES: Record<PlanKey, string> = {
-  pro_year: 'Pro anual',
-  pro_month: 'Pro mensual',
-  vip_month: 'VIP',
-};
 const DOC_LABELS: Record<string, string> = {
   terminos: 'Términos y Condiciones',
   suscripcion: 'Términos de Suscripción',

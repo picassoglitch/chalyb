@@ -16,22 +16,31 @@ import { cancelForUser } from '@/lib/billing/billing-actions';
 import { recordConsent, UI_VERSION } from '@/lib/billing/consent';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { PLAN_KEYS } from '@/lib/billing/api';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { formatMXN } from '@/lib/billing/format';
 import { adminName, adminSession } from './guard';
 import { personActions, personStatus } from './people';
 import type { SubRow } from './data';
 
-export type PeopleActionResult = { ok: true } | { ok: false; code: 'FORBIDDEN' | 'NOT_ALLOWED' | 'NOT_FOUND' | 'MP_ERROR' | 'EMAIL_ERROR' };
+export type PeopleActionResult =
+  | { ok: true }
+  | { ok: false; code: 'FORBIDDEN' | 'NOT_ALLOWED' | 'NOT_FOUND' | 'MP_ERROR' | 'EMAIL_ERROR' };
 
 const DAY = 86_400_000;
 
 async function target(userId: string) {
   const db = createAdminClient();
   const [{ data: profile }, { data: sub }, { data: pay }] = await Promise.all([
-    db.from('profiles').select('id, email, full_name, tier, tier_ends_at, role').eq('id', userId).maybeSingle(),
+    db
+      .from('profiles')
+      .select('id, email, full_name, tier, tier_ends_at, role')
+      .eq('id', userId)
+      .maybeSingle(),
     db
       .from('subscriptions')
-      .select('user_id, status, plan_key, tier, mp_preapproval_id, trial_ends_at, started_at, created_at, cancel_at_period_end, cancelled_at, grace_ends_at, access_until, charge_hold_until, reminder_due_at, reminder_delivered_at, last_charge_at')
+      .select(
+        'user_id, status, plan_key, tier, mp_preapproval_id, trial_ends_at, started_at, created_at, cancel_at_period_end, cancelled_at, grace_ends_at, access_until, charge_hold_until, reminder_due_at, reminder_delivered_at, last_charge_at',
+      )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -46,7 +55,9 @@ async function target(userId: string) {
       .maybeSingle(),
   ]);
   if (!profile) return null;
-  const left = pay ? (pay.amount_cents as number) - ((pay.refunded_cents as number | null) ?? 0) : 0;
+  const left = pay
+    ? (pay.amount_cents as number) - ((pay.refunded_cents as number | null) ?? 0)
+    : 0;
   const row = {
     id: profile.id as string,
     name: (profile.full_name as string | null) ?? '',
@@ -89,34 +100,55 @@ export async function giftMonth(userId: string): Promise<PeopleActionResult> {
   const current = t.profile.tier_ends_at ? Date.parse(t.profile.tier_ends_at as string) : 0;
   const until = new Date(Math.max(now, current) + 30 * DAY).toISOString();
   const tier = t.profile.tier === 'VIP' ? 'VIP' : 'PRO';
-  const { error } = await createAdminClient().from('profiles').update({ tier, tier_ends_at: until }).eq('id', userId);
+  const { error } = await createAdminClient()
+    .from('profiles')
+    .update({ tier, tier_ends_at: until })
+    .eq('id', userId);
   if (error) return { ok: false, code: 'NOT_FOUND' };
-  await audit(actor, 'admin.gift_month', { id: userId, email: t.profile.email as string }, {
-    before: { tier: t.profile.tier, tier_ends_at: t.profile.tier_ends_at },
-    after: { tier, tier_ends_at: until },
-  });
+  await audit(
+    actor,
+    'admin.gift_month',
+    { id: userId, email: t.profile.email as string },
+    {
+      before: { tier: t.profile.tier, tier_ends_at: t.profile.tier_ends_at },
+      after: { tier, tier_ends_at: until },
+    },
+  );
   return { ok: true };
 }
 
 /** "Cambiar su plan": emails a link to the confirm step with the
  *  recurring-charge checkbox. No charge until the user accepts there. */
-export async function offerPlanChange(userId: string, planKey: string): Promise<PeopleActionResult> {
+export async function offerPlanChange(
+  userId: string,
+  planKey: string,
+): Promise<PeopleActionResult> {
   const actor = await adminSession();
   if (!actor) return { ok: false, code: 'FORBIDDEN' };
-  if (!(PLAN_KEYS as readonly string[]).includes(planKey)) return { ok: false, code: 'NOT_ALLOWED' };
+  if (!(PLAN_KEYS as readonly string[]).includes(planKey))
+    return { ok: false, code: 'NOT_ALLOWED' };
   const t = await target(userId);
   if (!t?.profile.email) return { ok: false, code: 'NOT_FOUND' };
   const price = planPrice(planKey as PlanKey);
   const link = `${getAppUrl()}/app/billing/cambiar?plan=${planKey}`;
   const name = ((t.profile.full_name as string | null) ?? '').split(' ')[0] ?? '';
-  const plan = planKey === 'pro_year' ? 'Pro anual' : planKey === 'vip_month' ? 'VIP' : 'Pro mensual';
+  const plan = PLAN_NAMES[planKey as PlanKey];
   const subject = `Te proponemos el plan ${plan}`;
   const body = `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#f4f3ee;">Hola ${escapeHtml(name)}, te proponemos cambiar a <b>${escapeHtml(plan)}</b> (${escapeHtml(formatMXN(price.totalCents))} MXN ${price.interval === 'year' ? 'al año' : 'al mes'}, IVA incluido).</p>
 <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#f4f3ee;">No cambia nada ni se cobra nada hasta que tú lo confirmes.</p>
 <a href="${escapeHtml(link)}" style="display:inline-block;padding:12px 18px;border-radius:10px;background:#e8bb7f;color:#070809;font-weight:700;text-decoration:none;">Revisar y confirmar</a>`;
-  const sent = await sendEmail({ to: t.profile.email as string, subject, html: wrap({ title: subject, preview: subject, body }) });
+  const sent = await sendEmail({
+    to: t.profile.email as string,
+    subject,
+    html: wrap({ title: subject, preview: subject, body }),
+  });
   if (!sent.ok) return { ok: false, code: 'EMAIL_ERROR' };
-  await audit(actor, 'admin.plan_offer', { id: userId, email: t.profile.email as string }, { metadata: { plan_key: planKey } });
+  await audit(
+    actor,
+    'admin.plan_offer',
+    { id: userId, email: t.profile.email as string },
+    { metadata: { plan_key: planKey } },
+  );
   return { ok: true };
 }
 
@@ -137,7 +169,11 @@ export async function resendAccessEmail(userId: string): Promise<PeopleActionRes
   const subject = 'Tu enlace para entrar a Chalyb';
   const body = `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#f4f3ee;">Toca el botón para entrar a tu cuenta. El enlace dura poco y sirve una sola vez.</p>
 <a href="${escapeHtml(link)}" style="display:inline-block;padding:12px 18px;border-radius:10px;background:#e8bb7f;color:#070809;font-weight:700;text-decoration:none;">Entrar a Chalyb</a>`;
-  const sent = await sendEmail({ to: email, subject, html: wrap({ title: subject, preview: subject, body }) });
+  const sent = await sendEmail({
+    to: email,
+    subject,
+    html: wrap({ title: subject, preview: subject, body }),
+  });
   if (!sent.ok) return { ok: false, code: 'EMAIL_ERROR' };
   await audit(actor, 'admin.access_email', { id: userId, email });
   return { ok: true };
@@ -149,7 +185,8 @@ export async function refundLastCharge(userId: string): Promise<PeopleActionResu
   const actor = await adminSession();
   if (!actor) return { ok: false, code: 'FORBIDDEN' };
   const t = await target(userId);
-  if (!t?.pay || !t.allowed.refundLast || !t.pay.mp_payment_id) return { ok: false, code: 'NOT_ALLOWED' };
+  if (!t?.pay || !t.allowed.refundLast || !t.pay.mp_payment_id)
+    return { ok: false, code: 'NOT_ALLOWED' };
   try {
     await getMercadoPago().refund.create({
       payment_id: t.pay.mp_payment_id as string,
@@ -191,9 +228,14 @@ export async function refundLastCharge(userId: string): Promise<PeopleActionResu
     marketing_opt_in: false,
     details: { payment_id: t.pay.mp_payment_id as string, admin: adminName(actor) },
   }).catch((e) => console.error('[admin/refund] evidence not stored', e));
-  await audit(actor, 'admin.refund', { id: userId, email: t.profile.email as string }, {
-    metadata: { payment_id: t.pay.mp_payment_id, amount_cents: t.left },
-  });
+  await audit(
+    actor,
+    'admin.refund',
+    { id: userId, email: t.profile.email as string },
+    {
+      metadata: { payment_id: t.pay.mp_payment_id, amount_cents: t.left },
+    },
+  );
   return { ok: true };
 }
 
@@ -205,10 +247,19 @@ export async function cancelForPerson(userId: string): Promise<PeopleActionResul
   const t = await target(userId);
   if (!t || !t.allowed.cancel) return { ok: false, code: 'NOT_ALLOWED' };
   const r = await cancelForUser(
-    { id: userId, email: (t.profile.email as string | null) ?? null, fullName: (t.profile.full_name as string | null) ?? null },
+    {
+      id: userId,
+      email: (t.profile.email as string | null) ?? null,
+      fullName: (t.profile.full_name as string | null) ?? null,
+    },
     { offerShown: false, locale: 'es', surface: 'admin_people', buttonLabel: 'Sí, cancelar' },
   );
   if (!r.ok) return { ok: false, code: r.code === 'MP_ERROR' ? 'MP_ERROR' : 'NOT_ALLOWED' };
-  await audit(actor, 'admin.cancel', { id: userId, email: t.profile.email as string }, { metadata: { folio: r.folio } });
+  await audit(
+    actor,
+    'admin.cancel',
+    { id: userId, email: t.profile.email as string },
+    { metadata: { folio: r.folio } },
+  );
   return { ok: true };
 }

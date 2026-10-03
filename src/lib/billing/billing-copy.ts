@@ -68,3 +68,46 @@ export function consentSentence(t: Translate, input: DisclosureInput): string {
 export function evidenceText(paragraphs: string[]): string {
   return paragraphs.map(stripMarkup).join('\n');
 }
+
+/** Paid checkouts (no trial). Annual plans: Law Q4's charge block and
+ *  checkbox, verbatim, for VIP anual; the same wording for Pro anual bought
+ *  without a trial (TODO(owner): Law to confirm). Monthly: the existing
+ *  "Acepto que Chalyb cobre automáticamente … hoy …" sentence. */
+export interface PaidInput {
+  planKey: PlanKey;
+  /** The first renewal: one period after today. */
+  renewalAt: Date;
+  cardLast4: string | null;
+  locale: string;
+}
+
+export function paidVars(t: Translate, input: PaidInput) {
+  const price = planPrice(input.planKey);
+  const year = price.interval === 'year';
+  return {
+    monto: formatMXN(price.totalCents),
+    plan: price.tier === 'VIP' ? 'VIP' : 'Pro',
+    fecha_renovacion: formatFechaLarga(input.renewalAt, input.locale),
+    renovacion_corta: t(year ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month'),
+    cada_periodo: t(year ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month'),
+    tarjeta: input.cardLast4
+      ? t('vars.tarjeta.last4', { ultimos4: input.cardLast4 })
+      : t('vars.tarjeta.none'),
+  };
+}
+
+/** The charge block shown next to the paid button (with <b> markup). */
+export function paidParagraphs(t: Translate, input: PaidInput): string[] {
+  const v = paidVars(t, input);
+  return planPrice(input.planKey).interval === 'year'
+    ? [t('paid.chargeYear', v)]
+    : [t('paid.chargeMonth', v)];
+}
+
+/** The paid checkbox sentence (with <b>/<terms> markup). */
+export function paidConsentSentence(t: Translate, input: PaidInput): string {
+  const v = paidVars(t, input);
+  return planPrice(input.planKey).interval === 'year'
+    ? t('paid.consentYear', v)
+    : t('paid.consentMonth', v);
+}

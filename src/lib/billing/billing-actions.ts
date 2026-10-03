@@ -13,7 +13,7 @@ import type { ConsentEventInput } from './consent-core';
 import { dispatchBillingEmail } from './notices';
 import { formatFechaLarga } from './format';
 import { loadBilling } from './subscription-store';
-import { changeTiming, reactivationStart, vipUpgradeQuote } from './plan-change';
+import { changeTiming, reactivationStart, upgradeQuote } from './plan-change';
 import { startSubscription, type StartResult } from './start-subscription';
 
 /** "C-K7Q2M9" — short, unambiguous, shown to the user and in the email. */
@@ -141,7 +141,7 @@ export async function cancelForUser(
       periodKey: folio,
       vars: {
         nombre: (target.fullName ?? '').split(' ')[0] ?? '',
-        plan: s.planKey === 'vip_month' ? 'VIP' : 'Pro',
+        plan: s.planKey && planPrice(s.planKey).tier === 'VIP' ? 'VIP' : 'Pro',
         monto: '',
         folio_cancelacion: folio,
         fecha_hora_cancelacion: `${formatFechaLarga(now, 'es')}, ${now.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit' })}`,
@@ -162,7 +162,9 @@ export async function cancelForUser(
     consent_id: consent.consent_id,
     email_message_id: messageId,
   });
-  void track('cancel', { plan: s.planKey === 'pro_year' ? 'anual' : 'mensual' });
+  void track('cancel', {
+    plan: s.planKey && planPrice(s.planKey).interval === 'year' ? 'anual' : 'mensual',
+  });
   return { ok: true, folio, accessUntil };
 }
 
@@ -217,7 +219,7 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
             ? new Date(s.nextChargeAt)
             : undefined;
 
-  // The VIP upgrade refunds the unused part of the current paid period.
+  // An immediate change refunds the unused part of the current paid period.
   let refundCents = 0;
   let refundPaymentId: string | null = null;
   if (timing === 'now' && !trialing && billing.primaryRow) {
@@ -231,7 +233,8 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
       .limit(1)
       .maybeSingle();
     if (last && s.nextChargeAt) {
-      const quote = vipUpgradeQuote({
+      const quote = upgradeQuote({
+        to: input.planKey,
         trialing,
         lastChargeCents: last.amount_cents as number,
         periodStart: new Date(last.created_at as string),
@@ -297,7 +300,8 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
           .limit(1)
           .maybeSingle()
       : { data: null };
-    const q = vipUpgradeQuote({
+    const q = upgradeQuote({
+      to,
       trialing,
       lastChargeCents: (last?.amount_cents as number | undefined) ?? null,
       periodStart: last ? new Date(last.created_at as string) : null,
@@ -307,7 +311,7 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
     quote = {
       chargeTodayCents: q.chargeTodayCents,
       refundCents: q.refundCents,
-      thenCents: q.thenMonthlyCents,
+      thenCents: q.thenCents,
     };
   }
   const effectiveAt =

@@ -42,6 +42,7 @@ import {
   type PreapprovalStatus,
   type SubscribableTier,
 } from './subscription-reference';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -649,11 +650,6 @@ async function chargeEmail(
   if (!email) return;
   const planKey =
     (sub?.plan_key as PlanKey | null) ?? (sub?.tier === 'VIP' ? 'vip_month' : 'pro_month');
-  const names: Record<PlanKey, string> = {
-    pro_year: 'Pro anual',
-    pro_month: 'Pro mensual',
-    vip_month: 'VIP',
-  };
   const renew = (sub?.next_payment_date as string | null) ?? null;
   const grace = (sub?.grace_ends_at as string | null) ?? null;
   if (kind === 'charge_failed')
@@ -673,7 +669,7 @@ async function chargeEmail(
     evidence: kind === 'charge_ok' ? 'charge_succeeded' : 'charge_failed',
     vars: {
       nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
-      plan: names[planKey],
+      plan: PLAN_NAMES[planKey],
       monto: formatMXN(Math.round((ap.transaction_amount ?? 0) * 100)),
       ultimos4: (sub?.card_last4 as string | null) ?? undefined,
       fecha_renovacion: renew ? formatFechaLarga(renew, 'es') : undefined,

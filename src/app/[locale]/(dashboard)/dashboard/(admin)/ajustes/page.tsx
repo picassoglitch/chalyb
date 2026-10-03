@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Ajustes (P5-6). Read-only except the Mensual/Anual toggle (Q31).
 
-const PLANS: PlanKey[] = ['pro_month', 'pro_year', 'vip_month'];
+const PLANS: PlanKey[] = ['pro_month', 'pro_year', 'vip_month', 'vip_year'];
 
 export default async function AjustesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

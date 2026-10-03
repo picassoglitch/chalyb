@@ -6,6 +6,8 @@ import { formatMXN } from '@/lib/billing/format';
 // Amounts come from the one pricing source, IVA included (Q1); never typed here.
 const PRO = formatMXN(planPrice('pro_month').totalCents);
 const VIP = formatMXN(planPrice('vip_month').totalCents);
+const PRO_YEAR = formatMXN(planPrice('pro_year').totalCents);
+const VIP_YEAR = formatMXN(planPrice('vip_year').totalCents);
 
 /**
  * Spanish terms of service. See the note in privacy.es.tsx on why legal
@@ -143,12 +145,12 @@ export function TermsDocumentEs() {
           ejecución en vivo. Cuotas reducidas.
         </li>
         <li>
-          <strong>Pro</strong>: {PRO} MXN / mes, IVA incluido. Ejecución en vivo de UN Engine a tu elección, cuotas
-          extendidas, soporte por correo.
+          <strong>Pro</strong>: {PRO} MXN / mes o {PRO_YEAR} MXN / año, IVA incluido. Ejecución en
+          vivo de UN Engine a tu elección, cuotas extendidas, soporte por correo.
         </li>
         <li>
-          <strong>VIP</strong>: {VIP} MXN / mes, IVA incluido. Ejecución en vivo de todos los Engines activos,
-          cuotas máximas, soporte prioritario.
+          <strong>VIP</strong>: {VIP} MXN / mes o {VIP_YEAR} MXN / año, IVA incluido. Ejecución en
+          vivo de todos los Engines activos, cuotas máximas, soporte prioritario.
         </li>
       </ul>
       <p>

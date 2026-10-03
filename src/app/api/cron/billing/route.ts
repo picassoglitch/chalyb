@@ -31,17 +31,13 @@ import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { mpPauseInTrialVerified, trialDay6ReminderEnabled } from '@/lib/config/flags';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const HOUR = 60 * 60 * 1000;
-const NAMES: Record<PlanKey, string> = {
-  pro_year: 'Pro anual',
-  pro_month: 'Pro mensual',
-  vip_month: 'VIP',
-};
 const EMAIL_FOR: Record<NoticeKind, BillingEmailKind> = {
   trial_7d: 'trial_7d',
   trial_1d: 'trial_1d',
@@ -135,7 +131,7 @@ export async function GET(req: Request) {
                   })
                 : {
                     nombre,
-                    plan: NAMES[planKey],
+                    plan: PLAN_NAMES[planKey],
                     monto: formatMXN(price.totalCents),
                     periodicidad:
                       price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',

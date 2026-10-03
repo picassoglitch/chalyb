@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { safeNextPath } from '@/lib/auth/safe-next';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
 import { signupNext } from '@/lib/billing/plans-cta';
 
 // Plan cards link to /sign-in?mode=signup&(intent=trial|plan=<tier>)&interval=…;
@@ -32,7 +32,9 @@ export default async function SignInPage({
   // A plan card's CTA (SCR-13 → SCR-14): after the account, the trial picker
   // or the plan's checkout, with the card's interval kept (K-2).
   const next =
-    rawNext ?? signupNext({ intent, plan, interval, flow: trialFlowEnabled() }) ?? undefined;
+    rawNext ??
+    signupNext({ intent, plan, interval, flow: trialFlowEnabled(), paid: paidCheckoutEnabled() }) ??
+    undefined;
   const t = await getTranslations('auth.signIn');
 
   const supabase = await createClient();

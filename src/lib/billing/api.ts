@@ -2,7 +2,12 @@
 
 import type { StartError } from './start-subscription';
 
-export const PLAN_KEYS = ['pro_year', 'pro_month', 'vip_month'] as const;
+export const PLAN_KEYS = ['pro_year', 'pro_month', 'vip_month', 'vip_year'] as const;
+
+/** Plans sold today: VIP anual only with VIP_YEAR_ENABLED (and paid checkout). */
+export function planOnSale(key: string, vipYear: boolean): boolean {
+  return (PLAN_KEYS as readonly string[]).includes(key) && (key !== 'vip_year' || vipYear);
+}
 
 export function statusForStartError(code: StartError): number {
   switch (code) {

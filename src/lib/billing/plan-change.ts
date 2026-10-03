@@ -1,13 +1,16 @@
-// Plan changes (rebuild P2-9, BUILD-SPEC §6.10). Pure.
+// Plan changes (rebuild P2-9; Términos de Suscripción §4.4–§4.5, which win
+// over BUILD-SPEC §6.10 per C13). Pure.
 //
-// - Upgrade to VIP: immediate. The VIP month is charged today in full; the
-//   unused part of the current paid period comes back as a refund on its
-//   last charge (Mercado Pago can't charge a first amount different from the
-//   recurring one). Both numbers are shown before confirming.
-// - Downgrades and Mensual ↔ Anual: at the end of the paid period.
-// - During the trial: changes the plan the trial converts into (Pro mensual
-//   ↔ Pro anual, Términos §2.4); no charge, the charge date stays, and the
-//   new amount gets its own charge notice (T-6, owner O-17).
+// - Monthly → annual of the same plan (Pro → Pro anual, VIP → VIP anual):
+//   immediate, the annual charge today, with credit for the unused part of
+//   the month.
+// - Pro → VIP (either interval): immediate, with the same proration.
+// - Annual → monthly, and VIP → Pro: at the end of the paid period.
+// - During the trial: Pro mensual ↔ Pro anual keeps the charge date (T-6,
+//   owner O-17); to VIP, charged today (VIP has no trial).
+// The credit is a refund on the last charge (Mercado Pago can't charge a
+// first amount different from the recurring one); both are shown before
+// confirming.
 
 import { planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 
@@ -16,7 +19,11 @@ export type ChangeTiming = 'now' | 'period_end' | 'trial_end';
 export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): ChangeTiming {
   // TODO(owner O-17): Law to confirm the in-trial switch handling.
   if (trialing && planHasTrial(to)) return 'trial_end';
-  if (to === 'vip_month' && from !== 'vip_month') return 'now';
+  const a = planPrice(from);
+  const b = planPrice(to);
+  if (trialing) return 'now'; // to VIP: no trial, charged today
+  if (a.tier === 'PRO' && b.tier === 'VIP') return 'now';
+  if (a.tier === b.tier && a.interval === 'month' && b.interval === 'year') return 'now';
   return 'period_end';
 }
 
@@ -51,14 +58,18 @@ export function unusedCredit(input: {
   return Math.floor((input.lastChargeCents * left) / total);
 }
 
-export function vipUpgradeQuote(input: {
+/** What an immediate change costs today and gives back (Términos §4.4–4.5):
+ *  the new plan's price today, a refund of the unused part of the current
+ *  paid period (none during a trial), then the new plan's price each period. */
+export function upgradeQuote(input: {
+  to: PlanKey;
   trialing: boolean;
   lastChargeCents: number | null;
   periodStart: Date | null;
   periodEnd: Date | null;
   now: Date;
-}): { chargeTodayCents: number; refundCents: number; thenMonthlyCents: number } {
-  const vip = planPrice('vip_month').totalCents;
+}): { chargeTodayCents: number; refundCents: number; thenCents: number } {
+  const price = planPrice(input.to).totalCents;
   const refund =
     input.trialing || !input.lastChargeCents || !input.periodStart || !input.periodEnd
       ? 0
@@ -68,5 +79,5 @@ export function vipUpgradeQuote(input: {
           periodEnd: input.periodEnd,
           now: input.now,
         });
-  return { chargeTodayCents: vip, refundCents: refund, thenMonthlyCents: vip };
+  return { chargeTodayCents: price, refundCents: refund, thenCents: price };
 }

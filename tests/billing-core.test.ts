@@ -7,10 +7,26 @@ import { readFileSync } from 'node:fs';
 import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-state';
 import { trialDates, trialDaysLeft, addInterval } from '@/lib/billing/trial-dates';
 import { dueNotices, holdDecision } from '@/lib/billing/reminders';
-import { changeTiming, reactivationStart, vipUpgradeQuote, unusedCredit } from '@/lib/billing/plan-change';
+import {
+  changeTiming,
+  reactivationStart,
+  upgradeQuote,
+  unusedCredit,
+} from '@/lib/billing/plan-change';
 import { isQuebec, paidPlansBlocked } from '@/lib/billing/quebec';
-import { buildConsentEvent, verifyChain, canonicalJson, type ConsentEventInput } from '@/lib/billing/consent-core';
-import { disclosureParagraphs, consentSentence, evidenceText, stripMarkup, type Translate } from '@/lib/billing/billing-copy';
+import {
+  buildConsentEvent,
+  verifyChain,
+  canonicalJson,
+  type ConsentEventInput,
+} from '@/lib/billing/consent-core';
+import {
+  disclosureParagraphs,
+  consentSentence,
+  evidenceText,
+  stripMarkup,
+  type Translate,
+} from '@/lib/billing/billing-copy';
 import { missingLegalEntityFields } from '@/lib/billing/legal-entity';
 import { assertReminderWindows, PRICING } from '@/config/pricing';
 
@@ -48,7 +64,11 @@ test('trialing, then paying', () => {
 });
 
 test('past_due keeps access inside grace only', () => {
-  const r = row({ status: 'paused', next_charge_at: T0.toISOString(), grace_ends_at: new Date(T0.getTime() + 7 * DAY).toISOString() });
+  const r = row({
+    status: 'paused',
+    next_charge_at: T0.toISOString(),
+    grace_ends_at: new Date(T0.getTime() + 7 * DAY).toISOString(),
+  });
   assert.equal(deriveBillingState(r, T0.getTime() + DAY).state, 'past_due');
   assert.equal(deriveBillingState(r, T0.getTime() + DAY).grantsTier, 'PRO');
   assert.equal(deriveBillingState(r, T0.getTime() + 8 * DAY).state, 'free');
@@ -64,7 +84,10 @@ test('cancelled keeps access until the period (or trial) ends', () => {
 });
 
 test('VIP grants VIP; pending grants nothing; no row is free', () => {
-  assert.equal(deriveBillingState(row({ tier: 'VIP', plan_key: 'vip_month' }), T0.getTime()).grantsTier, 'VIP');
+  assert.equal(
+    deriveBillingState(row({ tier: 'VIP', plan_key: 'vip_month' }), T0.getTime()).grantsTier,
+    'VIP',
+  );
   assert.equal(deriveBillingState(row({ status: 'pending' }), T0.getTime()).state, 'free');
   assert.equal(deriveBillingState(null, T0.getTime()).state, 'free');
 });
@@ -76,12 +99,20 @@ test('trial dates: 7 days, charge at the end, the notice the moment it starts', 
   assert.equal(d.chargeAt.toISOString(), d.trialEndsAt.toISOString());
   assert.equal(d.reminderAt.toISOString(), T0.toISOString());
   assert.equal(trialDaysLeft(d.trialEndsAt, T0.getTime()), 7);
-  assert.equal(addInterval(new Date('2026-01-31T00:00:00Z'), 'year').toISOString(), '2027-01-31T00:00:00.000Z');
+  assert.equal(
+    addInterval(new Date('2026-01-31T00:00:00Z'), 'year').toISOString(),
+    '2027-01-31T00:00:00.000Z',
+  );
 });
 
 test('notice windows are never shorter than 5 days', () => {
   assert.doesNotThrow(() => assertReminderWindows());
-  assert.throws(() => assertReminderWindows({ ...PRICING, reminders: { monthDaysBefore: 3, yearDaysBefore: [30, 7] } }));
+  assert.throws(() =>
+    assertReminderWindows({
+      ...PRICING,
+      reminders: { monthDaysBefore: 3, yearDaysBefore: [30, 7] },
+    }),
+  );
 });
 
 // ── Notices ──────────────────────────────────────────────────────────
@@ -89,87 +120,225 @@ const charge = new Date(T0.getTime() + 30 * DAY).toISOString();
 const at = (days: number) => new Date(Date.parse(charge) - days * DAY);
 
 test('trial: the charge notice is due 7 days before the charge (day 0 of the trial)', () => {
-  const sub = { state: 'trialing', interval: 'year' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day6Enabled: false };
+  const sub = {
+    state: 'trialing',
+    interval: 'year' as const,
+    nextChargeAt: charge,
+    startedAt: T0.toISOString(),
+    day6Enabled: false,
+  };
   assert.deepEqual(dueNotices(sub, at(8)), []);
   const due = dueNotices(sub, at(7));
-  assert.deepEqual(due.map((n) => [n.kind, n.periodKey, n.mandatory]), [['trial_7d', 'trial:2026-10-30', true]]);
+  assert.deepEqual(
+    due.map((n) => [n.kind, n.periodKey, n.mandatory]),
+    [['trial_7d', 'trial:2026-10-30', true]],
+  );
   assert.equal(dueNotices({ ...sub, day6Enabled: true }, at(0.5)).length, 2);
 });
 
 test('monthly renewal: 7 days before EVERY charge', () => {
-  const sub = { state: 'pro', interval: 'month' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day6Enabled: false };
-  assert.deepEqual(dueNotices(sub, at(7)).map((n) => n.kind), ['renew_7d']);
+  const sub = {
+    state: 'pro',
+    interval: 'month' as const,
+    nextChargeAt: charge,
+    startedAt: T0.toISOString(),
+    day6Enabled: false,
+  };
+  assert.deepEqual(
+    dueNotices(sub, at(7)).map((n) => n.kind),
+    ['renew_7d'],
+  );
   assert.deepEqual(dueNotices(sub, at(8)), []);
 });
 
 test('annual renewal: 30 and 7 days before', () => {
-  const sub = { state: 'pro', interval: 'year' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day6Enabled: false };
-  assert.deepEqual(dueNotices(sub, at(30)).map((n) => n.kind), ['renew_30d']);
-  assert.deepEqual(dueNotices(sub, at(7)).map((n) => n.kind), ['renew_30d', 'renew_7d']);
+  const sub = {
+    state: 'pro',
+    interval: 'year' as const,
+    nextChargeAt: charge,
+    startedAt: T0.toISOString(),
+    day6Enabled: false,
+  };
+  assert.deepEqual(
+    dueNotices(sub, at(30)).map((n) => n.kind),
+    ['renew_30d'],
+  );
+  assert.deepEqual(
+    dueNotices(sub, at(7)).map((n) => n.kind),
+    ['renew_30d', 'renew_7d'],
+  );
 });
 
 test('the same charge always produces the same period keys (cron idempotency)', () => {
-  const sub = { state: 'pro', interval: 'year' as const, nextChargeAt: charge, startedAt: T0.toISOString(), day6Enabled: false };
-  assert.deepEqual(dueNotices(sub, at(6)).map((n) => n.periodKey), dueNotices(sub, at(2)).map((n) => n.periodKey));
+  const sub = {
+    state: 'pro',
+    interval: 'year' as const,
+    nextChargeAt: charge,
+    startedAt: T0.toISOString(),
+    day6Enabled: false,
+  };
+  assert.deepEqual(
+    dueNotices(sub, at(6)).map((n) => n.periodKey),
+    dueNotices(sub, at(2)).map((n) => n.periodKey),
+  );
 });
 
 test('monthly plans get one yearly summary on the anniversary', () => {
-  const sub = { state: 'pro', interval: 'month' as const, nextChargeAt: new Date(T0.getTime() + 400 * DAY).toISOString(), startedAt: T0.toISOString(), day6Enabled: false };
+  const sub = {
+    state: 'pro',
+    interval: 'month' as const,
+    nextChargeAt: new Date(T0.getTime() + 400 * DAY).toISOString(),
+    startedAt: T0.toISOString(),
+    day6Enabled: false,
+  };
   const later = new Date(T0.getTime() + 366 * DAY);
-  assert.deepEqual(dueNotices(sub, later).map((n) => [n.kind, n.periodKey]), [['annual_summary', 'summary:2027']]);
+  assert.deepEqual(
+    dueNotices(sub, later).map((n) => [n.kind, n.periodKey]),
+    [['annual_summary', 'summary:2027']],
+  );
 });
 
 // ── Bounce hold ──────────────────────────────────────────────────────
 test('delivered on time → no hold', () => {
-  assert.deepEqual(holdDecision({ nextChargeAt: charge, noticeDeliveredAt: at(7).toISOString(), holdUntil: null, now: at(0.5) }), { action: 'none' });
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: charge,
+      noticeDeliveredAt: at(7).toISOString(),
+      holdUntil: null,
+      now: at(0.5),
+    }),
+    { action: 'none' },
+  );
 });
 
 test('bounced → hold until 5 days after an effective notice → resume', () => {
   const now = at(0.5);
-  const hold = holdDecision({ nextChargeAt: charge, noticeDeliveredAt: null, holdUntil: null, now });
+  const hold = holdDecision({
+    nextChargeAt: charge,
+    noticeDeliveredAt: null,
+    holdUntil: null,
+    now,
+  });
   assert.equal(hold.action, 'hold');
   // Still undelivered at the end of the hold: keep holding.
   const until = (hold as { until: Date }).until.toISOString();
-  assert.deepEqual(holdDecision({ nextChargeAt: charge, noticeDeliveredAt: null, holdUntil: until, now: new Date(Date.parse(until) + DAY) }), { action: 'none' });
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: charge,
+      noticeDeliveredAt: null,
+      holdUntil: until,
+      now: new Date(Date.parse(until) + DAY),
+    }),
+    { action: 'none' },
+  );
   // Delivered through the alternate channel; 5 days later charging resumes.
   const delivered = new Date(Date.parse(until) + DAY);
   // The hold moves to 5 days after that delivery…
-  assert.deepEqual(holdDecision({ nextChargeAt: charge, noticeDeliveredAt: delivered.toISOString(), holdUntil: until, now: new Date(delivered.getTime() + DAY) }), {
-    action: 'hold',
-    until: new Date(delivered.getTime() + 5 * DAY),
-  });
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: charge,
+      noticeDeliveredAt: delivered.toISOString(),
+      holdUntil: until,
+      now: new Date(delivered.getTime() + DAY),
+    }),
+    {
+      action: 'hold',
+      until: new Date(delivered.getTime() + 5 * DAY),
+    },
+  );
   // …and stays put until then.
-  assert.deepEqual(holdDecision({ nextChargeAt: charge, noticeDeliveredAt: delivered.toISOString(), holdUntil: new Date(delivered.getTime() + 5 * DAY).toISOString(), now: new Date(delivered.getTime() + 4 * DAY) }), { action: 'none' });
-  assert.deepEqual(holdDecision({ nextChargeAt: charge, noticeDeliveredAt: delivered.toISOString(), holdUntil: until, now: new Date(delivered.getTime() + 5 * DAY) }), { action: 'resume' });
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: charge,
+      noticeDeliveredAt: delivered.toISOString(),
+      holdUntil: new Date(delivered.getTime() + 5 * DAY).toISOString(),
+      now: new Date(delivered.getTime() + 4 * DAY),
+    }),
+    { action: 'none' },
+  );
+  assert.deepEqual(
+    holdDecision({
+      nextChargeAt: charge,
+      noticeDeliveredAt: delivered.toISOString(),
+      holdUntil: until,
+      now: new Date(delivered.getTime() + 5 * DAY),
+    }),
+    { action: 'resume' },
+  );
 });
 
 test('a notice delivered too late (< 5 days before) still holds', () => {
-  const d = holdDecision({ nextChargeAt: charge, noticeDeliveredAt: at(3).toISOString(), holdUntil: null, now: at(0.5) });
+  const d = holdDecision({
+    nextChargeAt: charge,
+    noticeDeliveredAt: at(3).toISOString(),
+    holdUntil: null,
+    now: at(0.5),
+  });
   assert.equal(d.action, 'hold');
-  assert.equal((d as { until: Date }).until.toISOString(), new Date(at(3).getTime() + 5 * DAY).toISOString());
+  assert.equal(
+    (d as { until: Date }).until.toISOString(),
+    new Date(at(3).getTime() + 5 * DAY).toISOString(),
+  );
 });
 
 // ── Plan changes ─────────────────────────────────────────────────────
-test('change timing', () => {
+test('change timing (Términos §4.4–4.5, C13)', () => {
+  // Pro → VIP (either interval): today, with proration.
   assert.equal(changeTiming('pro_month', 'vip_month', false), 'now');
-  assert.equal(changeTiming('pro_month', 'pro_year', false), 'period_end');
+  assert.equal(changeTiming('pro_year', 'vip_year', false), 'now');
+  // Monthly → annual of the same plan: today, with credit for the month.
+  assert.equal(changeTiming('pro_month', 'pro_year', false), 'now');
+  assert.equal(changeTiming('vip_month', 'vip_year', false), 'now');
+  // Annual → monthly and VIP → Pro: at the end of the paid period.
+  assert.equal(changeTiming('pro_year', 'pro_month', false), 'period_end');
+  assert.equal(changeTiming('vip_year', 'vip_month', false), 'period_end');
   assert.equal(changeTiming('vip_month', 'pro_month', false), 'period_end');
+  assert.equal(changeTiming('vip_year', 'pro_year', false), 'period_end');
   // During the 7-day trial, Pro mensual ↔ Pro anual both keep the charge date (T-6).
   assert.equal(changeTiming('pro_year', 'pro_month', true), 'trial_end');
   assert.equal(changeTiming('pro_month', 'pro_year', true), 'trial_end');
   assert.equal(changeTiming('pro_year', 'vip_month', true), 'now');
+  assert.equal(changeTiming('pro_year', 'vip_year', true), 'now');
 });
 
 test('VIP upgrade: full VIP today, refund of the unused days', () => {
   const start = new Date('2026-10-01T00:00:00Z');
   const end = new Date('2026-10-31T00:00:00Z');
-  assert.equal(unusedCredit({ lastChargeCents: 99_700, periodStart: start, periodEnd: end, now: new Date('2026-10-16T00:00:00Z') }), 49_850);
-  assert.deepEqual(vipUpgradeQuote({ trialing: false, lastChargeCents: 99_700, periodStart: start, periodEnd: end, now: new Date('2026-10-16T00:00:00Z') }), {
-    chargeTodayCents: 379_900,
-    refundCents: 49_850,
-    thenMonthlyCents: 379_900,
-  });
-  assert.equal(vipUpgradeQuote({ trialing: true, lastChargeCents: null, periodStart: null, periodEnd: null, now: start }).refundCents, 0);
+  assert.equal(
+    unusedCredit({
+      lastChargeCents: 99_700,
+      periodStart: start,
+      periodEnd: end,
+      now: new Date('2026-10-16T00:00:00Z'),
+    }),
+    49_850,
+  );
+  assert.deepEqual(
+    upgradeQuote({
+      to: 'vip_month',
+      trialing: false,
+      lastChargeCents: 99_700,
+      periodStart: start,
+      periodEnd: end,
+      now: new Date('2026-10-16T00:00:00Z'),
+    }),
+    {
+      chargeTodayCents: 379_900,
+      refundCents: 49_850,
+      thenCents: 379_900,
+    },
+  );
+  assert.equal(
+    upgradeQuote({
+      to: 'vip_month',
+      trialing: true,
+      lastChargeCents: null,
+      periodStart: null,
+      periodEnd: null,
+      now: start,
+    }).refundCents,
+    0,
+  );
 });
 
 // ── Quebec ───────────────────────────────────────────────────────────
@@ -188,7 +357,14 @@ const input: ConsentEventInput = {
   event_type: 'trial_started',
   user_id: 'u1',
   account_email: 'Ana@Example.com',
-  documents: [{ doc: 'suscripcion', version: '1.0', url: 'https://www.chalyb.com/suscripcion/v1-0', sha256: 'abc' }],
+  documents: [
+    {
+      doc: 'suscripcion',
+      version: '1.0',
+      url: 'https://www.chalyb.com/suscripcion/v1-0',
+      sha256: 'abc',
+    },
+  ],
   client_timezone: 'America/Mexico_City',
   ip_address: '201.141.0.1',
   user_agent: 'Mozilla/5.0',
@@ -213,7 +389,12 @@ const input: ConsentEventInput = {
 
 test('consent events chain and any edit breaks the chain', () => {
   const a = buildConsentEvent(input, null, T0, '00000000-0000-0000-0000-00000000000a');
-  const b = buildConsentEvent({ ...input, event_type: 'charge_notice_sent' }, a.event_hash, T0, '00000000-0000-0000-0000-00000000000b');
+  const b = buildConsentEvent(
+    { ...input, event_type: 'charge_notice_sent' },
+    a.event_hash,
+    T0,
+    '00000000-0000-0000-0000-00000000000b',
+  );
   assert.equal(verifyChain([a, b]), -1);
   assert.equal(a.account_email_hash?.length, 64);
   assert.equal(a.disclosure_sha256?.length, 64);
@@ -226,9 +407,16 @@ test('consent events chain and any edit breaks the chain', () => {
 
 // ── Exact disclosure text (aceptacion-ux §3.2/§3.3) ─────────────────
 function translatorFor(locale: 'es' | 'en'): Translate {
-  const m = JSON.parse(readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8')).billing;
+  const m = JSON.parse(
+    readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8'),
+  ).billing;
   return (key, values = {}) => {
-    const raw = key.split('.').reduce((o: Record<string, unknown>, k) => o[k] as Record<string, unknown>, m) as unknown as string;
+    const raw = key
+      .split('.')
+      .reduce(
+        (o: Record<string, unknown>, k) => o[k] as Record<string, unknown>,
+        m,
+      ) as unknown as string;
     return raw.replace(/\{(\w+)\}/g, (_, k) => String(values[k] ?? `{${k}}`));
   };
 }
@@ -271,7 +459,8 @@ test('the charge block renders Law’s examples exactly (aceptacion-ux §3.2–3
 });
 
 test('seller identity: every field is required before the trial can open', () => {
-  for (const k of Object.keys(process.env)) if (k.startsWith('LEGAL_ENTITY_')) delete process.env[k];
+  for (const k of Object.keys(process.env))
+    if (k.startsWith('LEGAL_ENTITY_')) delete process.env[k];
   assert.equal(missingLegalEntityFields().length, 7);
 });
 
@@ -281,10 +470,27 @@ test('reactivating after cancelling a trial: Pro keeps the rest of it, VIP is ch
   // Cancelled trial → VIP: charged today, no leftover free days.
   assert.equal(reactivationStart({ to: 'vip_month', accessUntil, unpaidTrial: true, now }), null);
   // Cancelled trial → Pro mensual or Pro anual: the trial continues.
-  assert.equal(reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-10T12:00:00.000Z');
-  assert.equal(reactivationStart({ to: 'pro_year', accessUntil, unpaidTrial: true, now })?.toISOString(), '2026-10-10T12:00:00.000Z');
+  assert.equal(
+    reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: true, now })?.toISOString(),
+    '2026-10-10T12:00:00.000Z',
+  );
+  assert.equal(
+    reactivationStart({ to: 'pro_year', accessUntil, unpaidTrial: true, now })?.toISOString(),
+    '2026-10-10T12:00:00.000Z',
+  );
   // Paid access left over is always kept.
-  assert.equal(reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: false, now })?.toISOString(), '2026-10-10T12:00:00.000Z');
+  assert.equal(
+    reactivationStart({ to: 'pro_month', accessUntil, unpaidTrial: false, now })?.toISOString(),
+    '2026-10-10T12:00:00.000Z',
+  );
   // Access already over: today.
-  assert.equal(reactivationStart({ to: 'pro_year', accessUntil: '2026-10-01T00:00:00Z', unpaidTrial: true, now }), null);
+  assert.equal(
+    reactivationStart({
+      to: 'pro_year',
+      accessUntil: '2026-10-01T00:00:00Z',
+      unpaidTrial: true,
+      now,
+    }),
+    null,
+  );
 });

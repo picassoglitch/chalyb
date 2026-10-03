@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { listEngines } from '@/lib/data/engines';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
 import { requireClipsAccess } from '@/lib/tools/clips-access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
@@ -55,7 +55,11 @@ export default async function ClipsStep1Page({
               slug={engine.slug}
               toolName={engine.name}
               planHref={
-                trialFlow ? '/app/prueba' : trialFlowEnabled() ? '/app/planes' : '/app/subscription'
+                trialFlow
+                  ? '/app/prueba'
+                  : paidCheckoutEnabled()
+                    ? '/app/planes'
+                    : '/app/subscription'
               }
               trialFlow={trialFlow}
             />

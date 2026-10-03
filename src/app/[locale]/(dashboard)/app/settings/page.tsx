@@ -22,7 +22,7 @@ import { planLabelKey } from '@/lib/billing/plan-label';
 import { planPrice } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { countUnreadForUser } from '@/lib/messages/messages-data';
-import { supportSlaConfirmed, trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, supportSlaConfirmed, trialFlowEnabled } from '@/lib/config/flags';
 import { Avatar, ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { SignOutRow } from '@/components/app/sign-out-row';
 
@@ -61,9 +61,11 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
   // "Ver mi plan" → Mi plan (SCR-30); Free → the trial (SCR-14) once it exists.
   const planHref =
     planKey === 'gratis'
-      ? trialFlowEnabled()
+      ? trialFlowEnabled() && !entitlements.trialUsed
         ? '/app/prueba'
-        : '/app/subscription'
+        : paidCheckoutEnabled()
+          ? '/app/planes'
+          : '/app/subscription'
       : '/app/billing';
   // "Se renueva el {fecha} · ${monto} MXN al {mes|año}, IVA incluido" — only
   // with a real renewal behind it (Hard Rule 7: IVA always stated).
@@ -99,7 +101,9 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
                 : t(`plan.name.${planKey}`)}
             </h2>
             {renewal && (
-              <p style={{ fontSize: 18, marginTop: 6, position: 'relative', zIndex: 1 }}>{renewal}</p>
+              <p style={{ fontSize: 18, marginTop: 6, position: 'relative', zIndex: 1 }}>
+                {renewal}
+              </p>
             )}
             <div className="ch-plan__foot">
               {allIncluded ? (

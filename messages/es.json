@@ -963,6 +963,12 @@
     },
     "pay": {
       "consent": "Acepto que, si no cancelo antes del <b>{fecha_cobro}</b>, Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
+    },
+    "paid": {
+      "chargeYear": "<b>Hoy se cobran {monto} MXN</b> (IVA incluido) por 1 año de {plan} a {tarjeta}. Se renovará automáticamente el <b>{fecha_renovacion}</b> y cada año después por {monto} MXN hasta que canceles. Te avisaremos 30 y 7 días antes. Cancela en 1 clic desde Mi cuenta → Mi plan; conservas {plan} hasta el final del año pagado.",
+      "consentYear": "Acepto el cobro de {monto} MXN hoy y su renovación automática cada año, y acepto los <terms>Términos de Suscripción</terms>.",
+      "chargeMonth": "<b>Hoy se cobran {monto} MXN</b> (IVA incluido) a {tarjeta}, y se renovará automáticamente {cada_periodo} por {monto} MXN hasta que canceles. Te avisaremos 7 días antes de cada cobro. Cancela en 1 clic desde Mi cuenta → Mi plan.",
+      "consentMonth": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
     }
   },
   "plans": {
@@ -1067,7 +1073,6 @@
       "title": "Elige tu plan Pro",
       "today": "Hoy se cobran {monto} MXN",
       "cta": "Pagar y empezar",
-      "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>.",
       "q": "¿Qué plan quieres?"
     },
     "pay": {
@@ -1155,12 +1160,14 @@
       "pro_year": "Pro anual — todo incluido",
       "vip_month": "VIP — todo incluido y más créditos",
       "trial": "Prueba Pro gratis",
-      "free": "Gratis"
+      "free": "Gratis",
+      "vip_year": "VIP anual — todo incluido y más créditos"
     },
     "planName": {
       "pro_month": "Pro mensual",
       "pro_year": "Pro anual",
-      "vip_month": "VIP"
+      "vip_month": "VIP",
+      "vip_year": "VIP anual"
     },
     "renewMonth": "Se renueva cada mes.",
     "renewYear": "Se renueva cada año.",
@@ -1195,7 +1202,7 @@
     "change": {
       "title": "Cambiar de plan",
       "toYear": "Pasar a Pro anual",
-      "toYearSub": "Ahorras {ahorro} al año. Empieza en tu próxima fecha de cobro",
+      "toYearSub": "Ahorras {ahorro} al año. Se aplica hoy, con crédito por lo que no usaste de tu mes",
       "toMonth": "Pasar a Pro mensual",
       "toMonthSubYear": "Empieza cuando termine tu año pagado",
       "toVip": "Subir a VIP",
@@ -1208,7 +1215,10 @@
       "nextDate": "Empieza en tu próxima fecha de cobro",
       "trialSwitch": "Cambiar a {plan} (antes del primer cobro)",
       "priceYearShort": "{monto} al año",
-      "priceMonthShort": "{monto} al mes"
+      "priceMonthShort": "{monto} al mes",
+      "toVipYear": "Subir a VIP anual",
+      "toVipYearFromMonth": "Pasar a VIP anual",
+      "toVipMonth": "Pasar a VIP mensual"
     },
     "invoices": "Facturas",
     "invoicesEmpty": "Ninguna aún",
@@ -1256,8 +1266,6 @@
   "change": {
     "metaTitle": "Cambiar de plan",
     "title": "Cambiar a {plan}",
-    "whenNow": "Hoy se cobran {monto} MXN y te devolvemos {credito} MXN de tu plan actual. Después, {mensual} MXN cada mes.",
-    "whenNowNoRefund": "Hoy se cobran {monto} MXN. Después, {mensual} MXN cada mes.",
     "whenLater": "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}.",
     "trialSwitch": "Tu prueba sigue igual. Al terminar, el {fecha}, se cobrarán {monto} MXN {periodo}. Hoy mismo te enviamos por correo el aviso de cobro con el nuevo monto.",
     "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta a partir del <b>{fecha}</b>, y acepto los <terms>Términos de Suscripción</terms>.",
@@ -1266,7 +1274,8 @@
     "toFreeTitle": "Pasar a Gratis",
     "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
     "toFreeCta": "Ir a cancelar",
-    "done": "Listo. Tu cambio quedó registrado."
+    "done": "Listo. Tu cambio quedó registrado.",
+    "credit": "Te devolvemos {credito} MXN por la parte que no usaste de tu plan actual."
   },
   "seller": {
     "title": "Quién vende",
@@ -1844,7 +1853,8 @@
       "plan": {
         "pro_month": "Pro mensual",
         "pro_year": "Pro anual",
-        "vip_month": "VIP mensual"
+        "vip_month": "VIP mensual",
+        "vip_year": "VIP anual"
       },
       "toggle": "Ofrecer Mensual además de Anual",
       "toggleHelp": "Si lo apagas, la prueba y Planes solo ofrecen Anual.",

@@ -9,7 +9,7 @@ import { listEngines } from '@/lib/data/engines';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { isCustomerVisible } from '@/lib/billing/entitlement-core';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import { paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
 import { hubRunsTool } from '@/lib/tools/registry';
 import { TOOL_ROUTES } from '@/lib/tools/routes';
 import { engineDisplayName } from '@/lib/engines/display-names';
@@ -77,7 +77,7 @@ export default async function ToolPage({
   // TODO(P2): /app/prueba (SCR-14) once TRIAL_FLOW_ENABLED is on.
   const planHref = trialFlow
     ? '/app/prueba'
-    : trialFlowEnabled()
+    : paidCheckoutEnabled()
       ? '/app/planes'
       : '/app/subscription';
   // Pro without PRO_INCLUDES_ALL_TOOLS runs one tool at a time: a "trial
