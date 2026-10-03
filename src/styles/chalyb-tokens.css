@@ -10,6 +10,17 @@
    text, so text uses --ink3-text / --ok-text and the originals stay for icons,
    dots and dividers only. */
 
+/* While the cookie banner is open it publishes its height as --consent-h
+   (cookie-banner.tsx): the page gets that much room at the bottom, and
+   scrolling to an element keeps it clear of the banner, so the banner never
+   covers content or a primary button (TOOLS-SPEC F7). */
+html {
+  scroll-padding-bottom: var(--consent-h, 0px);
+}
+body {
+  padding-bottom: var(--consent-h, 0px);
+}
+
 .chalyb-app {
   --bg: #f5f5f7;
   --card: #ffffff;

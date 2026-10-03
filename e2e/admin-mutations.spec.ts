@@ -17,7 +17,10 @@ test.describe('as admin', () => {
     await page.getByLabel('Buscar por nombre o correo').fill('gina');
     await page.getByRole('button', { name: 'Acciones para Gina Regalo' }).click();
     await page.getByRole('button', { name: 'Regalar 1 mes gratis' }).click();
-    await page.getByRole('dialog', { name: '¿Regalar 1 mes de Pro a Gina Regalo?' }).getByRole('button', { name: 'Sí, regalar' }).click();
+    await page
+      .getByRole('dialog', { name: '¿Regalar 1 mes de Pro a Gina Regalo?' })
+      .getByRole('button', { name: 'Sí, regalar' })
+      .click();
     await expect(page.getByText('Listo. Ya está en Actividad.')).toBeVisible();
     await page.goto('/dashboard/actividad?tipo=admin');
     const row = page.locator('li[data-type="admin"]', { hasText: 'Regaló 1 mes gratis' }).first();
@@ -25,13 +28,18 @@ test.describe('as admin', () => {
     await expect(row).toContainText('admin@example.com');
   });
 
-  test('hide a used tool: the confirm explains §7.3, then it disappears everywhere', async ({ page, browser }) => {
+  test('hide a used tool: the confirm explains §7.3, then it disappears everywhere', async ({
+    page,
+    browser,
+  }) => {
     await page.goto('/dashboard/herramientas');
     await page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' }).click();
     const sheet = page.getByRole('dialog', { name: '¿Ocultar Inmuebles?' });
     await expect(sheet).toContainText('§7.3');
     await sheet.getByRole('button', { name: 'Sí, ocultar' }).click();
-    await expect(page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' })).toHaveAttribute('aria-checked', 'false');
+    await expect(
+      page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' }),
+    ).toHaveAttribute('aria-checked', 'false');
 
     const pro = await browser.newContext({ storageState: storageStatePath('pro') });
     const p = await pro.newPage();
@@ -45,10 +53,18 @@ test.describe('as admin', () => {
     await pro.close();
 
     await page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' }).click();
-    await expect(page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' })).toHaveAttribute('aria-checked', 'true');
+    await expect(
+      page.getByRole('switch', { name: 'Mostrar Inmuebles a clientes' }),
+    ).toHaveAttribute('aria-checked', 'true');
   });
 
-  test('Mensual off hides it from Planes and the trial; on brings it back', async ({ page, browser }) => {
+  test('Mensual off hides it from Planes and the trial; on brings it back', async ({
+    page,
+    browser,
+  }) => {
+    // The Mensual/Anual toggle only exists with the trial flow (annual plans
+    // are sold through it); with the flow off Planes is monthly-only (K-6).
+    test.skip(process.env.E2E_TRIAL_FLOW !== '1', 'needs E2E_TRIAL_FLOW=1');
     await page.goto('/dashboard/ajustes');
     const sw = page.getByRole('switch', { name: 'Ofrecer Mensual además de Anual' });
     await expect(sw).toHaveAttribute('aria-checked', 'true');
