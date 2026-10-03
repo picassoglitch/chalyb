@@ -13,7 +13,7 @@ export async function Faq({ tools, locale }: { tools: PublicTool[]; locale: stri
   const t = await getTranslations('landing.faq');
   const whatsapp = supportWhatsappUrl();
   const items: Array<{ q: string; a: string; extra?: string }> = [
-    { q: t('q1'), a: t('a1', { dias: PRICING.trial.reminderDaysBefore }) },
+    { q: t('q1'), a: t('a1', { dias: PRICING.trial.days }) },
     { q: t('q2'), a: t('a2'), extra: whatsapp ? t('a2help') : undefined },
     { q: t('q3'), a: t('a3', { lista: toolList(tools, locale) }) },
     { q: t('q4'), a: t('a4') },

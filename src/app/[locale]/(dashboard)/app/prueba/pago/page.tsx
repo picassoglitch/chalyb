@@ -6,7 +6,7 @@ import type { Route } from 'next';
 import { requireTrialFlow } from '@/lib/billing/trial-gate';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
-import { getPublicKey } from '@/lib/payments/mercadopago';
+import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { trialDates } from '@/lib/billing/trial-dates';
@@ -38,18 +38,25 @@ export default async function PagoPage({
   if (billing.primary.state !== 'free') return redirect({ href: '/app/billing', locale });
   const { plan } = await searchParams;
   const monthlyOffered = await billingToggleEnabled();
-  const planKey: PlanKey = plan === 'pro_month' && monthlyOffered ? 'pro_month' : 'pro_year';
-  // The free month is Anual-only; Mensual is charged today.
+  // Never a default plan here (C9): the plan comes from the picker.
+  if (plan !== 'pro_year' && !(plan === 'pro_month' && monthlyOffered)) {
+    return redirect({ href: '/app/prueba', locale });
+  }
+  const planKey: PlanKey = plan;
+  // 7 days free on Pro mensual and Pro anual, once per account.
   const trial = !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
   const tbRaw = await getTranslations('billing');
   const tb: Translate = (key, values) =>
-    tbRaw.markup(key as never, {
-      ...(values ?? {}),
-      b: (c: string) => `<b>${c}</b>`,
-      terms: (c: string) => `<terms>${c}</terms>`,
-    } as never);
+    tbRaw.markup(
+      key as never,
+      {
+        ...(values ?? {}),
+        b: (c: string) => `<b>${c}</b>`,
+        terms: (c: string) => `<terms>${c}</terms>`,
+      } as never,
+    );
   const price = planPrice(planKey);
   const dates = trialDates(new Date());
   const vars = trialVars(tb, { planKey, dates, cardLast4: null, locale });
@@ -81,8 +88,17 @@ export default async function PagoPage({
             <Markup
               text={
                 trial
-                  ? t.markup('pay.oneLine', { monto: vars.monto, fecha_cobro: vars.fecha_cobro, cada_periodo: vars.cada_periodo, b: (c) => `<b>${c}</b>` })
-                  : t.markup('pay.oneLinePaid', { monto: vars.monto, cada_periodo: vars.cada_periodo, b: (c) => `<b>${c}</b>` })
+                  ? t.markup('pay.oneLine', {
+                      monto: vars.monto,
+                      fecha_cobro: vars.fecha_cobro,
+                      periodo: t(price.interval === 'year' ? 'pay.periodYear' : 'pay.periodMonth'),
+                      b: (c) => `<b>${c}</b>`,
+                    })
+                  : t.markup('pay.oneLinePaid', {
+                      monto: vars.monto,
+                      cada_periodo: vars.cada_periodo,
+                      b: (c) => `<b>${c}</b>`,
+                    })
               }
             />
           </p>
@@ -93,7 +109,7 @@ export default async function PagoPage({
             {publicKey ? (
               <PayForm
                 publicKey={publicKey}
-                payerEmail={session.user.email ?? null}
+                payerEmail={mpPayerEmail(session.user.email)}
                 planKey={planKey}
                 amountMajor={price.totalCents / 100}
                 consentText={consentText}
@@ -107,7 +123,16 @@ export default async function PagoPage({
                 {t('pay.unavailable')}
               </p>
             )}
-            <p className="ch-muted" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', fontSize: 16 }}>
+            <p
+              className="ch-muted"
+              style={{
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                fontSize: 16,
+              }}
+            >
               <Lock aria-hidden="true" width={18} height={18} />
               {t('pay.secure')} <SellerSheet label={t('pay.seller')} />
             </p>
@@ -131,7 +156,9 @@ export default async function PagoPage({
                 </>
               )}
               <dt>{t('summary.after')}</dt>
-              <dd>{t('summary.afterValue', { monto: vars.monto, cada_periodo: vars.cada_periodo })}</dd>
+              <dd>
+                {t('summary.afterValue', { monto: vars.monto, cada_periodo: vars.cada_periodo })}
+              </dd>
               <dt>{t('summary.ivaLabel')}</dt>
               <dd>{formatMXN(ivaPortion(price.totalCents))}</dd>
               <dt>
@@ -142,7 +169,9 @@ export default async function PagoPage({
             {monthlyOffered && (
               <Link href={`/app/prueba/pago?plan=${other}` as Route} className="ch-lnk">
                 {other === 'pro_month'
-                  ? t('summary.switchMonth', { monto: formatMXN(planPrice('pro_month').totalCents) })
+                  ? t('summary.switchMonth', {
+                      monto: formatMXN(planPrice('pro_month').totalCents),
+                    })
                   : t('summary.switchYear', { monto: formatMXN(planPrice('pro_year').totalCents) })}
               </Link>
             )}

@@ -29,12 +29,23 @@ test.describe('trial path, as free', () => {
   asRole('free');
   test.skip(!FLOW, 'E2E_TRIAL_FLOW=1 (server with TRIAL_FLOW_ENABLED and its prerequisites)');
 
-  test('Tu prueba: Anual preselected, live billing block', async ({ page }, info) => {
-    await page.goto('/app/prueba');
-    await expect(page.getByRole('radio', { name: /Pro anual/ })).toBeChecked();
+  test('Tu prueba: nothing annual preselected; Mensual from a monthly card; live charge block', async ({
+    page,
+  }, info) => {
+    await page.goto('/app/prueba?interval=year');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Prueba Pro gratis de 7 días');
+    await expect(page.getByRole('radio', { name: /^Pro anual —/ })).not.toBeChecked();
+    await expect(page.getByRole('radio', { name: /^Pro mensual —/ })).not.toBeChecked();
+    await expect(page.getByText('Elegiste Pro anual en la tarjeta')).toBeVisible();
+    await page.getByRole('radio', { name: /^Pro anual —/ }).check();
+    await expect(page.getByText(/por 1 año de Pro/)).toBeVisible();
+    await page.goto('/app/prueba?interval=month');
+    await expect(page.getByRole('radio', { name: /^Pro mensual —/ })).toBeChecked();
     await expect(page.getByText(/Hoy pagas \$0\./)).toBeVisible();
-    await page.getByRole('radio', { name: /Pro mensual/ }).check();
     await expect(page.getByText(/por tu primer mes de Pro/)).toBeVisible();
+    await expect(page.getByText(/Tu prueba gratis de 7 días termina el/)).toBeVisible();
+    const body = await page.locator('body').innerText();
+    expect(body).not.toMatch(/mes gratis|o paga mes a mes/);
     await expectNoLeaks(page);
     await expectNoOverflow(page, info);
     await expectAccessible(page);
@@ -43,12 +54,17 @@ test.describe('trial path, as free', () => {
   test('Pago: the consent box is unchecked and the button disabled until it is', async ({
     page,
   }) => {
-    await page.goto('/app/prueba/pago?plan=pro_year');
+    await page.goto('/app/prueba/pago?plan=pro_month');
     const box = page.getByRole('checkbox');
     await expect(box).not.toBeChecked();
-    await expect(page.getByRole('button', { name: 'Empezar mi mes gratis' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Empezar mis 7 días gratis' })).toBeDisabled();
     await expect(page.getByText(/Primer cobro:/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Quién vende' })).toBeVisible();
+  });
+
+  test('Pago without a plan goes back to the picker (no default plan)', async ({ page }) => {
+    await page.goto('/app/prueba/pago');
+    await expect(page).toHaveURL(/\/app\/prueba(\?|$)/);
   });
 
   test('a direct POST without consent is refused with 422', async ({ request }) => {
@@ -110,7 +126,7 @@ test.describe('Mi plan as cancelled', () => {
 
 test.describe('banners', () => {
   for (const [role, text] of [
-    ['trial', /Prueba Pro gratis · te quedan/],
+    ['trial', /Prueba Pro gratis · El .* se cobrarán \$9,970 MXN/],
     ['past_due', /No pudimos cobrar tu plan/],
     ['pro_annual', /se renueva el/],
   ] as [Role, RegExp][]) {

@@ -1,7 +1,8 @@
 // The dates a trial promises (aceptacion-ux §3.2). Pure; UTC instants.
 //
-// The free month is PRICING.trial.days long; the first charge happens when it
-// ends; the notice goes out PRICING.trial.reminderDaysBefore days before.
+// The trial is PRICING.trial.days (7) long; the first charge happens when it
+// ends; the charge notice goes out PRICING.trial.reminderDaysBefore (7) days
+// before, i.e. the moment the trial starts. Start 3 oct 2026 → charge 10 oct.
 
 import { PRICING } from '@/config/pricing';
 

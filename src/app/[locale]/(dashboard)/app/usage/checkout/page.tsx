@@ -10,6 +10,7 @@ import {
   checkoutNotReadyError,
   getPublicKey,
   missingCheckoutVars,
+  mpPayerEmail,
 } from '@/lib/payments/mercadopago';
 import { PackCheckout } from '@/components/workspace/pack-checkout';
 
@@ -96,7 +97,7 @@ export default async function PackCheckoutPage({
             packLabel={pack.label}
             publicKey={publicKey}
             amountMajor={pack.amountCents / 100}
-            payerEmail={session.user.email ?? null}
+            payerEmail={mpPayerEmail(session.user.email)}
           />
         )}
 

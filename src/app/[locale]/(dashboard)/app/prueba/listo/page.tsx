@@ -4,7 +4,7 @@ import { CircleCheck } from 'lucide-react';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { loadBilling } from '@/lib/billing/subscription-store';
-import { planPrice } from '@/config/pricing';
+import { PRICING, planPrice } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { ButtonLink } from '@/components/ui/primitives';
@@ -26,7 +26,8 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
   const billing = await loadBilling(session.user.id);
   const row = billing.primaryRow;
   const s = billing.primary;
-  if (!row || (s.state !== 'trialing' && s.state !== 'pro')) return redirect({ href: '/app/billing', locale });
+  if (!row || (s.state !== 'trialing' && s.state !== 'pro'))
+    return redirect({ href: '/app/billing', locale });
 
   const t = await getTranslations('checkout');
   const planKey = s.planKey ?? 'pro_year';
@@ -34,19 +35,36 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
   const monto = formatMXN(price.totalCents);
   const tb = await getTranslations('billing');
   const cada = tb(price.interval === 'year' ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month');
-  const first = ((session.user.user_metadata?.full_name as string | undefined) ?? '').trim().split(/\s+/)[0];
+  const first = ((session.user.user_metadata?.full_name as string | undefined) ?? '')
+    .trim()
+    .split(/\s+/)[0];
   const trial = s.state === 'trialing';
   const last4 = s.card?.last4 ?? '••••';
   const folio = (row.consent_id as string | null) ?? '';
 
   return (
-    <WizardShell slug="chalybclip" toolName={t('tool')} backHref="/app" backLabel={t('back')} closeLabel={t('close')} narrow>
+    <WizardShell
+      slug="chalybclip"
+      toolName={t('tool')}
+      backHref="/app"
+      backLabel={t('back')}
+      closeLabel={t('close')}
+      narrow
+    >
       <div className="ch-center-col">
-        <span className="ch-state__ic" style={{ background: 'var(--ok-tint)', color: 'var(--ok-text)' }} aria-hidden="true">
+        <span
+          className="ch-state__ic"
+          style={{ background: 'var(--ok-tint)', color: 'var(--ok-text)' }}
+          aria-hidden="true"
+        >
           <CircleCheck />
         </span>
-        <h1 className="ch-h1">{first ? t('done.title', { nombre: first }) : t('done.titleAnon')}</h1>
-        <p className="ch-h2">{trial ? t('done.headline') : t('done.headlinePaid')}</p>
+        <h1 className="ch-h1">
+          {first ? t('done.title', { nombre: first }) : t('done.titleAnon')}
+        </h1>
+        <p className="ch-h2">
+          {trial ? t('done.headline', { dias: PRICING.trial.days }) : t('done.headlinePaid')}
+        </p>
         {trial && s.trialEndsAt && s.nextChargeAt && (
           <p className="ch-sub">
             <Markup
@@ -55,6 +73,7 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
                 monto,
                 fecha_cobro: formatFechaLarga(s.nextChargeAt, locale),
                 ultimos4: last4,
+                correo: session.user.email ?? '',
                 b: (c) => `<b>${c}</b>`,
               })}
             />
@@ -73,11 +92,33 @@ export default async function ListoPage({ params }: { params: Promise<{ locale: 
           {trial && s.nextChargeAt && (
             <>
               <dt>{t('summary.remind')}</dt>
-              <dd>{formatFechaLarga(new Date(Date.parse(s.nextChargeAt) - 7 * 86_400_000), locale)}</dd>
+              <dd>
+                {formatFechaLarga(
+                  new Date(
+                    Date.parse(s.nextChargeAt) - PRICING.trial.reminderDaysBefore * 86_400_000,
+                  ),
+                  locale,
+                )}
+              </dd>
             </>
           )}
-          <dt>{t('done.firstCharge', { plan: planKey === 'pro_year' ? t('trial.year') : planKey === 'pro_month' ? t('trial.month') : 'VIP' })}</dt>
-          <dd>{t('done.card', { marca: (s.card?.brand ?? '').toUpperCase(), ultimos4: last4, cada_periodo: cada })}</dd>
+          <dt>
+            {t('done.firstCharge', {
+              plan:
+                planKey === 'pro_year'
+                  ? t('trial.year')
+                  : planKey === 'pro_month'
+                    ? t('trial.month')
+                    : 'VIP',
+            })}
+          </dt>
+          <dd>
+            {t('done.card', {
+              marca: (s.card?.brand ?? '').toUpperCase(),
+              ultimos4: last4,
+              cada_periodo: cada,
+            })}
+          </dd>
         </dl>
 
         <ButtonLink href="/app/clips" size="xl">

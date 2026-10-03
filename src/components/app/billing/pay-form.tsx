@@ -92,11 +92,9 @@ export function PayForm({
                 ? t('declined')
                 : body.code === 'QUEBEC'
                   ? tPlans('quebec')
-                  : body.code === 'TRIAL_ANNUAL_ONLY'
-                    ? t('trialAnnualOnly')
-                    : body.code === 'NOT_AVAILABLE' || body.code === 'NOT_CONFIGURED'
-                      ? t('unavailable')
-                      : t('error');
+                  : body.code === 'NOT_AVAILABLE' || body.code === 'NOT_CONFIGURED'
+                    ? t('unavailable')
+                    : t('error');
         return { ok: false, error: message };
       } catch {
         return { ok: false, error: t('error') };

@@ -5,16 +5,17 @@
 //   last charge (Mercado Pago can't charge a first amount different from the
 //   recurring one). Both numbers are shown before confirming.
 // - Downgrades and Mensual ↔ Anual: at the end of the paid period.
-// - During the trial: changes the plan the trial converts into; no charge.
-//   The free month is Anual-only, so a trial can't turn into Mensual: that
-//   would be a free month followed by monthly billing.
+// - During the trial: changes the plan the trial converts into (Pro mensual
+//   ↔ Pro anual, Términos §2.4); no charge, the charge date stays, and the
+//   new amount gets its own charge notice (T-6, owner O-17).
 
 import { planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 
-export type ChangeTiming = 'now' | 'period_end' | 'trial_end' | 'trial_annual_only';
+export type ChangeTiming = 'now' | 'period_end' | 'trial_end';
 
 export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): ChangeTiming {
-  if (trialing && to !== 'vip_month') return planHasTrial(to) ? 'trial_end' : 'trial_annual_only';
+  // TODO(owner O-17): Law to confirm the in-trial switch handling.
+  if (trialing && planHasTrial(to)) return 'trial_end';
   if (to === 'vip_month' && from !== 'vip_month') return 'now';
   return 'period_end';
 }
@@ -22,8 +23,8 @@ export function changeTiming(from: PlanKey, to: PlanKey, trialing: boolean): Cha
 /**
  * When a reactivated plan (after a cancel) starts charging, or null for
  * today. Paid access left over is kept: the new plan starts after it. Access
- * left from an unpaid free month carries over only to a plan that has the
- * free month (Anual); Mensual and VIP start charging today.
+ * left from an unpaid trial carries over only to a plan that has the trial
+ * (Pro mensual, Pro anual); VIP starts charging today.
  */
 export function reactivationStart(input: {
   to: PlanKey;

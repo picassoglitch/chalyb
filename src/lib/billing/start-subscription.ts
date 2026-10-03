@@ -48,8 +48,8 @@ import {
   type Translate,
 } from './billing-copy';
 import { recordConsent, requestContext, UI_VERSION } from './consent';
-import { dispatchBillingEmail } from './notices';
-import { formatFechaLarga, formatMXN } from './format';
+import { dispatchBillingEmail, trialNoticeVars } from './notices';
+import { trialNoticeKey } from './reminders';
 import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
 
@@ -76,7 +76,6 @@ export type StartError =
   | 'ADMIN'
   | 'QUEBEC'
   | 'CARD_TRIAL_USED'
-  | 'TRIAL_ANNUAL_ONLY'
   | 'BAD_TOKEN'
   | 'DECLINED'
   | 'MP_ERROR';
@@ -137,9 +136,18 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
-  // The free month comes only with Pro anual; Mensual is charged today.
+  // 7 days free on Pro mensual and Pro anual, once per account (and card).
   const wantsTrial = planHasTrial(input.planKey) && !billing.trialUsed && input.intent !== 'change';
   const mode: StartMode = input.intent === 'change' ? 'change' : wantsTrial ? 'trial' : 'paid';
+  // T-6 · switching Pro mensual ↔ Pro anual during the trial: same charge
+  // date, the new plan's amount, the trial's own disclosure and checkbox,
+  // and a fresh charge notice (a new amount is a new notice).
+  const trialSwitch =
+    mode === 'change' &&
+    billing.primary.state === 'trialing' &&
+    planHasTrial(input.planKey) &&
+    !!billing.primary.trialEndsAt;
+  const trialLike = mode === 'trial' || trialSwitch;
   const firstChargeLater = mode === 'trial' || (mode === 'change' && !!input.effectiveAt);
 
   // The card: last 4 for the evidence and Mi plan, a fingerprint for the
@@ -162,10 +170,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   const now = new Date();
   const price = planPrice(input.planKey);
+  const switchEnds = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
   const dates: TrialDates =
     mode === 'trial'
       ? trialDates(now)
-      : { startsAt: now, trialEndsAt: now, chargeAt: input.effectiveAt ?? now, reminderAt: now };
+      : switchEnds
+        ? { startsAt: now, trialEndsAt: switchEnds, chargeAt: switchEnds, reminderAt: now }
+        : { startsAt: now, trialEndsAt: now, chargeAt: input.effectiveAt ?? now, reminderAt: now };
 
   // The texts the user saw, rendered again here exactly as the page renders
   // them, with the dates of THIS request.
@@ -180,11 +191,12 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       } as never,
     );
   const disclosure = { planKey: input.planKey, dates, cardLast4: null, locale: input.locale };
-  const disclosureText =
-    mode === 'trial' ? evidenceText(disclosureParagraphs(t, disclosure)) : null;
-  const checkboxText = mode === 'trial' ? stripMarkup(consentSentence(t, disclosure)) : null;
+  const disclosureText = trialLike ? evidenceText(disclosureParagraphs(t, disclosure)) : null;
+  const checkboxText = trialLike ? stripMarkup(consentSentence(t, disclosure)) : null;
   const tPay = await getTranslations({ locale: input.locale, namespace: 'checkout' });
-  const buttonLabel = mode === 'trial' ? tPay('pay.cta') : tPay('paid.cta');
+  const tChange = await getTranslations({ locale: input.locale, namespace: 'change' });
+  const buttonLabel =
+    mode === 'trial' ? tPay('pay.cta') : mode === 'change' ? tChange('cta') : tPay('paid.cta');
 
   // ── Mercado Pago ───────────────────────────────────────────────────
   const tier = price.tier;
@@ -272,9 +284,9 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       currency: CURRENCY,
       tax_included: true,
       billing_interval: price.interval,
-      trial_end_utc: mode === 'trial' ? dates.trialEndsAt.toISOString() : null,
+      trial_end_utc: trialLike ? dates.trialEndsAt.toISOString() : null,
       charge_date_utc: dates.chargeAt.toISOString(),
-      reminder_date_utc: mode === 'trial' ? dates.reminderAt.toISOString() : null,
+      reminder_date_utc: trialLike ? dates.reminderAt.toISOString() : null,
       payment_method: {
         processor: 'mercadopago',
         brand: card.payment_method_id ?? null,
@@ -312,10 +324,10 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       amount_cents: price.totalCents,
       currency: CURRENCY,
       started_at: now.toISOString(),
-      trial_ends_at: mode === 'trial' ? dates.trialEndsAt.toISOString() : null,
+      trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
       next_charge_at: firstChargeLater ? dates.chargeAt.toISOString() : null,
       next_payment_date: firstChargeLater ? dates.chargeAt.toISOString() : null,
-      reminder_due_at: mode === 'trial' ? dates.reminderAt.toISOString() : null,
+      reminder_due_at: trialLike ? dates.reminderAt.toISOString() : null,
       card_brand: card.payment_method_id ?? null,
       card_last4: card.last_four_digits ?? null,
       card_exp: exp,
@@ -347,44 +359,37 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     console.error('[billing/start] immediate sync failed; the webhook will finish it', err);
   }
 
-  if (mode === 'trial') {
+  // The charge notice, sent now (aceptacion-ux §3.6): on day 0 it is 7 days
+  // before the charge, the legal ≥5-day notice AND the confirmation. Nothing
+  // else goes in it (no welcome, no marketing: C1a). Its delivery gates the
+  // charge (the hold rule); the cron uses the same key, so it goes out once.
+  if (trialLike) {
     const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
-    const docs = legalDocuments('terminos', 'suscripcion', 'privacidad');
-    const labels: Record<string, string> = {
-      terminos: 'Términos y Condiciones',
-      suscripcion: 'Términos de Suscripción',
-      privacidad: 'Aviso de Privacidad',
-    };
-    const isYear = price.interval === 'year';
     await dispatchBillingEmail({
       userId,
       email,
-      kind: 'trial_welcome',
-      periodKey: consent.consent_id,
-      evidence: undefined,
-      vars: {
+      kind: 'trial_7d',
+      periodKey: trialNoticeKey(dates.chargeAt, preapprovalId),
+      evidence: 'charge_notice_sent',
+      vars: trialNoticeVars({
         nombre: name,
-        plan: PLAN_NAMES[input.planKey],
-        monto: formatMXN(price.totalCents),
-        renovacion: `${isYear ? 'cada año' : 'cada mes'} (${formatMXN(price.totalCents)} MXN)`,
-        fecha_inicio: formatFechaLarga(now, 'es'),
-        fecha_fin_prueba: formatFechaLarga(dates.trialEndsAt, 'es'),
-        fecha_cobro: formatFechaLarga(dates.chargeAt, 'es'),
-        fecha_recordatorio: formatFechaLarga(dates.reminderAt, 'es'),
-        ultimos4: card.last_four_digits,
-        consent_id: consent.consent_id,
-        documentos: docs.map((d) => ({
-          label: labels[d.doc] ?? d.doc,
-          version: d.version,
-          url: d.url,
-        })),
+        planKey: input.planKey,
+        startedAt: trialSwitch
+          ? ((billing.primaryRow?.started_at as string | undefined) ?? now)
+          : now,
+        trialEndsAt: dates.trialEndsAt,
+        chargeAt: dates.chargeAt,
+        last4: card.last_four_digits ?? null,
+        consentId: consent.consent_id,
         appUrl: getAppUrl(),
-      },
+      }),
     });
-    void track('trial_start', {
-      plan: price.interval === 'year' ? 'anual' : 'mensual',
-      source: 'app',
-    });
+    if (mode === 'trial') {
+      void track('trial_start', {
+        plan: price.interval === 'year' ? 'anual' : 'mensual',
+        source: 'app',
+      });
+    }
   }
 
   return { ok: true, consentId: consent.consent_id, mode, preapprovalId };

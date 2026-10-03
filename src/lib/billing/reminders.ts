@@ -2,8 +2,9 @@
 // §11.3, aceptacion-ux §4). Pure: the cron job feeds it a subscription and
 // the clock, and acts on what comes back.
 //
-//   trial         7 days before the first charge (day 23)
-//   trial day 29  optional, TRIAL_DAY29_REMINDER_ENABLED (D5)
+//   trial         the charge notice, due the moment the 7-day trial starts
+//                 (7 days before the first charge; Law's ≥5 days)
+//   trial day 6   optional, TRIAL_DAY6_REMINDER (O-11), the day before
 //   monthly       7 days before EVERY renewal
 //   annual        30 and 7 days before every renewal
 //   summary       once a year for monthly plans (Email 6)
@@ -11,14 +12,14 @@
 // Each notice carries a period key; the email_dispatches unique index on
 // (user_id, kind, period_key) is what makes two cron runs send once.
 
-import { PRICING } from '@/config/pricing';
+import { MIN_NOTICE_DAYS, PRICING } from '@/config/pricing';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** How far ahead of a charge the bounce check looks. The cron runs daily
- *  (Vercel Hobby allows daily jobs only; OPS-7), so two days guarantees at
- *  least one run before every charge. */
-export const HOLD_LOOKAHEAD_MS = 2 * DAY;
+/** The mandatory notice must be recorded DELIVERED by this long before the
+ *  charge (Términos de Suscripción §2.7 bis): charge − 5 days, i.e. day 2 of
+ *  a 7-day trial. The daily cron checks from then on. */
+export const NOTICE_DEADLINE_MS = MIN_NOTICE_DAYS * DAY;
 
 export type NoticeKind = 'trial_7d' | 'trial_1d' | 'renew_30d' | 'renew_7d' | 'annual_summary';
 
@@ -40,7 +41,12 @@ export interface NoticeInput {
   nextChargeAt: string | null;
   /** When the subscription started (for the yearly summary). */
   startedAt: string | null;
-  day29Enabled: boolean;
+  /** TRIAL_DAY6_REMINDER. */
+  day6Enabled: boolean;
+  /** Our id for the subscription (the MP preapproval id). A trial switched
+   *  between Pro mensual and Pro anual keeps its charge date but is a new
+   *  subscription with a new amount, so it needs its own notice. */
+  subKey?: string;
 }
 
 /** Notices due at `now` (already due, not yet necessarily sent). */
@@ -55,12 +61,17 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
   if (sub.state === 'trialing') {
     out.push({
       kind: 'trial_7d',
-      periodKey: `trial:${key}`,
+      periodKey: trialNoticeKey(sub.nextChargeAt, sub.subKey),
       dueAt: at(p.trial.reminderDaysBefore),
       mandatory: true,
     });
-    if (sub.day29Enabled)
-      out.push({ kind: 'trial_1d', periodKey: `trial1:${key}`, dueAt: at(1), mandatory: false });
+    if (sub.day6Enabled)
+      out.push({
+        kind: 'trial_1d',
+        periodKey: `trial1:${key}${sub.subKey ? `:${sub.subKey}` : ''}`,
+        dueAt: at(1),
+        mandatory: false,
+      });
   } else if (sub.state === 'pro') {
     if (sub.interval === 'year') {
       const [early, late] = p.reminders.yearDaysBefore;
@@ -101,6 +112,13 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
   return out.filter((n) => now >= n.dueAt);
 }
 
+/** The dedupe key of a trial's charge notice: the day-0 send at trial start
+ *  and the cron use the same one, so it goes out once. */
+export function trialNoticeKey(chargeAt: string | Date, subKey?: string): string {
+  const day = new Date(chargeAt).toISOString().slice(0, 10);
+  return `trial:${day}${subKey ? `:${subKey}` : ''}`;
+}
+
 export type HoldDecision =
   | { action: 'none' }
   /** Pause the preapproval: no charge until `until`. */
@@ -111,7 +129,8 @@ export type HoldDecision =
 /**
  * The bounce rule (Términos de Suscripción §2.7 bis): no charge until at
  * least 5 calendar days after an EFFECTIVE notice. If the mandatory notice
- * isn't confirmed delivered by HOLD_LOOKAHEAD_MS before the charge, hold it.
+ * isn't confirmed delivered by the deadline (charge − 5 days), hold it until
+ * 5 days after it is (or after now, while it still isn't).
  */
 export function holdDecision(input: {
   nextChargeAt: string | null;
@@ -137,7 +156,7 @@ export function holdDecision(input: {
   }
   if (!input.nextChargeAt) return { action: 'none' };
   const charge = Date.parse(input.nextChargeAt);
-  if (now < charge - HOLD_LOOKAHEAD_MS) return { action: 'none' };
+  if (now < charge - NOTICE_DEADLINE_MS) return { action: 'none' };
 
   const delivered = input.noticeDeliveredAt ? Date.parse(input.noticeDeliveredAt) : NaN;
   if (!Number.isNaN(delivered) && charge >= delivered + 5 * DAY) return { action: 'none' };

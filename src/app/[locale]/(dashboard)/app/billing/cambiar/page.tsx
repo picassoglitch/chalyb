@@ -4,7 +4,7 @@ import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { trialFlowEnabled } from '@/lib/config/flags';
-import { getPublicKey } from '@/lib/payments/mercadopago';
+import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { quoteChange } from '@/lib/billing/billing-actions';
@@ -31,13 +31,21 @@ export default async function CambiarPlanPage({
   setRequestLocale(locale);
   const session = await getSessionUser();
   if (!session) return redirect({ href: '/sign-in?next=/app/billing', locale });
-  if (!trialFlowEnabled() || isAdminRole(session.role)) return redirect({ href: '/app/subscription', locale });
+  if (!trialFlowEnabled() || isAdminRole(session.role))
+    return redirect({ href: '/app/subscription', locale });
   const { plan } = await searchParams;
   const t = await getTranslations('change');
   const tCheckout = await getTranslations('checkout');
   const tb = await getTranslations('billing');
   const tPlan = await getTranslations('myplan.planName');
-  const chrome = { slug: 'chalybclip', toolName: tCheckout('toolPaid'), backHref: '/app/billing', backLabel: tCheckout('back'), closeLabel: tCheckout('close'), narrow: true };
+  const chrome = {
+    slug: 'chalybclip',
+    toolName: tCheckout('toolPaid'),
+    backHref: '/app/billing',
+    backLabel: tCheckout('back'),
+    closeLabel: tCheckout('close'),
+    narrow: true,
+  };
 
   if (plan === 'gratis') {
     return (
@@ -54,25 +62,14 @@ export default async function CambiarPlanPage({
   }
   const to: PlanKey = plan === 'pro_month' || plan === 'vip_month' ? plan : 'pro_year';
   const quote = await quoteChange(session, to);
-  // The free month is Anual-only: a trial can't turn into Mensual.
-  if (quote.timing === 'trial_annual_only') {
-    return (
-      <WizardShell {...chrome}>
-        <div className="ch-center-col">
-          <h1 className="ch-h1">{t('trialAnnualOnlyTitle')}</h1>
-          <p className="ch-sub">{t('trialAnnualOnlyBody')}</p>
-          <ButtonLink href="/app/billing" size="xl">
-            {t('trialAnnualOnlyCta')}
-          </ButtonLink>
-        </div>
-      </WizardShell>
-    );
-  }
   const price = planPrice(to);
   const monto = formatMXN(price.totalCents);
   const fromName = quote.billing.primary.planKey ? tPlan(quote.billing.primary.planKey) : '';
-  const effective = quote.effectiveAt ? formatFechaLarga(quote.effectiveAt, locale) : formatFechaLarga(new Date(), locale);
-  const periodo = price.interval === 'year' ? tb('vars.cadaPeriodo.year') : tb('vars.cadaPeriodo.month');
+  const effective = quote.effectiveAt
+    ? formatFechaLarga(quote.effectiveAt, locale)
+    : formatFechaLarga(new Date(), locale);
+  const periodo =
+    price.interval === 'year' ? tb('vars.cadaPeriodo.year') : tb('vars.cadaPeriodo.month');
 
   const what =
     quote.timing === 'now'
@@ -85,13 +82,28 @@ export default async function CambiarPlanPage({
           ? t('whenNowNoRefund', { monto, mensual: monto })
           : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
 
-  const consentText = t.markup('consent', {
-    monto,
-    renovacion_corta: tb(price.interval === 'year' ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month'),
-    fecha: effective,
-    b: (c) => `<b>${c}</b>`,
-    terms: (c) => `<terms>${c}</terms>`,
-  });
+  // Switching during the trial is consent to the trial's charge with the new
+  // amount: Law's trial checkbox, with the same charge date (T-6).
+  const consentText =
+    quote.timing === 'trial_end'
+      ? tb.markup('pay.consent', {
+          fecha_cobro: effective,
+          monto,
+          renovacion_corta: tb(
+            price.interval === 'year' ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month',
+          ),
+          b: (c) => `<b>${c}</b>`,
+          terms: (c) => `<terms>${c}</terms>`,
+        })
+      : t.markup('consent', {
+          monto,
+          renovacion_corta: tb(
+            price.interval === 'year' ? 'vars.renovacionCorta.year' : 'vars.renovacionCorta.month',
+          ),
+          fecha: effective,
+          b: (c) => `<b>${c}</b>`,
+          terms: (c) => `<terms>${c}</terms>`,
+        });
   const publicKey = getPublicKey();
 
   return (
@@ -109,7 +121,7 @@ export default async function CambiarPlanPage({
         {publicKey && (
           <PayForm
             publicKey={publicKey}
-            payerEmail={session.user.email ?? null}
+            payerEmail={mpPayerEmail(session.user.email)}
             planKey={to}
             amountMajor={price.totalCents / 100}
             consentText={consentText}

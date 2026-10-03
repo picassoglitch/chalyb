@@ -9,11 +9,11 @@
 import { escapeHtml } from './escape';
 import { wrap } from './templates';
 
-export const TEMPLATE_VERSION = '1';
+export const TEMPLATE_VERSION = '2';
 
 export type BillingEmailKind =
-  | 'trial_welcome' // 1
-  | 'trial_7d' // 2
+  | 'trial_7d' // 1 · "Aviso de cobro", day 0 (mandatory)
+  | 'trial_1d' // 2 · day 6, only with TRIAL_DAY6_REMINDER
   | 'charge_ok' // 3
   | 'charge_failed' // 3b
   | 'renew_7d' // 4 (and the -7 annual)
@@ -27,6 +27,12 @@ export interface BillingEmailVars {
   monto: string; // "$9,970"
   renovacion?: string; // "cada año ($9,970 MXN)"
   periodicidad?: string; // "por 1 año de Pro"
+  /** Trial length in days, from config. */
+  dias?: number;
+  /** Whole days left until the charge ("Faltan 7 días"). */
+  faltan?: number;
+  /** Pro mensual's price, for the annual-only switch link. */
+  switch_mensual?: string;
   fecha_inicio?: string;
   fecha_fin_prueba?: string;
   fecha_cobro?: string;
@@ -56,38 +62,64 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
   let subject: string;
   let html: string[];
   switch (kind) {
-    case 'trial_welcome':
-      subject = 'Tu mes de Pro gratis ya empezó 🎉';
+    case 'trial_7d': {
+      // aceptacion-ux §3.6, verbatim: the legal ≥5-day charge notice and the
+      // confirmation, nothing else (no welcome, no marketing).
+      const cancel = `${v.appUrl}/app/billing?cancelar=1`;
+      subject = `Aviso de cobro: el ${v.fecha_cobro} se cobrarán ${v.monto} MXN si no cancelas`;
       html = [
+        p(`Hola ${e(v.nombre)}:`),
         p(
-          `Hola ${e(v.nombre)}, ya tienes Chalyb Pro completo: Clips, Señales, En vivo y todo lo demás.`,
+          `Tu prueba gratis de ${e(String(v.dias ?? ''))} días de Chalyb Pro empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`,
         ),
-        p(`Tu prueba gratis empezó el ${e(v.fecha_inicio)} y termina el ${b(v.fecha_fin_prueba)}.`),
         p(
-          `${b('Hoy pagaste $0.')} Si no cancelas antes, el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (${e(v.plan)}, IVA incluido)${card(v)}, y después ${b(v.renovacion)} hasta que canceles.`,
+          `${b('Hoy pagaste $0.')} Si no cancelas antes, el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (${e(v.plan)})${card(v)}, y después ${b(v.renovacion)} hasta que canceles.`,
         ),
-        p(`Te avisaremos el ${e(v.fecha_recordatorio)}.`),
-        p(`${b('Cancelar es 1 clic:')} Mi cuenta → Mi plan.`),
-        btn(`${v.appUrl}/app/clips`, 'Hacer mis primeros clips') + btn(plan, 'Cancelar mi prueba'),
+        p(
+          `Faltan ${b(`${v.faltan ?? v.dias ?? ''} ${v.faltan === 1 ? 'día' : 'días'}`)} para el cobro.`,
+        ),
+        ...(v.switch_mensual
+          ? [
+              p('¿Prefieres pagar mes a mes?') +
+                btn(
+                  `${v.appUrl}/app/billing/cambiar?plan=pro_month`,
+                  `Cambiar a Pro mensual: ${v.switch_mensual} MXN al mes`,
+                ),
+            ]
+          : []),
+        p(
+          `${b('Cancelar es 1 clic:')} <a href="${escapeHtml(cancel)}" style="color:#e8bb7f;">Cancelar mi prueba</a> (Mi cuenta → Mi plan). Si cancelas antes del ${e(v.fecha_cobro)}, no pagas nada y sigues con Pro hasta esa fecha.`,
+        ),
         p(
           `Documentos que aceptaste: ${(v.documentos ?? [])
             .map(
               (d) =>
                 `<a href="${escapeHtml(d.url)}" style="color:#e8bb7f;">${e(d.label)} v${e(d.version)}</a>`,
             )
-            .join(' · ')}`,
+            .join(' · ')}.`,
         ),
-        p(`Folio de tu aceptación: ${b(v.consent_id)}`),
+        p(`Folio de tu aceptación: ${e(v.consent_id)}`),
       ];
       break;
-    case 'trial_7d':
-      subject = 'Tu prueba gratis termina en 7 días';
+    }
+    case 'trial_1d':
+      // trial-to-paid-path §2 Email 2; only with TRIAL_DAY6_REMINDER (O-11).
+      subject = 'Mañana termina tu prueba gratis';
       html = [
         p(
-          `Hola ${e(v.nombre)}, tu mes de Pro gratis termina el ${b(v.fecha_fin_prueba)}. El ${b(v.fecha_cobro)} se cobrarán ${b(`${v.monto} MXN`)} (${e(v.periodicidad)}, IVA incluido)${card(v)} para seguir con Pro, y se renovará automáticamente hasta que canceles.`,
+          `Hola ${e(v.nombre)}: mañana, ${e(v.fecha_cobro)}, se cobrarán ${b(`${v.monto} MXN`)} (${e(v.plan)})${card(v)}.`,
         ),
-        p('No tienes que hacer nada para seguir con Pro.'),
-        btn(plan, 'Ver mi plan') + btn(plan, 'Cancelar en 1 clic'),
+        p('Para seguir con Pro no tienes que hacer nada. ¿No quieres seguir?'),
+        btn(plan, 'Ver mi plan') + btn(`${v.appUrl}/app/billing?cancelar=1`, 'Cancelar en 1 clic'),
+        ...(v.switch_mensual
+          ? [
+              p('¿Prefieres pagar mes a mes?') +
+                btn(
+                  `${v.appUrl}/app/billing/cambiar?plan=pro_month`,
+                  `Cambiar a ${v.switch_mensual} MXN al mes`,
+                ),
+            ]
+          : []),
       ];
       break;
     case 'charge_ok':
