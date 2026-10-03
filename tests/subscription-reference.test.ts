@@ -8,6 +8,8 @@ import {
   isLiveStatus,
   manifestId,
   normalizePreapprovalStatus,
+  packReference,
+  parsePackReference,
   parseSubscriptionReference,
   subscriptionReference,
 } from '@/lib/payments/subscription-reference';
@@ -24,7 +26,8 @@ test('a subscription reference round-trips', () => {
 test('one-off and pack references are not subscription references', () => {
   // The old tier checkout: "<userId>|<TIER>".
   assert.equal(parseSubscriptionReference(`${USER}|PRO`), null);
-  // Token packs: "pack|<userId>|<packId>".
+  // Token packs: "pack_<userId>_<packId>", and the older "pack|…".
+  assert.equal(parseSubscriptionReference(packReference(USER, 'tokens_500k')), null);
   assert.equal(parseSubscriptionReference(`pack|${USER}|tokens_500k`), null);
   assert.equal(parseSubscriptionReference(''), null);
   assert.equal(parseSubscriptionReference(null), null);
@@ -120,4 +123,27 @@ test('pending and unknown statuses change nothing', () => {
 test('the signature manifest lowercases an alphanumeric id and leaves a numeric one alone', () => {
   assert.equal(manifestId('2C938084726FCA480172750000000000'), '2c938084726fca480172750000000000');
   assert.equal(manifestId(1234567890), '1234567890');
+});
+
+test('a pack reference round-trips and only uses what the Orders API accepts', () => {
+  const ref = packReference(USER, 'tokens_100k');
+  assert.equal(ref, `pack_${USER}_tokens_100k`);
+  // Orders API: external_reference must match [A-Za-z0-9_-], 64 chars at most.
+  assert.match(ref, /^[A-Za-z0-9_-]{1,64}$/);
+  assert.match(packReference(USER, 'tokens_500k'), /^[A-Za-z0-9_-]{1,64}$/);
+  assert.deepEqual(parsePackReference(ref), { userId: USER, packId: 'tokens_100k' });
+});
+
+test('a pack reference from the preferences flow still parses', () => {
+  assert.deepEqual(parsePackReference(`pack|${USER}|tokens_2m`), { userId: USER, packId: 'tokens_2m' });
+});
+
+test('anything else is not a pack reference', () => {
+  assert.equal(parsePackReference(`sub|${USER}|PRO`), null);
+  assert.equal(parsePackReference(`${USER}|PRO`), null);
+  assert.equal(parsePackReference('pack_'), null);
+  assert.equal(parsePackReference(`pack_${USER}_`), null);
+  assert.equal(parsePackReference(`pack|${USER}|`), null);
+  assert.equal(parsePackReference(''), null);
+  assert.equal(parsePackReference(null), null);
 });
