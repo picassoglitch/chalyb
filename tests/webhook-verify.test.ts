@@ -76,9 +76,11 @@ test('a signature for a different payment id is rejected', () => {
 
 test('missing or junk headers are rejected, never thrown on', () => {
   const base = { secret: SECRET, paymentId: PAYMENT_ID };
+  // No x-request-id: the manifest drops that part (MP docs), so a signature
+  // made over a manifest WITH it no longer matches.
   assert.deepEqual(
     checkMpSignature({ ...base, requestId: null, signatureHeader: signedHeader() }),
-    { ok: false, reason: 'missing_headers' },
+    { ok: false, reason: 'mismatch' },
   );
   assert.deepEqual(checkMpSignature({ ...base, requestId: REQUEST_ID, signatureHeader: null }), {
     ok: false,

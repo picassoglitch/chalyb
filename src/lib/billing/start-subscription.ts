@@ -20,7 +20,17 @@ import { createHash } from 'node:crypto';
 import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { planHasTrial, planPrice, type PlanKey, CURRENCY } from '@/config/pricing';
-import { getMercadoPago, getAppUrl, isCheckoutReady, mpGet } from '@/lib/payments/mercadopago';
+import {
+  getMercadoPago,
+  getAppUrl,
+  isCheckoutReady,
+  logMpCreate,
+  mpErrorCodeOf,
+  mpGet,
+  mpPayerEmail,
+  mpReturnUrl,
+  sellerMatches,
+} from '@/lib/payments/mercadopago';
 import {
   normalizePreapprovalStatus,
   subscriptionReference,
@@ -117,6 +127,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   const userId = session.user.id;
   const email = session.user.email;
   if (!email) return { ok: false, code: 'MP_ERROR' };
+  // B33: the test buyer in `test`, the user in `prod`; never mixed.
+  const payerEmail = mpPayerEmail(email);
+  if (!payerEmail) {
+    console.error('[billing/start] no payer email for this Mercado Pago environment');
+    return { ok: false, code: 'NOT_CONFIGURED' };
+  }
+  if (!(await sellerMatches())) return { ok: false, code: 'NOT_CONFIGURED' };
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
@@ -172,6 +189,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // ── Mercado Pago ───────────────────────────────────────────────────
   const tier = price.tier;
   const reference = subscriptionReference(userId, tier);
+  let backUrl: string;
+  try {
+    backUrl = mpReturnUrl('/app/billing');
+  } catch (err) {
+    console.error(err);
+    return { ok: false, code: 'NOT_CONFIGURED' };
+  }
   let preapprovalId: string;
   let status: string;
   try {
@@ -180,7 +204,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       body: {
         reason: `Chalyb ${PLAN_NAMES[input.planKey]}`,
         external_reference: reference,
-        payer_email: email,
+        payer_email: payerEmail,
         card_token_id: token,
         auto_recurring: {
           frequency: price.interval === 'year' ? 12 : 1,
@@ -190,15 +214,22 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
           // The first charge: the trial end, the change date, or now.
           ...(firstChargeLater ? { start_date: dates.chargeAt.toISOString() } : {}),
         },
-        back_url: `${getAppUrl()}/app/billing`,
+        back_url: backUrl,
         status: 'authorized',
       },
     });
+    logMpCreate('preapproval', { id: created.id, externalReference: reference });
     if (!created.id) return { ok: false, code: 'MP_ERROR' };
     preapprovalId = created.id;
     status = normalizePreapprovalStatus(created.status);
   } catch (err) {
-    console.error('[billing/start] preapproval.create failed', err);
+    // B36: the MP code (e.g. CC_VAL_433) goes to the log; the customer gets
+    // the friendly card error that DECLINED maps to.
+    console.error(
+      '[billing/start] preapproval.create failed',
+      { mp_code: mpErrorCodeOf(err) },
+      err,
+    );
     return { ok: false, code: 'DECLINED' };
   }
   if (status !== 'authorized' && status !== 'pending') return { ok: false, code: 'DECLINED' };
