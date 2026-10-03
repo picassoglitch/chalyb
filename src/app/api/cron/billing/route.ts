@@ -8,8 +8,8 @@
 //   2. enforces the bounce rule: no charge until 5 days after an effective
 //      notice (pauses the preapproval, resumes it after);
 //   3. moves profiles.tier when a scheduled plan change takes effect;
-//   3b. ends Pro at the 7-day trial's deadline when its annual charge never
-//      landed (PRICING.trial.firstChargeGraceDays after the charge date);
+//   3b. ends Pro at the deadline of a charge that never landed: the trial's
+//      annual charge (no grace) or a renewal (PRICING.graceDays);
 //   4. re-reads stale subscriptions from Mercado Pago (the webhook keeps them
 //      current in between).
 // Grace and cancelled periods lapse on their own: the session reads
@@ -23,7 +23,7 @@ import { syncSubscription } from '@/lib/payments/subscription-sync';
 import { notify } from '@/lib/notifications/notify';
 import {
   deriveBillingState,
-  unpaidTrialDeadline,
+  unpaidCharge,
   type SubscriptionRow,
 } from '@/lib/billing/billing-state';
 import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
     holds: 0,
     resumes: 0,
     tierMoves: 0,
-    unpaidTrials: 0,
+    unpaidCharges: 0,
     synced: 0,
     errors: 0,
   };
@@ -226,25 +226,44 @@ export async function GET(req: Request) {
         }
       }
 
-      // 3b. The 7-day trial ended and its annual charge hasn't landed: give
-      // the profile the deadline as its end (the session lapses it then).
-      // Doesn't wait on Mercado Pago: a missing webhook or endless retries
-      // can't keep Pro on. The charge landing clears it (sync re-activates).
-      const unpaidUntil = unpaidTrialDeadline(row);
-      if (unpaidUntil && row.trial_ends_at && now.getTime() >= Date.parse(row.trial_ends_at)) {
+      // 3b. A charge is due and hasn't landed — the trial's annual charge or
+      // a renewal: give the profile the deadline as its end (the session
+      // lapses it then). Doesn't wait on Mercado Pago: a missing webhook or
+      // endless retries can't keep Pro on. The charge landing clears it
+      // (the sync re-activates on the new last_charge_at).
+      let syncedNow = false;
+      let unpaid = unpaidCharge(row);
+      const inTrialNow = !!row.trial_ends_at && now.getTime() < Date.parse(row.trial_ends_at);
+      if (unpaid && !inTrialNow && now.getTime() >= Date.parse(unpaid.dueAt)) {
+        // Our copy may be behind: re-read Mercado Pago first (it backfills a
+        // charge whose webhook we missed), then judge on the fresh row.
+        await syncSubscription(preapprovalId);
+        syncedNow = true;
+        stats.synced += 1;
+        const { data: fresh } = await admin
+          .from('subscriptions')
+          .select('last_charge_at')
+          .eq('mp_preapproval_id', preapprovalId)
+          .maybeSingle();
+        unpaid = unpaidCharge({
+          ...row,
+          last_charge_at: (fresh?.last_charge_at as string | null) ?? row.last_charge_at ?? null,
+        });
+      }
+      if (unpaid && !inTrialNow && now.getTime() >= Date.parse(unpaid.dueAt)) {
         const { data: ended } = await admin
           .from('profiles')
-          .update({ tier_ends_at: unpaidUntil })
+          .update({ tier_ends_at: unpaid.deadline })
           .eq('id', userId)
           .eq('tier', row.tier)
           .is('tier_ends_at', null)
           .select('id');
         if (ended?.length) {
-          stats.unpaidTrials += 1;
+          stats.unpaidCharges += 1;
           await notify({
             severity: 'warning',
-            title: 'Prueba terminada sin cobro anual',
-            body: `Suscripción ${preapprovalId} · Pro hasta el ${formatFechaLarga(unpaidUntil, 'es')} si no entra el cobro`,
+            title: row.last_charge_at ? 'Renovación sin cobro' : 'Prueba terminada sin cobro anual',
+            body: `Suscripción ${preapprovalId} · ${row.tier} hasta el ${formatFechaLarga(unpaid.deadline, 'es')} si no entra el cobro`,
             href: '/dashboard/dinero',
             source: 'billing.cron',
           });
@@ -252,7 +271,7 @@ export async function GET(req: Request) {
       }
 
       // 4. Hourly reconcile with Mercado Pago.
-      if (Date.parse(row.updated_at as string) < now.getTime() - HOUR) {
+      if (!syncedNow && Date.parse(row.updated_at as string) < now.getTime() - HOUR) {
         await syncSubscription(preapprovalId);
         stats.synced += 1;
       }

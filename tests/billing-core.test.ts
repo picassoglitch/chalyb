@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { deriveBillingState, unpaidTrialDeadline, type SubscriptionRow } from '@/lib/billing/billing-state';
+import { deriveBillingState, unpaidCharge, type SubscriptionRow } from '@/lib/billing/billing-state';
 import { trialDates, trialDaysLeft, addInterval, BILLING_CRON_UTC_HOUR } from '@/lib/billing/trial-dates';
 import { dueNotices, holdDecision } from '@/lib/billing/reminders';
 import { changeTiming, reactivationStart, vipUpgradeQuote, unusedCredit } from '@/lib/billing/plan-change';
@@ -58,7 +58,7 @@ test('7-day trial → annual charge: Pro ends at the charge date unless it lands
   const end = new Date(T0.getTime() + 7 * DAY).toISOString();
   const r = row({ trial_ends_at: end, next_charge_at: end });
   assert.equal(PRICING.trial.firstChargeGraceDays, 0);
-  assert.equal(unpaidTrialDeadline(r), end);
+  assert.deepEqual(unpaidCharge(r), { dueAt: end, deadline: end });
   assert.equal(deriveBillingState(r, T0.getTime() + 7 * DAY - 1).state, 'trialing');
   // Mercado Pago still says authorized (processing, retrying, or no webhook): no Pro.
   assert.equal(deriveBillingState(r, T0.getTime() + 7 * DAY).state, 'free');
@@ -70,10 +70,10 @@ test('7-day trial → annual charge: Pro ends at the charge date unless it lands
   assert.equal(deriveBillingState(failed, T0.getTime() + 8 * DAY).state, 'free');
   // The annual charge landed (even late): Pro for the year.
   const paid = { ...r, last_charge_at: new Date(T0.getTime() + 9 * DAY).toISOString(), next_charge_at: new Date(T0.getTime() + 372 * DAY).toISOString() };
-  assert.equal(unpaidTrialDeadline(paid), null);
+  assert.equal(unpaidCharge(paid)?.dueAt, new Date(T0.getTime() + 9 * DAY + 365 * DAY).toISOString());
   assert.equal(deriveBillingState(paid, T0.getTime() + 200 * DAY).state, 'pro');
   // Paid plans with no trial are untouched.
-  assert.equal(unpaidTrialDeadline(row({ plan_key: 'pro_month' })), null);
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_month' })), null);
 });
 
 test('a bounce hold moves the trial deadline with the charge', () => {
@@ -84,9 +84,35 @@ test('a bounce hold moves the trial deadline with the charge', () => {
     next_charge_at: end,
     reminder_delivered_at: new Date(T0.getTime() + 4 * DAY).toISOString(),
   });
-  assert.equal(unpaidTrialDeadline(r), new Date(T0.getTime() + 9 * DAY).toISOString());
+  assert.equal(unpaidCharge(r)?.deadline, new Date(T0.getTime() + 9 * DAY).toISOString());
   assert.equal(deriveBillingState(r, T0.getTime() + 8 * DAY).grantsTier, 'PRO');
   assert.equal(deriveBillingState(r, T0.getTime() + 9 * DAY).state, 'free');
+});
+
+test('renewal: due one period after the last charge, then PRICING.graceDays, whatever MP says', () => {
+  assert.equal(PRICING.graceDays, 7);
+  const last = T0.toISOString();
+  const monthDue = new Date('2026-10-30T18:00:00Z').getTime();
+  // Mensual, MP still "authorized" and has moved next_payment_date to a retry.
+  const m = row({ plan_key: 'pro_month', last_charge_at: last, next_charge_at: new Date(monthDue + 3 * DAY).toISOString() });
+  assert.deepEqual(unpaidCharge(m), {
+    dueAt: new Date(monthDue).toISOString(),
+    deadline: new Date(monthDue + 7 * DAY).toISOString(),
+  });
+  assert.equal(deriveBillingState(m, monthDue + 6 * DAY).grantsTier, 'PRO');
+  assert.equal(deriveBillingState(m, monthDue + 7 * DAY).state, 'free');
+  // A rejection we heard about shows as past_due inside grace, even with
+  // next_payment_date already moved forward.
+  const failed = { ...m, grace_ends_at: new Date(monthDue + 7 * DAY).toISOString() };
+  assert.equal(deriveBillingState(failed, monthDue + 2 * DAY).state, 'past_due');
+  // Anual: a year after the last charge. VIP (and legacy rows): monthly.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_year', last_charge_at: last }))?.dueAt, '2027-09-30T18:00:00.000Z');
+  assert.equal(unpaidCharge(row({ tier: 'VIP', plan_key: null, last_charge_at: last }))?.dueAt, '2026-10-30T18:00:00.000Z');
+  // The renewal landed: due moves a period ahead, Pro carries on.
+  const renewed = { ...m, last_charge_at: new Date(monthDue + DAY).toISOString() };
+  assert.equal(deriveBillingState(renewed, monthDue + 10 * DAY).state, 'pro');
+  // A never-charged paid start or plan change has nothing we can date.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_month' })), null);
 });
 
 test('cancelled keeps access until the period (or trial) ends', () => {
