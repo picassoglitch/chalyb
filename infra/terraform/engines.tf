@@ -30,7 +30,7 @@ module "engine" {
     {
       ENGINE_SLUG     = each.key
       PUBLIC_URL      = "https://${each.key}.${var.domain}"
-      CHALYB_BASE_URL = coalesce(var.hub_url, "https://${var.domain}")
+      CHALYB_BASE_URL = coalesce(var.hub_url, "https://www.${var.domain}")
     },
     each.value.env,
   )

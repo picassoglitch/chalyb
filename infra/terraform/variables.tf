@@ -30,7 +30,8 @@ variable "hub_url" {
   description = <<-EOT
     The hub's public origin. Every engine gets it as CHALYB_BASE_URL, where it
     admits jobs and reports usage (docs/engines/consumption-contract.md).
-    Empty means https://<domain>. Engines treat an unset CHALYB_BASE_URL as
+    Empty means https://www.<domain> (the apex 308s there, and a redirect
+    drops the bearer header). Engines treat an unset CHALYB_BASE_URL as
     local dev and skip metering, so this must never be left out in prod.
   EOT
   type        = string
