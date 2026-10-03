@@ -969,6 +969,33 @@
       "consentYear": "Acepto el cobro de {monto} MXN hoy y su renovación automática cada año, y acepto los <terms>Términos de Suscripción</terms>.",
       "chargeMonth": "<b>Hoy se cobran {monto} MXN</b> (IVA incluido) a {tarjeta}, y se renovará automáticamente {cada_periodo} por {monto} MXN hasta que canceles. Te avisaremos 7 días antes de cada cobro. Cancela en 1 clic desde Mi cuenta → Mi plan.",
       "consentMonth": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
+    },
+    "lealtad": {
+      "checkout": {
+        "today": "<b>Hoy, {fecha_hoy}, se cobran {m1} MXN</b> a {tarjeta} (mes 1 de Pro Lealtad).",
+        "after": "Después, cada mes, automáticamente y hasta que canceles:",
+        "row": "{fecha}: {monto}",
+        "rowLast": "desde {fecha}: {monto} MXN cada mes",
+        "notice": "Te avisamos por correo 7 días antes de cada cobro, con su monto.",
+        "reset": "Si cancelas, cambias de plan o un pago queda sin cubrir 7 días después de fallar, tu precio vuelve a empezar en {m1}.",
+        "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>; conservas Pro hasta el final del mes pagado.",
+        "fromOther": "Pro Lealtad empieza en el mes 1 ({m1}) al terminar tu periodo actual; tus meses en otro plan no cuentan."
+      },
+      "consent": "Acepto que Chalyb cobre <b>hoy {m1} MXN</b> a mi tarjeta y después, <b>automáticamente cada mes</b>, {m2}, {m3}, {m4}, {m5} y {m6} MXN, y luego <b>{piso} MXN al mes</b> mientras siga suscrito, hasta que cancele. Entiendo que <b>mi precio vuelve a empezar en {m1}</b> si cancelo, cambio de plan o un pago queda sin cubrir 7 días después de fallar, y acepto los <terms>Términos de Suscripción</terms>.",
+      "step": "Mes {n}: pagas {monto}, {pct}% menos que el mes 1.",
+      "stepFirst": "Mes 1: pagas {monto}.",
+      "rule": "Cada mes que sigues baja 10% del mes 1, hasta 60%.",
+      "thisMonth": "MXN este mes",
+      "progress": "{pct}% menos que el mes 1",
+      "progressMeta": "Mes {n} · faltan {k}",
+      "progressMetaFloor": "Mes {n} · ya en tu precio más bajo",
+      "floor": "Desde el mes 7: {piso} MXN al mes mientras sigas.",
+      "nextSub": "Mes {n} · {pct}% menos que el mes 1",
+      "warn": "ⓘ <b>Tu precio vuelve a {m1} si</b> cancelas (al terminar tu mes pagado), cambias a otro plan o un pago queda sin cubrir 7 días después de fallar. Cambiar de tarjeta, un reembolso o un contracargo no lo reinician.",
+      "changeSub": "Tu precio vuelve a empezar en {m1}",
+      "cancelSub": "Sigues con Pro hasta el {fecha}. No habrá más cobros. Si vuelves después, Pro Lealtad empieza otra vez en {m1}.",
+      "monthTick": "Mes {n}",
+      "monthTickLast": "Mes {n}+"
     }
   },
   "plans": {
@@ -981,7 +1008,9 @@
     "toggle": {
       "month": "Mensual",
       "year": "Anual",
-      "save": "Ahorra hasta {pct}%"
+      "save": "Ahorra hasta {pct}%",
+      "lealtad": "Lealtad",
+      "lealtadPill": "Solo Pro"
     },
     "gratis": {
       "name": "Gratis",
@@ -1046,6 +1075,36 @@
       "historyYear": "Tus resultados se guardan 1 año",
       "storage": "{espacio} para tus videos y archivos",
       "cancel": "Cancela en 1 clic, sin llamadas"
+    },
+    "lealtad": {
+      "subtitle": "Con Pro Lealtad, cada mes que sigues pagas menos.",
+      "badge": "Nuevo · Solo Pro",
+      "name": "Pro Lealtad",
+      "tag": "Para quien se queda: cada mes que sigues con Pro, pagas menos.",
+      "first": "MXN el primer mes",
+      "header": "Se renueva cada mes · Sin prueba gratis",
+      "explain": "Cada mes que sigues pagando, tu precio baja 10% del precio del mes 1, hasta <b>{piso} MXN al mes desde el mes 7</b> (60% menos).",
+      "charge": "<b>Se cobra hoy {m1} MXN.</b> Después se cobra automáticamente cada mes el monto del calendario, hasta que canceles. Te avisamos por correo y en la app 7 días antes de cada cobro, con su monto y fecha.",
+      "reset": "ⓘ <b>Tu precio vuelve a {m1} si</b> cancelas (al terminar tu mes pagado), cambias a otro plan o un pago queda sin cubrir 7 días después de fallar. Cambiar de tarjeta, un reembolso o un contracargo no lo reinician.",
+      "chartTitle": "Así baja tu precio",
+      "legend": "% = menos que el mes 1",
+      "month": "Mes {n}",
+      "monthLast": "Mes {n}+",
+      "barPct": "{pct}% menos",
+      "barAria": "Mes {n}: {monto} MXN, {pct}% menos que el mes 1",
+      "barAriaFirst": "Mes 1: {monto} MXN",
+      "rounding": "<b>Montos con IVA incluido, redondeados hacia abajo al peso entero</b>; el descuento real es igual o mayor al indicado.",
+      "yearLealtad": "Pro Lealtad, 1.er año",
+      "yearLealtadSub": "2.º año, si sigues: {total}",
+      "yearMonthly": "Pro mensual, 1 año",
+      "yearMonthlySub": "12 × {monto}",
+      "yearAnnual": "Pro anual, 1 año",
+      "cheapest": "Lo más barato el 1.er año",
+      "compare": "Del mes 1 al 4 pagas más que en Pro mensual ({pm}); desde el mes 6 pagas menos. En el primer año, Pro anual ({pa}) es lo más barato. Segundo año, si sigues: Pro Lealtad {l2} · Pro anual {pa} · Pro mensual {pm12}.",
+      "cta": "Pagar {m1} y empezar Pro Lealtad",
+      "ctaContinue": "Continuar con Pro Lealtad",
+      "notOthers": "Gratis y VIP no tienen Pro Lealtad:",
+      "seeOthers": "ver Mensual y Anual"
     }
   },
   "checkout": {
@@ -1144,7 +1203,8 @@
       "email": "Revisar correo"
     },
     "noticeHold": "No pudimos enviarte el aviso de cobro a <b>{correo}</b>. Confírmalo o actualízalo: <b>no te cobraremos</b> hasta 5 días después de avisarte.",
-    "trialTomorrow": "Mañana, <b>{fecha_cobro}</b>, se cobrarán <b>{monto} MXN</b>. Si no quieres seguir, cancela hoy en 1 clic."
+    "trialTomorrow": "Mañana, <b>{fecha_cobro}</b>, se cobrarán <b>{monto} MXN</b>. Si no quieres seguir, cancela hoy en 1 clic.",
+    "lealtad": "El <b>{fecha_cobro}</b> se cobran <b>{monto} MXN</b> de tu Pro Lealtad (mes {n}), {pct}% menos que tu mes 1. ¿No quieres seguir? Cancela antes de esa fecha y no se te cobra."
   },
   "myplan": {
     "title": "Mi plan",
@@ -1162,13 +1222,15 @@
       "vip_month": "VIP — todo incluido y más créditos",
       "trial": "Prueba {plan} gratis",
       "free": "Gratis",
-      "vip_year": "VIP anual — todo incluido y más créditos"
+      "vip_year": "VIP anual — todo incluido y más créditos",
+      "pro_lealtad": "Pro Lealtad — tu precio baja cada mes"
     },
     "planName": {
       "pro_month": "Pro mensual",
       "pro_year": "Pro anual",
       "vip_month": "VIP",
-      "vip_year": "VIP anual"
+      "vip_year": "VIP anual",
+      "pro_lealtad": "Pro Lealtad"
     },
     "renewMonth": "Se renueva cada mes.",
     "renewYear": "Se renueva cada año.",
@@ -1855,7 +1917,8 @@
         "pro_month": "Pro mensual",
         "pro_year": "Pro anual",
         "vip_month": "VIP mensual",
-        "vip_year": "VIP anual"
+        "vip_year": "VIP anual",
+        "pro_lealtad": "Pro Lealtad"
       },
       "toggle": "Ofrecer Mensual además de Anual",
       "toggleHelp": "Si lo apagas, la prueba y Planes solo ofrecen Anual.",

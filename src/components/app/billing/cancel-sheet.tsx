@@ -22,10 +22,14 @@ export function CancelSheet({
   triggerLabel,
   triggerSub,
   defaultOpen = false,
+  bodyOverride,
 }: {
   trial: boolean;
   /** Opened from the email's cancel link (?cancelar=1). */
   defaultOpen?: boolean;
+  /** Pro Lealtad: the one informative line (aceptacion-ux §4.2) instead of
+   *  the usual body; [Sí, cancelar] stays on the same screen. */
+  bodyOverride?: string;
   planName: string;
   accessDate: string;
   email: string;
@@ -111,13 +115,15 @@ export function CancelSheet({
             <p>
               <Markup
                 text={
-                  trial
-                    ? t.markup('trial.body', { fecha: accessDate, b: (c) => `<b>${c}</b>` })
-                    : t.markup('paid.body', {
-                        plan: planName,
-                        fecha: accessDate,
-                        b: (c) => `<b>${c}</b>`,
-                      })
+                  bodyOverride
+                    ? bodyOverride
+                    : trial
+                      ? t.markup('trial.body', { fecha: accessDate, b: (c) => `<b>${c}</b>` })
+                      : t.markup('paid.body', {
+                          plan: planName,
+                          fecha: accessDate,
+                          b: (c) => `<b>${c}</b>`,
+                        })
                 }
               />
             </p>

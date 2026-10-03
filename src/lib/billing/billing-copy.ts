@@ -7,7 +7,8 @@
 // messages: the page renders them with t.rich; evidence keeps the plain text
 // (stripMarkup).
 
-import { PRICING, planPrice, type PlanKey } from '@/config/pricing';
+import { PRICING, lealtadSchedule, planPrice, type PlanKey } from '@/config/pricing';
+import { lealtadCalendar } from './lealtad';
 import { formatFechaLarga, formatMXN } from './format';
 import type { TrialDates } from './trial-dates';
 
@@ -113,4 +114,56 @@ export function paidConsentSentence(t: Translate, input: PaidInput): string {
   return planPrice(input.planKey).interval === 'year'
     ? t('paid.consentYear', v)
     : t('paid.consentMonth', v);
+}
+
+/** Pro Lealtad (WS-7, aceptacion-ux §4.2 verbatim): every amount from the
+ *  schedule, every date from lealtadDates(), never typed. */
+export function lealtadVars() {
+  const s = lealtadSchedule().map((x) => formatMXN(x.cents));
+  return {
+    m1: s[0]!,
+    m2: s[1]!,
+    m3: s[2]!,
+    m4: s[3]!,
+    m5: s[4]!,
+    m6: s[5]!,
+    piso: s[6]!,
+  };
+}
+
+/** The checkout block next to the button, with real dates. */
+export function lealtadCheckoutParagraphs(
+  t: Translate,
+  input: { start: Date; cardLast4: string | null; locale: string },
+): string[] {
+  const v = lealtadVars();
+  const cal = lealtadCalendar(input.start);
+  const date = (d: Date) => formatFechaLarga(d, input.locale);
+  const rows = cal
+    .slice(1)
+    .map((c, i, all) =>
+      i === all.length - 1
+        ? t('lealtad.checkout.rowLast', { fecha: date(c.date), monto: formatMXN(c.cents) })
+        : t('lealtad.checkout.row', { fecha: date(c.date), monto: formatMXN(c.cents) }),
+    )
+    .join(' · ');
+  return [
+    t('lealtad.checkout.today', {
+      ...v,
+      fecha_hoy: date(input.start),
+      tarjeta: input.cardLast4
+        ? t('vars.tarjeta.last4', { ultimos4: input.cardLast4 })
+        : t('vars.tarjeta.none'),
+    }),
+    t('lealtad.checkout.after', v),
+    `${rows}.`,
+    t('lealtad.checkout.notice', v),
+    t('lealtad.checkout.reset', v),
+    t('lealtad.checkout.cancel', v),
+  ];
+}
+
+/** Law's checkbox (§15.12.3), verbatim. */
+export function lealtadConsentSentence(t: Translate): string {
+  return t('lealtad.consent', lealtadVars());
 }

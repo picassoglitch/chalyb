@@ -7,7 +7,12 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { changePlan } from '@/lib/billing/billing-actions';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
-import { paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
+import {
+  paidCheckoutEnabled,
+  vipYearEnabled,
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+} from '@/lib/config/flags';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
   if (isAdminRole(session.role))
     return NextResponse.json({ ok: false, code: 'ADMIN' }, { status: 403 });
   const planKey = String(body.planKey ?? '');
-  if (!planOnSale(planKey, vipYearEnabled())) {
+  if (!planOnSale(planKey, vipYearEnabled(), lealtadEnabled() && lealtadOpenToNewCustomers())) {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   }
   const result = await changePlan({

@@ -129,6 +129,7 @@ export function signupNext(input: {
     return qs ? `/app/prueba?${qs}` : '/app/prueba';
   }
   if (plan === 'free') return '/app';
+  if (plan === 'lealtad') return paid ? '/app/prueba/pago?plan=pro_lealtad' : '/app/billing';
   if (plan === 'pro') {
     return paid && interval ? `/app/prueba/pago?plan=pro_${interval}` : '/app/billing';
   }

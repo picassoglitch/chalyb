@@ -19,7 +19,14 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { planHasTrial, planPrice, type PlanKey, CURRENCY } from '@/config/pricing';
+import {
+  lealtadPriceCents,
+  planHasTrial,
+  planPrice,
+  type PlanKey,
+  CURRENCY,
+} from '@/config/pricing';
+import { lealtadCalendar, resumeStep } from './lealtad';
 import {
   getMercadoPago,
   getAppUrl,
@@ -41,10 +48,18 @@ import { legalDocuments } from '@/lib/legal/documents';
 import type { SessionUser } from '@/lib/auth/session';
 import { addInterval, trialDates, type TrialDates } from './trial-dates';
 import { formatFechaLarga, formatMXN } from './format';
-import { trialFlowEnabled } from '@/lib/config/flags';
+import {
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+  lealtadReturnWindowDays,
+  trialFlowEnabled,
+} from '@/lib/config/flags';
 import {
   consentSentence,
   disclosureParagraphs,
+  lealtadCheckoutParagraphs,
+  lealtadConsentSentence,
+  lealtadVars,
   paidConsentSentence,
   paidParagraphs,
   evidenceText,
@@ -132,6 +147,12 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     return { ok: false, code: 'NOT_CONFIGURED' };
   }
   if (!(await sellerMatches())) return { ok: false, code: 'NOT_CONFIGURED' };
+  // Pro Lealtad (WS-7): only with its flag, and only while it is open to
+  // new customers (Términos 4 bis.3: existing schedules continue).
+  const lealtad = input.planKey === 'pro_lealtad';
+  if (lealtad && !(lealtadEnabled() && lealtadOpenToNewCustomers())) {
+    return { ok: false, code: 'NOT_CONFIGURED' };
+  }
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
@@ -176,6 +197,28 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   const now = new Date();
   const price = planPrice(input.planKey);
+  // Pro Lealtad starts at month 1, or where it was within the optional
+  // return window (O-15, default off); every other plan at its price.
+  let startStep = 0;
+  if (lealtad && lealtadReturnWindowDays() > 0) {
+    const { data: last } = await admin
+      .from('subscriptions')
+      .select('loyalty_step, ended_at, access_until')
+      .eq('user_id', userId)
+      .eq('plan_key', 'pro_lealtad')
+      .eq('status', 'cancelled')
+      .order('ended_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const ended = (last?.access_until ?? last?.ended_at) as string | null | undefined;
+    startStep = resumeStep({
+      windowDays: lealtadReturnWindowDays(),
+      lastCancelledEndedAt: ended ? new Date(ended) : null,
+      lastStep: (last?.loyalty_step as number | null) ?? null,
+      now: new Date(),
+    });
+  }
+  const chargeCents = lealtad ? lealtadPriceCents(startStep) : price.totalCents;
   const switchEnds = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
   const dates: TrialDates =
     mode === 'trial'
@@ -208,32 +251,51 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   };
   const chargedToday = !trialLike && (mode === 'paid' || !firstChargeLater);
   const tChangeText = await getTranslations({ locale: input.locale, namespace: 'change' });
-  const disclosureText = trialLike
-    ? evidenceText(disclosureParagraphs(t, disclosure))
-    : chargedToday
-      ? evidenceText(paidParagraphs(t, paidInput))
-      : null;
-  const checkboxText = trialLike
-    ? stripMarkup(consentSentence(t, disclosure))
-    : chargedToday
-      ? stripMarkup(paidConsentSentence(t, paidInput))
-      : stripMarkup(
-          tChangeText.markup('consent', {
-            monto: formatMXN(price.totalCents),
-            renovacion_corta: tb(
-              price.interval === 'year'
-                ? 'vars.renovacionCorta.year'
-                : 'vars.renovacionCorta.month',
-            ),
-            fecha: formatFechaLarga(dates.chargeAt, input.locale),
-            b: (c: string) => `<b>${c}</b>`,
-            terms: (c: string) => `<terms>${c}</terms>`,
-          }),
-        );
+  // Pro Lealtad: Law's checkout block with the real dates, from the first
+  // charge (today, or when the current plan ends).
+  const lealtadStart = firstChargeLater ? dates.chargeAt : now;
+  const disclosureText = lealtad
+    ? evidenceText(
+        lealtadCheckoutParagraphs(t, {
+          start: lealtadStart,
+          cardLast4: null,
+          locale: input.locale,
+        }),
+      )
+    : trialLike
+      ? evidenceText(disclosureParagraphs(t, disclosure))
+      : chargedToday
+        ? evidenceText(paidParagraphs(t, paidInput))
+        : null;
+  const checkboxText = lealtad
+    ? stripMarkup(lealtadConsentSentence(t))
+    : trialLike
+      ? stripMarkup(consentSentence(t, disclosure))
+      : chargedToday
+        ? stripMarkup(paidConsentSentence(t, paidInput))
+        : stripMarkup(
+            tChangeText.markup('consent', {
+              monto: formatMXN(price.totalCents),
+              renovacion_corta: tb(
+                price.interval === 'year'
+                  ? 'vars.renovacionCorta.year'
+                  : 'vars.renovacionCorta.month',
+              ),
+              fecha: formatFechaLarga(dates.chargeAt, input.locale),
+              b: (c: string) => `<b>${c}</b>`,
+              terms: (c: string) => `<terms>${c}</terms>`,
+            }),
+          );
   const tPay = await getTranslations({ locale: input.locale, namespace: 'checkout' });
   const tChange = await getTranslations({ locale: input.locale, namespace: 'change' });
-  const buttonLabel =
-    mode === 'trial' ? tPay('pay.cta') : mode === 'change' ? tChange('cta') : tPay('paid.cta');
+  const tPlansBtn = await getTranslations({ locale: input.locale, namespace: 'plans' });
+  const buttonLabel = lealtad
+    ? tPlansBtn('lealtad.cta', { m1: lealtadVars().m1 })
+    : mode === 'trial'
+      ? tPay('pay.cta')
+      : mode === 'change'
+        ? tChange('cta')
+        : tPay('paid.cta');
 
   // ── Mercado Pago ───────────────────────────────────────────────────
   const tier = price.tier;
@@ -258,7 +320,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         auto_recurring: {
           frequency: price.interval === 'year' ? 12 : 1,
           frequency_type: 'months',
-          transaction_amount: price.totalCents / 100,
+          transaction_amount: chargeCents / 100,
           currency_id: CURRENCY,
           // The first charge: the trial end, the change date, or now.
           ...(firstChargeLater ? { start_date: dates.chargeAt.toISOString() } : {}),
@@ -292,8 +354,9 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   let consent;
   try {
     consent = await recordConsent({
-      event_type:
-        mode === 'trial'
+      event_type: lealtad
+        ? 'lealtad_started'
+        : mode === 'trial'
           ? 'trial_started'
           : mode === 'change'
             ? 'plan_changed'
@@ -317,7 +380,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       checkbox_checked: true,
       button_label: buttonLabel,
       plan_id: input.planKey,
-      amount_mxn: price.totalCents / 100,
+      amount_mxn: chargeCents / 100,
       currency: CURRENCY,
       tax_included: true,
       billing_interval: price.interval,
@@ -331,6 +394,16 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         mp_preapproval_id: preapprovalId,
       },
       marketing_opt_in: false,
+      ...(lealtad
+        ? {
+            details: {
+              start_step: String(startStep),
+              schedule: lealtadCalendar(lealtadStart)
+                .map((c) => `${c.date.toISOString().slice(0, 10)}=${c.cents}`)
+                .join(','),
+            },
+          }
+        : {}),
     });
   } catch (err) {
     console.error('[billing/start] consent not stored — cancelling the new preapproval', err);
@@ -358,7 +431,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       // Written as 'pending'; the sync below records Mercado Pago's real
       // status, which is what makes it a first activation (audit, grant).
       status: 'pending',
-      amount_cents: price.totalCents,
+      amount_cents: chargeCents,
+      ...(lealtad ? { loyalty_step: startStep, loyalty_mp_amount_cents: chargeCents } : {}),
       currency: CURRENCY,
       started_at: now.toISOString(),
       trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
@@ -400,6 +474,36 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // before the charge, the legal ≥5-day notice AND the confirmation. Nothing
   // else goes in it (no welcome, no marketing: C1a). Its delivery gates the
   // charge (the hold rule); the cron uses the same key, so it goes out once.
+  // Pro Lealtad: the confirmation with the whole calendar (aceptacion-ux §4.2).
+  if (lealtad) {
+    const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
+    const v = lealtadVars();
+    await dispatchBillingEmail({
+      userId,
+      email,
+      kind: 'lealtad_started',
+      periodKey: consent.consent_id,
+      vars: {
+        nombre: name,
+        plan: 'Pro Lealtad',
+        monto: v.m1,
+        reinicio: v.m1,
+        fecha_hoy: formatFechaLarga(lealtadStart, 'es'),
+        ultimos4: card.last_four_digits,
+        calendario: lealtadCalendar(lealtadStart)
+          .slice(1)
+          .map((c, i, all) => ({
+            fecha: formatFechaLarga(c.date, 'es'),
+            monto: formatMXN(c.cents),
+            desde: i === all.length - 1,
+          })),
+        consent_id: consent.consent_id,
+        version_sus: legalDocuments('suscripcion')[0]?.version,
+        appUrl: getAppUrl(),
+      },
+    });
+  }
+
   if (trialLike) {
     const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
     await dispatchBillingEmail({

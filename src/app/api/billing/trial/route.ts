@@ -8,7 +8,12 @@ import { NextResponse } from 'next/server';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
+import {
+  paidCheckoutEnabled,
+  vipYearEnabled,
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+} from '@/lib/config/flags';
 import { startSubscription } from '@/lib/billing/start-subscription';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
 
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
   if ((planKey === 'pro_month' || planKey === 'vip_month') && !(await billingToggleEnabled())) {
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 409 });
   }
-  if (!planOnSale(planKey, vipYearEnabled())) {
+  if (!planOnSale(planKey, vipYearEnabled(), lealtadEnabled() && lealtadOpenToNewCustomers())) {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   }
 

@@ -4,7 +4,12 @@ import { Lock } from 'lucide-react';
 import { redirect, Link } from '@/i18n/routing';
 import type { Route } from 'next';
 import { requirePaidCheckout } from '@/lib/billing/trial-gate';
-import { trialFlowEnabled, vipYearEnabled } from '@/lib/config/flags';
+import {
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+  trialFlowEnabled,
+  vipYearEnabled,
+} from '@/lib/config/flags';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
@@ -13,6 +18,9 @@ import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { addInterval, trialDates } from '@/lib/billing/trial-dates';
 import {
   consentSentence,
+  lealtadCheckoutParagraphs,
+  lealtadConsentSentence,
+  lealtadVars,
   paidConsentSentence,
   paidParagraphs,
   trialVars,
@@ -50,7 +58,8 @@ export default async function PagoPage({
   const onSale =
     plan === 'pro_year' ||
     (plan === 'vip_year' && vipYearEnabled()) ||
-    ((plan === 'pro_month' || plan === 'vip_month') && monthlyOffered);
+    ((plan === 'pro_month' || plan === 'vip_month') && monthlyOffered) ||
+    (plan === 'pro_lealtad' && lealtadEnabled() && lealtadOpenToNewCustomers());
   if (!onSale) {
     return redirect({ href: '/app/prueba', locale });
   }
@@ -81,10 +90,19 @@ export default async function PagoPage({
     cardLast4: null,
     locale,
   };
-  const consentText = trial
-    ? consentSentence(tb, { planKey, dates, cardLast4: null, locale })
-    : paidConsentSentence(tb, paidInput);
-  const paidBlock = trial ? [] : paidParagraphs(tb, paidInput);
+  // Pro Lealtad: Law's checkout block with every date, and its checkbox.
+  const lealtad = planKey === 'pro_lealtad';
+  const consentText = lealtad
+    ? lealtadConsentSentence(tb)
+    : trial
+      ? consentSentence(tb, { planKey, dates, cardLast4: null, locale })
+      : paidConsentSentence(tb, paidInput);
+  const paidBlock = lealtad
+    ? lealtadCheckoutParagraphs(tb, { start: new Date(), cardLast4: null, locale })
+    : trial
+      ? []
+      : paidParagraphs(tb, paidInput);
+  const tPlans = await getTranslations('plans');
   // The same plan's other interval (Pro ↔ Pro anual, VIP ↔ VIP anual).
   const vip = planPrice(planKey).tier === 'VIP';
   const other: PlanKey =
@@ -95,7 +113,7 @@ export default async function PagoPage({
       : vip
         ? 'vip_year'
         : 'pro_year';
-  const otherOnSale = other !== 'vip_year' || vipYearEnabled();
+  const otherOnSale = !lealtad && (other !== 'vip_year' || vipYearEnabled());
   const publicKey = getPublicKey();
 
   return (
@@ -145,7 +163,13 @@ export default async function PagoPage({
                 planKey={planKey}
                 amountMajor={price.totalCents / 100}
                 consentText={consentText}
-                buttonLabel={trial ? t('pay.cta') : t('paid.cta')}
+                buttonLabel={
+                  lealtad
+                    ? tPlans('lealtad.cta', { m1: lealtadVars().m1 })
+                    : trial
+                      ? t('pay.cta')
+                      : t('paid.cta')
+                }
                 endpoint="/api/billing/trial"
                 successHref="/app/prueba/listo"
                 askWhere
@@ -187,10 +211,18 @@ export default async function PagoPage({
                   <dd>{t('summary.firstValue', { monto: vars.monto, fecha: vars.fecha_cobro })}</dd>
                 </>
               )}
-              <dt>{t('summary.after')}</dt>
-              <dd>
-                {t('summary.afterValue', { monto: vars.monto, cada_periodo: vars.cada_periodo })}
-              </dd>
+              {/* Pro Lealtad's amount changes every month: the block lists it. */}
+              {!lealtad && (
+                <>
+                  <dt>{t('summary.after')}</dt>
+                  <dd>
+                    {t('summary.afterValue', {
+                      monto: vars.monto,
+                      cada_periodo: vars.cada_periodo,
+                    })}
+                  </dd>
+                </>
+              )}
               <dt>{t('summary.ivaLabel')}</dt>
               <dd>{formatMXN(ivaPortion(price.totalCents))}</dd>
               <dt>

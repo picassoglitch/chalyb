@@ -26,14 +26,20 @@ import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-
 import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
-import { dispatchBillingEmail, trialNoticeVars } from '@/lib/billing/notices';
+import {
+  dispatchBillingEmail,
+  lealtadFailedVars,
+  lealtadNoticeVars,
+  trialNoticeVars,
+} from '@/lib/billing/notices';
+import { reconcileLealtad } from '@/lib/billing/lealtad-server';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   mpPauseInTrialVerified,
   priceIncreaseNoAnswer,
   trialDay6ReminderEnabled,
 } from '@/lib/config/flags';
-import { planPrice, type PlanKey } from '@/config/pricing';
+import { chargeFor, planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { nextStep } from '@/lib/billing/price-change';
@@ -91,7 +97,7 @@ export async function GET(req: Request) {
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, consent_id, updated_at',
+      'id, user_id, status, tier, plan_key, amount_cents, loyalty_step, loyalty_mp_amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, consent_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -126,7 +132,11 @@ export async function GET(req: Request) {
           .maybeSingle();
         const email = profile?.email as string | null;
         for (const notice of due) {
-          const kind = EMAIL_FOR[notice.kind];
+          const lealtad = planKey === 'pro_lealtad';
+          // Pro Lealtad: the notice before every charge carries that month's
+          // amount and step (Términos 4 bis.6).
+          const kind =
+            lealtad && notice.kind === 'renew_7d' ? 'lealtad_7d' : EMAIL_FOR[notice.kind];
           if (!email) continue;
           const nombre = ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '';
           const trialNotice = notice.kind === 'trial_7d' || notice.kind === 'trial_1d';
@@ -137,31 +147,39 @@ export async function GET(req: Request) {
             periodKey: notice.periodKey,
             evidence: EVIDENCE[notice.kind],
             vars:
-              trialNotice && nextChargeAt && row.trial_ends_at
-                ? trialNoticeVars({
+              lealtad && kind === 'lealtad_7d' && nextChargeAt
+                ? lealtadNoticeVars({
                     nombre,
-                    planKey,
-                    startedAt: (row.started_at as string | null) ?? now,
-                    trialEndsAt: row.trial_ends_at,
+                    step: (row.loyalty_step as number | null) ?? 0,
                     chargeAt: nextChargeAt,
                     last4: row.card_last4 ?? null,
-                    consentId: (row.consent_id as string | null) ?? null,
                     appUrl: getAppUrl(),
-                    now,
                   })
-                : {
-                    nombre,
-                    plan: PLAN_NAMES[planKey],
-                    monto: formatMXN(price.totalCents),
-                    periodicidad:
-                      price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
-                    fecha_fin_prueba: row.trial_ends_at
-                      ? formatFechaLarga(row.trial_ends_at, 'es')
-                      : undefined,
-                    fecha_cobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : undefined,
-                    ultimos4: row.card_last4 ?? undefined,
-                    appUrl: getAppUrl(),
-                  },
+                : trialNotice && nextChargeAt && row.trial_ends_at
+                  ? trialNoticeVars({
+                      nombre,
+                      planKey,
+                      startedAt: (row.started_at as string | null) ?? now,
+                      trialEndsAt: row.trial_ends_at,
+                      chargeAt: nextChargeAt,
+                      last4: row.card_last4 ?? null,
+                      consentId: (row.consent_id as string | null) ?? null,
+                      appUrl: getAppUrl(),
+                      now,
+                    })
+                  : {
+                      nombre,
+                      plan: PLAN_NAMES[planKey],
+                      monto: formatMXN(chargeFor(row as never)),
+                      periodicidad:
+                        price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
+                      fecha_fin_prueba: row.trial_ends_at
+                        ? formatFechaLarga(row.trial_ends_at, 'es')
+                        : undefined,
+                      fecha_cobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : undefined,
+                      ultimos4: row.card_last4 ?? undefined,
+                      appUrl: getAppUrl(),
+                    },
           });
           if (sent.sent) stats.notices += 1;
           // The same notice in Avisos; it can't be deleted before the charge.
@@ -236,6 +254,40 @@ export async function GET(req: Request) {
           stats.priceChanges += 1;
         }
       }
+
+      // 1d. Pro Lealtad, payment failed: the second warning on day 5 of the
+      // 7-day grace (the first went out on day 0 from the webhook).
+      if (planKey === 'pro_lealtad' && state.state === 'past_due' && row.grace_ends_at) {
+        const graceEnd = Date.parse(row.grace_ends_at);
+        if (now.getTime() >= graceEnd - 2 * 86_400_000 && now.getTime() < graceEnd) {
+          const { data: profile } = await admin
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .maybeSingle();
+          if (profile?.email) {
+            await dispatchBillingEmail({
+              userId,
+              email: profile.email as string,
+              kind: 'lealtad_failed',
+              periodKey: `grace:${row.grace_ends_at.slice(0, 10)}:${preapprovalId}:d5`,
+              evidence: 'charge_failed',
+              vars: lealtadFailedVars({
+                nombre: ((profile.full_name as string | null) ?? '').split(' ')[0] ?? '',
+                step: (row.loyalty_step as number | null) ?? 0,
+                chargedAt: nextChargeAt ?? now,
+                graceEndsAt: row.grace_ends_at,
+                appUrl: getAppUrl(),
+              }),
+            });
+          }
+        }
+      }
+
+      // 1c. Pro Lealtad: MP must be set to the next step's amount.
+      await reconcileLealtad(row, now).catch((err) =>
+        console.error('[cron/billing] Pro Lealtad reconcile failed', preapprovalId, err),
+      );
 
       // 2. Bounce hold.
       const decision = holdDecision({

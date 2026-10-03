@@ -969,6 +969,33 @@
       "consentYear": "I accept the charge of {monto} MXN today and its automatic renewal every year, and I accept the <terms>Subscription Terms</terms>.",
       "chargeMonth": "<b>{monto} MXN is charged today</b> (VAT included) to {tarjeta}, and it renews automatically {cada_periodo} for {monto} MXN until you cancel. We’ll remind you 7 days before each charge. Cancel in 1 click from My account → My plan.",
       "consentMonth": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+    },
+    "lealtad": {
+      "checkout": {
+        "today": "<b>Today, {fecha_hoy}, {m1} MXN is charged</b> to {tarjeta} (month 1 of Pro Loyalty).",
+        "after": "After that, every month, automatically and until you cancel:",
+        "row": "{fecha}: {monto}",
+        "rowLast": "from {fecha}: {monto} MXN every month",
+        "notice": "We email you 7 days before each charge, with its amount.",
+        "reset": "If you cancel, switch plans or a payment is still unpaid 7 days after it failed, your price starts again at {m1}.",
+        "cancel": "Cancel in 1 click from <b>My account → My plan</b>; you keep Pro until the end of the paid month.",
+        "fromOther": "Pro Loyalty starts at month 1 ({m1}) when your current period ends; your months on another plan don’t count."
+      },
+      "consent": "I agree that Chalyb charges <b>{m1} MXN today</b> to my card and then, <b>automatically every month</b>, {m2}, {m3}, {m4}, {m5} and {m6} MXN, and then <b>{piso} MXN a month</b> while I stay subscribed, until I cancel. I understand that <b>my price starts again at {m1}</b> if I cancel, switch plans or a payment is still unpaid 7 days after it failed, and I accept the <terms>Subscription Terms</terms>.",
+      "step": "Month {n}: you pay {monto}, {pct}% less than month 1.",
+      "stepFirst": "Month 1: you pay {monto}.",
+      "rule": "Every month you stay it drops 10% of month 1, down to 60%.",
+      "thisMonth": "MXN this month",
+      "progress": "{pct}% less than month 1",
+      "progressMeta": "Month {n} · {k} to go",
+      "progressMetaFloor": "Month {n} · already at your lowest price",
+      "floor": "From month 7: {piso} MXN a month while you stay.",
+      "nextSub": "Month {n} · {pct}% less than month 1",
+      "warn": "ⓘ <b>Your price goes back to {m1} if</b> you cancel (when your paid month ends), switch to another plan, or a payment is still unpaid 7 days after it failed. Changing your card, a refund or a chargeback don’t reset it.",
+      "changeSub": "Your price starts again at {m1}",
+      "cancelSub": "You keep Pro until {fecha}. There will be no more charges. If you come back later, Pro Loyalty starts again at {m1}.",
+      "monthTick": "Month {n}",
+      "monthTickLast": "Month {n}+"
     }
   },
   "plans": {
@@ -981,7 +1008,9 @@
     "toggle": {
       "month": "Monthly",
       "year": "Yearly",
-      "save": "Save up to {pct}%"
+      "save": "Save up to {pct}%",
+      "lealtad": "Loyalty",
+      "lealtadPill": "Pro only"
     },
     "gratis": {
       "name": "Free",
@@ -1046,6 +1075,36 @@
       "historyYear": "A full year of history",
       "storage": "{espacio} of storage",
       "cancel": "Cancel online anytime, no calls"
+    },
+    "lealtad": {
+      "subtitle": "With Pro Loyalty, every month you stay you pay less.",
+      "badge": "New · Pro only",
+      "name": "Pro Loyalty",
+      "tag": "For people who stay: every month you keep Pro, you pay less.",
+      "first": "MXN the first month",
+      "header": "Renews every month · No free trial",
+      "explain": "Every month you keep paying, your price drops 10% of month 1’s price, down to <b>{piso} MXN a month from month 7</b> (60% less).",
+      "charge": "<b>{m1} MXN is charged today.</b> After that, each month’s amount on the calendar is charged automatically until you cancel. We email you and tell you in the app 7 days before each charge, with its amount and date.",
+      "reset": "ⓘ <b>Your price goes back to {m1} if</b> you cancel (when your paid month ends), switch to another plan, or a payment is still unpaid 7 days after it failed. Changing your card, a refund or a chargeback don’t reset it.",
+      "chartTitle": "How your price drops",
+      "legend": "% = less than month 1",
+      "month": "Month {n}",
+      "monthLast": "Month {n}+",
+      "barPct": "{pct}% less",
+      "barAria": "Month {n}: {monto} MXN, {pct}% less than month 1",
+      "barAriaFirst": "Month 1: {monto} MXN",
+      "rounding": "<b>Amounts include VAT, rounded down to the whole peso</b>; the real discount is equal to or greater than shown.",
+      "yearLealtad": "Pro Loyalty, 1st year",
+      "yearLealtadSub": "2nd year, if you stay: {total}",
+      "yearMonthly": "Pro monthly, 1 year",
+      "yearMonthlySub": "12 × {monto}",
+      "yearAnnual": "Pro yearly, 1 year",
+      "cheapest": "The cheapest in year 1",
+      "compare": "From month 1 to 4 you pay more than on Pro monthly ({pm}); from month 6 you pay less. In the first year, Pro yearly ({pa}) is the cheapest. Second year, if you stay: Pro Loyalty {l2} · Pro yearly {pa} · Pro monthly {pm12}.",
+      "cta": "Pay {m1} and start Pro Loyalty",
+      "ctaContinue": "Continue with Pro Loyalty",
+      "notOthers": "Free and VIP have no Pro Loyalty:",
+      "seeOthers": "see Monthly and Yearly"
     }
   },
   "checkout": {
@@ -1144,7 +1203,8 @@
       "email": "Check email"
     },
     "noticeHold": "We couldn’t send the charge notice to <b>{correo}</b>. Confirm or update it: <b>we won’t charge you</b> until 5 days after we reach you.",
-    "trialTomorrow": "Tomorrow, <b>{fecha_cobro}</b>, you’ll be charged <b>{monto} MXN</b>. If you don’t want to continue, cancel today in 1 click."
+    "trialTomorrow": "Tomorrow, <b>{fecha_cobro}</b>, you’ll be charged <b>{monto} MXN</b>. If you don’t want to continue, cancel today in 1 click.",
+    "lealtad": "On <b>{fecha_cobro}</b> <b>{monto} MXN</b> of your Pro Loyalty (month {n}) will be charged, {pct}% less than your month 1. Don’t want to continue? Cancel before that date and you won’t be charged."
   },
   "myplan": {
     "title": "My plan",
@@ -1162,13 +1222,15 @@
       "vip_month": "VIP — everything included and more credits",
       "trial": "Free {plan} trial",
       "free": "Free",
-      "vip_year": "VIP yearly — everything included and more credits"
+      "vip_year": "VIP yearly — everything included and more credits",
+      "pro_lealtad": "Pro Loyalty — your price drops every month"
     },
     "planName": {
       "pro_month": "Pro monthly",
       "pro_year": "Pro yearly",
       "vip_month": "VIP",
-      "vip_year": "VIP yearly"
+      "vip_year": "VIP yearly",
+      "pro_lealtad": "Pro Loyalty"
     },
     "renewMonth": "Renews every month.",
     "renewYear": "Renews every year.",
@@ -1855,7 +1917,8 @@
         "pro_month": "Pro monthly",
         "pro_year": "Pro yearly",
         "vip_month": "VIP monthly",
-        "vip_year": "VIP yearly"
+        "vip_year": "VIP yearly",
+        "pro_lealtad": "Pro Loyalty"
       },
       "toggle": "Offer Monthly as well as Yearly",
       "toggleHelp": "If you turn it off, the trial and Plans offer Yearly only.",

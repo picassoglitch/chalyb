@@ -17,7 +17,7 @@ import {
 import { recordConsent, UI_VERSION } from './consent';
 import type { ConsentEventType } from './consent-core';
 import { legalDocuments } from '@/lib/legal/documents';
-import { PRICING, planPrice, type PlanKey } from '@/config/pricing';
+import { PRICING, lealtadSchedule, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from './format';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
@@ -26,6 +26,56 @@ const DOC_LABELS: Record<string, string> = {
   suscripcion: 'Términos de Suscripción',
   privacidad: 'Aviso de Privacidad',
 };
+
+/** The pre-charge notice of a Pro Lealtad charge (aceptacion-ux §4.2):
+ *  this month's amount, its step, the following amounts, from the schedule. */
+export function lealtadNoticeVars(input: {
+  nombre: string;
+  step: number;
+  chargeAt: Date | string;
+  last4: string | null;
+  appUrl: string;
+}): BillingEmailVars {
+  const schedule = lealtadSchedule();
+  const s = schedule[Math.min(input.step, schedule.length - 1)]!;
+  const prev = schedule[Math.max(0, input.step - 1)]!;
+  return {
+    nombre: input.nombre,
+    plan: 'Pro Lealtad',
+    monto: formatMXN(s.cents),
+    mes: input.step + 1,
+    pct: s.pct,
+    monto_anterior: formatMXN(prev.cents),
+    siguientes: schedule.slice(input.step + 1, -1).map((x) => formatMXN(x.cents)),
+    piso: formatMXN(schedule.at(-1)!.cents),
+    reinicio: formatMXN(schedule[0]!.cents),
+    fecha_cobro: formatFechaLarga(input.chargeAt, 'es'),
+    ultimos4: input.last4 ?? undefined,
+    appUrl: input.appUrl,
+  };
+}
+
+/** A failed Pro Lealtad charge (day 0 / day 5 of the 7-day grace). */
+export function lealtadFailedVars(input: {
+  nombre: string;
+  step: number;
+  chargedAt: Date | string;
+  graceEndsAt: Date | string | null;
+  appUrl: string;
+}): BillingEmailVars {
+  const schedule = lealtadSchedule();
+  const s = schedule[Math.min(input.step, schedule.length - 1)]!;
+  return {
+    nombre: input.nombre,
+    plan: 'Pro Lealtad',
+    monto: formatMXN(s.cents),
+    mes: input.step + 1,
+    fecha_cobro: formatFechaLarga(input.chargedAt, 'es'),
+    fecha_limite: input.graceEndsAt ? formatFechaLarga(input.graceEndsAt, 'es') : undefined,
+    reinicio: formatMXN(schedule[0]!.cents),
+    appUrl: input.appUrl,
+  };
+}
 
 /**
  * Every value the trial's charge notice (and the optional day-6 reminder)

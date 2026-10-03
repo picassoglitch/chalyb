@@ -7,6 +7,8 @@ import { getCurrentUser, getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from './tiers';
 import {
   freeIncludesClips,
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
   paidCheckoutEnabled,
   proBadgeMostPopular,
   trialFlowEnabled,
@@ -39,6 +41,27 @@ export interface PlansProps {
   /** "El {fecha} se cobran…" in the card notes: today + the trial. */
   trialChargeDate: string;
   priceDisplay: PriceDisplay;
+  /** WS-7 · the "Lealtad · Solo Pro" toggle option and its target. */
+  lealtad: { offered: boolean; href: string | null };
+}
+
+/** Pro Lealtad on the cards (spec §15.3/§15.12): flag on, open to new
+ *  customers, paid checkout live; MXN only (USD_MARKET_ENABLED keeps MXN on
+ *  these cards today). Gratis signs up → the Lealtad checkout; Pro moves at
+ *  the end of the period; an existing Lealtad subscriber sees it as theirs. */
+function lealtadProps(input: {
+  signedIn: boolean;
+  isAdmin: boolean;
+  state: string;
+  planKey: string | null;
+  paidCheckout: boolean;
+}): PlansProps['lealtad'] {
+  const offered = lealtadEnabled() && lealtadOpenToNewCustomers() && input.paidCheckout;
+  if (!offered) return { offered: false, href: null };
+  if (input.isAdmin || input.planKey === 'pro_lealtad') return { offered: true, href: null };
+  if (!input.signedIn) return { offered: true, href: '/sign-in?mode=signup&plan=lealtad' };
+  if (input.state === 'free') return { offered: true, href: '/app/prueba/pago?plan=pro_lealtad' };
+  return { offered: true, href: '/app/billing/cambiar?plan=pro_lealtad' };
 }
 
 export async function loadPlansProps(locale: string): Promise<PlansProps> {
@@ -98,6 +121,13 @@ export async function loadPlansProps(locale: string): Promise<PlansProps> {
     badge: proBadgeMostPopular() ? 'masPopular' : 'recomendado',
     quebecBlocked,
     trialChargeDate: formatFechaLarga(trialDates(new Date()).chargeAt, locale),
+    lealtad: lealtadProps({
+      signedIn: !!session,
+      isAdmin,
+      state,
+      planKey,
+      paidCheckout: annualOffered,
+    }),
     priceDisplay: await loadPriceDisplay({
       currentAmountCents: (billing?.primaryRow?.amount_cents as number | undefined) ?? null,
     }),

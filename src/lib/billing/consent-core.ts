@@ -32,6 +32,10 @@ export const CONSENT_EVENT_TYPES = [
   'autopublish_enabled',
   'cancellation_requested',
   'refund_issued',
+  'lealtad_started',
+  'lealtad_step_notice_sent',
+  'lealtad_step_advanced',
+  'lealtad_reset',
   'arco_request_received',
   // BUILD-SPEC §11.6
   'voice_likeness_consent',

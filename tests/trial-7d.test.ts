@@ -376,7 +376,7 @@ test('11 · the consent record stores the 7-day trial, its texts, the plan and t
     'disclosure_text: disclosureText',
     'checkbox_text: checkboxText',
     'plan_id: input.planKey',
-    'amount_mxn: price.totalCents / 100',
+    'amount_mxn: chargeCents / 100',
     'trial_end_utc',
     'ui_version: UI_VERSION',
   ]) {

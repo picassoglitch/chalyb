@@ -14,7 +14,7 @@ import { pendingIncrease, type PendingIncrease } from '@/lib/billing/price-chang
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { PriceChangeModal, type PriceChangeView } from './price-change-modal';
 import { formatFechaCorta, formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { planPrice } from '@/config/pricing';
+import { lealtadSchedule, planPrice } from '@/config/pricing';
 import { recordConsent, UI_VERSION } from '@/lib/billing/consent';
 import { Markup } from '@/components/ui/markup';
 import { ClosableBanner } from './closable-banner';
@@ -91,6 +91,18 @@ async function renderBanner(
           b,
         });
       case 'renew':
+        if (s.planKey === 'pro_lealtad') {
+          // Mockup 87: that month's amount, step and %.
+          const step = (billing.primaryRow?.loyalty_step as number | undefined) ?? 0;
+          const sched = lealtadSchedule()[Math.min(step, 6)]!;
+          return t.markup('lealtad', {
+            fecha_cobro: date(s.nextChargeAt),
+            monto: formatMXN(sched.cents),
+            n: step + 1,
+            pct: sched.pct,
+            b,
+          });
+        }
         return t.markup('renew', {
           plan: s.planKey ? tPlan(s.planKey) : '',
           fecha_cobro: date(s.nextChargeAt),

@@ -56,7 +56,7 @@ export const USD_CENTS = {
   vip: { month: 20_000, year: 200_000 },
 } as const;
 
-export type PlanKey = 'pro_month' | 'pro_year' | 'vip_month' | 'vip_year';
+export type PlanKey = 'pro_month' | 'pro_year' | 'vip_month' | 'vip_year' | 'pro_lealtad';
 export type PackId = keyof typeof PACK_CENTS;
 
 function readBool(name: string, fallback: boolean): boolean {
@@ -101,7 +101,53 @@ export function planPrice(key: PlanKey): PlanPrice {
       return { key, tier: 'VIP', interval: 'month', totalCents: withIva(PRICE_CENTS.vip.month) };
     case 'vip_year':
       return { key, tier: 'VIP', interval: 'year', totalCents: withIva(PRICE_CENTS.vip.year) };
+    case 'pro_lealtad':
+      // Month 1 of the schedule; later charges follow lealtadPriceCents().
+      return { key, tier: 'PRO', interval: 'month', totalCents: lealtadPriceCents(0) };
   }
+}
+
+// ── Pro Lealtad (WS-7; PRICING-CARDS-SPEC §15.12, Términos §4 bis) ─────────
+// A monthly Pro plan whose price drops 10% of month 1's price for every
+// consecutive paid month, down to 60% less from month 7. MXN only (O-5).
+
+export const LEALTAD = {
+  baseCents: REFERENCE_CENTS.pro_month,
+  stepPct: 10,
+  floorPct: 60,
+  /** Steps 0…6 = months 1…7+. */
+  maxStep: 6,
+} as const;
+
+/** The amount of a charge at `step` (0 = month 1): linear off the base, not
+ *  compounding, truncated to the whole peso so the real % is ≥ advertised. */
+export function lealtadPriceCents(step: number): number {
+  const s = Math.max(0, Math.min(Math.trunc(step), LEALTAD.maxStep));
+  const pctOff = Math.min(s * LEALTAD.stepPct, LEALTAD.floorPct);
+  return Math.floor((LEALTAD.baseCents * (100 - pctOff)) / 100 / 100) * 100;
+}
+
+export interface LealtadStep {
+  /** 0-based; month = step + 1 ("7+" for the last). */
+  step: number;
+  cents: number;
+  /** The advertised "% menos que el mes 1". */
+  pct: number;
+}
+
+export function lealtadSchedule(): LealtadStep[] {
+  return Array.from({ length: LEALTAD.maxStep + 1 }, (_, step) => ({
+    step,
+    cents: lealtadPriceCents(step),
+    pct: Math.min(step * LEALTAD.stepPct, LEALTAD.floorPct),
+  }));
+}
+
+/** What a subscription's next charge must be: the Lealtad step's amount, or
+ *  the plan's price. */
+export function chargeFor(sub: { plan_key: PlanKey | null; loyalty_step?: number | null }): number {
+  if (sub.plan_key === 'pro_lealtad') return lealtadPriceCents(sub.loyalty_step ?? 0);
+  return planPrice(sub.plan_key ?? 'pro_month').totalCents;
 }
 
 export function packPriceCents(id: PackId): number {
@@ -289,7 +335,10 @@ export const MIN_NOTICE_DAYS = 5;
  *  a trial notice that would go out before the trial even starts. A 3-day
  *  trial can't meet the rule, so `{ days: 3, reminderDaysBefore: 3 }` throws. */
 export function assertReminderWindows(
-  p: { trial: { days: number; reminderDaysBefore: number }; reminders: { monthDaysBefore: number; yearDaysBefore: readonly number[] } } = PRICING,
+  p: {
+    trial: { days: number; reminderDaysBefore: number };
+    reminders: { monthDaysBefore: number; yearDaysBefore: readonly number[] };
+  } = PRICING,
 ): void {
   const days = [
     p.trial.reminderDaysBefore,

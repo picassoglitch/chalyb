@@ -32,6 +32,7 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  'plans.lealtad.yearMonthlySub', // "12 × {monto}"
   // Law §16.7: the US/CA footers exist only in English (USD market, flag off).
   'billing.price.taxUS',
   'billing.price.taxCA',

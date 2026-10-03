@@ -10,4 +10,5 @@ export const PLAN_NAMES: Record<PlanKey, string> = {
   pro_year: 'Pro anual',
   vip_month: 'VIP',
   vip_year: 'VIP anual',
+  pro_lealtad: 'Pro Lealtad',
 };

@@ -124,6 +124,20 @@ export async function cancelForUser(
       () => {},
     );
   }
+  // Pro Lealtad: the cancel resets the schedule when the paid month ends
+  // (Términos 4 bis.4(a)); coming back starts at month 1.
+  if (s.planKey === 'pro_lealtad') {
+    await admin
+      .from('subscriptions')
+      .update({ loyalty_reset_at: accessUntil ?? now.toISOString() })
+      .eq('mp_preapproval_id', preapprovalId);
+    await recordConsent({
+      ...base,
+      event_type: 'lealtad_reset',
+      button_label: null,
+      details: { cause: 'cancel', mp_preapproval_id: preapprovalId, effective_at: accessUntil ?? '' },
+    }).catch(() => {});
+  }
   const consent = await recordConsent({
     ...base,
     event_type: 'cancellation_requested',
@@ -246,6 +260,9 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     }
   }
 
+  // Leaving Pro Lealtad for any other plan resets its schedule (Términos
+  // 4 bis.4(b)); the confirm page said so with the amount.
+  const leavingLealtad = from === 'pro_lealtad' && input.planKey !== 'pro_lealtad';
   const result = await startSubscription({
     session: input.session,
     planKey: input.planKey,
@@ -257,6 +274,41 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     effectiveAt,
   });
   if (!result.ok) return result;
+
+  if (leavingLealtad && billing.primaryRow) {
+    const ctx = await requestContext();
+    await createAdminClient()
+      .from('subscriptions')
+      .update({ loyalty_reset_at: (effectiveAt ?? new Date()).toISOString() })
+      .eq('mp_preapproval_id', billing.primaryRow.mp_preapproval_id as string);
+    await recordConsent({
+      event_type: 'lealtad_reset',
+      user_id: input.session.user.id,
+      account_email: input.session.user.email ?? null,
+      documents: [],
+      client_timezone: input.clientTimezone ?? null,
+      ip_address: ctx.ip,
+      user_agent: ctx.userAgent,
+      locale: input.locale === 'es' ? 'es-MX' : 'en',
+      surface: 'web_plan_change',
+      ui_version: UI_VERSION,
+      disclosure_text: null,
+      checkbox_text: null,
+      checkbox_checked: null,
+      button_label: null,
+      plan_id: 'pro_lealtad',
+      amount_mxn: null,
+      currency: 'MXN',
+      tax_included: true,
+      billing_interval: 'month',
+      trial_end_utc: null,
+      charge_date_utc: null,
+      reminder_date_utc: null,
+      payment_method: null,
+      marketing_opt_in: false,
+      details: { cause: 'plan_change', to: input.planKey },
+    }).catch(() => {});
+  }
 
   if (refundCents > 0 && refundPaymentId) {
     try {

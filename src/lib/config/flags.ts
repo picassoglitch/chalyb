@@ -163,6 +163,25 @@ export function mpPreapprovalAmountPutVerified(): boolean {
   return readBool('MP_PREAPPROVAL_AMOUNT_PUT_VERIFIED', false); // TODO(owner O-6)
 }
 
+/** WS-7 · Pro Lealtad: the toggle option, panel, checkout and Mi plan
+ *  block. Off by default: it can't ship until lowering a running
+ *  preapproval's amount is verified at MP (O-6, OPS-24). */
+export function lealtadEnabled(): boolean {
+  return readBool('LEALTAD_ENABLED', false);
+}
+
+/** Withdraw Pro Lealtad for new customers; existing schedules continue. */
+export function lealtadOpenToNewCustomers(): boolean {
+  return readBool('LEALTAD_OPEN_TO_NEW_CUSTOMERS', true);
+}
+
+/** O-15 · optional return window that resumes the step after a cancel.
+ *  0 = off (default). */
+export function lealtadReturnWindowDays(): number {
+  const n = Number(process.env.LEALTAD_RETURN_WINDOW_DAYS ?? '0');
+  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0; // TODO(owner O-15)
+}
+
 /** Q3 · whether the trial offers Mensual as well as Anual. */
 export function trialPlanChoiceEnabled(): boolean {
   return readBool('TRIAL_PLAN_CHOICE_ENABLED', true);

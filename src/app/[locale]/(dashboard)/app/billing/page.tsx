@@ -19,10 +19,24 @@ import { loadBilling } from '@/lib/billing/subscription-store';
 import { loadPayments, paymentKind } from '@/lib/billing/payments-data';
 import { trialDaysLeft } from '@/lib/billing/trial-dates';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { annualMath, floorToPeso, planPrice, type PlanKey } from '@/config/pricing';
-import { cfdiEnabled, paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
+import {
+  annualMath,
+  floorToPeso,
+  lealtadPriceCents,
+  lealtadSchedule,
+  planPrice,
+  type PlanKey,
+} from '@/config/pricing';
+import {
+  cfdiEnabled,
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+  paidCheckoutEnabled,
+  vipYearEnabled,
+} from '@/lib/config/flags';
 import { ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { CancelSheet } from '@/components/app/billing/cancel-sheet';
+import { Markup } from '@/components/ui/markup';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('myplan');
@@ -63,9 +77,18 @@ export default async function MiPlanPage({
 
   const planKey: PlanKey | null = s && s.state !== 'free' ? (s.planKey ?? 'pro_month') : null;
   const planName = planKey ? t(`planName.${planKey}`) : '';
+  const planNameLealtad = t('planName.pro_lealtad');
   const price = planKey ? planPrice(planKey) : null;
-  const monto = price ? formatMXN(price.totalCents) : '';
+  // Pro Lealtad: loyalty_step is the step of the NEXT charge (0 = month 1).
+  const lealtad = planKey === 'pro_lealtad';
+  const loyaltyStep = (billing?.primaryRow?.loyalty_step as number | undefined) ?? 0;
+  const lealtadUi = lealtad && lealtadEnabled();
+  const monto = price ? formatMXN(lealtad ? lealtadPriceCents(loyaltyStep) : price.totalCents) : '';
   const yearly = price?.interval === 'year';
+  const schedule = lealtadSchedule();
+  const m1 = formatMXN(schedule[0]!.cents);
+  // The month being paid now (the step before the next charge).
+  const paidStep = Math.max(0, loyaltyStep - 1);
 
   // ── "Tu plan" card ────────────────────────────────────────────────
   let status = t('status.free');
@@ -98,8 +121,23 @@ export default async function MiPlanPage({
         periodo: yearly ? t('periodYear') : t('periodMonth'),
       }),
     );
-    // An Anual trial can't turn into Mensual (the free month is Anual-only).
-    cta = flow && !yearly ? { href: changeHref('pro_year'), label: t('changeCta') } : null;
+    // Any switch keeps the trial's charge date (the rows below list them).
+    cta = null;
+  } else if (s?.state === 'pro' && lealtadUi) {
+    // Mockup 87.
+    status = t('status.active');
+    heading = planName;
+    lines.push(
+      paidStep === 0
+        ? tb('lealtad.stepFirst', { monto: formatMXN(schedule[0]!.cents) })
+        : tb('lealtad.step', {
+            n: paidStep + 1,
+            monto: formatMXN(schedule[paidStep]!.cents),
+            pct: schedule[paidStep]!.pct,
+          }),
+    );
+    lines.push(tb('lealtad.rule'));
+    cta = null;
   } else if (s?.state === 'pro') {
     status = t('status.active');
     heading = t(`heading.${planKey!}`);
@@ -134,6 +172,11 @@ export default async function MiPlanPage({
     const vipYear = vipYearEnabled();
     const row = (to: PlanKey | 'gratis', title: string, detail: string) =>
       changes.push({ to, title, value: to === 'gratis' ? '$0' : short(to), detail });
+    // From Pro, Pro Lealtad starts at month 1 when the current period ends.
+    const toLealtad = () => {
+      if (lealtadEnabled() && lealtadOpenToNewCustomers())
+        row('pro_lealtad', planNameLealtad, tb('lealtad.checkout.fromOther', { m1 }));
+    };
     const toVip = () => {
       row('vip_month', t('change.toVip'), t('change.toVipSub'));
       if (vipYear) row('vip_year', t('change.toVipYear'), t('change.toVipSub'));
@@ -147,10 +190,19 @@ export default async function MiPlanPage({
         }),
       );
       toVip();
+      toLealtad();
+      row('gratis', t('change.toFree'), t('change.toFreeSubMonth'));
+    } else if (planKey === 'pro_lealtad') {
+      // Every row warns that the price starts again (spec §15.12.4).
+      const restart = tb('lealtad.changeSub', { m1 });
+      row('pro_month', t('change.toMonth'), restart);
+      row('pro_year', t('change.toYear'), restart);
+      row('vip_month', t('change.toVip'), restart);
       row('gratis', t('change.toFree'), t('change.toFreeSubMonth'));
     } else if (planKey === 'pro_year') {
       row('pro_month', t('change.toMonth'), t('change.toMonthSubYear'));
       toVip();
+      toLealtad();
       row('gratis', t('change.toFree'), t('change.toFreeSubYear'));
     } else if (planKey === 'vip_month') {
       if (vipYear)
@@ -257,6 +309,56 @@ export default async function MiPlanPage({
         {tb('price.tax')}
       </p>
 
+      {lealtadUi && s?.state === 'pro' && (
+        <>
+          <section className="ch-card ch-lprog" aria-labelledby="lprog-title">
+            <div className="ch-lprog__head">
+              <h2 id="lprog-title" className="ch-h2">
+                {paidStep === 0
+                  ? planName
+                  : tb('lealtad.progress', { pct: schedule[paidStep]!.pct })}
+              </h2>
+              <span className="ch-muted">
+                {paidStep >= schedule.length - 1
+                  ? tb('lealtad.progressMetaFloor', { n: paidStep + 1 })
+                  : tb('lealtad.progressMeta', {
+                      n: paidStep + 1,
+                      k: schedule.length - 1 - paidStep,
+                    })}
+              </span>
+            </div>
+            <div
+              className="ch-lprog__bar"
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={schedule.length}
+              aria-valuenow={paidStep + 1}
+              aria-label={tb('lealtad.progressMeta', {
+                n: paidStep + 1,
+                k: Math.max(0, schedule.length - 1 - paidStep),
+              })}
+            >
+              <span style={{ width: `${((paidStep + 1) / schedule.length) * 100}%` }} />
+            </div>
+            <ol className="ch-lprog__ticks">
+              {schedule.map((x, i) => (
+                <li key={x.step} data-on={i <= paidStep} data-now={i === paidStep}>
+                  {i === schedule.length - 1
+                    ? tb('lealtad.monthTickLast', { n: i + 1 })
+                    : tb('lealtad.monthTick', { n: i + 1 })}
+                </li>
+              ))}
+            </ol>
+            <p className="ch-muted">
+              {tb('lealtad.floor', { piso: formatMXN(schedule.at(-1)!.cents) })}
+            </p>
+          </section>
+          <p className="ch-lp__reset" role="note">
+            <Markup text={tb.markup('lealtad.warn', { m1, b: (c: string) => `<b>${c}</b>` })} />
+          </p>
+        </>
+      )}
+
       {s &&
         (s.state === 'trialing' || s.state === 'pro' || s.state === 'past_due') &&
         !entitlements.isAdmin && (
@@ -274,9 +376,14 @@ export default async function MiPlanPage({
                           new Date(Date.parse(s.nextChargeAt) - 7 * 86_400_000).toISOString(),
                         ),
                       })
-                    : yearly
-                      ? t('next.notice30')
-                      : t('next.notice7')
+                    : lealtadUi
+                      ? tb('lealtad.nextSub', {
+                          n: loyaltyStep + 1,
+                          pct: schedule[Math.min(loyaltyStep, schedule.length - 1)]!.pct,
+                        })
+                      : yearly
+                        ? t('next.notice30')
+                        : t('next.notice7')
               }
               value={`${monto} MXN`}
             />
@@ -344,6 +451,11 @@ export default async function MiPlanPage({
           <CancelSheet
             trial={s!.state === 'trialing'}
             defaultOpen={openCancel}
+            bodyOverride={
+              lealtadUi && s!.state !== 'trialing'
+                ? tb('lealtad.cancelSub', { fecha: date(accessEnd), m1 })
+                : undefined
+            }
             planName={planName}
             accessDate={date(accessEnd)}
             email={session.user.email ?? ''}

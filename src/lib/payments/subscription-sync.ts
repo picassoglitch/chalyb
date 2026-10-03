@@ -25,6 +25,7 @@ import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } fr
 import { checkCharge, expectedChargeForTier, type ExpectedCharge } from './webhook-verify';
 import {
   grandfatheredFor,
+  lealtadSchedule,
   PRICING,
   ivaPortion,
   planPrice,
@@ -43,6 +44,8 @@ import {
   type SubscribableTier,
 } from './subscription-reference';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
+import { onLealtadCharge } from '@/lib/billing/lealtad-server';
+import { lealtadFailedVars } from '@/lib/billing/notices';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -139,8 +142,14 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     // older ones are priced by tier.
     const expected: ExpectedCharge | null = planKey
       ? {
+          // Pro Lealtad's amount follows its schedule (always down): the
+          // preapproval may be on any of its steps; each charge is gated
+          // against its own step in onLealtadCharge().
           amountCents: planPrice(planKey).totalCents,
-          alsoAcceptCents: grandfatheredFor(planKey),
+          alsoAcceptCents:
+            planKey === 'pro_lealtad'
+              ? lealtadSchedule().map((s) => s.cents)
+              : grandfatheredFor(planKey),
           currency: PRICING.currency,
           label: `plan ${planKey}`,
         }
@@ -392,11 +401,22 @@ export async function recordAuthorizedPayment(
         })
         .eq('mp_preapproval_id', preapprovalId);
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
+      if (subRow?.plan_key === 'pro_lealtad') {
+        await onLealtadCharge({
+          userId: ref.userId,
+          preapprovalId,
+          paymentId: String(paymentId),
+          chargedCents: Math.round((ap.transaction_amount ?? 0) * 100),
+        }).catch((err) => console.error('[mp/subscription] Pro Lealtad step not recorded', err));
+      }
       if (!subRow?.last_charge_at && subRow?.trial_ends_at) {
         void track('conversion', {
           // From the plan, not the amount: VIP mensual costs more than any
           // threshold that once told the two Pro intervals apart.
-          plan: subRow.plan_key && planPrice(subRow.plan_key as PlanKey).interval === 'year' ? 'anual' : 'mensual',
+          plan:
+            subRow.plan_key && planPrice(subRow.plan_key as PlanKey).interval === 'year'
+              ? 'anual'
+              : 'mensual',
         });
       }
     } else if (paymentStatus === 'rejected') {
@@ -642,7 +662,7 @@ async function chargeEmail(
     admin.from('profiles').select('email, full_name').eq('id', userId).maybeSingle(),
     admin
       .from('subscriptions')
-      .select('plan_key, tier, card_last4, next_payment_date, grace_ends_at')
+      .select('plan_key, tier, card_last4, next_payment_date, grace_ends_at, loyalty_step')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle(),
   ]);
@@ -661,6 +681,26 @@ async function chargeEmail(
       dedupeKey: `pay:${paymentId}`,
       keepUntil: grace,
     });
+  // Pro Lealtad: a failed charge says what is at stake — the step, kept if
+  // it is paid within the 7-day grace (aceptacion-ux §4.2; day 0 here, day 5
+  // from the cron).
+  if (kind === 'charge_failed' && planKey === 'pro_lealtad') {
+    await dispatchBillingEmail({
+      userId,
+      email,
+      kind: 'lealtad_failed',
+      periodKey: `pay:${paymentId}:d0`,
+      evidence: 'charge_failed',
+      vars: lealtadFailedVars({
+        nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
+        step: (sub?.loyalty_step as number | null) ?? 0,
+        chargedAt: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+        graceEndsAt: grace,
+        appUrl: getAppUrl(),
+      }),
+    });
+    return;
+  }
   await dispatchBillingEmail({
     userId,
     email,

@@ -3,7 +3,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
-import { paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
+import {
+  lealtadEnabled,
+  lealtadOpenToNewCustomers,
+  paidCheckoutEnabled,
+  vipYearEnabled,
+} from '@/lib/config/flags';
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
@@ -64,7 +69,10 @@ export default async function CambiarPlanPage({
     );
   }
   const to: PlanKey =
-    plan === 'pro_month' || plan === 'vip_month' || (plan === 'vip_year' && vipYearEnabled())
+    plan === 'pro_month' ||
+    plan === 'vip_month' ||
+    (plan === 'vip_year' && vipYearEnabled()) ||
+    (plan === 'pro_lealtad' && lealtadEnabled() && lealtadOpenToNewCustomers())
       ? plan
       : 'pro_year';
   const quote = await quoteChange(session, to);

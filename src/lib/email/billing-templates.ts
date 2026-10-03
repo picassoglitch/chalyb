@@ -21,7 +21,10 @@ export type BillingEmailKind =
   | 'annual_summary' // 6
   | 'cancelled' // 7
   | 'price_change' // 8 · 30 days before (aceptacion-ux §4.1)
-  | 'price_change_7d'; // 9 · reminder if unanswered
+  | 'price_change_7d' // 9 · reminder if unanswered
+  | 'lealtad_started' // 10 · Pro Lealtad confirmation with the calendar
+  | 'lealtad_7d' // 11 · before EVERY Pro Lealtad charge (mandatory)
+  | 'lealtad_failed'; // 12 · a failed Pro Lealtad charge (day 0 and day 5)
 
 export interface BillingEmailVars {
   nombre: string;
@@ -59,6 +62,20 @@ export interface BillingEmailVars {
   fecha_fin_periodo?: string;
   /** PRICE_INCREASE_NO_ANSWER = keep_old. */
   keep_old?: boolean;
+  /** Pro Lealtad (WS-7). */
+  fecha_hoy?: string;
+  mes?: number;
+  pct?: number;
+  monto_anterior?: string;
+  /** "fecha: monto" rows, month 2 → 7+. */
+  calendario?: { fecha: string; monto: string; desde?: boolean }[];
+  /** Amounts after this one, for the pre-charge notice. */
+  siguientes?: string[];
+  piso?: string;
+  fecha_limite?: string;
+  version_sus?: string;
+  /** Month 1's amount: where the schedule restarts ("$1,662"). */
+  reinicio?: string;
   documentos?: { label: string; version: string; url: string }[];
   appUrl: string;
 }
@@ -202,6 +219,54 @@ export function billingEmail(kind: BillingEmailKind, v: BillingEmailVars) {
       ];
       break;
     }
+    case 'lealtad_started': {
+      // aceptacion-ux §4.2, verbatim.
+      subject = 'Tu Pro Lealtad empezó: tu calendario de cobros';
+      const cal = (v.calendario ?? [])
+        .map((r) => `${r.desde ? 'desde el ' : ''}${e(r.fecha)}: ${b(`${r.monto} MXN`)}`)
+        .join('<br>');
+      html = [
+        p(
+          `Hola ${e(v.nombre)}: hoy, ${e(v.fecha_hoy)}, cobramos ${b(`${v.monto} MXN`)} (IVA incluido)${card(v)} por el mes 1.`,
+        ),
+        p(`Tu calendario:<br>${cal}`),
+        p(
+          `Tu precio vuelve a empezar en ${e(v.reinicio ?? v.monto)} si cancelas, cambias de plan o un pago queda sin cubrir 7 días después de fallar. Cambiar de tarjeta, un reembolso o un contracargo no lo reinician.`,
+        ),
+        p('Te avisaremos 7 días antes de cada cobro. Cancela en 1 clic:') + btn(plan, 'Mi plan'),
+        p(
+          `Folio de tu aceptación: ${e(v.consent_id)} · Términos de Suscripción v${e(v.version_sus)}`,
+        ),
+      ];
+      break;
+    }
+    case 'lealtad_7d':
+      subject = `El ${v.fecha_cobro} se cobran ${v.monto} MXN de tu Pro Lealtad (mes ${v.mes})`;
+      html = [
+        p(
+          `Hola ${e(v.nombre)}: el ${b(v.fecha_cobro)} cobraremos ${b(`${v.monto} MXN`)} (IVA incluido)${card(v)} por el ${b(`mes ${v.mes}`)} de Pro Lealtad, ${e(String(v.pct))}% menos que tu mes 1. El mes pasado pagaste ${e(v.monto_anterior)}.`,
+        ),
+        p(
+          (v.mes ?? 0) >= 7
+            ? `Ya estás en tu precio más bajo: ${e(v.piso)} MXN al mes mientras sigas.`
+            : `Después: ${(v.siguientes ?? []).map(e).join(', ')}, y desde el mes 7, ${e(v.piso)} MXN al mes.`,
+        ),
+        p(`Si cancelas o cambias de plan, tu precio vuelve a empezar en ${e(v.reinicio)}.`),
+        p(`¿No quieres seguir?`) +
+          btn(`${v.appUrl}/app/billing?cancelar=1`, 'Cancelar en 1 clic') +
+          p(`antes del ${e(v.fecha_cobro)} y no se te cobra.`),
+        btn(plan, 'Ver mi plan'),
+      ];
+      break;
+    case 'lealtad_failed':
+      subject = `No pudimos cobrar tu Pro Lealtad: tienes hasta el ${v.fecha_limite} para conservar tu precio`;
+      html = [
+        p(
+          `Hola ${e(v.nombre)}: el cobro de ${b(`${v.monto} MXN`)} del ${e(v.fecha_cobro)} no pasó. Actualiza tu tarjeta antes del ${b(v.fecha_limite)} (7 días) y conservas tu mes ${e(String(v.mes))} del calendario. Si no se cubre, tu suscripción termina y, si vuelves, empiezas en ${e(v.reinicio)}.`,
+        ),
+        btn(`${v.appUrl}/app/billing/tarjeta`, 'Actualizar tarjeta'),
+      ];
+      break;
     case 'cancelled':
       subject = `Cancelaste tu plan · Folio ${v.folio_cancelacion}`;
       html = [

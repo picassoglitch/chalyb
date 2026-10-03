@@ -179,7 +179,7 @@ test('no IVA multiplication in the charge path', () => {
   }
   assert.match(
     readFileSync('src/lib/billing/start-subscription.ts', 'utf8'),
-    /transaction_amount:\s*price\.totalCents \/ 100/,
+    /transaction_amount:\s*chargeCents \/ 100/,
   );
 });
 
