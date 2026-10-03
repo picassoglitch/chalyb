@@ -33,6 +33,8 @@ export interface MpNotification {
 const ALIASES: Readonly<Record<string, MpTopic>> = {
   payment: 'payment',
   merchant_order: 'merchant_order',
+  // The Webhooks-format name for the same event ("Órdenes comerciales").
+  topic_merchant_order_wh: 'merchant_order',
   subscription_preapproval: 'subscription_preapproval',
   preapproval: 'subscription_preapproval',
   subscription_authorized_payment: 'subscription_authorized_payment',

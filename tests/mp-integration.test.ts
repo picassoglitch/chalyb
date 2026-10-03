@@ -267,6 +267,18 @@ test('Webhooks format: JSON body, or the pointer in the query string', () => {
   );
 });
 
+test('Webhooks format: a merchant order arrives as topic_merchant_order_wh', () => {
+  // As delivered for the 2026-10-03 test order (pack checkout via Orders).
+  assert.deepEqual(
+    parseMpNotification(
+      'https://www.chalyb.com/api/mp/webhook?data.id=44957976335&type=topic_merchant_order_wh',
+      '',
+      null,
+    ),
+    { format: 'webhook', topic: 'merchant_order', handled: true, dataId: '44957976335' },
+  );
+});
+
 test('IPN format: merchant_order with an empty body, form body, and resource URL', () => {
   assert.deepEqual(
     parseMpNotification(

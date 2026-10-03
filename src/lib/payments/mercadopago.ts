@@ -267,7 +267,9 @@ export async function mpGet<T>(path: string): Promise<T> {
   });
   if (!res.ok) {
     const excerpt = (await res.text().catch(() => '')).slice(0, 300);
-    throw new Error(`Mercado Pago GET ${path} → ${res.status}: ${excerpt}`);
+    throw Object.assign(new Error(`Mercado Pago GET ${path} → ${res.status}: ${excerpt}`), {
+      status: res.status,
+    });
   }
   return (await res.json()) as T;
 }

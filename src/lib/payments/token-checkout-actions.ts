@@ -29,6 +29,12 @@ import { isAdminRole } from '@/lib/billing/tiers';
 import { getTokenPack } from './pricing';
 import { packReference } from './subscription-reference';
 import {
+  STATEMENT_DESCRIPTOR,
+  orderAdditionalInfo,
+  packItem,
+  payerName,
+} from './order-quality';
+import {
   chargeFromOrder,
   isAllowedCheckoutUrl,
   orderAmount,
@@ -114,16 +120,14 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         total_amount: amount,
         external_reference: packReference(session.user.id, pack.id),
         description: title,
-        ...(payerEmail ? { payer: { email: payerEmail } } : {}),
-        items: [
-          {
-            title,
-            unit_price: amount,
-            quantity: 1,
-            external_code: `pack-${pack.id}`,
-          },
-        ],
+        payer: {
+          ...(payerEmail ? { email: payerEmail } : {}),
+          ...payerName(session.user),
+        },
+        items: [packItem(pack, amount)],
+        additional_info: orderAdditionalInfo(session.user),
         config: {
+          statement_descriptor: STATEMENT_DESCRIPTOR,
           online: {
             success_url: mpReturnUrl('/app/usage?status=success'),
             pending_url: mpReturnUrl('/app/usage?status=pending'),
@@ -298,16 +302,11 @@ export async function payTokenPackWithCard(input: {
         description: title,
         payer: {
           ...(payerEmail ? { email: payerEmail } : {}),
+          ...payerName(session.user),
           ...(input.identification ? { identification: input.identification } : {}),
         },
-        items: [
-          {
-            title,
-            unit_price: amount,
-            quantity: 1,
-            external_code: `pack-${pack.id}`,
-          },
-        ],
+        items: [packItem(pack, amount)],
+        additional_info: orderAdditionalInfo(session.user),
         transactions: {
           payments: [
             {
@@ -317,7 +316,7 @@ export async function payTokenPackWithCard(input: {
                 type: paymentType,
                 token,
                 installments,
-                statement_descriptor: 'CHALYB TOKENS',
+                statement_descriptor: STATEMENT_DESCRIPTOR,
               },
             },
           ],

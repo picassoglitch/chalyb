@@ -211,12 +211,20 @@ async function handleChargeback(chargebackId: string): Promise<NextResponse> {
 // ── Legacy merchant orders (IPN) ─────────────────────────────────────
 // The order itself grants nothing; each payment in it is settled exactly as
 // a `payment` notification would be, idempotent on mp_payment_id.
+/** A 404 from Mercado Pago, as the SDK (`status`) or mpGet (`status` /
+ *  `cause.status`) reports it. */
+function isMpNotFound(err: unknown): boolean {
+  const e = err as { status?: unknown; cause?: { status?: unknown } } | null;
+  return e?.status === 404 || e?.cause?.status === 404;
+}
+
 async function handleMerchantOrder(orderId: string): Promise<NextResponse> {
   let ids: string[];
   try {
     ids = merchantOrderPaymentIds(await mpGet(`/merchant_orders/${encodeURIComponent(orderId)}`));
   } catch (err) {
     console.error('[mp/webhook] failed to fetch merchant_order', orderId, err);
+    if (isMpNotFound(err)) return NextResponse.json({ ignored: 'not found' }, { status: 200 });
     return NextResponse.json({ error: 'mp fetch failed' }, { status: 500 });
   }
   let worst = 200;
@@ -251,6 +259,9 @@ async function handleCharge(topic: 'payment' | 'orders', dataId: string): Promis
     }
   } catch (err) {
     console.error(`[mp/webhook] failed to fetch ${topic}`, dataId, err);
+    // Mercado Pago says the resource does not exist (a simulated
+    // notification, another environment's id): a retry finds nothing either.
+    if (isMpNotFound(err)) return NextResponse.json({ ignored: 'not found' }, { status: 200 });
     // 500 → MP will retry. Likely a transient MP API issue.
     return NextResponse.json({ error: 'mp fetch failed' }, { status: 500 });
   }
