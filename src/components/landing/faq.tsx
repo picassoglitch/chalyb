@@ -9,11 +9,20 @@ import { SectionHead } from './section-head';
 // "¿Me dan factura?" needs CFDI_ENABLED (P4-5); the reminder days and the
 // tool list come from config and the active tools.
 
-export async function Faq({ tools, locale }: { tools: PublicTool[]; locale: string }) {
+export async function Faq({
+  tools,
+  locale,
+  trialOffered,
+}: {
+  tools: PublicTool[];
+  locale: string;
+  /** The trial Q&A only when the trial can be started (K-7). */
+  trialOffered: boolean;
+}) {
   const t = await getTranslations('landing.faq');
   const whatsapp = supportWhatsappUrl();
   const items: Array<{ q: string; a: string; extra?: string }> = [
-    { q: t('q1'), a: t('a1', { dias: PRICING.trial.days }) },
+    ...(trialOffered ? [{ q: t('q1'), a: t('a1', { dias: PRICING.trial.days }) }] : []),
     { q: t('q2'), a: t('a2'), extra: whatsapp ? t('a2help') : undefined },
     { q: t('q3'), a: t('a3', { lista: toolList(tools, locale) }) },
     { q: t('q4'), a: t('a4') },

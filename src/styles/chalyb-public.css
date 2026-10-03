@@ -451,102 +451,10 @@
 }
 
 /* ---------- Plans ---------- */
-.chalyb-app .pub-plans {
-  display: grid;
-  gap: 22px;
-  margin-top: 40px;
-}
-.chalyb-app .pub-pl {
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  padding: 26px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.chalyb-app .pub-band--white .pub-pl {
-  background: var(--bg);
-  box-shadow: none;
-}
-.chalyb-app .pub-pl h3 {
-  font-size: 22px;
-  font-weight: 700;
-}
-.chalyb-app .pub-pl__pr {
-  font-size: 34px;
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  margin-top: 6px;
-  line-height: 1.1;
-}
-.chalyb-app .pub-pl__per {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--ink2);
-}
-.chalyb-app .pub-pl__pn {
-  font-size: 17px;
-  color: var(--ink2);
-}
-.chalyb-app .pub-pl .ch-pill {
-  margin-top: 8px;
-}
-.chalyb-app .pub-pl .ch-btn {
-  margin-top: 18px;
-  width: 100%;
-}
-.chalyb-app .pub-pl--hi {
-  position: relative;
-  order: -1;
-  background: #fff !important;
-  box-shadow:
-    0 0 0 3px var(--accent),
-    var(--shadow-lg) !important;
-}
-.chalyb-app .pub-pl__tag {
-  position: absolute;
-  top: -15px;
-  left: 26px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 5px 14px;
-  border-radius: 999px;
-}
-.chalyb-app .pub-pl__deal {
-  margin-top: 14px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--accent) 10%, #fff);
-  display: grid;
-  gap: 4px;
-  font-size: 16px;
-  color: var(--ink2);
-}
-.chalyb-app .pub-pl__deal-t {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.chalyb-app .pub-pl__deal-t svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  color: var(--accent);
-}
-.chalyb-app .pub-pl__deal-s {
-  font-size: 14px;
-}
 .chalyb-app .pub-plans__tax,
 .chalyb-app .pub-plans__all {
   text-align: center;
-  margin-top: 18px;
+  margin-top: 6px;
   font-size: 17px;
   color: var(--ink2);
 }
@@ -989,18 +897,6 @@ body:has(.pub-consent) {
   .chalyb-app .pub-strip {
     display: flex;
     gap: 34px;
-  }
-  .chalyb-app .pub-plans {
-    grid-template-columns: 1fr 1.12fr 1fr;
-    align-items: center;
-    margin-top: 48px;
-  }
-  .chalyb-app .pub-pl--hi {
-    order: 0;
-    padding: 38px 30px;
-  }
-  .chalyb-app .pub-pl__pr {
-    font-size: 42px;
   }
   .chalyb-app .pub-partner {
     grid-template-columns: 1fr 1fr;

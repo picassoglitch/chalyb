@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Chalyb — Bots que trabajan por ti mientras duermes",
-    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 7 días. Precios en MXN, IVA incluido."
+    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 7 días. Precios en MXN, IVA incluido.",
+    "descriptionNoTrial": "Clips para tus redes, señales de cripto y tu transmisión en un solo lugar. Precios en MXN, IVA incluido."
   },
   "landing": {
     "nav": {
@@ -26,7 +27,9 @@
       "app": "Abrir Chalyb",
       "cta": "Empezar mis 7 días gratis",
       "menu": "Abrir menú",
-      "skip": "Ir al contenido"
+      "skip": "Ir al contenido",
+      "ctaNoTrial": "Empieza gratis",
+      "ctaSignedIn": "Ver planes"
     },
     "hero": {
       "eyebrowTag": "Todo incluido",
@@ -137,21 +140,7 @@
     },
     "plans": {
       "label": "Planes",
-      "title": "Un plan con todo incluido",
-      "sub": "Empieza gratis o llévate tu primer mes de Pro gratis con el plan anual.",
-      "gratis": "Gratis",
-      "gratisCta": "Crear cuenta gratis",
-      "pro": "Pro",
-      "badge": "Recomendado",
-      "vip": "VIP",
-      "vipCta": "Elegir VIP",
-      "seeAll": "Ver todos los planes y qué incluyen",
-      "proMonthNote": "Mes a mes · cancela cuando quieras",
-      "dealTitle": "Prueba Pro gratis 7 días",
-      "dealSave": "Ahorras {ahorro} al año · {pct}%",
-      "dealTotal": "Con Pro anual: un solo cobro de {monto} MXN al año, al terminar tus 7 días gratis.",
-      "proCta": "Empezar mis 7 días gratis",
-      "perMonth": "MXN al mes"
+      "seeAll": "Ver todos los planes y qué incluyen"
     },
     "partner": {
       "label": "Socios",
@@ -229,7 +218,10 @@
       "adsHint": "Miden si nuestros anuncios funcionan.",
       "link": "Cookies"
     },
-    "sticky": "Empezar mis 7 días gratis"
+    "sticky": "Empezar mis 7 días gratis",
+    "ctaNoTrial": "Empieza gratis",
+    "ctaSignedIn": "Ver planes",
+    "ctaSubShort": "Cancela cuando quieras."
   },
   "auth": {
     "signIn": {
@@ -936,7 +928,9 @@
         "launch": "Precio de lanzamiento: {monto} MXN al mes"
       },
       "taxUS": "Prices in US dollars. Sales tax, if any, is added at checkout and shown before you pay.",
-      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay."
+      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay.",
+      "unitYear": "MXN al año",
+      "unitMonth": "MXN al mes"
     },
     "vars": {
       "periodicidad": {
@@ -974,9 +968,9 @@
   "plans": {
     "metaTitle": "Planes",
     "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
-    "title": "Un plan. Todas las herramientas.",
-    "sub": "Prueba Pro gratis 7 días: mensual o anual. Cancela cuando quieras.",
-    "subNoTrial": "Cancela cuando quieras.",
+    "title": "Empieza gratis, crece con Pro",
+    "sub": "Prueba Pro gratis {dias} días. Cancela en 1 clic, sin llamadas.",
+    "subNoTrial": "Cancela en 1 clic, sin llamadas.",
     "toggleAria": "Cómo quieres pagar",
     "toggle": {
       "month": "Mensual",
@@ -986,36 +980,33 @@
     "gratis": {
       "name": "Gratis",
       "tag": "Para conocer Chalyb",
-      "note": "Sin tarjeta · Para siempre",
-      "cta": "Crear cuenta gratis",
-      "f1": "Clips para probar",
-      "f2": "Tus resultados guardados",
-      "f3": "Ayuda por correo",
-      "fNo": "Señales, En vivo y las demás herramientas"
+      "cta": "Crear cuenta gratis"
     },
     "pro": {
       "badge": "Recomendado",
       "name": "Pro",
-      "tag": "Todas las herramientas",
+      "tag": "Para quien publica cada semana",
       "cta": "Empezar mis 7 días gratis",
-      "ctaNoTrial": "Elegir Pro",
-      "ctaReturn": "Volver a Pro",
       "note": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
-      "f1": "Las {n} herramientas: {lista}",
       "fCredits": "{creditos} créditos cada mes",
-      "f3": "Clips sin marca de agua",
       "ctaMonth": "Elegir Pro mensual",
-      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras."
+      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras.",
+      "badgePopular": "Más popular",
+      "save": "Ahorras {ahorro} al año · {pct}%",
+      "switchYear": "Cambia a Anual y ahorra {ahorro} al año",
+      "ctaYear": "Elegir Pro anual"
     },
     "vip": {
       "name": "VIP",
-      "tag": "Para quien lo usa todos los días",
-      "noYear": "Sin plan anual",
+      "tag": "Para quien transmite a diario o maneja varios canales",
+      "noYear": "Solo plan mensual",
       "cta": "Elegir VIP",
       "ctaUp": "Subir a VIP",
-      "f1": "Todo lo de Pro",
-      "f2": "Muchos más créditos cada mes",
-      "f4": "Primero en recibir herramientas nuevas"
+      "featsTitle": "Todo lo de Pro, más:",
+      "save": "Ahorras {ahorro} al año · {pct}%",
+      "switchYear": "Cambia a Anual y ahorra {ahorro} al año",
+      "ctaYear": "Elegir VIP anual",
+      "ctaMonth": "Elegir VIP mensual"
     },
     "current": "Tu plan actual",
     "trialing": "Ya estás probando Pro",
@@ -1023,7 +1014,7 @@
     "faqTitle": "Preguntas frecuentes",
     "faq": {
       "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Eliges Pro mensual o Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus 7 días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta; VIP no tiene prueba.",
+      "a1": "Eliges Pro mensual o Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus {dias} días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta; VIP no tiene prueba.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -1031,7 +1022,24 @@
       "q4": "¿Puedo cancelar cuando quiera?",
       "a4": "Sí. Es 1 clic desde Mi cuenta. Sigues con tu plan hasta el final del periodo que pagaste."
     },
-    "quebec": "Por ahora los planes de pago no están disponibles en Quebec."
+    "quebec": "Por ahora los planes de pago no están disponibles en Quebec.",
+    "trialChip": "{dias} días gratis",
+    "trialFootnote": "Prueba Pro gratis {dias} días: mensual o anual, una vez por cuenta y por tarjeta. VIP no tiene prueba.",
+    "yourPlan": "Tu plan",
+    "featsTitle": "Incluye:",
+    "notePaid": "Se cobra hoy. Cancela en 1 clic, sin llamadas.",
+    "feat": {
+      "clipsTry": "Haz clips para probar (calidad SD, con marca de agua)",
+      "noWatermarkHd": "Clips sin marca de agua, en HD",
+      "clips4k": "Clips en 4K",
+      "noStreams": "Clips de tus transmisiones en vivo",
+      "streams": "Clips de hasta {n} transmisiones en vivo al mes",
+      "streamsUnlimited": "Clips de transmisiones en vivo sin límite al mes",
+      "history": "Tus resultados se guardan {dias} días",
+      "historyYear": "Tus resultados se guardan 1 año",
+      "storage": "{espacio} para tus videos y archivos",
+      "cancel": "Cancela en 1 clic, sin llamadas"
+    }
   },
   "checkout": {
     "tool": "Prueba Pro gratis",

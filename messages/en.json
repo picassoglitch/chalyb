@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Chalyb — Bots that work for you while you sleep",
-    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 7 days. Prices in MXN, VAT included."
+    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 7 days. Prices in MXN, VAT included.",
+    "descriptionNoTrial": "Clips for your socials, crypto alerts and your stream in one place. Prices in MXN, VAT included."
   },
   "landing": {
     "nav": {
@@ -26,7 +27,9 @@
       "app": "Open Chalyb",
       "cta": "Start my 7-day free trial",
       "menu": "Open menu",
-      "skip": "Skip to content"
+      "skip": "Skip to content",
+      "ctaNoTrial": "Start free",
+      "ctaSignedIn": "See plans"
     },
     "hero": {
       "eyebrowTag": "All included",
@@ -136,22 +139,8 @@
       "strip3": "Help from a real person on WhatsApp"
     },
     "plans": {
-      "label": "Plans",
-      "title": "One plan with everything included",
-      "sub": "Start free, or get your first month of Pro free with the yearly plan.",
-      "gratis": "Free",
-      "gratisCta": "Create a free account",
-      "pro": "Pro",
-      "badge": "Recommended",
-      "vip": "VIP",
-      "vipCta": "Choose VIP",
-      "seeAll": "See every plan and what it includes",
-      "proMonthNote": "Month to month · cancel any time",
-      "dealTitle": "Try Pro free for 7 days",
-      "dealSave": "Save {ahorro} a year · {pct}%",
-      "dealTotal": "With Pro yearly: one charge of {monto} MXN a year, when your 7 free days end.",
-      "proCta": "Start my 7-day free trial",
-      "perMonth": "MXN a month"
+      "label": "Pricing",
+      "seeAll": "Compare all plans"
     },
     "partner": {
       "label": "Partners",
@@ -229,7 +218,10 @@
       "adsHint": "Measure whether our ads work.",
       "link": "Cookie settings"
     },
-    "sticky": "Start my 7-day free trial"
+    "sticky": "Start my 7-day free trial",
+    "ctaNoTrial": "Start free",
+    "ctaSignedIn": "See plans",
+    "ctaSubShort": "Cancel any time."
   },
   "auth": {
     "signIn": {
@@ -928,7 +920,7 @@
       "proMonthBig": "{monto} MXN a month",
       "monthLine": "{monto} MXN a month · renews every month",
       "tax": "Prices in MXN, IVA (VAT) included.",
-      "free": "No card · Forever",
+      "free": "No card needed · Free forever",
       "ref": {
         "wasSr": "Previous price:",
         "labelA1": "Previous price on <b>{sitio}</b> until <b>{fecha}</b>. Here you pay {pct}% less.",
@@ -936,7 +928,9 @@
         "launch": "Launch price: {monto} MXN a month"
       },
       "taxUS": "Prices in US dollars. Sales tax, if any, is added at checkout and shown before you pay.",
-      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay."
+      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay.",
+      "unitYear": "MXN a year",
+      "unitMonth": "MXN a month"
     },
     "vars": {
       "periodicidad": {
@@ -974,10 +968,10 @@
   "plans": {
     "metaTitle": "Plans",
     "metaDescription": "Free, Pro or VIP. Prices in MXN, IVA (VAT) included. Cancel any time.",
-    "title": "One plan. Every tool.",
-    "sub": "Try Pro free for 7 days, monthly or yearly. Cancel any time.",
-    "subNoTrial": "Cancel any time.",
-    "toggleAria": "How you want to pay",
+    "title": "Start free, grow with Pro",
+    "sub": "Try Pro free for {dias} days. Cancel online in 1 click, no calls.",
+    "subNoTrial": "Cancel online anytime, no calls.",
+    "toggleAria": "Billing period",
     "toggle": {
       "month": "Monthly",
       "year": "Yearly",
@@ -985,45 +979,42 @@
     },
     "gratis": {
       "name": "Free",
-      "tag": "To get to know Chalyb",
-      "note": "No card · Forever",
-      "cta": "Create a free account",
-      "f1": "Clips to try",
-      "f2": "Your results saved",
-      "f3": "Help by email",
-      "fNo": "Señales, En vivo and the other tools"
+      "tag": "See what Chalyb can do",
+      "cta": "Create free account"
     },
     "pro": {
       "badge": "Recommended",
       "name": "Pro",
-      "tag": "Every tool",
+      "tag": "For creators who post every week",
       "cta": "Start my 7-day free trial",
-      "ctaNoTrial": "Choose Pro",
-      "ctaReturn": "Back to Pro",
       "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
-      "f1": "All {n} tools: {lista}",
       "fCredits": "{creditos} credits every month",
-      "f3": "Clips without watermark",
       "ctaMonth": "Choose Pro monthly",
-      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time."
+      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
+      "badgePopular": "Most popular",
+      "save": "Save {ahorro} a year · {pct}%",
+      "switchYear": "Switch to yearly and save {ahorro} a year",
+      "ctaYear": "Choose Pro yearly"
     },
     "vip": {
       "name": "VIP",
-      "tag": "For people who use it every day",
-      "noYear": "No yearly plan",
+      "tag": "For daily streamers and multi-channel creators",
+      "noYear": "Monthly billing only",
       "cta": "Choose VIP",
       "ctaUp": "Upgrade to VIP",
-      "f1": "Everything in Pro",
-      "f2": "Many more credits every month",
-      "f4": "First to get new tools"
+      "featsTitle": "Everything in Pro, plus:",
+      "save": "Save {ahorro} a year · {pct}%",
+      "switchYear": "Switch to yearly and save {ahorro} a year",
+      "ctaYear": "Choose VIP yearly",
+      "ctaMonth": "Choose VIP monthly"
     },
     "current": "Your current plan",
-    "trialing": "You’re already trying Pro",
+    "trialing": "You’re on your Pro trial",
     "notIncluded": "Not included",
     "faqTitle": "Frequently asked questions",
     "faq": {
       "q1": "How does the free trial work?",
-      "a1": "You pick Pro monthly or Pro yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your 7 free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card; VIP has no trial.",
+      "a1": "You pick Pro monthly or Pro yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your {dias} free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card; VIP has no trial.",
       "q2": "Can I switch from yearly to monthly?",
       "a2": "Yes, from My account → My plan, whenever you want.",
       "q3": "What are credits?",
@@ -1031,7 +1022,24 @@
       "q4": "Can I cancel whenever I want?",
       "a4": "Yes. It’s 1 click from My account. You keep your plan until the end of the period you paid for."
     },
-    "quebec": "Paid plans aren’t available in Quebec for now."
+    "quebec": "Paid plans aren’t available in Quebec for now.",
+    "trialChip": "{dias} days free",
+    "trialFootnote": "Free Pro trial, {dias} days: monthly or yearly, once per account and per card. VIP has no trial.",
+    "yourPlan": "Your plan",
+    "featsTitle": "What you get:",
+    "notePaid": "Charged today. Cancel online anytime.",
+    "feat": {
+      "clipsTry": "Test clips (SD, watermarked)",
+      "noWatermarkHd": "Watermark-free clips in HD",
+      "clips4k": "4K clip exports",
+      "noStreams": "Clips from your live streams",
+      "streams": "Clip up to {n} live streams a month",
+      "streamsUnlimited": "Unlimited live streams to clip",
+      "history": "{dias} days of history",
+      "historyYear": "A full year of history",
+      "storage": "{espacio} of storage",
+      "cancel": "Cancel online anytime, no calls"
+    }
   },
   "checkout": {
     "tool": "Pro free trial",

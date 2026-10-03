@@ -110,7 +110,8 @@ export function TrialPicker({
                         style={{ display: 'block', fontSize: 16, marginTop: 4 }}
                       >
                         {t('trial.yearOnce')}
-                        {choiceEnabled && math.yearSavingsCents > 0 &&
+                        {choiceEnabled &&
+                          math.yearSavingsCents > 0 &&
                           ` · ${t('trial.yearSave', { ahorro: formatMXN(floorToPeso(math.yearSavingsCents)) })}`}
                       </span>
                     )}

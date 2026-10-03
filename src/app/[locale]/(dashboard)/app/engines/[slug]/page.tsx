@@ -71,9 +71,15 @@ export default async function ToolPage({
   const tagline = tEngines.has(`marketing.${engine.slug}.tagline`)
     ? tEngines(`marketing.${engine.slug}.tagline`)
     : null;
-  const trialFlow = trialFlowEnabled();
+  // The trial offer only while it can be honoured: the flow is on and this
+  // account hasn't used its trial (K-7).
+  const trialFlow = trialFlowEnabled() && !entitlements.trialUsed;
   // TODO(P2): /app/prueba (SCR-14) once TRIAL_FLOW_ENABLED is on.
-  const planHref = trialFlow ? '/app/prueba' : '/app/subscription';
+  const planHref = trialFlow
+    ? '/app/prueba'
+    : trialFlowEnabled()
+      ? '/app/planes'
+      : '/app/subscription';
   // Pro without PRO_INCLUDES_ALL_TOOLS runs one tool at a time: a "trial
   // offer" for them means "switch your tool", not "try Pro".
   const isSwitch = access.state === 'trial_offer' && entitlements.plan !== 'FREE';

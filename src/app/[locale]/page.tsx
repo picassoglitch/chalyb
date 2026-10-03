@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LandingPage } from '@/components/landing/landing-page';
 import { getCurrentUser } from '@/lib/auth/session';
 import { publicPageMetadata } from '@/lib/site';
+import { trialFlowEnabled } from '@/lib/config/flags';
 
 export async function generateMetadata({
   params,
@@ -14,7 +15,8 @@ export async function generateMetadata({
   // The landing's tab title is the bare tagline, not "%s · Chalyb".
   const meta = publicPageMetadata('/', locale, {
     title: t('title'),
-    description: t('description'),
+    // The trial claim only when the trial can be started (K-7).
+    description: trialFlowEnabled() ? t('description') : t('descriptionNoTrial'),
   });
   return { ...meta, title: { absolute: t('title') } };
 }

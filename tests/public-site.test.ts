@@ -188,13 +188,23 @@ test('the plan summary renders the config totals, IVA included', () => {
   assert.equal(formatMXN(planPrice('pro_year').totalCents), '$9,970');
   assert.equal(formatMXN(annualMath().yearSavingsCents), '$1,994');
   assert.equal(formatMXN(planPrice('vip_month').totalCents), '$3,799');
-  const src = readFileSync(
+  const summary = readFileSync(
     new URL('../src/components/landing/plans-summary.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(src, /tb\(priceDisplay\.taxKey\)/, 'the plans block carries the tax footer ("Precios en MXN, IVA incluido.")');
-  assert.match(src, /planPrice\('pro_year'\)/);
-  assert.match(src, /annualMath\(\)/);
+  assert.match(summary, /tb\(props\.priceDisplay\.taxKey\)/, 'the plans block carries the tax footer');
+  assert.match(summary, /<PlanCards /, 'the landing renders the same cards as /planes (K-1)');
+  const cards = readFileSync(
+    new URL('../src/components/app/billing/plan-cards.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(cards, /proCard\(model, interval\)/);
+  const model = readFileSync(
+    new URL('../src/lib/billing/plan-card-model.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(model, /planPrice\(planKey\)\.totalCents/);
+  assert.match(model, /annualMath\('pro'\)/);
 });
 
 test('the trial CTA follows TRIAL_FLOW_ENABLED', () => {

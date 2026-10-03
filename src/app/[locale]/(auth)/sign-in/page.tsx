@@ -6,17 +6,11 @@ import { safeNextPath } from '@/lib/auth/safe-next';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
 import { trialFlowEnabled } from '@/lib/config/flags';
+import { signupNext } from '@/lib/billing/plans-cta';
 
-// Landing pricing cards link to /sign-in?mode=signup&plan=<tier>. Map the
-// chosen plan to where the user needs to BE after auth: Free lands in the
-// workspace, paid tiers land on billing where Mercado Pago checkout lives.
-// An explicit ?next= always wins over the plan-derived default.
-const PLAN_NEXT: Record<string, string> = {
-  free: '/app',
-  pro: '/app/billing',
-  vip: '/app/billing',
-};
-
+// Plan cards link to /sign-in?mode=signup&(intent=trial|plan=<tier>)&interval=…;
+// signupNext() maps that to where the user continues after auth. An explicit
+// ?next= always wins over the plan-derived default.
 export default async function SignInPage({
   params,
   searchParams,
@@ -29,19 +23,16 @@ export default async function SignInPage({
     reset?: string;
     plan?: string;
     intent?: string;
+    interval?: string;
   }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { error, next: rawNext, mode, reset, plan, intent } = await searchParams;
-  // "Prueba Pro gratis" (SCR-13 → SCR-14): after the account, the trial.
+  const { error, next: rawNext, mode, reset, plan, intent, interval } = await searchParams;
+  // A plan card's CTA (SCR-13 → SCR-14): after the account, the trial picker
+  // or the plan's checkout, with the card's interval kept (K-2).
   const next =
-    rawNext ??
-    (intent === 'trial' && trialFlowEnabled()
-      ? '/app/prueba'
-      : plan
-        ? PLAN_NEXT[plan.toLowerCase()]
-        : undefined);
+    rawNext ?? signupNext({ intent, plan, interval, flow: trialFlowEnabled() }) ?? undefined;
   const t = await getTranslations('auth.signIn');
 
   const supabase = await createClient();

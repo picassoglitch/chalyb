@@ -310,7 +310,6 @@ test('10 · every trial button says "Empezar mis 7 días gratis"', () => {
     es.plans.pro.cta,
     es.landing.cta,
     es.landing.sticky,
-    es.landing.plans.proCta,
     es.home.included.cta.trial,
   ]) {
     assert.equal(v, 'Empezar mis 7 días gratis');

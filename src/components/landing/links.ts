@@ -3,7 +3,7 @@ import type { Route } from 'next';
 /**
  * Where the public site's buttons go (rebuild P4-1).
  *
- * The trial CTA "Prueba Pro gratis 1 mes" opens SCR-13 (`intent=trial`) when
+ * The trial CTA "Empezar mis 7 días gratis" opens SCR-13 (`intent=trial`) when
  * the trial flow is live, and the existing sign-up otherwise. A signed-in
  * visitor goes to Planes, which knows their plan. Pure: tests check both flag
  * values.
@@ -27,6 +27,18 @@ export const TRIAL_SIGNUP_HREF = '/sign-in?mode=signup&intent=trial' as Route;
 export function trialCtaHref(opts: { trialFlowEnabled: boolean; signedIn: boolean }): Route {
   if (opts.signedIn) return PLANES_HREF;
   return opts.trialFlowEnabled ? TRIAL_SIGNUP_HREF : signupHref('pro');
+}
+
+/** Which label the trial button wears (K-7): the trial only when the flow can
+ *  honour it, "Ver planes" for a signed-in visitor (Planes knows their
+ *  state), else "Empieza gratis". messages: landing.<key> and
+ *  landing.publicNav.<key>. */
+export function trialCtaLabel(opts: {
+  trialFlowEnabled: boolean;
+  signedIn: boolean;
+}): 'cta' | 'ctaNoTrial' | 'ctaSignedIn' {
+  if (opts.signedIn) return 'ctaSignedIn';
+  return opts.trialFlowEnabled ? 'cta' : 'ctaNoTrial';
 }
 
 export function vipCtaHref(signedIn: boolean): Route {

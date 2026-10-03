@@ -15,7 +15,8 @@ export type FunnelEvent =
   | 'first_clip'
   | 'cancel'
   | 'conversion'
-  | 'payment_failed';
+  | 'payment_failed'
+  | 'landing_pricing_toggle';
 export type FunnelProps = Record<string, string | number | boolean>;
 
 export async function track(event: FunnelEvent, props: FunnelProps = {}): Promise<void> {

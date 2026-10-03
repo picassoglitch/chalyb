@@ -17,9 +17,17 @@ test.describe('public /planes', () => {
     await expect(page.getByText('Precios en MXN, IVA incluido.')).toBeVisible();
     const body = await page.locator('body').innerText();
     expect(body).not.toMatch(FORBIDDEN_PRICE);
-    expect(body).toMatch(/\$9,970 MXN al año/);
-    await page.getByRole('radio', { name: 'Mensual' }).click();
-    await expect(page.getByText(/MXN al mes/).first()).toBeVisible();
+    if (FLOW) {
+      // Anual is on by default: the yearly charge leads (Law §16).
+      expect(body).toMatch(/\$9,970\s+MXN al año/);
+      await page.getByRole('radio', { name: 'Mensual' }).click();
+      await expect(page.getByTestId('plan-cards')).toHaveAttribute('data-interval', 'month');
+    } else {
+      // Flow off (mockup 85): Mensual only, no toggle, nothing yearly.
+      await expect(page.getByRole('radiogroup')).toHaveCount(0);
+      expect(body).not.toMatch(/al año/);
+    }
+    expect(body).toMatch(/\$997\s+MXN al mes|\$9,970\s+MXN al año/);
     await expectNoOverflow(page, info);
     await expectAccessible(page);
   });

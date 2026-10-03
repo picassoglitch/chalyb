@@ -11,7 +11,18 @@ import { heroRows, type PublicTool } from '@/lib/tools/public-tools';
 
 const OK_PILL = new Set(['chalybclip', 'chalybobs', 'chalybbot', 'chalybtrade']);
 
-export async function Hero({ tools, trialHref }: { tools: PublicTool[]; trialHref: Route }) {
+export async function Hero({
+  tools,
+  trialHref,
+  ctaLabel,
+  ctaSub,
+}: {
+  tools: PublicTool[];
+  trialHref: Route;
+  /** From trialCtaLabel(): the trial only when the flow can honour it. */
+  ctaLabel: string;
+  ctaSub: string;
+}) {
   const t = await getTranslations('landing');
   const rows = heroRows(tools);
 
@@ -33,9 +44,9 @@ export async function Hero({ tools, trialHref }: { tools: PublicTool[]; trialHre
             className="ch-btn ch-btn--primary ch-btn--xl"
             data-cta="trial-hero"
           >
-            {t('cta')}
+            {ctaLabel}
           </Link>
-          <small>{t('ctaSub')}</small>
+          <small>{ctaSub}</small>
         </div>
         <ul className="pub-trust">
           {(['seal1', 'seal2', 'seal3'] as const).map((k) => (

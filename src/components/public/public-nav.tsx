@@ -8,7 +8,7 @@ import { Menu } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/ui/primitives';
 import { trialFlowEnabled } from '@/lib/config/flags';
-import { APP_HREF, LOGIN_HREF, trialCtaHref } from '@/components/landing/links';
+import { APP_HREF, LOGIN_HREF, trialCtaHref, trialCtaLabel } from '@/components/landing/links';
 
 const ANCHORS = [
   ['tools', '/#herramientas'],
@@ -44,7 +44,7 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
           </Link>
         )}
         <Link href={trialHref} className="ch-btn ch-btn--primary ch-btn--compact pub-nav__cta">
-          {t('cta')}
+          {t(trialCtaLabel({ trialFlowEnabled: trialFlowEnabled(), signedIn }))}
         </Link>
         <details className="pub-nav__menu">
           <summary aria-label={t('menu')}>

@@ -9,7 +9,9 @@ import { PublicNav } from '@/components/public/public-nav';
 import { PublicFooter } from '@/components/public/public-footer';
 import { trialFlowEnabled } from '@/lib/config/flags';
 import { listActiveTools } from '@/lib/tools/public-tools-server';
-import { trialCtaHref } from './links';
+import { trialCtaHref, trialCtaLabel } from './links';
+import { allToolsClaimAllowed } from '@/lib/config/flags';
+import { loadPlansProps } from '@/lib/billing/plans-props';
 import { Hero } from './hero';
 import { ToolsSection } from './tools';
 import { HowItWorks } from './how-it-works';
@@ -30,7 +32,11 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
     getLocale(),
     getTranslations('landing'),
   ]);
-  const trialHref = trialCtaHref({ trialFlowEnabled: trialFlowEnabled(), signedIn });
+  const flow = trialFlowEnabled();
+  const trialHref = trialCtaHref({ trialFlowEnabled: flow, signedIn });
+  const ctaLabel = t(trialCtaLabel({ trialFlowEnabled: flow, signedIn }));
+  const ctaSub = allToolsClaimAllowed() ? t('ctaSub') : t('ctaSubShort');
+  const plans = await loadPlansProps(locale);
 
   return (
     <div className="chalyb-app pub">
@@ -39,18 +45,24 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
       </a>
       <PublicNav signedIn={signedIn} />
       <main id="main">
-        <Hero tools={tools} trialHref={trialHref} />
+        <Hero tools={tools} trialHref={trialHref} ctaLabel={ctaLabel} ctaSub={ctaSub} />
         <ToolsSection tools={tools} />
         <HowItWorks />
         {tools.some((tool) => tool.slug === 'chalybclip') && <Gallery />}
         <Audience tools={tools} />
-        <PlansSummary signedIn={signedIn} trialHref={trialHref} />
+        <PlansSummary {...plans} />
         <Partner />
-        <Faq tools={tools} locale={locale} />
-        <FinalCta tools={tools} locale={locale} trialHref={trialHref} />
+        <Faq tools={tools} locale={locale} trialOffered={flow} />
+        <FinalCta
+          tools={tools}
+          locale={locale}
+          trialHref={trialHref}
+          ctaLabel={ctaLabel}
+          ctaSub={ctaSub}
+        />
       </main>
       <PublicFooter />
-      <StickyCta href={trialHref} label={t('sticky')} />
+      <StickyCta href={trialHref} label={flow && !signedIn ? t('sticky') : ctaLabel} />
       <JsonLd />
     </div>
   );

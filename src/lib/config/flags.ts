@@ -20,6 +20,12 @@ export function freeIncludesClips(): boolean {
   return readBool('FREE_INCLUDES_CLIPS', true);
 }
 
+/** O-13 / C7 · "Más popular" is a factual claim: only with the sales data
+ *  behind it. Off: "Recomendado". Never "Mejor oferta". */
+export function proBadgeMostPopular(): boolean {
+  return readBool('PRO_BADGE_MOST_POPULAR', false); // TODO(owner O-13)
+}
+
 /** O-5 / O-7 · USD prices, US/CA tax footers and English USD copy. Off:
  *  MXN everywhere (MP charging in USD is unverified, OPS-14). */
 export function usdMarketEnabled(): boolean {

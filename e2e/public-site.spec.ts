@@ -43,7 +43,8 @@ test('the trial button is visible without scrolling at 390×844 and goes to sign
 test('prices sit in a block that says IVA incluido', async ({ page }) => {
   await page.goto('/');
   const plans = page.locator('#planes');
-  await expect(plans.locator('[data-price="pro_year"]')).toContainText('MXN al año');
+  // Anual only exists with the trial flow on; Mensual always does.
+  await expect(plans.getByTestId('plan-cards')).toContainText(/MXN al (año|mes)/);
   await expect(plans).toContainText('Precios en MXN, IVA incluido.');
   await expect(plans).not.toContainText('2 meses gratis');
   await expect(plans.locator('s, del')).toHaveCount(0);

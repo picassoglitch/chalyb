@@ -29,7 +29,9 @@ export default async function ClipsStep1Page({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireClipsAccess(locale, '/app/clips');
+  const { entitlements } = await requireClipsAccess(locale, '/app/clips');
+  // A trial offer only while it can be honoured (K-7).
+  const trialFlow = trialFlowEnabled() && !entitlements.trialUsed;
   const t = await getTranslations('clips');
   const { error, link } = await searchParams;
   const chrome = {
@@ -52,8 +54,10 @@ export default async function ClipsStep1Page({
               engineId={engine.id}
               slug={engine.slug}
               toolName={engine.name}
-              planHref="/app/subscription"
-              trialFlow={trialFlowEnabled()}
+              planHref={
+                trialFlow ? '/app/prueba' : trialFlowEnabled() ? '/app/planes' : '/app/subscription'
+              }
+              trialFlow={trialFlow}
             />
           )}
         </div>

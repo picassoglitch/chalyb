@@ -9,10 +9,14 @@ export async function FinalCta({
   tools,
   locale,
   trialHref,
+  ctaLabel,
+  ctaSub,
 }: {
   tools: PublicTool[];
   locale: string;
   trialHref: Route;
+  ctaLabel: string;
+  ctaSub: string;
 }) {
   const t = await getTranslations('landing');
   return (
@@ -22,9 +26,9 @@ export async function FinalCta({
           <h2 id="final-title">{t('final.title')}</h2>
           <p>{t('final.sub', { lista: toolList(tools, locale) })}</p>
           <Link href={trialHref} className="ch-btn ch-btn--white ch-btn--xl" data-cta="trial-final">
-            {t('cta')}
+            {ctaLabel}
           </Link>
-          <small>{t('ctaSub')}</small>
+          <small>{ctaSub}</small>
         </div>
       </div>
     </section>

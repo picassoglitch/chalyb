@@ -86,10 +86,17 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
         {strip.kind === 'offer' ? (
           <>
             <p className="ch-strip__tx">
-              <b>{strip.cta === 'plans' ? t('included.gratisPlans') : t('included.gratis')}</b>
+              {/* The trial claim only while the trial is available (K-7). */}
+              <b>{strip.cta === 'trial' ? t('included.gratis') : t('included.gratisPlans')}</b>
             </p>
             <ButtonLink
-              href={strip.cta === 'plans' ? '/app/subscription' : '/app/prueba'}
+              href={
+                strip.cta === 'trial'
+                  ? '/app/prueba'
+                  : strip.cta === 'return'
+                    ? '/app/planes'
+                    : '/app/subscription'
+              }
               size="compact"
             >
               {t(`included.cta.${strip.cta}`)}
@@ -128,8 +135,18 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
       </section>
 
       {latest && (
-        <section aria-labelledby="latest-title" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+        <section
+          aria-labelledby="latest-title"
+          style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              gap: 12,
+            }}
+          >
             <h2 id="latest-title" className="ch-h2">
               {t('latest.title')}
             </h2>

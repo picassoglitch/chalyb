@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { selectBanner } from '@/lib/billing/banner';
-import { plansCta } from '@/lib/billing/plans-cta';
+import { plansCta, signupNext } from '@/lib/billing/plans-cta';
 import type { BillingState } from '@/lib/billing/billing-state';
 
 const DAY = 86_400_000;
@@ -98,61 +98,107 @@ test('the pre-charge banners can’t be closed; they count as the in-app notice'
   assert.equal(selectBanner(state({ state: 'past_due' }), false, NOW)!.closable, false);
 });
 
-test('Planes CTAs per state', () => {
-  const anon = plansCta({
-    signedIn: false,
-    isAdmin: false,
-    flow: true,
-    trialUsed: false,
-    billing: null,
-    quebecBlocked: false,
+test('Planes CTAs per state (K-2, spec §4.3)', () => {
+  const base = { isAdmin: false, annualOffered: true, vipYearOffered: false, quebecBlocked: false };
+  const anon = plansCta({ ...base, signedIn: false, flow: true, trialUsed: false, billing: null });
+  assert.deepEqual(anon.pro, {
+    hrefYear: '/sign-in?mode=signup&intent=trial&interval=year',
+    hrefMonth: '/sign-in?mode=signup&intent=trial&interval=month',
+    label: 'trial',
   });
-  assert.deepEqual(anon.pro, { href: '/sign-in?mode=signup&intent=trial', label: 'trial' });
+  assert.deepEqual(anon.vip, {
+    hrefYear: null,
+    hrefMonth: '/sign-in?mode=signup&plan=vip&interval=month',
+    label: 'choose',
+  });
+  // Flow off: monthly only, the legacy checkout, no trial (mockup 85, PC-B1/B4).
   const off = plansCta({
+    ...base,
+    annualOffered: false,
     signedIn: true,
-    isAdmin: false,
     flow: false,
     trialUsed: false,
     billing: state({}),
-    quebecBlocked: false,
   });
-  assert.deepEqual(off.pro, { href: '/app/subscription', label: 'noTrial' });
+  assert.deepEqual(off.pro, { hrefYear: null, hrefMonth: '/app/subscription', label: 'paid' });
   assert.deepEqual(off.gratis, { href: null, label: 'current' });
-  const used = plansCta({
+  // Signed in, trial available: the picker learns the interval (C9).
+  const free = plansCta({
+    ...base,
     signedIn: true,
-    isAdmin: false,
-    flow: true,
-    trialUsed: true,
-    billing: state({}),
-    quebecBlocked: false,
-  });
-  assert.equal(used.pro.label, 'return');
-  const trialing = plansCta({
-    signedIn: true,
-    isAdmin: false,
-    flow: true,
-    trialUsed: true,
-    billing: state({ state: 'trialing', planKey: 'pro_year' }),
-    quebecBlocked: false,
-  });
-  assert.deepEqual(trialing.pro, { href: null, label: 'trialing' });
-  assert.equal(trialing.vip.label, 'up');
-  const onVip = plansCta({
-    signedIn: true,
-    isAdmin: false,
-    flow: true,
-    trialUsed: true,
-    billing: state({ state: 'pro', planKey: 'vip_month' }),
-    quebecBlocked: false,
-  });
-  assert.deepEqual(onVip.vip, { href: null, label: 'current' });
-  const quebec = plansCta({
-    signedIn: true,
-    isAdmin: false,
     flow: true,
     trialUsed: false,
     billing: state({}),
-    quebecBlocked: true,
   });
-  assert.equal(quebec.pro.href, null);
+  assert.equal(free.pro.hrefYear, '/app/prueba?interval=year');
+  assert.equal(free.pro.hrefMonth, '/app/prueba?interval=month');
+  // Trial used: straight to the paid checkout, "Elegir Pro anual|mensual" (PC-B5).
+  const used = plansCta({
+    ...base,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({}),
+  });
+  assert.deepEqual(used.pro, {
+    hrefYear: '/app/prueba/pago?plan=pro_year',
+    hrefMonth: '/app/prueba/pago?plan=pro_month',
+    label: 'paid',
+  });
+  const trialing = plansCta({
+    ...base,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({ state: 'trialing', planKey: 'pro_year' }),
+  });
+  assert.deepEqual(trialing.pro, { hrefYear: null, hrefMonth: null, label: 'trialing' });
+  assert.equal(trialing.vip.label, 'up');
+  const onVip = plansCta({
+    ...base,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({ state: 'pro', planKey: 'vip_month' }),
+  });
+  assert.deepEqual(onVip.vip, { hrefYear: null, hrefMonth: null, label: 'current' });
+  const quebec = plansCta({
+    ...base,
+    quebecBlocked: true,
+    signedIn: true,
+    flow: true,
+    trialUsed: false,
+    billing: state({}),
+  });
+  assert.equal(quebec.pro.hrefYear, null);
+  assert.equal(quebec.pro.hrefMonth, null);
+  // VIP anual only once it is offered (WS-5).
+  const vipYear = plansCta({
+    ...base,
+    vipYearOffered: true,
+    signedIn: true,
+    flow: true,
+    trialUsed: false,
+    billing: state({}),
+  });
+  assert.equal(vipYear.vip.hrefYear, '/app/billing/cambiar?plan=vip_year');
+});
+
+test('sign-up keeps the card’s interval (K-2)', () => {
+  assert.equal(
+    signupNext({ intent: 'trial', interval: 'month', flow: true }),
+    '/app/prueba?interval=month',
+  );
+  assert.equal(signupNext({ intent: 'trial', flow: true }), '/app/prueba');
+  assert.equal(signupNext({ intent: 'trial', interval: 'year', flow: false }), null);
+  assert.equal(
+    signupNext({ plan: 'pro', interval: 'year', flow: true }),
+    '/app/prueba/pago?plan=pro_year',
+  );
+  assert.equal(signupNext({ plan: 'pro', flow: false }), '/app/billing');
+  assert.equal(
+    signupNext({ plan: 'vip', interval: 'month', flow: true }),
+    '/app/billing/cambiar?plan=vip_month',
+  );
+  assert.equal(signupNext({ plan: 'free', flow: true }), '/app');
 });
