@@ -251,10 +251,16 @@ export const PRICING = {
   currency: CURRENCY,
   /** Q3 · Mensual/Anual choice in the trial. */
   defaultInterval: 'year' as const,
-  /** Owner trial spec: 1 month free on Pro ANUAL only (owner, 2026-10-02:
-   *  Mensual pays from the first month), card required. Q26: shown as
-   *  whatever MP applies. */
-  trial: { days: 30, plan: 'pro' as const, requiresCard: true, reminderDaysBefore: 7 },
+  /** 7-day Pro trial on Pro mensual AND Pro anual (owner + Law, 2026-10-03;
+   *  PRICING-CARDS-SPEC §16.1). Card required; one per account, person and
+   *  card. The charge notice goes out on day 0, i.e. `reminderDaysBefore`
+   *  (= days) before the charge: Law's ≥5-day minimum is met by one email. */
+  trial: {
+    days: 7,
+    reminderDaysBefore: 7,
+    plans: ['pro_month', 'pro_year'] as readonly PlanKey[],
+    requiresCard: true,
+  },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
   reminders: { monthDaysBefore: 7, yearDaysBefore: [30, 7] as const },
   /** Q12 · terms [DÍAS DE GRACIA]. */
@@ -265,22 +271,32 @@ export const PRICING = {
   maxVideoHours: { gratis: null, pro: null, vip: null } as Record<string, number | null>,
 };
 
-/** Whether choosing this plan opens the free month (if the account hasn't
- *  used it). Only Pro anual does; Pro mensual and VIP charge from day one. */
+/** Whether choosing this plan opens the 7-day trial (if the account hasn't
+ *  used it): Pro mensual and Pro anual. VIP (and Pro Lealtad) never. */
 export function planHasTrial(key: PlanKey): boolean {
-  return key === 'pro_year';
+  return key === 'pro_month' || key === 'pro_year';
 }
 
-/** Fails fast on a notice window shorter than the law's 5 calendar days. */
-export function assertReminderWindows(p = PRICING): void {
+/** LFPC art. 76 Bis VIII: every charge notice at least this many calendar
+ *  days before the charge. */
+export const MIN_NOTICE_DAYS = 5;
+
+/** Fails fast on a notice window shorter than the law's 5 calendar days, or
+ *  a trial notice that would go out before the trial even starts. A 3-day
+ *  trial can't meet the rule, so `{ days: 3, reminderDaysBefore: 3 }` throws. */
+export function assertReminderWindows(
+  p: { trial: { days: number; reminderDaysBefore: number }; reminders: { monthDaysBefore: number; yearDaysBefore: readonly number[] } } = PRICING,
+): void {
   const days = [
     p.trial.reminderDaysBefore,
     p.reminders.monthDaysBefore,
     ...p.reminders.yearDaysBefore,
   ];
-  const bad = days.filter((d) => d < 5);
+  const bad = days.filter((d) => d < MIN_NOTICE_DAYS);
   if (bad.length)
     throw new Error(`Charge notices must be ≥ 5 days before the charge (got ${bad.join(', ')})`);
+  if (p.trial.reminderDaysBefore > p.trial.days)
+    throw new Error('The trial notice cannot go out before the trial starts');
 }
 assertReminderWindows();
 

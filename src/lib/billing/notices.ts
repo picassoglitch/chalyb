@@ -16,6 +16,67 @@ import {
 } from '@/lib/email/billing-templates';
 import { recordConsent, UI_VERSION } from './consent';
 import type { ConsentEventType } from './consent-core';
+import { legalDocuments } from '@/lib/legal/documents';
+import { PRICING, planPrice, type PlanKey } from '@/config/pricing';
+import { formatFechaLarga, formatMXN } from './format';
+
+const PLAN_NAMES: Record<PlanKey, string> = {
+  pro_year: 'Pro anual',
+  pro_month: 'Pro mensual',
+  vip_month: 'VIP',
+};
+const DOC_LABELS: Record<string, string> = {
+  terminos: 'Términos y Condiciones',
+  suscripcion: 'Términos de Suscripción',
+  privacidad: 'Aviso de Privacidad',
+};
+
+/**
+ * Every value the trial's charge notice (and the optional day-6 reminder)
+ * prints, from the subscription itself: the day-0 send and the cron fill it
+ * the same way. Amounts from the pricing config.
+ */
+export function trialNoticeVars(input: {
+  nombre: string;
+  planKey: PlanKey;
+  startedAt: Date | string;
+  trialEndsAt: Date | string;
+  chargeAt: Date | string;
+  last4: string | null;
+  consentId: string | null;
+  appUrl: string;
+  now?: Date;
+}): BillingEmailVars {
+  const price = planPrice(input.planKey);
+  const year = price.interval === 'year';
+  const monto = formatMXN(price.totalCents);
+  return {
+    nombre: input.nombre,
+    plan: PLAN_NAMES[input.planKey],
+    monto,
+    renovacion: `${year ? 'cada año' : 'cada mes'} (${monto} MXN)`,
+    periodicidad: year ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
+    fecha_inicio: formatFechaLarga(input.startedAt, 'es'),
+    fecha_fin_prueba: formatFechaLarga(input.trialEndsAt, 'es'),
+    fecha_cobro: formatFechaLarga(input.chargeAt, 'es'),
+    dias: PRICING.trial.days,
+    faltan: Math.max(
+      0,
+      Math.ceil(
+        (new Date(input.chargeAt).getTime() - (input.now ?? new Date()).getTime()) / 86_400_000,
+      ),
+    ),
+    ultimos4: input.last4 ?? undefined,
+    consent_id: input.consentId ?? undefined,
+    switch_mensual: year ? formatMXN(planPrice('pro_month').totalCents) : undefined,
+    documentos: legalDocuments('terminos', 'suscripcion', 'privacidad').map((d) => ({
+      label: DOC_LABELS[d.doc] ?? d.doc,
+      version: d.version,
+      url: d.url,
+    })),
+    appUrl: input.appUrl,
+  };
+}
 
 export interface DispatchInput {
   userId: string;

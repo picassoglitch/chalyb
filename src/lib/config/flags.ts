@@ -33,6 +33,17 @@ export function proIncludesAllTools(): boolean {
   return readBool('PRO_INCLUDES_ALL_TOOLS', true);
 }
 
+/**
+ * C4 / C15 · whether copy may say "Todas las herramientas incluidas". Only
+ * once Pro's entitlement, TIER_CAPS and the terms agree on it (WS-13, owner
+ * O-9); until then no card, picker or landing makes a tool claim.
+ */
+const PRO_TOOL_SCOPE_ALIGNED = false; // TODO(owner O-9): flip in WS-13 once aligned
+
+export function allToolsClaimAllowed(): boolean {
+  return PRO_TOOL_SCOPE_ALIGNED && proIncludesAllTools();
+}
+
 /** Q4 · How the hub runs each tool (rebuild P3), from TOOL_HUB_MODE_<SLUG>:
  *   off   (default) the tool's card launches the engine's app over SSO
  *   a     the engine exposes a job/settings API; the hub renders the flow
@@ -91,9 +102,18 @@ export function trialFlowRequested(): boolean {
   return readBool('TRIAL_FLOW_ENABLED', false);
 }
 
-/** D5 · the optional extra reminder the day before the trial charge. */
-export function trialDay29ReminderEnabled(): boolean {
-  return readBool('TRIAL_DAY29_REMINDER_ENABLED', false);
+/** O-11 · the optional "Mañana termina tu prueba gratis" email + amber
+ *  banner on day 6 (Law recommends it, strongly for Pro anual; owner: off). */
+export function trialDay6ReminderEnabled(): boolean {
+  return readBool('TRIAL_DAY6_REMINDER', false); // TODO(owner O-11)
+}
+
+/** O-6 / OPS-14 · whether pausing a preapproval during its trial (and
+ *  resuming it) is verified in the MP sandbox not to charge on the original
+ *  start_date. Until then the hold rule doesn't touch MP: it records the
+ *  hold and raises an admin attention item. */
+export function mpPauseInTrialVerified(): boolean {
+  return readBool('MP_PAUSE_IN_TRIAL_VERIFIED', false); // TODO(owner O-6)
 }
 
 /** Q3 · whether the trial offers Mensual as well as Anual. */

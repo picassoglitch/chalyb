@@ -7,7 +7,7 @@
 // messages: the page renders them with t.rich; evidence keeps the plain text
 // (stripMarkup).
 
-import { planPrice, type PlanKey } from '@/config/pricing';
+import { PRICING, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from './format';
 import type { TrialDates } from './trial-dates';
 
@@ -32,6 +32,7 @@ export function trialVars(t: Translate, input: DisclosureInput) {
   const date = (d: Date) => formatFechaLarga(d, input.locale);
   return {
     monto,
+    dias: PRICING.trial.days,
     fecha_fin_prueba: date(input.dates.trialEndsAt),
     fecha_cobro: date(input.dates.chargeAt),
     fecha_recordatorio: date(input.dates.reminderAt),
@@ -45,13 +46,15 @@ export function trialVars(t: Translate, input: DisclosureInput) {
   };
 }
 
-/** The four disclosure paragraphs, with <b> markup, in order. */
+/** The charge block (aceptacion-ux §3.2), one paragraph per line of Law's
+ *  template, with <b> markup, in order. */
 export function disclosureParagraphs(t: Translate, input: DisclosureInput): string[] {
   const v = trialVars(t, input);
   return [
     t('disclosure.today', v),
+    t('disclosure.ends', v),
     t('disclosure.charge', v),
-    t('disclosure.reminder', v),
+    t('disclosure.notice', v),
     t('disclosure.cancel', v),
   ];
 }

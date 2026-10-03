@@ -10,6 +10,7 @@ import {
   checkoutNotReadyError,
   getPublicKey,
   missingCheckoutVars,
+  mpPayerEmail,
 } from '@/lib/payments/mercadopago';
 import { isSubscribableTier } from '@/lib/payments/subscription-reference';
 import { SubscriptionCheckout } from '@/components/workspace/subscription-checkout';
@@ -111,7 +112,7 @@ export default async function SubscriptionCheckoutPage({
             tierLabel={caps.label}
             publicKey={publicKey}
             amountMajor={pricing.amountCents / 100}
-            payerEmail={session.user.email ?? null}
+            payerEmail={mpPayerEmail(session.user.email)}
           />
         )}
 

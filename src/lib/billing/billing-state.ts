@@ -46,6 +46,8 @@ export interface BillingState {
   cancelAtPeriodEnd: boolean;
   pendingChange: { planKey: PlanKey; effectiveAt: string } | null;
   reminderDeliveredAt: string | null;
+  /** The bounce hold: no charge before this (Términos §2.7 bis). */
+  chargeHoldUntil: string | null;
 }
 
 const FREE: BillingState = {
@@ -60,6 +62,7 @@ const FREE: BillingState = {
   cancelAtPeriodEnd: false,
   pendingChange: null,
   reminderDeliveredAt: null,
+  chargeHoldUntil: null,
 };
 
 const ms = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
@@ -83,6 +86,7 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
         ? { planKey: row.pending_plan_key, effectiveAt: row.pending_effective_at }
         : null,
     reminderDeliveredAt: row.reminder_delivered_at,
+    chargeHoldUntil: row.charge_hold_until ?? null,
   };
 
   const status = row.status.toLowerCase();

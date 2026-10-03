@@ -56,9 +56,10 @@ const eng = (id, slug, name, status, tier = 'PRO') => ({
 const tables = {
   subscriptions: [
     sub('pro', {}),
-    sub('vip', { tier: 'VIP', plan_key: 'vip_month', amount_cents: 289884 }),
-    sub('trial', { plan_key: 'pro_year', amount_cents: 868840, trial_ends_at: iso(25 * DAY), next_charge_at: iso(25 * DAY), next_payment_date: iso(25 * DAY), last_charge_at: null, started_at: iso(-5 * DAY) }),
-    sub('pro_annual', { plan_key: 'pro_year', amount_cents: 868840, next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY) }),
+    sub('vip', { tier: 'VIP', plan_key: 'vip_month', amount_cents: 379900 }),
+    // A 7-day trial on day 2; its charge notice went out (and was delivered) on day 0.
+    sub('trial', { plan_key: 'pro_year', amount_cents: 997000, trial_ends_at: iso(5 * DAY), next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY), last_charge_at: null, started_at: iso(-2 * DAY), reminder_delivered_at: iso(-2 * DAY) }),
+    sub('pro_annual', { plan_key: 'pro_year', amount_cents: 997000, next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY), reminder_delivered_at: iso(-2 * DAY) }),
     sub('past_due', { status: 'paused', next_charge_at: iso(-1 * DAY), next_payment_date: iso(-1 * DAY), grace_ends_at: iso(6 * DAY) }),
     sub('cancelled', { status: 'cancelled', cancel_at_period_end: true, access_until: iso(12 * DAY), cancelled_at: iso(-2 * DAY) }),
   ],

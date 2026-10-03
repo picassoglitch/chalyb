@@ -29,8 +29,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-export default async function MiPlanPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function MiPlanPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ cancelar?: string }>;
+}) {
   const { locale } = await params;
+  // The notice's 1-click cancel link opens the confirmation directly.
+  const openCancel = (await searchParams).cancelar === '1';
   setRequestLocale(locale);
   const session = await getSessionUser();
   if (!session) return redirect({ href: '/sign-in?next=/app/billing', locale });
@@ -179,12 +187,14 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
         detail: t('change.toFreeSubMonth'),
       });
     }
-  } else if (s?.state === 'trialing' && !yearly) {
-    // Only toward Anual: the free month doesn't carry over to Mensual.
+  } else if (s?.state === 'trialing' && !entitlements.isAdmin) {
+    // Términos §2.4: during the trial, Pro mensual ↔ Pro anual. The charge
+    // date stays; the new amount gets its own charge notice (T-6).
+    const other: PlanKey = yearly ? 'pro_month' : 'pro_year';
     changes.push({
-      to: 'pro_year',
-      title: t('change.trialSwitch', { plan: t('planName.pro_year') }),
-      value: short('pro_year'),
+      to: other,
+      title: t('change.trialSwitch', { plan: t(`planName.${other}`) }),
+      value: short(other),
       detail: '',
     });
   }
@@ -342,13 +352,14 @@ export default async function MiPlanPage({ params }: { params: Promise<{ locale:
         <div className="ch-group">
           <CancelSheet
             trial={s!.state === 'trialing'}
+            defaultOpen={openCancel}
             planName={planName}
             accessDate={date(accessEnd)}
             email={session.user.email ?? ''}
             reactivateHref={changeHref(planKey!)}
             offer={
-              // No "switch to Mensual" during the free month: it's Anual-only.
-              yearly && flow && s!.state !== 'trialing'
+              // The one optional offer (aceptacion-ux §5), annual plans only.
+              yearly && flow
                 ? {
                     href: changeHref('pro_month'),
                     label: tc('offerCta', { monto: formatMXN(planPrice('pro_month').totalCents) }),

@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Chalyb — Bots que trabajan por ti mientras duermes",
-    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 1 mes con el plan anual. Precios en MXN, IVA incluido."
+    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 7 días. Precios en MXN, IVA incluido."
   },
   "landing": {
     "nav": {
@@ -24,7 +24,7 @@
       "faq": "Preguntas",
       "login": "Entrar",
       "app": "Abrir Chalyb",
-      "cta": "Prueba Pro gratis",
+      "cta": "Empezar mis 7 días gratis",
       "menu": "Abrir menú",
       "skip": "Ir al contenido"
     },
@@ -78,7 +78,7 @@
         }
       }
     },
-    "cta": "Prueba Pro gratis 1 mes",
+    "cta": "Empezar mis 7 días gratis",
     "ctaSub": "Todas las herramientas incluidas. Cancela cuando quieras.",
     "tools": {
       "label": "Herramientas",
@@ -147,10 +147,10 @@
       "vipCta": "Elegir VIP",
       "seeAll": "Ver todos los planes y qué incluyen",
       "proMonthNote": "Mes a mes · cancela cuando quieras",
-      "dealTitle": "Paga anual y tu 1er mes es gratis",
+      "dealTitle": "Prueba Pro gratis 7 días",
       "dealSave": "Ahorras {ahorro} al año · {pct}%",
-      "dealTotal": "Un solo cobro de {monto} MXN al año, al terminar tu mes gratis.",
-      "proCta": "Empieza con 1 mes gratis",
+      "dealTotal": "Con Pro anual: un solo cobro de {monto} MXN al año, al terminar tus 7 días gratis.",
+      "proCta": "Empezar mis 7 días gratis",
       "perMonth": "MXN al mes"
     },
     "partner": {
@@ -178,8 +178,8 @@
     "faq": {
       "label": "Preguntas",
       "title": "Preguntas frecuentes",
-      "q1": "¿De verdad el primer mes es gratis?",
-      "a1": "Sí, con el plan anual. Hoy pagas $0. Te avisamos por correo {dias} días antes de que termine y puedes cancelar en 1 clic desde Mi cuenta, sin llamadas. Si prefieres pagar mes a mes, se cobra desde el primer mes.",
+      "q1": "¿Cómo funciona la prueba gratis?",
+      "a1": "Pruebas Pro {dias} días gratis, con el plan mensual o con el anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
       "q2": "¿Necesito saber de tecnología?",
       "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
       "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
@@ -229,7 +229,7 @@
       "adsHint": "Miden si nuestros anuncios funcionan.",
       "link": "Cookies"
     },
-    "sticky": "Prueba Pro gratis 1 mes"
+    "sticky": "Empezar mis 7 días gratis"
   },
   "auth": {
     "signIn": {
@@ -637,10 +637,10 @@
       "single": "Tu plan Pro incluye {tools}.",
       "toolsAria": "Herramientas incluidas",
       "more": "y {n} más",
-      "gratis": "Prueba Pro gratis 1 mes con el plan anual. Todas las herramientas incluidas.",
+      "gratis": "Prueba Pro gratis 7 días. Cancela cuando quieras.",
       "gratisPlans": "Con Pro tienes más herramientas.",
       "cta": {
-        "trial": "Prueba Pro gratis 1 mes",
+        "trial": "Empezar mis 7 días gratis",
         "return": "Volver a Pro",
         "plans": "Ver planes"
       }
@@ -961,10 +961,11 @@
       }
     },
     "disclosure": {
-      "today": "<b>Hoy pagas $0.</b> Tu mes gratis termina el <b>{fecha_fin_prueba}</b>.",
+      "today": "<b>Hoy pagas $0.</b>",
       "charge": "Si no cancelas antes, el <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b> {periodicidad} a {tarjeta}, y se renovará automáticamente {renovacion} hasta que canceles.",
-      "reminder": "Te avisaremos por correo el <b>{fecha_recordatorio}</b> (7 días antes).",
-      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada."
+      "cancel": "Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {fecha_fin_prueba} y no se te cobra nada.",
+      "ends": "Tu prueba gratis de {dias} días termina el <b>{fecha_fin_prueba}</b>.",
+      "notice": "Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto."
     },
     "pay": {
       "consent": "Acepto que, si no cancelo antes del <b>{fecha_cobro}</b>, Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
@@ -974,13 +975,13 @@
     "metaTitle": "Planes",
     "metaDescription": "Gratis, Pro o VIP. Precios en MXN, IVA incluido. Cancela cuando quieras.",
     "title": "Un plan. Todas las herramientas.",
-    "sub": "Prueba Pro gratis 1 mes con el plan anual. Cancela cuando quieras.",
+    "sub": "Prueba Pro gratis 7 días: mensual o anual. Cancela cuando quieras.",
     "subNoTrial": "Cancela cuando quieras.",
     "toggleAria": "Cómo quieres pagar",
     "toggle": {
       "month": "Mensual",
       "year": "Anual",
-      "save": "1 mes gratis"
+      "save": "Ahorra hasta {pct}%"
     },
     "gratis": {
       "name": "Gratis",
@@ -996,16 +997,15 @@
       "badge": "Recomendado",
       "name": "Pro",
       "tag": "Todas las herramientas",
-      "cta": "Prueba Pro gratis 1 mes",
+      "cta": "Empezar mis 7 días gratis",
       "ctaNoTrial": "Elegir Pro",
       "ctaReturn": "Volver a Pro",
-      "note": "Hoy pagas $0. Te avisamos 7 días antes del primer cobro.",
-      "monthAlt": "o {monto} MXN al mes con Mensual",
+      "note": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
       "f1": "Las {n} herramientas: {lista}",
       "fCredits": "{creditos} créditos cada mes",
       "f3": "Clips sin marca de agua",
       "ctaMonth": "Elegir Pro mensual",
-      "monthNoTrial": "El mes gratis viene con el plan anual."
+      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras."
     },
     "vip": {
       "name": "VIP",
@@ -1022,8 +1022,8 @@
     "notIncluded": "No incluye",
     "faqTitle": "Preguntas frecuentes",
     "faq": {
-      "q1": "¿Cómo funciona el mes gratis?",
-      "a1": "Viene con el plan anual: hoy pagas $0 y al terminar tu mes gratis se cobra el año a tu tarjeta. Te avisamos por correo 7 días antes. Si cancelas antes, no pagas nada. Con el plan mensual se cobra desde el primer mes.",
+      "q1": "¿Cómo funciona la prueba gratis?",
+      "a1": "Eliges Pro mensual o Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si no cancelas antes de que terminen tus 7 días gratis, se cobra el plan que elegiste. Si cancelas antes, no pagas nada. Una prueba por cuenta y por tarjeta; VIP no tiene prueba.",
       "q2": "¿Puedo cambiar de anual a mensual?",
       "a2": "Sí, desde Mi cuenta → Mi plan, cuando quieras.",
       "q3": "¿Qué son los créditos?",
@@ -1041,30 +1041,35 @@
     "close": "Cerrar y volver a Inicio",
     "trial": {
       "metaTitle": "Tu prueba",
-      "title": "Prueba Pro gratis 1 mes",
-      "sub": "El mes gratis viene con el plan anual. Cancela cuando quieras.",
-      "q": "¿Cómo quieres pagar Pro?",
+      "title": "Prueba Pro gratis de {dias} días",
+      "sub": "Cancela cuando quieras.",
+      "q": "¿Qué plan quieres cuando terminen tus {dias} días gratis?",
       "year": "Pro anual",
       "month": "Pro mensual",
-      "recommended": "Recomendado",
       "cta": "Continuar al pago",
-      "yearFree": "1er mes gratis",
-      "monthNoTrial": "Se cobra hoy · sin mes gratis"
+      "subAllTools": "Todas las herramientas incluidas. Cancela cuando quieras.",
+      "monthRow": "Pro mensual — {monto} MXN al mes",
+      "yearRow": "Pro anual — {monto} MXN al año",
+      "yearOnce": "(un solo cobro al año)",
+      "yearSave": "Ahorras {ahorro} al año frente a 12 meses de Pro mensual",
+      "cameFromYear": "Elegiste Pro anual en la tarjeta",
+      "pickFirst": "Elige un plan para continuar."
     },
     "paid": {
       "title": "Elige tu plan Pro",
       "today": "Hoy se cobran {monto} MXN",
       "cta": "Pagar y empezar",
-      "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>."
+      "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> hoy {renovacion_corta} a mi tarjeta, y acepto los <terms>Términos de Suscripción</terms>.",
+      "q": "¿Qué plan quieres?"
     },
     "pay": {
       "metaTitle": "Pago",
       "title": "Agrega tu tarjeta",
-      "oneLine": "Hoy pagas <b>$0</b>. Primer cobro: <b>{monto} MXN</b> el <b>{fecha_cobro}</b> y después <b>{cada_periodo}</b>, salvo que canceles antes.",
+      "oneLine": "Hoy pagas <b>$0</b>. Primer cobro: <b>{monto} MXN</b> {periodo} el <b>{fecha_cobro}</b>, salvo que canceles antes.",
       "oneLinePaid": "Hoy se cobran <b>{monto} MXN</b> y después <b>{cada_periodo}</b>, salvo que canceles.",
       "secure": "Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
       "seller": "Quién vende",
-      "cta": "Empezar mi mes gratis",
+      "cta": "Empezar mis 7 días gratis",
       "ctaHint": "Marca la casilla para continuar. Puedes cancelar cuando quieras.",
       "consentError": "Marca la casilla para confirmar el cobro automático. Puedes cancelar cuando quieras.",
       "declined": "Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.",
@@ -1081,13 +1086,14 @@
         "ca": "Canadá · otra provincia",
         "other": "Otro país"
       },
-      "trialAnnualOnly": "Tu mes gratis es del plan anual: durante la prueba no se puede cambiar a mensual."
+      "periodYear": "por 1 año",
+      "periodMonth": "cada mes"
     },
     "summary": {
       "title": "Resumen",
       "planAfter": "Plan al terminar la prueba",
-      "trialEnds": "Tu mes gratis termina",
-      "remind": "Te avisamos por correo",
+      "trialEnds": "Tu prueba gratis termina",
+      "remind": "Aviso de cobro por correo",
       "first": "Primer cobro",
       "firstValue": "{monto} MXN · {fecha}",
       "after": "Después",
@@ -1101,9 +1107,9 @@
       "metaTitle": "Listo",
       "title": "¡Listo, {nombre}!",
       "titleAnon": "¡Listo!",
-      "headline": "Tu mes de Pro gratis ya empezó.",
+      "headline": "Tus {dias} días de Pro gratis ya empezaron.",
       "headlinePaid": "Tu plan Pro ya está activo.",
-      "sub": "Termina el {fecha_fin_prueba}. Primer cobro: <b>{monto} MXN</b> el {fecha_cobro} a tu tarjeta ••{ultimos4}.",
+      "sub": "Terminan el {fecha_fin_prueba}. Primer cobro: <b>{monto} MXN</b> el {fecha_cobro} a tu tarjeta ••{ultimos4}. Te enviamos el aviso de cobro a {correo}.",
       "paidToday": "Hoy pagaste",
       "firstCharge": "Primer cobro ({plan})",
       "card": "{marca} ••{ultimos4} · se renueva {cada_periodo} hasta que canceles",
@@ -1113,16 +1119,18 @@
     }
   },
   "banner": {
-    "trial": "Prueba Pro gratis · te quedan {n} días",
-    "last7": "Tu prueba termina el <b>{fecha_fin_prueba}</b>. Se cobrarán <b>{monto} MXN</b> el <b>{fecha_cobro}</b>.",
+    "trial": "<b>Prueba Pro gratis</b> · El <b>{fecha_cobro}</b> se cobrarán <b>{monto} MXN</b>, salvo que canceles antes.",
     "ended": "Tu prueba terminó. Estás en el plan Gratis.",
     "pastDue": "No pudimos cobrar tu plan. Actualiza tu tarjeta antes del <b>{fecha_gracia}</b> para no perder Pro.",
     "renew": "Tu plan {plan} se renueva el <b>{fecha_cobro}</b> por <b>{monto} MXN</b>.",
     "cta": {
       "plan": "Ver mi plan",
       "return": "Volver a Pro",
-      "card": "Actualizar tarjeta"
-    }
+      "card": "Actualizar tarjeta",
+      "email": "Revisar correo"
+    },
+    "noticeHold": "No pudimos enviarte el aviso de cobro a <b>{correo}</b>. Confírmalo o actualízalo: <b>no te cobraremos</b> hasta 5 días después de avisarte.",
+    "trialTomorrow": "Mañana, <b>{fecha_cobro}</b>, se cobrarán <b>{monto} MXN</b>. Si no quieres seguir, cancela hoy en 1 clic."
   },
   "myplan": {
     "title": "Mi plan",
@@ -1243,17 +1251,14 @@
     "whenNow": "Hoy se cobran {monto} MXN y te devolvemos {credito} MXN de tu plan actual. Después, {mensual} MXN cada mes.",
     "whenNowNoRefund": "Hoy se cobran {monto} MXN. Después, {mensual} MXN cada mes.",
     "whenLater": "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}.",
-    "trialSwitch": "Tu prueba sigue igual. Al terminar, el {fecha}, se cobrarán {monto} MXN {periodo}.",
+    "trialSwitch": "Tu prueba sigue igual. Al terminar, el {fecha}, se cobrarán {monto} MXN {periodo}. Hoy mismo te enviamos por correo el aviso de cobro con el nuevo monto.",
     "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta a partir del <b>{fecha}</b>, y acepto los <terms>Términos de Suscripción</terms>.",
     "card": "Confirma con tu tarjeta. Por seguridad, Mercado Pago la pide de nuevo en cada cambio.",
     "cta": "Confirmar cambio",
     "toFreeTitle": "Pasar a Gratis",
     "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
     "toFreeCta": "Ir a cancelar",
-    "done": "Listo. Tu cambio quedó registrado.",
-    "trialAnnualOnlyTitle": "Tu mes gratis es del plan anual",
-    "trialAnnualOnlyBody": "Durante la prueba no se puede cambiar a Pro mensual. Si prefieres pagar mes a mes, cancela tu prueba (no se te cobra nada) y elige Pro mensual: se cobra desde hoy.",
-    "trialAnnualOnlyCta": "Volver a Mi plan"
+    "done": "Listo. Tu cambio quedó registrado."
   },
   "seller": {
     "title": "Quién vende",
@@ -1390,7 +1395,7 @@
     "setup": "Te falta un paso",
     "connect": "Conectar ahora",
     "open": "Abrir",
-    "strip": "Prueba Pro gratis 1 mes con el plan anual · Todas las herramientas incluidas. Cancela cuando quieras.",
+    "strip": "Prueba Pro gratis 7 días · Cancela cuando quieras.",
     "tagline": {
       "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
       "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
@@ -1565,8 +1570,8 @@
       "body": "Hicimos {n} clips. Ya tienen subtítulos."
     },
     "trial7": {
-      "title": "Tu prueba termina en 7 días",
-      "body": "El {fecha_cobro} se cobrarán {monto} MXN. Puedes cancelar en 1 clic."
+      "title": "Aviso de cobro de tu prueba",
+      "body": "El {fecha_cobro} se cobrarán {monto} MXN si no cancelas antes. Puedes cancelar en 1 clic."
     },
     "renew": {
       "title": "Tu plan se renueva en 7 días",

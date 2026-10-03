@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Chalyb — Bots that work for you while you sleep",
-    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 1 month with the yearly plan. Prices in MXN, VAT included."
+    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 7 days. Prices in MXN, VAT included."
   },
   "landing": {
     "nav": {
@@ -24,7 +24,7 @@
       "faq": "Questions",
       "login": "Log in",
       "app": "Open Chalyb",
-      "cta": "Try Pro free",
+      "cta": "Start my 7-day free trial",
       "menu": "Open menu",
       "skip": "Skip to content"
     },
@@ -78,7 +78,7 @@
         }
       }
     },
-    "cta": "Try Pro free for 1 month",
+    "cta": "Start my 7-day free trial",
     "ctaSub": "Every tool included. Cancel anytime.",
     "tools": {
       "label": "Tools",
@@ -147,10 +147,10 @@
       "vipCta": "Choose VIP",
       "seeAll": "See every plan and what it includes",
       "proMonthNote": "Month to month · cancel any time",
-      "dealTitle": "Pay yearly and your 1st month is free",
+      "dealTitle": "Try Pro free for 7 days",
       "dealSave": "Save {ahorro} a year · {pct}%",
-      "dealTotal": "One charge of {monto} MXN a year, when your free month ends.",
-      "proCta": "Start with 1 month free",
+      "dealTotal": "With Pro yearly: one charge of {monto} MXN a year, when your 7 free days end.",
+      "proCta": "Start my 7-day free trial",
       "perMonth": "MXN a month"
     },
     "partner": {
@@ -178,8 +178,8 @@
     "faq": {
       "label": "Questions",
       "title": "Frequently asked questions",
-      "q1": "Is the first month really free?",
-      "a1": "Yes, with the yearly plan. You pay $0 today. We email you {dias} days before it ends, and you can cancel in 1 click from My account, no calls. If you’d rather pay month to month, you’re charged from the first month.",
+      "q1": "How does the free trial work?",
+      "a1": "You try Pro free for {dias} days, on the monthly or the yearly plan. You pay $0 today and we email you the charge notice today. If you cancel before they end, you pay nothing: it’s 1 click from My account, no calls.",
       "q2": "Do I need tech skills?",
       "a2": "No. Each tool guides you step by step, with big buttons and simple words.",
       "a2help": "If you get stuck, a real person helps you on WhatsApp.",
@@ -229,7 +229,7 @@
       "adsHint": "Measure whether our ads work.",
       "link": "Cookie settings"
     },
-    "sticky": "Try Pro free for 1 month"
+    "sticky": "Start my 7-day free trial"
   },
   "auth": {
     "signIn": {
@@ -637,10 +637,10 @@
       "single": "Your Pro plan includes {tools}.",
       "toolsAria": "Included tools",
       "more": "and {n} more",
-      "gratis": "Try Pro free for 1 month with the yearly plan. Every tool included.",
+      "gratis": "Try Pro free for 7 days. Cancel any time.",
       "gratisPlans": "Pro gives you more tools.",
       "cta": {
-        "trial": "Try Pro free for 1 month",
+        "trial": "Start my 7-day free trial",
         "return": "Back to Pro",
         "plans": "See plans"
       }
@@ -961,10 +961,11 @@
       }
     },
     "disclosure": {
-      "today": "<b>You pay $0 today.</b> Your free month ends on <b>{fecha_fin_prueba}</b>.",
+      "today": "<b>You pay $0 today.</b>",
       "charge": "If you don’t cancel before, on <b>{fecha_cobro}</b> we will charge <b>{monto} MXN</b> {periodicidad} to {tarjeta}, and it will renew automatically {renovacion} until you cancel.",
-      "reminder": "We will email you on <b>{fecha_recordatorio}</b> (7 days before).",
-      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep Pro until {fecha_fin_prueba} and pay nothing."
+      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep Pro until {fecha_fin_prueba} and pay nothing.",
+      "ends": "Your {dias}-day free trial ends on <b>{fecha_fin_prueba}</b>.",
+      "notice": "Today we email you the charge notice with this date and this amount."
     },
     "pay": {
       "consent": "I agree that, if I don’t cancel before <b>{fecha_cobro}</b>, Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
@@ -974,13 +975,13 @@
     "metaTitle": "Plans",
     "metaDescription": "Free, Pro or VIP. Prices in MXN, IVA (VAT) included. Cancel any time.",
     "title": "One plan. Every tool.",
-    "sub": "Try Pro free for 1 month with the yearly plan. Cancel any time.",
+    "sub": "Try Pro free for 7 days, monthly or yearly. Cancel any time.",
     "subNoTrial": "Cancel any time.",
     "toggleAria": "How you want to pay",
     "toggle": {
       "month": "Monthly",
       "year": "Yearly",
-      "save": "1 month free"
+      "save": "Save up to {pct}%"
     },
     "gratis": {
       "name": "Free",
@@ -996,16 +997,15 @@
       "badge": "Recommended",
       "name": "Pro",
       "tag": "Every tool",
-      "cta": "Try Pro free for 1 month",
+      "cta": "Start my 7-day free trial",
       "ctaNoTrial": "Choose Pro",
       "ctaReturn": "Back to Pro",
-      "note": "You pay $0 today. We tell you 7 days before the first charge.",
-      "monthAlt": "or {monto} MXN a month with Monthly",
+      "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
       "f1": "All {n} tools: {lista}",
       "fCredits": "{creditos} credits every month",
       "f3": "Clips without watermark",
       "ctaMonth": "Choose Pro monthly",
-      "monthNoTrial": "The free month comes with the yearly plan."
+      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time."
     },
     "vip": {
       "name": "VIP",
@@ -1022,8 +1022,8 @@
     "notIncluded": "Not included",
     "faqTitle": "Frequently asked questions",
     "faq": {
-      "q1": "How does the free month work?",
-      "a1": "It comes with the yearly plan: you pay $0 today and the year is charged to your card when your free month ends. We email you 7 days before. If you cancel before, you pay nothing. The monthly plan is charged from the first month.",
+      "q1": "How does the free trial work?",
+      "a1": "You pick Pro monthly or Pro yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your 7 free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card; VIP has no trial.",
       "q2": "Can I switch from yearly to monthly?",
       "a2": "Yes, from My account → My plan, whenever you want.",
       "q3": "What are credits?",
@@ -1041,30 +1041,35 @@
     "close": "Close and go back to Home",
     "trial": {
       "metaTitle": "Your trial",
-      "title": "Try Pro free for 1 month",
-      "sub": "The free month comes with the yearly plan. Cancel any time.",
-      "q": "How do you want to pay for Pro?",
+      "title": "Try Pro free for {dias} days",
+      "sub": "Cancel any time.",
+      "q": "Which plan do you want when your {dias} free days end?",
       "year": "Pro yearly",
       "month": "Pro monthly",
-      "recommended": "Recommended",
       "cta": "Continue to payment",
-      "yearFree": "1st month free",
-      "monthNoTrial": "Charged today · no free month"
+      "subAllTools": "Every tool included. Cancel any time.",
+      "monthRow": "Pro monthly — {monto} MXN a month",
+      "yearRow": "Pro yearly — {monto} MXN a year",
+      "yearOnce": "(one charge a year)",
+      "yearSave": "You save {ahorro} a year compared with 12 months of Pro monthly",
+      "cameFromYear": "You picked Pro yearly on the card",
+      "pickFirst": "Pick a plan to continue."
     },
     "paid": {
       "title": "Choose your Pro plan",
       "today": "{monto} MXN is charged today",
       "cta": "Pay and start",
-      "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+      "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>.",
+      "q": "Which plan do you want?"
     },
     "pay": {
       "metaTitle": "Payment",
       "title": "Add your card",
-      "oneLine": "You pay <b>$0</b> today. First charge: <b>{monto} MXN</b> on <b>{fecha_cobro}</b> and then <b>{cada_periodo}</b>, unless you cancel before.",
+      "oneLine": "<b>$0</b> today. First charge: <b>{monto} MXN</b> {periodo} on <b>{fecha_cobro}</b>, unless you cancel before.",
       "oneLinePaid": "<b>{monto} MXN</b> is charged today and then <b>{cada_periodo}</b>, unless you cancel.",
       "secure": "Secure payment with Mercado Pago. Chalyb doesn’t store your card number.",
       "seller": "Who sells",
-      "cta": "Start my free month",
+      "cta": "Start my 7-day free trial",
       "ctaHint": "Tick the box to continue. You can cancel any time.",
       "consentError": "Tick the box to confirm the automatic charge. You can cancel any time.",
       "declined": "Your bank didn’t accept this card. Try another one or talk to your bank.",
@@ -1081,13 +1086,14 @@
         "ca": "Canada · another province",
         "other": "Another country"
       },
-      "trialAnnualOnly": "Your free month is part of the yearly plan: you can’t switch to monthly during the trial."
+      "periodYear": "for 1 year",
+      "periodMonth": "every month"
     },
     "summary": {
       "title": "Summary",
       "planAfter": "Plan after the trial",
-      "trialEnds": "Your free month ends",
-      "remind": "We email you",
+      "trialEnds": "Your free trial ends",
+      "remind": "Charge notice by email",
       "first": "First charge",
       "firstValue": "{monto} MXN · {fecha}",
       "after": "After that",
@@ -1101,9 +1107,9 @@
       "metaTitle": "Done",
       "title": "All set, {nombre}!",
       "titleAnon": "All set!",
-      "headline": "Your free month of Pro has started.",
+      "headline": "Your {dias} free days of Pro have started.",
       "headlinePaid": "Your Pro plan is active.",
-      "sub": "It ends on {fecha_fin_prueba}. First charge: <b>{monto} MXN</b> on {fecha_cobro} to your card ••{ultimos4}.",
+      "sub": "They end on {fecha_fin_prueba}. First charge: <b>{monto} MXN</b> on {fecha_cobro} to your card ••{ultimos4}. We sent the charge notice to {correo}.",
       "paidToday": "You paid today",
       "firstCharge": "First charge ({plan})",
       "card": "{marca} ••{ultimos4} · renews {cada_periodo} until you cancel",
@@ -1113,16 +1119,18 @@
     }
   },
   "banner": {
-    "trial": "Pro free trial · {n} days left",
-    "last7": "Your trial ends on <b>{fecha_fin_prueba}</b>. <b>{monto} MXN</b> will be charged on <b>{fecha_cobro}</b>.",
+    "trial": "<b>Free Pro trial</b> · On <b>{fecha_cobro}</b> you’ll be charged <b>{monto} MXN</b>, unless you cancel before.",
     "ended": "Your trial ended. You’re on the Free plan.",
     "pastDue": "We couldn’t charge your plan. Update your card before <b>{fecha_gracia}</b> to keep Pro.",
     "renew": "Your {plan} plan renews on <b>{fecha_cobro}</b> for <b>{monto} MXN</b>.",
     "cta": {
       "plan": "See my plan",
       "return": "Back to Pro",
-      "card": "Update card"
-    }
+      "card": "Update card",
+      "email": "Check email"
+    },
+    "noticeHold": "We couldn’t send the charge notice to <b>{correo}</b>. Confirm or update it: <b>we won’t charge you</b> until 5 days after we reach you.",
+    "trialTomorrow": "Tomorrow, <b>{fecha_cobro}</b>, you’ll be charged <b>{monto} MXN</b>. If you don’t want to continue, cancel today in 1 click."
   },
   "myplan": {
     "title": "My plan",
@@ -1243,17 +1251,14 @@
     "whenNow": "{monto} MXN is charged today and we refund {credito} MXN from your current plan. Then {mensual} MXN every month.",
     "whenNowNoRefund": "{monto} MXN is charged today. Then {mensual} MXN every month.",
     "whenLater": "Your change starts on {fecha}. Until then you keep {plan}.",
-    "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}.",
+    "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount.",
     "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
     "card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
     "cta": "Confirm change",
     "toFreeTitle": "Move to Free",
     "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
     "toFreeCta": "Go to cancel",
-    "done": "Done. Your change is recorded.",
-    "trialAnnualOnlyTitle": "Your free month is part of the yearly plan",
-    "trialAnnualOnlyBody": "You can’t switch to Pro monthly during the trial. If you’d rather pay month to month, cancel your trial (you won’t be charged) and choose Pro monthly: it’s charged from today.",
-    "trialAnnualOnlyCta": "Back to My plan"
+    "done": "Done. Your change is recorded."
   },
   "seller": {
     "title": "Who sells",
@@ -1390,7 +1395,7 @@
     "setup": "One step left",
     "connect": "Connect now",
     "open": "Open",
-    "strip": "Try Pro free for 1 month with the yearly plan · Every tool included. Cancel any time.",
+    "strip": "Try Pro free for 7 days · Cancel any time.",
     "tagline": {
       "chalybclip": "Turn your stream into short clips for TikTok, Reels and Shorts.",
       "chalybcrypto": "We tell you when it’s a good moment to buy or sell crypto.",
@@ -1565,8 +1570,8 @@
       "body": "We made {n} clips. They already have captions."
     },
     "trial7": {
-      "title": "Your trial ends in 7 days",
-      "body": "On {fecha_cobro} {monto} MXN will be charged. You can cancel in 1 click."
+      "title": "Charge notice for your trial",
+      "body": "On {fecha_cobro} {monto} MXN will be charged unless you cancel before. You can cancel in 1 click."
     },
     "renew": {
       "title": "Your plan renews in 7 days",

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
-import { getPublicKey } from '@/lib/payments/mercadopago';
+import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { planPrice } from '@/config/pricing';
 import { WizardShell } from '@/components/ui/wizard-shell';
@@ -36,7 +36,7 @@ export default async function TarjetaPage({ params }: { params: Promise<{ locale
         {publicKey && (
           <PayForm
             publicKey={publicKey}
-            payerEmail={session.user.email ?? null}
+            payerEmail={mpPayerEmail(session.user.email)}
             planKey={s.planKey ?? 'pro_month'}
             amountMajor={planPrice(s.planKey ?? 'pro_month').totalCents / 100}
             buttonLabel={s.state === 'past_due' ? t('updateCard') : t('methodChange')}

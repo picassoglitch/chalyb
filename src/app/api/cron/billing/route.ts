@@ -3,10 +3,13 @@
 // `Authorization: Bearer ${CRON_SECRET}`; 401 otherwise (rebuild P2-8).
 //
 // Every run is idempotent. It:
-//   1. sends the notices that are due (trial day 23, renewals −7, annual −30)
+//   1. sends the notices that are due (the trial's charge notice if the
+//      day-0 send didn't go out, day 6 with TRIAL_DAY6_REMINDER, renewals
+//      −7, annual −30)
 //      — email_dispatches' unique key makes a second run send nothing;
 //   2. enforces the bounce rule: no charge until 5 days after an effective
-//      notice (pauses the preapproval, resumes it after);
+//      notice (pauses the preapproval and resumes it after; during a trial
+//      only once MP_PAUSE_IN_TRIAL_VERIFIED, else an admin attention item);
 //   3. moves profiles.tier when a scheduled plan change takes effect;
 //   4. re-reads stale subscriptions from Mercado Pago (the webhook keeps them
 //      current in between).
@@ -23,9 +26,9 @@ import { deriveBillingState, type SubscriptionRow } from '@/lib/billing/billing-
 import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
-import { dispatchBillingEmail } from '@/lib/billing/notices';
+import { dispatchBillingEmail, trialNoticeVars } from '@/lib/billing/notices';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { trialDay29ReminderEnabled } from '@/lib/config/flags';
+import { mpPauseInTrialVerified, trialDay6ReminderEnabled } from '@/lib/config/flags';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
 
@@ -39,12 +42,12 @@ const NAMES: Record<PlanKey, string> = {
   pro_month: 'Pro mensual',
   vip_month: 'VIP',
 };
-const EMAIL_FOR: Partial<Record<NoticeKind, BillingEmailKind>> = {
+const EMAIL_FOR: Record<NoticeKind, BillingEmailKind> = {
   trial_7d: 'trial_7d',
+  trial_1d: 'trial_1d',
   renew_7d: 'renew_7d',
   renew_30d: 'renew_30d',
   annual_summary: 'annual_summary',
-  // trial_1d (D5) ships off; it needs its own template before it can be enabled.
 };
 const EVIDENCE = {
   trial_7d: 'charge_notice_sent',
@@ -72,7 +75,7 @@ export async function GET(req: Request) {
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, updated_at',
+      'id, user_id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, consent_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -94,7 +97,8 @@ export async function GET(req: Request) {
           interval: price.interval,
           nextChargeAt,
           startedAt: (row.started_at as string | null) ?? null,
-          day29Enabled: trialDay29ReminderEnabled(),
+          day6Enabled: trialDay6ReminderEnabled(),
+          subKey: preapprovalId,
         },
         now,
       );
@@ -107,26 +111,41 @@ export async function GET(req: Request) {
         const email = profile?.email as string | null;
         for (const notice of due) {
           const kind = EMAIL_FOR[notice.kind];
-          if (!email || !kind) continue;
+          if (!email) continue;
+          const nombre = ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '';
+          const trialNotice = notice.kind === 'trial_7d' || notice.kind === 'trial_1d';
           const sent = await dispatchBillingEmail({
             userId,
             email,
             kind,
             periodKey: notice.periodKey,
             evidence: EVIDENCE[notice.kind],
-            vars: {
-              nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
-              plan: NAMES[planKey],
-              monto: formatMXN(price.totalCents),
-              periodicidad:
-                price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
-              fecha_fin_prueba: row.trial_ends_at
-                ? formatFechaLarga(row.trial_ends_at, 'es')
-                : undefined,
-              fecha_cobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : undefined,
-              ultimos4: row.card_last4 ?? undefined,
-              appUrl: getAppUrl(),
-            },
+            vars:
+              trialNotice && nextChargeAt && row.trial_ends_at
+                ? trialNoticeVars({
+                    nombre,
+                    planKey,
+                    startedAt: (row.started_at as string | null) ?? now,
+                    trialEndsAt: row.trial_ends_at,
+                    chargeAt: nextChargeAt,
+                    last4: row.card_last4 ?? null,
+                    consentId: (row.consent_id as string | null) ?? null,
+                    appUrl: getAppUrl(),
+                    now,
+                  })
+                : {
+                    nombre,
+                    plan: NAMES[planKey],
+                    monto: formatMXN(price.totalCents),
+                    periodicidad:
+                      price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
+                    fecha_fin_prueba: row.trial_ends_at
+                      ? formatFechaLarga(row.trial_ends_at, 'es')
+                      : undefined,
+                    fecha_cobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : undefined,
+                    ultimos4: row.card_last4 ?? undefined,
+                    appUrl: getAppUrl(),
+                  },
           });
           if (sent.sent) stats.notices += 1;
           // The same notice in Avisos; it can't be deleted before the charge.
@@ -155,16 +174,27 @@ export async function GET(req: Request) {
         holdUntil: (row.charge_hold_until as string | null) ?? null,
         now,
       });
+      // During a trial, pausing the preapproval is unverified at MP (OPS-14):
+      // it might charge on resume. Until MP_PAUSE_IN_TRIAL_VERIFIED, record
+      // the hold and hand it to a person. Recreating the preapproval with a
+      // later start_date needs a new card token, i.e. the customer (O-16).
+      const touchMp = state.state !== 'trialing' || mpPauseInTrialVerified();
       if (decision.action === 'hold') {
         if (!row.charge_hold_until) {
-          await getMercadoPago().preapproval.update({
-            id: preapprovalId,
-            body: { status: 'paused' },
-          });
+          if (touchMp) {
+            await getMercadoPago().preapproval.update({
+              id: preapprovalId,
+              body: { status: 'paused' },
+            });
+          }
           await notify({
             severity: 'warning',
-            title: 'Cobro detenido: el aviso previo no se entregó',
-            body: `Suscripción ${preapprovalId} · no se cobra hasta el ${formatFechaLarga(decision.until, 'es')}`,
+            title: touchMp
+              ? 'Cobro detenido: el aviso previo no se entregó'
+              : 'Atención: detener a mano el primer cobro de una prueba (aviso no entregado)',
+            body: touchMp
+              ? `Suscripción ${preapprovalId} · no se cobra hasta el ${formatFechaLarga(decision.until, 'es')}`
+              : `Suscripción ${preapprovalId} · el aviso de cobro no consta como entregado. No debe cobrarse antes del ${formatFechaLarga(decision.until, 'es')}: cancela y vuelve a crear la suscripción con esa fecha, o reembolsa el cobro (Términos de Suscripción §7.2(b)). TODO(owner O-16)`,
             href: '/dashboard/dinero',
             source: 'billing.cron',
           });
@@ -177,10 +207,12 @@ export async function GET(req: Request) {
       } else if (decision.action === 'resume') {
         // TODO(OPS-14): confirm Mercado Pago's behaviour when a preapproval is
         // resumed after its next_payment_date has passed.
-        await getMercadoPago().preapproval.update({
-          id: preapprovalId,
-          body: { status: 'authorized' },
-        });
+        if (row.status === 'paused') {
+          await getMercadoPago().preapproval.update({
+            id: preapprovalId,
+            body: { status: 'authorized' },
+          });
+        }
         await admin
           .from('subscriptions')
           .update({ charge_hold_until: null })

@@ -12,10 +12,12 @@ import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import { Check, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { annualMath, floorToPeso, planPrice } from '@/config/pricing';
+import { planPrice, togglePct } from '@/config/pricing';
+import { trialDates } from '@/lib/billing/trial-dates';
+import { Markup } from '@/components/ui/markup';
 import type { PriceDisplay } from '@/lib/billing/price-display';
 import { ReferencePrice } from './reference-price';
-import { formatMXN } from '@/lib/billing/format';
+import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { Pill } from '@/components/ui/primitives';
 
 export interface PlansViewProps {
@@ -48,22 +50,29 @@ export function PlansView({
   const tb = useTranslations('billing');
   const [yearlyChoice, setYearly] = useState(true);
   const yearly = monthlyOffered ? yearlyChoice : true;
-  const math = annualMath();
   const month = planPrice('pro_month').totalCents;
   const year = planPrice('pro_year').totalCents;
   const vip = planPrice('vip_month').totalCents;
   const list = new Intl.ListFormat('es', { type: 'conjunction' }).format(tools);
 
   const proLabel = {
-    trial: yearly ? t('pro.cta') : t('pro.ctaMonth'),
+    trial: t('pro.cta'),
     noTrial: t('pro.ctaNoTrial'),
     return: t('pro.ctaReturn'),
     current: t('current'),
     trialing: t('trialing'),
   }[cta.pro.label];
-  // Mensual has no free month: skip the picker and go to its payment.
+  // The trial picker learns which interval the card showed; it preselects
+  // Pro mensual from a monthly card and nothing from an annual one (C9).
+  const interval = yearly ? 'year' : 'month';
   const proHref =
-    !yearly && cta.pro.href === '/app/prueba' ? '/app/prueba/pago?plan=pro_month' : cta.pro.href;
+    cta.pro.href === '/app/prueba'
+      ? `/app/prueba?interval=${interval}`
+      : cta.pro.href?.startsWith('/sign-in')
+        ? `${cta.pro.href}${cta.pro.href.includes('?') ? '&' : '?'}interval=${interval}`
+        : cta.pro.href;
+  // "{fecha}" in the card notes: today + the trial, in Mexico City.
+  const chargeDate = formatFechaLarga(trialDates(new Date()).chargeAt, 'es');
   const vipLabel = { choose: t('vip.cta'), up: t('vip.ctaUp'), current: t('current') }[
     cta.vip.label
   ];
@@ -110,10 +119,8 @@ export function PlansView({
                 onClick={() => setYearly(y)}
               >
                 {y ? t('toggle.year') : t('toggle.month')}
-                {y && math.yearSavingsCents > 0 && (
-                  <Pill kind="acc">
-                    {t('toggle.save', { ahorro: formatMXN(floorToPeso(math.yearSavingsCents)) })}
-                  </Pill>
+                {y && togglePct() > 0 && (
+                  <Pill kind="acc">{t('toggle.save', { pct: togglePct() })}</Pill>
                 )}
               </button>
             ))}
@@ -178,12 +185,13 @@ export function PlansView({
           {button(proHref, proLabel, true)}
           {trialOffered && cta.pro.label === 'trial' && (
             <p className="ch-muted" style={{ fontSize: 15 }}>
-              {yearly ? t('pro.note') : t('pro.monthNoTrial')}
-            </p>
-          )}
-          {yearly && monthlyOffered && (
-            <p className="ch-muted" style={{ fontSize: 15 }}>
-              {t('pro.monthAlt', { monto: formatMXN(month) })}
+              <Markup
+                text={t.markup(yearly ? 'pro.note' : 'pro.noteMonth', {
+                  fecha: chargeDate,
+                  monto: formatMXN(yearly ? year : month),
+                  b: (c) => `<b>${c}</b>`,
+                })}
+              />
             </p>
           )}
           <ul className="ch-feats">

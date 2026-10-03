@@ -21,8 +21,11 @@ export function CancelSheet({
   reactivateHref,
   triggerLabel,
   triggerSub,
+  defaultOpen = false,
 }: {
   trial: boolean;
+  /** Opened from the email's cancel link (?cancelar=1). */
+  defaultOpen?: boolean;
   planName: string;
   accessDate: string;
   email: string;
@@ -34,7 +37,7 @@ export function CancelSheet({
 }) {
   const t = useTranslations('cancel');
   const locale = useLocale();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [state, setState] = useState<'ask' | 'working' | 'done' | 'error'>('ask');
   const [folio, setFolio] = useState('');
 
