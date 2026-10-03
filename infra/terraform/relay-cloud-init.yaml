@@ -1,0 +1,44 @@
+#cloud-config
+# ChalyOBS RTMP relay on Container-Optimized OS. See relay.tf.
+#
+# Host networking: MediaMTX listens on :1935 (RTMP) and :8888 (HLS); the
+# firewall decides who reaches them. Recordings live on the stateful
+# partition, not the container layer, so a restart doesn't strand an upload.
+
+write_files:
+  - path: /etc/chalyb-relay.env
+    permissions: "0600"
+    content: |
+%{ for k, v in env ~}
+      ${k}=${v}
+%{ endfor ~}
+
+  - path: /etc/systemd/system/chalyb-relay.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=ChalyOBS RTMP relay
+      Wants=network-online.target
+      After=network-online.target docker.service
+      Requires=docker.service
+
+      [Service]
+      Environment=HOME=/home/chalyb-relay
+      ExecStartPre=/bin/mkdir -p /home/chalyb-relay /mnt/stateful_partition/relay-recordings
+      ExecStartPre=/usr/bin/docker-credential-gcr configure-docker --registries=${registry}
+      ExecStartPre=-/usr/bin/docker rm -f chalyb-relay
+      ExecStartPre=/usr/bin/docker pull ${image}
+      ExecStart=/usr/bin/docker run --rm --name chalyb-relay --network host \
+        --env-file /etc/chalyb-relay.env \
+        -v /mnt/stateful_partition/relay-recordings:/recordings \
+        ${image}
+      ExecStop=/usr/bin/docker stop -t 20 chalyb-relay
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl start chalyb-relay.service
