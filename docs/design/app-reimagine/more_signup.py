@@ -30,8 +30,8 @@ SU = '''
 '''
 def recap_panel():
     tools = "".join(f'<li><span class="c">{ic("check")}</span>{n}</li>' for n,_,_,_ in TOOLS)
-    return f'''<div class="recap"><div class="k">Tu mes de Pro gratis</div><h2>Todo incluido</h2><ul>{tools}</ul>
-<div class="zero"><span>Hoy pagas</span><b>$0</b></div><small>Te avisamos 7 días antes de cualquier cobro. Cancela en 1 clic.</small></div>'''
+    return f'''<div class="recap"><div class="k">Tus 7 días de Pro gratis</div><h2>Todo incluido</h2><ul>{tools}</ul>
+<div class="zero"><span>Hoy pagas</span><b>$0</b></div><small>Hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Cancela en 1 clic.</small></div>'''
 # ---- 13 crear cuenta
 b13 = f'''<div class="flow">{wtop("Atrás","Prueba Pro gratis","gift",step=1)}
 <div class="two"><div class="fcard"><h1>Crea tu cuenta</h1><p class="sub">Toma 1 minuto. No necesitas tarjeta en este paso.</p>
@@ -68,16 +68,17 @@ css14 = SU + '''
 .foot small{font-size:16px;color:var(--ink2)}
 '''
 DISC_14 = f'''<div class="disc"><div class="di">{ic("info")}</div><div>
-<p><b>Hoy pagas $0.</b> Tu mes gratis termina el <b>{FIN}</b>.</p>
-<p>Si no cancelas antes, el <b>{COBRO}</b> se cobrarán <b>$7,490 MXN</b> por 1 año de Pro a la tarjeta que registres, y se renovará automáticamente cada año ($7,490 MXN) hasta que canceles.</p>
-<p>Te avisaremos por correo el <b>{RECORD}</b> (7 días antes).</p>
+<p><b>Hoy pagas $0.</b></p>
+<p>Tu prueba gratis de 7 días termina el <b>{FIN}</b>.</p>
+<p>Si no cancelas antes, el <b>{COBRO}</b> se cobrarán <b>{P_PRO_M} MXN</b> por tu primer mes de Pro a la tarjeta que registres, y se renovará automáticamente cada mes ({P_PRO_M} MXN) hasta que canceles.</p>
+<p>Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto.</p>
 <p>Cancela en 1 clic desde <b>Mi cuenta → Mi plan</b>, sin llamadas. Si cancelas, sigues con Pro hasta el {FIN} y no se te cobra nada.</p></div></div>'''
+# Precios: ver PRICING-CARDS-SPEC.md (fuente única). Checkout: nunca preseleccionar el anual (Ley); aquí va Mensual.
 b14 = f'''<div class="flow">{wtop("Atrás","Prueba Pro gratis","gift",step=2)}<div class="col">
-<div class="title"><h1>Prueba Pro gratis 1 mes</h1><p class="sub">Todas las herramientas incluidas. Cancela cuando quieras.</p></div>
-<div class="q">¿Qué plan quieres cuando termine tu mes gratis?</div>
-<div class="opts"><div class="op sel"><div class="rd"></div><h3>Pro anual</h3><div class="amt">$7,490 <span>MXN al año</span></div>
-<div class="eq">(equivale a $624 al mes)</div><div class="eq"><b style="color:var(--ink)">Se renueva cada año</b></div><div class="tags"><span class="pill acc">Recomendado</span><span class="pill dark">Ahorras $1,498 al año</span></div></div>
-<div class="op"><div class="rd"></div><h3>Pro mensual</h3><div class="amt">$749 <span>MXN al mes</span></div><div class="eq">&nbsp;</div><div class="eq"><b style="color:var(--ink)">Se renueva cada mes</b></div></div></div>
+<div class="title"><h1>Prueba Pro gratis 7 días</h1><p class="sub">Hoy pagas $0. Cancela en 1 clic, sin llamadas.</p></div>
+<div class="q">¿Qué plan quieres cuando terminen tus 7 días gratis?</div>
+<div class="opts"><div class="op sel"><div class="rd"></div><h3>Pro mensual</h3><div class="amt">{P_PRO_M} <span>MXN al mes</span></div><div class="eq"><b style="color:var(--ink)">Se renueva cada mes</b></div></div>
+<div class="op"><div class="rd"></div><h3>Pro anual</h3><div class="amt">{P_PRO_Y} <span>MXN al año</span></div><div class="eq"><b style="color:var(--ink)">Se renueva cada año</b></div><div class="tags"><span class="pill acc">Ahorras {P_SAVE_PRO} al año · {P_PCT_PRO}%</span></div></div></div>
 {DISC_14}
 <div class="foot"><button class="btn btn-primary btn-xl">Continuar al pago</button><small>Precios en MXN, IVA incluido.</small></div></div></div>'''
 write("14-tu-prueba.html", page2("Tu prueba", b14, css14))
@@ -118,21 +119,21 @@ css15 = SU + '''
 '''
 b15 = f'''<div class="flow">{wtop("Atrás","Prueba Pro gratis","gift",step=3)}
 <div class="two"><div class="lh"><h1>Agrega tu tarjeta</h1>
-<div class="one">{ic("info")}<span>Hoy pagas <b>$0</b>. Primer cobro: <b>$7,490 MXN</b> el <b>{COBRO}</b> y después <b>cada año</b>, salvo que canceles antes.</span></div>
+<div class="one">{ic("info")}<span>Hoy pagas <b>$0</b>. Primer cobro: <b>{P_PRO_M} MXN</b> cada mes el <b>{COBRO}</b>, salvo que canceles antes.</span></div>
 <div class="mp"><div class="mh"><span class="mb">Mercado Pago</span>Formulario seguro de pago<span class="cards"><span>VISA</span><span>MASTERCARD</span><span>AMEX</span></span></div>
 <div class="field"><label>Número de tarjeta</label><div class="in">1234 5678 9012 3456</div></div>
 <div class="r2"><div class="field"><label>Vencimiento</label><div class="in">MM/AA</div></div><div class="field"><label>Código de seguridad</label><div class="in">3 dígitos</div></div></div>
 <div class="field"><label>Nombre como aparece en la tarjeta</label><div class="in">María López</div></div></div>
 <div class="mpn">{ic("lock")}Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta.<a class="lnk" style="margin-left:auto;font-size:15px;white-space:nowrap">Quién vende</a></div>
-<div class="cons cbx"><span class="b"></span><span>Acepto que, si no cancelo antes del <b>{COBRO}</b>, Chalyb cobre automáticamente <b>$7,490 MXN</b> y cada año después a mi tarjeta, y acepto los <a>Términos de Suscripción</a>.</span></div>
-<div class="go"><button class="btn btn-primary btn-xl">Empezar mi mes gratis</button><small>Marca la casilla para continuar. Puedes cancelar cuando quieras.</small></div></div>
+<div class="cons cbx"><span class="b"></span><span>Acepto que, si no cancelo antes del <b>{COBRO}</b>, Chalyb cobre automáticamente <b>{P_PRO_M} MXN</b> y cada mes después a mi tarjeta, y acepto los <a>Términos de Suscripción</a>.</span></div>
+<div class="go"><button class="btn btn-primary btn-xl">{TRIAL_CTA}</button><small>Marca la casilla para continuar. Puedes cancelar cuando quieras.</small></div></div>
 <div class="sum"><h3>Resumen</h3>
-<div class="rw"><span>Plan al terminar la prueba</span><b>Pro anual</b></div>
-<div class="rw"><span>Tu mes gratis termina</span><b>{FIN}</b></div>
-<div class="rw"><span>Te avisamos por correo</span><b>{RECORD}</b></div>
-<div class="rw"><span>Primer cobro<small>{COBRO}</small></span><b>$7,490 MXN</b></div>
-<div class="rw" style="border-bottom:0"><span>Después</span><b>$7,490 MXN cada año</b></div>
-<div class="tot"><span>Total hoy</span><b>$0</b></div><a class="lnk chg">Cambiar a Pro mensual ($749/mes)</a></div></div></div>'''
+<div class="rw"><span>Plan al terminar la prueba</span><b>Pro mensual</b></div>
+<div class="rw"><span>Tu prueba de 7 días termina</span><b>{FIN}</b></div>
+<div class="rw"><span>Aviso de cobro por correo</span><b>Hoy</b></div>
+<div class="rw"><span>Primer cobro<small>{COBRO}</small></span><b>{P_PRO_M} MXN</b></div>
+<div class="rw" style="border-bottom:0"><span>Después</span><b>{P_PRO_M} MXN cada mes</b></div>
+<div class="tot"><span>Total hoy</span><b>$0</b></div><a class="lnk chg">Cambiar a Pro anual ({P_PRO_Y} al año)</a></div></div></div>'''
 write("15-pago.html", page2("Pago", b15, css15))
 
 # ---- 16 listo
@@ -152,15 +153,15 @@ css16 = SU + '''
 .mailn{margin-top:16px;font-size:16px;color:var(--ink3)}
 '''
 b16 = f'''<div class="flow"><header class="topbar" style="position:relative"><span></span><div class="toptitle">{logo().replace('class="logo "','class="logo" style="padding:0"')}</div><button class="close">{ic("x")}</button></header>
-<div class="col"><div class="okc">{ic("check")}</div><h1>¡Listo, María!<br>Tu mes de Pro gratis ya empezó.</h1>
-<p class="sub">Termina el {FIN}. Primer cobro: <b>$7,490 MXN</b> el {COBRO} a tu tarjeta ••4821.</p>
+<div class="col"><div class="okc">{ic("check")}</div><h1>¡Listo, María!<br>Tus 7 días de Pro gratis ya empezaron.</h1>
+<p class="sub">Primer cobro: <b>{P_PRO_M} MXN</b> el {COBRO}, a tu tarjeta ••4821. Ya te enviamos el aviso de cobro.</p>
 <div class="group rc">
 <div class="row"><div class="ic" style="background:#34C759">{ic("check")}</div><div class="tx"><b>Hoy pagaste</b></div><span class="val">$0</span></div>
-<div class="row"><div class="ic" style="background:#5B4BFF">{ic("cal")}</div><div class="tx"><b>Tu mes gratis termina</b></div><span class="val">{FIN}</span></div>
-<div class="row"><div class="ic" style="background:#FF9F0A">{ic("mail")}</div><div class="tx"><b>Te avisamos por correo</b></div><span class="val">{RECORD}</span></div>
-<div class="row"><div class="ic" style="background:#8E8E93">{ic("card")}</div><div class="tx"><b>Primer cobro (Pro anual)</b><small>Visa ••4821 · se renueva cada año hasta que canceles</small></div><span class="val">$7,490 MXN</span></div></div>
+<div class="row"><div class="ic" style="background:#5B4BFF">{ic("cal")}</div><div class="tx"><b>Tu prueba gratis termina</b></div><span class="val">{FIN}</span></div>
+<div class="row"><div class="ic" style="background:#FF9F0A">{ic("mail")}</div><div class="tx"><b>Aviso de cobro enviado</b><small>Asunto: Aviso de cobro: el {COBRO} se cobrarán {P_PRO_M} MXN si no cancelas</small></div><span class="val">Hoy</span></div>
+<div class="row"><div class="ic" style="background:#8E8E93">{ic("card")}</div><div class="tx"><b>Primer cobro (Pro mensual)</b><small>Visa ••4821 · se renueva cada mes hasta que canceles</small></div><span class="val">{P_PRO_M} MXN</span></div></div>
 <div class="cta"><button class="btn btn-primary btn-xl">{ic("scissors")}Hacer mis primeros clips</button><br><a class="lnk">Ver mi plan</a></div>
-<p class="mailn">Te enviamos estos datos a maria.lopez@correo.mx · Folio de tu aceptación: 8F3C-2A1E</p></div></div>'''
+<p class="mailn">Folio de tu aceptación: 8F3C-2A1E</p></div></div>'''
 write("16-listo.html", page2("Listo", b16, css16))
 
 # ---- 17 banners
@@ -192,15 +193,15 @@ body{background:#ECECF1}
 ghost = f'''<div class="ghost"><div class="gs">{logo()}<div class="nv"></div><div class="nv o"></div></div>
 <div class="gm"><div class="e">Hola, María 👋</div><h1>¿Qué quieres hacer hoy?</h1><div class="cards"><div></div><div></div></div></div></div>'''
 BN = [
- ("1","Prueba activa","Tranquilo, siempre visible, sin alarma", banner("trial","<b>Prueba Pro gratis</b> · te quedan 12 días","Ver mi plan")),
- ("2","Últimos 7 días","Ámbar, del día 23 al 30 de la prueba", banner("warn",f"Tu prueba termina el <b>{FIN}</b>. Se cobrarán <b>$7,490 MXN</b> el <b>{COBRO}</b>.","Ver mi plan")),
+ ("1","Prueba activa","Ámbar desde el día 0 (la prueba es corta), siempre visible", banner("warn",f"<b>Prueba Pro gratis</b> · El <b>{COBRO}</b> se cobrarán <b>{P_PRO_M} MXN</b>, salvo que canceles antes.","Ver mi plan")),
+ ("2","Aviso de cobro sin entregar","Solo si el correo del día 0 rebota o no se confirma; el cobro se retiene", banner("warn","No pudimos enviarte el aviso de cobro a <b>maria.lopez@correo.mx</b>. Confírmalo o actualízalo: <b>no te cobraremos</b> hasta 5 días después de avisarte.","Revisar correo")),
  ("3","Prueba terminada o cancelada","Neutral, una sola invitación a volver", banner("gray","Tu prueba terminó. Estás en el plan Gratis.","Volver a Pro")),
  ("4","Pago pendiente","Rojo, solo cuando falla el cobro", banner("bad",f"No pudimos cobrar tu plan. Actualiza tu tarjeta antes del <b>{GRACIA}</b> para no perder Pro.","Actualizar tarjeta")),
 ]
 fr = "".join(f'<div class="fr"><div class="lab"><span class="n">{n}</span>{t}<small>· {d}</small></div><div class="win">{b}{ghost}</div></div>' for n,t,d,b in BN)
 b17 = f'''<div class="sheet"><div class="sh"><div><h1>Avisos de tu prueba</h1><p>Una línea y un botón, arriba de todo. Solo se ve uno a la vez.</p></div></div>{fr}
 <div class="rules"><div><b>Siempre una línea</b>Fecha y monto en negritas, sin letra chiquita.</div><div><b>Un solo botón</b>Lleva directo a Mi plan o a cambiar la tarjeta.</div>
-<div><b>No se puede ocultar</b>Los avisos 2 y 4 se quedan hasta que pasen.</div><div><b>Mismo texto que el correo</b>El aviso 2 sale el mismo día que el correo de 7 días.</div></div></div>'''
+<div><b>No se puede ocultar</b>Los avisos 1, 2 y 4 se quedan hasta que pasen.</div><div><b>Mismo texto que el correo</b>El aviso 1 repite el aviso de cobro del día 0 (fecha y monto).</div></div></div>'''
 write("17-banners.html", page2("Banners", b17, css17))
 
 # ---- 18 cancelar
@@ -237,20 +238,20 @@ body{background:#ECECF1}
 .done .fol{margin-top:14px;font-size:16px;color:var(--ink3)}
 '''
 mi_plan_bg = f'''<div class="mp"><div class="crumb">Mi cuenta ›</div><h1>Mi plan</h1>
-<div class="plan"><div class="k">Tu plan</div><h2>Prueba Pro gratis</h2><p>Te quedan 12 días · termina el {FIN}</p></div>
-<div class="group"><div class="row"><div class="ic" style="background:#5B4BFF">{ic("cal")}</div><div class="tx"><b>Después de la prueba</b><small>Pro anual · $7,490 MXN al año</small></div><span class="val" style="color:var(--accent);font-weight:600">Cambiar</span></div>
+<div class="plan"><div class="k">Tu plan</div><h2>Prueba Pro gratis</h2><p>Te quedan 7 días · termina el {FIN}</p></div>
+<div class="group"><div class="row"><div class="ic" style="background:#5B4BFF">{ic("cal")}</div><div class="tx"><b>Después de la prueba</b><small>Pro anual · {P_PRO_Y} MXN al año</small></div><span class="val" style="color:var(--accent);font-weight:600">Cambiar</span></div>
 <div class="row"><div class="ic" style="background:#34C759">{ic("card")}</div><div class="tx"><b>Tarjeta</b></div><span class="val">Visa ••4821</span></div>
 <div class="row"><div class="ic" style="background:#FF9F0A">{ic("coins")}</div><div class="tx"><b>Créditos</b><small>Usaste 350 de 2,000 este mes</small></div></div>
 <div class="row"><div class="ic" style="background:#8E8E93">{ic("doc")}</div><div class="tx"><b>Facturas</b></div><span class="val">Ninguna aún</span></div></div>
 <div class="group" style="margin-top:14px"><div class="row cancel"><div class="ic" style="background:#FF3B30">{ic("x")}</div><div class="tx"><b>Cancelar prueba</b><small>1 clic, sin llamadas</small></div></div></div></div>'''
 s18a = f'''<div class="sheetc sc"><h2>¿Cancelar tu prueba?</h2>
 <p>Seguirás teniendo Pro hasta el <b>{FIN}</b>. Después no se te cobrará nada y pasarás al plan Gratis. Tus clips y resultados se quedan guardados.</p>
-<div class="off">{ic("swap")}<span>¿Prefieres pagar mes a mes?</span><a class="lnk">Cambiar a $749/mes</a></div>
+<div class="off">{ic("swap")}<span>¿Prefieres pagar mes a mes?</span><a class="lnk">Cambiar a {P_PRO_M}/mes</a></div>
 <div class="acts two2"><button class="btn btn-dark">Sí, cancelar</button><button class="btn btn-primary">Seguir con Pro</button></div></div>'''
 s18b = f'''<div class="sheetc sc done"><div class="okc">{ic("check")}</div><h2>Listo, cancelaste.</h2>
 <p>No se te volverá a cobrar. Tienes Pro hasta el <b>{FIN}</b>.<br>Si cambias de opinión, puedes volver a activar Pro en cualquier momento.</p>
 <div class="acts"><button class="btn btn-primary">Volver a Inicio</button><button class="btn btn-secondary">Volver a activar Pro</button></div>
-<div class="fol">Folio: CAN-20261018-4821 · Te enviamos la confirmación a maria.lopez@correo.mx</div></div>'''
+<div class="fol">Folio: CAN-20261003-4821 · Te enviamos la confirmación a maria.lopez@correo.mx</div></div>'''
 b18 = f'''<div class="sheet"><div class="fr"><div class="lab"><span class="n">1</span>Confirmar (1 pantalla, sin laberintos)</div><div class="win">{mi_plan_bg}<div class="dim"></div>{s18a}</div></div>
-<div class="fr"><div class="lab"><span class="n">2</span>Hecho</div><div class="win">{mi_plan_bg.replace("Prueba Pro gratis</h2><p>Te quedan 12 días","Pro hasta el "+FIN+"</h2><p>Cancelado · no habrá más cobros")}<div class="dim"></div>{s18b}</div></div></div>'''
+<div class="fr"><div class="lab"><span class="n">2</span>Hecho</div><div class="win">{mi_plan_bg.replace("Prueba Pro gratis</h2><p>Te quedan 7 días","Pro hasta el "+FIN+"</h2><p>Cancelado · no habrá más cobros")}<div class="dim"></div>{s18b}</div></div></div>'''
 write("18-cancelar.html", page2("Cancelar", b18, css18))

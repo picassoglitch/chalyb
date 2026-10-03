@@ -1,0 +1,77 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Vista general herramientas</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:#ECECF1}
+.sheet{width:1600px;padding:48px 56px 60px}
+.hd{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+.hd .mark{width:48px;height:48px;border-radius:14px;background:linear-gradient(140deg,#7B6CFF 0%,#5B4BFF 55%,#3F2FE0 100%);display:grid;place-items:center;box-shadow:0 4px 12px rgba(91,75,255,.35)}
+.hd .mark svg{width:26px;height:26px}
+.hd h1{font-size:34px}.hd p{font-size:18px;color:var(--ink2);margin-top:2px}
+.hd .tag{margin-left:auto;font-size:16px;font-weight:600;color:var(--accent);background:#fff;padding:9px 16px;border-radius:999px;box-shadow:var(--shadow)}
+.grp{margin-top:34px}
+.grp h2{font-size:22px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.grp h2 span{font-size:15px;font-weight:600;color:var(--ink3)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 22px}
+.tile img{display:block;width:100%;aspect-ratio:1440/900;object-fit:cover;object-position:top;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 26px rgba(20,20,50,.12);background:#fff}
+.cap{margin-top:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cap .n{font-size:13px;font-weight:700;color:#fff;background:var(--accent);border-radius:7px;padding:2px 7px}
+.cap b{font-size:16.5px;font-weight:650}
+.cap span{font-size:14.5px;color:var(--ink2)}
+.cap span:not(.n){flex-basis:100%;margin-top:-4px}
+.rule{margin-top:36px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.rule div{background:#fff;border-radius:18px;padding:16px 18px;box-shadow:var(--shadow);font-size:16px;color:var(--ink2);line-height:1.4}
+.rule b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+</style></head><body><div class="sheet"><div class="hd"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div><h1>Chalyb · el interior de cada herramienta</h1><p>Clips, Señales y En vivo se abren dentro de la app, con el mismo sistema de diseño.</p></div><div class="tag">50 – 61</div></div><section class="grp"><h2>Clips<span>3 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/50-clips-home.png"><div class="cap"><span class="n">50</span><b>Inicio de Clips</b><span>Un botón: Hacer clips nuevos</span></div></div><div class="tile"><img src="../mockups/51-clips-detalle.png"><div class="cap"><span class="n">51</span><b>Detalle del clip</b><span>Ver, recortar, formato, descargar</span></div></div><div class="tile"><img src="../mockups/52-clips-ajustes.png"><div class="cap"><span class="n">52</span><b>Ajustes de Clips</b><span>Cuentas, subtítulos, logo</span></div></div></div></section><section class="grp"><h2>Señales<span>4 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/53-senales-aviso.png"><div class="cap"><span class="n">53</span><b>Aviso (una vez)</b><span>3 ideas + texto legal + casilla</span></div></div><div class="tile"><img src="../mockups/54-senales-home.png"><div class="cap"><span class="n">54</span><b>Inicio de Señales</b><span>Señales en palabras simples</span></div></div><div class="tile"><img src="../mockups/55-senales-detalle.png"><div class="cap"><span class="n">55</span><b>Detalle de la señal</b><span>Gráfica simple y por qué</span></div></div><div class="tile"><img src="../mockups/56-senales-avisos.png"><div class="cap"><span class="n">56</span><b>Ajustes de Señales</b><span>Monedas, cómo y cuándo avisamos</span></div></div></div></section><section class="grp"><h2>En vivo<span>3 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/57-envivo-conectar.png"><div class="cap"><span class="n">57</span><b>Conectar (primera vez)</b><span>Descargar + código de 6 números</span></div></div><div class="tile"><img src="../mockups/58-envivo-control.png"><div class="cap"><span class="n">58</span><b>Cuarto de control</b><span>Botón gigante, escenas, clip</span></div></div><div class="tile"><img src="../mockups/59-envivo-ajustes.png"><div class="cap"><span class="n">59</span><b>Ajustes de En vivo</b><span>Dónde transmites y calidad</span></div></div></div></section><section class="grp"><h2>Compartido<span>2 pantallas</span></h2><div class="grid"><div class="tile"><img src="../mockups/60-tool-no-abre.png"><div class="cap"><span class="n">60</span><b>Cuando no abre</b><span>Reintentar o hablar con alguien</span></div></div><div class="tile"><img src="../mockups/61-herramientas.png"><div class="cap"><span class="n">61</span><b>Tus herramientas</b><span>Se abren dentro de la app</span></div></div></div></section><div class="rule"><div><b>Todo dentro de la app</b>Ninguna herramienta abre otra pestaña. La barra lateral nunca desaparece.</div>
+<div><b>Un botón principal</b>Cada pantalla tiene una sola acción grande y una frase de qué pasa después.</div>
+<div><b>3 pestañas como máximo</b>Lo principal · Historial · Ajustes. Lo avanzado, cerrado por defecto.</div>
+<div><b>Nunca un callejón</b>Si algo falla: qué pasó, Intentar otra vez y Hablar con una persona.</div></div></div></body></html>

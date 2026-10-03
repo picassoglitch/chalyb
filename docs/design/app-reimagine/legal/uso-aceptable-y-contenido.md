@@ -51,7 +51,7 @@ No puedes usar Chalyb para crear, subir, procesar o publicar contenido que:
 9. Viole las reglas de las plataformas donde se publicará.
 10. Comercialice o reproduzca Señales, Pronósticos o resultados de Inversiones de Chalyb como si fueran asesoría propia, o con promesas de resultados.
 
-Las demás conductas prohibidas están en la sección 8 de los Términos y Condiciones.
+Las demás conductas prohibidas están en la sección 8 de los Términos y Condiciones. El fraude en pagos (por ejemplo, usar tarjetas de terceros sin autorización o presentar un **contracargo de mala fe**) se rige por la sección 10 de los Términos de Suscripción. **Pedir un reembolso, disputar un cargo o cancelar nunca es un incumplimiento de esta Política.**
 
 ## 4. Cuentas sociales conectadas y publicación automática
 

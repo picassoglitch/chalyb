@@ -410,7 +410,7 @@ ayuda = f'''<div><div class="ghead">Ayuda</div>
 b07 = f'''<div class="app">{sidebar("cuenta")}<main class="main"><div class="wrap">
 <div class="prof"><div class="avatar">ML</div><div><h1>Mi cuenta</h1><div class="em">María López · maria.lopez@correo.mx</div></div></div>
 <div class="cols"><div class="colx"><div class="plan"><div class="k">Tu plan</div><h2>Plan Pro — todo incluido</h2>
-<p>Se renueva el 15 de octubre de 2026 · $749 MXN al mes</p><div class="pb"><span class="inc">{ic("check")}Todas las herramientas</span><button class="btn">Ver mi plan</button></div></div>{pay}</div>
+<p>Se renueva el 15 de octubre de 2026 · $997 MXN al mes</p><div class="pb"><span class="inc">{ic("check")}Todas las herramientas</span><button class="btn">Ver mi plan</button></div></div>{pay}</div>
 <div class="colx">{redes}{prefs}{ayuda}</div></div></div></main></div>'''
 write("07-mi-cuenta.html", page("Mi cuenta", b07, css07))
 
@@ -466,7 +466,7 @@ b08 = f'''<div class="phone"><div class="status"><span>9:41</span><span class="r
 write("08-inicio-movil.html", page("Inicio móvil", b08, css08))
 # ====================== 09-30: extended screens ======================
 _D = os.path.dirname(os.path.abspath(__file__))
-for _m in ["more_shared.py","more_public.py","more_signup.py","more_app.py","more_admin.py","more_overview.py"]:
+for _m in ["more_shared.py","more_public.py","more_signup.py","more_app.py","more_admin.py","more_landing.py","more_overview.py"]:
     _f = os.path.join(_D, _m)
     if os.path.exists(_f): exec(open(_f, encoding="utf-8").read())
 print("built")

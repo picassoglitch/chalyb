@@ -120,5 +120,12 @@ def banner(kind, text, btn):
     icn = {"trial":"gift","warn":"clock","gray":"info","bad":"alert"}[kind]
     return f'<div class="bnr {kind}"><div class="bi">{ic(icn)}</div><div class="bt">{text}</div><button class="btn">{btn}</button></div>'
 
-# Fixed demo values for trial copy (user María, started 30 sep 2026)
-FIN = "30 de octubre de 2026"; COBRO = "30 de octubre de 2026"; RECORD = "23 de octubre de 2026"; GRACIA = "7 de noviembre de 2026"
+# Fixed demo values for trial copy (user María, trial of 7 days started TODAY, 3 oct 2026). Precios: ver PRICING-CARDS-SPEC.md (fuente única)
+FIN = "10 de octubre de 2026"; COBRO = "10 de octubre de 2026"; RECORD = "3 de octubre de 2026"; GRACIA = "17 de octubre de 2026"
+FIN_CORTO = "10 de octubre"
+# Final prices, IVA included (PRICING-CARDS-SPEC.md §0.2). Never type them elsewhere in the mockups.
+P_PRO_M, P_PRO_Y, P_VIP_M, P_VIP_Y = "$997", "$9,970", "$3,799", "$36,325"
+P_SAVE_PRO, P_SAVE_VIP, P_PCT_PRO, P_PCT_VIP, P_PCT_MAX = "$1,994", "$9,263", 16, 20, 20
+TRIAL_CTA = "Empezar mis 7 días gratis"
+BADGE_PRO = "Más popular"
+TRIAL_FOOT = "Prueba Pro gratis 7 días: mensual o anual, una vez por cuenta y por tarjeta. VIP no tiene prueba."

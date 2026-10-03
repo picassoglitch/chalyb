@@ -151,7 +151,7 @@ Al usar Chalyb **no puedes**:
 
 13.1. **Por ti.** Puedes dejar de usar Chalyb en cualquier momento y cancelar tu suscripción en 1 clic desde **Mi cuenta → Mi plan**, como se indica en los Términos de Suscripción. Puedes pedir el cierre definitivo de tu cuenta desde Mi cuenta o escribiendo a [CORREO DE CONTACTO].
 
-13.2. **Por nosotros, con causa.** Podemos suspender o cancelar tu cuenta, total o parcialmente, si: (a) incumples estos Términos o la Política de Uso Aceptable; (b) lo exige la ley o una autoridad; (c) detectamos fraude, abuso de pruebas gratis, contracargos sin fundamento o riesgo de seguridad; o (d) tu contenido infringe derechos de terceros. Cuando sea razonable y legalmente posible, te avisaremos y te daremos oportunidad de corregir la falta. En casos graves (fraude, contenido ilegal, riesgo para otros usuarios) podemos actuar de inmediato. En caso de terminación por tu incumplimiento, **no procede reembolso** del periodo pagado, salvo que la ley disponga otra cosa.
+13.2. **Por nosotros, con causa.** Podemos suspender o cancelar tu cuenta, total o parcialmente, si: (a) incumples estos Términos o la Política de Uso Aceptable; (b) lo exige la ley o una autoridad; (c) detectamos fraude, abuso de pruebas gratis, un **contracargo de mala fe** (definido en la sección 10.4 de los Términos de Suscripción, y solo con el aviso y el plazo de 10 días hábiles de su sección 10.5) o riesgo de seguridad; o (d) tu contenido infringe derechos de terceros. Cuando sea razonable y legalmente posible, te avisaremos y te daremos oportunidad de corregir la falta. En casos graves (fraude, contenido ilegal, riesgo para otros usuarios) podemos actuar de inmediato. En caso de terminación por tu incumplimiento, **no procede reembolso** del periodo pagado, salvo que la ley disponga otra cosa.
 
 13.3. **Por nosotros, sin causa.** Podemos dejar de ofrecer el Servicio o cerrar tu cuenta con **al menos [30] días naturales** de aviso por escrito (correo electrónico); si resides en Quebec, Canadá, el aviso será de **al menos 60 días**. En ese caso te reembolsaremos la parte proporcional no usada de cualquier periodo que hayas pagado por adelantado y no haremos nuevos cobros.
 
@@ -176,6 +176,8 @@ Al usar Chalyb **no puedes**:
 15.3. Si vives fuera de México, también conservas los derechos que las leyes imperativas de protección al consumidor de tu país, estado o provincia te otorguen (ver sección 16.4).
 
 15.4. **Reseñas.** Nada en estos Términos te impide publicar opiniones o reseñas honestas sobre Chalyb, ni presentar quejas ante cualquier autoridad.
+
+15.5. **Ejercer tus derechos no te perjudica.** Pedir o recibir un reembolso, bonificación o compensación, disputar un cargo ante tu banco o Mercado Pago, cancelar tu suscripción o presentar una queja ante la PROFECO **nunca** da lugar a una penalización, cargo adicional, suspensión, cierre o bloqueo de tu cuenta, ni a un cambio o reinicio de tu precio. La única excepción es un contracargo de mala fe, que es un fraude y no el ejercicio de un derecho, y solo en los términos de la sección 10 de los Términos de Suscripción.
 
 ## 16. Ley aplicable y jurisdicción
 

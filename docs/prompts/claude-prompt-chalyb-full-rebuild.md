@@ -1,10 +1,23 @@
 # Chalyb — full rebuild (ONE mega-prompt, shipped in phases)
 
-> **Status: FINAL — 2026-09-30 21:50 CT.** Built from the complete inputs: `BUILD-SPEC.md` (Fases 0–6, tokens, glossary, §6.10 paid Mi plan, §11 legal requirements with deploy-blocking tests, §12 owner decisions, §13 mockup index), mockups 00–30 (HTML + PNG + `style.css`), `trial-to-paid-path.md` (revised by Law), the Law-edited `legal/` package and `legal/REVISION-LEGAL.md`. **There are no DESIGN PENDING or LEGAL PENDING sections.** What remains open is owner or attorney *decisions*. Each one ships as a flag/config with a documented default and is listed in §12 OPEN QUESTIONS. The legal texts are complete, but they still carry owner values in brackets (`[RAZÓN SOCIAL]`, `[RFC]`…) and need a licensed attorney's signature, so publishing them and enabling real charges are OPS-10, enforced in code by `LEGAL_PUBLISH` + a placeholder gate. Every screen keeps its own `SCR-NN` subsection keyed to its mockup number. **Precedence:** `legal/aceptacion-ux.md` (legal UX) → BUILD-SPEC → mockups → `trial-to-paid-path.md` → the older owner trial prompt (§9-A, superseded where §9-B says so).
+> 🛑 **READ FIRST · 2026-10-03:** this prompt is now **history/reference**. The prompt Claude runs is `docs/prompts/claude-prompt-chalyb-all-pending.md` (package `all-pending-2026-10-03`, built on `claude/rebuild-p5-admin`). It **supersedes every amount and every trial rule** in this file. Where the two differ, the all-pending prompt wins. See **§UPDATE 2026-10-03** below.
+
+> **Status: FINAL — 2026-09-30 21:50 CT; updated 2026-10-02 with P0-17 (Mercado Pago fixes B33–B35, OPS-19/20).** Built from the complete inputs: `BUILD-SPEC.md` (Fases 0–6, tokens, glossary, §6.10 paid Mi plan, §11 legal requirements with deploy-blocking tests, §12 owner decisions, §13 mockup index), mockups 00–30 (HTML + PNG + `style.css`), `trial-to-paid-path.md` (revised by Law), the Law-edited `legal/` package and `legal/REVISION-LEGAL.md`. **There are no DESIGN PENDING or LEGAL PENDING sections.** What remains open is owner or attorney *decisions*. Each one ships as a flag/config with a documented default and is listed in §12 OPEN QUESTIONS. The legal texts are complete, but they still carry owner values in brackets (`[RAZÓN SOCIAL]`, `[RFC]`…) and need a licensed attorney's signature, so publishing them and enabling real charges are OPS-10, enforced in code by `LEGAL_PUBLISH` + a placeholder gate. Every screen keeps its own `SCR-NN` subsection keyed to its mockup number. **Precedence:** `legal/aceptacion-ux.md` (legal UX) → BUILD-SPEC → mockups → `trial-to-paid-path.md` → the older owner trial prompt (§9-A, superseded where §9-B says so).
 
 Repo: `picassoglitch/chalyb` (branch from `main`; main was verified read-only at `3f27ef3`, 2026-09-22). Live: https://www.chalyb.com. Product: a Spanish-first, all-in-one hub of tools.
 
 ---
+
+## §UPDATE 2026-10-03 · what changed (short)
+
+- **Master prompt:** `docs/prompts/claude-prompt-chalyb-all-pending.md` supersedes **every amount and every trial rule** here (P0-17 B34, P2, P4, §9-A…§9-D, §10 B34 row, OPS-3, OPS-20, §12 Q-items about prices or trial length). Phases P0–P5 are built on the stack ending at `claude/rebuild-p5-admin` (`c163dfd`). Old P6 (legal pages + release gate) now runs as all-pending **WS-12**, and the items here that it doesn't override stay as reference.
+- **Prices:** `PRICING-CARDS-SPEC.md` is the single source of truth: Pro $997 MXN al mes, Pro anual $9,970 MXN al año, VIP $3,799 MXN al mes, VIP anual $36,325 MXN al año, Pro Lealtad (§15, behind `LEALTAD_ENABLED=false`). These are totals with IVA included (`PRICES_INCLUDE_IVA=true`). No amount is typed by hand.
+- **Trial:** **7 days**, Pro mensual and Pro anual only (VIP, VIP anual and Pro Lealtad have none). The charge notice goes out on **day 0** (≥5 days before the charge) with the hold rule (Términos §2.7 bis). The checkout preselects Pro mensual, never the anual. The **30-day / "1 mes" trial is superseded everywhere in this file.**
+- **P0-17 B34:** the "$749 / $7,490" expectation is superseded. **The charge must equal the displayed price from the PRICING-CARDS-SPEC config** (`planPrice(planKey).totalCents`). A mismatch fails closed. The B33/B35/B36 MP fixes (MP_ENV, `notification_url`, IPN + `merchant_order`) are still required and live in all-pending WS-1 (they are **not** in the P0–P5 stack).
+- **Refunds/chargebacks, price increase, Lealtad:** new rules from Law (`legal/PRICING-2026-10-03-REVISION.md` §R, §S) are in all-pending WS-6, WS-7 and WS-8. Nothing here about chargebacks (e.g. suspending on dispute) applies any more.
+- **No tickets:** no Linear or other tickets for Chalyb, ever; documents only.
+- Backup of this file before the update: `/workspace/chalyb/_backup-full-rebuild-2026-10-03.md` (box).
+
 
 ## 0. HOW TO RUN THIS PROMPT
 
@@ -329,11 +342,45 @@ Read from env only: `E2E_BASE_URL`, `E2E_FREE_EMAIL`, `E2E_FREE_PASSWORD`, `E2E_
   - Don't add CI secrets; document the env var names in the PR.
 - *Done when:* `pnpm e2e` runs locally. Role specs skip cleanly when env vars are missing.
 
+**P0-17 · Mercado Pago integration fixes (QA live test 2026-10-02; source `docs/qa/MP-INTEGRATION-FINDINGS-2026-10-02.md` if present). Closes B33, B34, B35.**
+Context: the owner is trying to run Mercado Pago's "Medir la calidad de la integración". That tool needs an Order ID from a payment made **with test credentials in the last 7 days**. Today no test payment can complete, so the tool can't run. These three fixes touch today's live subscription flow (not the `TRIAL_FLOW_ENABLED` flow), so they ship in P0. If the rebuild is already past P0, ship this block as its own PR `claude/mp-integration-fixes` from `main`.
+Files to inspect first: `src/lib/payments/{mercadopago,mp-config,subscription-actions,subscription-sync,subscription-reference,pricing}.ts`, `src/app/api/mp/webhook/route.ts`, `src/components/payments/mp-card-brick.tsx`, and wherever `preapproval` / `preference` bodies are built (`rg -n "transaction_amount|unit_price|notification_url|payer_email|preapproval_plan_id|back_url" src`).
+
+- **B33 (BLOCKER) · Test and prod credentials get mixed.**
+  - *Problem:* subscription checkout fails with "Una de las partes con la que intentas hacer el pago es de prueba." MP raises this when the seller side (access token / public key that created the preapproval or preference) and the buyer side (payer account, `payer_email`, card) belong to different environments. The most likely code cause: the preapproval sends the **logged-in user's real email** as `payer_email` while a test token is in use (or the Brick uses one environment's public key and the server the other's access token).
+  - *Fix:*
+    1. One resolver `getMpEnv(): 'test' | 'prod'` in `mp-config.ts`, driven by a single env var (`MP_ENV`, following the existing MP env var naming; default `prod` on Vercel Production, `test` everywhere else). Every MP call (server SDK client, Brick public key, webhook secret) reads its credentials **only** through this resolver. No other file reads MP env vars directly (grep test).
+    2. Startup assertion: access token and public key are configured as a pair for the same environment. If `MP_ENV=test` and either is missing, fail loudly in logs and show the existing generic payment error to the user (never env names or raw MP errors in customer UI, §6.6).
+    3. In `test`, `payer_email` on preapprovals (and `payer.email` on preferences) is taken from `MP_TEST_PAYER_EMAIL` (a test-buyer account email), not the user's real email. In `prod` it stays the user's email. Never send a test payer email in `prod` (assert).
+    4. Log `mp_env`, the MP object id and `external_reference` on every create call (never tokens, card data or emails).
+  - *Done when:* unit tests: the resolver returns matching token/key pairs per env; `payer_email` = `MP_TEST_PAYER_EMAIL` in test and the user's email in prod; grep test finds no MP env var reads outside `mp-config.ts`. Manual (OPS-19): a preview deploy with `MP_ENV=test` completes a subscription with a test buyer + test card, and the PR lists the resulting test Order ID / preapproval id.
+
+- **B34 · Checkout charges $868.84 instead of $749.**
+  > ⚠️ **SUPERSEDED 2026-10-03:** the "$749 / $7,490" expectation in this item is replaced. The charge must equal the **displayed price from the PRICING-CARDS-SPEC config** (`planPrice(planKey).totalCents`: today Pro mensual $997, Pro anual $9,970, VIP $3,799, VIP anual $36,325, IVA included). The code uses no `preapproval_plan` ids (card-token preapprovals; `pricing-map.md`). See `claude-prompt-chalyb-all-pending.md` WS-1 / WS-2. The "*Done when*" amounts below are history.
+  - *Problem:* the rendered MP checkout showed "Chalyb Pro $868.84 / Total por mes $868.84". **$868.84 is exactly $749 × 1.16**, so the code (or the MP plan behind `preapproval_plan_id`) adds 16% IVA on top of a price that is already shown as the total. The customer would be charged more than the advertised price.
+  - *Fix:*
+    1. Find every place the amount sent to MP is computed (`transaction_amount`, `unit_price`, plan amounts) and make it read the **same value the page displays**, from the single pricing source (P2 §Config `PRICING`; until P2 lands, the existing `pricing.ts`). Remove any `× 1.16` / `ivaRate` multiplication from the charge path. IVA is only ever applied by the display/charge helper when `PRICES_INCLUDE_IVA=false`, and then the page shows that same total too (D1 / OPS-17).
+    2. If the flow uses `preapproval_plan_id`, the amount comes from the plan object in MP, not from code: read the plan via the API at startup or in a health check and **log a mismatch** between the plan's `auto_recurring.transaction_amount` and `PRICING`. Fixing the plan itself is OPS-20.
+  - *Done when:* unit test: the amount sent to MP for Pro mensual is `749` and for Pro anual is `7490` with `PRICES_INCLUDE_IVA=true`, and equals the displayed total with it `false`; a test fails if the charge amount and the displayed amount ever come from different functions. The PR includes a screenshot of the MP checkout showing $749.
+
+- **B35 · Webhooks: 0% delivered in Producción.**
+  - *Problem:* MP's Webhooks page (Producción, 2026-10-02) shows "0% Notificaciones entregadas" for `https://chalyb.com/api/mp/webhook`. Checked 2026-10-02 15:05 CT: `POST https://chalyb.com/api/mp/webhook` returns **308 → https://www.chalyb.com/api/mp/webhook**, and MP does not follow redirects, so every notification fails. `POST https://www.chalyb.com/api/mp/webhook` with no signature returns 400, which is correct.
+  - *Fix:*
+    1. Every `notification_url` the code sends (preferences, preapprovals) is built from the canonical origin helper (`NEXT_PUBLIC_APP_URL` = `https://www.chalyb.com`, P0 SEO fix) + `/api/mp/webhook`. No hard-coded host. Add a guard that refuses a non-www or non-https `notification_url` in `prod`. (The dashboard URL is OPS-4.)
+    2. Webhook route: accept both the Webhooks format (JSON body `{ type, action, data: { id } }` plus `?data.id=&type=`) and the legacy IPN format (`?id=&topic=`, including `topic=merchant_order`, since the only real approved payment, Operación 182026865254, is a legacy `checkout_merchant_order`). Handle `payment`, `subscription_preapproval`, `subscription_authorized_payment` and `merchant_order`; any other type returns 200 and is logged.
+    3. Signature: validate `x-signature` (`ts`, `v1`) with HMAC-SHA256 over the manifest `id:{data.id};request-id:{x-request-id};ts:{ts};` (lowercase `data.id` when it is alphanumeric; omit a part that is absent, per MP docs). The secret comes from `getMpEnv()` (test and prod may differ). Invalid signature → 401 with a log line that includes `mp_env` and the topic, never the secret. IPN-format calls that carry no signature are verified by fetching the resource from MP with the server token before acting on it.
+    4. Respond 200 within 2 s: acknowledge first, then process (idempotent on the MP resource id; existing dedupe if present).
+  - *Done when:* unit tests: signature manifest (with and without `x-request-id`, uppercase alphanumeric id), both payload formats, unknown type → 200, replayed notification → processed once. A test asserts every built `notification_url` starts with `https://www.chalyb.com/`. After deploy (OPS-4/OPS-19), MP's Webhooks page shows deliveries > 0% in both Prueba and Producción, and the "Simular notificación" button returns 200.
+
+- **Not in scope:** migrating from the legacy Checkout / merchant_order flow to MP's newer Orders API. If the quality tool scores low because of it, note what it reports in the PR and add it as an open question; don't migrate here. After B33 lets a test payment complete, run the quality tool (OPS-19) and fix only the items it flags that are plain request fields (for example `external_reference`, `items[].id/title/description/category_id`, `payer.first_name/last_name`, `statement_descriptor`, device id via MP's security script), each listed in the PR.
+
 ### Tests
 Unit: launch (popup branch via exported pure helper), `getEntitlements` matrix, plan-check grep test, empty-onClick/href test, credits-on-success and retry tests, error mapping, sitemap/robots origin, display names, i18n parity, customer-copy. E2E: `no-leaks.spec.ts` (Free/Pro/VIP/Admin), `clips-launch.spec.ts`, `aliases.spec.ts`, `seo-canonical.spec.ts`, `logout-en.spec.ts`, axe on touched pages, 360px overflow on touched pages.
 
 ### DONE WHEN
-- [ ] All P0-1…P0-16 done-when lines pass, plus the §7.1 gates.
+- [ ] All P0-1…P0-17 done-when lines pass, plus the §7.1 gates.
+- [ ] **MP (P0-17):** a test-credential subscription completes on preview; the charge equals the displayed price ($749 / $7,490); every `notification_url` is `https://www.chalyb.com/api/mp/webhook`.
+  > ⚠️ **SUPERSEDED 2026-10-03:** "$749 / $7,490" → "the charge equals the displayed price from PRICING-CARDS-SPEC config" (all-pending prompt WS-1 / WS-2).
 - [ ] No customer page renders env names, config keys, log hints, raw errors, "Chaly*" names, "engine", "modo demo" or "simulación" (e2e no-leaks green for all four roles).
 - [ ] "Abrir" on Clips works for an entitled user in both popup-allowed and popup-blocked contexts and is refused server-side for a non-entitled one.
 - [ ] Canonical, hreflang, robots and sitemap all use `https://www.chalyb.com`.
@@ -410,6 +457,7 @@ Unit: plan-strip selector (Free/trialing/Pro/VIP/admin), nav config. E2E: shell 
 ---
 
 ## P2 · Fase 2: Cuenta, prueba gratis y cobros (BUILD-SPEC §6, with §10.3 consent log and §11.1–§11.3 in the same PR)
+> ⚠️ **SUPERSEDED 2026-10-03:** P2 is built (stack `claude/rebuild-p2-trial-billing`). Its amounts ($749 / $7,490 / $2,499), the **30-day ("1 mes") trial**, and "Anual preselected" are replaced by the all-pending prompt WS-2 / WS-3: **7-day trial on Pro mensual and Pro anual only**, day-0 charge notice, Pro mensual preselected (never the anual), prices from PRICING-CARDS-SPEC.
 **Branch:** `claude/rebuild-p2-trial-billing` · **Depends on:** P0, P1 · **Closes:** B06 (entitlement), B11 (rebuild), B15 (verify), B17 (verify), B30 · **Mockups:** 12, 13, 14, 15, 16, 17, 18, 30 (and 26 for in-app notices)
 **Goal:** An App-Store-style subscription. The user picks the plan the trial converts into: Pro anual $7,490 (preselected) or Pro mensual $749, IVA incluido. They add a card through the embedded Mercado Pago Brick, tick a **required, unchecked recurring-charge checkbox**, and get 1 free month of Pro. Every acceptance is logged as evidence. A 7-day notice precedes every charge, and no charge happens without a delivered notice. Cancel takes 2 clicks with "Sí, cancelar" always visible. Mi plan covers every state.
 **Text sources (precedence):** `legal/aceptacion-ux.md` §1–§5 (governs) → BUILD-SPEC §6 (keys + exact copy) → `trial-to-paid-path.md` (aligned with the legal review; §9-D) → mockups. The original owner trial prompt is superseded where §9-B says so.
@@ -419,6 +467,7 @@ Unit: plan-strip selector (Free/trialing/Pro/VIP/admin), nav config. E2E: shell 
 **Files:** `src/lib/payments/{mercadopago,mp-config,subscription-actions,subscription-sync,subscription-reference,pricing}.ts`, `src/app/api/mp/webhook/route.ts`, `src/lib/billing/{tiers,money,money-data,subscription-period,entitlement}.ts`, new `src/config/pricing.ts` (or extend the existing plans config; BUILD-SPEC §6.1), new `src/lib/billing/{billing-copy,consent,reminders,format}.ts`, `src/components/payments/mp-card-brick.tsx` (reuse), `src/components/auth/*`, new routes `src/app/[locale]/(dashboard)/app/{prueba,prueba/pago,prueba/listo,planes}/page.tsx`, `.../app/billing/page.tsx` (= **Mi plan**; alias `/app/cuenta/plan`), `src/components/app/{trial-banner,disclosure-block,confirm-step,seller-sheet}.tsx`, `src/lib/email/{resend,templates}.ts`, new `src/app/api/cron/billing/route.ts`, new `src/app/api/resend/webhook/route.ts`, `vercel.json` (`crons`), new migration `00NN_trial_billing_consent.sql`, `messages/{es,en}.json`.
 
 ### Config: one pricing source (BUILD-SPEC §6.1). No amount is ever written by hand in components, emails or legal text.
+> ⚠️ **SUPERSEDED 2026-10-03:** the values in this block (`trial.days: 30`, `pro: { month: 749, year: 7490 }`, `vip: { month: 2499 }`, `defaultInterval: 'year'`) are history. Current config: PRICING-CARDS-SPEC §13 / all-pending WS-2.
 ```ts
 // src/config/pricing.ts (extend the existing plans config if there is one; keep pricing.ts cents in sync from here)
 export const PRICING = {
@@ -880,6 +929,7 @@ Grouped "Hoy" / "Esta semana", "Marcar como leídos". Types: `notif.clipsReady` 
 ---
 
 ## P4 · Fase 4: Sitio público (BUILD-SPEC §8)
+> ⚠️ **SUPERSEDED 2026-10-03:** the landing/pricing copy and amounts in P4 ("Prueba Pro gratis 1 mes", $7,490 / $624 / $1,498) are replaced by `LANDING-SPEC.md` + PRICING-CARDS-SPEC (all-pending WS-4 / WS-10).
 **Branch:** `claude/rebuild-p4-public` · **Depends on:** P1 (tokens), P2 (`PRICING`, Planes, trial CTA target) · **Closes:** B09 (permanent), B31 · **Mockups:** 10 (desktop, full page), 11 (mobile 390), 12 (Planes, built in P2)
 **Goal:** an honest, simple public site in the new design: one plan story, prices from `PRICING` per the §6.2 rules, "IVA incluido", fully bilingual, Lighthouse ≥ 90 on mobile.
 
@@ -1194,6 +1244,8 @@ Same structure in one column; hamburger menu; a **sticky bottom CTA "Prueba Pro 
 
 
 # 9. COPY APPENDIX
+
+> ⚠️ **SUPERSEDED 2026-10-03:** the amounts ($749, $7,490, $2,499, $624, $8,988, $1,498) and the 1-month / 30-day trial quoted in §9-A … §9-D are **history**. Law's current copy is `legal/aceptacion-ux.md` (Law-updated 2026-10-03), `legal/terminos-de-suscripcion.md` and `legal/PRICING-2026-10-03-REVISION.md`; amounts come from PRICING-CARDS-SPEC config.
 
 ## 9-A · Owner-approved trial copy (verbatim from `docs/specs/trial-billing-spec.md` "COPY (use exactly)")
 > The older owner trial prompt's copy, kept as reference for intent and tone. **It is superseded wherever §9-B, BUILD-SPEC §6 or aceptacion-ux differ.** Build from BUILD-SPEC keys (P2 screens); don't ship strings from this block that §9-B overrides.
@@ -1573,6 +1625,9 @@ Asunto: "Bienvenido a Chalyb Pro"
 | B30 | Billing page jargon, Spanish-only | open | P2-12 |
 | B31 | Landing claims conflict with new model (sin tarjeta, simulación, 7-day ChalyClip, no IVA) | open | P4-1 |
 | B32 | Clips can't be generated on any plan (= BUILD-SPEC B3) | open (QA 2026-09-30) | P0-16 (+ `@smoke` deploy test), P3-2 |
+| B33 | MP checkout fails "Una de las partes … es de prueba" (test/prod credential mix) | open, BLOCKER (QA 2026-10-02) | P0-17, OPS-19 |
+| B34 | MP checkout shows $868.84 (= $749 × 1.16) instead of $749 | open (QA 2026-10-02) | P0-17, OPS-20 · **superseded 2026-10-03:** charge = displayed price from PRICING-CARDS-SPEC config (all-pending WS-1 / WS-2) |
+| B35 | MP webhooks 0% delivered; non-www URL 308s | open (QA 2026-10-02) | P0-17, OPS-4 |
 
 ---
 
@@ -1585,7 +1640,8 @@ Asunto: "Bienvenido a Chalyb Pro"
 - **OPS-1 · MP webhook secret:** make `MERCADOPAGO_WEBHOOK_SECRET` on Vercel match the MP dashboard (the likely root cause of B15).
 - **OPS-2 · Migrations:** apply 0039/0040 if they aren't applied yet. Then apply each phase's migration in order after its PR merges: P0 `tool_display_names` (+ unique constraint if added), P2 `trial_billing_consent`, P3 `tools_notifications` (if created). Confirm the app DB role has no UPDATE/DELETE on `consent_events`.
 - **OPS-3 · MP plans (prod):** create `preapproval_plan`s `pro_year` ($7,490 MXN / 12 months, 1-month free trial), `pro_month` ($749 MXN / month, 1-month free trial) and `vip_month` ($2,499 MXN / month, no trial), all IVA-inclusive totals **after D1**. Put the ids in the env vars named in P2. Point subscription and payment webhooks at the existing route.
-- **OPS-4 · Canonical host:** `NEXT_PUBLIC_APP_URL=https://www.chalyb.com`; the MP notification URL is `https://www.chalyb.com/api/mp/webhook` (non-www 308s `/api/*`). Keep the Vercel non-www → www redirect.
+  > ⚠️ **SUPERSEDED 2026-10-03:** no `preapproval_plan`s are used (card-token preapprovals); amounts and the 1-month trial here are replaced by all-pending OPS-20 ("verify only") and the 7-day Pro trial.
+- **OPS-4 · Canonical host:** `NEXT_PUBLIC_APP_URL=https://www.chalyb.com`; the MP notification URL is `https://www.chalyb.com/api/mp/webhook` (non-www 308s `/api/*`). Keep the Vercel non-www → www redirect. **Urgent (B35, 2026-10-02):** the MP dashboard Webhooks URL is still `https://chalyb.com/api/mp/webhook` in Producción, which is why deliveries are 0%. Change it to the www URL in **both** Modo productivo and Modo de prueba, keep the events (Pagos, Planes y suscripciones, Órdenes comerciales) checked, and copy the signature secret into `MERCADOPAGO_WEBHOOK_SECRET` (OPS-1).
 - **OPS-5 · Engine secrets (B28):** verify `CHALYBCLIP_/CHALYBCRYPTO_/CHALYBOBS_` `ADMIN_TOKEN` and `SSO_SECRET` per engine, plus `engines.admin_api_base` / `external_url` in prod.
 - **OPS-6 · Reconcile (B29):** after P0 deploys, run the admin reconcile for entitled users with an empty `external_user_id`.
 - **OPS-7 · Cron:** set `CRON_SECRET`; confirm hourly Vercel crons are available on the plan in use.
@@ -1609,6 +1665,9 @@ Asunto: "Bienvenido a Chalyb Pro"
 - **OPS-16 · Supabase Auth:** set the password policy to 8 characters to match `signup.password.hint`.
 - **OPS-17 · Accounting:** confirm whether $749 / $7,490 / $2,499 include IVA (D1), the operator's tax residence, the IVA rate for users abroad, and CFDI issuance (PAC). This blocks real charges.
 - **OPS-18 · WhatsApp:** if WhatsApp notices/support are wanted, set up the business channel (needed for the bounce rule's alternate channel beyond in-app, Señales delivery and "Hablar con una persona").
+- **OPS-19 · MP test setup (B33):** in MP Developers → Tu integración → Cuentas de prueba, create a **test seller** and a **test buyer**. Put the test seller's access token and public key on the Preview environment with `MP_ENV=test`, and the test buyer's email in `MP_TEST_PAYER_EMAIL`. Pay with the test buyer + an MP test card (cardholder name `APRO`) on a preview deploy. Then run "Medir la calidad de la integración" with that Order ID within 7 days.
+- **OPS-20 · MP plan amounts (B34):** if the subscription uses a `preapproval_plan`, open each plan in MP and check its amount. A plan at $868.84 must be replaced by one at $749 (Pro mensual) / $7,490 (Pro anual), matching `PRICING` (plan amounts can't always be edited once subscribers exist; create new ones and update the env ids).
+  > ⚠️ **SUPERSEDED 2026-10-03:** replaced by all-pending OPS-20 (verify that no plans exist; sandbox charge = $997 Pro mensual with `start_date` = now + 7 d).
 
 ---
 

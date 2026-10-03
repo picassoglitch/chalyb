@@ -1,0 +1,127 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>En vivo · Conectar</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+.main{padding:34px 64px 30px}
+.crumb{font-size:17px;color:var(--ink2);font-weight:500;margin-bottom:8px}
+.th{display:flex;align-items:center;gap:18px}
+.th .tt{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.th h1{font-size:36px;line-height:1.02}
+.ttabs{margin-left:auto;display:flex;background:#EBEBF0;border-radius:16px;padding:4px;gap:4px}
+.ttabs a{height:50px;padding:0 22px;display:flex;align-items:center;border-radius:13px;font-size:18px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.ttabs a.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.tb{margin-top:24px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 12px}
+.sec h3{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.sec a{font-size:17px;color:var(--accent);font-weight:600}
+.sec small{font-size:16px;color:var(--ink3)}
+.advbar{display:flex;align-items:center;gap:14px;padding:0 22px 0 24px;height:66px;border-radius:20px;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.advbar .ic2{color:var(--ink2)} .advbar b{font-size:19px;font-weight:600;white-space:nowrap}
+.advbar .pro{background:var(--tint);color:var(--accent);font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.advbar small{font-size:16px;color:var(--ink3);margin-left:auto;margin-right:4px;white-space:nowrap}
+.advbar .chev{color:var(--ink3)}
+.gh2{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;font-size:17px;font-weight:650}
+.gh2 a{font-size:16px;color:var(--accent);font-weight:600}
+.ok2{color:var(--ok);font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ok2 svg{width:18px;height:18px;stroke-width:3}
+.conn2{font-size:17px;color:var(--accent);font-weight:600;white-space:nowrap}
+.row .brand{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#F2F2F6}
+.dfoot{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 2px #E4E0FF;font-size:17px;line-height:1.4}
+.dfoot svg.i{color:var(--accent);width:24px;height:24px}
+.dfoot a{margin-left:auto;white-space:nowrap;font-size:16.5px}
+.note2{font-size:16px;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.note2 svg.i{width:18px;height:18px}
+.vpill{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:700;letter-spacing:-.02em;padding:6px 14px 6px 10px;border-radius:12px;white-space:nowrap}
+.vpill svg.i{width:21px;height:21px;stroke-width:2.6}
+.v-buy{background:var(--tint);color:var(--accent)} .v-sell{background:var(--warn-tint);color:var(--warn)} .v-wait{background:#EEEEF2;color:var(--ink2)}
+.btn-okl{background:#fff;color:var(--ok);box-shadow:inset 0 0 0 1.5px #BFE6CD}
+
+.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.intro h2{font-size:30px;font-weight:700;letter-spacing:-.025em}
+.intro p{font-size:19px;color:var(--ink2);margin-top:4px}
+.what{margin-top:16px;display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:18px;background:var(--tint2);box-shadow:inset 0 0 0 1.5px #E4E0FF;font-size:18px}
+.what svg.i{color:var(--accent);width:24px;height:24px}
+.st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:20px}
+.sc3{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:22px 22px 24px;display:flex;flex-direction:column;min-height:372px}
+.sc3.on{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.sc3 .nb{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:700;flex:none;background:#EEEEF2;color:var(--ink2)}
+.sc3.on .nb{background:var(--accent);color:#fff}
+.sc3 .k{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.sc3.on .k{color:var(--accent)}
+.sc3 h3{font-size:23px;font-weight:700;letter-spacing:-.02em;margin-top:16px;line-height:1.2}
+.sc3 p{font-size:17.5px;color:var(--ink2);margin-top:8px;line-height:1.4}
+.sc3 .btn-xl{margin-top:auto;font-size:20px}
+.sc3 .alt{text-align:center;font-size:16px;margin-top:12px;color:var(--ink3)}
+.code{margin-top:auto;display:flex;justify-content:center;gap:8px}
+.code span{width:46px;height:70px;border-radius:14px;background:var(--bg);display:grid;place-items:center;font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);box-shadow:inset 0 0 0 1.5px #E1E1E8}
+.code .gap{width:6px;background:none;box-shadow:none}
+.sc3 .exp{text-align:center;font-size:16px;color:var(--ink3);margin-top:12px}
+.okbig{margin:auto auto 0;width:112px;height:112px;border-radius:50%;background:#F0F0F4;display:grid;place-items:center;color:#C6C6CE}
+.okbig svg.i{width:58px;height:58px;stroke-width:2.6}
+.wait{margin-top:16px;display:flex;align-items:center;gap:14px;font-size:17.5px;color:var(--ink2)}
+.spin{width:24px;height:24px;border-radius:50%;border:3px solid var(--tint);border-top-color:var(--accent);border-right-color:var(--accent);flex:none}
+.wait .r{margin-left:auto;display:flex;gap:12px}
+.wait .btn{height:50px;font-size:17px;padding:0 20px;border-radius:14px}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap"><div class="crumb">Inicio ›</div><div class="th"><div class="tico" style="width:64px;height:64px;border-radius:18px;background:#FF375F"><svg class="i" viewBox="0 0 24 24" style="width:32px;height:32px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div>
+<div class="tt"><h1>En vivo</h1><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Incluido en tu plan</span></div>
+<nav class="ttabs"><a class="on">Transmitir</a><a class="">Mis transmisiones</a><a class="">Ajustes</a></nav></div><div class="tb"><div class="intro"><div><h2>Conecta tu computadora</h2><p>Solo se hace una vez. Toma unos 2 minutos.</p></div></div>
+<div class="what"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg><span><b>¿Qué es OBS?</b> Es el programa gratis que manda la imagen de tu computadora a YouTube o Twitch. Nosotros lo manejamos por ti.</span></div>
+<div class="st3">
+<div class="sc3 on"><div class="k"><span class="nb">1</span>Ahora</div><h3>Descarga el programa de En vivo</h3><p>Ábrelo en la computadora donde transmites. Si no tienes OBS, lo instala por ti.</p>
+<button class="btn btn-primary btn-xl"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Descargar para Windows</button><div class="alt">¿Tienes Mac? <a class="lnk">Descargar para Mac</a></div></div>
+<div class="sc3"><div class="k"><span class="nb">2</span>Después</div><h3>Escribe este código en el programa</h3><p>El programa te lo pide al abrirlo. Así sabemos que es tu computadora.</p>
+<div class="code"><span>4</span><span>8</span><span>2</span><span class="gap"></span><span>9</span><span>1</span><span>3</span></div><div class="exp">Este código sirve por 10 minutos.</div></div>
+<div class="sc3"><div class="k"><span class="nb">3</span>Al final</div><h3>¡Listo!</h3><p>Cuando se conecte, aquí verás una palomita verde y ya podrás transmitir.</p><div class="okbig"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+</div>
+<div class="wait"><span class="spin"></span>Esperando tu computadora… Esta página se actualiza sola.<div class="r"><button class="btn btn-okl"><svg class="i" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>Hablar con una persona</button></div></div></div></div></main></div></body></html>

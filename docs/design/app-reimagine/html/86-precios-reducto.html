@@ -1,0 +1,170 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Precios · Pro Lealtad</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><style>
+body{font-family:"Inter",-apple-system,system-ui,sans-serif;background:#fff}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap;font-style:normal}
+.pill svg.i{width:16px;height:16px}
+.pill.acc{background:var(--tint);color:var(--accent)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)}
+.pill.dark{background:var(--ink);color:#fff}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:3px 8px;border-radius:7px;white-space:nowrap}
+.band{background:#fff;padding:96px 0 88px}
+.sec{max-width:1280px;margin:0 auto;padding:0 40px}
+.shd{text-align:center;max-width:880px;margin:0 auto}
+.shd .label{margin-bottom:14px}
+.shd h2{font-size:48px;letter-spacing:-.04em;line-height:1.08;font-weight:750}
+.shd p{font-size:21px;color:var(--ink2);margin-top:14px;line-height:1.45}
+.ejbar{display:flex;justify-content:center;margin-top:18px}
+/* toggle — sits ABOVE the cards, centred */
+.tog{display:inline-flex;background:#EBEBF0;border-radius:18px;padding:5px;margin-top:30px;gap:4px}
+.tog span{height:54px;padding:0 26px;display:flex;align-items:center;gap:10px;border-radius:14px;font-size:19px;font-weight:600;color:var(--ink2)}
+.tog span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.tog .pill{font-size:13.5px;padding:4px 10px}
+/* cards: one grid, subgrid rows => equal heights + every row (price, CTA, list) aligned */
+.pc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(6,auto);column-gap:24px;row-gap:0;margin-top:52px;align-items:stretch}
+.pk{grid-row:span 6;display:grid;grid-template-rows:subgrid;row-gap:0;background:var(--bg);border-radius:28px;padding:34px 28px 32px;position:relative;min-width:0}
+.pk.hi{background:#fff;box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.pk .tagx{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
+.pk .tagx.cur{background:var(--ink)}
+.pk .hd h3{font-size:26px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.pk .hd .who{font-size:17.5px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.pk .hd .chip{margin-top:14px;font-size:15px;padding:7px 14px 7px 11px}
+.pk .pb{margin-top:24px;container-type:inline-size}
+.pk .pr{display:flex;align-items:baseline;gap:8px;white-space:nowrap;flex-wrap:nowrap}
+.pk .pr b{font-size:clamp(30px,12.2cqi,46px);font-weight:750;letter-spacing:-.045em;line-height:1}
+.pk .pr span{font-size:clamp(14px,5cqi,18.5px);font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pk .pn{font-size:17.5px;color:var(--ink);font-weight:650;margin-top:10px}
+.pk .pb .tag-ej{margin-bottom:10px}
+.pk .ref{font-size:15.5px;color:var(--ink2);margin-top:6px}
+.pk .vl .save-g{font-size:16px;color:var(--ink2);font-weight:600}
+.lnk.mute{color:var(--ink2)}
+.pk .vl{margin-top:14px;min-height:30px}
+.pk .vl .pill{font-size:15px}
+.pk .vl .muted2{font-size:16.5px;color:var(--ink2)}
+.pk .vl .swy{font-size:16.5px}
+.pk .vl .was{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pk .vl .was s{font-size:18px;font-weight:600;color:var(--ink2);text-decoration-thickness:1.5px}
+.pk .vl .refl{font-size:15.5px;color:var(--ink2);line-height:1.45;margin-top:4px}
+.pk .vl .refl b{color:var(--ink);font-weight:650}
+.ph{font-style:normal;font-weight:700;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:0 5px;border-radius:5px;white-space:nowrap}
+.pk .vl .launch{font-size:16px;font-weight:650;color:var(--ink)}
+.pk .ct{margin-top:24px}
+.pk .btn{width:100%}
+.pk .btn.cur{background:#EBEBF0;color:var(--ink2);box-shadow:none}
+.pk .bn{font-size:15.5px;color:var(--ink2);text-align:center;margin-top:12px;line-height:1.45}
+.pk .bn b{color:var(--ink);font-weight:650}
+.pk .ft{margin-top:24px;padding-top:22px;border-top:1px solid #E1E1E8;align-self:start}
+.pk.hi .ft{border-top-color:var(--line)}
+.pk .ft h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:-.005em}
+.pk ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+.pk li{display:flex;gap:12px;font-size:17.5px;line-height:1.38}
+.pk li .ck{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.pk li .ck svg{width:15px;height:15px;stroke-width:3}
+.pk li.no{color:var(--ink3)} .pk li.no .ck{background:#E9E9EE;color:#A8A8B0}
+.pnote{text-align:center;font-size:17px;color:var(--ink2);margin-top:40px;line-height:1.6}
+.pnote small{display:block;font-size:15px;color:var(--ink2);margin-top:4px}
+.pnote a{display:table;margin:10px auto 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* ---------- mobile 390 ---------- */
+body.m .band{padding:56px 0 48px}
+body.m .sec{padding:0 20px}
+body.m .shd h2{font-size:31px;line-height:1.12}
+body.m .shd p{font-size:18px}
+body.m .tog{display:flex;width:100%;margin-top:22px;border-radius:16px;padding:4px}
+body.m .tog span{flex:1;justify-content:center;height:52px;padding:0 10px;font-size:18px;border-radius:13px}
+body.m .tog .pill{font-size:12.5px;padding:3px 8px}
+body.m .pc{display:flex;flex-direction:column;gap:30px;margin-top:40px}
+body.m .pk{display:block;padding:30px 22px 26px;border-radius:26px}
+body.m .pk .vl{min-height:0}
+body.m .pk .btn{height:60px}
+body.m .pnote{font-size:16px;margin-top:30px}
+
+.tog span .sub{font-style:normal;font-size:13.5px;font-weight:700;color:var(--ink2);background:#E1E1E8;padding:3px 9px;border-radius:999px}
+.tog span.on .sub{background:var(--tint);color:var(--accent)}
+.rd{margin-top:52px;display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:0;background:#fff;border-radius:28px;box-shadow:0 0 0 3px var(--accent),var(--shadow-lg);position:relative}
+.rd .tagx{position:absolute;top:-17px;left:215px;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
+.rd .l{padding:36px 34px 32px;border-right:1px solid var(--line)}
+.rd .r{padding:36px 38px 30px;min-width:0}
+.rd h3{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.rd .who{font-size:17.5px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.rd .pr{display:flex;align-items:baseline;gap:8px;white-space:nowrap;margin-top:24px}
+.rd .pr b{font-size:46px;font-weight:750;letter-spacing:-.045em;line-height:1}
+.rd .pr span{font-size:18.5px;font-weight:600;color:var(--ink2)}
+.rd .pn{font-size:17.5px;font-weight:650;margin-top:10px}
+.rd .then{font-size:17px;color:var(--ink);margin-top:14px;line-height:1.45}
+.rd .then b{color:var(--accent)}
+.rd .btn{width:100%;margin-top:24px}
+.rd .bn{font-size:15.5px;color:var(--ink2);margin-top:12px;line-height:1.5}
+.rd .bn b{color:var(--ink);font-weight:650}
+.rd .rst{display:flex;gap:10px;margin-top:16px;padding:12px 14px;border-radius:14px;background:#FFF7E8;box-shadow:inset 0 0 0 1px #F5DFB3;font-size:15.5px;line-height:1.45;color:#5C4210}
+.rd .rst svg.i{width:20px;height:20px;flex:none;color:#B7791F;margin-top:1px}
+.rd .rh{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.rd .rh h4{font-size:19px;font-weight:700}
+.rd .rh small{font-size:15.5px;color:var(--ink2)}
+/* escalera */
+.st{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;align-items:end;height:300px;margin-top:22px;padding-bottom:4px;border-bottom:1.5px solid #E1E1E8}
+.st .c{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.st .v{font-size:16px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.st .o{font-size:14.5px;font-weight:700;color:var(--accent);margin-top:2px;white-space:nowrap}
+.st .o.z{color:var(--ink2)}
+.st .bar{width:100%;border-radius:12px 12px 4px 4px;background:var(--tint);margin-top:8px;box-shadow:inset 0 0 0 1.5px #DCD6FF}
+.st .c.fl .bar{background:var(--accent);box-shadow:none}
+.st .c.first .bar{background:#EBEBF0;box-shadow:inset 0 0 0 1.5px #DCDCE3}
+.stl{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;margin-top:10px}
+.stl span{text-align:center;font-size:15px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.stl span.fl{color:var(--accent)}
+.cmp{margin-top:22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cmp div{border-radius:16px;background:var(--bg);padding:14px 16px}
+.cmp div.me{background:var(--tint2);box-shadow:inset 0 0 0 1.5px #E4E0FF}
+.cmp small{display:block;font-size:15px;color:var(--ink2);font-weight:600}
+.cmp b{display:block;font-size:24px;font-weight:750;letter-spacing:-.02em;margin-top:2px}
+.cmp em{display:block;font-style:normal;font-size:15px;color:var(--ink2);margin-top:2px}
+.cmpn{font-size:15.5px;color:var(--ink2);margin-top:12px;line-height:1.5}
+.oth{text-align:center;font-size:17px;color:var(--ink2);margin-top:30px}
+.rd .rst b{color:#3D2A05}
+.rd .chk{display:flex;gap:12px;margin-top:16px;font-size:15.5px;line-height:1.45;color:var(--ink)}
+.rd .chk .box{width:22px;height:22px;flex:none;border-radius:6px;background:#fff;box-shadow:inset 0 0 0 2px #B9B9C6;margin-top:1px}
+.rd .chk a{color:var(--accent);text-decoration:underline;font-weight:600}
+.rd .btn[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+.rd .btn.pay{margin-top:16px}
+.rd .bh{font-size:14.5px;color:var(--ink2);margin-top:8px;text-align:center}
+.rnd{font-size:15px;color:var(--ink2);margin-top:12px;line-height:1.45}
+body.m .sth .srow .pq{font-size:14px;font-weight:700;color:var(--accent);white-space:nowrap;text-align:right}
+/* móvil */
+body.m .rd{display:block;margin-top:40px;border-radius:26px}
+body.m .rd .tagx{left:50%}
+body.m .rd .l{padding:30px 22px 24px;border-right:0;border-bottom:1px solid var(--line)}
+body.m .rd .r{padding:24px 22px 24px}
+body.m .rd .pr b{font-size:40px}
+body.m .tog span{padding:0 6px;font-size:17px;gap:6px;flex-direction:column;justify-content:center;gap:0;height:58px}
+body.m .tog span .sub{font-size:12px;padding:1px 7px;background:none!important}
+body.m .sth{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+body.m .sth .srow{display:grid;grid-template-columns:62px minmax(0,1fr) 72px;align-items:center;gap:10px;font-size:16px}
+body.m .sth .srow .mm{font-weight:600;color:var(--ink2);white-space:nowrap}
+body.m .sth .srow .tr{height:26px;border-radius:8px;background:var(--tint);box-shadow:inset 0 0 0 1.5px #DCD6FF}
+body.m .sth .srow.first .tr{background:#EBEBF0;box-shadow:inset 0 0 0 1.5px #DCDCE3}
+body.m .sth .srow.fl .tr{background:var(--accent);box-shadow:none}
+body.m .sth .srow .pv{text-align:right;font-weight:700;white-space:nowrap}
+body.m .sth .srow.fl .mm{color:var(--accent)}
+body.m .sth .srow{grid-template-columns:54px minmax(0,1fr) 60px 76px;gap:8px}
+body.m .rd .btn.pay{font-size:16.5px;padding-left:10px;padding-right:10px;white-space:normal;height:auto;min-height:56px;line-height:1.25}
+body.m .rd .rh{flex-direction:column;align-items:flex-start;gap:2px}
+body.m .cmp{grid-template-columns:1fr;gap:8px}
+body.m .cmp div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 14px}
+body.m .cmp b{font-size:20px;margin:0}
+body.m .cmp em{display:none}
+</style></head><body class=""><section class="band" id="precios"><div class="sec"><div class="shd"><div class="label">Planes</div><h2>Empieza gratis, crece con Pro</h2><p>Con Pro Lealtad, cada mes que sigues pagas menos.</p><div class="tog" role="radiogroup"><span role="radio" aria-checked="false">Mensual</span><span role="radio" aria-checked="false">Anual <i class="sub">hasta −20%</i></span><span class="on" role="radio" aria-checked="true">Lealtad <i class="sub">Solo Pro</i></span></div></div><section class="rd" aria-labelledby="pl-lealtad"><div class="tagx">Nuevo · Solo Pro</div>
+<div class="l"><h3 id="pl-lealtad">Pro Lealtad</h3><div class="who">Para quien se queda: cada mes que sigues con Pro, pagas menos.</div>
+<div class="pr"><b>$1,662</b><span>MXN el primer mes</span></div>
+<div class="pn">Se renueva cada mes · Sin prueba gratis</div>
+<div class="then">Cada mes que sigues pagando, tu precio baja 10% del precio del mes 1, hasta <b>$664 MXN al mes desde el mes 7</b> (60% menos).</div>
+<div class="bn"><b>Se cobra hoy $1,662 MXN.</b> Después se cobra automáticamente cada mes el monto del calendario, hasta que canceles. Te avisamos por correo y en la app 7 días antes de cada cobro, con su monto y fecha.</div>
+<div class="rst"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg><span><b>Tu precio vuelve a $1,662 si</b> cancelas (al terminar tu mes pagado), cambias a otro plan o un pago queda sin cubrir 7 días después de fallar. Cambiar de tarjeta, un reembolso o un contracargo no lo reinician.</span></div>
+<label class="chk"><span class="box" role="checkbox" aria-checked="false"></span><span>Acepto que Chalyb cobre <b>hoy $1,662 MXN</b> a mi tarjeta y después, <b>automáticamente cada mes</b>, $1,495, $1,329, $1,163, $997 y $831 MXN, y luego <b>$664 MXN al mes</b> mientras siga suscrito, hasta que cancele. Entiendo que <b>mi precio vuelve a empezar en $1,662</b> si cancelo, cambio de plan o un pago queda sin cubrir 7 días después de fallar, y acepto los <a>Términos de Suscripción</a>.</span></label>
+<button class="btn btn-primary pay" disabled>Pagar $1,662 y empezar Pro Lealtad</button>
+<div class="bh">Marca la casilla para continuar.</div></div>
+<div class="r"><div class="rh"><h4>Así baja tu precio</h4><small>% = menos que el mes 1</small></div><div class="st" role="img" aria-label="Precio por mes: Mes 1 $1,662, Mes 2 $1,495, 10% menos que el mes 1, Mes 3 $1,329, 20% menos que el mes 1, Mes 4 $1,163, 30% menos que el mes 1, Mes 5 $997, 40% menos que el mes 1, Mes 6 $831, 50% menos que el mes 1, Mes 7+ $664, 60% menos que el mes 1"><div class="c first"><div class="v">$1,662</div><div class="o z">&nbsp;</div><div class="bar" style="height:210px"></div></div><div class="c"><div class="v">$1,495</div><div class="o">10% menos</div><div class="bar" style="height:189px"></div></div><div class="c"><div class="v">$1,329</div><div class="o">20% menos</div><div class="bar" style="height:168px"></div></div><div class="c"><div class="v">$1,163</div><div class="o">30% menos</div><div class="bar" style="height:147px"></div></div><div class="c"><div class="v">$997</div><div class="o">40% menos</div><div class="bar" style="height:126px"></div></div><div class="c"><div class="v">$831</div><div class="o">50% menos</div><div class="bar" style="height:105px"></div></div><div class="c fl"><div class="v">$664</div><div class="o">60% menos</div><div class="bar" style="height:84px"></div></div></div><div class="stl" aria-hidden="true"><span class="">Mes 1</span><span class="">Mes 2</span><span class="">Mes 3</span><span class="">Mes 4</span><span class="">Mes 5</span><span class="">Mes 6</span><span class="fl">Mes 7+</span></div>
+<div class="rnd">Montos con IVA incluido, redondeados hacia abajo al peso entero; el descuento real es igual o mayor al indicado.</div>
+<div class="cmp"><div class="me"><small>Pro Lealtad, 1.er año</small><b>$11,461</b><em>2.º año, si sigues: $7,968</em></div>
+<div><small>Pro mensual, 1 año</small><b>$11,964</b><em>12 × $997</em></div>
+<div><small>Pro anual, 1 año</small><b>$9,970</b><em>Lo más barato el 1.er año</em></div></div>
+<div class="cmpn">Del mes 1 al 4 pagas más que en Pro mensual ($997); desde el mes 6 pagas menos. En el primer año, Pro anual ($9,970) es lo más barato. Segundo año, si sigues: Pro Lealtad $7,968 · Pro anual $9,970 · Pro mensual $11,964.</div></div></section><div class="oth">Gratis y VIP no tienen Pro Lealtad: <a class="lnk">ver Mensual y Anual</a></div><div class="pnote">Precios en MXN, IVA incluido.</div></div></section></body></html>
