@@ -7,7 +7,8 @@ import { heroRows, type PublicTool } from '@/lib/tools/public-tools';
 
 // 1 · Hero. The "Mientras dormías" panel is an illustration: one example row
 // per active tool (at most 4), an example clip still, and the "Ejemplo" tag
-// (P4-4). No real names or invented numbers.
+// (P4-4). No real names or invented numbers. The clip still is a Kick-style
+// stream reaction (neon green), without any platform logo or UI.
 
 const OK_PILL = new Set(['chalybclip', 'chalybobs', 'chalybbot', 'chalybtrade']);
 
