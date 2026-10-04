@@ -44,7 +44,7 @@ export function clipItem(job: ClipJob): ResultItem {
     count: job.state === 'ready' ? job.clips.length : job.count,
     pct: PCT[job.state],
     source: job.sourceUrl,
-    href: `/app/clips/${encodeURIComponent(job.id)}`,
+    href: `/app/clips/trabajo/${encodeURIComponent(job.id)}`,
     at: job.createdAt,
   };
 }

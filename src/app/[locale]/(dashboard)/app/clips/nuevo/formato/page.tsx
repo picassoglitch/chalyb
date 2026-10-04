@@ -30,19 +30,20 @@ export default async function ClipsStep2Page({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireClipsAccess(locale, '/app/clips');
+  await requireClipsAccess(locale, '/app/clips/nuevo');
   if (!getClipsAdapter()) return redirect({ href: '/app/clips', locale });
 
   const { link } = await searchParams;
   const checked = checkSourceUrl(link ?? '');
   if (!checked.ok) {
     return redirect({
-      href: `/app/clips?error=${checked.reason}&link=${encodeURIComponent(link ?? '')}`,
+      href: `/app/clips/nuevo?error=${checked.reason}&link=${encodeURIComponent(link ?? '')}`,
       locale,
     });
   }
 
   const t = await getTranslations('clips');
+  const tc = await getTranslations('clipsTool');
   const caps = getClipsAdapter()!.capabilities();
 
   return (
@@ -51,9 +52,10 @@ export default async function ClipsStep2Page({
       toolName="Clips"
       step={2}
       stepLabel={t('step', { n: 2 })}
-      backHref={`/app/clips?link=${encodeURIComponent(checked.url)}`}
+      backHref={`/app/clips/nuevo?link=${encodeURIComponent(checked.url)}`}
+      closeHref="/app/clips"
       backLabel={t('back')}
-      closeLabel={t('close')}
+      closeLabel={tc('close')}
     >
       <form action={createClipJob} className="ch-center-col">
         <input type="hidden" name="link" value={checked.url} />

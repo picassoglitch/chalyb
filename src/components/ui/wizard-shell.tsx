@@ -17,6 +17,7 @@ export function WizardShell({
   backHref,
   backLabel,
   closeLabel,
+  closeHref,
   narrow,
   children,
 }: {
@@ -28,6 +29,8 @@ export function WizardShell({
   backHref: string;
   backLabel: string;
   closeLabel: string;
+  /** Where ✕ goes: Inicio, or the tool's home when the flow started there. */
+  closeHref?: string;
   narrow?: boolean;
   children: ReactNode;
 }) {
@@ -44,7 +47,7 @@ export function WizardShell({
           )}
           {toolName}
         </div>
-        <WizardClose label={closeLabel} />
+        <WizardClose label={closeLabel} href={closeHref} />
       </header>
       {step && stepLabel && <StepBar step={step} label={stepLabel} />}
       <main id="main" className={`ch-col${narrow ? ' ch-col--narrow' : ''}`}>

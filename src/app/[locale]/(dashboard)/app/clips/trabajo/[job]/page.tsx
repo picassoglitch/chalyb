@@ -45,18 +45,20 @@ export default async function ClipJobPage({
 }) {
   const { locale, job: jobId } = await params;
   setRequestLocale(locale);
-  const { session } = await requireClipsAccess(locale, `/app/clips/${jobId}`);
+  const { session } = await requireClipsAccess(locale, `/app/clips/trabajo/${jobId}`);
   if (!getClipsAdapter()) return redirect({ href: '/app/clips', locale });
 
   const job = await loadClipJob(session.user.id, jobId);
   if (!job) notFound();
   const t = await getTranslations('clips');
+  const tc = await getTranslations('clipsTool');
   const chrome = {
     slug: 'chalybclip',
     toolName: 'Clips',
     backHref: '/app/clips',
     backLabel: t('back'),
-    closeLabel: t('close'),
+    closeLabel: tc('close'),
+    closeHref: '/app/clips',
   };
 
   if (job.state === 'failed') {
@@ -73,7 +75,7 @@ export default async function ClipJobPage({
 
   if (job.state === 'ready') {
     return (
-      <WizardShell {...chrome} backHref="/app" backLabel={t('home')}>
+      <WizardShell {...chrome}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <header
             style={{
@@ -88,7 +90,7 @@ export default async function ClipJobPage({
               <h1 className="ch-h1">{t('done.title')}</h1>
               <p className="ch-sub">{t('done.sub', { n: job.clips.length })}</p>
             </div>
-            <ButtonLink href="/app/clips" variant="secondary">
+            <ButtonLink href="/app/clips/nuevo" variant="secondary">
               {t('done.more')}
             </ButtonLink>
           </header>

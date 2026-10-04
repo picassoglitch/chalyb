@@ -50,6 +50,8 @@ export const CONSENT_EVENT_TYPES = [
   'arco_request_received',
   // BUILD-SPEC §11.6
   'voice_likeness_consent',
+  // aceptacion-ux §7 · connecting a social account (WS-11, TOOLS-SPEC §8)
+  'social_connect',
 ] as const;
 
 export type ConsentEventType = (typeof CONSENT_EVENT_TYPES)[number];

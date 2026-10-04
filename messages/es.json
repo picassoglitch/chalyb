@@ -627,40 +627,6 @@
       "cta": "Hacer mi primer clip"
     }
   },
-  "tool": {
-    "back": "Inicio",
-    "badge": {
-      "included": "Incluido en tu plan",
-      "trialOffer": "Incluido en Pro · Pruébalo gratis",
-      "otherTool": "Cámbiala para usarla",
-      "setup": "Te falta un paso"
-    },
-    "ready": {
-      "body": "{tool} se abre en una pestaña nueva."
-    },
-    "offer": {
-      "title": "Incluido en Pro · Pruébalo gratis",
-      "body": "Con Pro puedes usar {tool}.",
-      "trialCta": "Prueba Pro gratis",
-      "plansCta": "Ver planes"
-    },
-    "switch": {
-      "title": "Tu plan incluye una herramienta a la vez.",
-      "body": "Para usar {tool}, elígela en Herramientas.",
-      "cta": "Cambiar herramienta"
-    }
-  },
-  "launch": {
-    "open": "Abrir",
-    "opening": "Abriendo…",
-    "blocked": "Tu navegador no abrió la pestaña nueva.",
-    "openNamed": "Abrir {tool}",
-    "retry": "Intentar de nuevo",
-    "help": "Hablar con una persona",
-    "trialCta": "Prueba Pro gratis",
-    "plansCta": "Ver planes",
-    "signIn": "Entrar"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Incluido en Pro · Pruébalo gratis",
@@ -709,10 +675,6 @@
     "back": "Atrás",
     "close": "Cerrar y volver a Inicio",
     "step": "Paso {n} de 3",
-    "handoff": {
-      "title": "Haz tus clips",
-      "body": "Clips se abre en una pestaña nueva. Ahí pegas el enlace de tu stream y nosotros hacemos el resto."
-    },
     "s1": {
       "metaTitle": "Clips · Paso 1",
       "title": "Pega el enlace de tu stream o video",
@@ -2301,5 +2263,149 @@
     "autosave": "Los cambios se guardan solos.",
     "saving": "Guardando…",
     "saved": "Guardado"
+  },
+  "clipsTool": {
+    "metaTitle": "Clips",
+    "metaMine": "Mis clips",
+    "metaDetail": "Detalle del clip",
+    "metaSettings": "Ajustes de Clips",
+    "home": {
+      "hero": {
+        "title": "Hacer clips nuevos",
+        "body": "Pega el enlace de tu stream o video. Te damos clips con subtítulos, listos para publicar.",
+        "cta": "Hacer clips nuevos",
+        "hint": "Toma 1 minuto. Funciona con {plataformas}."
+      },
+      "noCredits": {
+        "title": "Te quedaste sin créditos este mes. Se renuevan el {fecha}.",
+        "cta": "Ver mi plan"
+      },
+      "accounts": "Cuentas conectadas",
+      "accountsSettings": "Ajustes",
+      "connected": "Conectado",
+      "connect": "Conectar",
+      "processing": "En proceso",
+      "processingHint": "Te avisamos cuando estén listos",
+      "row": {
+        "title": "Clips de “{titulo}”",
+        "step": "{paso}…",
+        "eta": "Faltan unos {n} minutos.",
+        "stepOf": "Paso {n} de 4",
+        "progress": "Avance de “{titulo}”",
+        "see": "Ver avance",
+        "failed": "No pudimos terminar “{titulo}”.",
+        "noCharge": "No se usaron créditos.",
+        "retry": "Intentar otra vez"
+      },
+      "steps": {
+        "receiving": "Recibiendo tu video",
+        "finding": "Buscando los mejores momentos",
+        "captions": "Agregando subtítulos",
+        "preparing": "Preparando la descarga"
+      },
+      "more": "y {n} más",
+      "latest": "Tus últimos clips",
+      "latestAll": "Ver todos ({n})",
+      "empty": {
+        "title": "Aún no tienes clips",
+        "body": "Haz el primero en 1 minuto. Solo pega el enlace de tu stream."
+      }
+    },
+    "card": {
+      "meta": "{fecha} · {formato}",
+      "open": "Abrir {titulo}"
+    },
+    "format": {
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "square": "Cuadrado"
+    },
+    "mine": {
+      "title": "Mis clips",
+      "search": "Buscar en mis clips",
+      "filters": "Filtrar por formato",
+      "all": "Todos",
+      "count": "{n, plural, one {# clip} other {# clips}}",
+      "none": "No hay clips con ese filtro.",
+      "empty": {
+        "title": "Aún no tienes clips",
+        "body": "Haz el primero en 1 minuto. Solo pega el enlace de tu stream."
+      }
+    },
+    "detail": {
+      "back": "Mis clips",
+      "position": "Clip {n} de {total}",
+      "prev": "Clip anterior",
+      "next": "Clip siguiente",
+      "title": "Título del clip",
+      "titleHint": "Así se llamará al publicarlo",
+      "captions": "Subtítulos",
+      "captionsSub": "{idioma} · {estilo}",
+      "trim": "Recortar",
+      "trimHint": "Arrastra los bordes morados",
+      "trimStart": "Empieza en <b>{t}</b>",
+      "trimLength": "Dura <b>{t}</b>",
+      "trimEnd": "Termina en <b>{t}</b>",
+      "trimStartHandle": "Inicio del recorte",
+      "trimEndHandle": "Final del recorte",
+      "format": "Formato",
+      "download": "Descargar",
+      "preparing": "Preparando tu descarga…",
+      "share": "Compartir",
+      "copied": "Enlace copiado",
+      "publish": "Publicar en {plataforma}",
+      "published": "Listo, lo mandamos a {plataforma}.",
+      "publishError": "{plataforma} no respondió. Lo intentamos otra vez en unos minutos y te avisamos.",
+      "autosave": "Los cambios se guardan solos. Tu clip original no se borra.",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "saveError": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "player": "Vista previa de {titulo}",
+      "notFound": {
+        "title": "No encontramos este clip",
+        "cta": "Ver mis clips"
+      }
+    },
+    "langs": {
+      "es": "Español (México)",
+      "en": "Inglés"
+    },
+    "presets": {
+      "clasico": "Clásico",
+      "amarillo": "Amarillo",
+      "fondo": "Con fondo",
+      "sample": "ESTO FUE ÉPICO"
+    },
+    "settings": {
+      "accounts": "Cuentas conectadas",
+      "tiktokSub": "Para publicar con un toque",
+      "captions": "Subtítulos",
+      "captionsOn": "Poner subtítulos en mis clips",
+      "captionLang": "Idioma de los subtítulos",
+      "style": "Estilo de subtítulos",
+      "styleHint": "Toca uno. Lo usamos en tus próximos clips.",
+      "brand": "Tu marca",
+      "watermark": "Marca de agua / logo",
+      "watermarkSub": "Tu logo en una esquina de cada clip",
+      "autosave": "Los cambios se guardan solos y se usan en tus próximos clips.",
+      "autopublish": "Publicar automáticamente en mis redes",
+      "autopublishAccount": "Cuenta",
+      "autopublishOn": "Publicación automática activada en {cuenta}.",
+      "duration": "Duración de los clips",
+      "durationAuto": "Automática",
+      "durationFixed": "{n} segundos",
+      "framing": "Encuadre",
+      "framingCenter": "Centro automático",
+      "framingFollow": "Seguir a la persona",
+      "bulk": "Subir varios videos a la vez",
+      "bulkHint": "Pega varios enlaces en el paso 1 de Hacer clips nuevos.",
+      "bulkCta": "Hacer clips nuevos"
+    },
+    "connect": {
+      "title": "Conectar {plataforma}",
+      "close": "Cerrar",
+      "error": "No pudimos empezar la conexión. Intenta de nuevo."
+    },
+    "close": "Cerrar y volver a Clips"
   }
 }

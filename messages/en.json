@@ -627,40 +627,6 @@
       "cta": "Make my first clip"
     }
   },
-  "tool": {
-    "back": "Home",
-    "badge": {
-      "included": "Included in your plan",
-      "trialOffer": "Included in Pro · Try it free",
-      "otherTool": "Switch to it to use it",
-      "setup": "One step left"
-    },
-    "ready": {
-      "body": "{tool} opens in a new tab."
-    },
-    "offer": {
-      "title": "Included in Pro · Try it free",
-      "body": "With Pro you can use {tool}.",
-      "trialCta": "Try Pro free",
-      "plansCta": "See plans"
-    },
-    "switch": {
-      "title": "Your plan includes one tool at a time.",
-      "body": "To use {tool}, pick it under Tools.",
-      "cta": "Switch tool"
-    }
-  },
-  "launch": {
-    "open": "Open",
-    "opening": "Opening…",
-    "blocked": "Your browser did not open the new tab.",
-    "openNamed": "Open {tool}",
-    "retry": "Try again",
-    "help": "Talk to a person",
-    "trialCta": "Try Pro free",
-    "plansCta": "See plans",
-    "signIn": "Sign in"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Included in Pro · Try it free",
@@ -709,10 +675,6 @@
     "back": "Back",
     "close": "Close and go back to Home",
     "step": "Step {n} of 3",
-    "handoff": {
-      "title": "Make your clips",
-      "body": "Clips opens in a new tab. Paste your stream link there and we do the rest."
-    },
     "s1": {
       "metaTitle": "Clips · Step 1",
       "title": "Paste the link to your stream or video",
@@ -2301,5 +2263,149 @@
     "autosave": "Changes save on their own.",
     "saving": "Saving…",
     "saved": "Saved"
+  },
+  "clipsTool": {
+    "metaTitle": "Clips",
+    "metaMine": "My clips",
+    "metaDetail": "Clip details",
+    "metaSettings": "Clips settings",
+    "home": {
+      "hero": {
+        "title": "Make new clips",
+        "body": "Paste the link to your stream or video. We give you clips with captions, ready to post.",
+        "cta": "Make new clips",
+        "hint": "Takes 1 minute. Works with {plataformas}."
+      },
+      "noCredits": {
+        "title": "You ran out of credits this month. They renew on {fecha}.",
+        "cta": "See my plan"
+      },
+      "accounts": "Connected accounts",
+      "accountsSettings": "Settings",
+      "connected": "Connected",
+      "connect": "Connect",
+      "processing": "In progress",
+      "processingHint": "We'll let you know when they're ready",
+      "row": {
+        "title": "Clips from “{titulo}”",
+        "step": "{paso}…",
+        "eta": "About {n} minutes left.",
+        "stepOf": "Step {n} of 4",
+        "progress": "Progress of “{titulo}”",
+        "see": "See progress",
+        "failed": "We couldn't finish “{titulo}”.",
+        "noCharge": "No credits were used.",
+        "retry": "Try again"
+      },
+      "steps": {
+        "receiving": "Receiving your video",
+        "finding": "Finding the best moments",
+        "captions": "Adding captions",
+        "preparing": "Preparing the download"
+      },
+      "more": "and {n} more",
+      "latest": "Your latest clips",
+      "latestAll": "See all ({n})",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "card": {
+      "meta": "{fecha} · {formato}",
+      "open": "Open {titulo}"
+    },
+    "format": {
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "square": "Square"
+    },
+    "mine": {
+      "title": "My clips",
+      "search": "Search my clips",
+      "filters": "Filter by format",
+      "all": "All",
+      "count": "{n, plural, one {# clip} other {# clips}}",
+      "none": "No clips match that filter.",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "detail": {
+      "back": "My clips",
+      "position": "Clip {n} of {total}",
+      "prev": "Previous clip",
+      "next": "Next clip",
+      "title": "Clip title",
+      "titleHint": "This is its name when you post it",
+      "captions": "Captions",
+      "captionsSub": "{idioma} · {estilo}",
+      "trim": "Trim",
+      "trimHint": "Drag the purple edges",
+      "trimStart": "Starts at <b>{t}</b>",
+      "trimLength": "Lasts <b>{t}</b>",
+      "trimEnd": "Ends at <b>{t}</b>",
+      "trimStartHandle": "Trim start",
+      "trimEndHandle": "Trim end",
+      "format": "Format",
+      "download": "Download",
+      "preparing": "Preparing your download…",
+      "share": "Share",
+      "copied": "Link copied",
+      "publish": "Post to {plataforma}",
+      "published": "Done, we sent it to {plataforma}.",
+      "publishError": "{plataforma} didn't respond. We'll try again in a few minutes and let you know.",
+      "autosave": "Changes save on their own. Your original clip isn't deleted.",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "We couldn't save that change. Try again.",
+      "player": "Preview of {titulo}",
+      "notFound": {
+        "title": "We couldn't find this clip",
+        "cta": "See my clips"
+      }
+    },
+    "langs": {
+      "es": "Spanish (Mexico)",
+      "en": "English"
+    },
+    "presets": {
+      "clasico": "Classic",
+      "amarillo": "Yellow",
+      "fondo": "With background",
+      "sample": "THIS WAS EPIC"
+    },
+    "settings": {
+      "accounts": "Connected accounts",
+      "tiktokSub": "To post with one tap",
+      "captions": "Captions",
+      "captionsOn": "Add captions to my clips",
+      "captionLang": "Caption language",
+      "style": "Caption style",
+      "styleHint": "Tap one. We'll use it on your next clips.",
+      "brand": "Your brand",
+      "watermark": "Watermark / logo",
+      "watermarkSub": "Your logo in a corner of every clip",
+      "autosave": "Changes save on their own and apply to your next clips.",
+      "autopublish": "Post automatically to my accounts",
+      "autopublishAccount": "Account",
+      "autopublishOn": "Automatic posting is on for {cuenta}.",
+      "duration": "Clip length",
+      "durationAuto": "Automatic",
+      "durationFixed": "{n} seconds",
+      "framing": "Framing",
+      "framingCenter": "Auto center",
+      "framingFollow": "Follow the person",
+      "bulk": "Upload several videos at once",
+      "bulkHint": "Paste several links in step 1 of Make new clips.",
+      "bulkCta": "Make new clips"
+    },
+    "connect": {
+      "title": "Connect {plataforma}",
+      "close": "Close",
+      "error": "We couldn't start the connection. Try again."
+    },
+    "close": "Close and go back to Clips"
   }
 }

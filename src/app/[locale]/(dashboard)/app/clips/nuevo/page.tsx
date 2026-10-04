@@ -29,13 +29,15 @@ export default async function ClipsStep1Page({
   setRequestLocale(locale);
   await requireClipsAccess(locale, '/app/clips/nuevo');
   const t = await getTranslations('clips');
+  const tc = await getTranslations('clipsTool');
   const { error, link } = await searchParams;
   const chrome = {
     slug: 'chalybclip',
     toolName: 'Clips',
     backHref: '/app/clips',
     backLabel: t('home'),
-    closeLabel: t('close'),
+    closeLabel: tc('close'),
+    closeHref: '/app/clips',
   };
 
   // No engine API yet: Clips' home shows ToolErrorState (never a hand-off).
