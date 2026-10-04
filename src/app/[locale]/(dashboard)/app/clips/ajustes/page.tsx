@@ -9,7 +9,10 @@ import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
 import { AdvancedOptions } from '@/components/tools/advanced-options';
 import { AccountsList, accountRows } from '@/components/tools/clips/accounts-list';
-import { ClipsAdvancedFields, ClipsSettingsForm } from '@/components/tools/clips/clips-settings-form';
+import {
+  ClipsAdvancedFields,
+  ClipsSettingsForm,
+} from '@/components/tools/clips/clips-settings-form';
 import { AutopublishForm } from '@/components/tools/clips/autopublish-form';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
@@ -26,13 +29,21 @@ export async function generateMetadata(): Promise<Metadata> {
 // Opciones avanzadas lists only the rows it can honour (and isn't rendered
 // at all when there are none). No AI voice or face here (BUILD-SPEC §11.6).
 
-export default async function ClipsSettingsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ClipsSettingsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   const gate = await loadTool(locale, 'chalybclip', '/app/clips/ajustes', getClipsAdapter);
   if (gate.kind === 'locked')
     return (
-      <ToolShell slug="chalybclip" tab={null} plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}>
+      <ToolShell
+        slug="chalybclip"
+        tab={null}
+        plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}
+      >
         <ToolLockedState slug="chalybclip" entitlements={gate.entitlements} />
       </ToolShell>
     );
@@ -40,7 +51,9 @@ export default async function ClipsSettingsPage({ params }: { params: Promise<{ 
     return (
       <ToolShell slug="chalybclip" tab="settings">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
-        {gate.kind === 'setup' && <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />}
+        {gate.kind === 'setup' && (
+          <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
+        )}
       </ToolShell>
     );
 
@@ -65,7 +78,9 @@ export default async function ClipsSettingsPage({ params }: { params: Promise<{ 
     caps.bulkUpload && ts('bulk'),
   ].filter((x): x is string => !!x);
   const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
-  const summary = list.format(adv.map((x, i) => (i === 0 ? x : x.charAt(0).toLowerCase() + x.slice(1))));
+  const summary = list.format(
+    adv.map((x, i) => (i === 0 ? x : x.charAt(0).toLowerCase() + x.slice(1))),
+  );
 
   return (
     <ToolShell slug="chalybclip" tab="settings">
@@ -77,7 +92,11 @@ export default async function ClipsSettingsPage({ params }: { params: Promise<{ 
                 {ts('accounts')}
               </h2>
               <div className="ch-card">
-                <AccountsList rows={rows} returnTo="/app/clips/ajustes" subs={{ tiktok: ts('tiktokSub') }} />
+                <AccountsList
+                  rows={rows}
+                  returnTo="/app/clips/ajustes"
+                  subs={{ tiktok: ts('tiktokSub') }}
+                />
               </div>
             </section>
           )}
@@ -108,7 +127,12 @@ export default async function ClipsSettingsPage({ params }: { params: Promise<{ 
       </div>
 
       {adv.length > 0 && (
-        <AdvancedOptions storageKey="clips.settings" title={tsh('title')} sub={tsh('sub')} summary={summary}>
+        <AdvancedOptions
+          storageKey="clips.settings"
+          title={tsh('title')}
+          sub={tsh('sub')}
+          summary={summary}
+        >
           <div className="ch-advrows">
             {autopublish && (
               <AutopublishForm

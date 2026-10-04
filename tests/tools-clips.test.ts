@@ -38,7 +38,10 @@ test('En proceso: at most 3 rows, the rest as "y {n} más"; ready jobs never sho
     job('e', 'finding_moments'),
   ];
   const { rows, more } = processingRows(jobs);
-  assert.deepEqual(rows.map((r) => r.id), ['a', 'c', 'd']);
+  assert.deepEqual(
+    rows.map((r) => r.id),
+    ['a', 'c', 'd'],
+  );
   assert.equal(more, 1);
   assert.deepEqual(processingRows([job('x', 'ready')]), { rows: [], more: 0 });
 });
@@ -92,9 +95,18 @@ const clip = (id: string, title: string, format: ClipDetail['format']) =>
 
 test('Mis clips: format chips and search, unknown filter is Todos', () => {
   const all = [clip('1', 'La jugada final', 'vertical'), clip('2', 'Reacción épica', 'square')];
-  assert.deepEqual(filterClips(all, 'all', '').map((c) => c.id), ['1', '2']);
-  assert.deepEqual(filterClips(all, 'square', '').map((c) => c.id), ['2']);
-  assert.deepEqual(filterClips(all, 'all', 'JUGADA').map((c) => c.id), ['1']);
+  assert.deepEqual(
+    filterClips(all, 'all', '').map((c) => c.id),
+    ['1', '2'],
+  );
+  assert.deepEqual(
+    filterClips(all, 'square', '').map((c) => c.id),
+    ['2'],
+  );
+  assert.deepEqual(
+    filterClips(all, 'all', 'JUGADA').map((c) => c.id),
+    ['1'],
+  );
   assert.equal(parseClipFilter('horizontal'), 'horizontal');
   assert.equal(parseClipFilter('<script>'), 'all');
   assert.deepEqual(clipNeighbours(all, '2'), { n: 2, total: 2, prev: '1', next: null });
@@ -103,15 +115,35 @@ test('Mis clips: format chips and search, unknown filter is Todos', () => {
 
 test('BFF parsing: only values a screen could send reach the adapter', () => {
   const patch = parseClipPatch(
-    { title: '  Nuevo  ', captionsOn: false, format: 'square', trim: { startS: 40, endS: 41 }, userId: 'x' },
+    {
+      title: '  Nuevo  ',
+      captionsOn: false,
+      format: 'square',
+      trim: { startS: 40, endS: 41 },
+      userId: 'x',
+    },
     { sourceDurationSec: 45 },
   );
-  assert.deepEqual(patch, { title: 'Nuevo', captionsOn: false, format: 'square', trim: { startS: 40, endS: 45 } });
-  assert.deepEqual(parseClipPatch({ title: '', format: 'tall', captionsOn: 'yes' }, { sourceDurationSec: 45 }), {});
+  assert.deepEqual(patch, {
+    title: 'Nuevo',
+    captionsOn: false,
+    format: 'square',
+    trim: { startS: 40, endS: 45 },
+  });
+  assert.deepEqual(
+    parseClipPatch({ title: '', format: 'tall', captionsOn: 'yes' }, { sourceDurationSec: 45 }),
+    {},
+  );
   assert.deepEqual(parseClipPatch(null, { sourceDurationSec: 45 }), {});
 
   const s = parseSettings(
-    { captionPreset: 'fondo', duration: 90, framing: 'follow', captionLang: 'fr', watermarkOn: true },
+    {
+      captionPreset: 'fondo',
+      duration: 90,
+      framing: 'follow',
+      captionLang: 'fr',
+      watermarkOn: true,
+    },
     DEFAULT_CLIPS_SETTINGS,
   );
   assert.equal(s.captionPreset, 'fondo');
@@ -127,7 +159,12 @@ test('BFF parsing: only values a screen could send reach the adapter', () => {
 test('mock adapter: finished clips, edits keep the original, others can’t read them', async () => {
   let t = 0;
   const a = createMockClipsAdapter({ now: () => t, stepMs: 10 });
-  const r = await a.createJob({ userId: 'u1', sourceUrl: 'https://youtube.com/watch?v=torneo-del-sabado', format: 'vertical', count: 3 });
+  const r = await a.createJob({
+    userId: 'u1',
+    sourceUrl: 'https://youtube.com/watch?v=torneo-del-sabado',
+    format: 'vertical',
+    count: 3,
+  });
   assert.ok(r.ok);
   assert.equal((await a.listClips('u1')).length, 0, 'no clips while working');
   const working = await a.getJob('u1', r.jobId);
@@ -138,7 +175,10 @@ test('mock adapter: finished clips, edits keep the original, others can’t read
   assert.equal(clips.length, 3);
   const first = clips[0]!;
   assert.deepEqual(first.trim, { startS: 0, endS: first.sourceDurationSec });
-  const edited = await a.patchClip('u1', first.id, { title: 'Nuevo', trim: { startS: 2, endS: 9 } });
+  const edited = await a.patchClip('u1', first.id, {
+    title: 'Nuevo',
+    trim: { startS: 2, endS: 9 },
+  });
   assert.equal(edited!.title, 'Nuevo');
   assert.equal(edited!.sourceDurationSec, first.sourceDurationSec, 'the original length stays');
   assert.equal(await a.getClip('u2', first.id), null);

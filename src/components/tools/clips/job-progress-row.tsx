@@ -21,7 +21,11 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
   if (job.state === 'failed') {
     return (
       <li className="ch-jobrow ch-jobrow--failed" role="alert">
-        <span className="ch-jobrow__thumb" style={{ background: thumbFor(job.id) }} aria-hidden="true" />
+        <span
+          className="ch-jobrow__thumb"
+          style={{ background: thumbFor(job.id) }}
+          aria-hidden="true"
+        />
         <div className="ch-jobrow__tx">
           <b>{t('failed', { titulo })}</b>
           <span className="ch-muted">
@@ -42,7 +46,11 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
   const p = jobProgress(job.state);
   return (
     <li className="ch-jobrow">
-      <span className="ch-jobrow__thumb" style={{ background: thumbFor(job.id) }} aria-hidden="true" />
+      <span
+        className="ch-jobrow__thumb"
+        style={{ background: thumbFor(job.id) }}
+        aria-hidden="true"
+      />
       <div className="ch-jobrow__tx">
         <b>{t('title', { titulo })}</b>
         <span className="ch-muted">

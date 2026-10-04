@@ -73,7 +73,11 @@ export function ClipsSettingsForm({
             <span className="ch-setrow__tx">
               <b>{copy.captionsOn}</b>
             </span>
-            <Switch checked={s.captionsOn} label={copy.captionsOn} onChange={(v) => save({ captionsOn: v })} />
+            <Switch
+              checked={s.captionsOn}
+              label={copy.captionsOn}
+              onChange={(v) => save({ captionsOn: v })}
+            />
           </li>
           <li className="ch-setrow">
             <span className="ch-setrow__ic ch-setrow__ic--blue" aria-hidden="true">
@@ -141,7 +145,11 @@ export function ClipsSettingsForm({
                 <b>{copy.watermark}</b>
                 <span className="ch-muted">{copy.watermarkSub}</span>
               </span>
-              <Switch checked={s.watermarkOn} label={copy.watermark} onChange={(v) => save({ watermarkOn: v })} />
+              <Switch
+                checked={s.watermarkOn}
+                label={copy.watermark}
+                onChange={(v) => save({ watermarkOn: v })}
+              />
             </li>
           </ul>
         </section>
@@ -195,7 +203,9 @@ export function ClipsAdvancedFields({
             id="adv-duration"
             className="ch-select"
             value={String(s.duration)}
-            onChange={(e) => save({ duration: e.target.value === 'auto' ? 'auto' : Number(e.target.value) })}
+            onChange={(e) =>
+              save({ duration: e.target.value === 'auto' ? 'auto' : Number(e.target.value) })
+            }
           >
             <option value="auto">{copy.durationAuto}</option>
             {[15, 30, 45, 60].map((n) => (

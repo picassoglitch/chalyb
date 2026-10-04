@@ -37,7 +37,11 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const gate = await loadTool(locale, 'chalybclip', '/app/clips', getClipsAdapter);
   if (gate.kind === 'locked')
     return (
-      <ToolShell slug="chalybclip" tab={null} plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}>
+      <ToolShell
+        slug="chalybclip"
+        tab={null}
+        plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}
+      >
         <ToolLockedState slug="chalybclip" entitlements={gate.entitlements} />
       </ToolShell>
     );
@@ -45,7 +49,9 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
     return (
       <ToolShell slug="chalybclip" tab="main">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
-        {gate.kind === 'setup' && <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />}
+        {gate.kind === 'setup' && (
+          <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
+        )}
       </ToolShell>
     );
 

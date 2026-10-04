@@ -20,12 +20,16 @@ export const GET = toolRoute(
   { idempotent: true },
 );
 
-export const PATCH = toolRoute('chalybclip', getClipsAdapter, async (a, { req, session, params }) => {
-  const id = params.clipId ?? '';
-  const clip = await a.getClip(session.user.id, id);
-  if (!clip) throw new NotFoundError('clip');
-  const patch = parseClipPatch(await req.json().catch(() => ({})), clip);
-  const next = await a.patchClip(session.user.id, id, patch);
-  if (!next) throw new NotFoundError('clip');
-  return next;
-});
+export const PATCH = toolRoute(
+  'chalybclip',
+  getClipsAdapter,
+  async (a, { req, session, params }) => {
+    const id = params.clipId ?? '';
+    const clip = await a.getClip(session.user.id, id);
+    if (!clip) throw new NotFoundError('clip');
+    const patch = parseClipPatch(await req.json().catch(() => ({})), clip);
+    const next = await a.patchClip(session.user.id, id, patch);
+    if (!next) throw new NotFoundError('clip');
+    return next;
+  },
+);

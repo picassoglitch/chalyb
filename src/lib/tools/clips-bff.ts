@@ -17,7 +17,10 @@ export class NotFoundError extends Error {
   readonly code = 'NOT_FOUND';
 }
 
-export function parseClipPatch(body: unknown, clip: Pick<ClipDetail, 'sourceDurationSec'>): ClipPatch {
+export function parseClipPatch(
+  body: unknown,
+  clip: Pick<ClipDetail, 'sourceDurationSec'>,
+): ClipPatch {
   const b = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
   const out: ClipPatch = {};
   if (typeof b.title === 'string') {
@@ -38,11 +41,19 @@ export function parseSettings(body: unknown, prev: ClipsSettings): ClipsSettings
   const next = { ...prev };
   if (typeof b.captionsOn === 'boolean') next.captionsOn = b.captionsOn;
   if (b.captionLang === 'es' || b.captionLang === 'en') next.captionLang = b.captionLang;
-  if (typeof b.captionPreset === 'string' && (CAPTION_PRESETS as readonly string[]).includes(b.captionPreset))
+  if (
+    typeof b.captionPreset === 'string' &&
+    (CAPTION_PRESETS as readonly string[]).includes(b.captionPreset)
+  )
     next.captionPreset = b.captionPreset as ClipsSettings['captionPreset'];
   if (typeof b.watermarkOn === 'boolean') next.watermarkOn = b.watermarkOn;
   if (b.duration === 'auto') next.duration = 'auto';
-  else if (typeof b.duration === 'number' && Number.isInteger(b.duration) && b.duration >= 15 && b.duration <= 60)
+  else if (
+    typeof b.duration === 'number' &&
+    Number.isInteger(b.duration) &&
+    b.duration >= 15 &&
+    b.duration <= 60
+  )
     next.duration = b.duration;
   if (b.framing === 'center' || b.framing === 'follow') next.framing = b.framing;
   return next;

@@ -39,7 +39,11 @@ export function AutopublishForm({
       {accounts.length > 1 && (
         <label className="ch-field">
           <span>{copy.account}</span>
-          <select className="ch-select" value={account} onChange={(e) => setAccount(e.target.value)}>
+          <select
+            className="ch-select"
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+          >
             {accounts.map((a) => (
               <option key={a}>{a}</option>
             ))}

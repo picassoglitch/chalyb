@@ -221,7 +221,12 @@ export function ClipEditor({
         </fieldset>
 
         {busy ? (
-          <button type="button" className="ch-btn ch-btn--primary ch-btn--xl" disabled aria-live="polite">
+          <button
+            type="button"
+            className="ch-btn ch-btn--primary ch-btn--xl"
+            disabled
+            aria-live="polite"
+          >
             {copy.preparing}
           </button>
         ) : (
@@ -231,7 +236,12 @@ export function ClipEditor({
           </a>
         )}
         <div className="ch-clipedit__second">
-          <ShareButton url={clip.downloadUrl} title={clip.title} label={copy.share} copiedLabel={copy.copied} />
+          <ShareButton
+            url={clip.downloadUrl}
+            title={clip.title}
+            label={copy.share}
+            copiedLabel={copy.copied}
+          />
           {publish}
         </div>
         <p className="ch-muted ch-clipedit__note" role="status">

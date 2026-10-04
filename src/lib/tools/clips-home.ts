@@ -36,7 +36,10 @@ export const MAX_PROCESSING_ROWS = 3;
  *  más". Failed jobs stay until retried (the person needs to see them). */
 export function processingRows(jobs: ClipJob[]): { rows: ClipJob[]; more: number } {
   const open = jobs.filter((j) => j.state !== 'ready');
-  return { rows: open.slice(0, MAX_PROCESSING_ROWS), more: Math.max(0, open.length - MAX_PROCESSING_ROWS) };
+  return {
+    rows: open.slice(0, MAX_PROCESSING_ROWS),
+    more: Math.max(0, open.length - MAX_PROCESSING_ROWS),
+  };
 }
 
 // ── Mis clips ───────────────────────────────────────────────────────────

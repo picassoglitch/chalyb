@@ -34,7 +34,11 @@ export default async function MisClipsPage({
   const gate = await loadTool(locale, 'chalybclip', '/app/clips/mis-clips', getClipsAdapter);
   if (gate.kind === 'locked')
     return (
-      <ToolShell slug="chalybclip" tab={null} plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}>
+      <ToolShell
+        slug="chalybclip"
+        tab={null}
+        plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}
+      >
         <ToolLockedState slug="chalybclip" entitlements={gate.entitlements} />
       </ToolShell>
     );
@@ -42,7 +46,9 @@ export default async function MisClipsPage({
     return (
       <ToolShell slug="chalybclip" tab="history">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
-        {gate.kind === 'setup' && <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />}
+        {gate.kind === 'setup' && (
+          <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
+        )}
       </ToolShell>
     );
 
@@ -74,7 +80,12 @@ export default async function MisClipsPage({
       ) : (
         <>
           <div className="ch-minebar">
-            <form action="/app/clips/mis-clips" method="get" role="search" className="ch-minesearch">
+            <form
+              action="/app/clips/mis-clips"
+              method="get"
+              role="search"
+              className="ch-minesearch"
+            >
               <Search aria-hidden="true" />
               <input
                 type="search"

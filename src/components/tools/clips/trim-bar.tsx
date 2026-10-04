@@ -74,7 +74,11 @@ export function TrimBar({
           <span key={i} style={{ background: THUMBS[i % THUMBS.length] }} />
         ))}
       </div>
-      <span className="ch-trim__dim" style={{ left: 0, width: `${pct(trim.startS)}%` }} aria-hidden="true" />
+      <span
+        className="ch-trim__dim"
+        style={{ left: 0, width: `${pct(trim.startS)}%` }}
+        aria-hidden="true"
+      />
       <span
         className="ch-trim__dim"
         style={{ left: `${pct(trim.endS)}%`, right: 0 }}

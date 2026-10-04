@@ -31,7 +31,12 @@ export function PublishButton({
   }
   return (
     <>
-      <button type="button" className="ch-btn ch-btn--gray" disabled={state === 'busy'} onClick={go}>
+      <button
+        type="button"
+        className="ch-btn ch-btn--gray"
+        disabled={state === 'busy'}
+        onClick={go}
+      >
         {labels.cta}
       </button>
       {state === 'done' && <p role="status">{labels.done}</p>}

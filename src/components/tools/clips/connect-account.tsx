@@ -67,7 +67,12 @@ export function ConnectAccount({
               {copy.error}
             </p>
           )}
-          <button type="button" className="ch-btn ch-btn--primary ch-btn--xl" disabled={busy} onClick={go}>
+          <button
+            type="button"
+            className="ch-btn ch-btn--primary ch-btn--xl"
+            disabled={busy}
+            onClick={go}
+          >
             {copy.cta}
           </button>
         </div>

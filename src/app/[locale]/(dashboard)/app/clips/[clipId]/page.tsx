@@ -36,7 +36,11 @@ export default async function ClipDetailPage({
   const gate = await loadTool(locale, 'chalybclip', path, getClipsAdapter);
   if (gate.kind === 'locked')
     return (
-      <ToolShell slug="chalybclip" tab={null} plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}>
+      <ToolShell
+        slug="chalybclip"
+        tab={null}
+        plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}
+      >
         <ToolLockedState slug="chalybclip" entitlements={gate.entitlements} />
       </ToolShell>
     );
@@ -44,7 +48,9 @@ export default async function ClipDetailPage({
     return (
       <ToolShell slug="chalybclip" tab="history">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
-        {gate.kind === 'setup' && <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />}
+        {gate.kind === 'setup' && (
+          <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
+        )}
       </ToolShell>
     );
 
@@ -118,7 +124,11 @@ export default async function ClipDetailPage({
         </Link>
         <div className="ch-clipnav__pos">
           {pos.prev ? (
-            <Link href={`/app/clips/${encodeURIComponent(pos.prev)}` as Route} className="ch-round" aria-label={td('prev')}>
+            <Link
+              href={`/app/clips/${encodeURIComponent(pos.prev)}` as Route}
+              className="ch-round"
+              aria-label={td('prev')}
+            >
               <ChevronLeft aria-hidden="true" />
             </Link>
           ) : (
@@ -128,7 +138,11 @@ export default async function ClipDetailPage({
           )}
           <span className="ch-muted">{td('position', { n: pos.n, total: pos.total })}</span>
           {pos.next ? (
-            <Link href={`/app/clips/${encodeURIComponent(pos.next)}` as Route} className="ch-round" aria-label={td('next')}>
+            <Link
+              href={`/app/clips/${encodeURIComponent(pos.next)}` as Route}
+              className="ch-round"
+              aria-label={td('next')}
+            >
               <ChevronRight aria-hidden="true" />
             </Link>
           ) : (

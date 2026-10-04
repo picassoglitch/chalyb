@@ -12,7 +12,13 @@ import { recordToolConsent } from '@/lib/tools/consents';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const NAMES = { youtube: 'YouTube', twitch: 'Twitch', tiktok: 'TikTok', kick: 'Kick', facebook: 'Facebook' };
+const NAMES = {
+  youtube: 'YouTube',
+  twitch: 'Twitch',
+  tiktok: 'TikTok',
+  kick: 'Kick',
+  facebook: 'Facebook',
+};
 
 export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { req, session }) => {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;

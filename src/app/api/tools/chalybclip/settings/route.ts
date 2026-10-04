@@ -8,9 +8,14 @@ import { parseSettings } from '@/lib/tools/clips-bff';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export const GET = toolRoute('chalybclip', getClipsAdapter, (a, { session }) => a.getSettings(session.user.id), {
-  idempotent: true,
-});
+export const GET = toolRoute(
+  'chalybclip',
+  getClipsAdapter,
+  (a, { session }) => a.getSettings(session.user.id),
+  {
+    idempotent: true,
+  },
+);
 
 export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { req, session }) => {
   const prev = await a.getSettings(session.user.id);
