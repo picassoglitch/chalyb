@@ -47,3 +47,11 @@ test('English pages say the Spanish version prevails', async ({ page }) => {
   await page.goto('/en/legal/subscription');
   await expect(page.getByText('The Spanish version prevails.')).toBeVisible();
 });
+
+// The takedown form is a client component on a public page: its text must
+// reach the browser (PUBLIC_CLIENT_NAMESPACES), never raw message keys.
+test('/derechos-de-autor renders the takedown form with its real text', async ({ page }) => {
+  await page.goto('/derechos-de-autor');
+  await expect(page.getByRole('button', { name: 'Enviar aviso' })).toBeVisible();
+  await expect(page.getByText(/takedown\.form\./)).toHaveCount(0);
+});

@@ -34,7 +34,7 @@ const LONG = new Set<Field>([
 export function TakedownForm() {
   const t = useTranslations('takedown.form');
   const [missing, setMissing] = useState<Field[]>([]);
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error' | 'limited'>('idle');
   const [folio, setFolio] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -63,6 +63,10 @@ export function TakedownForm() {
         id?: string | null;
         fields?: Field[];
       };
+      if (res.status === 429) {
+        setState('limited');
+        return;
+      }
       if (!res.ok || !j.ok) {
         if (j.fields?.length) setMissing(j.fields);
         setState('error');
@@ -147,9 +151,9 @@ export function TakedownForm() {
           {t('truthful')} ({t('optional')})
         </span>
       </label>
-      {state === 'error' && (
+      {(state === 'error' || state === 'limited') && (
         <div role="alert" className="auth-error">
-          {t('error')}
+          {state === 'limited' ? t('rateLimited') : t('error')}
         </div>
       )}
       <button type="submit" className="auth-submit" disabled={state === 'sending'}>

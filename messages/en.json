@@ -2480,7 +2480,8 @@
       "error": "We couldn’t send the notice. Check the details and try again.",
       "sentTitle": "We received your notice.",
       "sentBody": "We’ll review it and contact you through the details you gave.",
-      "folio": "Reference {folio}."
+      "folio": "Reference {folio}.",
+      "rateLimited": "We received several notices in a row. Try again later or write to us."
     }
   },
   "toolShell": {

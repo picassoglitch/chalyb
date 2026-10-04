@@ -2480,7 +2480,8 @@
       "error": "No pudimos enviar el aviso. Revisa los datos e inténtalo de nuevo.",
       "sentTitle": "Recibimos tu aviso.",
       "sentBody": "Lo revisamos y te contactamos al medio que nos diste.",
-      "folio": "Folio {folio}."
+      "folio": "Folio {folio}.",
+      "rateLimited": "Recibimos varios avisos seguidos. Intenta de nuevo más tarde o escríbenos."
     }
   },
   "toolShell": {

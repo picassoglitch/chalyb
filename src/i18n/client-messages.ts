@@ -15,6 +15,8 @@ export const PUBLIC_CLIENT_NAMESPACES = [
   'plans',
   'billing',
   'seller',
+  // /derechos-de-autor's takedown form (P6).
+  'takedown',
 ] as const;
 
 export function pickNamespaces(
