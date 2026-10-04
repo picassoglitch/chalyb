@@ -2283,5 +2283,110 @@
     "autosave": "Los cambios se guardan solos.",
     "saving": "Guardando…",
     "saved": "Guardado"
+  },
+  "signalsTool": {
+    "metaTitle": "Señales",
+    "metaDetail": "Señal de {moneda}",
+    "metaHistory": "Historial de señales",
+    "metaSettings": "Ajustes de Señales",
+    "listTitle": "Tus señales más recientes",
+    "filter": {
+      "all": "Todas",
+      "aria": "Filtrar por moneda"
+    },
+    "new": "Nueva",
+    "when": {
+      "today": "Hoy, {hora}",
+      "yesterday": "Ayer, {hora}",
+      "date": "{fecha}, {hora}"
+    },
+    "verdict": {
+      "buy": "Momento de compra",
+      "sell": "Momento de venta",
+      "wait": "Sin señal clara"
+    },
+    "ref": "Precio de referencia",
+    "why": "<b>Por qué:</b> {texto}",
+    "detail": "Ver detalle",
+    "detailAria": "Ver detalle de {moneda}",
+    "alerts": {
+      "title": "Mis avisos",
+      "change": "Cambiar",
+      "yes": "Sí",
+      "no": "No",
+      "whatsapp": "WhatsApp",
+      "email": "Correo",
+      "app": "En la app",
+      "schedule": "Horario",
+      "range": "{desde} a {hasta}",
+      "allDay": "Todo el día"
+    },
+    "legend": {
+      "title": "¿Qué significa cada una?",
+      "buy": "El precio va subiendo de forma estable.",
+      "sell": "Subió rápido y podría bajar.",
+      "wait": "No hay nada claro por ahora."
+    },
+    "empty": "Aún no hay señales de tus monedas. Te avisamos en cuanto haya una.",
+    "emptyAdd": "Agregar más monedas",
+    "partial": "No pudimos traer las señales nuevas. Te mostramos las últimas que teníamos.",
+    "retry": "Intentar otra vez",
+    "history": {
+      "empty": "Aún no hay señales en tu historial.",
+      "today": "Hoy",
+      "yesterday": "Ayer"
+    },
+    "detailPage": {
+      "back": "Señales",
+      "range": {
+        "1d": "1 día",
+        "7d": "7 días",
+        "1m": "1 mes"
+      },
+      "rangeAria": "Periodo de la gráfica",
+      "marker": "Aquí te avisamos · {hora}",
+      "chartAria": "Precio de {moneda} en los últimos {periodo}",
+      "whyTitle": "Por qué, en palabras simples",
+      "follow": "Recibir avisos de esta moneda",
+      "followVia": "Por {canales}",
+      "same": "Esta misma señal la ven todas las personas de tu plan. No usa tus saldos ni tus inversiones.",
+      "old": "Esta señal es del {fecha}. Puede que ya no aplique.",
+      "notFound": {
+        "title": "No encontramos esta señal",
+        "body": "Puede que ya no esté disponible.",
+        "cta": "Ver señales"
+      }
+    },
+    "settings": {
+      "coins": "Tus monedas",
+      "coinsHint": "Solo eliges de qué monedas te avisamos. La señal es la misma para todos.",
+      "addCoin": "Agregar moneda",
+      "removeCoin": "Quitar {moneda}",
+      "how": "Cómo te avisamos",
+      "appHint": "Una notificación en tu celular",
+      "when": "Horario",
+      "from": "Avisarme desde",
+      "to": "Hasta",
+      "night": "En la noche no te molestamos",
+      "days": "Días",
+      "daysAll": "Todos los días",
+      "daysWeekdays": "De lunes a viernes",
+      "legal": "Información importante",
+      "riskNotice": "Aviso de riesgo",
+      "riskAccepted": "Lo aceptaste el {fecha}",
+      "readAgain": "Leer otra vez",
+      "advSummary": "Temporalidad, resumen diario y formato del aviso",
+      "timeframe": "Temporalidad",
+      "short": "Corto plazo",
+      "medium": "Mediano plazo",
+      "timeframeHint": "Filtra qué señales recibes. Son iguales para todos.",
+      "daily": "Resumen diario",
+      "dailyHint": "Una vez al día, a la hora en que empieza tu horario.",
+      "format": "Formato del aviso",
+      "formatShort": "Corto",
+      "formatExplained": "Con explicación",
+      "error": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "noCoins": "Elige al menos una moneda."
+    }
   }
 }

@@ -37,7 +37,7 @@ export function CoinPicker({ coins, initial }: { coins: { symbol: string; name: 
       </p>
       <p className="ch-muted">{t('s1.same')}</p>
       {picked.length > 0 ? (
-        <Link href={`/app/senales/avisos?coins=${picked.join(',')}` as Route} className="ch-btn ch-btn--primary ch-btn--xl">
+        <Link href={`/app/senales/empezar/avisos?coins=${picked.join(',')}` as Route} className="ch-btn ch-btn--primary ch-btn--xl">
           {tw('continue')}
         </Link>
       ) : (

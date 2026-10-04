@@ -10,6 +10,9 @@ const TOOL_REDIRECTS: [string, string][] = [
   ['/app/engines/chalybcrypto/:rest*', '/app/senales'],
   ['/app/engines/chalybobs/:rest*', '/app/en-vivo'],
   ['/app/engines/:slug/:rest*', '/app/herramientas'],
+  // Señales' first activation moved under /app/senales/empezar.
+  ['/app/senales/avisos', '/app/senales/empezar/avisos'],
+  ['/app/senales/listo', '/app/senales/empezar/listo'],
 ];
 
 const nextConfig: NextConfig = {

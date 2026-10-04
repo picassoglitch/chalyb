@@ -2283,5 +2283,110 @@
     "autosave": "Changes save on their own.",
     "saving": "Saving…",
     "saved": "Saved"
+  },
+  "signalsTool": {
+    "metaTitle": "Signals",
+    "metaDetail": "{moneda} signal",
+    "metaHistory": "Signal history",
+    "metaSettings": "Signals settings",
+    "listTitle": "Your latest signals",
+    "filter": {
+      "all": "All",
+      "aria": "Filter by coin"
+    },
+    "new": "New",
+    "when": {
+      "today": "Today, {hora}",
+      "yesterday": "Yesterday, {hora}",
+      "date": "{fecha}, {hora}"
+    },
+    "verdict": {
+      "buy": "Buying moment",
+      "sell": "Selling moment",
+      "wait": "No clear signal"
+    },
+    "ref": "Reference price",
+    "why": "<b>Why:</b> {texto}",
+    "detail": "See details",
+    "detailAria": "See details for {moneda}",
+    "alerts": {
+      "title": "My alerts",
+      "change": "Change",
+      "yes": "On",
+      "no": "Off",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "app": "In the app",
+      "schedule": "Hours",
+      "range": "{desde} to {hasta}",
+      "allDay": "All day"
+    },
+    "legend": {
+      "title": "What does each one mean?",
+      "buy": "The price is rising steadily.",
+      "sell": "It rose fast and could drop.",
+      "wait": "Nothing is clear for now."
+    },
+    "empty": "There are no signals for your coins yet. We'll let you know as soon as there is one.",
+    "emptyAdd": "Add more coins",
+    "partial": "We couldn't get the new signals. Here are the latest ones we had.",
+    "retry": "Try again",
+    "history": {
+      "empty": "There are no signals in your history yet.",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "detailPage": {
+      "back": "Signals",
+      "range": {
+        "1d": "1 day",
+        "7d": "7 days",
+        "1m": "1 month"
+      },
+      "rangeAria": "Chart period",
+      "marker": "We alerted you here · {hora}",
+      "chartAria": "{moneda} price over the last {periodo}",
+      "whyTitle": "Why, in plain words",
+      "follow": "Get alerts for this coin",
+      "followVia": "By {canales}",
+      "same": "Everyone on your plan sees this same signal. It doesn't use your balances or your investments.",
+      "old": "This signal is from {fecha}. It may no longer apply.",
+      "notFound": {
+        "title": "We couldn't find this signal",
+        "body": "It may no longer be available.",
+        "cta": "See signals"
+      }
+    },
+    "settings": {
+      "coins": "Your coins",
+      "coinsHint": "You only choose which coins we alert you about. The signal is the same for everyone.",
+      "addCoin": "Add coin",
+      "removeCoin": "Remove {moneda}",
+      "how": "How we alert you",
+      "appHint": "A notification on your phone",
+      "when": "Hours",
+      "from": "Alert me from",
+      "to": "Until",
+      "night": "We don't bother you at night",
+      "days": "Days",
+      "daysAll": "Every day",
+      "daysWeekdays": "Monday to Friday",
+      "legal": "Important information",
+      "riskNotice": "Risk notice",
+      "riskAccepted": "You accepted it on {fecha}",
+      "readAgain": "Read again",
+      "advSummary": "Time frame, daily summary and alert format",
+      "timeframe": "Time frame",
+      "short": "Short term",
+      "medium": "Medium term",
+      "timeframeHint": "Filters which signals you get. They're the same for everyone.",
+      "daily": "Daily summary",
+      "dailyHint": "Once a day, when your hours start.",
+      "format": "Alert format",
+      "formatShort": "Short",
+      "formatExplained": "With explanation",
+      "error": "We couldn't save the change. Try again.",
+      "noCoins": "Choose at least one coin."
+    }
   }
 }

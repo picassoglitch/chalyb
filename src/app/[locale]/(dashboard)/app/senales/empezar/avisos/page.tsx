@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
-import { requireTool } from '@/lib/tools/access';
-import { getSenales } from '@/lib/tools/registry';
+import { requireSenalesReady } from '@/lib/tools/senales-access';
 import { saveSignalPrefs } from '@/lib/tools/senales-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
 
@@ -23,16 +22,27 @@ export default async function SenalesStep2({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { session, adapter, riskPending } = await requireTool(locale, 'chalybcrypto', '/app/senales', getSenales);
-  if (riskPending) return redirect({ href: '/app/senales', locale });
+  const { session, adapter } = await requireSenalesReady(locale, '/app/senales/empezar/avisos');
   const { coins = '', error } = await searchParams;
-  if (!coins) return redirect({ href: '/app/senales', locale });
+  if (!coins) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signals');
   const tw = await getTranslations('wizard');
-  const [channels, prefs] = await Promise.all([adapter.channels(), adapter.getPrefs(session.user.id)]);
+  const [channels, prefs] = await Promise.all([
+    adapter.channels(),
+    adapter.getPrefs(session.user.id),
+  ]);
   const chosen = new Set(prefs?.channels ?? ['app']);
   return (
-    <WizardShell slug="chalybcrypto" toolName="Señales" step={2} stepLabel={tw('step', { n: 2 })} backHref={`/app/senales`} backLabel={tw('back')} closeLabel={tw('close')} narrow>
+    <WizardShell
+      slug="chalybcrypto"
+      toolName="Señales"
+      step={2}
+      stepLabel={tw('step', { n: 2 })}
+      backHref={`/app/senales/empezar`}
+      backLabel={tw('back')}
+      closeLabel={tw('close')}
+      narrow
+    >
       <form action={saveSignalPrefs} className="ch-center-col">
         <input type="hidden" name="coins" value={coins} />
         <fieldset className="ch-fieldset">
@@ -46,13 +56,26 @@ export default async function SenalesStep2({
             ))}
           </div>
         </fieldset>
-        {error === 'channels' && <p role="alert" style={{ color: 'var(--bad)' }}>{t('s2.none')}</p>}
-        <details className="ch-card" style={{ padding: '14px 18px', width: '100%', textAlign: 'left' }}>
-          <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>{t('adv.title')}</summary>
+        {error === 'channels' && (
+          <p role="alert" style={{ color: 'var(--bad)' }}>
+            {t('s2.none')}
+          </p>
+        )}
+        <details
+          className="ch-card"
+          style={{ padding: '14px 18px', width: '100%', textAlign: 'left' }}
+        >
+          <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>
+            {t('adv.title')}
+          </summary>
           <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
             <label style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               {t('adv.timeframe')}
-              <select name="timeframe" className="ch-select" defaultValue={prefs?.timeframe ?? 'day'}>
+              <select
+                name="timeframe"
+                className="ch-select"
+                defaultValue={prefs?.timeframe ?? 'day'}
+              >
                 <option value="day">{t('adv.day')}</option>
                 <option value="week">{t('adv.week')}</option>
               </select>
