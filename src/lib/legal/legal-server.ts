@@ -15,6 +15,7 @@ import { escapeHtml } from '@/lib/email/escape';
 import { wrap } from '@/lib/email/templates';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { logAudit } from '@/lib/audit/log';
+import { notify } from '@/lib/notifications/notify';
 import { legalPublished } from '@/lib/config/flags';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { canonicalOrigin } from '@/lib/site';
@@ -49,6 +50,7 @@ import {
 } from './takedown';
 import {
   TERMS_CHANGE_NOTICE_DAYS,
+  undeliverableAlertDue,
   inForceFrom,
   noticeIsLate,
   termsChangeDecision,
@@ -778,6 +780,42 @@ export interface LegalCronReport {
   retention: Record<string, unknown> | null;
 }
 
+async function alertIfManyUndeliverable(
+  db: ReturnType<typeof createAdminClient>,
+  doc: ReacceptDoc,
+  version: string,
+  periodKey: string,
+): Promise<void> {
+  const count = async (status?: string) => {
+    let q = db
+      .from('email_dispatches')
+      .select('id', { count: 'exact', head: true })
+      .eq('kind', 'terms_change')
+      .eq('period_key', periodKey);
+    if (status) q = q.eq('delivery_status', status);
+    return (await q).count ?? 0;
+  };
+  const [lost, total] = await Promise.all([count('undeliverable'), count()]);
+  if (!undeliverableAlertDue(lost, total)) return;
+  // Once per version: the first run to set the marker sends the alert.
+  const { data } = await db
+    .from('legal_change_notices')
+    .update({ undeliverable_alert_at: new Date().toISOString() })
+    .eq('doc', doc)
+    .eq('version', version)
+    .is('undeliverable_alert_at', null)
+    .select('doc')
+    .maybeSingle();
+  if (!data) return;
+  await notify({
+    severity: 'warning',
+    title: `Avisos de cambios sin entregar: ${lost} de ${total} (${doc} ${version})`,
+    body: 'Más del 5% de los avisos no se pudo entregar tras 5 intentos o 72 h. Esas personas no tendrán que aceptar el cambio. Revisa el correo de salida y la lista en Dueño → Legal.',
+    href: '/dashboard/legal',
+    source: 'legal',
+  });
+}
+
 /** aceptacion-ux §8: the email ≥ 30 days before a relevant change to any
  *  document people re-accept (Términos, Suscripción, Privacidad). */
 /** At most this many notices per cron run; the rest go out the next day. */
@@ -944,6 +982,7 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date, budget: NoticeBu
     console.error(
       `[legal] ${doc} ${version}: notices still owed with < 30 days to ${meta.effective}; it will apply later`,
     );
+  await alertIfManyUndeliverable(db, doc, version, periodKey);
   if (remaining === 0 && report.failed === 0) {
     await db
       .from('legal_change_notices')

@@ -68,6 +68,14 @@ export function personNoticed(
   return Date.parse(dispatch.sent_at) <= Date.parse(inForceAt) - TERMS_CHANGE_NOTICE_DAYS * DAY;
 }
 
+/** Above this share of undeliverable notices for a version, the owner is
+ *  warned once: those people are never asked to accept the change. */
+export const UNDELIVERABLE_ALERT_PCT = 5;
+
+export function undeliverableAlertDue(undeliverable: number, total: number): boolean {
+  return total > 0 && undeliverable * 100 > UNDELIVERABLE_ALERT_PCT * total;
+}
+
 export const termsChangePeriodKey = (version: string, doc = 'terminos') => `${doc}:${version}`;
 
 /** The document's name in a sentence ("nuestros Términos"). */

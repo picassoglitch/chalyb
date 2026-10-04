@@ -67,6 +67,15 @@ export interface SendResult {
   id?: string;
   reason?: 'not_configured' | 'send_failed';
   error?: string;
+  /** The provider, not the address, failed: not configured, a network
+   *  error, a 5xx or a 429. Retry later without counting it against the
+   *  recipient. */
+  transient?: boolean;
+}
+
+/** A provider-side failure (status unknown, 5xx or 429). */
+export function isProviderFailure(statusCode: number | null | undefined): boolean {
+  return statusCode == null || statusCode >= 500 || statusCode === 429;
 }
 
 export async function sendEmail(params: SendParams): Promise<SendResult> {
@@ -74,7 +83,7 @@ export async function sendEmail(params: SendParams): Promise<SendResult> {
     // Surface in dev so it's obvious why nothing arrived. Don't throw —
     // forms should still appear to succeed in dev when MP/Resend aren't set.
     console.warn('[resend] RESEND_API_KEY not set — email skipped:', params.subject);
-    return { ok: false, reason: 'not_configured' };
+    return { ok: false, reason: 'not_configured', transient: true };
   }
   try {
     const { data, error } = await getResend().emails.send({
@@ -87,12 +96,19 @@ export async function sendEmail(params: SendParams): Promise<SendResult> {
     });
     if (error) {
       console.error('[resend] send failed', error);
-      return { ok: false, reason: 'send_failed', error: error.message };
+      const statusCode = (error as { statusCode?: number | null }).statusCode;
+      return {
+        ok: false,
+        reason: 'send_failed',
+        error: error.message,
+        transient: isProviderFailure(statusCode),
+      };
     }
     return { ok: true, id: data?.id };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'unknown error';
     console.error('[resend] threw', err);
-    return { ok: false, reason: 'send_failed', error: message };
+    // Thrown: network or SDK failure, not the address.
+    return { ok: false, reason: 'send_failed', error: message, transient: true };
   }
 }

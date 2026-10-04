@@ -1,4 +1,5 @@
--- 0060 · Retention purge revised + change-notice retry cap (7a reviews of #49 and #52).
+-- 0060 · Retention purge revised + change-notice retry cap (7a reviews of #49, #52, #53).
+-- Not applied anywhere yet; edited in place. OPS: apply 0055 → 0060 in order.
 --
 -- Aviso de privacidad §9.1: non-compliance data goes "a más tardar 72 meses
 -- después de la fecha del incumplimiento". For a chargeback the incident is
@@ -119,11 +120,13 @@ begin
    where user_id = p_user and kind = p_kind and period_key = p_period
      and (delivery_status = 'failed'
           or (delivery_status = 'pending' and sent_at < now() - interval '10 minutes'))
-     and (attempts >= p_max_attempts or coalesce(first_attempt_at, sent_at) < now() - p_give_up);
+     -- Only a counted attempt starts the 72 h clock (release_notice_attempt
+     -- clears it after a provider failure).
+     and (attempts >= p_max_attempts or (first_attempt_at is not null and first_attempt_at < now() - p_give_up));
 
   update public.email_dispatches
      set delivery_status = 'pending', sent_at = now(), provider_message_id = null,
-         attempts = attempts + 1, first_attempt_at = coalesce(first_attempt_at, sent_at)
+         attempts = attempts + 1, first_attempt_at = coalesce(first_attempt_at, now())
    where user_id = p_user and kind = p_kind and period_key = p_period
      and (delivery_status = 'failed'
           or (delivery_status = 'pending' and sent_at < now() - interval '10 minutes'))
@@ -173,3 +176,27 @@ as $$
   order by p.id
   limit greatest(1, least(p_limit, 1000));
 $$;
+
+-- A failed send that was the provider's fault (not configured, network,
+-- 5xx, 429) doesn't count against the person: give the attempt back, and
+-- if it was the first one, the 72-hour clock never started. An outage can
+-- therefore never make everyone 'undeliverable'.
+create or replace function public.release_notice_attempt(p_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.email_dispatches
+     set delivery_status = 'failed',
+         provider_message_id = null,
+         attempts = greatest(attempts - 1, 0),
+         first_attempt_at = case when attempts <= 1 then null else first_attempt_at end
+   where id = p_id and delivery_status = 'pending';
+$$;
+revoke all on function public.release_notice_attempt(uuid) from public, anon, authenticated;
+grant execute on function public.release_notice_attempt(uuid) to service_role;
+
+-- One owner alert per version when undeliverable notices pass 5%.
+alter table public.legal_change_notices
+  add column if not exists undeliverable_alert_at timestamptz;
