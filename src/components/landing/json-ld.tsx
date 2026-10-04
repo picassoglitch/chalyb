@@ -1,20 +1,48 @@
-// Emits the landing's JSON-LD only when paid checkout is live AND the legal
-// texts are published (rebuild P4-8): before that there is no offer a search
-// engine should advertise.
+// The landing's JSON-LD (LANDING-SPEC §6): Organization, SoftwareApplication
+// and WebSite always; the offers only when paid checkout is live AND the
+// legal texts are published (rebuild P4-8), since before that there is no
+// offer a search engine should advertise. FAQPage carries the same questions
+// the page shows (faq-items.ts).
 
-import { legalPublished, paidCheckoutEnabled, vipYearEnabled } from '@/lib/config/flags';
-import { jsonLdData } from '@/lib/seo/json-ld';
+import { getLocale, getTranslations } from 'next-intl/server';
+import {
+  allToolsClaimAllowed,
+  legalPublished,
+  paidCheckoutEnabled,
+  trialFlowEnabled,
+  vipYearEnabled,
+} from '@/lib/config/flags';
+import { faqPageData, jsonLdData } from '@/lib/seo/json-ld';
+import { listActiveTools } from '@/lib/tools/public-tools-server';
+import { faqItems } from './faq-items';
 
-export function JsonLd() {
-  // Offers only when they can be bought, with the published terms.
-  if (!(paidCheckoutEnabled() && legalPublished())) return null;
+function LdScript({ data }: { data: unknown }) {
   return (
     <script
       type="application/ld+json"
-      // Static data from config; no user input reaches it.
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(jsonLdData(undefined, vipYearEnabled())).replace(/</g, '\\u003c'),
-      }}
+      // Static data from config and messages; no user input reaches it.
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
     />
+  );
+}
+
+export async function JsonLd() {
+  const [tools, locale, t] = await Promise.all([
+    listActiveTools(),
+    getLocale(),
+    getTranslations('landing.faq'),
+  ]);
+  const offers = paidCheckoutEnabled() && legalPublished();
+  const faq = faqItems(t, {
+    tools,
+    locale,
+    trialOffered: trialFlowEnabled(),
+    claimAll: allToolsClaimAllowed(),
+  });
+  return (
+    <>
+      <LdScript data={jsonLdData(undefined, vipYearEnabled(), offers)} />
+      <LdScript data={faqPageData(faq)} />
+    </>
   );
 }
