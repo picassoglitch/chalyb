@@ -24,13 +24,13 @@ export async function saveSignalPrefs(formData: FormData): Promise<void> {
   const coins = String(formData.get('coins') ?? '').split(',').filter((c) => known.has(c));
   const supported = new Set(await adapter.channels());
   const channels = formData.getAll('channel').map(String).filter((c): c is SignalChannel => supported.has(c as SignalChannel));
-  if (!coins.length) return redirect({ href: '/app/senales', locale });
-  if (!channels.length) return redirect({ href: `/app/senales/avisos?coins=${coins.join(',')}&error=channels`, locale });
+  if (!coins.length) return redirect({ href: '/app/senales/empezar', locale });
+  if (!channels.length) return redirect({ href: `/app/senales/empezar/avisos?coins=${coins.join(',')}&error=channels`, locale });
   await adapter.savePrefs(session.user.id, {
     coins,
     channels,
     timeframe: formData.get('timeframe') === 'week' ? 'week' : 'day',
     quietHours: formData.get('quiet') === 'on',
   });
-  return redirect({ href: '/app/senales/listo', locale });
+  return redirect({ href: '/app/senales/empezar/listo', locale });
 }

@@ -44,6 +44,19 @@ export interface Signal {
   /** The engine's own general explanation; the hub never writes signal text. */
   explanation: string;
   at: string;
+  /** Reference price when the signal was made (Q5 default: MXN). */
+  refPriceMXN?: number;
+  /** The engine's "por qué": a short line about the PRICE, never the person,
+   *  and up to 3 bullets for the detail (TOOLS-SPEC §5.2–§5.3). */
+  why?: { short: string; bullets: string[] };
+}
+
+export type SignalRange = '1d' | '7d' | '1m';
+
+/** One point of the past price (the detail chart shows the past only). */
+export interface PricePoint {
+  at: string;
+  priceMXN: number;
 }
 
 export interface Coin {
@@ -59,8 +72,17 @@ export type SignalChannel = 'whatsapp' | 'email' | 'app';
 export interface SignalPrefs {
   coins: string[];
   channels: SignalChannel[];
+  /** Corto plazo (day) / Mediano plazo (week): filters which signals
+   *  arrive; the signals are the same for everyone. */
   timeframe: 'day' | 'week';
   quietHours: boolean;
+  /** Horario (TOOLS-SPEC §5.4), 'HH:MM' 24 h. */
+  from?: string;
+  to?: string;
+  days?: 'all' | 'weekdays';
+  /** Opciones avanzadas: one summary a day; short or explained notices. */
+  dailySummary?: boolean;
+  format?: 'short' | 'explained';
 }
 
 export interface SenalesAdapter {
@@ -68,7 +90,13 @@ export interface SenalesAdapter {
   coins(): Promise<Coin[]>;
   channels(): Promise<SignalChannel[]>;
   /** CONTENT: by plan only. There is deliberately no user parameter. */
-  getSignals(input: { plan: PlanTierKey; coins?: string[] }): Promise<Signal[]>;
+  getSignals(input: { plan: PlanTierKey; coins?: string[]; since?: string }): Promise<Signal[]>;
+  /** One signal and its past price, by plan. No user parameter either. */
+  getSignal(input: {
+    plan: PlanTierKey;
+    id: string;
+    range: SignalRange;
+  }): Promise<{ signal: Signal; series: PricePoint[] } | null>;
   /** DELIVERY: the user's filter. */
   getPrefs(userId: string): Promise<SignalPrefs | null>;
   savePrefs(userId: string, prefs: SignalPrefs): Promise<void>;

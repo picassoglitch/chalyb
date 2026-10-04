@@ -14,10 +14,12 @@ import type {
   InversionesAdapter,
   LiveStatus,
   PronosticosAdapter,
+  PricePoint,
   PropertyCard,
   SenalesAdapter,
   Signal,
   SignalPrefs,
+  SignalRange,
   ToolCapabilities,
 } from './tools';
 
@@ -34,24 +36,117 @@ const COINS: Coin[] = [
   { symbol: 'LTC', name: 'Litecoin' },
 ];
 
+/** Sample reference prices (MXN) — engine output stand-ins, not real data. */
+const REF_MXN: Record<string, number> = {
+  BTC: 1_186_400,
+  ETH: 46_980,
+  SOL: 3_412,
+  XRP: 11.62,
+  DOGE: 3.07,
+  ADA: 8.41,
+  BNB: 12_310,
+  LTC: 1_684,
+};
+
+const WHY: Record<Signal['state'], { short: string; bullets: string[] }> = {
+  buy: {
+    short: 'Lleva varios días subiendo poco a poco, sin saltos bruscos.',
+    bullets: [
+      'Lleva 5 días subiendo poco a poco.',
+      'No ha tenido subidas ni bajadas bruscas.',
+      'Se ha comprado más de lo que se ha vendido.',
+    ],
+  },
+  sell: {
+    short: 'Subió muy rápido esta semana. A veces, después de eso, baja.',
+    bullets: [
+      'Subió mucho en pocos días.',
+      'Las subidas rápidas a veces se corrigen.',
+      'Se está vendiendo más que antes.',
+    ],
+  },
+  wait: {
+    short: 'Se mueve mucho para los dos lados. Te avisamos cuando se calme.',
+    bullets: [
+      'Sube y baja sin una dirección clara.',
+      'Los movimientos de hoy son más grandes de lo normal.',
+      'Te avisamos cuando haya algo claro.',
+    ],
+  },
+};
+
+const RANGE_POINTS: Record<SignalRange, { n: number; stepMs: number }> = {
+  '1d': { n: 24, stepMs: 3_600_000 },
+  '7d': { n: 42, stepMs: 4 * 3_600_000 },
+  '1m': { n: 30, stepMs: 24 * 3_600_000 },
+};
+
+/** Deterministic pseudo-random walk ending at `end` (same input → same series). */
+function series(seed: string, end: number, endAt: number, range: SignalRange, trend: number): PricePoint[] {
+  const { n, stepMs } = RANGE_POINTS[range];
+  let h = 0;
+  for (const ch of seed + range) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const rnd = () => {
+    h = (h * 1_103_515_245 + 12_345) >>> 0;
+    return h / 2 ** 32;
+  };
+  const pts: number[] = [end];
+  for (let i = 1; i < n; i++) pts.push(pts[i - 1]! * (1 - trend / n + (rnd() - 0.5) * 0.012));
+  return pts.reverse().map((p, i) => ({
+    at: new Date(endAt - (n - 1 - i) * stepMs).toISOString(),
+    priceMXN: Math.round(p * 100) / 100,
+  }));
+}
+
 export function createMockSenales(now = () => Date.now()): SenalesAdapter {
   const prefs = new Map<string, SignalPrefs>();
-  // One feed per plan: the same for everyone on it.
-  const feed = (plan: string): Signal[] =>
-    COINS.slice(0, plan === 'FREE' ? 3 : 8).map((c, i) => ({
-      id: `${plan}-${c.symbol}`,
-      coin: c.symbol,
-      state: (['buy', 'wait', 'sell'] as const)[i % 3]!,
-      confidence: i % 3 === 1 ? 'none' : i % 2 ? 'medium' : 'high',
-      explanation: `Muestra del motor para ${c.name}: tendencia general del mercado en las últimas horas.`,
-      at: new Date(Math.floor(now() / 3_600_000) * 3_600_000 - i * 600_000).toISOString(),
-    }));
+  // One feed per plan: the same for everyone on it. Newest first: today's
+  // signal per coin, then yesterday's, then one 9 days old (the "puede que
+  // ya no aplique" band).
+  const feed = (plan: string): Signal[] => {
+    const hour = Math.floor(now() / 3_600_000) * 3_600_000;
+    const coins = COINS.slice(0, plan === 'FREE' ? 3 : 8);
+    const out: Signal[] = [];
+    for (const [ageH, suffix] of [
+      [0, ''],
+      [26, '-d1'],
+      [9 * 24, '-d9'],
+    ] as const) {
+      coins.forEach((c, i) => {
+        if (suffix === '-d9' && c.symbol !== 'BTC') return;
+        const state = (['buy', 'sell', 'wait'] as const)[(i + (suffix ? 1 : 0)) % 3]!;
+        out.push({
+          id: `${plan}-${c.symbol}${suffix}`,
+          coin: c.symbol,
+          state,
+          confidence: state === 'wait' ? 'none' : i % 2 ? 'medium' : 'high',
+          explanation: `Muestra del motor para ${c.name}: tendencia general del mercado en las últimas horas.`,
+          at: new Date(hour - ageH * 3_600_000 - i * 600_000).toISOString(),
+          refPriceMXN: REF_MXN[c.symbol],
+          why: WHY[state],
+        });
+      });
+    }
+    return out;
+  };
   return {
     capabilities: () => CAPS,
     coins: async () => COINS,
     channels: async () => ['email', 'app'],
-    getSignals: async ({ plan, coins }) =>
-      feed(plan).filter((s) => !coins?.length || coins.includes(s.coin)),
+    getSignals: async ({ plan, coins, since }) =>
+      feed(plan).filter(
+        (s) => (!coins?.length || coins.includes(s.coin)) && (!since || s.at >= since),
+      ),
+    getSignal: async ({ plan, id, range }) => {
+      const signal = feed(plan).find((s) => s.id === id);
+      if (!signal) return null;
+      const trend = signal.state === 'buy' ? 0.06 : signal.state === 'sell' ? -0.04 : 0;
+      return {
+        signal,
+        // The past only: the series ends now, never later.
+        series: series(signal.id, signal.refPriceMXN ?? 1, Math.floor(now() / 60_000) * 60_000, range, trend),
+      };
+    },
     getPrefs: async (userId) => prefs.get(userId) ?? null,
     savePrefs: async (userId, p) => {
       prefs.set(userId, p);
