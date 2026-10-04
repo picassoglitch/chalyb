@@ -908,6 +908,8 @@
       "title": "Privacy and account",
       "notice": "Privacy and notifications",
       "arco": "My data (ARCO rights)",
+      "connected": "Connected accounts",
+      "connectedNone": "None",
       "charge": "Problem with a charge",
       "close": "Close my account"
     },
