@@ -880,3 +880,20 @@
     padding: 10px 16px;
   }
 }
+
+/* §4.4: "Descargar" is visible without scrolling on the phone too. Below
+   900 px it rides above the tab bar; the editor leaves room for it. */
+@media (max-width: 899px) {
+  .chalyb-app .ch-clipedit {
+    padding-bottom: 96px;
+  }
+  .chalyb-app .ch-clipedit__dl {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    /* Above the tab bar and above the cookie banner while it's open (F6). */
+    bottom: calc(92px + env(safe-area-inset-bottom) + var(--consent-h, 0px));
+    z-index: 30;
+    box-shadow: 0 10px 30px rgba(91, 75, 255, 0.35);
+  }
+}

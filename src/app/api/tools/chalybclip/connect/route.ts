@@ -41,7 +41,7 @@ export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { req, se
     buttonLabel: t('cta', { plataforma: name }),
     details: { tool: 'chalybclip', platform },
     locale,
-    disclosureText: t('body', { plataforma: name }).replace(/<\/?b>/g, ''),
+    disclosureText: t.markup('body', { plataforma: name, b: (c) => c }),
   });
   return { url };
 });

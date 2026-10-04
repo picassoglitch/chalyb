@@ -136,7 +136,7 @@ export function PairingSteps({
           <p className="ch-muted">{t('s2.body')}</p>
           {code && !expired ? (
             <>
-              <p className="ch-pair__code" aria-label={t('s2.aria', { codigo: `${a} ${b}` })}>
+              <p className="ch-pair__code" role="img" aria-label={t('s2.aria', { codigo: `${a} ${b}` })}>
                 {[a, b].map((g, gi) => (
                   <span key={gi} className="ch-pair__grp" aria-hidden="true">
                     {g.split('').map((d, i) => (

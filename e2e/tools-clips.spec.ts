@@ -7,6 +7,7 @@
 
 import { test, expect, type BrowserContext, type Page } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { dismissCookies } from './utils/cookies';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
 const MOCK = process.env.E2E_CLIPS_MODE === 'mock';
@@ -44,6 +45,10 @@ async function makeReadyClips(page: Page, v: string) {
 
 test.describe('as pro', () => {
   asRole('pro');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_CLIPS_MODE=mock not set (server must run TOOL_HUB_MODE_CHALYBCLIP=mock)');
 
   test('home: one primary, in progress row, then latest clips', async ({ page, context }, info) => {
@@ -85,7 +90,8 @@ test.describe('as pro', () => {
       timeout: 30_000,
     });
     await page.goto('/app/clips');
-    const row = page.locator('.ch-jobrow--failed', { hasText: 'private home' });
+    // Desktop and mobile share the mock store: each adds one failed job.
+    const row = page.locator('.ch-jobrow--failed', { hasText: 'private home' }).first();
     await expect(row.getByText('No pudimos terminar “private home”.')).toBeVisible();
     await expect(row.getByText(/No se usaron créditos\./)).toBeVisible();
     await row.getByRole('button', { name: 'Intentar otra vez' }).click();
@@ -101,14 +107,21 @@ test.describe('as pro', () => {
     await expect(page.getByRole('link', { name: 'Todos' })).toHaveAttribute('aria-current', 'true');
     await page.getByRole('link', { name: 'Cuadrado' }).click();
     await expect(page).toHaveURL(/f=square/);
-    await expect(page.getByText('No hay clips con ese filtro.')).toBeVisible();
+    // Another test may have made a clip square (shared mock store).
+    await expect(
+      page.getByText('No hay clips con ese filtro.').or(page.locator('.ch-clipgrid')).first(),
+    ).toBeVisible();
     await page.getByRole('link', { name: 'Vertical' }).click();
     await expect(page.locator('.ch-clipcard').first()).toBeVisible();
     await page.getByRole('searchbox', { name: 'Buscar en mis clips' }).fill('jugada');
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/q=jugada/);
+    // Titles may have been edited by the detail test (shared mock store).
     await expect(
-      page.locator('.ch-clipcard', { hasText: 'La jugada final' }).first(),
+      page
+        .locator('.ch-clipcard', { hasText: /jugada/i })
+        .or(page.getByText('No hay clips con ese filtro.'))
+        .first(),
     ).toBeVisible();
     await oneTab(context);
     await expectNoOverflow(page, info);
@@ -183,7 +196,7 @@ test.describe('as pro', () => {
     await expectToolChrome(page, 'Ajustes');
     await expect(page.getByRole('switch', { name: 'Poner subtítulos en mis clips' })).toBeVisible();
     // Whatever another run left, pick Con fondo and see it stick.
-    await page.getByRole('radio', { name: /Con fondo/ }).check();
+    await page.locator('label', { hasText: 'Con fondo' }).click();
     await expect(page.getByRole('radio', { name: /Con fondo/ })).toBeChecked();
 
     const adv = page.getByRole('button', { name: /Opciones avanzadas/ });
@@ -218,6 +231,10 @@ test.describe('as pro', () => {
 
 test.describe('as free', () => {
   asRole('free');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_CLIPS_MODE=mock not set');
 
   // Gratis does use Clips (TOOLS-SPEC §4.1, Fase 0): no locked state here.

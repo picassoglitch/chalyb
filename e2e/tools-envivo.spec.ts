@@ -6,6 +6,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { dismissCookies } from './utils/cookies';
 import { expectNoLeaks } from './utils/no-leaks';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
@@ -31,6 +32,10 @@ async function ensurePaired(page: Page) {
 
 test.describe('as pro', () => {
   asRole('pro');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set (server must run the tools in mock mode)');
 
   test('connect → go live → end with the confirm, all in one tab', async ({
@@ -167,6 +172,10 @@ test.describe('as pro', () => {
 
 test.describe('as free', () => {
   asRole('free');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
   test('En vivo viene en Pro: locked inside the app, no stream controls', async ({

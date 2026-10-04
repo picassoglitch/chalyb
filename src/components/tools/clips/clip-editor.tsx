@@ -223,14 +223,18 @@ export function ClipEditor({
         {busy ? (
           <button
             type="button"
-            className="ch-btn ch-btn--primary ch-btn--xl"
+            className="ch-btn ch-btn--primary ch-btn--xl ch-clipedit__dl"
             disabled
             aria-live="polite"
           >
             {copy.preparing}
           </button>
         ) : (
-          <a href={clip.downloadUrl} download className="ch-btn ch-btn--primary ch-btn--xl">
+          <a
+            href={clip.downloadUrl}
+            download
+            className="ch-btn ch-btn--primary ch-btn--xl ch-clipedit__dl"
+          >
             <Download aria-hidden="true" />
             {copy.download}
           </a>

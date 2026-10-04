@@ -2602,3 +2602,37 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-tool__status--warn .ch-tool__dot { background: #ff9f0a; }
 .chalyb-app .ch-tools--light { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
 .chalyb-app .ch-tool--light { padding: 14px; gap: 12px; }
+/* Tool screens at 360 px: single-column grids never grow past the screen
+   (an implicit auto column sizes to its widest unwrapped child). */
+.chalyb-app :is(
+    .ch-toolbody, .ch-pair, .ch-live, .ch-live__main, .ch-live__side, .ch-live__panel,
+    .ch-ev-streams, .ch-ev-set, .ch-ev-set__col, .ch-ev-adv, .ch-jobrows, .ch-sig-list,
+    .ch-sig-side, .ch-sig-detail__side, .ch-sig-panel, .ch-sig-day, .ch-sig-chartcard,
+    .ch-sigset, .ch-sigset__col, .ch-toolerr
+  ) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.chalyb-app .ch-toolbody > * {
+  min-width: 0;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-adv__bar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    row-gap: 6px;
+  }
+  .chalyb-app .ch-adv__sub {
+    order: 3;
+    flex-basis: 100%;
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+/* Phones: scrolling to an element (keyboard focus, in-page links) keeps it
+   clear of the fixed bottom tab bar as well as the cookie banner. */
+@media (max-width: 899px) {
+  html:has(.ch-tabs) {
+    scroll-padding-bottom: calc(96px + var(--consent-h, 0px));
+  }
+}

@@ -40,7 +40,10 @@ export async function POST(req: Request) {
       details: { tool: slug, version: riskVersion(), tool_name: engineDisplayName(slug) },
       locale,
       // aceptacion-ux §6, word for word as the sheet showed it (BUILD-SPEC §10.3).
-      disclosureText: t('risk.body', { herramienta: engineDisplayName(slug) }).replace(/<\/?b>/g, ''),
+      disclosureText: t.markup('risk.body', {
+        herramienta: engineDisplayName(slug),
+        b: (c) => c,
+      }),
     });
     return NextResponse.json({ ok: true, consentId: event.consent_id });
   }
@@ -74,7 +77,7 @@ export async function POST(req: Request) {
     const event = await recordToolConsent(session, {
       type: 'autopublish_enabled',
       surface: 'clips_autopublish',
-      checkboxText: t('autopublish.check', { cuenta: account }).replace(/<\/?b>/g, ''),
+      checkboxText: t.markup('autopublish.check', { cuenta: account, b: (c) => c }),
       buttonLabel: t('autopublish.cta'),
       details: { tool: 'chalybclip', account },
       locale,

@@ -4,6 +4,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { dismissCookies } from './utils/cookies';
 import { expectNoLeaks } from './utils/no-leaks';
 import { expectNoOverflow } from './utils/a11y';
 
@@ -39,6 +40,10 @@ async function finishSetup(page: Page) {
 
 test.describe('Señales · as pro (annual)', () => {
   asRole('pro_annual');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
   test('no box, no acceptance (422); the data needs the notice (403 until accepted)', async ({
@@ -131,6 +136,10 @@ test.describe('Señales · as pro (annual)', () => {
 
 test.describe('Señales · as free', () => {
   asRole('free');
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/app');
+    await dismissCookies(page);
+  });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
   test('locked: comes with Pro, no risk sheet before activating', async ({ page }, info) => {

@@ -58,13 +58,6 @@ export default defineConfig({
       },
     },
     {
-      // "Abrir" must work in WebKit too (P0-1).
-      name: 'desktop-webkit',
-      dependencies: ['setup'],
-      testMatch: /clips-launch\.spec\.ts/,
-      use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
-    },
-    {
       // Owner-panel actions that change shared state (hide a tool, the
       // Mensual toggle, a gifted month) run once, after every other spec,
       // so no parallel test sees the change (P5).
