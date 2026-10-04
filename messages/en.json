@@ -46,7 +46,7 @@
       "notifTitle": "Your clips are ready",
       "notifBody": "They already have subtitles. Download them whenever you like."
     },
-    "cta": "Start my 7 free days",
+    "cta": "Start my 7-day free trial",
     "ctaSub": "Every tool included. Cancel anytime.",
     "tools": {
       "label": "Tools",
@@ -104,7 +104,10 @@
       "cap3": "LAST SECOND",
       "cap4": "WHAT DO YOU RECOMMEND?",
       "cap5": "I CAN’T STOP LAUGHING",
-      "cap6": "HERE’S THE TRICK"
+      "cap6": "HERE’S THE TRICK",
+      "p1": "TikTok",
+      "p2": "Reels",
+      "p3": "Shorts"
     },
     "who": {
       "label": "Who it’s for",
@@ -201,7 +204,7 @@
       "contact": "Contact",
       "write": "Write to us",
       "disclaimer": "Signals, Picks and Investments are informational: not financial or betting advice, and they don’t guarantee results. The decisions and the risks are yours.",
-      "copy": "© {year} Chalyb. Prices in Mexican pesos (MXN), VAT included.",
+      "copy": "© {year} Chalyb. Prices in MXN, VAT included.",
       "secure": "Secure payment with Mercado Pago",
       "lang": "Español · English"
     },

@@ -82,10 +82,15 @@ export async function ToolsSection({
           sub={claimAll ? t('sub') : t('subNoClaim')}
         />
         <ul className="pub-bento">
-          {cards.map((c) => {
+          {cards.map((c, i) => {
+            // Without the "todo incluido" card, the last card fills its row.
+            const fill =
+              !claimAll && i === cards.length - 1 && span < 3
+                ? { className: ' pub-bc--fill', style: { ['--span' as string]: span + 1 } }
+                : { className: '', style: undefined };
             if (c.kind === 'pair') {
               return (
-                <li key="pair" className="pub-bc">
+                <li key="pair" className={`pub-bc${fill.className}`} style={fill.style}>
                   <span className="pub-bc__pair">
                     <ToolTile slug={c.tools[0].slug} color={c.tools[0].color} size={60} />
                     <ToolTile slug={c.tools[1].slug} color={c.tools[1].color} size={60} />
@@ -100,7 +105,11 @@ export async function ToolsSection({
             const clips = tool.slug === 'chalybclip';
             const note = legal(tool.slug);
             return (
-              <li key={tool.slug} className={`pub-bc${clips ? ' pub-bc--clips' : ''}`}>
+              <li
+                key={tool.slug}
+                className={`pub-bc${clips ? ' pub-bc--clips' : ''}${fill.className}`}
+                style={fill.style}
+              >
                 <div className="pub-bc__tx">
                   <ToolTile slug={tool.slug} color={tool.color} size={60} />
                   <h3>{tool.name}</h3>
@@ -126,7 +135,7 @@ export async function ToolsSection({
             );
           })}
           {claimAll && (
-            <li className="pub-bc pub-bc--all" style={{ gridColumn: `span ${span}` }}>
+            <li className="pub-bc pub-bc--all" style={{ ['--span' as string]: span }}>
               <div>
                 <h3>{t('allTitle')}</h3>
                 <p>

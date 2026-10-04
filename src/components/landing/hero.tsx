@@ -4,7 +4,6 @@ import { getTranslations } from 'next-intl/server';
 import { ArrowRight, Check } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { formatMXN } from '@/lib/billing/format';
-import { Markup } from '@/components/ui/markup';
 import { BrandMark } from './brand-mark';
 
 // 1 · Hero (LANDING-SPEC §3.2, mockup 42). The only h1. The visual is the
@@ -21,12 +20,9 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
         <div className="pub-hero2__copy">
           <p className="pub-kick">
             <span>{t('eyebrowTag')}</span>
-            <span className="pub-only-desk">{t('eyebrow')}</span>
-            <span className="pub-only-mob pub-kick__mob">{t('eyebrow')}</span>
+            <span className="pub-kick__rest">{t('eyebrow')}</span>
           </p>
-          <h1 id="hero-title">
-            <Markup text={t.markup('title', { em: (c: string) => `<em>${c}</em>` })} />
-          </h1>
+          <h1 id="hero-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h1>
           <p className="pub-hero2__sub">{t('sub')}</p>
           <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
             {ctaLabel}
@@ -74,7 +70,7 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
             <BrandMark size={44} />
             <div>
               <p className="pub-notif__top">
-                <span>{t('notifApp')}</span>
+                <span className="pub-notif__app">{t('notifApp')}</span>
                 <span>{t('notifWhen')}</span>
               </p>
               <b>{t('notifTitle')}</b>

@@ -45,8 +45,9 @@ export function LandingClient({ signedIn }: { signedIn: boolean }) {
       if (el.dataset.cta) {
         const href = el.getAttribute('href') ?? '';
         const u = new URL(href, location.href);
+        // Pricing cards carry their own data-cta; their links say `from`.
         send('landing_cta_click', {
-          cta_id: el.dataset.cta,
+          cta_id: u.searchParams.get('from') ?? el.dataset.cta,
           plan: u.searchParams.get('plan') ?? 'pro',
           interval: u.searchParams.get('interval') ?? '',
           section: el.closest('section')?.id || 'nav',

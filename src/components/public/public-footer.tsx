@@ -75,9 +75,9 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
           <p>{t('copy', { year: new Date().getFullYear() })}</p>
           <p>{t('secure')}</p>
           <CookieSettingsButton className="pub-foot__cookies" />
-          <a href="/en" hrefLang="en" lang="en" className="pub-foot__lang" data-foot-target="en">
+          <Link href="/" locale="en" hrefLang="en" className="pub-foot__lang" data-foot-target="en">
             {t('lang')}
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

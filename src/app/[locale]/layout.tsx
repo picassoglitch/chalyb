@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { CookieConsent } from '@/components/public/cookie-banner';
 import { routing } from '@/i18n/routing';
+import { PUBLIC_CLIENT_NAMESPACES, pickNamespaces } from '@/i18n/client-messages';
 import { HREFLANG } from '@/i18n/locales';
 import { canonicalOrigin } from '@/lib/site';
 import './globals.css';
@@ -74,7 +75,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={pickNamespaces(messages, PUBLIC_CLIENT_NAMESPACES)}>
           {children}
           {/* Loads Vercel Analytics only after cookie consent (P4-7). */}
           <CookieConsent />

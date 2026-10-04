@@ -2,7 +2,6 @@ import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { formatMXN } from '@/lib/billing/format';
-import { Markup } from '@/components/ui/markup';
 import { toolList, type PublicTool } from '@/lib/tools/public-tools';
 
 // 9 · CTA final (LANDING-SPEC §3.10), with the active tools.
@@ -25,9 +24,7 @@ export async function FinalCta({
     <section className="pub-band pub-band--tight" aria-labelledby="final-title" id="final">
       <div className="pub-wrap">
         <div className="pub-final2">
-          <h2 id="final-title">
-            <Markup text={t.markup('title', { em: (c: string) => `<em>${c}</em>` })} />
-          </h2>
+          <h2 id="final-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h2>
           <p>
             <span className="pub-only-desk">{t('sub', { lista: toolList(tools, locale) })}</span>
             <span className="pub-only-mob">{t('subMobile')}</span>

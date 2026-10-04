@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import { SectionHead } from './section-head';
 
 // 4 · Galería (LANDING-SPEC §3.5): 6 example clips, vertical with a big
 // subtitle and the duration, as on the "Tus clips están listos" screen. The
@@ -42,9 +41,9 @@ export async function Gallery() {
         </ul>
         <div className="pub-gall2__foot">
           <ul aria-label={t('platforms')} className="pub-gall2__plat">
-            <li>TikTok</li>
-            <li>Reels</li>
-            <li>Shorts</li>
+            {(['p1', 'p2', 'p3'] as const).map((k) => (
+              <li key={k}>{t(k)}</li>
+            ))}
           </ul>
           <p>{t('foot')}</p>
         </div>

@@ -104,7 +104,10 @@
       "cap3": "ÚLTIMO SEGUNDO",
       "cap4": "¿QUÉ ME RECOMIENDAN?",
       "cap5": "NO PUEDO MÁS JAJAJA",
-      "cap6": "EL TRUCO ES ESTE"
+      "cap6": "EL TRUCO ES ESTE",
+      "p1": "TikTok",
+      "p2": "Reels",
+      "p3": "Shorts"
     },
     "who": {
       "label": "Para quién",
@@ -201,7 +204,7 @@
       "contact": "Contacto",
       "write": "Escríbenos",
       "disclaimer": "Señales, Pronósticos e Inversiones son informativos: no son asesoría financiera ni de apuestas, y no garantizan resultados. Las decisiones y los riesgos son tuyos.",
-      "copy": "© {year} Chalyb. Precios en pesos mexicanos (MXN), IVA incluido.",
+      "copy": "© {year} Chalyb. Precios en MXN, IVA incluido.",
       "secure": "Pago seguro con Mercado Pago",
       "lang": "Español · English"
     },

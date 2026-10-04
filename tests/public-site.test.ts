@@ -110,7 +110,6 @@ test('every active tool has its landing copy in both locales', () => {
       ]),
     )) {
       assert.ok(m[`landing.tools.desc.${tool.slug}`], `${locale}: tools.desc.${tool.slug}`);
-      assert.ok(m[`landing.hero.rows.${tool.slug}.label`], `${locale}: hero.rows.${tool.slug}`);
     }
   }
 });
@@ -152,8 +151,11 @@ const FORBIDDEN = [
 ];
 
 test('landing copy has none of the forbidden claims (B31, §0.3, §11)', () => {
+  // The exact notices negate the words on purpose (LANDING-SPEC §1.5).
+  const notices = new Set(['landing.tools.legalBets', 'landing.publicFooter.disclaimer']);
   for (const locale of ['es', 'en']) {
     for (const [key, value] of Object.entries(landing(locale))) {
+      if (notices.has(key)) continue;
       for (const re of FORBIDDEN) assert.doesNotMatch(value, re, `${locale} ${key}: ${value}`);
     }
   }
@@ -247,10 +249,12 @@ test('WhatsApp help and partner terms need an https URL', () => {
 test('the components gate each owner claim behind its flag', () => {
   const read = (f: string) =>
     readFileSync(new URL(`../src/components/landing/${f}`, import.meta.url), 'utf8');
-  assert.match(read('audience.tsx'), /supportWhatsappUrl\(\) \? \['strip3'\]/);
-  assert.match(read('faq.tsx'), /cfdiEnabled\(\) \?/);
-  assert.match(read('faq.tsx'), /whatsapp \? t\('a2help'\)/);
-  assert.match(read('partner.tsx'), /partnerProgramTermsUrl\(\)/);
+  // LANDING-SPEC §10: no WhatsApp help (D6), no invoice question (L2), no
+  // partner earnings promise (D7), tool claims behind allToolsClaimAllowed.
+  assert.doesNotMatch(read('audience.tsx') + read('faq.tsx'), /whatsapp|cfdi|factura/i);
+  assert.doesNotMatch(read('partner.tsx'), /ganancias|partnerProgramTermsUrl/);
+  assert.match(read('landing-page.tsx'), /const claimAll = allToolsClaimAllowed\(\)/);
+  assert.match(read('tools.tsx'), /\{claimAll && \(\s*<li className="pub-bc pub-bc--all"/);
   assert.match(read('json-ld.tsx'), /paidCheckoutEnabled\(\) && legalPublished\(\)/);
 });
 

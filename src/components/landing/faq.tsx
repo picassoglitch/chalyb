@@ -7,7 +7,7 @@ import { SectionHead } from './section-head';
 
 // 7 · Preguntas frecuentes (#preguntas, LANDING-SPEC §3.8): 8 questions, two
 // columns of 4 on desktop; the first (and on desktop the sixth) open. Amounts
-// from config, the Pro list from the active tools. No CFDI question until
+// from config, the Pro list from the active tools. No invoice question until
 // the owner confirms invoices (L2).
 
 export async function Faq({
