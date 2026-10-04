@@ -16,6 +16,7 @@ import { wrap } from '@/lib/email/templates';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { logAudit } from '@/lib/audit/log';
 import { legalPublished } from '@/lib/config/flags';
+import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
 import { currentVersion, legalPath, noticeRequired, versionMeta, versionSlug } from './registry';
@@ -23,6 +24,7 @@ import { arcoEffectiveBy, arcoError, arcoRespondBy, type ArcoInput } from './arc
 import {
   COUNTER_NOTICE_BUSINESS_DAYS,
   contentFingerprint,
+  normalizeContentUrl,
   counterNoticeOutcome,
   isRepeatInfringer,
   strikeCount,
@@ -244,48 +246,109 @@ export async function submitTakedown(
   return { ok: true, id: data.id as string };
 }
 
-/** Admin: remove the content, block its re-upload, tell the uploader. */
-export async function removeTakedown(
-  id: string,
-  targetEmail: string,
-  actor: { id: string; name: string },
-): Promise<{ ok: true; repeat: boolean } | { ok: false; code: string }> {
-  const db = createAdminClient();
-  const { data: n } = await db.from('takedown_notices').select('*').eq('id', id).maybeSingle();
-  if (!n || n.status !== 'received') return { ok: false, code: 'state' };
-  const { data: prof } = await db
+/** Admin, step 1 of a removal: the uploader's account (exact email) and
+ *  their clip jobs, each with the normalized source the block would use, so
+ *  the admin picks the exact source instead of trusting the notice's text. */
+export async function lookupTakedownTarget(
+  email: string,
+): Promise<
+  | {
+      ok: true;
+      userId: string;
+      jobs: { id: string; sourceUrl: string; normalized: string | null; createdAt: string }[];
+    }
+  | { ok: false; code: 'user' }
+> {
+  const { data: prof } = await createAdminClient()
     .from('profiles')
-    .select('id, email')
-    .ilike('email', targetEmail.trim())
+    .select('id')
+    .eq('email', email.trim().toLowerCase())
     .maybeSingle();
   if (!prof) return { ok: false, code: 'user' };
+  const jobs =
+    (await getClipsAdapter()
+      ?.listJobs(prof.id as string, 200)
+      .catch(() => [])) ?? [];
+  return {
+    ok: true,
+    userId: prof.id as string,
+    jobs: jobs.map((j) => ({
+      id: j.id,
+      sourceUrl: j.sourceUrl,
+      normalized: normalizeContentUrl(j.sourceUrl),
+      createdAt: j.createdAt,
+    })),
+  };
+}
+
+/** The normalized form of a source, shown to the admin before confirming. */
+export function previewSource(url: string): string | null {
+  return normalizeContentUrl(url);
+}
+
+/**
+ * Admin: remove (Uso aceptable §5.2). The exact source must normalize and
+ * match at least one of the uploader's jobs. Every job of theirs with that
+ * fingerprint is hidden (content_removals: Mis resultados, the job page,
+ * downloads and sharing in Chalyb), the source is blocked for re-upload,
+ * and the uploader is told exactly that.
+ */
+export async function removeTakedown(
+  id: string,
+  input: { targetEmail: string; sourceUrl: string },
+  actor: { id: string; name: string },
+): Promise<
+  { ok: true; repeat: boolean; hidden: number; normalized: string } | { ok: false; code: string }
+> {
+  const normalized = normalizeContentUrl(input.sourceUrl);
+  const fp = contentFingerprint(input.sourceUrl);
+  if (!normalized || !fp) return { ok: false, code: 'source' };
+  const db = createAdminClient();
+  const target = await lookupTakedownTarget(input.targetEmail);
+  if (!target.ok) return { ok: false, code: 'user' };
+  const matches = target.jobs.filter((j) => contentFingerprint(j.sourceUrl) === fp);
+  if (!matches.length) return { ok: false, code: 'no_job' };
   const now = new Date().toISOString();
-  const { error } = await db
+  const { data: n } = await db
     .from('takedown_notices')
     .update({
       status: 'removed',
-      target_user_id: prof.id,
+      target_user_id: target.userId,
       removed_at: now,
       removed_by: actor.name,
       user_notified_at: now,
+      source_url: input.sourceUrl.trim(),
+      source_fingerprint: fp,
+      removed_job_count: matches.length,
     })
     .eq('id', id)
-    .eq('status', 'received');
-  if (error) return { ok: false, code: 'db' };
-  const fp = contentFingerprint(n.content_location as string);
-  if (fp) {
-    await db.from('blocked_content').upsert({
-      fingerprint: fp,
-      kind: 'url',
-      source: n.content_location,
-      takedown_id: id,
-      lifted_at: null,
-    });
-  }
-  // §5.2.4: tell the uploader, with a copy of the notice and no claimant
-  // data beyond what's needed.
+    .eq('status', 'received')
+    .select('id, content_identification, right_statement')
+    .maybeSingle();
+  // Someone else moved it first (two admins, a double click): stop.
+  if (!n) return { ok: false, code: 'state' };
+  await db
+    .from('content_removals')
+    .upsert(
+      matches.map((j) => ({
+        takedown_id: id,
+        user_id: target.userId,
+        job_id: j.id,
+        removed_at: now,
+        restored_at: null,
+      })),
+    );
+  await db
+    .from('blocked_content')
+    .upsert({ fingerprint: fp, kind: 'url', source: normalized, takedown_id: id, lifted_at: null });
+
+  const { data: prof } = await db
+    .from('profiles')
+    .select('email')
+    .eq('id', target.userId)
+    .maybeSingle();
   await addUserNotice({
-    userId: prof.id as string,
+    userId: target.userId,
     kind: 'contentRemoved',
     ...(await noticeText('contentRemoved', {
       contenido: String(n.content_identification).slice(0, 120),
@@ -293,7 +356,7 @@ export async function removeTakedown(
     href: '/uso-aceptable#5-3-contra-aviso',
     dedupeKey: `takedown:${id}`,
   }).catch(() => {});
-  if (prof.email) {
+  if (prof?.email) {
     await sendEmail({
       to: prof.email as string,
       subject: 'Retiramos contenido por un aviso de derechos de autor',
@@ -301,10 +364,11 @@ export async function removeTakedown(
         title: 'Contenido retirado',
         preview: 'Puedes enviar un contra-aviso si fue un error.',
         body: [
-          `<p>Recibimos un aviso de derechos de autor sobre este contenido y lo retiramos (Política de Uso Aceptable §5.2):</p>`,
-          `<p><b>${escapeHtml(n.content_identification as string)}</b><br/>${escapeHtml(n.content_location as string)}</p>`,
+          `<p>Recibimos un aviso de derechos de autor sobre este contenido (Política de Uso Aceptable §5.2):</p>`,
+          `<p><b>${escapeHtml(n.content_identification as string)}</b><br/>${escapeHtml(normalized)}</p>`,
           `<p>Motivo que nos indicaron: ${escapeHtml(n.right_statement as string)}</p>`,
-          `<p>Si crees que fue un error, responde a este correo con tu <b>contra-aviso</b>: demuestra la titularidad o la autorización que tienes para ese uso, o justifica el uso conforme a la Ley Federal del Derecho de Autor (§5.3).</p>`,
+          `<p>Lo que hicimos: ocultamos ${matches.length === 1 ? 'el trabajo de clips' : `los ${matches.length} trabajos de clips`} hechos con ese video. Ya no aparecen en Mis resultados ni se pueden abrir, descargar ni compartir desde Chalyb, y ese video no se puede volver a subir. Los archivos que ya descargaste o publicaste fuera de Chalyb no los podemos tocar.</p>`,
+          `<p>Si crees que fue un error, responde a este correo con tu <b>contra-aviso</b>: demuestra la titularidad o la autorización que tienes para ese uso, o justifica el uso conforme a la Ley Federal del Derecho de Autor (§5.3). Si procede, volvemos a mostrar tus clips.</p>`,
         ].join(''),
       }),
       replyTo: copyrightInbox(),
@@ -313,24 +377,24 @@ export async function removeTakedown(
   const { data: history } = await db
     .from('takedown_notices')
     .select('status, removed_at')
-    .eq('target_user_id', prof.id);
+    .eq('target_user_id', target.userId);
   const repeat = isRepeatInfringer(
     strikeCount((history ?? []) as { status: string; removed_at: string | null }[], new Date()),
   );
   void logAudit({
     action: 'legal.takedown',
     actorId: actor.id,
-    targetUserId: prof.id as string,
-    metadata: { id, step: 'removed', fingerprint: fp },
+    targetUserId: target.userId,
+    metadata: { id, step: 'removed', fingerprint: fp, hidden_jobs: matches.map((j) => j.id) },
   });
   if (repeat)
     void logAudit({
       action: 'legal.repeat_infringer',
       actorId: actor.id,
-      targetUserId: prof.id as string,
+      targetUserId: target.userId,
       metadata: { id },
     });
-  return { ok: true, repeat };
+  return { ok: true, repeat, hidden: matches.length, normalized };
 }
 
 /** Admin: the uploader's counter-notice (§5.3). The claimant has 15
@@ -349,7 +413,7 @@ export async function recordCounterNotice(
   if (!n || n.status !== 'removed' || !text.trim()) return false;
   const now = new Date();
   const deadline = addMxBusinessDays(now, COUNTER_NOTICE_BUSINESS_DAYS);
-  const { error } = await db
+  const { data: moved, error } = await db
     .from('takedown_notices')
     .update({
       status: 'counter_noticed',
@@ -358,8 +422,11 @@ export async function recordCounterNotice(
       claimant_deadline: deadline.toISOString(),
     })
     .eq('id', id)
-    .eq('status', 'removed');
-  if (error) return false;
+    .eq('status', 'removed')
+    .select('id')
+    .maybeSingle();
+  // Another admin got there first: stop (no second email).
+  if (error || !moved) return false;
   if (looksLikeEmail(n.claimant_contact as string)) {
     await sendEmail({
       to: (n.claimant_contact as string).trim(),
@@ -427,25 +494,36 @@ export async function rejectTakedown(
   return true;
 }
 
-async function restoreTakedown(id: string, targetUserId: string | null): Promise<void> {
+async function restoreTakedown(id: string, targetUserId: string | null): Promise<boolean> {
   const db = createAdminClient();
   const now = new Date().toISOString();
-  await db
+  const { data } = await db
     .from('takedown_notices')
     .update({ status: 'restored', restored_at: now })
     .eq('id', id)
-    .eq('status', 'counter_noticed');
+    .eq('status', 'counter_noticed')
+    .select('id')
+    .maybeSingle();
+  // Already restored or upheld by someone else: nothing to undo.
+  if (!data) return false;
+  // Undo exactly what the removal did: show the jobs again, lift the block.
+  await db
+    .from('content_removals')
+    .update({ restored_at: now })
+    .eq('takedown_id', id)
+    .is('restored_at', null);
   await db.from('blocked_content').update({ lifted_at: now }).eq('takedown_id', id);
   if (targetUserId) {
     await addUserNotice({
       userId: targetUserId,
       kind: 'contentRestored',
       ...(await noticeText('contentRestored')),
+      href: '/app/history',
       dedupeKey: `takedown-restored:${id}`,
     }).catch(() => {});
-  }
-  if (targetUserId)
     void logAudit({ action: 'legal.takedown', targetUserId, metadata: { id, step: 'restored' } });
+  }
+  return true;
 }
 
 /** Re-upload blocking (§5.2.3): the source of a new job, checked before it
@@ -619,8 +697,10 @@ export async function runCounterNoticeRestores(now = new Date()): Promise<{ rest
     claimant_proceeding_at: string | null;
     target_user_id: string | null;
   }[]) {
-    if (counterNoticeOutcome(n, now) === 'restore') {
-      await restoreTakedown(n.id, n.target_user_id);
+    if (
+      counterNoticeOutcome(n, now) === 'restore' &&
+      (await restoreTakedown(n.id, n.target_user_id))
+    ) {
       restored += 1;
     }
   }

@@ -1,14 +1,18 @@
 // POST /api/admin/legal — the owner panel's legal actions (Dueño → Legal).
 // Admins only. One body shape: { kind: 'arco' | 'takedown', id, action, … }.
 //   arco:     answer { outcome } · extend
-//   takedown: remove { targetEmail } · reject { reason } · counter { text } ·
-//             uphold (the claimant showed a proceeding in time)
+//   takedown: lookup { targetEmail } → the uploader's jobs with their
+//               normalized sources · preview { sourceUrl } → normalized ·
+//             remove { targetEmail, sourceUrl } · reject { reason } ·
+//             counter { text } · uphold (the claimant showed a proceeding)
 
 import { NextResponse } from 'next/server';
 import { adminName, adminSession } from '@/lib/admin/guard';
 import {
   answerArco,
   extendArco,
+  lookupTakedownTarget,
+  previewSource,
   recordCounterNotice,
   rejectTakedown,
   removeTakedown,
@@ -36,15 +40,27 @@ export async function POST(req: Request) {
       ok = await extendArco(id, actor.user.id);
     }
   } else if (b.kind === 'takedown') {
-    if (b.action === 'remove') {
-      const r = await removeTakedown(id, str('targetEmail'), {
-        id: actor.user.id,
-        name: adminName(actor),
-      });
+    if (b.action === 'lookup') {
+      const r = await lookupTakedownTarget(str('targetEmail'));
       ok = r.ok;
-      extra = r.ok ? { repeat: r.repeat } : { code: r.code };
+      extra = r.ok ? { jobs: r.jobs } : { code: r.code };
+    } else if (b.action === 'preview') {
+      const normalized = previewSource(str('sourceUrl'));
+      ok = normalized !== null;
+      extra = { normalized };
+    } else if (b.action === 'remove') {
+      const r = await removeTakedown(
+        id,
+        { targetEmail: str('targetEmail'), sourceUrl: str('sourceUrl') },
+        { id: actor.user.id, name: adminName(actor) },
+      );
+      ok = r.ok;
+      extra = r.ok
+        ? { repeat: r.repeat, hidden: r.hidden, normalized: r.normalized }
+        : { code: r.code };
     } else if (b.action === 'reject') {
-      ok = await rejectTakedown(id, str('reason'), actor.user.id);
+      ok = str('reason').trim() ? await rejectTakedown(id, str('reason'), actor.user.id) : false;
+      if (!ok) extra = { code: str('reason').trim() ? 'state' : 'reason' };
     } else if (b.action === 'counter') {
       ok = await recordCounterNotice(id, str('text'), actor.user.id);
     } else if (b.action === 'uphold') {
