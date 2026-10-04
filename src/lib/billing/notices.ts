@@ -19,6 +19,7 @@ import type { ConsentEventType } from './consent-core';
 import { legalDocuments } from '@/lib/legal/documents';
 import { PRICING, lealtadSchedule, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from './format';
+import { trialLengthDays } from './trial-dates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 const DOC_LABELS: Record<string, string> = {
@@ -105,7 +106,8 @@ export function trialNoticeVars(input: {
     fecha_inicio: formatFechaLarga(input.startedAt, 'es'),
     fecha_fin_prueba: formatFechaLarga(input.trialEndsAt, 'es'),
     fecha_cobro: formatFechaLarga(input.chargeAt, 'es'),
-    dias: PRICING.trial.days,
+    // The trial's real length (longer after a late plan switch).
+    dias: trialLengthDays(input.startedAt, input.trialEndsAt),
     faltan: Math.max(
       0,
       Math.ceil(

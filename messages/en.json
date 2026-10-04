@@ -1315,6 +1315,7 @@
     "title": "Change to {plan}",
     "whenLater": "Your change starts on {fecha}. Until then you keep {plan}.",
     "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount.",
+    "trialSwitchMoved": "Because you're switching plans, your first charge moves to {fecha} so we can notify you 5 days ahead; your trial stays free until then. That day {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount and date.",
     "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
     "card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
     "cta": "Confirm change",

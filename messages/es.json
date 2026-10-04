@@ -1315,6 +1315,7 @@
     "title": "Cambiar a {plan}",
     "whenLater": "Tu cambio empieza el {fecha}. Hasta entonces sigues con {plan}.",
     "trialSwitch": "Tu prueba sigue igual. Al terminar, el {fecha}, se cobrarán {monto} MXN {periodo}. Hoy mismo te enviamos por correo el aviso de cobro con el nuevo monto.",
+    "trialSwitchMoved": "Como cambias de plan, tu primer cobro pasa al {fecha} para avisarte con 5 días de anticipación; tu prueba sigue sin costo hasta entonces. Ese día se cobrarán {monto} MXN {periodo}. Hoy mismo te enviamos por correo el aviso de cobro con el nuevo monto y la nueva fecha.",
     "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta a partir del <b>{fecha}</b>, y acepto los <terms>Términos de Suscripción</terms>.",
     "card": "Confirma con tu tarjeta. Por seguridad, Mercado Pago la pide de nuevo en cada cambio.",
     "cta": "Confirmar cambio",

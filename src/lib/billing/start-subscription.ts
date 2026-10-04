@@ -45,7 +45,13 @@ import { cancelPreapproval, syncSubscription } from '@/lib/payments/subscription
 import { track } from '@/lib/analytics/track';
 import { legalDocuments } from '@/lib/legal/documents';
 import type { SessionUser } from '@/lib/auth/session';
-import { addInterval, trialDates, type TrialDates } from './trial-dates';
+import {
+  addInterval,
+  switchChargeDate,
+  switchMovesCharge,
+  trialDates,
+  type TrialDates,
+} from './trial-dates';
 import { formatFechaLarga, formatMXN } from './format';
 import {
   lealtadEnabled,
@@ -242,12 +248,23 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     });
   }
   const chargeCents = lealtad ? lealtadPriceCents(startStep) : price.totalCents;
-  const switchEnds = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
+  // T-6: the switch's fresh notice goes out now, so its charge comes at
+  // least 5 days later — pushed past the trial's end when the switch is late
+  // (owner, 2026-10-03); the trial runs to the same instant.
+  const originalTrialEnd = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
+  const switchEnds = originalTrialEnd ? switchChargeDate(originalTrialEnd, now) : null;
+  const switchMoved = !!originalTrialEnd && switchMovesCharge(originalTrialEnd, now);
+  const trialStartedAt = (billing.primaryRow?.started_at as string | undefined) ?? null;
   const dates: TrialDates =
     mode === 'trial'
       ? trialDates(now)
       : switchEnds
-        ? { startsAt: now, trialEndsAt: switchEnds, chargeAt: switchEnds, reminderAt: now }
+        ? {
+            startsAt: trialStartedAt ? new Date(trialStartedAt) : now,
+            trialEndsAt: switchEnds,
+            chargeAt: switchEnds,
+            reminderAt: now,
+          }
         : { startsAt: now, trialEndsAt: now, chargeAt: input.effectiveAt ?? now, reminderAt: now };
 
   // The texts the user saw, rendered again here exactly as the page renders
@@ -277,6 +294,14 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // Pro Lealtad: Law's checkout block with the real dates, from the first
   // charge (today, or when the current plan ends).
   const lealtadStart = firstChargeLater ? dates.chargeAt : now;
+  // A trial switch: the change page's own paragraph, with the (moved) date.
+  const switchParagraph = trialSwitch
+    ? tChangeText(switchMoved ? 'trialSwitchMoved' : 'trialSwitch', {
+        fecha: formatFechaLarga(dates.chargeAt, input.locale),
+        monto: formatMXN(chargeCents),
+        periodo: tb(price.interval === 'year' ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month'),
+      })
+    : null;
   const disclosureText = lealtad
     ? evidenceText(
         lealtadCheckoutParagraphs(t, {
@@ -285,9 +310,11 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
           locale: input.locale,
         }),
       )
-    : trialLike
-      ? evidenceText(disclosureParagraphs(t, disclosure))
-      : chargedToday
+    : switchParagraph
+      ? evidenceText([switchParagraph])
+      : trialLike
+        ? evidenceText(disclosureParagraphs(t, disclosure))
+        : chargedToday
         ? evidenceText(paidParagraphs(t, paidInput))
         : null;
   const checkboxText = lealtad
@@ -480,6 +507,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       })
       .eq('id', userId)
       .is('pro_trial_started_at', null);
+  }
+  // A switch that pushed the charge back extends the trial to it.
+  if (switchMoved) {
+    await admin
+      .from('profiles')
+      .update({ pro_trial_ends_at: dates.trialEndsAt.toISOString() })
+      .eq('id', userId);
   }
   // Every card that starts a plan, trial or paid: a card that already paid
   // for one account can't open a trial on another.

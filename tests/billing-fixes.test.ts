@@ -391,26 +391,70 @@ test('LOW the cron grants approved, correctly priced packs with no purchase on f
   assert.match(cron, /await reconcilePackGrants\(now\)/);
 });
 
-// ── #8 · Documents CURRENT behaviour (owner decision pending; unchanged) ─
-test('#8 (current behaviour) a late in-trial switch is held only on paper unless MP_PAUSE_IN_TRIAL_VERIFIED', async () => {
+// ── #8 · A late in-trial switch pushes the first charge back (owner, 2026-10-03) ─
+test('#8 a switch on day 2 keeps the trial end; on day 5 the charge moves to notice + 5 days', async () => {
+  const { switchChargeDate, switchMovesCharge } = await import('@/lib/billing/trial-dates');
   const { holdDecision } = await import('@/lib/billing/reminders');
-  const { mpPauseInTrialVerified } = await import('@/lib/config/flags');
-  // T-6: the trial switch on day 5 sends a fresh notice 2 days before the
-  // charge; it's delivered at once.
   const start = Date.parse('2026-10-01T15:00:00Z');
-  const charge = new Date(start + 7 * DAY).toISOString();
-  const switchedAt = new Date(start + 5 * DAY);
-  const d = holdDecision({ nextChargeAt: charge, noticeDeliveredAt: switchedAt.toISOString(), holdUntil: null, now: switchedAt });
-  // The rule says hold until 5 days after that notice…
-  assert.deepEqual(d, { action: 'hold', until: new Date(switchedAt.getTime() + 5 * DAY) });
-  // …but during a trial the cron only touches Mercado Pago with the flag on
-  // (default off): otherwise an admin notice, and MP charges at trial end.
-  assert.equal(mpPauseInTrialVerified(), false);
+  const trialEnd = new Date(start + 7 * DAY);
+  // Day 2 (up to trial start + 2 days − the 1 h slack): the fresh notice is
+  // still ≥ 5 days before the trial end; the date is kept.
+  for (const h of [26, 36, 47]) {
+    const day2 = new Date(start + h * 60 * 60 * 1000);
+    assert.equal(switchChargeDate(trialEnd, day2).toISOString(), trialEnd.toISOString(), `${h} h`);
+    assert.equal(switchMovesCharge(trialEnd, day2), false);
+  }
+  // Day 5: 5 days after the notice, plus the notice slack (1 h).
+  const day5 = new Date(start + 5 * DAY);
+  const moved = switchChargeDate(trialEnd, day5);
+  assert.equal(moved.toISOString(), new Date(day5.getTime() + 5 * DAY + 60 * 60 * 1000).toISOString());
+  assert.equal(switchMovesCharge(trialEnd, day5), true);
+  // The notice sent at the switch is then effective: no hold.
+  assert.deepEqual(
+    holdDecision({ nextChargeAt: moved.toISOString(), noticeDeliveredAt: day5.toISOString(), holdUntil: null, now: day5 }),
+    { action: 'none' },
+  );
+});
+
+test('#8 a switch never shortens a trial', async () => {
+  const { switchChargeDate } = await import('@/lib/billing/trial-dates');
+  const trialEnd = new Date('2026-10-08T15:00:00Z');
+  for (let h = -7 * 24; h <= 7 * 24; h += 7) {
+    const at = new Date(trialEnd.getTime() + h * 60 * 60 * 1000);
+    assert.ok(switchChargeDate(trialEnd, at).getTime() >= trialEnd.getTime(), `switch at ${at.toISOString()}`);
+  }
+});
+
+test('#8 the consent record, the email and the change page carry the moved date', async () => {
+  const { trialLengthDays } = await import('@/lib/billing/trial-dates');
+  // The email's "prueba de {dias} días": the real length, never under 7.
+  assert.equal(trialLengthDays('2026-10-01T15:00:00Z', '2026-10-11T16:00:00Z'), 10);
+  assert.equal(trialLengthDays('2026-10-01T15:00:00Z', '2026-10-08T15:00:00Z'), 7);
+
   const { readFileSync } = await import('node:fs');
-  const cron = readFileSync(new URL('../src/app/api/cron/billing/route.ts', import.meta.url), 'utf8');
-  assert.match(cron, /const touchMp = state\.state !== 'trialing' \|\| mpPauseInTrialVerified\(\);/);
-  assert.match(cron, /if \(touchMp\) \{\s*await getMercadoPago\(\)\.preapproval\.update\(\{\s*id: preapprovalId,\s*body: \{ status: 'paused' \}/);
-  // And the in-trial switch is allowed at any point of the trial.
-  const { changeTiming } = await import('@/lib/billing/plan-change');
-  assert.equal(changeTiming('pro_month', 'vip_year', true), 'trial_end');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const notices = read('src/lib/billing/notices.ts');
+  assert.match(notices, /fecha_fin_prueba: formatFechaLarga\(input\.trialEndsAt, 'es'\),/);
+  assert.match(notices, /fecha_cobro: formatFechaLarga\(input\.chargeAt, 'es'\),/);
+  assert.match(notices, /dias: trialLengthDays\(input\.startedAt, input\.trialEndsAt\),/);
+  const start = read('src/lib/billing/start-subscription.ts');
+  // The switch's dates come from switchChargeDate; consent, MP, row and email all read them.
+  assert.match(start, /const switchEnds = originalTrialEnd \? switchChargeDate\(originalTrialEnd, now\) : null;/);
+  assert.match(start, /trialEndsAt: switchEnds,\s*chargeAt: switchEnds,/);
+  assert.match(start, /trial_end_utc: trialLike \? dates\.trialEndsAt\.toISOString\(\) : null,/);
+  assert.match(start, /charge_date_utc: dates\.chargeAt\.toISOString\(\),/);
+  assert.match(start, /start_date: dates\.chargeAt\.toISOString\(\)/);
+  assert.match(start, /trial_ends_at: trialLike \? dates\.trialEndsAt\.toISOString\(\) : null,/);
+  assert.match(start, /trialEndsAt: dates\.trialEndsAt,\s*chargeAt: dates\.chargeAt,/);
+  // The evidence is the change page's paragraph with the moved date.
+  assert.match(start, /tChangeText\(switchMoved \? 'trialSwitchMoved' : 'trialSwitch'/);
+  // The page says so before they confirm, with the same date.
+  const actions = read('src/lib/billing/billing-actions.ts');
+  assert.match(actions, /switchChargeDate\(new Date\(s\.trialEndsAt\), new Date\(\)\)\.toISOString\(\)/);
+  assert.match(read('src/app/[locale]/(dashboard)/app/billing/cambiar/page.tsx'), /quote\.switchMoved \? 'trialSwitchMoved' : 'trialSwitch'/);
+  for (const lang of ['es', 'en']) {
+    const m = JSON.parse(read(`messages/${lang}.json`));
+    assert.match(m.change.trialSwitchMoved, /\{fecha\}/, lang);
+    assert.match(m.change.trialSwitchMoved, /5/, lang);
+  }
 });
