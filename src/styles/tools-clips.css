@@ -891,6 +891,7 @@
     position: fixed;
     left: 16px;
     right: 16px;
+    width: auto;
     /* Above the tab bar and above the cookie banner while it's open (F6). */
     bottom: calc(92px + env(safe-area-inset-bottom) + var(--consent-h, 0px));
     z-index: 30;
