@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Familjen_Grotesk, Fraunces, Inter, Space_Mono } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -18,8 +18,38 @@ export const dynamicParams = false;
 
 // The design system's font (Q27; LANDING-SPEC §7) for every page, public ones
 // included: self-hosted by next/font, no request to Google at runtime. The
-// tokens read it as var(--cc-body).
-const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--cc-body' });
+// tokens read it as var(--cc-body). Not preloaded: the 48 KB preload
+// competed with the hero's LCP image, and the fallback is metric-adjusted, so
+// the swap shifts nothing (LANDING-SPEC §7, CLS 0 measured).
+const inter = Inter({ subsets: ['latin'], display: 'swap', preload: false, variable: '--cc-body' });
+
+// The legacy faces (globals.css --font-display/--font-serif/--font-mono) for
+// the pages not yet rebuilt. Self-hosted too: the Google Fonts <link> they
+// used to come from blocked the landing's first paint (LANDING-SPEC §7). Not
+// preloaded, so a page that never uses them never downloads them.
+const legacyDisplay = Familjen_Grotesk({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-familjen',
+});
+const legacySerif = Fraunces({
+  subsets: ['latin'],
+  // Variable weight (covers the 400/500 the <link> asked for) with opsz.
+  axes: ['opsz'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-fraunces',
+});
+const legacyMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-space-mono',
+});
+const fontVars = [inter, legacyDisplay, legacySerif, legacyMono].map((f) => f.variable).join(' ');
 
 export async function generateMetadata({
   params,
@@ -65,15 +95,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   return (
-    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth" className={fontVars}>
       <body>
         <NextIntlClientProvider messages={pickNamespaces(messages, PUBLIC_CLIENT_NAMESPACES)}>
           {children}

@@ -51,7 +51,11 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
                 width={1072}
                 height={670}
                 sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
-                priority
+                // The LCP: high fetch priority straight from the HTML (Next
+                // 16 deprecated `priority`; its preload carried no
+                // fetchpriority). The only image with priority (§7).
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
             <div className="pub-laptop__base" />

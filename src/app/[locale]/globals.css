@@ -15,9 +15,9 @@
   --color-ember: #ff6b3d;
   --color-magenta: #ff3df0;
 
-  --font-display: 'Familjen Grotesk', sans-serif;
-  --font-serif: 'Fraunces', serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-display: var(--font-familjen), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --font-mono: var(--font-space-mono), monospace;
 }
 
 /* Raw CSS custom properties — the auth shell, legal prose and the landing all
@@ -45,9 +45,9 @@
   --cyan: #8ea2e8; /* the mark's indigo, lifted for legibility on --bg */
   --ember: #ff6b3d;
   --magenta: #ff3df0;
-  --font-display: 'Familjen Grotesk', sans-serif;
-  --font-serif: 'Fraunces', serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-display: var(--font-familjen), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --font-mono: var(--font-space-mono), monospace;
   --path: var(--brand);
   --path-glow: rgba(232, 187, 127, 0.4);
 }

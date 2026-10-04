@@ -432,6 +432,34 @@
   border-radius: 16px;
   overflow: hidden;
 }
+/* The still is a lazy <img> (gallery.tsx), not .pub-thumb's background
+   image, which loaded all six on first paint; the gradient stays as the
+   loading color (LANDING-SPEC §7). */
+.chalyb-app .pub-gall2__v.pub-thumb--1 {
+  background: linear-gradient(160deg, #2b1b6b 0%, #6a2cc9 45%, #ff6b9a 100%);
+}
+.chalyb-app .pub-gall2__v.pub-thumb--2 {
+  background: linear-gradient(170deg, #0c2d48 0%, #1478a8 50%, #38e1c4 100%);
+}
+.chalyb-app .pub-gall2__v.pub-thumb--3 {
+  background: linear-gradient(165deg, #3a0d12 0%, #c2362c 50%, #ffb347 100%);
+}
+.chalyb-app .pub-gall2__v.pub-thumb--4 {
+  background: linear-gradient(160deg, #101935 0%, #2e3dba 50%, #8fa2ff 100%);
+}
+.chalyb-app .pub-gall2__v.pub-thumb--5 {
+  background: linear-gradient(170deg, #0f2a1d 0%, #1f8a4c 50%, #c8f169 100%);
+}
+.chalyb-app .pub-gall2__v.pub-thumb--6 {
+  background: linear-gradient(165deg, #2a1240 0%, #b23a8e 50%, #ffc371 100%);
+}
+.chalyb-app .pub-gall2__img {
+  object-fit: cover;
+}
+.chalyb-app .pub-gall2__dur,
+.chalyb-app .pub-gall2__cap {
+  z-index: 1;
+}
 .chalyb-app .pub-gall2__dur {
   position: absolute;
   top: 8px;
