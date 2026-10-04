@@ -69,7 +69,9 @@ export function hashIp(
   if (!ip) return null;
   let key = env.LEGAL_EVIDENCE_HASH_KEY?.trim();
   if (!key) {
-    if (env.VERCEL_ENV === 'production') {
+    // Any deployment (production or preview) fails closed; only a local run
+    // (no VERCEL_ENV) uses the dev key, whose hashes are reversible.
+    if (env.VERCEL_ENV) {
       if (!warnedNoKey) {
         warnedNoKey = true;
         console.error(

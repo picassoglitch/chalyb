@@ -18,6 +18,7 @@ import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { legalPublished } from '@/lib/config/flags';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { runTool } from '@/lib/tools/bff';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
 import {
@@ -394,7 +395,13 @@ export async function lookupTakedownTarget(email: string): Promise<
     .maybeSingle();
   if (!prof) return { ok: false, code: 'user' };
   const adapter = getClipsAdapter();
-  const jobs = adapter ? await adapter.listJobs(prof.id as string, 200).catch(() => null) : null;
+  // Through the BFF so the engine call gets its timeout, signal and breaker.
+  const listed = adapter
+    ? await runTool('chalybclip', prof.id as string, (signal) =>
+        adapter.listJobs(prof.id as string, 200, signal),
+      ).catch(() => null)
+    : null;
+  const jobs = listed && listed.ok ? listed.data : null;
   return {
     ok: true,
     userId: prof.id as string,

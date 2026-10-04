@@ -223,6 +223,9 @@ test('LOW · the IP hash is an HMAC with LEGAL_EVIDENCE_HASH_KEY; prod without i
   assert.match(h!, /^[0-9a-f]{64}$/, 'migration 0059 CHECK (hex-64)');
   assert.notEqual(h, createHash('sha256').update('203.0.113.7').digest('hex'));
   assert.equal(hashIp('203.0.113.7', { VERCEL_ENV: 'production' }), null, 'fail closed');
+  // Previews fail closed too: the dev key is for local runs only.
+  assert.equal(hashIp('203.0.113.7', { VERCEL_ENV: 'preview' }), null, 'preview fails closed');
+  assert.match(hashIp('203.0.113.7', {})!, /^[0-9a-f]{64}$/, 'local run: dev key');
   assert.equal(hashIp(null, { LEGAL_EVIDENCE_HASH_KEY: key }), null);
 });
 
