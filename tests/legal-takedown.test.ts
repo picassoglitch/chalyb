@@ -126,7 +126,8 @@ test('regression · with no Clips adapter (production) a removal still blocks an
   // lookup reports null jobs when there is no adapter, instead of [] (which read as "no match").
   assert.match(
     server(),
-    /const jobs = adapter \? await adapter\.listJobs\(prof\.id as string, 200\)\.catch\(\(\) => null\) : null;/,
+    // Through the BFF (timeout, signal, breaker); no adapter or a failed call → null.
+    /const listed = adapter\s*\?\s*await runTool\('chalybclip'[\s\S]*?: null;\s*const jobs = listed && listed\.ok \? listed\.data : null;/,
   );
 });
 
