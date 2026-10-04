@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { contentFingerprint, normalizeContentUrl } from '@/lib/legal/takedown';
 import { checkSourceUrl } from '@/lib/tools/adapters/run-job';
 import { handleTakedownPost, readBodyCapped, TAKEDOWN_MAX_BYTES } from '@/lib/legal/takedown-http';
+import { planClipLinks } from '@/lib/tools/clips-links';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -215,4 +216,47 @@ test('MED 6 · the route uses the handler with the durable limiter; migration 00
   const sql = readFileSync(join(ROOT, 'supabase/migrations/0059_takedown_evidence.sql'), 'utf8');
   assert.match(sql, /add column if not exists claimant_ip_hash text/);
   assert.match(sql, /add column if not exists claimant_user_agent text/);
+});
+
+// ---------- LOW · a blocked "more links" URL is reported, not skipped ----------
+
+test('LOW · a blocked extra link stops the batch with the blocked message', async () => {
+  const blocked = new Set([contentFingerprint('https://youtu.be/BLOCKEDvid1')]);
+  const isBlocked = async (u: string) => blocked.has(contentFingerprint(u));
+  const main = 'https://youtu.be/dQw4w9WgXcQ';
+
+  const ok = await planClipLinks(
+    main,
+    'https://youtu.be/aaaaaaaaaaa https://example.com/x',
+    isBlocked,
+  );
+  assert.deepEqual(ok.ok && ok.links.map((l) => normalizeContentUrl(l)), [
+    YT,
+    'youtube.com/watch?v=aaaaaaaaaaa',
+  ]); // the unsupported extra is still skipped, as before
+
+  // Blocked among the extras — however it's written — or as the main link.
+  for (const extra of [
+    'https://youtu.be/BLOCKEDvid1',
+    'https://music.youtube.com/watch?v=BLOCKEDvid1&si=x',
+  ])
+    assert.deepEqual(
+      await planClipLinks(main, `https://youtu.be/aaaaaaaaaaa ${extra}`, isBlocked),
+      {
+        ok: false,
+        reason: 'content_blocked',
+      },
+    );
+  assert.deepEqual(await planClipLinks('https://youtu.be/BLOCKEDvid1', '', isBlocked), {
+    ok: false,
+    reason: 'content_blocked',
+  });
+  assert.deepEqual(await planClipLinks('nope', '', isBlocked), {
+    ok: false,
+    reason: 'link_unsupported',
+  });
+
+  const action = readFileSync(join(ROOT, 'src/lib/tools/clips-actions.ts'), 'utf8');
+  assert.match(action, /planClipLinks\(/);
+  assert.doesNotMatch(action, /if \(!extra\.ok\) continue;/);
 });

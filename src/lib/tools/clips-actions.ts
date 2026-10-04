@@ -9,8 +9,9 @@ import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { submitClips } from './clips-jobs';
 import { getClipsAdapter } from './adapters/clips';
-import { checkSourceUrl } from './adapters/run-job';
-import { extraLinks, parseClipOptions } from './clips-options';
+import { parseClipOptions } from './clips-options';
+import { planClipLinks } from './clips-links';
+import { isContentBlocked } from '@/lib/legal/legal-server';
 import {
   CLIP_COUNTS,
   CLIP_FORMATS,
@@ -30,8 +31,15 @@ export async function createClipJob(formData: FormData): Promise<void> {
     return redirect({ href: '/app/clips', locale });
   }
 
-  const link = checkSourceUrl(String(formData.get('link') ?? ''));
-  if (!link.ok) return redirect({ href: `/app/clips/nuevo?error=${link.reason}`, locale });
+  // Every link, extras included, is checked for the re-upload block before
+  // any job starts (clips-links.ts).
+  const plan = await planClipLinks(
+    String(formData.get('link') ?? ''),
+    formData.get('more'),
+    isContentBlocked,
+  );
+  if (!plan.ok) return redirect({ href: `/app/clips/nuevo?error=${plan.reason}`, locale });
+  const [first, ...extras] = plan.links;
 
   const formatRaw = String(formData.get('format') ?? 'vertical');
   const format: ClipFormat = (CLIP_FORMATS as readonly string[]).includes(formatRaw)
@@ -43,19 +51,16 @@ export async function createClipJob(formData: FormData): Promise<void> {
     : 6;
 
   const options = parseClipOptions((k) => formData.get(k));
-  const result = await submitClips({ userId: session.user.id, sourceUrl: link.url, format, count, options });
+  const result = await submitClips({ userId: session.user.id, sourceUrl: first!, format, count, options });
   if (!result) return redirect({ href: '/app/clips', locale });
   if (!result.ok) return redirect({ href: `/app/clips/nuevo?error=${result.reason}`, locale });
 
-  // "Subir varios videos a la vez": the same settings for each extra link.
-  // A bad extra link is skipped (the first job already started); the user
-  // sees every job in Mis resultados.
-  const extras = extraLinks(formData.get('more'), link.url);
+  // "Subir varios videos a la vez": the same settings for each extra link
+  // (already checked: readable and not blocked); the user sees every job in
+  // Mis resultados.
   let started = 0;
-  for (const raw of extras) {
-    const extra = checkSourceUrl(raw);
-    if (!extra.ok) continue;
-    const r = await submitClips({ userId: session.user.id, sourceUrl: extra.url, format, count, options });
+  for (const url of extras) {
+    const r = await submitClips({ userId: session.user.id, sourceUrl: url, format, count, options });
     if (r?.ok) started += 1;
   }
   if (started > 0) return redirect({ href: '/app/history', locale });
