@@ -37,7 +37,7 @@ Tick each line in order. Don't start a line until the one above it is done.
 
 ## 1. Migrations 0051 → 0060
 
-Apply in this exact order (Supabase SQL editor or `pnpm db:push`). Production already has 0046–0050. Every one of these is idempotent: re-running it changes nothing. `pnpm test:migrations` applies all of them twice to an empty Postgres and checks the key behaviors; run it before applying.
+Apply in this exact order (Supabase SQL editor, or `npx supabase db push --linked` after `supabase link`). Production already has 0046–0050. Every one of these is idempotent: re-running it changes nothing. `pnpm test:migrations` applies all of them twice to an empty Postgres and checks the key behaviors; run it before applying.
 
 For each: what it does, a **pre-check** (run before; it must return what's shown), a **post-check** (run after) and whether it can be undone.
 
@@ -102,7 +102,8 @@ Pre-check: none needed (new objects).
 Post-check:
 ```sql
 select relname, relrowsecurity from pg_class where relname in ('arco_requests','takedown_notices','blocked_content');  -- all true
-select has_table_privilege('authenticated','public.takedown_notices','SELECT');                                      -- false
+select has_table_privilege('authenticated','public.takedown_notices','INSERT');                                      -- false
+select count(*) from pg_policies where tablename in ('takedown_notices','blocked_content');                        -- 0
 ```
 Reversible: yes while empty. After that it's legal evidence; keep it.
 
@@ -190,7 +191,7 @@ Legend:
 | `NEXT_PUBLIC_SUPABASE_URL` | required | required | required | Not a secret. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | required | required | required | Public by design. |
 | `SUPABASE_SERVICE_ROLE_KEY` 🔒 | required | required | required | Bypasses RLS: server only. |
-| `NEXT_PUBLIC_APP_URL` | `https://www.chalyb.com` | preview URL | `http://localhost:3000` | MP `notification_url`/back URLs, email links, sitemap. Use **www** (OPS-4); the example file's comment still says the apex. |
+| `NEXT_PUBLIC_APP_URL` | `https://www.chalyb.com` | preview URL | `http://localhost:3000` | MP `notification_url`/back URLs, email links, sitemap. Use **www** (OPS-4). |
 | `MERCADOPAGO_ACCESS_TOKEN` 🔒 ⛔ | prod pair (`APP_USR-`) | test pair (`TEST-`/test seller) | test pair | Checkout refuses without it (`isCheckoutReady`, `src/lib/payments/mercadopago.ts`). |
 | `MERCADOPAGO_PUBLIC_KEY` ⛔ | prod pair | test pair | test pair | Not a secret, but the card form won't render without it. |
 | `MERCADOPAGO_WEBHOOK_SECRET` 🔒 ⛔ | required | required | optional | Webhook refuses unsigned or unverifiable calls; checkout refuses without it. |
@@ -206,7 +207,7 @@ Legend:
 | `SUPER_ADMIN_EMAILS` | your address | your address | your address | Anyone listed is a super admin. |
 | `PRICES_INCLUDE_IVA` | `true` | `true` | `true` | Defaults to true in code; set it explicitly (OPS-17). |
 | `*_ADMIN_TOKEN`, `*_SSO_SECRET` 🔒 (CHALYBCLIP, CHALYBOBS, CHALYBCRYPTO) | required | required | as needed | Must equal the engine side, or provisioning and SSO launches fail. |
-| `TOOL_HUB_MODE_<SLUG>` | `off` unless an engine API exists (`a`) | same | `mock` allowed | `mock` is refused in production unless `E2E_USE_MOCK_ADAPTERS=1`. |
+| `TOOL_HUB_MODE_<SLUG>` | `off` unless an engine API exists (`a`) | same | `mock` allowed | `mock` is never allowed on the production deployment; on previews only with `E2E_USE_MOCK_ADAPTERS=1`. |
 
 ### 2.2 Recommended
 
@@ -281,7 +282,7 @@ Each step: what must be true first, how to turn it on, what to check after, and 
 **After, check:**
 - A real-card purchase of Pro mensual on production. The consent row exists, the MP preapproval amount equals the card price, and the webhook marked the subscription authorized.
 - Mi plan shows it, and cancel works in 2 clicks.
-- Refund it from Dueño → Dinero.
+- Refund it from Dueño → Personas → (the person) → Reembolsar.
 
 **Roll back:** `PAID_CHECKOUT_ENABLED=false` + redeploy. New purchases stop; existing subscriptions keep renewing.
 
@@ -341,7 +342,7 @@ Within 7 days of an approved Order, run MP's "Medir la calidad de la integració
 Can the test seller charge in USD?
 
 **S4 · Refund API (OPS-14 #4)**
-An admin refund from Dueño → Dinero reaches MP and the ledger shows it.
+An admin refund from Dueño → Personas → (the person) → Reembolsar reaches MP and the ledger shows it.
 
 **S5 · Disputes (OPS-14 #5)**
 Find MP's chargeback deadline and evidence format for a test dispute. Put the deadline in the PR or the doc (aceptacion-ux §10.5 "VERIFICAR").

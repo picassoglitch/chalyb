@@ -58,7 +58,11 @@ test.describe('Mi perfil · language and session', () => {
     expect((await sessionCookies(page)).length).toBeGreaterThanOrEqual(before.length);
   });
 
-  test('name and language at once, then a save with no language change stays put', async ({ page }) => {
+  test('name and language at once, then a save with no language change stays put', async ({ page }, info) => {
+    // It renames the shared mock "free" user and reloads to read it back; two
+    // projects doing that at once overwrite each other. One project is enough
+    // (the language round-trip above still runs on both, 390 included).
+    test.skip(info.project.name !== 'desktop-chromium', 'mutates the shared free user');
     const signIn = watchSignIn(page);
     await page.goto('/app/settings/perfil');
     const name = page.getByLabel('Tu nombre');
