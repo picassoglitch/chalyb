@@ -2130,14 +2130,16 @@
         "noUser": "No account with that email.",
         "lookup": "Find their jobs",
         "pickSource": "Pick the exact video (or paste the link)",
-        "noJobs": "This account has no clip jobs.",
+        "noJobs": "The panel found no job of this account with that video; you can still remove with the exact link.",
         "sourceUrl": "Exact video link",
         "willBlock": "Will block: {fuente}. Every job of theirs made from that video is hidden.",
         "badSource": "That link can’t be normalized; check it’s the video’s link.",
-        "noJob": "No job of that account uses that video.",
         "needReason": "Type the reason for rejecting.",
         "rejectReason": "Reason for rejecting",
-        "done": "Done: {n} job(s) hidden and the video blocked."
+        "done": "Done: the video is blocked, the person was notified, and {n} job(s) were hidden in the panel.",
+        "hubBlind": "The panel can’t see this account’s jobs (Clips runs in its own app). Paste the exact video link: Remove blocks it and notifies the person; clips already made must also be removed in the Clips tool.",
+        "engineToo": "Also remove the clips already made in the Clips tool.",
+        "tooLong": "That link is too long."
       },
       "notices": {
         "title": "Change notices (≥ 30 days)",

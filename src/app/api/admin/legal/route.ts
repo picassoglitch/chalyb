@@ -68,7 +68,12 @@ export async function POST(req: Request) {
       );
       ok = r.ok;
       extra = r.ok
-        ? { repeat: r.repeat, hidden: r.hidden, normalized: r.normalized }
+        ? {
+            repeat: r.repeat,
+            hidden: r.hidden,
+            engineMustRemove: r.engineMustRemove,
+            normalized: r.normalized,
+          }
         : { code: r.code };
     } else if (b.action === 'reject') {
       ok = str('reason').trim() ? await rejectTakedown(id, str('reason'), actor.user.id) : false;

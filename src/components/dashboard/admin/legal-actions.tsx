@@ -93,6 +93,7 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
   const [counter, setCounter] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [hubBlind, setHubBlind] = useState(false);
 
   const call = async (action: string, extra: Record<string, unknown> = {}) => {
     setBusy(true);
@@ -100,9 +101,10 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
     const r = (await post({ kind: 'takedown', id, action, ...extra })) as Awaited<
       ReturnType<typeof post>
     > & {
-      jobs?: TargetJob[];
+      jobs?: TargetJob[] | null;
       normalized?: string | null;
       hidden?: number;
+      engineMustRemove?: boolean;
     };
     setBusy(false);
     return r;
@@ -110,8 +112,8 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
   const codeMsg = (code?: string) =>
     code === 'user'
       ? t('takedown.noUser')
-      : code === 'no_job'
-        ? t('takedown.noJob')
+      : code === 'tooLong'
+        ? t('takedown.tooLong')
         : code === 'source'
           ? t('takedown.badSource')
           : code === 'reason'
@@ -121,11 +123,15 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
   async function lookup() {
     const r = await call('lookup', { targetEmail: email });
     if (r.ok) {
+      // null: the hub can't list this person's jobs (production without
+      // the Clips adapter): the admin pastes the exact link.
       setJobs(r.jobs ?? []);
+      setHubBlind(r.jobs === null || r.jobs === undefined);
       setSource('');
       setNormalized(null);
     } else {
       setJobs(null);
+      setHubBlind(false);
       setMsg(codeMsg(r.code));
     }
   }
@@ -141,7 +147,10 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
     const r = await call(action, extra);
     if (r.ok) {
       if (r.repeat) setMsg(t('takedown.repeat'));
-      else if (typeof r.hidden === 'number') setMsg(t('takedown.done', { n: r.hidden }));
+      else if (typeof r.hidden === 'number')
+        setMsg(
+          `${t('takedown.done', { n: r.hidden })}${r.engineMustRemove ? ` ${t('takedown.engineToo')}` : ''}`,
+        );
       router.refresh();
     } else setMsg(codeMsg(r.code));
   }
@@ -174,7 +183,11 @@ export function TakedownActions({ id, status }: { id: string; status: string }) 
           {jobs && (
             <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'grid', gap: 6 }}>
               <legend className="ch-label">{t('takedown.pickSource')}</legend>
-              {jobs.length === 0 && <p className="ch-muted">{t('takedown.noJobs')}</p>}
+              {hubBlind ? (
+                <p className="ch-muted">{t('takedown.hubBlind')}</p>
+              ) : (
+                jobs.length === 0 && <p className="ch-muted">{t('takedown.noJobs')}</p>
+              )}
               {jobs.map((j) => (
                 <label key={j.id} className="ch-check" style={{ alignItems: 'flex-start' }}>
                   <input
