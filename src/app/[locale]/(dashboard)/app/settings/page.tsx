@@ -249,7 +249,12 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
               title={t('privacy.charge')}
               href="/app/messages"
             />
-            <Row icon={<UserX />} iconColor="#5E5E66" title={t('privacy.close')} href="/app/help" />
+            <Row
+              icon={<UserX />}
+              iconColor="#5E5E66"
+              title={t('privacy.close')}
+              href="/app/settings/cerrar-cuenta"
+            />
             <SignOutRow />
           </Group>
         </div>

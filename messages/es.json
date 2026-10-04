@@ -2989,5 +2989,38 @@
       "error": "No pudimos empezar la conexión. Intenta de nuevo."
     },
     "close": "Cerrar y volver a Clips"
+  },
+  "closeAccount": {
+    "metaTitle": "Cerrar mi cuenta",
+    "title": "Cerrar mi cuenta",
+    "sub": "Antes de confirmar, revisa qué pasa con tus créditos y con tu plan.",
+    "credits": {
+      "title": "Créditos extra",
+      "some": "Tienes {n, number} créditos extra sin usar. Se pierden al cerrar tu cuenta.",
+      "none": "No tienes créditos extra sin usar.",
+      "unknown": "No pudimos leer tu saldo de créditos extra. Inténtalo más tarde: necesitamos mostrártelo antes de cerrar tu cuenta."
+    },
+    "plan": {
+      "title": "Tu plan",
+      "charging": "Al confirmar cancelamos tu plan y no habrá más cobros. Mientras cerramos tu cuenta conservas tu acceso actual, como máximo hasta el {fecha}.",
+      "chargingNoDate": "Al confirmar cancelamos tu plan y no habrá más cobros.",
+      "ending": "Tu plan ya está cancelado: no habrá más cobros.",
+      "none": "No tienes un plan de pago."
+    },
+    "after": "Cerrar tu cuenta borra tus datos según el Aviso de privacidad. Te responderemos por correo en un máximo de 20 días con la fecha en que quedará cerrada.",
+    "onlyStopPaying": "¿Solo quieres dejar de pagar? Cancela tu plan en Mi plan y conserva tu cuenta.",
+    "onlyStopPayingCta": "Ir a Mi plan",
+    "check": "Entiendo que al cerrar mi cuenta pierdo mis créditos extra sin usar y que mi plan se cancela.",
+    "cta": "Cerrar mi cuenta",
+    "back": "Volver a Mi cuenta",
+    "open": "Ya pediste cerrar tu cuenta el {recibida}. Te responderemos a más tardar el {fecha}.",
+    "done": "Recibimos tu solicitud para cerrar tu cuenta. Te responderemos a más tardar el {fecha}.",
+    "errors": {
+      "credits_changed": "Tu saldo de créditos cambió. Revisa el número actualizado y confirma de nuevo.",
+      "not_confirmed": "Marca la casilla para continuar.",
+      "mp_error": "Mercado Pago no respondió al cancelar tu plan. No cerramos nada; inténtalo de nuevo en unos minutos.",
+      "rateLimited": "Ya enviaste varias solicitudes hoy. Inténtalo mañana.",
+      "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo."
+    }
   }
 }

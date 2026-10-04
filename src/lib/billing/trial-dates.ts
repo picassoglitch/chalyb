@@ -74,7 +74,11 @@ export function trialDates(start: Date, p = PRICING): TrialDates {
 
 /** A trial's real length in days: PRICING.trial.days, or more when a late
  *  plan switch pushed the first charge back (switchChargeDate). */
-export function trialLengthDays(startedAt: string | Date, trialEndsAt: string | Date, p = PRICING): number {
+export function trialLengthDays(
+  startedAt: string | Date,
+  trialEndsAt: string | Date,
+  p = PRICING,
+): number {
   const ms = new Date(trialEndsAt).getTime() - new Date(startedAt).getTime();
   return Math.max(p.trial.days, Math.round(ms / DAY));
 }

@@ -81,7 +81,17 @@ export async function submitArco(
   session: SessionUser,
   input: ArcoInput,
   locale: string,
-): Promise<{ ok: true; respondBy: string } | { ok: false; code: string }> {
+  /** A request made by another screen (account closure): where it came
+   *  from, the warning it showed and what the person accepted, kept as
+   *  evidence in place of the generic ARCO text. */
+  evidence?: {
+    surface: string;
+    disclosureText: string;
+    checkboxText: string;
+    buttonLabel: string;
+    details: Record<string, unknown>;
+  },
+): Promise<{ ok: true; respondBy: string; requestId: string } | { ok: false; code: string }> {
   const err = arcoError(input);
   if (err) return { ok: false, code: err };
   const email = session.user.email ?? '';
@@ -125,12 +135,15 @@ export async function submitArco(
     ip_address: ctx.ip,
     user_agent: ctx.userAgent,
     locale: locale === 'es' ? 'es-MX' : 'en',
-    surface: 'arco_form',
+    surface: evidence?.surface ?? 'arco_form',
     ui_version: UI_VERSION,
-    disclosure_text: `Solicitud ARCO (${input.right}) · folio ${String(data.id)}`,
-    checkbox_text: null,
-    checkbox_checked: null,
-    button_label: null,
+    // Never the person's own words: the closure's warning is our text, as shown.
+    disclosure_text:
+      `Solicitud ARCO (${input.right}) · folio ${String(data.id)}` +
+      (evidence ? `\n\n${evidence.disclosureText}` : ''),
+    checkbox_text: evidence?.checkboxText ?? null,
+    checkbox_checked: evidence ? true : null,
+    button_label: evidence?.buttonLabel ?? null,
     plan_id: null,
     amount_mxn: null,
     currency: null,
@@ -141,7 +154,7 @@ export async function submitArco(
     reminder_date_utc: respondBy.toISOString(),
     payment_method: null,
     marketing_opt_in: false,
-    details: { right: input.right, request_id: data.id },
+    details: { ...(evidence?.details ?? {}), right: input.right, request_id: data.id },
   });
   await db.from('arco_requests').update({ consent_id: consent.consent_id }).eq('id', data.id);
   const fecha = formatFechaLarga(respondBy, 'es');
@@ -174,7 +187,7 @@ export async function submitArco(
     targetUserId: session.user.id,
     metadata: { id: data.id, right: input.right },
   });
-  return { ok: true, respondBy: respondBy.toISOString() };
+  return { ok: true, respondBy: respondBy.toISOString(), requestId: String(data.id) };
 }
 
 /** Admin: record the answer, then deliver it (email + in-app) and keep the
