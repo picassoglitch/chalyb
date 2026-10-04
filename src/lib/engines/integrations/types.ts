@@ -50,6 +50,10 @@ export interface LaunchTokenInput {
   /** Credentials blob persisted at provisioning time. */
   credentials: Record<string, unknown> | null;
   engine: Engine;
+  /** Already validated (launch-forward.ts). `next` replaces the integration's
+   *  default landing; `state` is echoed for the engine's login-CSRF check. */
+  next?: string;
+  state?: string;
 }
 
 export interface LaunchTokenResult {

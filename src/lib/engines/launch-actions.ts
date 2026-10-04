@@ -18,10 +18,16 @@ import { getIntegration } from './integrations/registry';
 import { provisionEngineAccess } from './subscriptions';
 import { runLaunch, type LaunchResult, type LaunchLogEvent } from './launch-flow';
 import { hasRiskAck } from '@/lib/tools/consents';
+import { sanitizeLaunchForward, type LaunchForward } from './launch-forward';
 
 export type { LaunchResult } from './launch-flow';
 
-export async function getEngineLaunchUrl(engineId: string): Promise<LaunchResult> {
+export async function getEngineLaunchUrl(
+  engineId: string,
+  forward?: LaunchForward,
+): Promise<LaunchResult> {
+  // A server action's arguments come from the browser: validate again.
+  const { next, state } = sanitizeLaunchForward(forward);
   const session = await getSessionUser();
   if (!session) return { ok: false, code: 'SESSION_EXPIRED' };
 
@@ -127,6 +133,8 @@ export async function getEngineLaunchUrl(engineId: string): Promise<LaunchResult
         externalUserId,
         credentials: (row?.external_credentials as Record<string, unknown> | null) ?? null,
         engine,
+        next,
+        state,
       });
       return result.ok && result.url
         ? { ok: true, url: result.url }

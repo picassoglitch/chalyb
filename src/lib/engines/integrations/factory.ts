@@ -252,6 +252,8 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
       effectiveTier,
       externalUserId,
       engine,
+      next,
+      state,
     }: LaunchTokenInput): Promise<LaunchTokenResult> {
       if (!engine.externalUrl) {
         return {
@@ -288,8 +290,10 @@ export function createEngineIntegration(config: EngineIntegrationConfig): Engine
         };
       }
 
-      const base = `${engine.externalUrl}/auth/sso?token=${encodeURIComponent(token)}`;
-      const url = postSsoPath ? `${base}&next=${encodeURIComponent(postSsoPath)}` : base;
+      let url = `${engine.externalUrl}/auth/sso?token=${encodeURIComponent(token)}`;
+      const landing = next ?? postSsoPath;
+      if (landing) url += `&next=${encodeURIComponent(landing)}`;
+      if (state) url += `&state=${encodeURIComponent(state)}`;
       return { ok: true, url };
     },
 

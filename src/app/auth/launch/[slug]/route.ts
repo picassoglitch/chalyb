@@ -16,6 +16,10 @@
 // welcome gift / 7-day trial claimed silently, and ChalyClip enforces its
 // own tier perks once inside.
 //
+// `?next=` and `?state=` (launch-forward.ts) survive the sign-in bounce and
+// are handed to the engine's /auth/sso: `next` is where to land on the
+// engine, `state` is the engine's own login-CSRF nonce, echoed unchanged.
+//
 // Under /auth/* so it's excluded from the i18n proxy matcher (no locale
 // prefix rewriting on a redirect-only endpoint).
 
@@ -28,6 +32,7 @@ import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
+import { launchForwardQuery, readLaunchForward } from '@/lib/engines/launch-forward';
 
 export async function GET(
   request: NextRequest,
@@ -35,12 +40,12 @@ export async function GET(
 ): Promise<NextResponse> {
   const { slug } = await ctx.params;
   const origin = request.nextUrl.origin;
+  const forward = readLaunchForward(request.nextUrl.searchParams);
 
   const session = await getSessionUser();
   if (!session) {
-    return NextResponse.redirect(
-      new URL(`/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}`)}`, origin),
-    );
+    const back = `/auth/launch/${slug}${launchForwardQuery(forward)}`;
+    return NextResponse.redirect(new URL(`/sign-in?next=${encodeURIComponent(back)}`, origin));
   }
 
   // Full-access gate — for cross-engine launches only. ChalyClip is exempt:
@@ -123,7 +128,7 @@ export async function GET(
     // Non-fatal — getEngineLaunchUrl will report if access is still missing.
   }
 
-  const result = await getEngineLaunchUrl(engineId);
+  const result = await getEngineLaunchUrl(engineId, forward);
   if (result.ok && result.url) {
     return NextResponse.redirect(result.url);
   }
