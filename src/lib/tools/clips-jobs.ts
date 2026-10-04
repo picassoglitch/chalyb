@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { track } from '@/lib/analytics/track';
 import { getClipsAdapter } from './adapters/clips';
 import { isContentBlocked } from '@/lib/legal/legal-server';
+import { isJobHidden } from '@/lib/legal/removals';
 import { refreshClipJob, submitClipJob, type JobPolicyDeps } from './adapters/run-job';
 import type { ClipJob, ClipsAdapter, CreateClipJobInput } from './adapters/types';
 
@@ -64,5 +65,7 @@ export async function submitClips(input: CreateClipJobInput) {
 export async function loadClipJob(userId: string, jobId: string): Promise<ClipJob | null> {
   const adapter = getClipsAdapter();
   if (!adapter) return null;
+  // Removed after a copyright notice: no page, no downloads, no sharing.
+  if (await isJobHidden(userId, jobId)) return null;
   return refreshClipJob(policyDeps(adapter), userId, jobId);
 }

@@ -2118,12 +2118,37 @@
         "deadline": "el titular tiene hasta el {fecha}",
         "targetEmail": "Correo de quien lo subió",
         "remove": "Retirar y bloquear",
-        "reject": "Rechazar (escribe el motivo)",
+        "reject": "Rechazar",
         "counterText": "Texto del contra-aviso",
         "counter": "Registrar contra-aviso",
         "uphold": "El titular acreditó un procedimiento",
         "repeat": "Esta cuenta llegó al límite de reincidencia: revisa si se cierra (Uso aceptable §5.4).",
-        "noUser": "No encontramos una cuenta con ese correo."
+        "noUser": "No encontramos una cuenta con ese correo.",
+        "lookup": "Buscar sus trabajos",
+        "pickSource": "Elige el video exacto (o pega el enlace)",
+        "noJobs": "Esta cuenta no tiene trabajos de clips.",
+        "sourceUrl": "Enlace exacto del video",
+        "willBlock": "Se bloqueará: {fuente}. Se ocultarán todos sus trabajos hechos con ese video.",
+        "badSource": "Ese enlace no se puede normalizar; revisa que sea el enlace del video.",
+        "noJob": "Ningún trabajo de esa cuenta usa ese video.",
+        "needReason": "Escribe el motivo del rechazo.",
+        "rejectReason": "Motivo del rechazo",
+        "done": "Listo: se ocultaron {n} trabajo(s) y se bloqueó el video."
+      },
+      "notices": {
+        "title": "Avisos de cambios (≥ 30 días)",
+        "doc": "{doc}, versión {version}",
+        "docs": {
+          "terminos": "Términos",
+          "suscripcion": "Términos de Suscripción",
+          "privacidad": "Aviso de privacidad"
+        },
+        "counts": "Enviados: {sent} · en curso: {pending} · fallidos: {failed} · rebotados: {bounced}",
+        "complete": "Todos los avisos salieron el {fecha}.",
+        "sending": "Enviando desde el {fecha}; aún faltan personas.",
+        "notStarted": "Aún no empieza el envío.",
+        "inForce": "Aplica desde el {fecha}.",
+        "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde)."
       }
     }
   },

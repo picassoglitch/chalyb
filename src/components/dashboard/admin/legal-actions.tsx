@@ -75,84 +75,200 @@ export function ArcoActions({ id, extended }: { id: string; extended: boolean })
   );
 }
 
+interface TargetJob {
+  id: string;
+  sourceUrl: string;
+  normalized: string | null;
+  createdAt: string;
+}
+
 export function TakedownActions({ id, status }: { id: string; status: string }) {
   const t = useTranslations('admin.legal');
   const router = useRouter();
-  const [text, setText] = useState('');
+  const [email, setEmail] = useState('');
+  const [jobs, setJobs] = useState<TargetJob[] | null>(null);
+  const [source, setSource] = useState('');
+  const [normalized, setNormalized] = useState<string | null>(null);
+  const [reason, setReason] = useState('');
+  const [counter, setCounter] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const run = async (action: string, extra: Record<string, unknown> = {}) => {
+
+  const call = async (action: string, extra: Record<string, unknown> = {}) => {
     setBusy(true);
     setMsg(null);
-    const r = await post({ kind: 'takedown', id, action, ...extra });
+    const r = (await post({ kind: 'takedown', id, action, ...extra })) as Awaited<
+      ReturnType<typeof post>
+    > & {
+      jobs?: TargetJob[];
+      normalized?: string | null;
+      hidden?: number;
+    };
     setBusy(false);
+    return r;
+  };
+  const codeMsg = (code?: string) =>
+    code === 'user'
+      ? t('takedown.noUser')
+      : code === 'no_job'
+        ? t('takedown.noJob')
+        : code === 'source'
+          ? t('takedown.badSource')
+          : code === 'reason'
+            ? t('takedown.needReason')
+            : t('error');
+
+  async function lookup() {
+    const r = await call('lookup', { targetEmail: email });
+    if (r.ok) {
+      setJobs(r.jobs ?? []);
+      setSource('');
+      setNormalized(null);
+    } else {
+      setJobs(null);
+      setMsg(codeMsg(r.code));
+    }
+  }
+  async function pick(url: string) {
+    setSource(url);
+    setNormalized(null);
+    if (!url.trim()) return;
+    const r = await call('preview', { sourceUrl: url });
+    setNormalized(r.ok ? (r.normalized ?? null) : null);
+    if (!r.ok) setMsg(t('takedown.badSource'));
+  }
+  async function act(action: string, extra: Record<string, unknown> = {}) {
+    const r = await call(action, extra);
     if (r.ok) {
       if (r.repeat) setMsg(t('takedown.repeat'));
+      else if (typeof r.hidden === 'number') setMsg(t('takedown.done', { n: r.hidden }));
       router.refresh();
-    } else setMsg(r.code === 'user' ? t('takedown.noUser') : t('error'));
-  };
-  const input = (label: string) => (
-    <>
-      <label className="ch-sr" htmlFor={`t-${id}`}>
-        {label}
-      </label>
-      <input
-        id={`t-${id}`}
-        className="ch-input"
-        style={{ minWidth: 220, flex: 1 }}
-        value={text}
-        placeholder={label}
-        onChange={(e) => setText(e.target.value)}
-      />
-    </>
-  );
+    } else setMsg(codeMsg(r.code));
+  }
+
   return (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div style={{ display: 'grid', gap: 10 }}>
       {status === 'received' && (
         <>
-          {input(t('takedown.targetEmail'))}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <label className="ch-sr" htmlFor={`te-${id}`}>
+              {t('takedown.targetEmail')}
+            </label>
+            <input
+              id={`te-${id}`}
+              className="ch-input"
+              style={{ minWidth: 220, flex: 1 }}
+              value={email}
+              placeholder={t('takedown.targetEmail')}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <button
+              type="button"
+              className="ch-btn ch-btn--secondary ch-btn--compact"
+              disabled={busy || !email.trim()}
+              onClick={lookup}
+            >
+              {t('takedown.lookup')}
+            </button>
+          </div>
+          {jobs && (
+            <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'grid', gap: 6 }}>
+              <legend className="ch-label">{t('takedown.pickSource')}</legend>
+              {jobs.length === 0 && <p className="ch-muted">{t('takedown.noJobs')}</p>}
+              {jobs.map((j) => (
+                <label key={j.id} className="ch-check" style={{ alignItems: 'flex-start' }}>
+                  <input
+                    type="radio"
+                    name={`src-${id}`}
+                    checked={source === j.sourceUrl}
+                    onChange={() => pick(j.sourceUrl)}
+                  />
+                  <span style={{ overflowWrap: 'anywhere' }}>{j.sourceUrl}</span>
+                </label>
+              ))}
+              <label className="ch-sr" htmlFor={`su-${id}`}>
+                {t('takedown.sourceUrl')}
+              </label>
+              <input
+                id={`su-${id}`}
+                className="ch-input"
+                value={source}
+                placeholder={t('takedown.sourceUrl')}
+                onChange={(e) => setSource(e.target.value)}
+                onBlur={(e) => pick(e.target.value)}
+              />
+              {normalized && <p>{t('takedown.willBlock', { fuente: normalized })}</p>}
+              <div>
+                <button
+                  type="button"
+                  className="ch-btn ch-btn--primary ch-btn--compact"
+                  disabled={busy || !normalized}
+                  onClick={() => act('remove', { targetEmail: email, sourceUrl: source })}
+                >
+                  {t('takedown.remove')}
+                </button>
+              </div>
+            </fieldset>
+          )}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <label className="ch-sr" htmlFor={`rr-${id}`}>
+              {t('takedown.rejectReason')}
+            </label>
+            <input
+              id={`rr-${id}`}
+              className="ch-input"
+              style={{ minWidth: 220, flex: 1 }}
+              value={reason}
+              placeholder={t('takedown.rejectReason')}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <button
+              type="button"
+              className="ch-btn ch-btn--secondary ch-btn--compact"
+              disabled={busy || !reason.trim()}
+              onClick={() => act('reject', { reason })}
+            >
+              {t('takedown.reject')}
+            </button>
+          </div>
+        </>
+      )}
+      {status === 'removed' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <label className="ch-sr" htmlFor={`ct-${id}`}>
+            {t('takedown.counterText')}
+          </label>
+          <input
+            id={`ct-${id}`}
+            className="ch-input"
+            style={{ minWidth: 220, flex: 1 }}
+            value={counter}
+            placeholder={t('takedown.counterText')}
+            onChange={(e) => setCounter(e.target.value)}
+          />
           <button
             type="button"
-            className="ch-btn ch-btn--primary ch-btn--compact"
-            disabled={busy || !text.trim()}
-            onClick={() => run('remove', { targetEmail: text })}
+            className="ch-btn ch-btn--secondary ch-btn--compact"
+            disabled={busy || !counter.trim()}
+            onClick={() => act('counter', { text: counter })}
           >
-            {t('takedown.remove')}
+            {t('takedown.counter')}
           </button>
+        </div>
+      )}
+      {status === 'counter_noticed' && (
+        <div>
           <button
             type="button"
             className="ch-btn ch-btn--secondary ch-btn--compact"
             disabled={busy}
-            onClick={() => run('reject', { reason: text })}
+            onClick={() => act('uphold')}
           >
-            {t('takedown.reject')}
+            {t('takedown.uphold')}
           </button>
-        </>
+        </div>
       )}
-      {status === 'removed' && (
-        <>
-          {input(t('takedown.counterText'))}
-          <button
-            type="button"
-            className="ch-btn ch-btn--secondary ch-btn--compact"
-            disabled={busy || !text.trim()}
-            onClick={() => run('counter', { text })}
-          >
-            {t('takedown.counter')}
-          </button>
-        </>
-      )}
-      {status === 'counter_noticed' && (
-        <button
-          type="button"
-          className="ch-btn ch-btn--secondary ch-btn--compact"
-          disabled={busy}
-          onClick={() => run('uphold')}
-        >
-          {t('takedown.uphold')}
-        </button>
-      )}
-      {msg && <span role="status">{msg}</span>}
+      {msg && <p role="status">{msg}</p>}
     </div>
   );
 }

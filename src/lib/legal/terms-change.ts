@@ -1,12 +1,16 @@
-// The ≥30-day email before a relevant Terms change (aceptacion-ux §8; old
-// P6-5; Quebec requires 30 days for unilateral changes), the pure part.
+// The ≥30-day email before a relevant change (aceptacion-ux §8; old P6-5;
+// Quebec requires 30 days for unilateral changes), the pure part.
 //
-// A relevant change (rights, payments or data) is announced by email at least
-// 30 days before its effective date; after that date the §8 modal asks for
-// acceptance. The daily /api/cron/legal sends it once per user and version
-// (email_dispatches' unique key). If the first chance to send is already
-// inside the 30 days, nothing is sent and the run reports `too_late`: the
-// owner must move the effective date, never shorten the notice.
+// A relevant change (rights, payments or data) to a document people accept
+// is announced by email at least 30 days before it applies to them. The
+// daily /api/cron/legal keeps sending until every person owed the notice
+// has a successful dispatch; that moment is the version's `complete_at`.
+// The version is in force from the LATER of its registry date and
+// complete_at + 30 days (7a review of #49, HIGH 1): a run that dies partway
+// can only delay it, never cut the notice short. A person without a
+// successful notice ≥ 30 days before that date is never asked to accept.
+// The first version of a document has no earlier one to change, so it sends
+// nothing and needs no notice.
 
 import { escapeHtml } from '@/lib/email/escape';
 import { wrap } from '@/lib/email/templates';
@@ -15,19 +19,53 @@ import type { VersionMeta } from './registry';
 export const TERMS_CHANGE_NOTICE_DAYS = 30;
 const DAY = 86_400_000;
 
-export type TermsChangeDecision = 'none' | 'send' | 'too_late';
+export type TermsChangeDecision = 'none' | 'send' | 'complete';
 
+/** Whether the cron still has notices to send for this version. */
 export function termsChangeDecision(input: {
   published: boolean;
   meta: VersionMeta | null;
-  now: Date;
+  /** An earlier published version exists (this one is a change). */
+  noticeRequired: boolean;
+  /** When every person owed the notice had a successful dispatch. */
+  completeAt: string | null;
 }): TermsChangeDecision {
-  const { published, meta, now } = input;
+  const { published, meta, noticeRequired, completeAt } = input;
   if (!published || !meta?.published || !meta.effective || meta.relevance !== 'relevant')
     return 'none';
-  const effective = Date.parse(meta.effective);
-  if (now.getTime() >= effective) return 'none';
-  return effective - now.getTime() >= TERMS_CHANGE_NOTICE_DAYS * DAY ? 'send' : 'too_late';
+  if (!noticeRequired) return 'none';
+  return completeAt ? 'complete' : 'send';
+}
+
+/** The registry date can't be met any more: fewer than 30 days remain and
+ *  people are still owed the notice (the version will start later). */
+export function noticeIsLate(meta: VersionMeta | null, now: Date, remaining: number): boolean {
+  if (!meta?.effective || remaining <= 0) return false;
+  return Date.parse(meta.effective) - now.getTime() < TERMS_CHANGE_NOTICE_DAYS * DAY;
+}
+
+/** When the version actually applies: the registry date, or later if the
+ *  notice finished less than 30 days before it; null while notices are
+ *  still owed. */
+export function inForceFrom(
+  meta: VersionMeta | null,
+  notice: { noticeRequired: boolean; completeAt: string | null },
+): string | null {
+  if (!meta?.effective) return null;
+  if (meta.relevance !== 'relevant' || !notice.noticeRequired) return meta.effective;
+  if (!notice.completeAt) return null;
+  const after = Date.parse(notice.completeAt) + TERMS_CHANGE_NOTICE_DAYS * DAY;
+  return new Date(Math.max(Date.parse(meta.effective), after)).toISOString();
+}
+
+/** A person was given the notice: a successful dispatch at least 30 days
+ *  before the version applies. */
+export function personNoticed(
+  dispatch: { delivery_status: string; sent_at: string } | null,
+  inForceAt: string,
+): boolean {
+  if (!dispatch || !['sent', 'delivered'].includes(dispatch.delivery_status)) return false;
+  return Date.parse(dispatch.sent_at) <= Date.parse(inForceAt) - TERMS_CHANGE_NOTICE_DAYS * DAY;
 }
 
 export const termsChangePeriodKey = (version: string, doc = 'terminos') => `${doc}:${version}`;

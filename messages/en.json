@@ -2118,12 +2118,37 @@
         "deadline": "the claimant has until {fecha}",
         "targetEmail": "Uploader’s email",
         "remove": "Remove and block",
-        "reject": "Reject (type the reason)",
+        "reject": "Reject",
         "counterText": "Counter-notice text",
         "counter": "Record counter-notice",
         "uphold": "Claimant showed a proceeding",
         "repeat": "This account reached the repeat-infringer limit: review closing it (Acceptable Use §5.4).",
-        "noUser": "No account with that email."
+        "noUser": "No account with that email.",
+        "lookup": "Find their jobs",
+        "pickSource": "Pick the exact video (or paste the link)",
+        "noJobs": "This account has no clip jobs.",
+        "sourceUrl": "Exact video link",
+        "willBlock": "Will block: {fuente}. Every job of theirs made from that video is hidden.",
+        "badSource": "That link can’t be normalized; check it’s the video’s link.",
+        "noJob": "No job of that account uses that video.",
+        "needReason": "Type the reason for rejecting.",
+        "rejectReason": "Reason for rejecting",
+        "done": "Done: {n} job(s) hidden and the video blocked."
+      },
+      "notices": {
+        "title": "Change notices (≥ 30 days)",
+        "doc": "{doc}, version {version}",
+        "docs": {
+          "terminos": "Terms",
+          "suscripcion": "Subscription Terms",
+          "privacidad": "Privacy Notice"
+        },
+        "counts": "Sent: {sent} · in progress: {pending} · failed: {failed} · bounced: {bounced}",
+        "complete": "Every notice went out on {fecha}.",
+        "sending": "Sending since {fecha}; people still owed.",
+        "notStarted": "Sending hasn’t started.",
+        "inForce": "Applies from {fecha}.",
+        "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late)."
       }
     }
   },

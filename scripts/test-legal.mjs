@@ -60,6 +60,8 @@ if (found)
 const SUITE = [
   'legal',
   'legal-p6',
+  'legal-notices',
+  'legal-takedown',
   'release-gate',
   'trial-7d',
   'price-rules',

@@ -416,10 +416,28 @@ test('re-accept: the modal never blocks cancelling, its options, downloads or he
     // A clip job's page is where its clips download (7a review).
     '/app/clips/mock_abc_1',
     '/en/app/clips/mock_abc_1',
+    // WS-11's routes: a job, one clip, the list of my clips.
+    '/app/clips/trabajo/mock_abc_1',
+    '/app/clips/3f2a9c1e-77aa-4d1b-9e0c-1b2c3d4e5f60',
+    '/app/clips/mis-clips',
   ]) {
     assert.equal(termsModalExempt(p), true, p);
   }
-  for (const p of ['/app', '/app/clips', '/app/clips/formato', '/en/app/planes', '/app/billingx']) {
+  for (const p of [
+    '/app',
+    '/app/clips',
+    '/app/clips/formato',
+    // Settings (connect accounts, auto-publish) and the new-clip steps stay
+    // covered (7a merge-watch with WS-11).
+    '/app/clips/ajustes',
+    '/en/app/clips/ajustes',
+    '/app/clips/nuevo',
+    '/app/clips/nuevo/formato',
+    '/app/clips/trabajo',
+    '/app/clips/mock_abc_1/editar',
+    '/en/app/planes',
+    '/app/billingx',
+  ]) {
     assert.equal(termsModalExempt(p), false, p);
   }
 });
@@ -501,18 +519,102 @@ test('consistency: Suscripción must match the trial plans and grace in config b
   assert.ok(issues.includes('trial-plans:vip_month,vip_year'), issues.join());
   // No grace after the trial (firstChargeGraceDays 0); §8 doesn't say so.
   assert.ok(issues.includes('trial-grace'), issues.join());
+  // "VIP anual no incluye Prueba gratis" (§4) contradicts the config too.
+  assert.ok(issues.includes('trial-excluded:vip_year'), issues.join());
   assert.ok(legalPublishBlockers().includes('suscripcion@1.0:trial-plans:vip_month,vip_year'));
   const cfg = {
     trialPlans: ['pro_month', 'pro_year'] as const,
     graceDays: 7,
     firstChargeGraceDays: 0,
   };
-  const ok =
-    '## 2. Prueba\n\n2.1. La Prueba está disponible para **Pro mensual** y **Pro anual**.\n\n## 8. Pagos\n\n8.2. tendrás **7 días naturales** (no aplica al cobro que termina la Prueba)\n';
+  const G = 'El periodo de gracia no aplica al cobro con el que termina la Prueba.';
+  const doc = (offer: string, s8: string, extra = '') =>
+    `## 2. Prueba\n\n2.1. La Prueba está disponible para ${offer}.\n\n${extra}\n\n## 8. Pagos\n\n8.2. tendrás **7 días naturales**. ${s8}\n`;
+  const ok = doc('**Pro mensual** y **Pro anual**', G);
   assert.deepEqual(subscriptionConsistency(ok, cfg), []);
   assert.deepEqual(subscriptionConsistency(ok.replace('**7 días', '**5 días'), cfg), [
     'grace-days:5!=7',
   ]);
+  // §8 must say it explicitly: the Prueba merely appearing isn't enough.
+  assert.deepEqual(
+    subscriptionConsistency(doc('Pro mensual y Pro anual', 'Durante la Prueba no hay cobro.'), cfg),
+    ['trial-grace'],
+  );
+  assert.deepEqual(
+    subscriptionConsistency(
+      doc(
+        'Pro mensual y Pro anual',
+        'Al cobro que termina la Prueba no se aplica el periodo de gracia.',
+      ),
+      cfg,
+    ),
+    [],
+  );
+  const all = { ...cfg, trialPlans: ['pro_month', 'pro_year', 'vip_month', 'vip_year'] as const };
+  // Naming VIP only to exclude it still blocks.
+  assert.deepEqual(
+    subscriptionConsistency(doc('Pro mensual y Pro anual (no para VIP ni VIP anual)', G), all),
+    ['trial-plans:vip_month,vip_year'],
+  );
+  assert.deepEqual(
+    subscriptionConsistency(doc('Pro mensual, Pro anual, VIP y VIP anual', G), all),
+    [],
+  );
+  // A "no incluye Prueba" anywhere next to a trial plan blocks.
+  assert.deepEqual(
+    subscriptionConsistency(
+      doc(
+        'Pro mensual, Pro anual, VIP y VIP anual',
+        G,
+        '4.2. **VIP anual** no incluye Prueba gratis.',
+      ),
+      all,
+    ),
+    ['trial-excluded:vip_year'],
+  );
+  // Never rewrites Law's text: the check only reads.
+  assert.match(
+    readFileSync(join(ROOT, 'src/lib/legal/consistency.ts'), 'utf8'),
+    /never rewrite Law's text/,
+  );
+});
+
+test('build gate: recomputes the legal state, fails closed, refuses a stale publish-state.json', () => {
+  const gate = readFileSync(join(ROOT, 'scripts/legal-publish-gate.mjs'), 'utf8');
+  assert.match(gate, /scripts\/legal-state\.mjs/);
+  assert.match(gate, /could not be computed, so the build is refused/);
+  assert.match(gate, /publish-state\.json is stale/);
+  assert.match(
+    readFileSync(join(ROOT, 'package.json'), 'utf8'),
+    /"build": "node scripts\/legal-publish-gate\.mjs && next build"/,
+  );
+});
+
+test('re-accept: plan changes and Pro Lealtad count as accepting the documents they cite', () => {
+  const h = termsHistory(
+    [
+      { event_type: 'plan_changed', documents: [{ doc: 'suscripcion', version: '1.1' }] },
+      { event_type: 'lealtad_started', documents: [{ doc: 'privacidad', version: '1.2' }] },
+    ],
+    'suscripcion',
+  );
+  assert.equal(h.acceptedVersion, '1.1');
+  assert.equal(
+    termsHistory(
+      [{ event_type: 'lealtad_started', documents: [{ doc: 'privacidad', version: '1.2' }] }],
+      'privacidad',
+    ).acceptedVersion,
+    '1.2',
+  );
+});
+
+test('re-accept: token packs refuse a new charge while a relevant change is unaccepted (§8)', () => {
+  const src = readFileSync(join(ROOT, 'src/lib/payments/token-checkout-actions.ts'), 'utf8');
+  const guards =
+    src.match(
+      /if \(await termsAcceptancePending\(session\.user\.id\)\) \{\s*return \{ ok: false, reason: 'terms_pending'/g,
+    ) ?? [];
+  assert.equal(guards.length, 2, 'hosted and card');
 });
 
 test('seller identity: placeholders, TBD and generic or malformed RFCs are refused', () => {

@@ -18,7 +18,7 @@ import {
   takedownMissing,
   takedownTooLong,
 } from '@/lib/legal/takedown';
-import { termsChangeDecision, termsChangeEmail } from '@/lib/legal/terms-change';
+import { termsChangeEmail } from '@/lib/legal/terms-change';
 import { attentionItems } from '@/lib/admin/attention';
 import { CLIP_FAILURE_REASONS } from '@/lib/tools/adapters/types';
 
@@ -170,61 +170,6 @@ test('takedown: the public form is at /derechos-de-autor (Uso aceptable §5.1)',
 });
 
 // ── Change email (aceptacion-ux §8) ────────────────────────────────────
-
-const meta = (
-  o: Partial<{
-    published: boolean;
-    effective: string | null;
-    relevance: 'relevant' | 'minor';
-  }> = {},
-) => ({
-  published: true,
-  effective: '2026-12-01T06:00:00Z',
-  relevance: 'relevant' as const,
-  changes: ['Cambia el plazo de cancelación'],
-  ...o,
-});
-
-test('change email: ≥30 days before a relevant change; too late is reported, never sent', () => {
-  const at = (iso: string) => new Date(iso);
-  assert.equal(
-    termsChangeDecision({ published: true, meta: meta(), now: at('2026-10-15T00:00:00Z') }),
-    'send',
-  );
-  assert.equal(
-    termsChangeDecision({ published: true, meta: meta(), now: at('2026-11-01T06:00:00Z') }),
-    'send',
-    'exactly 30 days',
-  );
-  assert.equal(
-    termsChangeDecision({ published: true, meta: meta(), now: at('2026-11-15T00:00:00Z') }),
-    'too_late',
-  );
-  assert.equal(
-    termsChangeDecision({ published: true, meta: meta(), now: at('2026-12-02T00:00:00Z') }),
-    'none',
-  );
-  assert.equal(
-    termsChangeDecision({
-      published: true,
-      meta: meta({ relevance: 'minor' }),
-      now: at('2026-10-15T00:00:00Z'),
-    }),
-    'none',
-  );
-  assert.equal(
-    termsChangeDecision({ published: false, meta: meta(), now: at('2026-10-15T00:00:00Z') }),
-    'none',
-  );
-  assert.equal(
-    termsChangeDecision({
-      published: true,
-      meta: meta({ effective: null }),
-      now: at('2026-10-15T00:00:00Z'),
-    }),
-    'none',
-  );
-});
 
 test('change email: date, changes, links, cancel; escaped; a service notice, no marketing', () => {
   const m = termsChangeEmail({

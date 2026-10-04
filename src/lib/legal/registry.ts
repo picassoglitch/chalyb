@@ -62,6 +62,20 @@ export function versionMeta(doc: LegalDoc, version = currentVersion(doc)): Versi
 export function listVersions(doc: LegalDoc): string[] {
   return Object.keys(REGISTRY[doc].versions).filter((v) => archived(doc, v));
 }
+/** A version that changes an earlier published one: its relevant changes
+ *  must be announced ≥ 30 days ahead (the first version has nothing to
+ *  change). */
+export function noticeRequired(doc: LegalDoc, version = currentVersion(doc)): boolean {
+  const n = (v: string) => v.split('.').map(Number);
+  const before = (a: string, b: string) => {
+    const [x, y] = [n(a), n(b)];
+    for (let i = 0; i < Math.max(x.length, y.length); i++)
+      if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) < (y[i] ?? 0);
+    return false;
+  };
+  return Object.entries(REGISTRY[doc].versions).some(([v, m]) => m.published && before(v, version));
+}
+
 export function docForPath(path: string): LegalDoc | null {
   return LEGAL_DOCS.find((d) => REGISTRY[d].path === path) ?? null;
 }

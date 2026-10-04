@@ -26,14 +26,10 @@
 
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { getTokenPack } from './pricing';
 import { packReference } from './subscription-reference';
-import {
-  STATEMENT_DESCRIPTOR,
-  orderAdditionalInfo,
-  packItem,
-  payerName,
-} from './order-quality';
+import { STATEMENT_DESCRIPTOR, orderAdditionalInfo, packItem, payerName } from './order-quality';
 import {
   chargeFromOrder,
   isAllowedCheckoutUrl,
@@ -54,6 +50,9 @@ import {
 } from './mercadopago';
 import { isCardErrorCode } from './mp-config';
 
+/** Same rule and words as the plan checkout (subscription-actions.ts). */
+const TERMS_PENDING_ERROR = 'Acepta los nuevos Términos (o revisa tus opciones) antes de comprar.';
+
 /** What a customer reads when the card itself was the problem. */
 const CARD_ERROR =
   'No pudimos validar tu tarjeta. Revisa los datos o prueba con otra; no se hizo ningún cargo.';
@@ -61,7 +60,13 @@ const CARD_ERROR =
 export interface PackCheckoutResult {
   ok: boolean;
   url?: string;
-  reason?: 'unauth' | 'admin_skip' | 'unknown_pack' | 'not_configured' | 'mp_error';
+  reason?:
+    | 'unauth'
+    | 'admin_skip'
+    | 'unknown_pack'
+    | 'not_configured'
+    | 'mp_error'
+    | 'terms_pending';
   error?: string;
 }
 
@@ -85,6 +90,10 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
+    }
+    // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+    if (await termsAcceptancePending(session.user.id)) {
+      return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
     }
 
     const pack = getTokenPack(packId);
@@ -222,6 +231,7 @@ export interface PackCardPaymentResult {
     | 'not_configured'
     | 'bad_token'
     | 'rejected'
+    | 'terms_pending'
     | 'mp_error';
   error?: string;
 }
@@ -257,6 +267,10 @@ export async function payTokenPackWithCard(input: {
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
+    }
+    // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+    if (await termsAcceptancePending(session.user.id)) {
+      return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
     }
     const pack = getTokenPack(input.packId);
     if (!pack) {

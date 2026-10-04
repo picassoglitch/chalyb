@@ -17,9 +17,11 @@ import { legalPublished } from '@/lib/config/flags';
 import { recordConsent, requestContext, UI_VERSION } from '@/lib/billing/consent';
 import { formatFechaLarga } from '@/lib/billing/format';
 import { legalDocuments } from './documents';
-import { currentVersion, versionMeta } from './registry';
+import { currentVersion, noticeRequired, versionMeta } from './registry';
+import { inForceFrom, personNoticed, termsChangePeriodKey } from './terms-change';
 import {
   REACCEPT_DOCS,
+  TERMS_ACCEPTING_EVENTS,
   termsHistory,
   termsPrompt,
   type ReacceptDoc,
@@ -54,32 +56,58 @@ export async function termsPromptFor(userId: string, locale: string): Promise<Te
   })).filter((d) => d.meta?.published && d.meta.effective);
   // Cheap exit before touching the database: nothing to show.
   if (!live.length) return NONE;
-  const { data } = await createAdminClient()
-    .from('consent_events')
-    .select('event_type, documents')
-    .eq('user_id', userId)
-    .in('event_type', [
-      'signup_terms_accepted',
-      'terms_reaccepted',
-      'trial_started',
-      'subscription_started',
-      'terms_notice_shown',
-    ]);
+  const db = createAdminClient();
+  const [{ data }, { data: notices }, { data: dispatches }] = await Promise.all([
+    db
+      .from('consent_events')
+      .select('event_type, documents')
+      .eq('user_id', userId)
+      .in('event_type', [...TERMS_ACCEPTING_EVENTS, 'terms_notice_shown']),
+    db
+      .from('legal_change_notices')
+      .select('doc, version, complete_at')
+      .in(
+        'doc',
+        live.map((d) => d.doc),
+      ),
+    db
+      .from('email_dispatches')
+      .select('period_key, delivery_status, sent_at')
+      .eq('user_id', userId)
+      .eq('kind', 'terms_change'),
+  ]);
   const rows = (data ?? []) as Parameters<typeof termsHistory>[0];
   const now = new Date();
-  const views = live.map(({ doc, version, meta }) => ({
-    prompt: termsPrompt({
-      published: true,
-      current: version,
-      meta,
-      history: termsHistory(rows, doc),
-      now,
-    }),
-    doc,
-    version,
-    effective: meta?.effective ? formatFechaLarga(meta.effective, locale) : '',
-    changes: meta?.changes.slice(0, 3) ?? [],
-  }));
+  const views = live.map(({ doc, version, meta }) => {
+    // 7a review of #49, HIGH 1: the version applies only once every notice
+    // went out, plus 30 days; nobody without the notice is asked.
+    const required = noticeRequired(doc, version);
+    const completeAt =
+      ((notices ?? []) as { doc: string; version: string; complete_at: string | null }[]).find(
+        (n) => n.doc === doc && n.version === version,
+      )?.complete_at ?? null;
+    const inForceAt = inForceFrom(meta, { noticeRequired: required, completeAt });
+    const mine =
+      (
+        (dispatches ?? []) as { period_key: string; delivery_status: string; sent_at: string }[]
+      ).find((d) => d.period_key === termsChangePeriodKey(version, doc)) ?? null;
+    const noticed = !required || (inForceAt !== null && personNoticed(mine, inForceAt));
+    return {
+      prompt: termsPrompt({
+        published: true,
+        current: version,
+        meta,
+        history: termsHistory(rows, doc),
+        now,
+        inForceAt,
+        noticed,
+      }),
+      doc,
+      version,
+      effective: inForceAt ? formatFechaLarga(inForceAt, locale) : '',
+      changes: meta?.changes.slice(0, 3) ?? [],
+    };
+  });
   return (
     views.find((v) => v.prompt === 'modal') ?? views.find((v) => v.prompt === 'banner') ?? NONE
   );
