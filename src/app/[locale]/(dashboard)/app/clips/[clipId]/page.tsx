@@ -6,6 +6,7 @@ import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { CLIP_FORMATS } from '@/lib/tools/adapters/types';
 import { clipNeighbours } from '@/lib/tools/clips-home';
+import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -88,7 +89,9 @@ export default async function ClipDetailPage({
   const tc = await getTranslations('consents.connect');
   const tx = await getTranslations('clipsTool.connect');
   const publishLabel = td('publish', { plataforma: 'TikTok' });
-  const publish = tiktok ? (
+  // Publishing and connecting need a plan with social accounts (TIER_CAPS).
+  const socials = socialsAllowed(gate.entitlements.plan);
+  const publish = !socials ? null : tiktok ? (
     <PublishButton
       clipId={clip.id}
       platform="tiktok"

@@ -8,6 +8,7 @@ import { listClipJobs } from '@/lib/tools/clips-jobs';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
 import { getTokenBalance } from '@/lib/usage/tokens';
+import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -71,7 +72,11 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
   const { rows, more } = processingRows(jobs);
   const working = rows.some((j) => j.state !== 'failed');
-  const acctRows = accountRows(accounts, ['youtube', 'twitch', 'tiktok'], caps.supportsConnect);
+  const acctRows = accountRows(
+    accounts,
+    ['youtube', 'twitch', 'tiktok'],
+    caps.supportsConnect && socialsAllowed(gate.entitlements.plan),
+  );
   const firstTime = jobs.length === 0 && clips.length === 0;
   const now = new Date();
 

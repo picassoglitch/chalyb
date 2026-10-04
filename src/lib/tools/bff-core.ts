@@ -11,6 +11,7 @@ export const TOOL_ERROR_REASONS = [
   'forbidden',
   'risk_ack_required',
   'bad_request', // the request itself was wrong (body, params): never an outage
+  'needs_plan', // the plan doesn't include this action
   'unknown',
 ] as const;
 export type ToolErrorReason = (typeof TOOL_ERROR_REASONS)[number];
@@ -132,6 +133,8 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
       return { reason: 'risk_ack_required', retryable: false };
     case 'BAD_REQUEST':
       return { reason: 'bad_request', retryable: false };
+    case 'NEEDS_PLAN':
+      return { reason: 'needs_plan', retryable: false };
     default:
       return { reason: 'unknown', retryable: true };
   }
@@ -146,6 +149,7 @@ export function statusForReason(reason: ToolErrorReason): number {
       return 400;
     case 'forbidden':
     case 'risk_ack_required':
+    case 'needs_plan':
       return 403;
     case 'not_implemented':
     case 'unavailable':
@@ -161,9 +165,14 @@ export function statusForReason(reason: ToolErrorReason): number {
 /** Whether a failure counts against the tool's health (a missing clip or a
  *  missing risk notice is the person's state, not an outage). */
 export function countsAsOutage(reason: ToolErrorReason): boolean {
-  return !['not_found', 'forbidden', 'risk_ack_required', 'bad_request', 'circuit_open'].includes(
-    reason,
-  );
+  return ![
+    'not_found',
+    'forbidden',
+    'risk_ack_required',
+    'bad_request',
+    'needs_plan',
+    'circuit_open',
+  ].includes(reason);
 }
 
 // ── Circuit breaker (one per tool, per server process) ───────────────────

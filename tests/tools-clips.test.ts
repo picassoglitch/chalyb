@@ -189,3 +189,16 @@ test('mock adapter: finished clips, edits keep the original, others can’t read
   assert.deepEqual(await a.accounts('u1'), [], 'no accounts without supportsConnect');
   assert.equal(await a.connectUrl('u1', 'tiktok', '/app/clips'), null);
 });
+
+// Review fix 2: connecting socials and publishing follow TIER_CAPS.
+import { socialsAllowed } from '@/lib/tools/clips-bff';
+import { failureEffect as failure, statusForReason as status } from '@/lib/tools/bff-core';
+
+test('social connect and publish: only plans with clipConnectSocials', () => {
+  assert.equal(socialsAllowed('FREE'), false);
+  assert.equal(socialsAllowed('PRO'), true);
+  assert.equal(socialsAllowed('VIP'), true);
+  const refusal = failure({ code: 'NEEDS_PLAN' }, { adapterErrorsOnly: true });
+  assert.deepEqual(refusal, { reason: 'needs_plan', retryable: false, outage: false });
+  assert.equal(status('needs_plan'), 403);
+});

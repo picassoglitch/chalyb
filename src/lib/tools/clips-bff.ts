@@ -12,9 +12,22 @@ import {
   type SocialPlatform,
 } from './adapters/types';
 import { clampTrim, cleanTitle } from './clips-home';
+import { TIER_CAPS } from '@/lib/billing/tiers';
+import type { SubscriptionTier } from '@/lib/auth/session';
 
 export class NotFoundError extends Error {
   readonly code = 'NOT_FOUND';
+}
+
+/** The plan doesn't include connecting social accounts (TIER_CAPS
+ *  clipConnectSocials): connect and publish answer 403 NEEDS_PLAN. */
+export class NeedsPlanError extends Error {
+  readonly code = 'NEEDS_PLAN';
+}
+
+/** Whether a plan may connect social accounts and publish to them. */
+export function socialsAllowed(plan: SubscriptionTier): boolean {
+  return TIER_CAPS[plan]?.clipConnectSocials === true;
 }
 
 export function parseClipPatch(

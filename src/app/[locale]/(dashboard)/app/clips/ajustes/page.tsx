@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -67,7 +68,8 @@ export default async function ClipsSettingsPage({
     adapter.getSettings(session.user.id),
     adapter.accounts(session.user.id),
   ]);
-  const rows = accountRows(accounts, ['youtube', 'twitch', 'tiktok'], caps.supportsConnect);
+  const socials = caps.supportsConnect && socialsAllowed(entitlements.plan);
+  const rows = accountRows(accounts, ['youtube', 'twitch', 'tiktok'], socials);
   const connected = accounts.filter((a) => a.connected && a.handle).map((a) => a.handle!);
   const autopublish =
     caps.supportsConnect && connected.length > 0 && TIER_CAPS[entitlements.plan].clipAutoPublish;

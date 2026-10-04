@@ -6,7 +6,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { toolRoute } from '@/lib/tools/bff-route';
-import { NotFoundError, parsePlatform } from '@/lib/tools/clips-bff';
+import { NeedsPlanError, NotFoundError, parsePlatform, socialsAllowed } from '@/lib/tools/clips-bff';
 import { recordToolConsent } from '@/lib/tools/consents';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,8 @@ const NAMES = {
   facebook: 'Facebook',
 };
 
-export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { session, body }) => {
+export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { session, entitlements, body }) => {
+  if (!socialsAllowed(entitlements.plan)) throw new NeedsPlanError('clipConnectSocials');
   const platform = parsePlatform(body.platform);
   if (!platform || !a.capabilities().supportsConnect) throw new NotFoundError('platform');
   // Only back to a Clips screen of this app.

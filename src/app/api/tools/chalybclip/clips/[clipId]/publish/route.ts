@@ -3,7 +3,7 @@
 
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { toolRoute } from '@/lib/tools/bff-route';
-import { NotFoundError, parsePlatform } from '@/lib/tools/clips-bff';
+import { NeedsPlanError, NotFoundError, parsePlatform, socialsAllowed } from '@/lib/tools/clips-bff';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -11,7 +11,8 @@ export const runtime = 'nodejs';
 export const POST = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  async (a, { session, params, body }) => {
+  async (a, { session, entitlements, params, body }) => {
+    if (!socialsAllowed(entitlements.plan)) throw new NeedsPlanError('clipConnectSocials');
     const platform = parsePlatform(body.platform);
     const accounts = await a.accounts(session.user.id);
     if (!platform || !accounts.some((x) => x.platform === platform && x.connected))

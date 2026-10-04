@@ -237,6 +237,20 @@ test.describe('as free', () => {
   });
   test.skip(!MOCK, 'E2E_CLIPS_MODE=mock not set');
 
+  test('Free cannot connect social accounts or publish (TIER_CAPS)', async ({ page }) => {
+    const connect = await page.request.post('/api/tools/chalybclip/connect', {
+      data: { platform: 'tiktok', returnTo: '/app/clips', locale: 'es' },
+    });
+    expect(connect.status()).toBe(403);
+    expect((await connect.json()).error.reason).toBe('needs_plan');
+    const publish = await page.request.post('/api/tools/chalybclip/clips/any/publish', {
+      data: { platform: 'tiktok' },
+    });
+    expect(publish.status()).toBe(403);
+    await page.goto('/app/clips/ajustes');
+    await expect(page.getByRole('button', { name: /^Conectar/ })).toHaveCount(0);
+  });
+
   // Gratis does use Clips (TOOLS-SPEC §4.1, Fase 0): no locked state here.
   test('Free gets Clips itself, not an offer', async ({ page, context }) => {
     await page.goto('/app/clips');
