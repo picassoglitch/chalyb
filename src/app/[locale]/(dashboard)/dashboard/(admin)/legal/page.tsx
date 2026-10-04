@@ -4,6 +4,7 @@ import { requireAdminPage } from '@/lib/admin/guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatFechaLarga } from '@/lib/billing/format';
 import { ArcoActions, TakedownActions } from '@/components/dashboard/admin/legal-actions';
+import { LiftBlockButton } from '@/components/dashboard/admin/lift-block-button';
 import { REACCEPT_DOCS } from '@/lib/legal/reaccept';
 import { currentVersion, noticeRequired, versionMeta } from '@/lib/legal/registry';
 import { inForceFrom, termsChangePeriodKey } from '@/lib/legal/terms-change';
@@ -107,6 +108,17 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
         };
       }),
   );
+  const { data: blocks } = await db
+    .from('blocked_content')
+    .select('fingerprint, source, created_at')
+    .is('lifted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  const blockRows = (blocks ?? []) as {
+    fingerprint: string;
+    source: string | null;
+    created_at: string;
+  }[];
   const arcoRows = (arco.data ?? []) as Arco[];
   const noticeRows = (notices.data ?? []) as Notice[];
 
@@ -192,6 +204,26 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
                 : ''}
             </p>
             <TakedownActions id={n.id} status={n.status} />
+          </article>
+        ))}
+      </section>
+      <section aria-labelledby="l-blocks" style={{ display: 'grid', gap: 12 }}>
+        <h2 id="l-blocks" className="ch-h2">
+          {t('blocks.title', { n: blockRows.length })}
+        </h2>
+        {blockRows.length === 0 && <p className="ch-muted">{t('blocks.none')}</p>}
+        {blockRows.map((b) => (
+          <article
+            key={b.fingerprint}
+            className="ch-card"
+            style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}
+          >
+            <span style={{ flex: 1, minWidth: 200, overflowWrap: 'anywhere' }}>
+              {b.source ?? b.fingerprint.slice(0, 16)}
+              <br />
+              <small className="ch-muted">{t('blocks.since', { fecha: date(b.created_at) })}</small>
+            </span>
+            <LiftBlockButton fingerprint={b.fingerprint} />
           </article>
         ))}
       </section>

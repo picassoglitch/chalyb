@@ -2153,6 +2153,13 @@
         "notStarted": "Sending hasn’t started.",
         "inForce": "Applies from {fecha}.",
         "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late)."
+      },
+      "blocks": {
+        "title": "Blocked videos ({n})",
+        "none": "No blocked videos.",
+        "since": "Blocked since {fecha}",
+        "lift": "Lift block",
+        "error": "Couldn’t lift it. Try again."
       }
     }
   },

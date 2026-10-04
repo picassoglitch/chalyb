@@ -179,3 +179,13 @@ test('H1 · the prompt and the cron read the notice state; the dashboard shows i
     /legal_change_notices/,
   );
 });
+
+import { effectiveInstant } from '@/lib/legal/registry';
+
+test('LOW · a date-only effective date is 00:00 in Mexico City, not UTC', () => {
+  assert.equal(effectiveInstant('2026-12-01'), '2026-12-01T06:00:00.000Z');
+  assert.equal(effectiveInstant('2026-12-01T00:00:00-06:00'), '2026-12-01T06:00:00.000Z');
+  assert.equal(effectiveInstant('2026-12-01T12:00:00Z'), '2026-12-01T12:00:00.000Z');
+  assert.equal(effectiveInstant('mañana'), null);
+  assert.equal(effectiveInstant(null), null);
+});

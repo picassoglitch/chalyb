@@ -84,3 +84,18 @@ test('LOW · reject needs a reason, in its own field', () => {
     /str\('reason'\)\.trim\(\) \? await rejectTakedown/,
   );
 });
+
+test('LOW · an admin can lift a block; the notice and its hidden jobs stay as they were', () => {
+  const s = server();
+  assert.match(
+    s,
+    /\.from\('blocked_content'\)\s*\.update\(\{ lifted_at: new Date\(\)\.toISOString\(\) \}\)\s*\.eq\('fingerprint', fingerprint\)\s*\.is\('lifted_at', null\)/,
+  );
+  const api = read('src/app/api/admin/legal/route.ts');
+  assert.match(api, /b\.kind === 'block' && b\.action === 'lift'/);
+  assert.match(api, /\/\^\[0-9a-f\]\{64\}\$\/\.test\(b\.fingerprint\)/);
+  assert.match(
+    read('src/app/[locale]/(dashboard)/dashboard/(admin)/legal/page.tsx'),
+    /<LiftBlockButton fingerprint=/,
+  );
+});

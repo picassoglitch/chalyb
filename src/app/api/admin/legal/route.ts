@@ -5,12 +5,14 @@
 //               normalized sources · preview { sourceUrl } → normalized ·
 //             remove { targetEmail, sourceUrl } · reject { reason } ·
 //             counter { text } · uphold (the claimant showed a proceeding)
+//   block:    lift { fingerprint } (no id)
 
 import { NextResponse } from 'next/server';
 import { adminName, adminSession } from '@/lib/admin/guard';
 import {
   answerArco,
   extendArco,
+  liftBlock,
   lookupTakedownTarget,
   previewSource,
   recordCounterNotice,
@@ -28,6 +30,16 @@ export async function POST(req: Request) {
   const actor = await adminSession();
   if (!actor) return NextResponse.json({ ok: false }, { status: 403 });
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  // Blocks are keyed by their fingerprint (sha256 hex), not a uuid.
+  if (b.kind === 'block' && b.action === 'lift') {
+    const fp =
+      typeof b.fingerprint === 'string' && /^[0-9a-f]{64}$/.test(b.fingerprint)
+        ? b.fingerprint
+        : null;
+    if (!fp) return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
+    const lifted = await liftBlock(fp, actor.user.id);
+    return NextResponse.json({ ok: lifted }, { status: lifted ? 200 : 409 });
+  }
   const id = typeof b.id === 'string' && /^[0-9a-f-]{36}$/i.test(b.id) ? b.id : null;
   if (!id) return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   const str = (k: string) => (typeof b[k] === 'string' ? (b[k] as string) : '');

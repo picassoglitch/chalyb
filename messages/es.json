@@ -2153,6 +2153,13 @@
         "notStarted": "Aún no empieza el envío.",
         "inForce": "Aplica desde el {fecha}.",
         "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde)."
+      },
+      "blocks": {
+        "title": "Videos bloqueados ({n})",
+        "none": "No hay videos bloqueados.",
+        "since": "Bloqueado desde el {fecha}",
+        "lift": "Quitar bloqueo",
+        "error": "No se pudo quitar. Intenta de nuevo."
       }
     }
   },

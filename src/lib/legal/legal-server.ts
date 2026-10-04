@@ -579,6 +579,27 @@ async function restoreTakedown(id: string, targetUserId: string | null): Promise
   return true;
 }
 
+/** Admin: lift a re-upload block by hand (a mistaken removal, a licence
+ *  shown later). The notice and its history stay; the jobs it hid stay
+ *  hidden unless the notice is restored. */
+export async function liftBlock(fingerprint: string, actorId: string): Promise<boolean> {
+  const { data } = await createAdminClient()
+    .from('blocked_content')
+    .update({ lifted_at: new Date().toISOString() })
+    .eq('fingerprint', fingerprint)
+    .is('lifted_at', null)
+    .select('fingerprint, takedown_id')
+    .maybeSingle();
+  if (!data) return false;
+  void logAudit({
+    action: 'legal.takedown',
+    actorId,
+    targetUserId: actorId,
+    metadata: { step: 'block_lifted', fingerprint, takedown_id: data.takedown_id },
+  });
+  return true;
+}
+
 /** Re-upload blocking (§5.2.3): the source of a new job, checked before it
  *  is created. Fails open on a database error (logged), never on a match. */
 export async function isContentBlocked(sourceUrl: string): Promise<boolean> {
