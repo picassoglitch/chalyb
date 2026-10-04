@@ -1877,3 +1877,126 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-lprog__ticks { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; font-size: 15px; color: var(--ink2); text-align: center; }
 .chalyb-app .ch-lprog__ticks li[data-on='true'] { color: var(--accent); font-weight: 600; }
 .chalyb-app .ch-lprog__ticks li[data-now='true'] { color: var(--ink); font-weight: 700; }
+
+/* ── FIX-3 · Mi plan Gratis (mockup 70). Only what no existing class did:
+   the offer card (accent ring, like .ch-task--first), its price block on
+   --tint2, a two-column feature list, and a row that stacks a bar. ── */
+.chalyb-app .ch-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.chalyb-app .ch-link:hover {
+  text-decoration: underline;
+}
+.chalyb-app .ch-freeplan {
+  display: grid;
+  gap: 10px;
+  padding: 26px 28px;
+}
+.chalyb-app .ch-offer {
+  display: grid;
+  gap: 16px;
+  padding: 30px 32px;
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+  justify-items: start;
+}
+.chalyb-app .ch-offer > .ch-btn {
+  justify-self: stretch;
+}
+.chalyb-app .ch-offer__adds {
+  font-weight: 600;
+  font-size: 18px;
+}
+.chalyb-app .ch-feats--2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+  width: 100%;
+}
+.chalyb-app .ch-offer__price {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-offer__today {
+  display: grid;
+  gap: 4px;
+  padding-right: 24px;
+  border-right: 1px solid var(--line);
+  font-size: 18px;
+}
+.chalyb-app .ch-offer__today b {
+  font-size: 34px;
+  font-weight: 750;
+}
+.chalyb-app .ch-offer__after {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  font-size: 17px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-offer__big {
+  font-size: 28px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.chalyb-app .ch-offer__big small {
+  font-size: 18px;
+  font-weight: 650;
+}
+.chalyb-app .ch-row--stack {
+  align-items: flex-start;
+}
+.chalyb-app .ch-row__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-row .ch-row__big {
+  font-size: 26px;
+  font-weight: 750;
+}
+.chalyb-app .ch-row--stack .ch-lprog__bar {
+  margin: 10px 0 8px;
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-feats--2 {
+    grid-template-columns: 1fr;
+  }
+  .chalyb-app .ch-offer {
+    padding: 24px 20px;
+  }
+  .chalyb-app .ch-offer__price {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .chalyb-app .ch-offer__today {
+    border-right: 0;
+    padding-right: 0;
+  }
+}
+@media (min-width: 900px) {
+  .chalyb-app .ch-acct--plan {
+    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-acct--plan .ch-pill {
+  font-size: 16px;
+}
+@media (max-width: 899px) {
+  /* The one offer first on a phone: the primary action without scrolling. */
+  .chalyb-app .ch-acct--plan > .ch-acct__col:last-child {
+    order: -1;
+  }
+}

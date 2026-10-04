@@ -2035,5 +2035,68 @@
     "error": "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
     "periodMonth": "mes",
     "periodYear": "año"
+  },
+  "freeplan": {
+    "f": {
+      "watermark": "Clips con marca de agua",
+      "credits": "{creditos} créditos cada mes",
+      "manual": "Descargas tus clips a mano",
+      "community": "Acceso a la comunidad"
+    },
+    "group": "Tu cuenta Gratis",
+    "credits": {
+      "used": "Usaste {usados} de {total}",
+      "link": "Ver mis créditos ›"
+    },
+    "method": {
+      "value": "Sin tarjeta",
+      "sub": "No la necesitas"
+    },
+    "other": "Otros planes",
+    "vip": {
+      "title": "VIP",
+      "sub": "Más créditos y ayuda prioritaria",
+      "value": "{monto} al mes"
+    },
+    "offer": {
+      "pill": "Incluido en Pro · Pruébalo gratis",
+      "title": "Prueba Pro gratis {dias} días",
+      "sub": "Mensual o anual. Cancela en 1 clic, sin llamadas.",
+      "adds": "Lo que Pro te agrega"
+    },
+    "add": {
+      "tools": "Todas las herramientas",
+      "credits": "{creditos} créditos al mes",
+      "noWatermark": "Clips sin marca de agua",
+      "logo": "Tu logo en tus clips",
+      "publish": "Publica en tus redes",
+      "community": "Comunidad premium"
+    },
+    "price": {
+      "today": "Hoy pagas",
+      "after": "Después de tus {dias} días",
+      "monthUnit": "MXN al mes",
+      "renew": "Se renueva cada mes",
+      "yearAlt": "o Pro anual: {monto_anual} MXN al año",
+      "save": "Ahorras {ahorro} al año · {pct}%"
+    },
+    "ctaTrial": "Empezar mis {dias} días gratis",
+    "ctaNoTrial": "Elegir Pro",
+    "legal": "Hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Cancela en 1 clic desde Mi plan, sin llamadas. Precios en MXN, IVA incluido.",
+    "legalNoTrial": "Se renueva cada mes hasta que canceles. Cancela en 1 clic desde Mi plan, sin llamadas. Precios en MXN, IVA incluido.",
+    "choiceNote": "Eliges mensual o anual en el siguiente paso.",
+    "used": {
+      "title": "Elige tu plan Pro",
+      "today": "Hoy se cobran",
+      "renew": "Se renueva cada mes hasta que canceles. O {monto_anual} MXN al año."
+    },
+    "admin": "Eres administrador: tienes todo incluido, sin importar el plan.",
+    "adminAdvanced": "Opciones avanzadas · Solo administradores",
+    "adminMissing": "Para recibir pagos faltan estas variables: {vars}",
+    "payDown": "Por ahora no podemos recibir pagos. Inténtalo en unas horas o habla con una persona.",
+    "human": "Hablar con una persona",
+    "payError": "No pudimos abrir el pago. Intenta otra vez en un momento.",
+    "retry": "Intentar otra vez",
+    "activated": "Listo, tu plan ya está activo."
   }
 }

@@ -2035,5 +2035,68 @@
     "error": "We couldn’t save your answer. Please try again.",
     "periodMonth": "month",
     "periodYear": "year"
+  },
+  "freeplan": {
+    "f": {
+      "watermark": "Clips with a watermark",
+      "credits": "{creditos} credits every month",
+      "manual": "You download your clips yourself",
+      "community": "Community access"
+    },
+    "group": "Your Free account",
+    "credits": {
+      "used": "You used {usados} of {total}",
+      "link": "See my credits ›"
+    },
+    "method": {
+      "value": "No card",
+      "sub": "You don’t need one"
+    },
+    "other": "Other plans",
+    "vip": {
+      "title": "VIP",
+      "sub": "More credits and priority help",
+      "value": "{monto} a month"
+    },
+    "offer": {
+      "pill": "Included in Pro · Try it free",
+      "title": "Try Pro free for {dias} days",
+      "sub": "Monthly or yearly. Cancel in 1 click, no calls.",
+      "adds": "What Pro adds"
+    },
+    "add": {
+      "tools": "Every tool",
+      "credits": "{creditos} credits a month",
+      "noWatermark": "Clips without a watermark",
+      "logo": "Your logo on your clips",
+      "publish": "Post to your socials",
+      "community": "Premium community"
+    },
+    "price": {
+      "today": "You pay today",
+      "after": "After your {dias} days",
+      "monthUnit": "MXN a month",
+      "renew": "Renews every month",
+      "yearAlt": "or Pro yearly: {monto_anual} MXN a year",
+      "save": "Save {ahorro} a year · {pct}%"
+    },
+    "ctaTrial": "Start my {dias} free days",
+    "ctaNoTrial": "Choose Pro",
+    "legal": "Today we email you the charge notice with the date and the amount. Cancel in 1 click from My plan, no calls. Prices in MXN, VAT included.",
+    "legalNoTrial": "Renews every month until you cancel. Cancel in 1 click from My plan, no calls. Prices in MXN, VAT included.",
+    "choiceNote": "You choose monthly or yearly in the next step.",
+    "used": {
+      "title": "Choose your Pro plan",
+      "today": "Charged today",
+      "renew": "Renews every month until you cancel. Or {monto_anual} MXN a year."
+    },
+    "admin": "You’re an admin: everything is included, whatever the plan.",
+    "adminAdvanced": "Advanced options · Admins only",
+    "adminMissing": "To take payments, these variables are missing: {vars}",
+    "payDown": "We can’t take payments right now. Try again in a few hours or talk to a person.",
+    "human": "Talk to a person",
+    "payError": "We couldn’t open the payment. Try again in a moment.",
+    "retry": "Try again",
+    "activated": "Done, your plan is active."
   }
 }
