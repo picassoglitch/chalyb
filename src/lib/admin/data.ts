@@ -211,6 +211,7 @@ const AUDIT_TITLES: Record<string, string> = {
   'admin.dispute': 'Registró un paso de una disputa',
   'admin.cancel': 'Canceló la suscripción',
   'engine.visibility': 'Cambió la visibilidad de una herramienta',
+  'tool.incident': 'Marcó un incidente de herramienta',
   'settings.billing_toggle': 'Cambió Mensual/Anual',
   'tier.change': 'Cambió un plan o una herramienta',
   'role.change': 'Cambió un rol',

@@ -15,6 +15,8 @@ import {
 } from '@/lib/config/settings';
 import { adminName, adminSession } from './guard';
 import { payingUsersOfTool } from './data';
+import { toolBySlug } from '@/config/tools';
+import { setToolIncident } from '@/lib/tools/status';
 
 export type ToolVisibilityResult =
   | { ok: true }
@@ -50,6 +52,25 @@ export async function setToolVisible(slug: string, visible: boolean, confirmed =
     before: { status: engine.status },
     after: { status: next },
     metadata: { slug, admin_name: adminName(actor), confirmed_used_tool: confirmed },
+  });
+  revalidatePath('/[locale]', 'layout');
+  return { ok: true };
+}
+
+/** Open or close a tool's incident by hand (TOOLS-SPEC §1.2): while open,
+ *  the tool's error screen says "Ya nos avisaron, lo estamos arreglando". */
+export async function setToolIncidentAction(slug: string, active: boolean): Promise<{ ok: boolean }> {
+  const actor = await adminSession();
+  if (!actor || !toolBySlug(slug)) return { ok: false };
+  await setToolIncident(slug, active);
+  await logAudit({
+    action: 'tool.incident',
+    actorId: actor.user.id,
+    actorEmail: actor.user.email ?? null,
+    targetUserId: actor.user.id,
+    targetEmail: actor.user.email ?? null,
+    after: { incident_active: active },
+    metadata: { slug, admin_name: adminName(actor) },
   });
   revalidatePath('/[locale]', 'layout');
   return { ok: true };

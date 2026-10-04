@@ -1898,7 +1898,9 @@
         "yes": "Sí, ocultar",
         "no": "No, volver"
       },
-      "err": "No pudimos guardar el cambio. Intenta de nuevo."
+      "err": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "incident": "Incidente",
+      "incidentToggle": "Incidente abierto en {herramienta}: la pantalla de error dice que ya nos avisaron"
     },
     "settings": {
       "metaTitle": "Ajustes",

@@ -1898,7 +1898,9 @@
         "yes": "Yes, hide",
         "no": "No, go back"
       },
-      "err": "We couldn’t save the change. Try again."
+      "err": "We couldn’t save the change. Try again.",
+      "incident": "Incident",
+      "incidentToggle": "Open incident in {herramienta}: the error screen says we've been alerted"
     },
     "settings": {
       "metaTitle": "Settings",

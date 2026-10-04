@@ -6,7 +6,7 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { setToolVisible } from '@/lib/admin/panel-actions';
+import { setToolIncidentAction, setToolVisible } from '@/lib/admin/panel-actions';
 import { Switch } from '@/components/ui/switch';
 import { Pill } from '@/components/ui/primitives';
 import { ConfirmStep } from './confirm-step';
@@ -17,6 +17,8 @@ export interface ToolSwitchVM {
   visible: boolean;
   health: 'ok' | 'slow' | 'down';
   failures24h: number;
+  /** Tools inside the app only: whether an incident is open (WS-11). */
+  incident?: boolean;
 }
 
 export function ToolSwitches({ tools }: { tools: ToolSwitchVM[] }) {
@@ -53,6 +55,23 @@ export function ToolSwitches({ tools }: { tools: ToolSwitchVM[] }) {
               </small>
             </span>
             {x.visible && <Pill kind={x.health === 'ok' ? 'ok' : x.health === 'slow' ? 'warn' : 'bad'}>{t(`home.health.${x.health}`)}</Pill>}
+            {x.incident !== undefined && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                {t('tools.incident')}
+                <Switch
+                  checked={x.incident}
+                  label={t('tools.incidentToggle', { herramienta: x.name })}
+                  onChange={(next) =>
+                    !pending &&
+                    start(async () => {
+                      const r = await setToolIncidentAction(x.slug, next);
+                      if (r.ok) router.refresh();
+                      else setError(true);
+                    })
+                  }
+                />
+              </label>
+            )}
             <Switch checked={x.visible} label={t('tools.toggle', { herramienta: x.name })} onChange={() => !pending && flip(x)} />
           </li>
         ))}
