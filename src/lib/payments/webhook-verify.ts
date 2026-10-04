@@ -228,3 +228,19 @@ export function gatePreapproval(input: {
   if (expected && charge?.ok) return { storedStatus: input.status, refused: false };
   return { storedStatus: AMOUNT_MISMATCH_STATUS, refused: true, expected };
 }
+
+/**
+ * Whether a refused charge is refunded automatically. Only when Mercado
+ * Pago told us both what was paid and in what currency: a response missing
+ * either is refused and handed to a person, never refunded on a guess (a
+ * correctly priced purchase would otherwise go back).
+ */
+export function autoRefundMismatch(
+  check: ChargeCheck,
+  paid: { amountMajor: number | null | undefined; currency: string | null | undefined },
+): boolean {
+  if (check.ok) return false;
+  if (paid.amountMajor === null || paid.amountMajor === undefined) return false;
+  if (!paid.currency || !paid.currency.trim()) return false;
+  return check.paidCents > 0;
+}

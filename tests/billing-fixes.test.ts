@@ -135,7 +135,8 @@ test('#4 issueRefund claims before calling MP, on an isolated client with the ke
   const claimAt = body.indexOf('claimRefund(ledger');
   const mpAt = body.indexOf('refund.create(');
   assert.ok(claimAt > 0 && claimAt < mpAt, 'claim before the MP call');
-  assert.match(body, /getMercadoPagoIsolated\(\)\.refund\.create\(\{[\s\S]*?idempotencyKey: refundIdempotencyKey/);
+  assert.match(body, /const idempotencyKey = refundIdempotencyKey\(/);
+  assert.match(body, /const mp = getMercadoPagoIsolated\(\);[\s\S]*?mp\.refund\.create\(\{[\s\S]*?requestOptions: \{ idempotencyKey \}/);
   assert.match(body, /releaseRefund\(ledger/);
   // No keyed call anywhere goes through the shared, cached client.
   for (const f of ['src/lib/payments/token-checkout-actions.ts', 'src/lib/billing/disputes-server.ts']) {
@@ -258,4 +259,45 @@ test('#9 a paid start whose first charge never lands ends after graceDays', asyn
   assert.match(read('supabase/migrations/0057_subscription_first_charge.sql'), /add column if not exists first_charge_at timestamptz/);
   for (const f of ['src/lib/billing/subscription-store.ts', 'src/app/api/cron/billing/route.ts', 'src/lib/payments/subscription-sync.ts'])
     assert.match(read(f), /first_charge_at/, f);
+});
+
+// ── #10 · Orders API payments: refunds, disputes, unreadable responses ─
+test('#10 Orders payments refund through their order; disputes find them by reference_id', async () => {
+  const { isOrderPaymentId, ledgerStatus, orderStatusToChargeStatus } = await import('@/lib/payments/order-charge');
+  assert.equal(isOrderPaymentId('PAY01JEVQM899NWDRXXGXZG1XE5R7'), true);
+  assert.equal(isOrderPaymentId('123456789'), false);
+  // An unmapped status never overwrites a known one.
+  assert.equal(ledgerStatus('unknown', 'approved'), 'approved');
+  assert.equal(ledgerStatus('unknown', null), 'unknown');
+  assert.equal(ledgerStatus('refunded', 'approved'), 'refunded');
+  assert.equal(orderStatusToChargeStatus('charged_back'), 'charged_back');
+  assert.equal(orderStatusToChargeStatus('in_mediation'), 'in_mediation');
+
+  const { readFileSync } = await import('node:fs');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const disputes = read('src/lib/billing/disputes-server.ts');
+  const refund = disputes.slice(disputes.indexOf('export async function issueRefund'));
+  assert.match(refund, /isOrderPaymentId\(input\.mpPaymentId\)[\s\S]*?mp\.order\.refund\(\{[\s\S]*?transactions: \[\{ id: input\.mpPaymentId, amount: \(cents \/ 100\)\.toFixed\(2\) \}\][\s\S]*?idempotencyKey/);
+  const cb = disputes.slice(disputes.indexOf('export async function onChargebackOpened'));
+  assert.match(cb, /raw->transactions->payments->0->>reference_id/);
+  // A dispute we can't place is a person's job, not a silent ok.
+  assert.match(cb, /if \(!found\?\.user_id\) \{[\s\S]*?notify\(\{[\s\S]*?severity: 'critical'/);
+  assert.match(read('src/lib/payments/one-off-settlement.ts'), /status: ledgerStatus\(status, previousStatus\)/);
+});
+
+test('#10 a refused charge is auto-refunded only when MP said what was paid and in what currency', async () => {
+  const { autoRefundMismatch, checkCharge, expectedChargeForPack } = await import('@/lib/payments/webhook-verify');
+  const expected = expectedChargeForPack('tokens_100k')!;
+  const paid = (amountMajor: number | null, currency: string | null) => ({ amountMajor, currency });
+  const refuse = (p: ReturnType<typeof paid>) => autoRefundMismatch(checkCharge(expected, p), p);
+  assert.equal(refuse(paid(1, 'MXN')), true); // wrong amount: refunded
+  assert.equal(refuse(paid(expected.amountCents / 100, 'USD')), true); // wrong currency, stated: refunded
+  assert.equal(refuse(paid(expected.amountCents / 100, null)), false); // currency missing: never on a guess
+  assert.equal(refuse(paid(null, 'MXN')), false);
+  assert.equal(refuse(paid(expected.amountCents / 100, 'MXN')), false); // matches: nothing to refund
+  const { readFileSync } = await import('node:fs');
+  const settle = readFileSync(new URL('../src/lib/payments/one-off-settlement.ts', import.meta.url), 'utf8');
+  assert.match(settle, /autoRefundMismatch\(check, paid\)/);
+  // A failed automatic refund is raised, not swallowed.
+  assert.match(settle, /if \(!refunded\.ok\) \{[\s\S]*?severity: 'critical'/);
 });

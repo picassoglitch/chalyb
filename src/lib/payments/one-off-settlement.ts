@@ -18,12 +18,13 @@ import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from './pricing';
 import { getAppUrl } from './mercadopago';
 import {
+  autoRefundMismatch,
   checkCharge,
   expectedChargeForPack,
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import { isDispute, type NormalizedCharge } from './order-charge';
+import { isDispute, ledgerStatus, type NormalizedCharge } from './order-charge';
 import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { parsePackReference } from './subscription-reference';
 import type { SubscriptionTier } from '@/lib/auth/session';
@@ -122,7 +123,7 @@ export async function settleOneOffCharge(
       mp_payment_id: mpId,
       amount_cents: amountCents,
       currency,
-      status,
+      status: ledgerStatus(status, previousStatus),
       raw,
     },
     { onConflict: 'mp_payment_id' },
@@ -315,15 +316,35 @@ export async function settleOneOffCharge(
         source: 'mp.webhook',
       });
       // Nothing was granted, so the whole amount goes back (Términos
-      // §7.2(d): an amount other than the one shown), within 5 business days.
-      if (userId && check.paidCents > 0) {
-        await issueRefund({
+      // §7.2(d): an amount other than the one shown), within 5 business days
+      // — but only when MP told us what was paid and in what currency. A
+      // response missing either is a person's call, never a refund on a guess.
+      const paid = { amountMajor: charge.amountMajor, currency: charge.currency };
+      if (userId && autoRefundMismatch(check, paid)) {
+        const refunded = await issueRefund({
           userId,
           mpPaymentId: mpId,
           cents: check.paidCents,
           reason: 'legal_7_2_d',
           surface: 'mp_webhook',
           actor: null,
+        });
+        if (!refunded.ok) {
+          await notify({
+            severity: 'critical',
+            title: 'Reembolso automático fallido — reembolsar a mano',
+            body: `MP ${charge.mpReference} (pago ${mpId}) · $${(check.paidCents / 100).toFixed(2)} ${check.paidCurrency} · Términos §7.2(d), dentro de 5 días hábiles`,
+            href: '/dashboard/dinero',
+            source: 'mp.webhook',
+          });
+        }
+      } else if (userId) {
+        await notify({
+          severity: 'critical',
+          title: 'Pago rechazado sin datos completos — revisar y reembolsar si procede',
+          body: `MP ${charge.mpReference} (pago ${mpId}) · monto ${charge.amountMajor ?? '?'} · moneda ${charge.currency ?? '?'}: no se otorgó nada ni se reembolsó automáticamente`,
+          href: '/dashboard/dinero',
+          source: 'mp.webhook',
         });
       }
       return ok({

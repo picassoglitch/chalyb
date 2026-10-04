@@ -92,9 +92,28 @@ export function orderStatusToChargeStatus(status: string | null | undefined): Ch
       return 'rejected';
     case 'refunded':
       return 'refunded';
+    case 'charged_back':
+      return 'charged_back';
+    case 'in_mediation':
+      return 'in_mediation';
     default:
       return 'unknown';
   }
+}
+
+/**
+ * Whether a ledger key is an Orders API payment (`PAY01…`) rather than a
+ * Payments API one (numeric). Orders payments are refunded through
+ * POST /v1/orders/{id}/refund; /v1/payments/{id}/refunds doesn't know them.
+ */
+export function isOrderPaymentId(mpPaymentId: string): boolean {
+  return !/^\d+$/.test(mpPaymentId);
+}
+
+/** The status the ledger keeps: a status we can't read never overwrites one
+ *  we could (an unmapped Orders status would turn "approved" into nothing). */
+export function ledgerStatus(next: ChargeStatus, previous: string | null): string {
+  return next === 'unknown' && previous ? previous : next;
 }
 
 /** Payments API statuses pass through; anything unexpected is `unknown`. */
