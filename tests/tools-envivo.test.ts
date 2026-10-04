@@ -12,6 +12,10 @@ import {
   maskKey,
   otherOs,
   recentSignIn,
+  REVEAL_MAX_ATTEMPTS,
+  REVEAL_WINDOW_MS,
+  revealAttemptAllowed,
+  sessionAuthTimeMs,
   splitCode,
 } from '@/lib/tools/envivo-core';
 import { createMockEnVivo } from '@/lib/tools/adapters/mock-tools';
@@ -61,17 +65,43 @@ test('"Hacer clip de este momento" only while live and recording', () => {
   assert.equal(clipNowState({ live: true, saveRecording: true }), 'ready');
 });
 
-test('"Mostrar" needs a sign-in in the last 5 minutes (or the password)', () => {
+test('"Mostrar" needs THIS session to be under 5 minutes old (or the password)', () => {
   const now = Date.parse('2026-10-03T10:00:00.000Z');
-  assert.equal(recentSignIn('2026-10-03T09:57:00.000Z', now), true);
-  assert.equal(recentSignIn('2026-10-03T09:54:00.000Z', now), false);
+  const jwt = (claims: object) =>
+    `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.sig`;
+  const sec = (iso: string) => Date.parse(iso) / 1000;
+  // amr (the session's sign-in timestamps) wins over iat, which moves on
+  // every token refresh.
+  const fresh = jwt({
+    iat: sec('2026-10-03T09:59:00Z'),
+    amr: [{ method: 'password', timestamp: sec('2026-10-03T09:57:00Z') }],
+  });
+  const refreshed = jwt({
+    iat: sec('2026-10-03T09:59:30Z'),
+    amr: [{ method: 'otp', timestamp: sec('2026-10-03T08:00:00Z') }],
+  });
+  assert.equal(recentSignIn(sessionAuthTimeMs(fresh), now), true);
   assert.equal(
-    recentSignIn('2026-10-03T10:01:00.000Z', now),
+    recentSignIn(sessionAuthTimeMs(refreshed), now),
     false,
-    'future dates are not trusted',
+    'a refreshed token is not a sign-in',
   );
+  assert.equal(
+    recentSignIn(sessionAuthTimeMs(jwt({ iat: sec('2026-10-03T09:58:00Z') })), now),
+    true,
+  );
+  assert.equal(sessionAuthTimeMs('not-a-jwt'), null);
+  assert.equal(sessionAuthTimeMs(null), null);
   assert.equal(recentSignIn(null, now), false);
-  assert.equal(recentSignIn('garbage', now), false);
+  assert.equal(recentSignIn(now + 60_000, now), false, 'not from the future');
+});
+
+test('"Mostrar" password checks are rate limited per user', () => {
+  assert.equal(REVEAL_MAX_ATTEMPTS, 5);
+  assert.equal(REVEAL_WINDOW_MS, 15 * 60_000);
+  assert.ok(revealAttemptAllowed(0));
+  assert.ok(revealAttemptAllowed(4));
+  assert.ok(!revealAttemptAllowed(5));
 });
 
 test('mock engine: no computer until the code is typed, then paired and online', async () => {

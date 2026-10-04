@@ -30,6 +30,8 @@ export type AuditAction =
   | 'engine.provision' // account created (or failed) at an engine on launch (P0-2)
   | 'clips.job_failed' // a Clips job ended in failed(reason) (P0-16)
   | 'tool.incident' // the owner opened or closed a tool incident from /dashboard/herramientas
+  | 'tool.key_reauth' // a password check before revealing an En vivo stream key; metadata {ok}
+  | 'tool.key_reveal' // an En vivo stream key was shown; metadata {platform, via}
   | 'tool.error' // a tool screen showed ToolErrorState (WS-11, TOOLS-SPEC §7.1); metadata {tool, reason, supportCode}
   // Owner panel (P5). Engine and settings actions have no subscriber: the
   // admin is both actor and target, like engine.status before them.
