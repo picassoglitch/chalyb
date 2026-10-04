@@ -38,6 +38,7 @@ import {
   legalPublished,
   legalPublishBlockers as flagBlockers,
   paidCheckoutBlockers,
+  sellerValueOk,
 } from '@/lib/config/flags';
 import publishState from '@/lib/legal/publish-state.json' with { type: 'json' };
 import registryJson from '@/lib/legal/registry.json' with { type: 'json' };
@@ -506,4 +507,23 @@ test('consistency: Suscripción must match the trial plans and grace in config b
   assert.deepEqual(subscriptionConsistency(ok.replace('**7 días', '**5 días'), cfg), [
     'grace-days:5!=7',
   ]);
+});
+
+test('seller identity: placeholders, TBD and generic or malformed RFCs are refused', () => {
+  for (const [name, v] of [
+    ['LEGAL_ENTITY_NAME', '[RAZÓN SOCIAL]'],
+    ['LEGAL_ENTITY_ADDRESS', 'TBD'],
+    ['LEGAL_ENTITY_PHONE', 'TODO: phone'],
+    ['LEGAL_ENTITY_RFC', 'XAXX010101000'],
+    ['LEGAL_ENTITY_RFC', 'XEXX010101000'],
+    ['LEGAL_ENTITY_RFC', 'ABC123'],
+    ['LEGAL_ENTITY_EMAIL', 'hola'],
+    ['LEGAL_ENTITY_HOURS', '   '],
+  ] as const) {
+    assert.equal(sellerValueOk(name, v), false, `${name}=${v}`);
+  }
+  assert.equal(sellerValueOk('LEGAL_ENTITY_RFC', 'CHA261003AB1'), true, 'company RFC');
+  assert.equal(sellerValueOk('LEGAL_ENTITY_RFC', 'GODE561231GR8'), true, 'person RFC');
+  assert.equal(sellerValueOk('LEGAL_ENTITY_NAME', 'Chalyb Tecnología S.A. de C.V.'), true);
+  assert.equal(sellerValueOk('LEGAL_ENTITY_EMAIL', 'hola@chalyb.com'), true);
 });

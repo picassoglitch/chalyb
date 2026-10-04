@@ -62,9 +62,13 @@ test('V-1 · paid checkout is refused while anything it depends on is missing; t
     process.env.LEGAL_PUBLISH = 'true';
     // WS-12: the flag alone can't publish Law's drafts while brackets remain.
     assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
-    setLegalPublishStateForTests({ terminos: { version: '1.0', published: true, placeholders: 0 } });
+    setLegalPublishStateForTests({
+      terminos: { version: '1.0', published: true, placeholders: 0 },
+    });
     for (const k of ['NAME', 'RFC', 'ADDRESS', 'PHONE', 'EMAIL', 'HOURS', 'COMPLAINTS'])
       process.env[`LEGAL_ENTITY_${k}`] = 'x';
+    process.env.LEGAL_ENTITY_RFC = 'CHA261003AB1';
+    process.env.LEGAL_ENTITY_EMAIL = 'hola@example.com';
     process.env.CONSENT_ENCRYPTION_KEY = 'x';
     process.env.CRON_SECRET = 'x';
     assert.deepEqual(paidCheckoutBlockers(), []);
