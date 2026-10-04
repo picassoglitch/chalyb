@@ -1067,6 +1067,7 @@
     "notePaid": "Charged today. Cancel online anytime.",
     "feat": {
       "clipsTry": "Test clips (SD, watermarked)",
+      "clipsTryWatermark": "Test clips (watermarked)",
       "noWatermarkHd": "Watermark-free clips in HD",
       "clips4k": "4K clip exports",
       "noStreams": "Clips from your live streams",

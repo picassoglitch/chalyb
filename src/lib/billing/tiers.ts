@@ -312,6 +312,19 @@ export function engineCanRunLive(
   return engineId === selectedEngineId;
 }
 
+/**
+ * D7 · how many tools a plan runs live, from the same rule the entitlement
+ * uses (entitlement-core: PRO_INCLUDES_ALL_TOOLS gives paid plans every
+ * tool). TIER_CAPS.liveEnginesCount is the legacy one-slot model; read this
+ * instead wherever a count or a slot picker is shown, so the screens, the
+ * server entitlement and the terms say the same thing.
+ */
+export function liveToolSlots(tier: SubscriptionTier, proIncludesAllTools: boolean): number {
+  const caps = TIER_CAPS[tier];
+  if (proIncludesAllTools && caps.liveEnginesCount > 0) return Infinity;
+  return caps.liveEnginesCount;
+}
+
 // Back-compat alias — remove after all call sites migrated.
 export { engineCanRunLive as botCanRunLive };
 
@@ -460,7 +473,8 @@ export function buildQuotaRows(tier: SubscriptionTier, usage: QuotaUsage = NO_US
       used: usage.running,
       cap: caps.maxConcurrentJobs,
       unit: 'a la vez',
-      sub: caps.boost === 'included' ? 'Cada trabajo corre en su propio servidor dedicado' : undefined,
+      sub:
+        caps.boost === 'included' ? 'Cada trabajo corre en su propio servidor dedicado' : undefined,
     },
     {
       label: 'Almacenamiento',

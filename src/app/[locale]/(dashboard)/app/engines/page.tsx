@@ -3,7 +3,8 @@ import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { CATS, type EngineCategory } from '@/lib/data/types';
 import { getTokenBalance } from '@/lib/usage/tokens';
-import { TIER_CAPS } from '@/lib/billing/tiers';
+import { TIER_CAPS, liveToolSlots } from '@/lib/billing/tiers';
+import { proIncludesAllTools } from '@/lib/config/flags';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { isCustomerVisible, meetsTierRequirement } from '@/lib/billing/entitlement-core';
 import { EnginesExplorer } from '@/components/workspace/engines/engines-explorer';
@@ -160,7 +161,10 @@ export default async function MyEnginesPage({ params }: { params: Promise<{ loca
                   // Real count live right now (includes the ChalyClip trial/grace),
                   // not the static plan cap — matches the hero's "N en vivo ahora".
                   k: t('caps.liveEngines'),
-                  v: caps.liveEnginesCount === Infinity ? '∞' : String(liveCount),
+                  v:
+                    liveToolSlots(tier, proIncludesAllTools()) === Infinity
+                      ? '∞'
+                      : String(liveCount),
                 },
                 {
                   k: t('caps.tokens'),

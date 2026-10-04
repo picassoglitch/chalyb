@@ -51,6 +51,16 @@ export function proIncludesAllTools(): boolean {
   return readBool('PRO_INCLUDES_ALL_TOOLS', true);
 }
 
+/** D8 · the Clips limits a plan card may promise. The separate Clips app
+ *  (ChalyClip, checked 2026-10-03) enforces the watermark on Gratis, 4K on
+ *  VIP only and publishing on paid plans, but renders Gratis at 1080p and
+ *  doesn't limit live-stream clips by plan. Until it enforces the Gratis SD
+ *  cap and the 0-streams rule, the cards don't state them.
+ *  TODO(owner D8): turn on once ChalyClip enforces both. */
+export function planFeatureClipLimitsEnforced(): boolean {
+  return readBool('PLAN_FEATURE_CLIP_LIMITS_ENFORCED', false);
+}
+
 /**
  * C4 / C15 · whether copy may say "Todas las herramientas incluidas". Only
  * once Pro's entitlement, TIER_CAPS and the terms agree on it (WS-13, owner

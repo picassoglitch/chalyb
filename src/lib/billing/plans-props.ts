@@ -7,6 +7,7 @@ import { getCurrentUser, getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from './tiers';
 import {
   freeIncludesClips,
+  planFeatureClipLimitsEnforced,
   lealtadEnabled,
   lealtadOpenToNewCustomers,
   paidCheckoutEnabled,
@@ -92,7 +93,10 @@ export async function loadPlansProps(locale: string): Promise<PlansProps> {
   const proBusy = isAdmin || state === 'trialing' || (paid && !onVip);
   const trialOffered = flow && !trialUsed && !proBusy && !quebecBlocked;
 
-  const opts = { freeIncludesClips: freeIncludesClips() };
+  const opts = {
+    freeIncludesClips: freeIncludesClips(),
+    clipLimitsEnforced: planFeatureClipLimitsEnforced(),
+  };
   return {
     cta: plansCta({
       signedIn: !!session,

@@ -2,8 +2,10 @@
 // Pure. Only real, enforced limits: no tool count, no "todas las
 // herramientas" (C4 / C15), no credits or jobs.
 //
-// TODO(owner D8): the Clips caps (watermark, SD/HD/4K, 0/12/∞ streams) are
-// enforced in the separate Clips app; confirm before these bullets ship.
+// D8 · the Clips caps live in the separate Clips app. What it enforces
+// (watermark on Gratis, 4K on VIP only) always shows; what it doesn't yet
+// (Gratis in SD, no live-stream clips on Gratis) shows only with
+// PLAN_FEATURE_CLIP_LIMITS_ENFORCED (flags.ts). TODO(owner D8).
 
 import { TIER_CAPS } from './tiers';
 
@@ -11,6 +13,7 @@ export interface PlanFeature {
   /** plans.feat.<key> */
   key:
     | 'clipsTry'
+    | 'clipsTryWatermark'
     | 'noWatermarkHd'
     | 'clips4k'
     | 'noStreams'
@@ -32,9 +35,16 @@ export function storageLabel(mb: number): string {
 
 type Tier = 'FREE' | 'PRO' | 'VIP';
 
-function clipsFeature(tier: Tier): PlanFeature | null {
+interface FeatureOpts {
+  freeIncludesClips: boolean;
+  /** D8 · the Clips app enforces Gratis' SD cap and 0 live streams. */
+  clipLimitsEnforced?: boolean;
+}
+
+function clipsFeature(tier: Tier, opts: FeatureOpts): PlanFeature | null {
   const q = TIER_CAPS[tier].clipExportMaxQuality;
-  if (tier === 'FREE') return { key: 'clipsTry', included: true };
+  if (tier === 'FREE')
+    return { key: opts.clipLimitsEnforced ? 'clipsTry' : 'clipsTryWatermark', included: true };
   if (q === '4k') return { key: 'clips4k', included: true };
   return TIER_CAPS[tier].clipWatermark ? null : { key: 'noWatermarkHd', included: true };
 }
@@ -57,15 +67,15 @@ function historyFeature(tier: Tier): PlanFeature {
  * Gratis: what it has, plus what it lacks crossed out. Pro: its own list.
  * VIP: only what is ABOVE Pro (the card's header says "Todo lo de Pro, más:").
  */
-export function planFeatures(tier: Tier, opts: { freeIncludesClips: boolean }): PlanFeature[] {
+export function planFeatures(tier: Tier, opts: FeatureOpts): PlanFeature[] {
   const all = (t: Tier): PlanFeature[] => {
-    const clips = clipsFeature(t);
+    const clips = clipsFeature(t, opts);
     return [
       ...(clips && (t !== 'FREE' || opts.freeIncludesClips) ? [clips] : []),
       ...(t === 'FREE' ? [] : [streamsFeature(t)]),
       historyFeature(t),
       { key: 'storage', values: { espacio: storageLabel(TIER_CAPS[t].storageMB) }, included: true },
-      ...(t === 'FREE' ? [streamsFeature(t)] : []),
+      ...(t === 'FREE' && opts.clipLimitsEnforced ? [streamsFeature(t)] : []),
       ...(t === 'PRO' ? [{ key: 'cancel', included: true } as PlanFeature] : []),
     ];
   };

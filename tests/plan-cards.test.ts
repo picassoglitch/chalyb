@@ -161,9 +161,20 @@ test('C8 · no superlative deal claim unless Pro saves strictly the most', () =>
 });
 
 test('K-9 · bullets come from TIER_CAPS, no tool count, no credits', () => {
-  const keys = (t: 'FREE' | 'PRO' | 'VIP', on = true) =>
-    planFeatures(t, { freeIncludesClips: on }).map((f) => [f.key, f.values ?? null, f.included]);
+  const keys = (t: 'FREE' | 'PRO' | 'VIP', on = true, enforced = false) =>
+    planFeatures(t, { freeIncludesClips: on, clipLimitsEnforced: enforced }).map((f) => [
+      f.key,
+      f.values ?? null,
+      f.included,
+    ]);
+  // D8 · the Clips app doesn't enforce Gratis' SD cap or 0 live streams yet,
+  // so by default the card promises only the watermark.
   assert.deepEqual(keys('FREE'), [
+    ['clipsTryWatermark', null, true],
+    ['history', { dias: 7 }, true],
+    ['storage', { espacio: '500 MB' }, true],
+  ]);
+  assert.deepEqual(keys('FREE', true, true), [
     ['clipsTry', null, true],
     ['history', { dias: 7 }, true],
     ['storage', { espacio: '500 MB' }, true],

@@ -1067,6 +1067,7 @@
     "notePaid": "Se cobra hoy. Cancela en 1 clic, sin llamadas.",
     "feat": {
       "clipsTry": "Haz clips para probar (calidad SD, con marca de agua)",
+      "clipsTryWatermark": "Haz clips para probar (con marca de agua)",
       "noWatermarkHd": "Clips sin marca de agua, en HD",
       "clips4k": "Clips en 4K",
       "noStreams": "Clips de tus transmisiones en vivo",

@@ -10,7 +10,7 @@ import { Check, Coins, CreditCard, FileText, Gift, MessageCircle, Star } from 'l
 import { Link } from '@/i18n/routing';
 import { annualMath, floorToPeso, pct, planHasTrial, planPrice, PRICING } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
-import { paidCheckoutEnabled, proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
+import { allToolsClaimAllowed, paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
 import { isCheckoutReady } from '@/lib/payments/mercadopago';
 import type { TokenBalance } from '@/lib/usage/tokens';
 import { Banner, ButtonLink, Group, Pill, Row, StateBlock } from '@/components/ui/primitives';
@@ -60,7 +60,8 @@ export async function FreePlan({
   const left = used !== null && total !== null ? Math.max(0, total - used) : null;
 
   const adds = [
-    proIncludesAllTools() ? t('add.tools') : null,
+    // C4 / D7: a tool claim only once entitlement, TIER_CAPS and terms agree.
+    allToolsClaimAllowed() ? t('add.tools') : null,
     proCredits ? t('add.credits', { creditos: n(proCredits, locale) }) : null,
     t('add.noWatermark'),
     t('add.logo'),
@@ -130,9 +131,14 @@ export async function FreePlan({
                     aria-valuemin={0}
                     aria-valuemax={total}
                     aria-valuenow={used}
-                    aria-label={t('credits.used', { usados: n(used, locale), total: n(total, locale) })}
+                    aria-label={t('credits.used', {
+                      usados: n(used, locale),
+                      total: n(total, locale),
+                    })}
                   >
-                    <span style={{ width: `${total ? Math.min(100, (used / total) * 100) : 0}%` }} />
+                    <span
+                      style={{ width: `${total ? Math.min(100, (used / total) * 100) : 0}%` }}
+                    />
                   </div>
                   <div className="ch-row__line">
                     <span className="ch-muted">

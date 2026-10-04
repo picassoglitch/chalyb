@@ -2,6 +2,9 @@ import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { planPrice } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
+// D7: the Pro line says what the server grants (one source: the flag the
+// entitlement reads), so the terms and the product can't disagree.
+import { proIncludesAllTools } from '@/lib/config/flags';
 
 // Amounts come from the one pricing source, IVA included (Q1); never typed here.
 const PRO = formatMXN(planPrice('pro_month').totalCents);
@@ -145,8 +148,11 @@ export function TermsDocumentEn() {
           execution. Reduced quotas.
         </li>
         <li>
-          <strong>Pro</strong>: {PRO} MXN / month or {PRO_YEAR} MXN / year, IVA (VAT) included. Live
-          execution of ONE Engine of your choice, extended quotas, email support.
+          <strong>Pro</strong>: {PRO} MXN / month or {PRO_YEAR} MXN / year, IVA (VAT) included.{' '}
+          {proIncludesAllTools()
+            ? 'Live execution of every active Engine'
+            : 'Live execution of ONE Engine of your choice'}
+          , extended quotas, email support.
         </li>
         <li>
           <strong>VIP</strong>: {VIP} MXN / month or {VIP_YEAR} MXN / year, IVA (VAT) included. Live
