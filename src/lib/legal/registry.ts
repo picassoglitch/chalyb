@@ -28,6 +28,8 @@ export interface VersionMeta {
   relevance: 'relevant' | 'minor';
   /** Up to three one-line changes for the §8 modal (es). */
   changes: string[];
+  /** Roles of amounts two roles share today, per occurrence (amounts.ts). */
+  amountRoles?: Record<string, string[]>;
 }
 
 interface Entry {
@@ -67,11 +69,15 @@ export function archived(doc: LegalDoc, version = currentVersion(doc)): Archived
   return ARCHIVE[doc]?.[version] ?? null;
 }
 
-/** The document's text as it renders today: Law's Markdown with every amount
- *  bound from src/config/pricing.ts. */
+/** The document's text as people see it. A published version is frozen:
+ *  the text filled with the prices of the day it was archived, whose hash
+ *  consent events cite (a later price change needs a new version, and
+ *  `pnpm legal:hash` fails until there is one). A draft re-binds every
+ *  amount from src/config/pricing.ts on each render. */
 export function renderedSource(doc: LegalDoc, version = currentVersion(doc)): string | null {
   const a = archived(doc, version);
-  return a ? bindAmounts(a.template) : null;
+  if (!a) return null;
+  return versionMeta(doc, version)?.published ? a.rendered : bindAmounts(a.template);
 }
 
 export function renderedBlocks(doc: LegalDoc, version = currentVersion(doc)): Block[] | null {
@@ -79,10 +85,13 @@ export function renderedBlocks(doc: LegalDoc, version = currentVersion(doc)): Bl
   return src === null ? null : parseMarkdown(src);
 }
 
-/** Owner/attorney values Law left in brackets: `[RAZÓN SOCIAL]`, `[IVA:
- *  CONFIRMAR]`, `[DECISIÓN DEL DUEÑO …]`. Old P6-3's regex, widened to
- *  any bracket that opens with an uppercase word (notes run long). */
-export const PLACEHOLDER_RE = /\[[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9]*(?:[ :\/,.\-][^\]]*)?\]/g;
+/** Anything Law left in brackets: owner/attorney values (`[RAZÓN SOCIAL]`,
+ *  `[IVA: CONFIRMAR]`), numbers to confirm (`[30]`, `[15]`), choices
+ *  (`[conservarás / tendrás limitado]`) and notes (`[NOTA PARA EL DUEÑO …]`).
+ *  Runs on the rendered text, where a Markdown link is already plain text,
+ *  so every remaining `[…]` is unfinished. Innermost brackets count once
+ *  each; no allow-list is needed today. */
+export const PLACEHOLDER_RE = /\[[^[\]]+\]/g;
 
 /** The placeholders left in a rendered document, in order. */
 export function placeholders(doc: LegalDoc, version = currentVersion(doc)): string[] {

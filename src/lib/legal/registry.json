@@ -4,7 +4,12 @@
     "path": "/legal/terms",
     "current": "1.0",
     "versions": {
-      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": []
+      }
     }
   },
   "suscripcion": {
@@ -12,7 +17,24 @@
     "path": "/legal/subscription",
     "current": "1.0",
     "versions": {
-      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": [],
+        "amountRoles": {
+          "$997": [
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:lealtad_4",
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:lealtad_4",
+            "mxn:pro_month"
+          ]
+        }
+      }
     }
   },
   "privacidad": {
@@ -20,7 +42,12 @@
     "path": "/legal/privacy",
     "current": "1.0",
     "versions": {
-      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": []
+      }
     }
   },
   "uso_aceptable": {
@@ -28,7 +55,12 @@
     "path": "/legal/acceptable-use",
     "current": "1.0",
     "versions": {
-      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": []
+      }
     }
   }
 }

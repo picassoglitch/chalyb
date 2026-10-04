@@ -124,10 +124,22 @@ test('versioned URL: fixed /legal/<slug>/v<x-y>, stable for a version', () => {
 
 // ── Amounts from config (old P6-2) ────────────────────────────────────────
 
-test('amounts: every amount Law wrote is a config role, none typed', () => {
+const amountRoles = (doc: string) =>
+  (
+    registryJson as Record<
+      string,
+      { current: string; versions: Record<string, { amountRoles?: Record<string, string[]> }> }
+    >
+  )[doc]!.versions[currentVersion(doc as never)]!.amountRoles ?? {};
+
+test('amounts: every amount Law wrote is one config role, none typed', () => {
   for (const doc of LEGAL_DOCS) {
-    const { template, unknown } = tokenizeAmounts(lawSource(doc), false);
-    assert.deepEqual(unknown, [], doc);
+    const { template, unknown, ambiguous, invalid } = tokenizeAmounts(
+      lawSource(doc),
+      amountRoles(doc),
+      false,
+    );
+    assert.deepEqual([unknown, ambiguous, invalid], [[], [], []], doc);
     assert.equal(
       [...template.matchAll(AMOUNT_RE)].length,
       0,
@@ -137,18 +149,62 @@ test('amounts: every amount Law wrote is a config role, none typed', () => {
   }
 });
 
-test('amounts: under today’s config the render equals Law’s text', () => {
-  for (const doc of LEGAL_DOCS) assert.equal(renderedSource(doc), lawSource(doc), doc);
+test('amounts: an amount two roles share is never guessed', () => {
+  // Pro mensual and Lealtad month 5 are both $997 today.
+  const r = tokenizeAmounts('Pro $997 · mes 5 $997', {}, false);
+  assert.equal(r.ambiguous.length, 1);
+  assert.throws(() => tokenizeAmounts('Pro $997', {}), /ambiguous/);
+  assert.throws(
+    () => tokenizeAmounts('$997 y $997', { $997: ['mxn:pro_month'] }),
+    /ambiguous/,
+    'count must match',
+  );
+  assert.throws(() => tokenizeAmounts('$997', { $997: ['mxn:vip_month'] }), /wrong role/);
+  assert.equal(
+    tokenizeAmounts('Pro $997 · mes 5 $997', { $997: ['mxn:pro_month', 'mxn:lealtad_4'] }).template,
+    'Pro {{mxn:pro_month}} · mes 5 {{mxn:lealtad_4}}',
+  );
 });
 
-test('amounts: a price change changes the legal render', () => {
+test('amounts: under today’s config the render equals Law’s text, and the hash is of that render', () => {
+  for (const doc of LEGAL_DOCS) {
+    assert.equal(renderedSource(doc), lawSource(doc), doc);
+    assert.equal(archived(doc)!.rendered, lawSource(doc), `${doc} archived render current`);
+    assert.equal(archived(doc)!.sha256, sha(archived(doc)!.rendered), doc);
+  }
+});
+
+test('amounts: a price change re-renders a draft, never the Lealtad month-5 cell', () => {
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
     const text = renderedSource('suscripcion')!;
-    assert.notEqual(text, lawSource('suscripcion'));
     // $997 as a list price + 16% IVA.
     assert.match(text, /\*\*Pro \$1,156\.52 MXN\/mes\*\*/);
+    // Lealtad steps don't move with the IVA flag: month 5 stays $997.
+    assert.match(text, /\| 5 \| \*\*\$997 MXN\*\* \| 40% \|/);
+    assert.match(text, /\$1,163 · \$997 · \$831/);
   });
   assert.equal(bindAmounts('{{mxn:pro_month}} · {{usd:pro_year}}'), '$997 · US$500');
+});
+
+test('amounts: a published version is frozen: today’s prices never change it', () => {
+  const a = archived('suscripcion')!;
+  const frozen = { ...a, rendered: a.rendered };
+  withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
+    // What renderedSource does for a published version: the archived render.
+    assert.equal(frozen.rendered, lawSource('suscripcion'));
+    assert.notEqual(
+      bindAmounts(a.template),
+      frozen.rendered,
+      'the archive step would refuse: new version needed',
+    );
+  });
+  const reg = readFileSync(join(ROOT, 'src/lib/legal/registry.ts'), 'utf8');
+  assert.match(
+    reg,
+    /versionMeta\(doc, version\)\?\.published \? a\.rendered : bindAmounts\(a\.template\)/,
+  );
+  const script = readFileSync(join(ROOT, 'scripts/hash-legal-docs.mjs'), 'utf8');
+  assert.match(script, /today's prices render it differently/);
 });
 
 // ── Publish gate (old P6-3) ───────────────────────────────────────────────
@@ -162,7 +218,15 @@ test('placeholders: the regex catches Law’s owner brackets, not prose', () => 
     '[DÍAS DE GRACIA]',
   ]);
   assert.deepEqual(hits('[DECISIÓN DEL DUEÑO D20: si $9,970 es precio de primer año]').length, 1);
-  assert.deepEqual(hits('ver [sección 4](#planes) y [x]'), []);
+  // Numbers and lowercase choices count too (7a review): [30], [15],
+  // [conservarás / tendrás limitado].
+  assert.deepEqual(hits('dentro de [30] días, [15] hábiles, [conservarás / tendrás limitado]'), [
+    '[30]',
+    '[15]',
+    '[conservarás / tendrás limitado]',
+  ]);
+  // The regex runs on rendered text: a Markdown link is already plain text.
+  assert.deepEqual(hits(blocksText(parseMarkdown('ver [sección 4](#planes)'))), []);
 });
 
 test('placeholders: today’s drafts would fail as "published"', () => {
@@ -170,6 +234,9 @@ test('placeholders: today’s drafts would fail as "published"', () => {
     assert.ok(placeholders(doc).length > 0, `${doc} still has brackets`);
   assert.ok(placeholders('terminos').includes('[RAZÓN SOCIAL]'));
   assert.ok(placeholders('suscripcion').includes('[IVA: CONFIRMAR]'));
+  assert.ok(placeholders('suscripcion').includes('[conservarás / tendrás limitado]'));
+  assert.ok(placeholders('terminos').includes('[30]'));
+  assert.ok(placeholders('terminos').includes('[15]'));
   assert.ok(legalPublishBlockers().length > 0);
 });
 

@@ -6,7 +6,11 @@
 // byte for byte; a price change changes the legal page with it.
 //
 // An amount that matches no role fails the archive step: the legal text
-// can't promise a number the code doesn't charge.
+// can't promise a number the code doesn't charge. An amount that matches
+// two roles today (Pro mensual and Lealtad month 5 are both $997) is never
+// guessed: registry.json lists, per version, the role of each of its
+// occurrences in order (`amountRoles`), and the archive step fails while
+// one is missing or the count doesn't match.
 
 import {
   LEALTAD,
@@ -23,9 +27,7 @@ export interface AmountRole {
   cents: number;
 }
 
-/** Every amount the legal texts may print, by role. Order matters when two
- *  roles share a value today (Pro mensual and Lealtad month 5 are both
- *  $997): the first role wins, so plan prices come first. */
+/** Every amount the legal texts may print, by role. */
 export function legalAmountRoles(): Record<string, AmountRole> {
   const mxn = (cents: number): AmountRole => ({ currency: 'MXN', cents });
   const usd = (cents: number): AmountRole => ({ currency: 'USD', cents });
@@ -62,27 +64,69 @@ function parseLiteral(literal: string): AmountRole {
   return { currency: usd ? 'USD' : 'MXN', cents: Math.round(Number.parseFloat(n) * 100) };
 }
 
-/** Law's text → template with {{role}} tokens. Throws on an amount no role
- *  explains (returned in `unknown` when `strict` is false). */
+/** Per literal ("$997"), the role of each occurrence, in order. */
+export type AmountRoleMap = Readonly<Record<string, readonly string[]>>;
+
+/**
+ * Law's text → template with {{role}} tokens. Collects every problem:
+ * `unknown` (no role has that value), `ambiguous` (several roles do and
+ * `explicit` doesn't say which, or its count is off), `invalid` (an explicit
+ * role that doesn't have that value). With `strict`, any problem throws.
+ */
 export function tokenizeAmounts(
   source: string,
+  explicit: AmountRoleMap = {},
   strict = true,
-): { template: string; unknown: string[] } {
+): { template: string; unknown: string[]; ambiguous: string[]; invalid: string[] } {
   const roles = Object.entries(legalAmountRoles());
   const unknown: string[] = [];
+  const ambiguous: string[] = [];
+  const invalid: string[] = [];
+  const seen = new Map<string, number>();
+  const counts = new Map<string, number>();
+  for (const m of source.matchAll(AMOUNT_RE)) counts.set(m[0], (counts.get(m[0]) ?? 0) + 1);
   const template = source.replace(AMOUNT_RE, (literal) => {
     const want = parseLiteral(literal);
-    const hit = roles.find(([, r]) => r.currency === want.currency && r.cents === want.cents);
-    if (!hit) {
+    const hits = roles.filter(([, r]) => r.currency === want.currency && r.cents === want.cents);
+    const i = seen.get(literal) ?? 0;
+    seen.set(literal, i + 1);
+    if (!hits.length) {
       unknown.push(literal);
       return literal;
     }
-    return `{{${hit[0]}}}`;
+    const list = explicit[literal];
+    if (list) {
+      if (list.length !== counts.get(literal)) {
+        if (i === 0)
+          ambiguous.push(
+            `${literal} (${counts.get(literal)} occurrences, ${list.length} roles listed)`,
+          );
+        return literal;
+      }
+      const name = list[i]!;
+      if (!hits.some(([k]) => k === name)) {
+        invalid.push(`${literal} #${i + 1} → ${name}`);
+        return literal;
+      }
+      return `{{${name}}}`;
+    }
+    if (hits.length > 1) {
+      if (i === 0) ambiguous.push(`${literal} (${hits.map(([k]) => k).join(' | ')})`);
+      return literal;
+    }
+    return `{{${hits[0]![0]}}}`;
   });
-  if (strict && unknown.length) {
-    throw new Error(`legal text has amounts that pricing.ts doesn't define: ${unknown.join(', ')}`);
+  if (strict && (unknown.length || ambiguous.length || invalid.length)) {
+    const parts = [
+      unknown.length ? `not in pricing.ts: ${unknown.join(', ')}` : '',
+      ambiguous.length
+        ? `ambiguous, list them in registry.json amountRoles: ${ambiguous.join(', ')}`
+        : '',
+      invalid.length ? `wrong role: ${invalid.join(', ')}` : '',
+    ].filter(Boolean);
+    throw new Error(`legal amounts: ${parts.join('; ')}`);
   }
-  return { template, unknown };
+  return { template, unknown, ambiguous, invalid };
 }
 
 /** Template → text with today's config amounts. */

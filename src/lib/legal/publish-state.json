@@ -2,12 +2,12 @@
   "terminos": {
     "version": "1.0",
     "published": false,
-    "placeholders": 25
+    "placeholders": 28
   },
   "suscripcion": {
     "version": "1.0",
     "published": false,
-    "placeholders": 35
+    "placeholders": 38
   },
   "privacidad": {
     "version": "1.0",
