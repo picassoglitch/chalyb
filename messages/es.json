@@ -20,141 +20,133 @@
     "publicNav": {
       "aria": "Secciones",
       "tools": "Herramientas",
-      "how": "Cómo funciona",
-      "plans": "Planes",
-      "faq": "Preguntas",
-      "login": "Entrar",
+      "pricing": "Precios",
+      "help": "Ayuda",
+      "login": "Iniciar sesión",
+      "trial": "Prueba gratis",
+      "trialNoTrial": "Empieza gratis",
       "app": "Abrir Chalyb",
-      "cta": "Empezar mis 7 días gratis",
       "menu": "Abrir menú",
-      "skip": "Ir al contenido",
-      "ctaNoTrial": "Empieza gratis",
-      "ctaSignedIn": "Ver planes"
+      "close": "Cerrar menú",
+      "skip": "Ir al contenido"
     },
     "hero": {
       "eyebrowTag": "Todo incluido",
       "eyebrow": "Un plan, todas las herramientas",
-      "title": "Bots que <em>trabajan por ti</em> mientras duermes",
-      "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.",
-      "subMobile": "Clips, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.",
+      "title": "Tú duermes. <em>Tus bots trabajan.</em>",
+      "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más, en un solo plan.",
+      "noteStrong": "Cancela cuando quieras.",
+      "noteRest": "Hoy pagas {cero}.",
       "seal1": "En español",
       "seal2": "Sin saber de tecnología",
       "seal3": "Cancela en 1 clic",
-      "panel": "Mientras dormías",
-      "example": "Ejemplo",
-      "frameAlt": "Ejemplo de un clip vertical",
-      "rows": {
-        "chalybclip": {
-          "label": "Clips listos",
-          "detail": "De tu stream de anoche",
-          "pill": "Listo"
-        },
-        "chalybcrypto": {
-          "label": "Señal: Bitcoin",
-          "detail": "Buen momento para comprar",
-          "pill": "Nuevo"
-        },
-        "chalybobs": {
-          "label": "Tu transmisión",
-          "detail": "Escenas listas para mañana",
-          "pill": "Listo"
-        },
-        "chalybbot": {
-          "label": "Tu Asistente respondió",
-          "detail": "Contestó a tus clientes",
-          "pill": "Hecho"
-        },
-        "chalybpicks": {
-          "label": "Pronósticos del día",
-          "detail": "Listos para revisar",
-          "pill": "Nuevo"
-        },
-        "chalybrealtor": {
-          "label": "Inmuebles",
-          "detail": "Nuevos interesados",
-          "pill": "Nuevo"
-        },
-        "chalybtrade": {
-          "label": "Inversiones",
-          "detail": "Tus reglas siguen activas",
-          "pill": "Hecho"
-        }
-      }
+      "alt": "Chalyb en computadora y celular: la pantalla Tus clips están listos y la pantalla de Inicio.",
+      "notifApp": "Chalyb",
+      "notifWhen": "ahora",
+      "notifTitle": "Tus clips están listos",
+      "notifBody": "Ya tienen subtítulos. Descárgalos cuando quieras."
     },
     "cta": "Empezar mis 7 días gratis",
     "ctaSub": "Todas las herramientas incluidas. Cancela cuando quieras.",
     "tools": {
       "label": "Herramientas",
-      "title": "Todo lo que necesitas, en un solo lugar",
-      "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen en tu plan.",
+      "title": "Todo en un solo plan",
+      "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen incluidas en Pro.",
+      "subNoClaim": "Cada herramienta hace una cosa y la hace por ti.",
       "included": "Incluido en Pro",
+      "liveBot": "En vivo + Asistente",
+      "legalFin": "Informativo, no es asesoría financiera.",
+      "legalBets": "Informativo, no es asesoría de apuestas.",
       "desc": {
-        "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
+        "chalybclip": "Pega el enlace de tu stream y recibe clips cortos con subtítulos para TikTok, Reels y Shorts.",
         "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
+        "liveBot": "Maneja tu transmisión con botones grandes. Y un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
         "chalybobs": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
-        "chalybbot": "Un bot que contesta a tus clientes y seguidores, de día y de noche.",
+        "chalybbot": "Un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
         "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
         "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
         "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
       },
-      "ideaTitle": "Tu idea",
-      "ideaSub": "¿Necesitas otra herramienta? Propónla y nosotros la construimos.",
-      "ideaCta": "Proponer una idea"
+      "allTitle": "Fuiste por una cosa y te llevaste todo.",
+      "allBody": "Entras por los clips y te quedas con las señales, tu transmisión, tu Asistente y más. Todo en el mismo plan, sin pagar extra.",
+      "allBodyMobile": "Entras por los clips y te quedas con todo lo demás. Mismo plan, sin pagar extra."
     },
     "how": {
       "label": "Cómo funciona",
-      "title": "Cómo funciona en 3 pasos",
-      "s1": "Crea tu cuenta",
-      "s1p": "Con Google o con tu correo. Toma 1 minuto.",
-      "s2": "Elige qué quieres hacer",
-      "s2p": "Clips, señales, tu transmisión… todo está en Inicio con botones grandes.",
-      "s3": "Listo, trabaja por ti",
-      "s3p": "Te avisamos cuando tus resultados estén listos. Tú solo los usas."
+      "title": "Así de fácil: 3 pasos",
+      "sub": "Tal como lo ves en el app. Así se hacen tus clips:",
+      "s1": "Pega el enlace",
+      "s1p": "Copia la dirección de tu stream o video y pégala. Funciona con YouTube, Twitch, Kick y Facebook.",
+      "s2": "Elige dónde lo vas a publicar",
+      "s2p": "TikTok, Reels, Shorts, YouTube o Instagram. Nosotros te recomendamos la mejor forma.",
+      "s3": "Descarga tus clips",
+      "s3p": "Te avisamos cuando estén listos, ya con subtítulos. Descárgalos o compártelos.",
+      "stepOf": "Paso {n} de 3",
+      "alt": "Pantalla del paso {n}: {titulo}",
+      "note": "Todas las herramientas funcionan igual: 3 pasos, botones grandes y palabras simples."
     },
     "gallery": {
       "label": "Clips",
       "title": "Así se ven tus clips",
-      "sub": "Pega el enlace de tu stream y recibe clips con subtítulos, listos para publicar.",
+      "sub": "Verticales, con subtítulos y listos para publicar. Tú solo pegas el enlace.",
+      "subMobile": "Verticales, con subtítulos y listos para publicar.",
       "c1": "El mejor momento del stream",
       "c2": "Reacción épica",
       "c3": "La jugada final",
       "c4": "Respondiendo al chat",
       "c5": "Risa con los amigos",
       "c6": "El consejo del día",
-      "alt": "Ejemplo de clip: {titulo}"
+      "format": "Vertical · con subtítulos",
+      "foot": "Imágenes de ejemplo.",
+      "platforms": "Formatos",
+      "cap1": "¡NO LO PUEDO CREER!",
+      "cap2": "ESTO FUE ÉPICO",
+      "cap3": "ÚLTIMO SEGUNDO",
+      "cap4": "¿QUÉ ME RECOMIENDAN?",
+      "cap5": "NO PUEDO MÁS JAJAJA",
+      "cap6": "EL TRUCO ES ESTE",
+      "p1": "TikTok",
+      "p2": "Reels",
+      "p3": "Shorts"
     },
     "who": {
-      "title": "Hecho para streamers, creadores y negocios",
-      "sub": "Si no tienes tiempo de editar, contestar o vigilar el mercado, Chalyb lo hace por ti.",
+      "label": "Para quién",
+      "title": "Para ti, y para tu mamá también",
+      "sub": "Si no tienes tiempo de editar, contestar o estar pendiente, Chalyb lo hace por ti.",
       "streamers": "Streamers",
-      "streamersP": "Clips de cada transmisión y control de OBS en un toque.",
+      "streamersP": "Clips de cada transmisión y tus escenas de OBS con un toque.",
       "creators": "Creadores",
       "creatorsP": "Publica todos los días sin pasar horas editando.",
       "business": "Negocios",
-      "businessP": "Un asistente que atiende a tus clientes por ti.",
-      "investors": "Quien invierte",
-      "investorsP": "Avisos claros sobre cripto e inversiones, sin palabras raras.",
+      "businessP": "Un Asistente que contesta a tus clientes, de día y de noche.",
+      "mom": "Tu mamá también",
+      "momP": "Botones grandes y palabras simples. Si sabe mandar un WhatsApp, sabe usar Chalyb.",
       "strip1": "En español, para México y Latinoamérica",
       "strip2": "Pago seguro con Mercado Pago",
-      "strip3": "Ayuda de una persona por WhatsApp"
+      "strip3": "Cancela en 1 clic, sin llamadas"
     },
     "plans": {
-      "label": "Planes",
-      "seeAll": "Ver todos los planes y qué incluyen"
+      "label": "Precios",
+      "seeAll": "Ver todos los planes y qué incluyen",
+      "iva": "Precios en MXN, IVA incluido.",
+      "secure": "Pago seguro con Mercado Pago.",
+      "trialNote": "Prueba gratis {dias} días en cualquier plan, mensual o anual: una vez por cuenta y por tarjeta."
     },
     "partner": {
       "label": "Socios",
       "title": "Tienes la idea, nosotros la construimos",
-      "sub": "Propón una herramienta. Si la hacemos, compartimos las ganancias contigo.",
-      "terms": "Ver bases"
+      "sub": "Cuéntanos qué herramienta te haría la vida más fácil. La revisamos y te respondemos.",
+      "open": "Proponer mi idea",
+      "sheetTitle": "Proponer mi idea",
+      "close": "Cerrar"
     },
     "idea": {
       "name": "Tu nombre",
       "email": "Tu correo",
       "idea": "¿Qué herramienta te gustaría?",
-      "submit": "Proponer mi idea",
+      "submit": "Enviar mi idea",
       "sending": "Enviando…",
-      "done": "¡Gracias! Recibimos tu idea. Si la hacemos, te escribimos a tu correo.",
+      "done": "¡Gracias! Recibimos tu idea. Te escribimos a {correo}.",
       "clickwrap": "Al enviar, aceptas que usemos tus datos para responderte, como dice el <aviso>Aviso de Privacidad</aviso>.",
       "errors": {
         "name": "Escribe tu nombre.",
@@ -167,40 +159,54 @@
     "faq": {
       "label": "Preguntas",
       "title": "Preguntas frecuentes",
-      "q1": "¿Cómo funciona la prueba gratis?",
-      "a1": "Pruebas cualquier plan {dias} días gratis, mensual o anual, solo la primera vez. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro. Si cancelas antes de que terminen, no pagas nada: es 1 clic desde Mi cuenta, sin llamadas.",
-      "q2": "¿Necesito saber de tecnología?",
-      "a2": "No. Cada herramienta te guía paso a paso, con botones grandes y palabras simples.",
-      "a2help": "Si te atoras, te ayuda una persona por WhatsApp.",
-      "q3": "¿Qué incluye el plan Pro?",
-      "a3": "Todas las herramientas: {lista}, con créditos cada mes.",
-      "q4": "¿Cómo cancelo?",
-      "a4": "Entra a Mi cuenta → Mi plan → Cancelar. Es 1 clic y 1 confirmación. Sigues con Pro hasta el final de tu periodo.",
-      "q5": "¿Cómo pago?",
-      "a5": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
-      "q6": "¿Me dan factura?",
-      "a6": "Sí. Pide tu factura desde Mi cuenta → Mi plan después de cada cobro."
+      "q1": "¿De verdad los primeros 7 días son gratis?",
+      "a1": "Sí, en cualquier plan, mensual o anual, la primera vez. Hoy pagas {cero} y hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Si no quieres seguir, cancelas en 1 clic antes de esa fecha y no se te cobra nada.",
+      "q2": "¿Cuánto pago después de los 7 días?",
+      "a2": "Pro cuesta {pro_mes} MXN al mes o {pro_anual} MXN al año, IVA incluido. Antes de cada renovación te avisamos por correo.",
+      "q3": "¿Cómo cancelo?",
+      "a3": "Entra a Mi cuenta → Mi plan → Cancelar. Es 1 clic y 1 confirmación, sin llamadas. Sigues con tu plan hasta el final del periodo que pagaste.",
+      "q4": "¿Necesito saber de tecnología?",
+      "a4": "No. Cada herramienta te guía en 3 pasos, con botones grandes y palabras simples.",
+      "q5": "¿Qué incluye el plan Pro?",
+      "a5": "Todas las herramientas: {lista}, con créditos nuevos cada mes. Sin pagos extra.",
+      "a5NoClaim": "Las herramientas de Chalyb, con créditos nuevos cada mes.",
+      "q6": "¿Las Señales me dicen en qué invertir?",
+      "a6": "No. Son avisos informativos, iguales para todos, y no usan tus saldos ni tus inversiones. No son asesoría financiera: tú decides.",
+      "q7": "¿Cómo pago?",
+      "a7": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
+      "q8": "¿Puedo cambiar de plan?",
+      "a8": "Sí. Desde Mi cuenta → Mi plan puedes pasar de mensual a anual, subir a VIP o volver a Gratis cuando quieras."
     },
     "final": {
-      "title": "Fuiste por una cosa y te llevaste todo.",
-      "sub": "{lista}. Todo en un solo plan."
+      "title": "Empieza hoy. <em>Mañana ya trabajan por ti.</em>",
+      "sub": "{lista}. Todo en un solo plan.",
+      "subMobile": "Todas las herramientas en un solo plan.",
+      "note": "Hoy pagas {cero}. Cancela cuando quieras."
     },
     "publicFooter": {
       "lead": "Herramientas que trabajan por ti, en español y sin saber de tecnología.",
       "tools": "Herramientas",
-      "plans": "Planes",
+      "toolsAll": "Ver todas",
+      "chalyb": "Chalyb",
+      "pricing": "Precios",
       "help": "Ayuda",
       "idea": "Proponer una idea",
-      "login": "Entrar",
+      "login": "Iniciar sesión",
       "legal": "Legal",
       "legalDocs": {
         "terms": "Términos y Condiciones",
-        "privacy": "Aviso de Privacidad"
+        "subscription": "Términos de Suscripción",
+        "privacy": "Aviso de Privacidad",
+        "acceptable": "Uso aceptable"
       },
       "seller": "Quién vende",
       "sellerLabel": "Quién vende:",
-      "copy": "© {year} Chalyb. Precios en pesos mexicanos (MXN), IVA incluido.",
-      "secure": "Pago seguro con Mercado Pago"
+      "contact": "Contacto",
+      "write": "Escríbenos",
+      "disclaimer": "Señales, Pronósticos e Inversiones son informativos: no son asesoría financiera ni de apuestas, y no garantizan resultados. Las decisiones y los riesgos son tuyos.",
+      "copy": "© {year} Chalyb. Precios en MXN, IVA incluido.",
+      "secure": "Pago seguro con Mercado Pago",
+      "lang": "Español · English"
     },
     "cookies": {
       "title": "Cookies",
@@ -218,10 +224,16 @@
       "adsHint": "Miden si nuestros anuncios funcionan.",
       "link": "Cookies"
     },
-    "sticky": "Empezar mis 7 días gratis",
+    "sticky": {
+      "note": "Hoy pagas {cero}. Cancela cuando quieras."
+    },
     "ctaNoTrial": "Empieza gratis",
     "ctaSignedIn": "Ver planes",
-    "ctaSubShort": "Cancela cuando quieras."
+    "ctaSubShort": "Cancela cuando quieras.",
+    "meta": {
+      "title": "Chalyb: bots que trabajan por ti mientras duermes",
+      "description": "Clips para tus redes, señales de cripto, tu transmisión y más en un solo plan. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
+    }
   },
   "auth": {
     "signIn": {

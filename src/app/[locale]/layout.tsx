@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { CookieConsent } from '@/components/public/cookie-banner';
 import { routing } from '@/i18n/routing';
+import { PUBLIC_CLIENT_NAMESPACES, pickNamespaces } from '@/i18n/client-messages';
 import { HREFLANG } from '@/i18n/locales';
 import { canonicalOrigin } from '@/lib/site';
 import './globals.css';
@@ -13,6 +15,11 @@ import './globals.css';
 // segment and run generateMetadata with locale="favicon.ico", which threw
 // MODULE_NOT_FOUND on `import('messages/favicon.ico.json')`. Now they 404 clean.
 export const dynamicParams = false;
+
+// The design system's font (Q27; LANDING-SPEC §7) for every page, public ones
+// included: self-hosted by next/font, no request to Google at runtime. The
+// tokens read it as var(--cc-body).
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--cc-body' });
 
 export async function generateMetadata({
   params,
@@ -58,7 +65,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   return (
-    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth">
+    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth" className={inter.variable}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -68,7 +75,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={pickNamespaces(messages, PUBLIC_CLIENT_NAMESPACES)}>
           {children}
           {/* Loads Vercel Analytics only after cookie consent (P4-7). */}
           <CookieConsent />

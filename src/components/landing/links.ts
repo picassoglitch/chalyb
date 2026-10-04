@@ -48,3 +48,44 @@ export function vipCtaHref(signedIn: boolean): Route {
 export function freeCtaHref(signedIn: boolean): Route {
   return signedIn ? APP_HREF : signupHref('free');
 }
+
+/** LANDING-SPEC §4 `cta_id`s that start the trial. */
+export type TrialCtaId =
+  | 'nav_trial'
+  | 'hero_trial'
+  | 'tools_trial'
+  | 'final_trial'
+  | 'sticky_trial'
+  | 'menu_trial'
+  | 'pricing_pro';
+
+/**
+ * A trial CTA's destination (LANDING-SPEC §4): sign-up with the trial intent,
+ * the interval the pricing toggle shows (display only: /app/prueba never
+ * preselects the annual charge) and `from` for attribution without cookies.
+ * Without the trial flow it's the plain Pro sign-up; a signed-in visitor goes
+ * to the app's trial step.
+ */
+export function landingTrialHref(opts: {
+  from: TrialCtaId;
+  interval?: 'year' | 'month';
+  trialFlowEnabled: boolean;
+  signedIn: boolean;
+}): Route {
+  if (opts.signedIn) return '/app/prueba' as Route;
+  const interval = opts.interval ?? 'year';
+  if (!opts.trialFlowEnabled)
+    return `/sign-in?mode=signup&plan=pro&interval=${interval}&from=${opts.from}` as Route;
+  return `/sign-in?mode=signup&plan=pro&intent=trial&interval=${interval}&from=${opts.from}` as Route;
+}
+
+/** The landing's pricing cards tag their sign-up links (LANDING-SPEC §4):
+ *  `from=pricing_{plan}`, and the plan when the trial link lacks it. Links
+ *  into the app are left alone. */
+export function tagPricingHref(href: string | null, plan: PlanSlug): string | null {
+  if (!href || !href.startsWith('/sign-in')) return href;
+  const url = new URL(href, 'https://x');
+  if (!url.searchParams.has('plan')) url.searchParams.set('plan', plan);
+  url.searchParams.set('from', `pricing_${plan}`);
+  return `${url.pathname}?${url.searchParams.toString()}`;
+}

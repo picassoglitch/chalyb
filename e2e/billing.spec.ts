@@ -14,7 +14,7 @@ test.describe('public /planes', () => {
   test('real totals, IVA stated, no "2 meses gratis", Mensual in 1 tap', async ({ page }, info) => {
     await page.goto('/planes');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByText('Precios en MXN, IVA incluido.')).toBeVisible();
+    await expect(page.getByText('Precios en MXN, IVA incluido.', { exact: true })).toBeVisible();
     const body = await page.locator('body').innerText();
     expect(body).not.toMatch(FORBIDDEN_PRICE);
     if (FLOW) {

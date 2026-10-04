@@ -35,6 +35,13 @@ const SAME_OK_KEYS = new Set([
   'plans.lealtad.yearMonthlySub', // "12 × {monto}"
   // FIX-3 §C.4: each language is written in its own language; city names and
   // the hour don't change.
+  // Platform and product names, "Legal" and "Streamers" read the same.
+  'landing.gallery.p1',
+  'landing.gallery.p2',
+  'landing.gallery.p3',
+  'landing.who.streamers',
+  'landing.publicFooter.legal',
+  'landing.publicFooter.lang', // "Español · English": each language in its own
   'language.es',
   'language.en',
   'profile.tz.America_Tijuana',

@@ -1,46 +1,60 @@
 import { getTranslations } from 'next-intl/server';
-import { Briefcase, Check, Clapperboard, Radio, TrendingUp, type LucideIcon } from 'lucide-react';
-import { supportWhatsappUrl } from '@/lib/config/flags';
-import { audienceCards, type AudienceKey, type PublicTool } from '@/lib/tools/public-tools';
+import { Briefcase, Clapperboard, Globe, Heart, Radio, ShieldCheck, CircleCheck, type LucideIcon } from 'lucide-react';
+import type { PublicTool } from '@/lib/tools/public-tools';
 import { SectionHead } from './section-head';
 
-// 5 · Para quién. Cards that depend on a tool appear only while it is active;
-// the WhatsApp help claim only with SUPPORT_WHATSAPP_URL (P4-5).
+// 5 · Para quién (LANDING-SPEC §3.6). A card that depends on a tool shows
+// only while that tool is active; "Tu mamá también" always does. No photos
+// of people.
 
-const ICONS: Record<AudienceKey, LucideIcon> = {
+type Key = 'streamers' | 'creators' | 'business' | 'mom';
+const ICONS: Record<Key, LucideIcon> = {
   streamers: Radio,
   creators: Clapperboard,
   business: Briefcase,
-  investors: TrendingUp,
+  mom: Heart,
 };
+
+export function audienceKeys(tools: readonly PublicTool[]): Key[] {
+  const has = (s: string) => tools.some((t) => t.slug === s);
+  return [
+    ...(has('chalybclip') || has('chalybobs') ? (['streamers'] as const) : []),
+    ...(has('chalybclip') ? (['creators'] as const) : []),
+    ...(has('chalybbot') ? (['business'] as const) : []),
+    'mom',
+  ];
+}
 
 export async function Audience({ tools }: { tools: PublicTool[] }) {
   const t = await getTranslations('landing.who');
-  const strip = ['strip1', 'strip2', ...(supportWhatsappUrl() ? ['strip3'] : [])] as const;
-
+  const strip: [LucideIcon, string][] = [
+    [Globe, t('strip1')],
+    [ShieldCheck, t('strip2')],
+    [CircleCheck, t('strip3')],
+  ];
   return (
     <section className="pub-band" aria-labelledby="who-title">
       <div className="pub-wrap">
-        <SectionHead id="who-title" title={t('title')} sub={t('sub')} />
+        <SectionHead id="who-title" label={t('label')} title={t('title')} sub={t('sub')} />
         <ul className="pub-aud">
-          {audienceCards(tools).map((key) => {
-            const Icon = ICONS[key];
+          {audienceKeys(tools).map((k) => {
+            const Icon = ICONS[k];
             return (
-              <li key={key} className="pub-au">
-                <span className="pub-au__ic" aria-hidden="true">
+              <li key={k} className={`pub-aud__c${k === 'mom' ? ' pub-aud__c--mom' : ''}`}>
+                <span className="pub-aud__ic" aria-hidden="true">
                   <Icon />
                 </span>
-                <h3>{t(key)}</h3>
-                <p>{t(`${key}P`)}</p>
+                <h3>{t(k)}</h3>
+                <p>{t(`${k}P`)}</p>
               </li>
             );
           })}
         </ul>
         <ul className="pub-strip">
-          {strip.map((k) => (
-            <li key={k}>
-              <Check aria-hidden="true" />
-              {t(k)}
+          {strip.map(([Icon, label]) => (
+            <li key={label}>
+              <Icon aria-hidden="true" />
+              {label}
             </li>
           ))}
         </ul>

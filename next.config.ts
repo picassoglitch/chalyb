@@ -13,6 +13,9 @@ const LEGAL_ALIASES = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
+  // LANDING-SPEC §7: AVIF first, WebP as the fallback (next/image picks by
+  // the browser's Accept header).
+  images: { formats: ['image/avif', 'image/webp'] },
   // Vanity / habitual URLs that should land on the real auth page.
   // The auth surface lives at /sign-in (Next route group `(auth)`), but
   // users type "login" / "register" by reflex. Permanent redirects so

@@ -140,6 +140,12 @@ test('the likeness guard refuses without consent; no ungated likeness option exi
 });
 
 // ── Forbidden words across messages, emails and the built bundle ────
+const DISCLAIMER_KEYS = new Set([
+  'forecasts.footer',
+  'landing.tools.legalBets',
+  'landing.publicFooter.disclaimer',
+]);
+
 /** Message values, minus the legally required disclaimers. */
 function customerMessages(locale: string): string {
   const out: string[] = [];
@@ -147,8 +153,9 @@ function customerMessages(locale: string): string {
     if (node && typeof node === 'object')
       for (const [k, v] of Object.entries(node)) walk(v, key ? `${key}.${k}` : k);
     // The required disclaimers negate the words on purpose ("no es asesoría
-    // de apuestas"): aceptacion-ux §6 and the Pronósticos footer (P3-9).
-    else if (!key.startsWith('consents.') && key !== 'forecasts.footer') out.push(String(node));
+    // de apuestas"): aceptacion-ux §6, the Pronósticos footer (P3-9) and the
+    // landing's exact notices (LANDING-SPEC §1.5, §3.3, §3.11).
+    else if (!key.startsWith('consents.') && !DISCLAIMER_KEYS.has(key)) out.push(String(node));
   };
   walk(JSON.parse(read(`messages/${locale}.json`)), '');
   return out.join('\n');

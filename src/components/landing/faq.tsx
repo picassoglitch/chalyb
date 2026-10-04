@@ -1,62 +1,49 @@
 import { getTranslations } from 'next-intl/server';
 import { ChevronDown } from 'lucide-react';
-import { PRICING } from '@/config/pricing';
-import { cfdiEnabled, supportWhatsappUrl } from '@/lib/config/flags';
-import { toolList, type PublicTool } from '@/lib/tools/public-tools';
+import type { PublicTool } from '@/lib/tools/public-tools';
+import { faqItems } from './faq-items';
 import { SectionHead } from './section-head';
 
-// 8 · Preguntas (#preguntas). The WhatsApp line needs SUPPORT_WHATSAPP_URL and
-// "¿Me dan factura?" needs CFDI_ENABLED (P4-5); the reminder days and the
-// tool list come from config and the active tools.
+// 7 · Preguntas frecuentes (#preguntas, LANDING-SPEC §3.8): 8 questions, two
+// columns of 4 on desktop; the first (and on desktop the sixth) open. Amounts
+// from config, the Pro list from the active tools. No invoice question until
+// the owner confirms invoices (L2).
 
 export async function Faq({
   tools,
   locale,
   trialOffered,
+  claimAll,
 }: {
   tools: PublicTool[];
   locale: string;
   /** The trial Q&A only when the trial can be started (K-7). */
   trialOffered: boolean;
+  claimAll: boolean;
 }) {
   const t = await getTranslations('landing.faq');
-  const whatsapp = supportWhatsappUrl();
-  const items: Array<{ q: string; a: string; extra?: string }> = [
-    ...(trialOffered ? [{ q: t('q1'), a: t('a1', { dias: PRICING.trial.days }) }] : []),
-    { q: t('q2'), a: t('a2'), extra: whatsapp ? t('a2help') : undefined },
-    { q: t('q3'), a: t('a3', { lista: toolList(tools, locale) }) },
-    { q: t('q4'), a: t('a4') },
-    { q: t('q5'), a: t('a5') },
-    ...(cfdiEnabled() ? [{ q: t('q6'), a: t('a6') }] : []),
-  ];
+  // One source with the FAQPage JSON-LD (faq-items.ts).
+  const items = faqItems((k, v) => t(k, v), { tools, locale, trialOffered, claimAll });
 
   return (
-    <section id="preguntas" className="pub-band pub-band--white" aria-labelledby="faq-title">
+    <section id="preguntas" className="pub-band" aria-labelledby="faq-title">
       <div className="pub-wrap">
         <SectionHead id="faq-title" label={t('label')} title={t('title')} />
-        <div className="pub-faq">
-          {items.map((item) => (
-            <details key={item.q} className="pub-fq">
+        <div className="pub-faq2">
+          {items.map((item, i) => (
+            <details
+              key={item.id}
+              className={`pub-fq${item.id === 6 ? ' pub-fq--desk-open' : ''}`}
+              open={i === 0}
+              data-faq={item.id}
+            >
               <summary>
                 {item.q}
-                <ChevronDown aria-hidden="true" />
+                <span className="pub-fq__chev" aria-hidden="true">
+                  <ChevronDown />
+                </span>
               </summary>
-              <p>
-                {item.a}
-                {item.extra && (
-                  <>
-                    {' '}
-                    <a
-                      href={whatsapp!}
-                      className="ch-lnk"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {item.extra}
-                    </a>
-                  </>
-                )}
-              </p>
+              <p>{item.a}</p>
             </details>
           ))}
         </div>

@@ -12,12 +12,13 @@ export function IdeaForm() {
   const t = useTranslations('landing.idea');
   const [result, setResult] = useState<IdeaResult | null>(null);
   const [pending, start] = useTransition();
+  const [email, setEmail] = useState('');
   const id = useId();
 
   if (result?.ok) {
     return (
       <p role="status" className="pub-idea__done">
-        {t('done')}
+        {t('done', { correo: email })}
       </p>
     );
   }
@@ -28,7 +29,18 @@ export function IdeaForm() {
     <form
       className="pub-idea"
       noValidate
-      action={(fd) => start(async () => setResult(await submitIdea(fd)))}
+      action={(fd) => {
+        setEmail(String(fd.get('email') ?? ''));
+        start(async () => {
+          const r = await submitIdea(fd);
+          setResult(r);
+          window.dispatchEvent(
+            new CustomEvent('chalyb:landing', {
+              detail: { event: 'landing_partner_submit', props: { result: r.ok ? 'ok' : 'error' } },
+            }),
+          );
+        });
+      }}
     >
       <div className="ch-field">
         <label htmlFor={`${id}-name`}>{t('name')}</label>
