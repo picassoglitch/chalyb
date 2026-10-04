@@ -92,14 +92,6 @@ export default async function EngineDetailPage({
   const access = await getEngineAccess(session!.user.id, engine.id);
 
   const stateMeta = STATE_LABEL[engine.state] ?? { label: engine.state, cls: '' };
-  const marginColor =
-    metrics.marginPct === null
-      ? ''
-      : metrics.marginPct >= 50
-        ? 'gr'
-        : metrics.marginPct >= 0
-          ? 'am'
-          : 'r';
 
   return (
     <div className="cc-scroll">

@@ -17,7 +17,7 @@ import {
 import { recordConsent, UI_VERSION } from './consent';
 import type { ConsentEventType } from './consent-core';
 import { legalDocuments } from '@/lib/legal/documents';
-import { PRICING, lealtadSchedule, planPrice, type PlanKey } from '@/config/pricing';
+import { lealtadSchedule, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from './format';
 import { trialLengthDays } from './trial-dates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';

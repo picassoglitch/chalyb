@@ -10,16 +10,6 @@ import { expectNoLeaks } from './utils/no-leaks';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
 const MOCK = process.env.E2E_TOOLS_MODE === 'mock';
-const TOOLS = [
-  'Clips',
-  'Señales',
-  'En vivo',
-  'Asistente',
-  'Pronósticos',
-  'Inmuebles',
-  'Inversiones',
-];
-
 /** The risk notice (aceptacion-ux §6): blocks until the box is ticked. */
 async function passRiskGate(page: Page) {
   const gate = page.getByRole('dialog', { name: 'Antes de empezar' });
