@@ -2000,3 +2000,128 @@ html body:has(.ch-flow) {
     order: -1;
   }
 }
+
+/* ── FIX-3 · Mis créditos (mockups 72, 72b). The balance card, the pack
+   options in the sheet and a group header with a link. ── */
+@media (min-width: 900px) {
+  .chalyb-app .ch-acct--credits {
+    grid-template-columns: minmax(0, 470px) minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-credits {
+  display: grid;
+  gap: 12px;
+  padding: 26px 28px;
+}
+.chalyb-app .ch-credits__k {
+  font-size: 20px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-credits__n {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-credits__n b {
+  font-size: clamp(44px, 6vw, 60px);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.chalyb-app .ch-credits__n span {
+  font-size: 22px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-credits__bar {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.chalyb-app .ch-credits__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b7dff, var(--accent));
+}
+.chalyb-app .ch-credits__li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: 18px;
+}
+.chalyb-app .ch-credits__li > span:first-child {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-credits__li svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-credits > .ch-btn {
+  margin-top: 6px;
+  min-height: 60px;
+}
+.chalyb-app .ch-ghead-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-right: 20px;
+}
+.chalyb-app .ch-adv__h {
+  font-size: 18px;
+  font-weight: 650;
+}
+.chalyb-app .ch-adv__list {
+  display: grid;
+  gap: 6px;
+  padding-left: 20px;
+  font-size: 17px;
+  list-style: disc;
+}
+.chalyb-app .ch-packs {
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-pack {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  cursor: pointer;
+}
+.chalyb-app .ch-pack--on {
+  box-shadow: 0 0 0 3px var(--accent);
+  border-color: transparent;
+}
+.chalyb-app .ch-pack:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-pack__l,
+.chalyb-app .ch-pack__r {
+  display: grid;
+  gap: 2px;
+  font-size: 18px;
+}
+.chalyb-app .ch-pack__r {
+  text-align: right;
+  flex: none;
+}
+.chalyb-app .ch-adv .ch-pill,
+.chalyb-app .ch-adv .ch-table th,
+.chalyb-app .ch-adv .ch-table td {
+  font-size: 16px;
+}

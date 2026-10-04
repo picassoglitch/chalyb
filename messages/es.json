@@ -2098,5 +2098,81 @@
     "payError": "No pudimos abrir el pago. Intenta otra vez en un momento.",
     "retry": "Intentar otra vez",
     "activated": "Listo, tu plan ya está activo."
+  },
+  "credits": {
+    "title": "Mis créditos",
+    "sub": "Los créditos se usan cuando tus herramientas trabajan por ti.",
+    "left": "Te quedan",
+    "unit": "créditos",
+    "used": "Usaste {usados} de {total} este mes",
+    "none": "Te quedaste sin créditos este mes. Se renuevan el {fecha}.",
+    "renew": "Se renuevan el <b>{fecha}</b>. Vuelves a tener {total}.",
+    "extra": "Créditos extra comprados: <b>{n}</b>. Se usan después de los de tu plan.",
+    "unlimited": "Sin límite de créditos",
+    "admin": "Eres administrador.",
+    "cta": "Conseguir más créditos",
+    "lowCta": "Conseguir más",
+    "tool": "Herramienta",
+    "byTool": {
+      "title": "En qué los usaste este mes",
+      "generic": "Lo usaste {n, plural, one {# vez} other {# veces}}"
+    },
+    "history": {
+      "title": "Historial",
+      "all": "Ver todo",
+      "renewal": "Se renovaron tus créditos",
+      "pack": "Compraste {n} créditos"
+    },
+    "adv": {
+      "title": "Opciones avanzadas",
+      "tag": "Para profesionales",
+      "limits": "Límites de tu plan",
+      "tech": "Detalle técnico",
+      "historyDays": "Guardamos tus resultados {n} días",
+      "streams": "Streams de Clips al mes: {n}",
+      "pct": "Usaste {pct}% de tus créditos de este mes",
+      "perThousand": "Paquete de {n} créditos: {monto} MXN por cada 1,000",
+      "col": {
+        "date": "Fecha",
+        "tool": "Herramienta",
+        "operation": "Operación",
+        "kind": "Tipo",
+        "amount": "Cantidad"
+      },
+      "diag": "Diagnóstico: {warnings}. Busca en los registros el prefijo [/app/usage]."
+    },
+    "sheet": {
+      "title": "Conseguir más créditos",
+      "sub": "Se suman a los que ya tienes. Tu plan y tu fecha de cobro no cambian.",
+      "terms": "Es un <b>pago único</b>, no una suscripción. Los créditos extra se usan después de los de tu plan y {vigencia}. Precios en MXN, IVA incluido.",
+      "noExpiry": "no vencen",
+      "card": "En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.",
+      "cta": "Continuar al pago · {monto} MXN",
+      "later": "Ahora no"
+    },
+    "pack": {
+      "name": "{n} créditos",
+      "small": "Para unos cuantos clips más",
+      "mid": "Cada crédito te sale más barato",
+      "big": "El más barato por crédito, para uso diario",
+      "once": "Pago único"
+    },
+    "paid": "<b>Pago recibido.</b> Tus créditos se suman en unos minutos.",
+    "low": "Te queda poco: <b>{pct}%</b> de tus créditos. Se renuevan el {fecha}.",
+    "empty": {
+      "title": "Aún no usas tus créditos",
+      "body": "Cuando hagas tu primer clip, aquí verás en qué se usaron.",
+      "cta": "Hacer mi primer clip"
+    },
+    "error": {
+      "title": "No pudimos cargar tus créditos",
+      "body": "Tus créditos están bien; solo no pudimos mostrarlos ahora.",
+      "cta": "Intentar otra vez"
+    },
+    "partner": {
+      "title": "Tus ganancias como socio",
+      "month": "Este mes · se paga al cerrar el mes",
+      "paid": "Pagado el {fecha}"
+    }
   }
 }

@@ -52,7 +52,8 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
   assert.equal(shellModeFor('/app/billing'), 'modern', 'Mi plan since P2');
   assert.equal(shellModeFor('/app/subscription'), 'modern', 'FIX-3 A');
   assert.equal(shellModeFor('/en/app/subscription'), 'modern');
-  assert.equal(shellModeFor('/app/usage'), 'legacy');
+  assert.equal(shellModeFor('/app/usage'), 'modern', 'FIX-3 B');
+  assert.equal(shellModeFor('/en/app/usage'), 'modern');
   assert.equal(shellModeFor('/app/prueba/pago'), 'wizard');
   assert.equal(shellModeFor('/app/engines/chalybclip'), 'modern', 'tool pages');
   assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Más herramientas since P3');

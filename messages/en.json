@@ -2098,5 +2098,81 @@
     "payError": "We couldn’t open the payment. Try again in a moment.",
     "retry": "Try again",
     "activated": "Done, your plan is active."
+  },
+  "credits": {
+    "title": "My credits",
+    "sub": "Credits are used when your tools work for you.",
+    "left": "You have",
+    "unit": "credits",
+    "used": "You used {usados} of {total} this month",
+    "none": "You’re out of credits this month. They renew on {fecha}.",
+    "renew": "They renew on <b>{fecha}</b>. You get {total} again.",
+    "extra": "Extra credits bought: <b>{n}</b>. Used after your plan’s.",
+    "unlimited": "No credit limit",
+    "admin": "You’re an admin.",
+    "cta": "Get more credits",
+    "lowCta": "Get more",
+    "tool": "Tool",
+    "byTool": {
+      "title": "What you used them on this month",
+      "generic": "You used it {n, plural, one {# time} other {# times}}"
+    },
+    "history": {
+      "title": "History",
+      "all": "See all",
+      "renewal": "Your credits renewed",
+      "pack": "You bought {n} credits"
+    },
+    "adv": {
+      "title": "Advanced options",
+      "tag": "For pros",
+      "limits": "Your plan’s limits",
+      "tech": "Technical detail",
+      "historyDays": "We keep your results for {n} days",
+      "streams": "Clips streams per month: {n}",
+      "pct": "You used {pct}% of this month’s credits",
+      "perThousand": "{n}-credit pack: {monto} MXN per 1,000",
+      "col": {
+        "date": "Date",
+        "tool": "Tool",
+        "operation": "Operation",
+        "kind": "Type",
+        "amount": "Amount"
+      },
+      "diag": "Diagnostics: {warnings}. Search the logs for the [/app/usage] prefix."
+    },
+    "sheet": {
+      "title": "Get more credits",
+      "sub": "They add to what you have. Your plan and charge date don’t change.",
+      "terms": "It’s a <b>one-time payment</b>, not a subscription. Extra credits are used after your plan’s and {vigencia}. Prices in MXN, VAT included.",
+      "noExpiry": "don’t expire",
+      "card": "You enter your card in the next step. Secure payment with Mercado Pago.",
+      "cta": "Continue to payment · {monto} MXN",
+      "later": "Not now"
+    },
+    "pack": {
+      "name": "{n} credits",
+      "small": "For a few more clips",
+      "mid": "Each credit costs you less",
+      "big": "The cheapest per credit, for daily use",
+      "once": "One-time payment"
+    },
+    "paid": "<b>Payment received.</b> Your credits land in a few minutes.",
+    "low": "You’re running low: <b>{pct}%</b> of your credits left. They renew on {fecha}.",
+    "empty": {
+      "title": "You haven’t used your credits yet",
+      "body": "When you make your first clip, you’ll see here what they went to.",
+      "cta": "Make my first clip"
+    },
+    "error": {
+      "title": "We couldn’t load your credits",
+      "body": "Your credits are fine; we just couldn’t show them right now.",
+      "cta": "Try again"
+    },
+    "partner": {
+      "title": "Your partner earnings",
+      "month": "This month · paid when the month closes",
+      "paid": "Paid on {fecha}"
+    }
   }
 }

@@ -59,3 +59,20 @@ test('A · the copy: no amounts written by hand, no banned words, the real charg
   assert.match(free, /'\/app\/prueba\?interval=month'/, 'Pro mensual preselected, never the annual');
   assert.match(free, /PRICING\.credits\.pro \?\? null/, 'plan credit lines only when config sets them (D-F3-2)');
 });
+
+test('B · Mis créditos: no legacy, no technical words on screen, packs from config', () => {
+  const page = src('src/app/[locale]/(dashboard)/app/usage/page.tsx');
+  assert.doesNotMatch(page, LEGACY);
+  assert.match(page, /balanceBroken \? \(/, 'a broken balance paints no number (§4.2 B)');
+  assert.match(page, /TOKEN_PACKS\.map/);
+  const sheet = src('src/components/app/credits-sheet.tsx');
+  assert.match(sheet, /packs\[Math\.min\(1, packs\.length - 1\)\]/, 'the middle pack is preselected');
+  assert.match(sheet, /\/app\/usage\/checkout\?pack=\$\{chosen\.id\}/);
+  // §4.2 B: none of these words in the normal view's copy.
+  const copy = values(es.credits).filter((s) => !/\[\/app\/usage\]/.test(s)).join('\n');
+  assert.doesNotMatch(copy, /\btokens?\b|\bengines?\b|\brun\b|llamada|LLM|Storage|Publish|telemetry|balance|bonus|Top-up/i);
+  // "Suscripción" as the old screen's name; the sheet's "no una suscripción" is the spec's own copy.
+  assert.doesNotMatch(copy, /Suscripción/);
+  assert.doesNotMatch(copy, /\$\s?\d|% de descuento|nunca caducan|Mejor relación/);
+  assert.equal(es.credits.sheet.cta, 'Continuar al pago · {monto} MXN');
+});

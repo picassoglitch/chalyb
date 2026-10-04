@@ -1,47 +1,38 @@
-// /app/usage — token balance + activity feed + buy-token-pack tiles.
+// /app/usage — Mis créditos (FIX-3 §B, mockups 72, 72b, 74 §2).
 //
-// Hardening pass: this page kept 500'ing on action-POST re-renders ("Server
-// Components render" error in production). Root cause was multiple
-// data-fetch surfaces that could throw OUTSIDE of try/catch:
-//
-//   1. getSessionUser() — calls createClient() which throws on missing
-//      env vars, then queries profiles which can throw on RLS / dropped
-//      connection.
-//   2. setRequestLocale(locale) — throws if locale is an unsupported value.
-//   3. createClient() in the page body — same throw conditions.
-//   4. Inline supabase.from(...) chains — throw on network / auth glitch.
-//
-// New architecture: all data fetching lives in a single async function
-// `loadUsagePageData()` that returns a SAFE shape with sane defaults on
-// every error path. The page render uses whatever that function returns
-// — it can never throw because every external call is wrapped.
-//
-// Net effect: the page WILL render even if migrations are behind, RLS is
-// misconfigured, env vars are missing, or Supabase is rate-limiting. In
-// the worst case the user sees "Aún no tienes consumo registrado" with
-// zero balance. A second-level error.tsx in the parent dir is still the
-// backstop for anything I haven't anticipated.
+// The data loader below never throws: every external call is wrapped, and
+// failures are collected in `warnings` (logged with the `[/app/usage]`
+// prefix). What changed with FIX-3 is the rule on top of it: when the
+// balance itself couldn't be read, no number is painted — the page says so
+// instead of showing a default as if it were real.
 
-import { engineDisplayName } from '@/lib/engines/display-names';
+import type { Metadata, Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
-import type { Route } from 'next';
+import { Plus, RefreshCw, Scissors, SlidersHorizontal, TriangleAlert } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { engineDisplayName } from '@/lib/engines/display-names';
 import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth/session';
-import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
+import { effectiveTier, isAdminRole, TIER_CAPS } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
 import { createClient } from '@/lib/supabase/server';
-import { TokenPackBuyButton } from '@/components/workspace/token-pack-buy-button';
 import { TOKEN_PACKS } from '@/lib/payments/pricing';
-import { formatMXN } from '@/lib/billing/format';
+import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   getCurrentAccrualsForPartner,
   getPayoutsForPartner,
   type PayoutRow,
   type RoyaltyAccrual,
 } from '@/lib/usage/royalties';
+import { Banner, Group, Pill, Row, StateBlock } from '@/components/ui/primitives';
+import { ToolIcon } from '@/components/ui/tool-icon';
+import { Markup } from '@/components/ui/markup';
+import { CreditsSheet, RefreshWhilePending } from '@/components/app/credits-sheet';
 
-export const metadata = { title: 'Uso' };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('credits');
+  return { title: t('title') };
+}
 
 interface UsageEventRow {
   id: string;
@@ -50,19 +41,6 @@ interface UsageEventRow {
   amount: number;
   occurred_at: string;
   operation: string | null;
-}
-
-// One "run" = group of usage events sharing (engine_id, operation, date).
-// Renders as a single row showing total cost + call count. Events without
-// an operation tag render individually (one row each), same as before.
-interface RunGroup {
-  key: string;
-  engineId: string;
-  operation: string;
-  occurredAt: string;
-  count: number;
-  totalAmount: number;
-  kinds: Set<string>;
 }
 
 interface PageData {
@@ -74,9 +52,10 @@ interface PageData {
   isAdmin: boolean;
   balance: TokenBalance;
   events: UsageEventRow[];
-  engineMap: Map<string, { name: string; icon: string }>;
+  engineMap: Map<string, { name: string; slug: string }>;
   royaltyAccruals: RoyaltyAccrual[];
   royaltyPayouts: PayoutRow[];
+  packs: { tokens: number; at: string }[];
   /** When any of the fetches errored, the operator-visible reason. Logged
    *  to Vercel Functions logs but NOT shown to the user — the surface
    *  silently degrades to default values instead. */
@@ -91,26 +70,6 @@ const DEFAULT_BALANCE: TokenBalance = {
   monthlyUsed: 0,
   periodStart: new Date().toISOString(),
 };
-
-const KIND_LABEL: Record<string, string> = {
-  'llm.tokens': 'LLM tokens',
-  'storage.mb': 'Storage',
-  'publish.count': 'Publish',
-};
-
-function formatNumber(n: number): string {
-  return n.toLocaleString('es-MX');
-}
-
-function relativeDate(iso: string, locale: string): string {
-  const date = new Date(iso);
-  return date.toLocaleDateString(locale === 'es' ? 'es-MX' : 'en-US', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 /**
  * Load every piece of data the page needs, with bulletproof error handling.
@@ -149,6 +108,7 @@ async function loadUsagePageData(): Promise<PageData> {
       engineMap: new Map(),
       royaltyAccruals: [],
       royaltyPayouts: [],
+      packs: [],
       warnings,
     };
   }
@@ -178,10 +138,30 @@ async function loadUsagePageData(): Promise<PageData> {
     }),
   ]);
 
+  // ── Packs bought (Historial "+n") ──
+  let packs: { tokens: number; at: string }[] = [];
+  try {
+    const supabase = await createClient();
+    const { data: rows, error } = await supabase
+      .from('token_pack_purchases')
+      .select('tokens_granted, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) warnings.push('packs_lookup_failed');
+    packs = (rows ?? []).map((r) => ({
+      tokens: Number(r.tokens_granted),
+      at: r.created_at as string,
+    }));
+  } catch (err) {
+    console.error('[/app/usage] packs lookup threw:', err);
+    warnings.push('packs_lookup_threw');
+  }
+
   // ── Usage events ────────────────────────────────────────────────────
   // Defensive supabase client init.
   let events: UsageEventRow[] = [];
-  const engineMap = new Map<string, { name: string; icon: string }>();
+  const engineMap = new Map<string, { name: string; slug: string }>();
   try {
     const supabase = await createClient();
     // Try with `operation` column (migration 0015). On column-missing
@@ -237,7 +217,7 @@ async function loadUsagePageData(): Promise<PageData> {
             engineMap.set(e.id as string, {
               // Customer name ("Inmuebles"), never the internal one (P0-6).
               name: engineDisplayName(e.slug as string, (e.name as string | null) ?? undefined),
-              icon: (e.icon as string | null) ?? '◆',
+              slug: e.slug as string,
             });
           }
         }
@@ -262,31 +242,32 @@ async function loadUsagePageData(): Promise<PageData> {
     engineMap,
     royaltyAccruals,
     royaltyPayouts,
+    packs,
     warnings,
   };
 }
+
+const TOOL_COLOR: Record<string, string> = {
+  chalybclip: '#5B4BFF',
+  chalybcrypto: '#FF9F0A',
+  chalybobs: '#FF2D55',
+};
 
 export default async function UsagePage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; comprar?: string; todo?: string }>;
 }) {
-  // Param parsing — could throw if Next gives us a weird shape; default safely.
   let locale = 'es';
-  let paymentStatus: string | undefined = undefined;
+  let sp: { status?: string; comprar?: string; todo?: string } = {};
   try {
-    const p = await params;
-    locale = p.locale || 'es';
-    const sp = await searchParams;
-    paymentStatus = sp.status;
+    locale = (await params).locale || 'es';
+    sp = await searchParams;
   } catch (err) {
     console.error('[/app/usage] params parsing failed:', err);
   }
-
-  // setRequestLocale can throw if locale isn't in the supported list. We
-  // accept whatever Next gave us but never let it crash the page.
   try {
     setRequestLocale(locale);
   } catch (err) {
@@ -294,445 +275,328 @@ export default async function UsagePage({
   }
 
   const data = await loadUsagePageData();
+  // `redirect()` throws NEXT_REDIRECT on purpose: the one error we want.
+  if (!data.hasSession) redirect('/sign-in?next=/app/usage');
 
-  // No session = redirect to sign-in. `redirect()` throws internally
-  // (intended NEXT_REDIRECT) and is the only error we WANT to bubble.
-  if (!data.hasSession) {
-    redirect('/sign-in?next=/app/usage');
-  }
+  const t = await getTranslations('credits');
+  const tm = await getTranslations('myplan');
+  const nf = (v: number) => v.toLocaleString(locale === 'es' ? 'es-MX' : 'en-US');
+  const date = (iso: string) => formatFechaLarga(iso, locale);
+  const b = (c: string) => `<b>${c}</b>`;
+  const { balance } = data;
+  const balanceBroken = data.warnings.some((w) => w.startsWith('balance_') || w.startsWith('session_'));
+  const total = balance.monthlyAllocation;
+  const used = balance.monthlyUsed;
+  const left = Math.max(0, balance.remaining);
+  const usedPct = total > 0 ? Math.min(100, Math.floor((used / total) * 100)) : 0;
+  // Credits renew on the 1st (calendar month; D-F3-3: show what the code does).
+  const start = new Date(balance.periodStart);
+  const renew = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1, 12)).toISOString();
+  const low = !balance.unlimited && total > 0 && usedPct >= 80;
+  const packs = TOKEN_PACKS.map((p) => ({ id: p.id, tokens: p.tokens, amount: formatMXN(p.amountCents) }));
+  const toolName = (engineId: string) => data.engineMap.get(engineId)?.name ?? t('tool');
+  const toolSlug = (engineId: string) => data.engineMap.get(engineId)?.slug ?? 'more';
 
-  // Collapse events into runs. Pure JS — no external calls, can't throw.
-  type Row = { kind: 'run'; group: RunGroup } | { kind: 'event'; event: UsageEventRow };
-  const runMap = new Map<string, RunGroup>();
-  const standalone: UsageEventRow[] = [];
+  // Runs: events sharing tool, operation and day are one use.
+  type Use = { key: string; engineId: string; at: string; credits: number; operation: string };
+  const uses = new Map<string, Use>();
   for (const e of data.events) {
-    if (!e.operation) {
-      standalone.push(e);
-      continue;
-    }
-    const date = (e.occurred_at || '').slice(0, 10);
-    const key = `${e.engine_id}|${e.operation}|${date}`;
-    const existing = runMap.get(key);
-    if (existing) {
-      existing.count += 1;
-      existing.totalAmount += e.amount;
-      existing.kinds.add(e.kind);
-      if (e.occurred_at < existing.occurredAt) existing.occurredAt = e.occurred_at;
-    } else {
-      runMap.set(key, {
-        key,
-        engineId: e.engine_id,
-        operation: e.operation,
-        occurredAt: e.occurred_at,
-        count: 1,
-        totalAmount: e.amount,
-        kinds: new Set([e.kind]),
-      });
-    }
+    const key = e.operation ? `${e.engine_id}|${e.operation}|${(e.occurred_at || '').slice(0, 10)}` : e.id;
+    const credits = e.kind === 'llm.tokens' ? e.amount : 0;
+    const u = uses.get(key);
+    if (u) {
+      u.credits += credits;
+      if (e.occurred_at > u.at) u.at = e.occurred_at;
+    } else
+      uses.set(key, { key, engineId: e.engine_id, at: e.occurred_at, credits, operation: e.operation ?? e.kind });
   }
-  const rows: Row[] = [
-    ...Array.from(runMap.values()).map((g) => ({ kind: 'run' as const, group: g })),
-    ...standalone.map((e) => ({ kind: 'event' as const, event: e })),
-  ].sort((a, b) => {
-    const ta = a.kind === 'run' ? a.group.occurredAt : a.event.occurred_at;
-    const tb = b.kind === 'run' ? b.group.occurredAt : b.event.occurred_at;
-    return (tb || '').localeCompare(ta || '');
-  });
-  const visibleRows = rows.slice(0, 25);
+  const thisMonth = [...uses.values()].filter((u) => u.at >= balance.periodStart);
+  const byTool = new Map<string, { n: number; credits: number }>();
+  for (const u of thisMonth) {
+    const x = byTool.get(u.engineId) ?? { n: 0, credits: 0 };
+    x.n += 1;
+    x.credits += u.credits;
+    byTool.set(u.engineId, x);
+  }
 
-  const now = new Date();
-  const periodLabel = now.toLocaleDateString('es-MX', {
-    month: 'long',
-    year: 'numeric',
-  });
-
-  const { balance, isAdmin, tier, royaltyAccruals, royaltyPayouts, engineMap } = data;
-  const tUsage = await getTranslations('usage');
-
-  const usedPct = balance.unlimited
-    ? 0
-    : balance.monthlyAllocation > 0
-      ? Math.min(100, (balance.monthlyUsed / balance.monthlyAllocation) * 100)
-      : 0;
-  const overSoon = !balance.unlimited && usedPct > 80;
+  type Hist = { key: string; at: string; title: string; detail: string; value: string; plus: boolean; slug: string };
+  const history: Hist[] = [
+    ...[...uses.values()].map((u) => ({
+      key: u.key,
+      at: u.at,
+      title: toolName(u.engineId),
+      detail: date(u.at),
+      value: `−${nf(u.credits)}`,
+      plus: false,
+      slug: toolSlug(u.engineId),
+    })),
+    ...data.packs.map((p, i) => ({
+      key: `pack-${i}`,
+      at: p.at,
+      title: t('history.pack', { n: nf(p.tokens) }),
+      detail: date(p.at),
+      value: `+${nf(p.tokens)}`,
+      plus: true,
+      slug: 'more',
+    })),
+    ...(!balance.unlimited && total > 0
+      ? [
+          {
+            key: 'renewal',
+            at: balance.periodStart,
+            title: t('history.renewal'),
+            detail: date(balance.periodStart),
+            value: `+${nf(total)}`,
+            plus: true,
+            slug: 'renew',
+          },
+        ]
+      : []),
+  ].sort((a, b2) => b2.at.localeCompare(a.at));
+  const all = sp.todo === '1';
+  const shown = history.slice(0, all ? 20 : 5);
+  const caps = TIER_CAPS[data.tier];
 
   return (
-    <div className="cc-scroll">
-      {/* Post-checkout return banner */}
-      {paymentStatus === 'success' && (
-        <div
-          style={{
-            padding: '14px 18px',
-            border: '1px solid var(--cc-green)',
-            background: 'var(--cc-green-g)',
-            borderRadius: 'var(--cc-r-l)',
-            marginBottom: 18,
-            color: 'var(--cc-txt-2)',
-            fontSize: 13,
-          }}
-        >
-          ● <b style={{ color: 'var(--cc-green)' }}>Pago recibido</b> — tus tokens se suman a tu
-          balance en cuanto Mercado Pago confirma (de segundos a minutos). Esta página se actualiza
-          sola.
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+      <header>
+        <Link href={'/app/settings' as Route} className="ch-muted" style={{ fontSize: 17 }}>
+          {tm('crumb')} ›
+        </Link>
+        <h1 className="ch-h1">{t('title')}</h1>
+        <p className="ch-sub">{t('sub')}</p>
+      </header>
+
+      {sp.status === 'success' && (
+        <>
+          <Banner kind="trial">
+            <Markup text={t.markup('paid', { b })} />
+          </Banner>
+          <RefreshWhilePending />
+        </>
+      )}
+      {low && !balanceBroken && (
+        <Banner kind="warn" action={{ href: '/app/usage?comprar=1', label: t('lowCta') }}>
+          <Markup text={t.markup('low', { pct: 100 - usedPct, fecha: date(renew), b })} />
+        </Banner>
       )}
 
-      {/* Top stats */}
-      <div className="cc-mod-statgrid">
-        <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Periodo</div>
-          <div className="cc-mod-stat-v">{periodLabel}</div>
-          <div className="cc-mod-stat-sub">se renueva el 1° del próximo mes</div>
-        </div>
-        <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Balance disponible</div>
-          <div className={`cc-mod-stat-v ${balance.unlimited ? 'pu' : overSoon ? 'am' : 'gr'}`}>
-            {balance.unlimited ? '∞' : formatNumber(balance.remaining)}
-          </div>
-          <div className="cc-mod-stat-sub">
-            {balance.unlimited
-              ? `admin · sin límite (usados: ${formatNumber(balance.monthlyUsed)})`
-              : `de ${formatNumber(balance.monthlyAllocation + balance.bonus)} tokens este mes`}
-          </div>
-        </div>
-        <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Tokens bonus</div>
-          <div className={`cc-mod-stat-v ${balance.bonus > 0 ? 'cy' : ''}`}>
-            {formatNumber(balance.bonus)}
-          </div>
-          <div className="cc-mod-stat-sub">
-            {balance.bonus > 0
-              ? 'tokens extra comprados · no caducan'
-              : 'aún no compras tokens extra'}
-          </div>
-        </div>
-        <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Plan</div>
-          <div className="cc-mod-stat-v gr">{tier.replace('_', '-')}</div>
-          <div className="cc-mod-stat-sub">
-            {balance.unlimited
-              ? 'sin límite por tu rol'
-              : `incluye ${formatNumber(balance.monthlyAllocation)} tokens al mes`}
-          </div>
-        </div>
-      </div>
+      {balanceBroken ? (
+        <StateBlock
+          icon={<TriangleAlert />}
+          title={t('error.title')}
+          body={t('error.body')}
+          action={{ href: '/app/usage', label: t('error.cta') }}
+          role="alert"
+        />
+      ) : (
+        <div className="ch-acct ch-acct--credits">
+          <div className="ch-acct__col">
+            <section className="ch-card ch-credits" aria-labelledby="cr-left">
+              {balance.unlimited ? (
+                <>
+                  <h2 id="cr-left" className="ch-h2">
+                    {t('unlimited')}
+                  </h2>
+                  <p className="ch-muted">{t('admin')}</p>
+                </>
+              ) : (
+                <>
+                  <p id="cr-left" className="ch-credits__k">
+                    {t('left')}
+                  </p>
+                  <p className="ch-credits__n">
+                    <b>{nf(left)}</b> <span>{t('unit')}</span>
+                  </p>
+                  <div
+                    className="ch-credits__bar"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={total}
+                    aria-valuenow={Math.min(used, total)}
+                    aria-label={t('used', { usados: nf(used), total: nf(total) })}
+                  >
+                    <span style={{ width: `${usedPct}%` }} />
+                  </div>
+                  <p className="ch-muted">
+                    {left === 0
+                      ? t('none', { fecha: date(renew) })
+                      : t('used', { usados: nf(used), total: nf(total) })}
+                  </p>
+                  <p className="ch-credits__li">
+                    <span aria-hidden="true">
+                      <RefreshCw />
+                    </span>
+                    <span>
+                      <Markup text={t.markup('renew', { fecha: date(renew), total: nf(total), b })} />
+                    </span>
+                  </p>
+                  <p className="ch-credits__li">
+                    <span aria-hidden="true">
+                      <Plus />
+                    </span>
+                    <span>
+                      <Markup text={t.markup('extra', { n: nf(balance.bonus), b })} />
+                    </span>
+                  </p>
+                </>
+              )}
+              <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+            </section>
 
-      {/* Progress bar — hide for admins (no meaningful limit) */}
-      {!balance.unlimited && (
-        <div className="cc-mod-section">
-          <div className="cc-mod-sl">Consumo del mes</div>
-          <div
-            style={{
-              padding: '18px 20px',
-              border: `1px solid var(--cc-line-2)`,
-              background: 'var(--cc-panel)',
-              borderRadius: 'var(--cc-r-l)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: 'var(--cc-txt-2)' }}>
-                <b>{formatNumber(balance.monthlyUsed)}</b> usados ·{' '}
-                <b>{formatNumber(balance.remaining)}</b> te quedan
-              </span>
-              <span
-                style={{
-                  fontSize: 11.5,
-                  fontFamily: 'var(--cc-mono), monospace',
-                  color: overSoon ? 'var(--cc-amber)' : 'var(--cc-txt-3)',
-                }}
-              >
-                {usedPct.toFixed(1)}% gastado
-              </span>
-            </div>
-            <span className="cc-bar-track" style={{ display: 'block', width: '100%' }}>
-              <span
-                className={`cc-bar-fill ${overSoon ? 'am' : 'gr'}`}
-                style={{ width: `${usedPct}%` }}
-              />
-            </span>
-            {overSoon && (
-              <div
-                style={{
-                  marginTop: 10,
-                  fontSize: 12,
-                  color: 'var(--cc-amber)',
-                  fontFamily: 'var(--cc-mono), monospace',
-                }}
-              >
-                ▸ Ya casi llegas a tu límite. Compra tokens extra para no quedarte sin servicio
-                cuando se acaben.
-              </div>
+            {byTool.size > 0 && (
+              <Group title={t('byTool.title')}>
+                {[...byTool.entries()].map(([id, x]) => (
+                  <Row
+                    key={id}
+                    icon={<ToolIcon slug={toolSlug(id)} filled size="sm" />}
+                    iconColor={TOOL_COLOR[toolSlug(id)] ?? '#8E8E93'}
+                    title={toolName(id)}
+                    detail={t('byTool.generic', { n: x.n })}
+                    value={nf(x.credits)}
+                  />
+                ))}
+              </Group>
             )}
           </div>
-        </div>
-      )}
 
-      {/* Buy top-up packs — hidden for admins */}
-      {!isAdmin && (
-        <div className="cc-mod-section">
-          <div className="cc-mod-sl">Comprar tokens extra</div>
-          <p
-            style={{
-              fontSize: 12.5,
-              color: 'var(--cc-txt-3)',
-              maxWidth: '64ch',
-              lineHeight: 1.55,
-              marginBottom: 14,
-            }}
-          >
-            Los tokens que compras <b>nunca caducan</b> y se usan <b>después</b> de los tokens que
-            ya trae tu plan cada mes. Sirven en todas tus herramientas. Comprar tokens{' '}
-            <b>no cambia tu plan</b>: tus límites y tu fecha de renovación siguen igual — eso se
-            gestiona en{' '}
-            <Link href={'/app/subscription' as Route} style={{ color: 'var(--cc-txt-2)' }}>
-              Suscripción
-            </Link>
-            .
-          </p>
-          <div className="cc-mod-grid">
-            {TOKEN_PACKS.map((pack) => (
-              <div
-                key={pack.id}
-                className="cc-mod-card"
-                style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
-              >
-                <div className="cc-mod-card-head">
-                  <h4 style={{ fontSize: 16 }}>{pack.label}</h4>
-                  <span className="cc-mod-badge gr">
-                    {formatMXN(pack.amountCents)} {tUsage('priceSuffix')}
-                  </span>
+          <div className="ch-acct__col">
+            {uses.size === 0 ? (
+              <StateBlock
+                icon={<Scissors />}
+                title={t('empty.title')}
+                body={t('empty.body')}
+                action={{ href: '/app/clips', label: t('empty.cta') }}
+              />
+            ) : (
+              <section aria-labelledby="hist-h">
+                <div className="ch-ghead-row">
+                  <h2 id="hist-h" className="ch-ghead">
+                    {t('history.title')}
+                  </h2>
+                  {!all && history.length > 5 && (
+                    <Link href={'/app/usage?todo=1' as Route} className="ch-link">
+                      {t('history.all')}
+                    </Link>
+                  )}
                 </div>
-                <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', minHeight: 36 }}>
-                  {pack.tagline}
-                </p>
-                <div className="cc-mod-meta">
-                  <span>
-                    <b>{formatNumber(pack.tokens)}</b> tokens
-                  </span>
-                  <span style={{ fontFamily: 'var(--cc-mono), monospace', fontSize: 10.5 }}>
-                    ≈ ${(pack.amountCents / 100 / (pack.tokens / 1000)).toFixed(2)} MXN/1k tokens
-                  </span>
+                <div className="ch-group">
+                  {shown.map((h) => (
+                    <Row
+                      key={h.key}
+                      icon={h.slug === 'renew' ? <RefreshCw /> : <ToolIcon slug={h.slug} filled size="sm" />}
+                      iconColor={h.plus ? '#8E8E93' : (TOOL_COLOR[h.slug] ?? '#8E8E93')}
+                      title={h.title}
+                      detail={h.detail}
+                      value={<span style={h.plus ? { color: 'var(--accent)' } : undefined}>{h.value}</span>}
+                    />
+                  ))}
                 </div>
-                <TokenPackBuyButton packId={pack.id} packLabel={pack.label} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              </section>
+            )}
 
-      {/* Partner royalty section — only renders if this user owns an
-          engine with a non-zero royalty rate. */}
-      {(royaltyAccruals.length > 0 || royaltyPayouts.length > 0) && (
-        <div className="cc-mod-section">
-          <div className="cc-mod-sl">Royalties · tus engines</div>
-          <p
-            style={{
-              fontSize: 12.5,
-              color: 'var(--cc-txt-3)',
-              maxWidth: '64ch',
-              lineHeight: 1.55,
-              marginBottom: 14,
-            }}
-          >
-            Como dueño de uno o más engines, ganas regalías cada vez que otros usuarios gastan
-            tokens en ellos. El admin cierra el periodo al final del mes y procesa el pago por
-            fuera.
-          </p>
-          {royaltyAccruals.length > 0 && (
-            <div className="cc-mod-list" style={{ marginBottom: 14 }}>
-              {royaltyAccruals.map((a) => (
-                <div key={a.engineId} className="cc-mod-row">
-                  <div className="cc-mod-ic">◆</div>
-                  <div className="cc-mod-body">
-                    <div className="cc-mod-name">
-                      {a.engineName}{' '}
-                      <span className="cc-mod-badge">
-                        {a.alreadyFinalized ? 'cerrado' : 'acumulando'}
-                      </span>
-                    </div>
-                    <div className="cc-mod-sub">
-                      {formatNumber(a.tokensThisPeriod)} tokens este mes · rate{' '}
-                      <code>${(a.ratePerMillionCents / 100).toLocaleString('es-MX')}/1M</code>
-                    </div>
-                  </div>
-                  <div className="cc-mod-right">
-                    <b className={a.alreadyFinalized ? 'gr' : 'am'}>
-                      ${(a.accruedCents / 100).toLocaleString('es-MX')}
-                    </b>
-                    <span>MXN este periodo</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {royaltyPayouts.length > 0 && (
-            <details>
-              <summary
-                style={{
-                  cursor: 'pointer',
-                  color: 'var(--cc-txt-3)',
-                  fontSize: 12.5,
-                  marginBottom: 10,
-                }}
-              >
-                Historial de pagos ({royaltyPayouts.length})
+            {(data.royaltyAccruals.length > 0 || data.royaltyPayouts.length > 0) && (
+              <PartnerEarnings accruals={data.royaltyAccruals} payouts={data.royaltyPayouts} locale={locale} />
+            )}
+
+            <details className="ch-card ch-adv">
+              <summary>
+                <SlidersHorizontal aria-hidden="true" /> {t('adv.title')}{' '}
+                <Pill kind="acc">{t('adv.tag')}</Pill>
               </summary>
-              <div className="cc-mod-list">
-                {royaltyPayouts.map((p) => (
-                  <div key={p.id} className="cc-mod-row">
-                    <div className="cc-mod-ic">
-                      {p.status === 'paid' ? '✓' : p.status === 'cancelled' ? '✕' : '◷'}
-                    </div>
-                    <div className="cc-mod-body">
-                      <div className="cc-mod-name">
-                        {p.engineName}{' '}
-                        <span className={`cc-mod-badge ${p.status === 'paid' ? 'gr' : ''}`}>
-                          {p.status}
-                        </span>
-                      </div>
-                      <div className="cc-mod-sub">
-                        Periodo{' '}
-                        {new Date(p.periodStart).toLocaleDateString('es-MX', {
-                          month: 'long',
-                          year: 'numeric',
-                        })}{' '}
-                        · {formatNumber(p.tokensAttributed)} tokens
-                        {p.paymentReference && (
-                          <>
-                            {' '}
-                            · ref <code>{p.paymentReference}</code>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="cc-mod-right">
-                      <b className={p.status === 'paid' ? 'gr' : ''}>
-                        ${(p.amountCents / 100).toLocaleString('es-MX')}
-                      </b>
-                      <span>MXN</span>
-                    </div>
+              <div className="ch-adv__body">
+                <h3 className="ch-adv__h">{t('adv.limits')}</h3>
+                <ul className="ch-adv__list">
+                  <li>{t('adv.historyDays', { n: caps.historyDays })}</li>
+                  {caps.clipStreamsPerMonth > 0 && <li>{t('adv.streams', { n: caps.clipStreamsPerMonth })}</li>}
+                </ul>
+                <h3 className="ch-adv__h">{t('adv.tech')}</h3>
+                <ul className="ch-adv__list">
+                  {!balance.unlimited && total > 0 && <li>{t('adv.pct', { pct: usedPct })}</li>}
+                  {TOKEN_PACKS.map((p) => (
+                    <li key={p.id}>
+                      {t('adv.perThousand', {
+                        n: nf(p.tokens),
+                        monto: formatMXN(Math.round((p.amountCents * 1000) / p.tokens)),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+                {data.events.length > 0 && (
+                  <div className="ch-table-wrap" role="region" aria-label={t('adv.tech')} tabIndex={0}>
+                    <table className="ch-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">{t('adv.col.date')}</th>
+                          <th scope="col">{t('adv.col.tool')}</th>
+                          <th scope="col">{t('adv.col.operation')}</th>
+                          <th scope="col">{t('adv.col.kind')}</th>
+                          <th scope="col" className="num">
+                            {t('adv.col.amount')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.events.slice(0, 20).map((e) => (
+                          <tr key={e.id}>
+                            <td>{date(e.occurred_at)}</td>
+                            <td>{toolName(e.engine_id)}</td>
+                            <td>{e.operation ?? '—'}</td>
+                            <td>{e.kind}</td>
+                            <td className="num">{nf(e.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
+                )}
+                {data.isAdmin && data.warnings.length > 0 && (
+                  <p className="ch-muted">{t('adv.diag', { warnings: data.warnings.join(', ') })}</p>
+                )}
               </div>
             </details>
-          )}
+          </div>
         </div>
       )}
-
-      {/* Recent usage events — collapsed into runs when engine tags them. */}
-      <div className="cc-mod-section">
-        <div className="cc-mod-sl">Actividad reciente</div>
-        {visibleRows.length === 0 ? (
-          <div
-            style={{
-              padding: '32px 22px',
-              border: '1px dashed var(--cc-line-2)',
-              borderRadius: 'var(--cc-r-l)',
-              textAlign: 'center',
-              color: 'var(--cc-txt-3)',
-              fontSize: 13,
-              lineHeight: 1.55,
-            }}
-          >
-            Todavía no registras consumo este mes.
-            <br />
-            <span
-              style={{
-                color: 'var(--cc-txt-4)',
-                fontSize: 11.5,
-                fontFamily: 'var(--cc-mono), monospace',
-                marginTop: 6,
-                display: 'inline-block',
-              }}
-            >
-              Tu actividad aparece aquí en cuanto uses una herramienta.
-            </span>
-          </div>
-        ) : (
-          <div className="cc-mod-list">
-            {visibleRows.map((row) => {
-              if (row.kind === 'run') {
-                const g = row.group;
-                const eng = engineMap.get(g.engineId);
-                return (
-                  <div key={g.key} className="cc-mod-row">
-                    <div className="cc-mod-ic">{eng?.icon ?? '◆'}</div>
-                    <div className="cc-mod-body">
-                      <div className="cc-mod-name">
-                        {eng?.name ?? '—'} <span className="cc-mod-badge">{g.operation}</span>{' '}
-                        <span className="cc-mod-badge gr">
-                          {g.count} llamada{g.count === 1 ? '' : 's'}
-                        </span>
-                      </div>
-                      <div className="cc-mod-sub">
-                        {relativeDate(g.occurredAt, locale)} ·{' '}
-                        {Array.from(g.kinds)
-                          .map((k) => KIND_LABEL[k] ?? k)
-                          .join(' · ')}
-                      </div>
-                    </div>
-                    <div className="cc-mod-right">
-                      <b className="cy">{formatNumber(g.totalAmount)}</b>
-                      <span>tokens · run</span>
-                    </div>
-                  </div>
-                );
-              }
-              const e = row.event;
-              const eng = engineMap.get(e.engine_id);
-              return (
-                <div key={e.id} className="cc-mod-row">
-                  <div className="cc-mod-ic">{eng?.icon ?? '◆'}</div>
-                  <div className="cc-mod-body">
-                    <div className="cc-mod-name">
-                      {eng?.name ?? '—'}{' '}
-                      <span className="cc-mod-badge">{KIND_LABEL[e.kind] ?? e.kind}</span>
-                    </div>
-                    <div className="cc-mod-sub">{relativeDate(e.occurred_at, locale)}</div>
-                  </div>
-                  <div className="cc-mod-right">
-                    <b>{formatNumber(e.amount)}</b>
-                    <span>{e.kind.split('.')[1] ?? 'units'}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Diagnostic strip — only when something actually went wrong. Admins
-          get the warning codes and where to look; customers get one plain
-          sentence and a retry (P0-6). */}
-      {data.warnings.length > 0 &&
-        (isAdmin ? (
-          <div
-            style={{
-              marginTop: 18,
-              padding: '8px 12px',
-              background: 'var(--cc-amber-g, rgba(245,177,61,0.06))',
-              border: '1px solid rgba(245,177,61,0.25)',
-              borderRadius: 7,
-              fontSize: 11,
-              color: 'var(--cc-amber, #f5b13d)',
-              fontFamily: 'var(--cc-mono), monospace',
-              lineHeight: 1.5,
-            }}
-          >
-            ▸ Algunos datos se mostraron con valores por defecto ({data.warnings.join(', ')}). Si
-            esto sigue pasando, revisa los logs de Vercel — busca por el prefijo `[/app/usage]`.
-          </div>
-        ) : (
-          <div role="status" style={{ marginTop: 18, fontSize: 15, color: 'var(--cc-txt-2)' }}>
-            {tUsage('loadFailed')}{' '}
-            <Link
-              href={'/app/usage' as Route}
-              style={{ color: 'var(--cc-green)', fontWeight: 600 }}
-            >
-              {tUsage('retry')}
-            </Link>
-          </div>
-        ))}
     </div>
+  );
+}
+
+async function PartnerEarnings({
+  accruals,
+  payouts,
+  locale,
+}: {
+  accruals: RoyaltyAccrual[];
+  payouts: PayoutRow[];
+  locale: string;
+}) {
+  const t = await getTranslations('credits');
+  return (
+    <Group title={t('partner.title')}>
+      {accruals.map((a) => (
+        <Row
+          key={`a-${a.engineId}`}
+          icon={<ToolIcon slug={a.engineSlug} filled size="sm" />}
+          iconColor={TOOL_COLOR[a.engineSlug] ?? '#8E8E93'}
+          title={engineDisplayName(a.engineSlug, a.engineName)}
+          detail={t('partner.month')}
+          value={`${formatMXN(a.accruedCents)} MXN`}
+        />
+      ))}
+      {payouts
+        .filter((p) => p.status === 'paid' && p.paidAt)
+        .slice(0, 6)
+        .map((p) => (
+          <Row
+            key={`p-${p.id}`}
+            icon={<ToolIcon slug={p.engineSlug} filled size="sm" />}
+            iconColor={TOOL_COLOR[p.engineSlug] ?? '#8E8E93'}
+            title={engineDisplayName(p.engineSlug, p.engineName)}
+            detail={t('partner.paid', { fecha: formatFechaLarga(p.paidAt!, locale) })}
+            value={`${formatMXN(p.amountCents)} MXN`}
+          />
+        ))}
+    </Group>
   );
 }

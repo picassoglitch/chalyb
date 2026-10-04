@@ -49,3 +49,25 @@ test.describe('A · Mi plan, paid', () => {
     await noLegacyStyle(page);
   });
 });
+
+test.describe('B · Mis créditos', () => {
+  asRole('pro');
+  test('the real balance, the buy sheet with the middle pack, Esc closes', async ({ page }) => {
+    await page.goto('/app/usage');
+    await expect(page.getByRole('heading', { level: 1, name: 'Mis créditos' })).toBeVisible();
+    await expect(page.getByRole('progressbar')).toBeVisible();
+    await noLegacyStyle(page);
+    const trigger = page.getByRole('button', { name: 'Conseguir más créditos' });
+    await trigger.click();
+    await expect(page.getByRole('radio', { checked: true })).toHaveValue('tokens_500k');
+    const cta = page.getByRole('link', { name: /^Continuar al pago · \$/ });
+    await expect(cta).toHaveAttribute('href', /\/app\/usage\/checkout\?pack=tokens_500k$/);
+    await page.getByText('100,000 créditos', { exact: true }).click();
+    await expect(cta).toHaveAttribute('href', /pack=tokens_100k$/);
+    await page.keyboard.press('Escape');
+    await expect(cta).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    // Technical names may live inside the closed Opciones avanzadas only.
+    await expect(page.getByText(/\btokens?\b|engine|LLM|telemetry/i).locator('visible=true')).toHaveCount(0);
+  });
+});
