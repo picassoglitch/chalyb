@@ -17,7 +17,7 @@ export async function hiddenJobIds(userId: string): Promise<Set<string>> {
     .eq('user_id', userId)
     .is('restored_at', null);
   if (error) {
-    // Before 0056 runs the table doesn't exist: nothing is hidden yet.
+    // Before 0058 runs the table doesn't exist: nothing is hidden yet.
     console.error('[removals] lookup failed', error.message);
     return new Set();
   }
