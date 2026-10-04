@@ -515,6 +515,75 @@ try {
   );
 }
 
+// ── 0060: claim, retry and give up on a notice ───────────────────────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const u = (
+    await db.query(`insert into auth.users (email) values ('claim@example.com') returning id`)
+  ).rows[0].id;
+  const claim = async (period) =>
+    (
+      await db.query(
+        `select public.claim_notice_dispatch($1, 'terms_change', $2, 'terms_change', '1') as id`,
+        [u, period],
+      )
+    ).rows[0].id;
+  const row = async (period) =>
+    (
+      await db.query(
+        `select delivery_status, attempts from public.email_dispatches where user_id = $1 and period_key = $2`,
+        [u, period],
+      )
+    ).rows[0];
+  const a = await claim('t:1');
+  check('a new notice is claimed pending', !!a && (await row('t:1')).delivery_status === 'pending');
+  check('an in-flight claim is not taken twice', (await claim('t:1')) === null);
+  await db.query(`update public.email_dispatches set delivery_status = 'failed' where id = $1`, [
+    a,
+  ]);
+  const b = await claim('t:1');
+  const r1 = await row('t:1');
+  check(
+    'a failed notice is retaken, attempts + 1',
+    b === a && r1.delivery_status === 'pending' && r1.attempts === 2,
+    JSON.stringify(r1),
+  );
+  await db.query(
+    `update public.email_dispatches set delivery_status = 'failed', attempts = 5 where id = $1`,
+    [a],
+  );
+  const c = await claim('t:1');
+  check(
+    'after 5 attempts it is undeliverable, not retaken',
+    c === null && (await row('t:1')).delivery_status === 'undeliverable',
+  );
+  const d = await claim('t:2');
+  await db.query(
+    `update public.email_dispatches set delivery_status = 'failed', first_attempt_at = now() - interval '73 hours' where id = $1`,
+    [d],
+  );
+  check(
+    'after 72 hours it is undeliverable',
+    (await claim('t:2')) === null && (await row('t:2')).delivery_status === 'undeliverable',
+  );
+  await db.query(
+    `insert into public.profiles (id, email) values ($1, 'claim@example.com') on conflict (id) do update set email = excluded.email`,
+    [u],
+  );
+  const owed = (
+    await db.query(
+      `select id from public.legal_change_notice_recipients('terminos', '9.8', 't:1', null, 1000)`,
+    )
+  ).rows.map((r) => r.id);
+  check('undeliverable counts as done for completion', !owed.includes(u));
+}
+
 console.log(
   `${files.length} migrations applied twice${process.exitCode ? ' — WITH FAILURES' : ''}`,
 );

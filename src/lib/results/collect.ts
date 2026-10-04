@@ -27,12 +27,14 @@ export async function collectResults(
     hubRunsTool('chalybrealtor') && ent.tools.chalybrealtor?.state === 'included'
       ? getInmuebles()
       : null;
-  const [jobs, cards, hidden] = await Promise.all([
-    clips ? safe('clips', () => clips.listJobs(userId, limit)) : Promise.resolve([]),
-    homes ? safe('inmuebles', () => homes.list(userId)) : Promise.resolve([]),
-    hiddenJobIds(userId),
-  ]);
   // Jobs removed after a copyright notice never show (Uso aceptable §5.2).
-  const visible = jobs.filter((j) => !hidden.has(j.id));
+  // Filter before the limit, so a hidden job doesn't take a slot (the /app
+  // "latest" card shows the next one).
+  const hidden = await hiddenJobIds(userId);
+  const [jobs, cards] = await Promise.all([
+    clips ? safe('clips', () => clips.listJobs(userId, limit + hidden.size)) : Promise.resolve([]),
+    homes ? safe('inmuebles', () => homes.list(userId)) : Promise.resolve([]),
+  ]);
+  const visible = jobs.filter((j) => !hidden.has(j.id)).slice(0, limit);
   return mergeResults(visible.map(clipItem), cards.map(propertyItem)).slice(0, limit);
 }

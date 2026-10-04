@@ -27,6 +27,7 @@ import {
 } from '@/lib/legal/registry';
 import { inlineText } from '@/lib/legal/markdown';
 import { formatFechaLarga } from '@/lib/billing/format';
+import { versionInForceAt } from '@/lib/legal/legal-server';
 import { localizedPath, publicPageMetadata } from '@/lib/site';
 import { LegalPage } from './legal-page';
 import { LegalMarkdown } from './legal-markdown';
@@ -87,7 +88,6 @@ export async function LegalDocPage({
 
   const t = await getTranslations({ locale, namespace: 'legal' });
   const user = await getCurrentUser();
-  const meta = versionMeta(doc, version);
 
   if (!inForce(doc, version)) {
     return (
@@ -109,7 +109,9 @@ export async function LegalDocPage({
   }
 
   const title = list.find((b) => b.t === 'h' && b.level === 1);
-  const effective = meta?.effective ? formatFechaLarga(meta.effective, locale) : t('doc.noDate');
+  // "Vigente desde": the date it really applies (later if notices ran late).
+  const inForceAt = await versionInForceAt(doc, version);
+  const effective = inForceAt ? formatFechaLarga(inForceAt, locale) : t('doc.noDate');
   const others = listVersions(doc).filter((v) => v !== version);
   const sha = archived(doc, version)?.sha256 ?? '';
 

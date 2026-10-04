@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { LegalPage } from '@/components/legal/legal-page';
 import { formatFechaLarga } from '@/lib/billing/format';
+import { versionInForceAt } from '@/lib/legal/legal-server';
 import { legalPath, parseVersionSlug, versionMeta, versionSlug } from '@/lib/legal/registry';
 import { localizedPath } from '@/lib/site';
 import type { ReacceptDoc } from '@/lib/legal/reaccept';
@@ -28,7 +29,8 @@ export async function LegalChangesPage({ doc, params }: { doc: ReacceptDoc } & P
   if (!version || !meta) notFound();
   const t = await getTranslations({ locale, namespace: 'termsUpdate.changesPage' });
   const user = await getCurrentUser();
-  const fecha = meta.effective ? formatFechaLarga(meta.effective, locale) : t('noDate');
+  const inForceAt = await versionInForceAt(doc, version);
+  const fecha = inForceAt ? formatFechaLarga(inForceAt, locale) : t('noDate');
   return (
     <LegalPage
       title={t('title')}

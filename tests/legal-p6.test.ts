@@ -269,7 +269,7 @@ test('MED 7 · an ARCO answer is emailed (outcome, date), notified in-app, kept 
   assert.match(inc.text, /Nos falta información/);
   assert.doesNotMatch(inc.text, /efectiva/);
   const s = read('src/lib/legal/legal-server.ts');
-  assert.match(s, /kind: 'arco_answer',\s*periodKey: `arco:\$\{id\}`/);
+  assert.match(s, /kind: 'arco_answer',\s*periodKey: `arco:\$\{row\.id\}`/);
   assert.match(s, /kind: 'arcoAnswered'/);
   assert.match(read('src/app/[locale]/(dashboard)/app/settings/arco/page.tsx'), /t\('effectiveBy'/);
 });

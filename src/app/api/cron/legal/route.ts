@@ -4,7 +4,8 @@
 //   1. restores content whose counter-notice deadline passed with no
 //      proceeding from the claimant (Uso aceptable §5.3);
 //   2. purges non-compliance marks 72 months after the incident (Aviso
-//      §9.1); `?dry=1` only counts;
+//      §9.1); `?dry=1` only counts; then resends ARCO answers whose email
+//      failed (gives up after 5 tries / 72 h);
 //   3. the ≥30-day email before a relevant change to the Términos,
 //      Suscripción or Aviso de privacidad (aceptacion-ux §8): a capped,
 //      throttled batch that stops before maxDuration; one document failing
@@ -14,6 +15,7 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import {
   NOTICE_BATCH,
+  runArcoAnswerRetries,
   runCounterNoticeRestores,
   runRetention,
   runTermsChangeNotices,
@@ -43,11 +45,18 @@ export async function GET(req: Request) {
     console.error('[cron/legal] counter-notice restores failed', e.message);
     return { restored: 0 };
   });
-  const retention = await runRetention(now, dryRun);
+  const retention = await runRetention(now, dryRun).catch((e: Error) => {
+    console.error('[cron/legal] retention failed', e.message);
+    return null;
+  });
+  const arcoAnswers = await runArcoAnswerRetries().catch((e: Error) => {
+    console.error('[cron/legal] ARCO answer retries failed', e.message);
+    return { resent: 0, failed: 0 };
+  });
   const termsChange = await runTermsChangeNotices(now, {
     deadline: Date.now() + (maxDuration - 60) * 1000,
     maxSends: NOTICE_BATCH,
   });
-  const report: LegalCronReport = { termsChange, counterNotices, retention };
+  const report: LegalCronReport = { termsChange, counterNotices, arcoAnswers, retention };
   return NextResponse.json({ ok: true, ...report });
 }

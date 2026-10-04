@@ -42,6 +42,11 @@ import { evidenceLines, renderPdf, sha256Hex, type EvidenceInput } from './evide
 
 const DAY = 86_400_000;
 const NOTICE_KINDS = ['trial_7d', 'trial_1d', 'renew_7d', 'renew_30d', 'lealtad_7d'];
+
+/** A charge notice the provider accepted (see the triage below). */
+export function noticeWasSent(n: { delivery_status: unknown; provider_message_id?: unknown }): boolean {
+  return (n.delivery_status === 'sent' || n.delivery_status === 'delivered') && !!n.provider_message_id;
+}
 const CONSENT_KINDS = [
   'trial_started',
   'subscription_started',
@@ -242,7 +247,7 @@ async function triageInputs(cb: { user_id: string; mp_preapproval_id: string | n
       .limit(1),
     admin
       .from('email_dispatches')
-      .select('sent_at, delivery_status')
+      .select('sent_at, delivery_status, provider_message_id')
       .eq('user_id', cb.user_id)
       .in('kind', NOTICE_KINDS)
       .lte('sent_at', chargedAt.toISOString())
@@ -256,9 +261,10 @@ async function triageInputs(cb: { user_id: string; mp_preapproval_id: string | n
           .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
-  const delivered = (notices ?? []).find(
-    (n) => n.delivery_status !== 'bounced' && n.delivery_status !== 'failed',
-  );
+  // A notice counts only once the provider took it: 'sent' or 'delivered'
+  // with its message id. 'pending' (claimed, maybe never sent), 'failed',
+  // 'bounced' and 'undeliverable' never do (§7.2(b) triage).
+  const delivered = (notices ?? []).find((n) => noticeWasSent(n));
   const noticeDays = delivered
     ? Math.floor((chargedAt.getTime() - Date.parse(delivered.sent_at as string)) / DAY)
     : null;

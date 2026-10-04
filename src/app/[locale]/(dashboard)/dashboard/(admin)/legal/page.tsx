@@ -84,16 +84,30 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
             .eq('doc', doc)
             .eq('version', version)
             .maybeSingle(),
-          ...(['sent', 'delivered', 'pending', 'failed', 'bounced'] as const).map((st) =>
-            db
-              .from('email_dispatches')
-              .select('id', { count: 'exact', head: true })
-              .eq('kind', 'terms_change')
-              .eq('period_key', key)
-              .eq('delivery_status', st),
+          ...(['sent', 'delivered', 'pending', 'failed', 'bounced', 'undeliverable'] as const).map(
+            (st) =>
+              db
+                .from('email_dispatches')
+                .select('id', { count: 'exact', head: true })
+                .eq('kind', 'terms_change')
+                .eq('period_key', key)
+                .eq('delivery_status', st),
           ),
         ]);
         const completeAt = (state.data?.complete_at as string | null) ?? null;
+        // Never noticed (bounced, or given up after 5 tries / 72 h): they
+        // stay on the terms they have and are never asked to accept.
+        const { data: lost } = await db
+          .from('email_dispatches')
+          .select('user_id, delivery_status')
+          .eq('kind', 'terms_change')
+          .eq('period_key', key)
+          .in('delivery_status', ['bounced', 'undeliverable'])
+          .limit(50);
+        const lostIds = ((lost ?? []) as { user_id: string }[]).map((r) => r.user_id);
+        const { data: lostPeople } = lostIds.length
+          ? await db.from('profiles').select('id, email').in('id', lostIds)
+          : { data: [] };
         return {
           doc,
           version,
@@ -105,6 +119,8 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
           pending: counts[2]!.count ?? 0,
           failed: counts[3]!.count ?? 0,
           bounced: counts[4]!.count ?? 0,
+          undeliverable: counts[5]!.count ?? 0,
+          lost: ((lostPeople ?? []) as { email: string | null }[]).map((p) => p.email ?? '—'),
         };
       }),
   );
@@ -143,6 +159,7 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
                   pending: c.pending,
                   failed: c.failed,
                   bounced: c.bounced,
+                  undeliverable: c.undeliverable,
                 })}
               </span>
               <span>
@@ -152,6 +169,16 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
                     ? t('notices.sending', { fecha: date(c.firstSendAt) })
                     : t('notices.notStarted')}
               </span>
+              {c.lost.length > 0 && (
+                <details>
+                  <summary>{t('notices.lost', { n: c.lost.length })}</summary>
+                  <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                    {c.lost.map((e) => (
+                      <li key={e}>{e}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               <span>
                 {c.inForceAt
                   ? t('notices.inForce', { fecha: date(c.inForceAt) })

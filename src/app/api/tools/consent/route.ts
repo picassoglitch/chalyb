@@ -14,6 +14,7 @@ import { getEntitlements } from '@/lib/billing/entitlement';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { decideAutopublish } from '@/lib/tools/autopublish';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -62,6 +63,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, consentId: event.consent_id });
   }
   if (body.kind === 'autopublish') {
+    // aceptacion-ux §8: no publishing while a relevant legal change is
+    // unaccepted (downloads stay allowed).
+    if (await termsAcceptancePending(session.user.id))
+      return NextResponse.json({ ok: false, code: 'TERMS_PENDING' }, { status: 409 });
     const account = String(body.account ?? '').slice(0, 120);
     const ent = await getEntitlements(session);
     const decision = decideAutopublish({

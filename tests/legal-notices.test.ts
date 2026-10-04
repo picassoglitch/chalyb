@@ -30,11 +30,12 @@ test('H2 · "sent" only with a provider id; anything else is failed and retried'
 
 test('H2 · claim inserts pending, takes over only failed or >10 min pending, through one conditional UPDATE', () => {
   const src = read('src/lib/legal/notice-dispatch.ts');
-  assert.match(src, /delivery_status: 'pending',\s*sent_at:/);
-  assert.match(
-    src,
-    /\.or\(`delivery_status\.eq\.failed,and\(delivery_status\.eq\.pending,sent_at\.lt\.\$\{stale\}\)`\)\s*\.select\('id'\)\s*\.maybeSingle\(\)/,
-  );
+  // The claim is one SQL statement since 0060 (claim_notice_dispatch):
+  // insert pending, or retake failed / > 10-minute pending, atomically.
+  assert.match(src, /db\.rpc\('claim_notice_dispatch'/);
+  const sql = read('supabase/migrations/0060_legal_retention_v2.sql');
+  assert.match(sql, /'pending', now\(\), 1, now\(\)\)\s*on conflict \(user_id, kind, period_key\) do nothing/);
+  assert.match(sql, /delivery_status = 'pending' and sent_at < now\(\) - interval '10 minutes'/);
   assert.equal(STALE_PENDING_MS, 600_000);
   // finish only moves a row this run still holds as pending.
   assert.match(src, /\.eq\('id', id\)\.eq\('delivery_status', 'pending'\)/);
@@ -188,4 +189,46 @@ test('LOW · a date-only effective date is 00:00 in Mexico City, not UTC', () =>
   assert.equal(effectiveInstant('2026-12-01T12:00:00Z'), '2026-12-01T12:00:00.000Z');
   assert.equal(effectiveInstant('mañana'), null);
   assert.equal(effectiveInstant(null), null);
+});
+
+test('H1 gaps · undeliverable after 5 tries / 72 h; pending counts as owed; email and pages use the real date', () => {
+  const nd = read('src/lib/legal/notice-dispatch.ts');
+  assert.match(nd, /db\.rpc\('claim_notice_dispatch'/);
+  const sql = read('supabase/migrations/0060_legal_retention_v2.sql');
+  assert.match(sql, /set delivery_status = 'undeliverable'/);
+  assert.match(sql, /'sent', 'delivered', 'bounced', 'undeliverable'/);
+  const s = read('src/lib/legal/legal-server.ts');
+  assert.match(
+    s,
+    /\.eq\('delivery_status', 'pending'\);\s*const remaining = \(\(left \?\? \[\]\) as unknown\[\]\)\.length \+ \(inFlight \?\? 0\);/,
+  );
+  assert.match(
+    s,
+    /Math\.max\(\s*Date\.parse\(meta\.effective\),\s*now\.getTime\(\) \+ TERMS_CHANGE_NOTICE_DAYS \* 86_400_000/,
+  );
+  assert.match(
+    read('src/components/legal/legal-doc-page.tsx'),
+    /await versionInForceAt\(doc, version\)/,
+  );
+  assert.match(
+    read('src/components/legal/legal-changes-page.tsx'),
+    /await versionInForceAt\(doc, version\)/,
+  );
+  assert.match(
+    read('src/app/[locale]/(dashboard)/dashboard/(admin)/legal/page.tsx'),
+    /\.in\('delivery_status', \['bounced', 'undeliverable'\]\)/,
+  );
+});
+
+test('LOW · no publishing while terms are pending; disputes triage needs a provider-confirmed notice', () => {
+  assert.match(
+    read('src/app/api/tools/consent/route.ts'),
+    /if \(await termsAcceptancePending\(session\.user\.id\)\)\s*return NextResponse\.json\(\{ ok: false, code: 'TERMS_PENDING' \}/,
+  );
+  const d = read('src/lib/billing/disputes-server.ts');
+  assert.match(
+    d,
+    /\(n\.delivery_status === 'sent' \|\| n\.delivery_status === 'delivered'\) && !!n\.provider_message_id/,
+  );
+  assert.match(d, /\(notices \?\? \[\]\)\.find\(\(n\) => noticeWasSent\(n\)\)/);
 });

@@ -2099,12 +2099,13 @@
           "suscripcion": "Subscription Terms",
           "privacidad": "Privacy Notice"
         },
-        "counts": "Sent: {sent} · in progress: {pending} · failed: {failed} · bounced: {bounced}",
+        "counts": "Sent: {sent} · in progress: {pending} · failed: {failed} · bounced: {bounced} · undeliverable: {undeliverable}",
         "complete": "Every notice went out on {fecha}.",
         "sending": "Sending since {fecha}; people still owed.",
         "notStarted": "Sending hasn’t started.",
         "inForce": "Applies from {fecha}.",
-        "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late)."
+        "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late).",
+        "lost": "{n, plural, one {# person not noticed} other {# people not noticed}} (they stay on their current terms and aren’t asked to accept)"
       },
       "blocks": {
         "title": "Blocked videos ({n})",
