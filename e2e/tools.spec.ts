@@ -103,34 +103,7 @@ test.describe('as pro', () => {
     await expect(page.getByTestId('signals-disclaimer')).toBeVisible();
   });
 
-  test('En vivo: start, switch scene, toggle mic, end with the confirm', async ({ page }, info) => {
-    await page.goto('/app/en-vivo');
-    await expect(page.getByText('OBS conectado')).toBeVisible();
-    const stop = page.getByRole('button', { name: /Terminar transmisión/ });
-    if (await stop.isVisible().catch(() => false)) {
-      await stop.click();
-      await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    }
-    await page.getByRole('button', { name: /Iniciar transmisión/ }).click();
-    await expect(stop).toBeVisible();
-    await page.getByRole('button', { name: /Juego/ }).click();
-    await expect(page.getByRole('button', { name: /Juego/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    const mic = page.getByRole('switch', { name: 'Micrófono' });
-    const before = await mic.getAttribute('aria-checked');
-    await mic.click();
-    await expect(mic).not.toHaveAttribute('aria-checked', before ?? '');
-    await clean(page, info);
-    await stop.click();
-    await expect(page.getByRole('dialog', { name: '¿Terminar tu transmisión?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Seguir' }).last().click();
-    await expect(stop).toBeVisible();
-    await stop.click();
-    await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    await expect(page.getByRole('button', { name: /Iniciar transmisión/ })).toBeVisible();
-  });
+  // En vivo's flow (connect → live → end) lives in e2e/tools-envivo.spec.ts.
 
   test('Asistente: 3 steps, and it always says it is automatic', async ({ page }, info) => {
     await page.goto('/app/herramientas/asistente');
