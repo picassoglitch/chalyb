@@ -245,3 +245,46 @@ test('admin: ARCO deadlines and open notices are "Necesita tu atención" items �
     /const actor = await adminSession\(\);\s*if \(!actor\)/,
   );
 });
+
+// ── #49 review: ARCO answers, guards, evidence ─────────────────────────
+
+import { arcoAnswerEmail, ARCO_DAILY_LIMIT } from '@/lib/legal/arco';
+
+test('MED 7 · an ARCO answer is emailed (outcome, date), notified in-app, kept as a dispatch, shown on the page', () => {
+  const m = arcoAnswerEmail({
+    folio: 'ab12cd34',
+    right: 'cancellation',
+    outcome: 'granted',
+    effectiveBy: '18 de octubre de 2026',
+  });
+  assert.match(m.subject, /folio ab12cd34/);
+  assert.match(m.text, /Resultado: Procede\./);
+  assert.match(m.text, /a más tardar el 18 de octubre de 2026/);
+  const inc = arcoAnswerEmail({
+    folio: 'x',
+    right: 'access',
+    outcome: 'incomplete',
+    effectiveBy: null,
+  });
+  assert.match(inc.text, /Nos falta información/);
+  assert.doesNotMatch(inc.text, /efectiva/);
+  const s = read('src/lib/legal/legal-server.ts');
+  assert.match(s, /kind: 'arco_answer',\s*periodKey: `arco:\$\{id\}`/);
+  assert.match(s, /kind: 'arcoAnswered'/);
+  assert.match(read('src/app/[locale]/(dashboard)/app/settings/arco/page.tsx'), /t\('effectiveBy'/);
+});
+
+test('LOW · ARCO: extension only once and before the deadline; daily limit; no free text in the evidence', () => {
+  const s = read('src/lib/legal/legal-server.ts');
+  assert.match(
+    s,
+    /\.is\('responded_at', null\)\s*\.is\('extended_at', null\)\s*\.gte\('respond_by', now\.toISOString\(\)\)/,
+  );
+  assert.equal(ARCO_DAILY_LIMIT, 5);
+  assert.match(s, /p_ip: `arco:\$\{session\.user\.id\}`/);
+  assert.match(
+    s,
+    /disclosure_text: `Solicitud ARCO \(\$\{input\.right\}\) · folio \$\{String\(data\.id\)\}`/,
+  );
+  assert.doesNotMatch(s, /disclosure_text: disclosure/);
+});

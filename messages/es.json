@@ -1710,6 +1710,10 @@
     "contentRestored": {
       "title": "Restablecimos tu contenido",
       "body": "Tu contra-aviso procedió: el contenido vuelve a estar disponible."
+    },
+    "arcoAnswered": {
+      "title": "Respondimos tu solicitud sobre tus datos",
+      "body": "Folio {folio}. Te enviamos la respuesta por correo; también la ves en Mis datos."
     }
   },
   "admin": {
@@ -2126,14 +2130,16 @@
         "noUser": "No encontramos una cuenta con ese correo.",
         "lookup": "Buscar sus trabajos",
         "pickSource": "Elige el video exacto (o pega el enlace)",
-        "noJobs": "Esta cuenta no tiene trabajos de clips.",
+        "noJobs": "El panel no encontró trabajos de esta cuenta con ese video; puedes retirar con el enlace exacto.",
         "sourceUrl": "Enlace exacto del video",
         "willBlock": "Se bloqueará: {fuente}. Se ocultarán todos sus trabajos hechos con ese video.",
         "badSource": "Ese enlace no se puede normalizar; revisa que sea el enlace del video.",
-        "noJob": "Ningún trabajo de esa cuenta usa ese video.",
         "needReason": "Escribe el motivo del rechazo.",
         "rejectReason": "Motivo del rechazo",
-        "done": "Listo: se ocultaron {n} trabajo(s) y se bloqueó el video."
+        "done": "Listo: se bloqueó el video, se avisó a la persona y se ocultaron {n} trabajo(s) en el panel.",
+        "hubBlind": "El panel no ve los trabajos de esta cuenta (Clips corre en su propia app). Pega el enlace exacto del video: Retirar lo bloquea y avisa a la persona; los clips ya hechos hay que retirarlos también en la herramienta de Clips.",
+        "engineToo": "Retira también los clips ya hechos en la herramienta de Clips.",
+        "tooLong": "Ese enlace es demasiado largo."
       },
       "notices": {
         "title": "Avisos de cambios (≥ 30 días)",
@@ -2149,6 +2155,13 @@
         "notStarted": "Aún no empieza el envío.",
         "inForce": "Aplica desde el {fecha}.",
         "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde)."
+      },
+      "blocks": {
+        "title": "Videos bloqueados ({n})",
+        "none": "No hay videos bloqueados.",
+        "since": "Bloqueado desde el {fecha}",
+        "lift": "Quitar bloqueo",
+        "error": "No se pudo quitar. Intenta de nuevo."
       }
     }
   },
@@ -2452,9 +2465,18 @@
       "errors": {
         "description": "Escribe qué datos y qué necesitas.",
         "correctValue": "Escribe el dato correcto.",
-        "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo."
+        "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo.",
+        "rateLimited": "Ya enviaste varias solicitudes hoy. Inténtalo mañana o escríbenos."
       }
-    }
+    },
+    "outcome": {
+      "granted": "Procede",
+      "partially_granted": "Procede en parte",
+      "denied": "No procede",
+      "incomplete": "Nos falta información"
+    },
+    "effectiveBy": "Se hace efectiva a más tardar el {fecha}.",
+    "answeredWith": "Respondida el {fecha}: {resultado}"
   },
   "takedown": {
     "metaTitle": "Aviso de derechos de autor",

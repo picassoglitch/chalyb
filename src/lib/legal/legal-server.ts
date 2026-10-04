@@ -20,7 +20,15 @@ import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
 import { currentVersion, legalPath, noticeRequired, versionMeta, versionSlug } from './registry';
-import { arcoEffectiveBy, arcoError, arcoRespondBy, type ArcoInput } from './arco';
+import {
+  ARCO_DAILY_LIMIT,
+  arcoAnswerEmail,
+  arcoEffectiveBy,
+  arcoError,
+  arcoRespondBy,
+  type ArcoInput,
+  type ArcoOutcome,
+} from './arco';
 import {
   COUNTER_NOTICE_BUSINESS_DAYS,
   contentFingerprint,
@@ -39,6 +47,7 @@ import {
   termsChangePeriodKey,
 } from './terms-change';
 import { claimNoticeDispatch, finishNoticeDispatch } from './notice-dispatch';
+import { removalDoneText, removalPlan } from './removal-plan';
 import { REACCEPT_DOCS, type ReacceptDoc } from './reaccept';
 
 /** Where ARCO requests and copyright notices land. TODO(owner): Law's
@@ -66,8 +75,34 @@ export async function submitArco(
   const received = new Date();
   const respondBy = arcoRespondBy(received);
   const db = createAdminClient();
+  const { data: limit } = await db.rpc('check_contact_rate_limit', {
+    p_ip: `arco:${session.user.id}`,
+    p_window_seconds: 86_400,
+    p_max_attempts: ARCO_DAILY_LIMIT,
+  });
+  if (limit && (limit as { allowed?: boolean }).allowed === false)
+    return { ok: false, code: 'rateLimited' };
+  const { data, error } = await db
+    .from('arco_requests')
+    .insert({
+      user_id: session.user.id,
+      right_kind: input.right,
+      description: input.description.trim(),
+      data_location: input.dataLocation?.trim() || null,
+      correct_value: input.correctValue?.trim() || null,
+      contact_email: email,
+      received_at: received.toISOString(),
+      respond_by: respondBy.toISOString(),
+    })
+    .select('id')
+    .single();
+  if (error) {
+    console.error('[arco] insert failed', error.message);
+    return { ok: false, code: 'db' };
+  }
+  // The evidence keeps the right and the folio, never the person's own
+  // words (those stay in arco_requests, which is deletable).
   const ctx = await requestContext();
-  const disclosure = `Solicitud ARCO (${input.right}): ${input.description.trim()}`;
   const consent = await recordConsent({
     event_type: 'arco_request_received',
     user_id: session.user.id,
@@ -79,7 +114,7 @@ export async function submitArco(
     locale: locale === 'es' ? 'es-MX' : 'en',
     surface: 'arco_form',
     ui_version: UI_VERSION,
-    disclosure_text: disclosure,
+    disclosure_text: `Solicitud ARCO (${input.right}) · folio ${String(data.id)}`,
     checkbox_text: null,
     checkbox_checked: null,
     button_label: null,
@@ -93,27 +128,9 @@ export async function submitArco(
     reminder_date_utc: respondBy.toISOString(),
     payment_method: null,
     marketing_opt_in: false,
-    details: { right: input.right },
+    details: { right: input.right, request_id: data.id },
   });
-  const { data, error } = await db
-    .from('arco_requests')
-    .insert({
-      user_id: session.user.id,
-      right_kind: input.right,
-      description: input.description.trim(),
-      data_location: input.dataLocation?.trim() || null,
-      correct_value: input.correctValue?.trim() || null,
-      contact_email: email,
-      received_at: received.toISOString(),
-      respond_by: respondBy.toISOString(),
-      consent_id: consent.consent_id,
-    })
-    .select('id')
-    .single();
-  if (error) {
-    console.error('[arco] insert failed', error.message);
-    return { ok: false, code: 'db' };
-  }
+  await db.from('arco_requests').update({ consent_id: consent.consent_id }).eq('id', data.id);
   const fecha = formatFechaLarga(respondBy, 'es');
   await sendEmail({
     to: privacyInbox(),
@@ -147,27 +164,60 @@ export async function submitArco(
   return { ok: true, respondBy: respondBy.toISOString() };
 }
 
+/** Admin: record the answer, then deliver it (email + in-app) and keep the
+ *  dispatch as evidence (7a review of #49, MEDIUM 7). */
 export async function answerArco(
   id: string,
-  outcome: 'granted' | 'partially_granted' | 'denied' | 'incomplete',
+  outcome: ArcoOutcome,
   actorId: string,
 ): Promise<boolean> {
   const now = new Date();
-  const { data, error } = await createAdminClient()
+  const effectiveBy =
+    outcome === 'granted' || outcome === 'partially_granted' ? arcoEffectiveBy(now) : null;
+  const db = createAdminClient();
+  const { data, error } = await db
     .from('arco_requests')
     .update({
       responded_at: now.toISOString(),
       outcome,
-      effective_by:
-        outcome === 'granted' || outcome === 'partially_granted'
-          ? arcoEffectiveBy(now).toISOString()
-          : null,
+      effective_by: effectiveBy?.toISOString() ?? null,
     })
     .eq('id', id)
     .is('responded_at', null)
-    .select('user_id')
+    .select('user_id, contact_email, right_kind')
     .maybeSingle();
   if (error || !data) return false;
+  const folio = id.slice(0, 8);
+  const mail = arcoAnswerEmail({
+    folio,
+    right: data.right_kind as string,
+    outcome,
+    effectiveBy: effectiveBy ? formatFechaLarga(effectiveBy, 'es') : null,
+  });
+  const claimed = await claimNoticeDispatch(db, {
+    userId: data.user_id as string,
+    kind: 'arco_answer',
+    periodKey: `arco:${id}`,
+    templateId: 'arco_answer',
+    templateVersion: '1',
+  }).catch(() => null);
+  if (claimed) {
+    const res = await sendEmail({
+      to: data.contact_email as string,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      replyTo: privacyInbox(),
+    });
+    await finishNoticeDispatch(db, claimed, res);
+  }
+  await addUserNotice({
+    userId: data.user_id as string,
+    kind: 'arcoAnswered',
+    ...(await noticeText('arcoAnswered', { folio })),
+    href: '/app/settings/arco',
+    dedupeKey: `arco-answer:${id}`,
+  }).catch(() => {});
   void logAudit({
     action: 'legal.arco',
     actorId,
@@ -177,22 +227,30 @@ export async function answerArco(
   return true;
 }
 
+/** Admin: the one extension Aviso §5.3 allows, only on an open request
+ *  that isn't extended and isn't overdue. */
 export async function extendArco(id: string, actorId: string): Promise<boolean> {
   const db = createAdminClient();
-  const { data } = await db
+  const now = new Date();
+  const { data: row } = await db
     .from('arco_requests')
-    .select('received_at, extended_at, user_id')
+    .select('received_at')
     .eq('id', id)
     .maybeSingle();
-  if (!data || data.extended_at) return false;
-  const { error } = await db
+  if (!row) return false;
+  const { data } = await db
     .from('arco_requests')
     .update({
-      extended_at: new Date().toISOString(),
-      respond_by: arcoRespondBy(new Date(data.received_at as string), true).toISOString(),
+      extended_at: now.toISOString(),
+      respond_by: arcoRespondBy(new Date(row.received_at as string), true).toISOString(),
     })
-    .eq('id', id);
-  if (error) return false;
+    .eq('id', id)
+    .is('responded_at', null)
+    .is('extended_at', null)
+    .gte('respond_by', now.toISOString())
+    .select('user_id')
+    .maybeSingle();
+  if (!data) return false;
   void logAudit({
     action: 'legal.arco',
     actorId,
@@ -249,13 +307,15 @@ export async function submitTakedown(
 /** Admin, step 1 of a removal: the uploader's account (exact email) and
  *  their clip jobs, each with the normalized source the block would use, so
  *  the admin picks the exact source instead of trusting the notice's text. */
-export async function lookupTakedownTarget(
-  email: string,
-): Promise<
+export async function lookupTakedownTarget(email: string): Promise<
   | {
       ok: true;
       userId: string;
-      jobs: { id: string; sourceUrl: string; normalized: string | null; createdAt: string }[];
+      /** null: the hub can't list this person's jobs (no Clips adapter in
+       *  production); the admin pastes the exact link instead. */
+      jobs:
+        | { id: string; sourceUrl: string; normalized: string | null; createdAt: string }[]
+        | null;
     }
   | { ok: false; code: 'user' }
 > {
@@ -265,19 +325,18 @@ export async function lookupTakedownTarget(
     .eq('email', email.trim().toLowerCase())
     .maybeSingle();
   if (!prof) return { ok: false, code: 'user' };
-  const jobs =
-    (await getClipsAdapter()
-      ?.listJobs(prof.id as string, 200)
-      .catch(() => [])) ?? [];
+  const adapter = getClipsAdapter();
+  const jobs = adapter ? await adapter.listJobs(prof.id as string, 200).catch(() => null) : null;
   return {
     ok: true,
     userId: prof.id as string,
-    jobs: jobs.map((j) => ({
-      id: j.id,
-      sourceUrl: j.sourceUrl,
-      normalized: normalizeContentUrl(j.sourceUrl),
-      createdAt: j.createdAt,
-    })),
+    jobs:
+      jobs?.map((j) => ({
+        id: j.id,
+        sourceUrl: j.sourceUrl,
+        normalized: normalizeContentUrl(j.sourceUrl),
+        createdAt: j.createdAt,
+      })) ?? null,
   };
 }
 
@@ -298,16 +357,22 @@ export async function removeTakedown(
   input: { targetEmail: string; sourceUrl: string },
   actor: { id: string; name: string },
 ): Promise<
-  { ok: true; repeat: boolean; hidden: number; normalized: string } | { ok: false; code: string }
+  | { ok: true; repeat: boolean; hidden: number; engineMustRemove: boolean; normalized: string }
+  | { ok: false; code: string }
 > {
+  if (input.sourceUrl.trim().length > 2000) return { ok: false, code: 'tooLong' };
   const normalized = normalizeContentUrl(input.sourceUrl);
   const fp = contentFingerprint(input.sourceUrl);
   if (!normalized || !fp) return { ok: false, code: 'source' };
   const db = createAdminClient();
   const target = await lookupTakedownTarget(input.targetEmail);
   if (!target.ok) return { ok: false, code: 'user' };
-  const matches = target.jobs.filter((j) => contentFingerprint(j.sourceUrl) === fp);
-  if (!matches.length) return { ok: false, code: 'no_job' };
+  // What the hub can hide depends on whether it sees the jobs; the block
+  // and the notice go ahead either way (removal-plan.ts).
+  const plan = removalPlan(
+    target.jobs?.map((j) => ({ id: j.id, fingerprint: contentFingerprint(j.sourceUrl) })) ?? null,
+    fp,
+  );
   const now = new Date().toISOString();
   const { data: n } = await db
     .from('takedown_notices')
@@ -319,7 +384,7 @@ export async function removeTakedown(
       user_notified_at: now,
       source_url: input.sourceUrl.trim(),
       source_fingerprint: fp,
-      removed_job_count: matches.length,
+      removed_job_count: plan.hideJobIds.length,
     })
     .eq('id', id)
     .eq('status', 'received')
@@ -327,20 +392,31 @@ export async function removeTakedown(
     .maybeSingle();
   // Someone else moved it first (two admins, a double click): stop.
   if (!n) return { ok: false, code: 'state' };
-  await db
-    .from('content_removals')
-    .upsert(
-      matches.map((j) => ({
-        takedown_id: id,
-        user_id: target.userId,
-        job_id: j.id,
-        removed_at: now,
-        restored_at: null,
-      })),
-    );
-  await db
+  if (plan.hideJobIds.length) {
+    const { error } = await db
+      .from('content_removals')
+      .upsert(
+        plan.hideJobIds.map((job) => ({
+          takedown_id: id,
+          user_id: target.userId,
+          job_id: job,
+          removed_at: now,
+          restored_at: null,
+        })),
+      );
+    if (error) {
+      // Never tell the uploader something is hidden when it isn't.
+      console.error('[takedown] hiding jobs failed', error.message);
+      return { ok: false, code: 'db' };
+    }
+  }
+  const { error: blockErr } = await db
     .from('blocked_content')
     .upsert({ fingerprint: fp, kind: 'url', source: normalized, takedown_id: id, lifted_at: null });
+  if (blockErr) {
+    console.error('[takedown] blocking failed', blockErr.message);
+    return { ok: false, code: 'db' };
+  }
 
   const { data: prof } = await db
     .from('profiles')
@@ -367,8 +443,8 @@ export async function removeTakedown(
           `<p>Recibimos un aviso de derechos de autor sobre este contenido (Política de Uso Aceptable §5.2):</p>`,
           `<p><b>${escapeHtml(n.content_identification as string)}</b><br/>${escapeHtml(normalized)}</p>`,
           `<p>Motivo que nos indicaron: ${escapeHtml(n.right_statement as string)}</p>`,
-          `<p>Lo que hicimos: ocultamos ${matches.length === 1 ? 'el trabajo de clips' : `los ${matches.length} trabajos de clips`} hechos con ese video. Ya no aparecen en Mis resultados ni se pueden abrir, descargar ni compartir desde Chalyb, y ese video no se puede volver a subir. Los archivos que ya descargaste o publicaste fuera de Chalyb no los podemos tocar.</p>`,
-          `<p>Si crees que fue un error, responde a este correo con tu <b>contra-aviso</b>: demuestra la titularidad o la autorización que tienes para ese uso, o justifica el uso conforme a la Ley Federal del Derecho de Autor (§5.3). Si procede, volvemos a mostrar tus clips.</p>`,
+          `<p>Lo que hicimos: ${escapeHtml(removalDoneText(plan))}</p>`,
+          `<p>Si crees que fue un error, responde a este correo con tu <b>contra-aviso</b>: demuestra la titularidad o la autorización que tienes para ese uso, o justifica el uso conforme a la Ley Federal del Derecho de Autor (§5.3). Si procede, quitamos el bloqueo y volvemos a mostrar tus clips.</p>`,
         ].join(''),
       }),
       replyTo: copyrightInbox(),
@@ -385,7 +461,13 @@ export async function removeTakedown(
     action: 'legal.takedown',
     actorId: actor.id,
     targetUserId: target.userId,
-    metadata: { id, step: 'removed', fingerprint: fp, hidden_jobs: matches.map((j) => j.id) },
+    metadata: {
+      id,
+      step: 'removed',
+      fingerprint: fp,
+      hidden_jobs: plan.hideJobIds,
+      engine_must_remove: plan.engineMustRemove,
+    },
   });
   if (repeat)
     void logAudit({
@@ -394,7 +476,13 @@ export async function removeTakedown(
       targetUserId: target.userId,
       metadata: { id },
     });
-  return { ok: true, repeat, hidden: matches.length, normalized };
+  return {
+    ok: true,
+    repeat,
+    hidden: plan.hideJobIds.length,
+    engineMustRemove: plan.engineMustRemove,
+    normalized,
+  };
 }
 
 /** Admin: the uploader's counter-notice (§5.3). The claimant has 15
@@ -526,6 +614,27 @@ async function restoreTakedown(id: string, targetUserId: string | null): Promise
   return true;
 }
 
+/** Admin: lift a re-upload block by hand (a mistaken removal, a licence
+ *  shown later). The notice and its history stay; the jobs it hid stay
+ *  hidden unless the notice is restored. */
+export async function liftBlock(fingerprint: string, actorId: string): Promise<boolean> {
+  const { data } = await createAdminClient()
+    .from('blocked_content')
+    .update({ lifted_at: new Date().toISOString() })
+    .eq('fingerprint', fingerprint)
+    .is('lifted_at', null)
+    .select('fingerprint, takedown_id')
+    .maybeSingle();
+  if (!data) return false;
+  void logAudit({
+    action: 'legal.takedown',
+    actorId,
+    targetUserId: actorId,
+    metadata: { step: 'block_lifted', fingerprint, takedown_id: data.takedown_id },
+  });
+  return true;
+}
+
 /** Re-upload blocking (§5.2.3): the source of a new job, checked before it
  *  is created. Fails open on a database error (logged), never on a match. */
 export async function isContentBlocked(sourceUrl: string): Promise<boolean> {
@@ -562,15 +671,49 @@ export interface LegalCronReport {
 
 /** aceptacion-ux §8: the email ≥ 30 days before a relevant change to any
  *  document people re-accept (Términos, Suscripción, Privacidad). */
+/** At most this many notices per cron run; the rest go out the next day. */
+export const NOTICE_BATCH = 2000;
+/** Pause between sends (~8 a second), under the email provider's rate. */
+export const NOTICE_THROTTLE_MS = 125;
+
+interface NoticeBudget {
+  /** Epoch ms after which no new send starts. */
+  deadline: number;
+  /** Sends left in this run, shared by every document. */
+  maxSends: number;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** aceptacion-ux §8: the email ≥ 30 days before a relevant change to any
+ *  document people re-accept (Términos, Suscripción, Privacidad). One
+ *  document failing is reported and the next one still runs. */
 export async function runTermsChangeNotices(
   now = new Date(),
+  budget: NoticeBudget = { deadline: Date.now() + 240_000, maxSends: NOTICE_BATCH },
 ): Promise<LegalCronReport['termsChange']> {
-  const reports = [];
-  for (const doc of REACCEPT_DOCS) reports.push(await runDocChangeNotices(doc, now));
+  const left = { ...budget };
+  const reports: LegalCronReport['termsChange'] = [];
+  for (const doc of REACCEPT_DOCS) {
+    try {
+      reports.push(await runDocChangeNotices(doc, now, left));
+    } catch (e) {
+      console.error(`[legal] ${doc} notices failed`, e instanceof Error ? e.message : e);
+      reports.push({
+        doc,
+        decision: 'error',
+        version: currentVersion(doc),
+        sent: 0,
+        skipped: 0,
+        failed: 0,
+        late: false,
+      });
+    }
+  }
   return reports;
 }
 
-async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
+async function runDocChangeNotices(doc: ReacceptDoc, now: Date, budget: NoticeBudget) {
   const version = currentVersion(doc);
   const meta = versionMeta(doc, version);
   const db = createAdminClient();
@@ -628,6 +771,10 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
     if (error) throw new Error(error.message);
     const people = (page ?? []) as { id: string; email: string; full_name: string | null }[];
     for (const p of people) {
+      if (budget.maxSends <= 0 || Date.now() >= budget.deadline) {
+        report.decision = 'paused';
+        break;
+      }
       const mail = termsChangeEmail({
         ...vars,
         nombre: p.full_name?.split(' ')[0] || p.email.split('@')[0]!,
@@ -651,10 +798,14 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
       });
       if ((await finishNoticeDispatch(db, claimed, res)) === 'sent') report.sent += 1;
       else report.failed += 1;
+      budget.maxSends -= 1;
+      await sleep(NOTICE_THROTTLE_MS);
     }
-    if (people.length < 200) break;
+    if (report.decision === 'paused' || people.length < 200) break;
     after = people[people.length - 1]!.id;
   }
+  // Out of time or batch: the rest go out on the next run; not complete.
+  if (report.decision === 'paused') return report;
   // Complete once nobody is owed the notice any more (failed sends are
   // owed again); the version then applies 30 days later at the earliest.
   const { data: left } = await db.rpc('legal_change_notice_recipients', {
@@ -707,10 +858,16 @@ export async function runCounterNoticeRestores(now = new Date()): Promise<{ rest
   return { restored };
 }
 
-/** Aviso §9.1: non-compliance marks go 72 months after the incident. */
-export async function runRetention(now = new Date()): Promise<Record<string, unknown> | null> {
+/** Aviso §9.1: non-compliance marks go 72 months after the incident (the
+ *  chargeback's opened_at). `dryRun` counts without deleting. The SQL
+ *  function audits every active restriction it lifts. */
+export async function runRetention(
+  now = new Date(),
+  dryRun = false,
+): Promise<Record<string, unknown> | null> {
   const { data, error } = await createAdminClient().rpc('legal_retention_purge', {
     p_now: now.toISOString(),
+    p_dry_run: dryRun,
   });
   if (error) {
     console.error('[legal] retention purge failed', error.message);

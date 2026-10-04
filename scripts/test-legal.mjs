@@ -62,6 +62,7 @@ const SUITE = [
   'legal-p6',
   'legal-notices',
   'legal-takedown',
+  'legal-cron',
   'release-gate',
   'trial-7d',
   'price-rules',

@@ -1710,6 +1710,10 @@
     "contentRestored": {
       "title": "We restored your content",
       "body": "Your counter-notice was upheld: the content is available again."
+    },
+    "arcoAnswered": {
+      "title": "We answered your request about your data",
+      "body": "Reference {folio}. We emailed you the answer; you can also see it in My data."
     }
   },
   "admin": {
@@ -2126,14 +2130,16 @@
         "noUser": "No account with that email.",
         "lookup": "Find their jobs",
         "pickSource": "Pick the exact video (or paste the link)",
-        "noJobs": "This account has no clip jobs.",
+        "noJobs": "The panel found no job of this account with that video; you can still remove with the exact link.",
         "sourceUrl": "Exact video link",
         "willBlock": "Will block: {fuente}. Every job of theirs made from that video is hidden.",
         "badSource": "That link can’t be normalized; check it’s the video’s link.",
-        "noJob": "No job of that account uses that video.",
         "needReason": "Type the reason for rejecting.",
         "rejectReason": "Reason for rejecting",
-        "done": "Done: {n} job(s) hidden and the video blocked."
+        "done": "Done: the video is blocked, the person was notified, and {n} job(s) were hidden in the panel.",
+        "hubBlind": "The panel can’t see this account’s jobs (Clips runs in its own app). Paste the exact video link: Remove blocks it and notifies the person; clips already made must also be removed in the Clips tool.",
+        "engineToo": "Also remove the clips already made in the Clips tool.",
+        "tooLong": "That link is too long."
       },
       "notices": {
         "title": "Change notices (≥ 30 days)",
@@ -2149,6 +2155,13 @@
         "notStarted": "Sending hasn’t started.",
         "inForce": "Applies from {fecha}.",
         "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late)."
+      },
+      "blocks": {
+        "title": "Blocked videos ({n})",
+        "none": "No blocked videos.",
+        "since": "Blocked since {fecha}",
+        "lift": "Lift block",
+        "error": "Couldn’t lift it. Try again."
       }
     }
   },
@@ -2452,9 +2465,18 @@
       "errors": {
         "description": "Tell us which data and what you need.",
         "correctValue": "Enter the correct value.",
-        "send": "We couldn’t send your request. Please try again."
+        "send": "We couldn’t send your request. Please try again.",
+        "rateLimited": "You sent several requests today. Try tomorrow or write to us."
       }
-    }
+    },
+    "outcome": {
+      "granted": "Granted",
+      "partially_granted": "Partly granted",
+      "denied": "Denied",
+      "incomplete": "Missing information"
+    },
+    "effectiveBy": "Carried out by {fecha} at the latest.",
+    "answeredWith": "Answered on {fecha}: {resultado}"
   },
   "takedown": {
     "metaTitle": "Copyright notice",

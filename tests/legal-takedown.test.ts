@@ -33,22 +33,25 @@ test('H3 · a removed job is hidden from Mis resultados, its page (downloads, sh
 
 test('H3 · removal stores the hidden job ids; restore undoes exactly that', () => {
   const s = server();
-  assert.match(s, /\.from\('content_removals'\)\s*\.upsert\(\s*matches\.map\(/);
-  assert.match(s, /removed_job_count: matches\.length/);
+  assert.match(s, /\.from\('content_removals'\)\s*\.upsert\(\s*plan\.hideJobIds\.map\(/);
+  assert.match(s, /removed_job_count: plan\.hideJobIds\.length/);
   assert.match(
     s,
     /\.from\('content_removals'\)\s*\.update\(\{ restored_at: now \}\)\s*\.eq\('takedown_id', id\)/,
   );
-  // The email says what was done, not that content was deleted.
-  assert.match(s, /Lo que hicimos: ocultamos/);
-  assert.match(s, /no los podemos tocar/);
+  // The email says what was done (removalDoneText), not that content was deleted.
+  assert.match(s, /Lo que hicimos: \$\{escapeHtml\(removalDoneText\(plan\)\)\}/);
 });
 
-test('H4 · the block uses an exact source that normalizes and matches one of the uploader’s jobs', () => {
+test('H4 · the block uses an exact source that normalizes (and hides the uploader’s matching jobs when the hub sees them)', () => {
   const s = server();
   assert.match(s, /input: \{ targetEmail: string; sourceUrl: string \}/);
   assert.match(s, /if \(!normalized \|\| !fp\) return \{ ok: false, code: 'source' \};/);
-  assert.match(s, /if \(!matches\.length\) return \{ ok: false, code: 'no_job' \};/);
+  assert.doesNotMatch(
+    s,
+    /code: 'no_job'/,
+    'a matching job is never required (prod has no adapter)',
+  );
   assert.doesNotMatch(s, /contentFingerprint\(n\.content_location/, 'never the notice’s free text');
   const api = read('src/app/api/admin/legal/route.ts');
   assert.match(api, /b\.action === 'lookup'/);
@@ -82,5 +85,60 @@ test('LOW · reject needs a reason, in its own field', () => {
   assert.match(
     read('src/app/api/admin/legal/route.ts'),
     /str\('reason'\)\.trim\(\) \? await rejectTakedown/,
+  );
+});
+
+test('LOW · an admin can lift a block; the notice and its hidden jobs stay as they were', () => {
+  const s = server();
+  assert.match(
+    s,
+    /\.from\('blocked_content'\)\s*\.update\(\{ lifted_at: new Date\(\)\.toISOString\(\) \}\)\s*\.eq\('fingerprint', fingerprint\)\s*\.is\('lifted_at', null\)/,
+  );
+  const api = read('src/app/api/admin/legal/route.ts');
+  assert.match(api, /b\.kind === 'block' && b\.action === 'lift'/);
+  assert.match(api, /\/\^\[0-9a-f\]\{64\}\$\/\.test\(b\.fingerprint\)/);
+  assert.match(
+    read('src/app/[locale]/(dashboard)/dashboard/(admin)/legal/page.tsx'),
+    /<LiftBlockButton fingerprint=/,
+  );
+});
+
+import { removalDoneText, removalPlan } from '@/lib/legal/removal-plan';
+
+test('regression · with no Clips adapter (production) a removal still blocks and notifies', () => {
+  const blind = removalPlan(null, 'fp1');
+  assert.deepEqual(blind, { hideJobIds: [], hubListsJobs: false, engineMustRemove: true });
+  const text = removalDoneText(blind);
+  assert.match(text, /Bloqueamos ese video/);
+  assert.match(text, /en la herramienta de Clips también se retiran/);
+  assert.doesNotMatch(text, /Ocultamos/, 'never claims the hub hid something it can’t see');
+  const seen = removalPlan(
+    [
+      { id: 'j1', fingerprint: 'fp1' },
+      { id: 'j2', fingerprint: 'fp2' },
+      { id: 'j3', fingerprint: 'fp1' },
+    ],
+    'fp1',
+  );
+  assert.deepEqual(seen, { hideJobIds: ['j1', 'j3'], hubListsJobs: true, engineMustRemove: false });
+  assert.match(removalDoneText(seen), /Ocultamos los 2 trabajos/);
+  assert.deepEqual(removalPlan([{ id: 'j9', fingerprint: 'other' }], 'fp1').engineMustRemove, true);
+  // lookup reports null jobs when there is no adapter, instead of [] (which read as "no match").
+  assert.match(
+    server(),
+    /const jobs = adapter \? await adapter\.listJobs\(prof\.id as string, 200\)\.catch\(\(\) => null\) : null;/,
+  );
+});
+
+test('LOW · storage failures never email "hidden"; an over-long link is its own error', () => {
+  const s = server();
+  assert.match(
+    s,
+    /if \(error\) \{\s*\/\/ Never tell the uploader something is hidden when it isn't\.[\s\S]{0,120}return \{ ok: false, code: 'db' \};/,
+  );
+  assert.match(s, /if \(blockErr\) \{[\s\S]{0,120}return \{ ok: false, code: 'db' \};/);
+  assert.match(
+    s,
+    /if \(input\.sourceUrl\.trim\(\)\.length > 2000\) return \{ ok: false, code: 'tooLong' \};/,
   );
 });

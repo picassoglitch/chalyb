@@ -56,8 +56,21 @@ export function legalPath(doc: LegalDoc): string {
 export function currentVersion(doc: LegalDoc): string {
   return REGISTRY[doc].current;
 }
+/**
+ * registry.json `effective` as an instant. A full timestamp is used as is; a
+ * bare date ("2026-12-01") means 00:00 in Mexico City (UTC−6 all year since
+ * 2022), not UTC midnight, which would be 18:00 the day before there.
+ */
+export function effectiveInstant(raw: string | null): string | null {
+  if (!raw) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return `${raw}T06:00:00.000Z`;
+  const t = Date.parse(raw);
+  return Number.isNaN(t) ? null : new Date(t).toISOString();
+}
+
 export function versionMeta(doc: LegalDoc, version = currentVersion(doc)): VersionMeta | null {
-  return REGISTRY[doc].versions[version] ?? null;
+  const m = REGISTRY[doc].versions[version];
+  return m ? { ...m, effective: effectiveInstant(m.effective) } : null;
 }
 export function listVersions(doc: LegalDoc): string[] {
   return Object.keys(REGISTRY[doc].versions).filter((v) => archived(doc, v));

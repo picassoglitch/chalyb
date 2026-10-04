@@ -41,7 +41,9 @@ export function ArcoForm({ email }: { email: string }) {
       });
       const j = (await res.json().catch(() => ({}))) as { ok?: boolean; code?: string };
       if (!res.ok || !j.ok) {
-        setError(j.code === 'description' || j.code === 'correctValue' ? j.code : 'send');
+        setError(
+          ['description', 'correctValue', 'rateLimited'].includes(j.code ?? '') ? j.code! : 'send',
+        );
         return;
       }
       setDone(true);
