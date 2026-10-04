@@ -233,12 +233,12 @@ test.describe('as pro', () => {
   });
 
   test('Mis resultados: in progress, search and no match', async ({ page }, info) => {
-    await page.goto('/app/clips');
+    await page.goto('/app/clips/nuevo');
     await page.getByLabel(/Pega el enlace/).fill('https://www.youtube.com/watch?v=resultados');
     await page.getByRole('button', { name: 'Continuar' }).click();
     await page.getByRole('button', { name: 'Crear mis clips' }).click();
     // Wait for the job to exist before leaving the page.
-    await expect(page).toHaveURL(/\/app\/clips\/[^/?]+$/);
+    await expect(page).toHaveURL(/\/app\/clips\/trabajo\/[^/?]+$/);
     await page.goto('/app/resultados');
     await expect(page).toHaveURL(/\/app\/history$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Mis resultados' })).toBeVisible();

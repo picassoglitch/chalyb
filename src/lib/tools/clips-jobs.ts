@@ -31,7 +31,7 @@ function policyDeps(adapter: ClipsAdapter): JobPolicyDeps {
         userId: job.userId,
         kind: 'clipsReady',
         ...(await noticeText('clipsReady', { n: job.clips.length })),
-        href: `/app/clips/${encodeURIComponent(job.id)}`,
+        href: `/app/clips/trabajo/${encodeURIComponent(job.id)}`,
         dedupeKey: `clips:${job.id}`,
       });
     },
@@ -59,4 +59,17 @@ export async function loadClipJob(userId: string, jobId: string): Promise<ClipJo
   const adapter = getClipsAdapter();
   if (!adapter) return null;
   return refreshClipJob(policyDeps(adapter), userId, jobId);
+}
+
+/** The user's jobs for Clips' home, newest first. Unfinished ones re-run the
+ *  job policy (automatic retries, credits once, failures logged), exactly
+ *  like opening each job's screen would. */
+export async function listClipJobs(userId: string, limit = 20): Promise<ClipJob[]> {
+  const adapter = getClipsAdapter();
+  if (!adapter) return [];
+  const deps = policyDeps(adapter);
+  const jobs = await adapter.listJobs(userId, limit);
+  return Promise.all(
+    jobs.map(async (j) => (j.settled ? j : ((await refreshClipJob(deps, userId, j.id)) ?? j))),
+  );
 }

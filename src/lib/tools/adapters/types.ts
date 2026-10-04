@@ -52,6 +52,11 @@ export interface ClipJob {
   /** Moments found so far, once known ("Encontramos {n}"). */
   momentsFound: number | null;
   clips: Clip[];
+  /** A short name for the video when the engine knows it ("Torneo del
+   *  sábado"); screens fall back to the platform name. */
+  title?: string;
+  /** The engine's estimate of minutes left while working; never invented. */
+  etaMinutes?: number;
   /** How many times the job has been submitted (1 + automatic retries). */
   attempts: number;
   /** Whether the hub has applied its policy to the finished job: charged
@@ -87,6 +92,76 @@ export interface ClipsCapabilities {
   supportsConnect: boolean;
   /** Whether a finished job uses no credits when it fails (P0 rule). */
   confirmsNoChargeOnFailure: boolean;
+  /** Clip editing in the detail screen (title, captions, trim, format). */
+  editClips: boolean;
+  /** "Encuadre: Centro automático / Seguir a la persona". */
+  framing: boolean;
+  /** "Acceso API" (keys for the professional plan). */
+  apiAccess: boolean;
+}
+
+// ── Clips inside the app (WS-11, TOOLS-SPEC §1.3 / §4) ─────────────────
+export const CAPTION_PRESETS = ['clasico', 'amarillo', 'fondo'] as const;
+export type CaptionPreset = (typeof CAPTION_PRESETS)[number];
+
+export const SOCIAL_PLATFORMS = ['youtube', 'twitch', 'tiktok', 'kick', 'facebook'] as const;
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
+export interface ClipTrim {
+  startS: number;
+  endS: number;
+}
+
+/** One finished clip, with the person's edits applied. The original is
+ *  never deleted: edits re-render a copy (§1.3 PATCH /clips/{id}). */
+export interface ClipDetail {
+  id: string;
+  jobId: string;
+  title: string;
+  /** Length of the moment the engine cut (the trim can't go past it). */
+  sourceDurationSec: number;
+  format: ClipFormat;
+  captionsOn: boolean;
+  trim: ClipTrim;
+  createdAt: string;
+  /** Same-tab download (Content-Disposition: attachment). */
+  downloadUrl: string;
+  thumbUrl: string | null;
+  previewUrl: string | null;
+}
+
+export interface ClipPatch {
+  title?: string;
+  captionsOn?: boolean;
+  trim?: ClipTrim;
+  format?: ClipFormat;
+}
+
+/** Ajustes de Clips (§4.3): used for the person's next clips. */
+export interface ClipsSettings {
+  captionsOn: boolean;
+  captionLang: 'es' | 'en';
+  captionPreset: CaptionPreset;
+  watermarkOn: boolean;
+  /** "auto" or a fixed 15–60 s length. */
+  duration: 'auto' | number;
+  framing: 'center' | 'follow';
+}
+
+export const DEFAULT_CLIPS_SETTINGS: ClipsSettings = {
+  captionsOn: true,
+  captionLang: 'es',
+  captionPreset: 'amarillo',
+  watermarkOn: false,
+  duration: 'auto',
+  framing: 'center',
+};
+
+export interface ConnectedAccount {
+  platform: SocialPlatform;
+  /** "@MariaEnVivo" when connected. */
+  handle: string | null;
+  connected: boolean;
 }
 
 export interface CreateClipJobInput {
@@ -114,4 +189,17 @@ export interface ClipsAdapter {
    *  true only for the one call that flipped it, so concurrent readers can't
    *  charge twice. */
   markSettled(userId: string, jobId: string): Promise<boolean>;
+
+  // Clip level (WS-11). Null when the clip doesn't exist or isn't theirs.
+  /** The user's finished clips, newest first. */
+  listClips(userId: string, limit?: number): Promise<ClipDetail[]>;
+  getClip(userId: string, clipId: string): Promise<ClipDetail | null>;
+  patchClip(userId: string, clipId: string, patch: ClipPatch): Promise<ClipDetail | null>;
+  getSettings(userId: string): Promise<ClipsSettings>;
+  saveSettings(userId: string, settings: ClipsSettings): Promise<void>;
+  /** Accounts the person connected. Empty without supportsConnect. */
+  accounts(userId: string): Promise<ConnectedAccount[]>;
+  /** Where the same-tab OAuth starts; null when the engine can't connect. */
+  connectUrl(userId: string, platform: SocialPlatform, returnTo: string): Promise<string | null>;
+  publishClip(userId: string, clipId: string, platform: SocialPlatform): Promise<{ ok: boolean }>;
 }

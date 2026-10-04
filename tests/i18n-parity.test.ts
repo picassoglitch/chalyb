@@ -52,6 +52,10 @@ const SAME_OK_KEYS = new Set([
   'clips.s2.formats.horizontal.detail', // "Horizontal"
   'workspace.pages.fallback.sub', // empty
   'clips.done.thumbAlt', // "Clip: {title}"
+  'clipsTool.home.row.step', // "{paso}…"
+  'clipsTool.format.vertical', // "Vertical"
+  'clipsTool.format.horizontal', // "Horizontal"
+  'clipsTool.mine.count', // "{n, plural, one {# clip} other {# clips}}"
   'invest.s1.exchange', // "Exchange"
   'results.clipsTitle', // "{n} clips"
   'admin.more.models', // "AI Models"
