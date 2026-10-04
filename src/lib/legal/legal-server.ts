@@ -48,6 +48,7 @@ import {
   takedownTooLong,
   type TakedownInput,
 } from './takedown';
+import type { TakedownEvidence } from './takedown-http';
 import {
   TERMS_CHANGE_NOTICE_DAYS,
   undeliverableAlertDue,
@@ -327,6 +328,8 @@ export async function extendArco(id: string, actorId: string): Promise<boolean> 
 
 export async function submitTakedown(
   input: TakedownInput,
+  /** Hashed IP and user agent of the request (takedown-http.ts, 7a MED 6). */
+  evidence?: TakedownEvidence,
 ): Promise<{ ok: true; id: string } | { ok: false; code: string; fields?: string[] }> {
   const missing = takedownMissing(input);
   if (missing.length) return { ok: false, code: 'missing', fields: missing };
@@ -342,6 +345,8 @@ export async function submitTakedown(
       work_description: input.workDescription?.trim() || null,
       ownership_evidence: input.ownershipEvidence?.trim() || null,
       declared_truthful: input.declaredTruthful === true,
+      claimant_ip_hash: evidence?.ipHash ?? null,
+      claimant_user_agent: evidence?.userAgent ?? null,
     })
     .select('id')
     .single();

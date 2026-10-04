@@ -4,8 +4,15 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { contentFingerprint, normalizeContentUrl } from '@/lib/legal/takedown';
 import { checkSourceUrl } from '@/lib/tools/adapters/run-job';
+import { handleTakedownPost, readBodyCapped, TAKEDOWN_MAX_BYTES } from '@/lib/legal/takedown-http';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 // ---------- MED 5 · one fingerprint per video, however the link is written ----------
 
@@ -95,4 +102,117 @@ test('MED 5 · every YouTube link the upload accepts maps to the same fingerprin
     if (!checked.ok) continue; // the upload refuses it, so it can't dodge the block
     assert.equal(normalizeContentUrl(checked.url), YT, `upload ${v} → ${checked.url}`);
   }
+});
+
+// ---------- MED 6 · the public endpoint: byte cap, rate limits, evidence ----------
+
+const NOTICE = {
+  claimantName: 'Titular',
+  claimantContact: 'Titular@Example.com ',
+  contentIdentification: 'Mi canción',
+  rightStatement: 'Soy el autor',
+  contentLocation: 'https://youtu.be/dQw4w9WgXcQ',
+};
+
+function req(body: string | ReadableStream<Uint8Array>, headers: Record<string, string> = {}) {
+  return new Request('https://www.chalyb.com/api/legal/takedown', {
+    method: 'POST',
+    body,
+    headers: { 'content-type': 'application/json', ...headers },
+    // A stream body needs half-duplex in Node's fetch.
+    ...(typeof body === 'string' ? {} : { duplex: 'half' }),
+  } as RequestInit);
+}
+
+/** A chunked body that never says how long it is (no content-length). */
+function chunked(total: number, chunk = 8_192): ReadableStream<Uint8Array> {
+  let sent = 0;
+  return new ReadableStream({
+    pull(c) {
+      if (sent >= total) return c.close();
+      const n = Math.min(chunk, total - sent);
+      sent += n;
+      c.enqueue(new Uint8Array(n).fill(0x61));
+    },
+  });
+}
+
+function deps(limits: Record<string, boolean> = {}) {
+  const calls = { rate: [] as string[], submitted: [] as unknown[] };
+  return {
+    calls,
+    d: {
+      rateLimit: async (key: string) => {
+        calls.rate.push(key);
+        return limits[key] ?? true;
+      },
+      submit: async (input: unknown, evidence: unknown) => {
+        calls.submitted.push({ input, evidence });
+        return { ok: true as const, id: 'n1' };
+      },
+    },
+  };
+}
+
+test('MED 6 · a chunked body past the cap is cut, whatever content-length says', async () => {
+  assert.equal(
+    await readBodyCapped(req(chunked(TAKEDOWN_MAX_BYTES + 1)), TAKEDOWN_MAX_BYTES),
+    null,
+  );
+  assert.equal((await readBodyCapped(req('{"a":1}'), TAKEDOWN_MAX_BYTES))!, '{"a":1}');
+  const { d, calls } = deps();
+  const lying = req(chunked(TAKEDOWN_MAX_BYTES * 4), { 'content-length': '10' });
+  const r = await handleTakedownPost(lying, d);
+  assert.equal(r.status, 413);
+  assert.equal(calls.submitted.length, 0);
+});
+
+test('MED 6 · rate limited per IP and per claimant contact', async () => {
+  const ip = { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' };
+  {
+    const { d, calls } = deps();
+    const r = await handleTakedownPost(req(JSON.stringify(NOTICE), ip), d);
+    assert.equal(r.status, 200);
+    assert.deepEqual(calls.rate, [
+      'takedown:ip:203.0.113.7',
+      'takedown:contact:titular@example.com',
+    ]);
+  }
+  for (const blocked of ['takedown:ip:203.0.113.7', 'takedown:contact:titular@example.com']) {
+    const { d, calls } = deps({ [blocked]: false });
+    const r = await handleTakedownPost(req(JSON.stringify(NOTICE), ip), d);
+    assert.equal(r.status, 429, blocked);
+    assert.equal((r.body as { code: string }).code, 'rateLimited');
+    assert.equal(calls.submitted.length, 0, blocked);
+  }
+  // A form with a missing field doesn't use up the claimant's attempts.
+  const { d, calls } = deps();
+  const r = await handleTakedownPost(req(JSON.stringify({ ...NOTICE, rightStatement: '' }), ip), d);
+  assert.equal(r.status, 422);
+  assert.deepEqual(calls.rate, []);
+});
+
+test('MED 6 · the notice stores a hashed IP and the user agent as evidence', async () => {
+  const { d, calls } = deps();
+  await handleTakedownPost(
+    req(JSON.stringify(NOTICE), { 'x-forwarded-for': '203.0.113.7', 'user-agent': 'UA/1.0' }),
+    d,
+  );
+  const { evidence } = calls.submitted[0] as { evidence: { ipHash: string; userAgent: string } };
+  assert.equal(evidence.userAgent, 'UA/1.0');
+  assert.match(evidence.ipHash, /^[0-9a-f]{64}$/);
+  assert.ok(!JSON.stringify(calls.submitted).includes('203.0.113.7'), 'the raw IP is never stored');
+  assert.equal(
+    evidence.ipHash,
+    createHash('sha256').update('takedown-evidence:203.0.113.7').digest('hex'),
+  );
+});
+
+test('MED 6 · the route uses the handler with the durable limiter; migration 0059 adds the columns', () => {
+  const route = readFileSync(join(ROOT, 'src/app/api/legal/takedown/route.ts'), 'utf8');
+  assert.match(route, /handleTakedownPost\(/);
+  assert.match(route, /check_contact_rate_limit/);
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/0059_takedown_evidence.sql'), 'utf8');
+  assert.match(sql, /add column if not exists claimant_ip_hash text/);
+  assert.match(sql, /add column if not exists claimant_user_agent text/);
 });
