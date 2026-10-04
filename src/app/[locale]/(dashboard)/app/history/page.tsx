@@ -5,7 +5,6 @@ import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
 import { collectResults } from '@/lib/results/collect';
-import { hubRunsTool } from '@/lib/tools/registry';
 import { toolHref } from '@/lib/tools/routes';
 import { StateBlock } from '@/components/ui/primitives';
 import { ResultsList } from '@/components/app/results-list';
@@ -39,7 +38,7 @@ export default async function ResultadosPage({ params }: { params: Promise<{ loc
           icon={<Inbox />}
           title={t('empty')}
           body={t('emptyBody')}
-          action={clipsIncluded ? { href: toolHref('chalybclip', hubRunsTool('chalybclip')), label: t('emptyCta') } : undefined}
+          action={clipsIncluded ? { href: toolHref('chalybclip'), label: t('emptyCta') } : undefined}
         />
       ) : (
         <ResultsList items={items} toolNames={ENGINE_DISPLAY_NAMES} />

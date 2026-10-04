@@ -30,8 +30,14 @@ const MODERN = new Set([
   '/app/avisos',
 ]);
 
-/** Tool flows (P3): focus layout like Clips. */
-const WIZARD = /^\/app\/(clips|prueba|senales|en-vivo|herramientas\/[^/]+)(\/|$)/;
+/** Step-by-step flows: focus layout, no navigation. The Clips wizard
+ *  (nuevo → formato → trabajo), the first Señales activation, the trial
+ *  path and the tools outside the registry. */
+const WIZARD =
+  /^\/app\/(clips\/nuevo|clips\/trabajo|senales\/empezar|prueba|herramientas\/[^/]+)(\/|$)/;
+
+/** Inside a tool (TOOLS-SPEC §3 ToolShell): the sidebar stays. */
+const TOOL = /^\/app\/(clips|senales|en-vivo)(\/|$)/;
 
 /** Strip a leading /en (the default locale is unprefixed) and trailing slash. */
 export function normalizeAppPath(pathname: string): string {
@@ -43,7 +49,7 @@ export function shellModeFor(pathname: string): ShellMode {
   const p = normalizeAppPath(pathname);
   if (WIZARD.test(p)) return 'wizard';
   if (p === '/app/billing/cambiar' || p === '/app/billing/tarjeta') return 'wizard';
-  if (MODERN.has(p) || /^\/app\/engines\/[^/]+$/.test(p)) return 'modern';
+  if (MODERN.has(p) || TOOL.test(p)) return 'modern';
   return 'legacy';
 }
 

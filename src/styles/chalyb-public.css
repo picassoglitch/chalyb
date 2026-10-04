@@ -725,6 +725,13 @@ body:has(.pub-consent) {
 }
 /* In the app on phones, sit above the bottom tab bar so navigation stays
    usable while the visitor decides. */
+/* F6: inside the app on desktop, only across the content area: the sidebar
+   stays uncovered and usable. */
+@media (min-width: 900px) {
+  body:has(.ch-side) .chalyb-app.pub-consent {
+    left: 272px;
+  }
+}
 @media (max-width: 899px) {
   body:has(.ch-tabs) .chalyb-app.pub-consent {
     bottom: calc(88px + env(safe-area-inset-bottom));

@@ -8,22 +8,30 @@ import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { submitClips } from './clips-jobs';
+import { getClipsAdapter } from './adapters/clips';
 import { checkSourceUrl } from './adapters/run-job';
 import { extraLinks, parseClipOptions } from './clips-options';
-import { CLIP_COUNTS, CLIP_FORMATS, type ClipCount, type ClipFormat } from './adapters/types';
+import {
+  CLIP_COUNTS,
+  CLIP_FORMATS,
+  manualRetryAllowed,
+  type ClipCount,
+  type ClipFormat,
+} from './adapters/types';
+import { logAudit } from '@/lib/audit/log';
 
 export async function createClipJob(formData: FormData): Promise<void> {
   const locale = await getLocale();
   const session = await getSessionUser();
-  if (!session) return redirect({ href: '/sign-in?next=/app/clips', locale });
+  if (!session) return redirect({ href: '/sign-in?next=/app/clips/nuevo', locale });
 
   const entitlements = await getEntitlements(session);
   if (entitlements.tools.chalybclip?.state !== 'included') {
-    return redirect({ href: '/app/engines/chalybclip', locale });
+    return redirect({ href: '/app/clips', locale });
   }
 
   const link = checkSourceUrl(String(formData.get('link') ?? ''));
-  if (!link.ok) return redirect({ href: `/app/clips?error=${link.reason}`, locale });
+  if (!link.ok) return redirect({ href: `/app/clips/nuevo?error=${link.reason}`, locale });
 
   const formatRaw = String(formData.get('format') ?? 'vertical');
   const format: ClipFormat = (CLIP_FORMATS as readonly string[]).includes(formatRaw)
@@ -37,7 +45,7 @@ export async function createClipJob(formData: FormData): Promise<void> {
   const options = parseClipOptions((k) => formData.get(k));
   const result = await submitClips({ userId: session.user.id, sourceUrl: link.url, format, count, options });
   if (!result) return redirect({ href: '/app/clips', locale });
-  if (!result.ok) return redirect({ href: `/app/clips?error=${result.reason}`, locale });
+  if (!result.ok) return redirect({ href: `/app/clips/nuevo?error=${result.reason}`, locale });
 
   // "Subir varios videos a la vez": the same settings for each extra link.
   // A bad extra link is skipped (the first job already started); the user
@@ -51,5 +59,29 @@ export async function createClipJob(formData: FormData): Promise<void> {
     if (r?.ok) started += 1;
   }
   if (started > 0) return redirect({ href: '/app/history', locale });
-  return redirect({ href: `/app/clips/${encodeURIComponent(result.jobId)}`, locale });
+  return redirect({ href: `/app/clips/trabajo/${encodeURIComponent(result.jobId)}`, locale });
+}
+
+/** "Intentar otra vez" on a failed row of Clips' home (TOOLS-SPEC §4.1):
+ *  resubmits the same job in place, then back to the home. */
+export async function retryClipJob(formData: FormData): Promise<void> {
+  const locale = await getLocale();
+  const session = await getSessionUser();
+  if (!session) return redirect({ href: '/sign-in?next=/app/clips', locale });
+  const entitlements = await getEntitlements(session);
+  const adapter = getClipsAdapter();
+  if (entitlements.tools.chalybclip?.state === 'included' && adapter) {
+    const jobId = String(formData.get('jobId') ?? '').slice(0, 120);
+    const job = jobId ? await adapter.getJob(session.user.id, jobId) : null;
+    if (job && manualRetryAllowed(job)) {
+      await adapter.retryJob(session.user.id, job.id, { manual: true });
+      await logAudit({
+        action: 'clips.job_retry',
+        actorId: session.user.id,
+        targetUserId: session.user.id,
+        metadata: { job_id: job.id, manual_retry: (job.manualRetries ?? 0) + 1 },
+      });
+    }
+  }
+  return redirect({ href: '/app/clips', locale });
 }

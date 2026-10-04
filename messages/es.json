@@ -671,40 +671,6 @@
       "cta": "Hacer mi primer clip"
     }
   },
-  "tool": {
-    "back": "Inicio",
-    "badge": {
-      "included": "Incluido en tu plan",
-      "trialOffer": "Incluido en Pro · Pruébalo gratis",
-      "otherTool": "Cámbiala para usarla",
-      "setup": "Te falta un paso"
-    },
-    "ready": {
-      "body": "{tool} se abre en una pestaña nueva."
-    },
-    "offer": {
-      "title": "Incluido en Pro · Pruébalo gratis",
-      "body": "Con Pro puedes usar {tool}.",
-      "trialCta": "Prueba Pro gratis",
-      "plansCta": "Ver planes"
-    },
-    "switch": {
-      "title": "Tu plan incluye una herramienta a la vez.",
-      "body": "Para usar {tool}, elígela en Herramientas.",
-      "cta": "Cambiar herramienta"
-    }
-  },
-  "launch": {
-    "open": "Abrir",
-    "opening": "Abriendo…",
-    "blocked": "Tu navegador no abrió la pestaña nueva.",
-    "openNamed": "Abrir {tool}",
-    "retry": "Intentar de nuevo",
-    "help": "Hablar con una persona",
-    "trialCta": "Prueba Pro gratis",
-    "plansCta": "Ver planes",
-    "signIn": "Entrar"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Incluido en Pro · Pruébalo gratis",
@@ -753,10 +719,6 @@
     "back": "Atrás",
     "close": "Cerrar y volver a Inicio",
     "step": "Paso {n} de 3",
-    "handoff": {
-      "title": "Haz tus clips",
-      "body": "Clips se abre en una pestaña nueva. Ahí pegas el enlace de tu stream y nosotros hacemos el resto."
-    },
     "s1": {
       "metaTitle": "Clips · Paso 1",
       "title": "Pega el enlace de tu stream o video",
@@ -887,7 +849,8 @@
         "pro": "Plan Pro",
         "pro_anual": "Plan Pro anual",
         "vip": "Plan VIP"
-      }
+      },
+      "yourAccount": "Tu cuenta"
     }
   },
   "account": {
@@ -1468,38 +1431,8 @@
       "none": "Sin prisa"
     }
   },
-  "live": {
-    "metaTitle": "En vivo",
-    "title": "Tu transmisión",
-    "sub": "Todo listo. Cuando quieras, toca el botón grande.",
-    "obsOk": "OBS conectado",
-    "platforms": "Tu transmisión saldrá en {plataformas}",
-    "start": "Iniciar transmisión",
-    "startSub": "Empieza en 3 segundos. Puedes detenerla cuando quieras.",
-    "stop": "Terminar transmisión",
-    "liveFor": "En vivo · {tiempo}",
-    "confirmTitle": "¿Terminar tu transmisión?",
-    "confirmYes": "Sí, terminar",
-    "confirmNo": "Seguir",
-    "scenes": "Escenas",
-    "scenesSub": "Toca una para cambiar lo que ve tu público",
-    "onAir": "En pantalla",
-    "quick": "Controles rápidos",
-    "mic": "Micrófono",
-    "cam": "Cámara",
-    "clipsAfter": "Hacer clips al terminar",
-    "check": "Antes de empezar",
-    "internet": "Internet",
-    "good": "Bueno",
-    "slow": "Lento",
-    "offline": "Sin conexión",
-    "streamTitle": "Título",
-    "adv": "Calidad, servidores y atajos",
-    "advBody": "Estos ajustes los manejas en OBS. Aquí verás los atajos cuando tu herramienta los ofrezca."
-  },
   "tools": {
     "metaTitle": "Herramientas",
-    "title": "Más herramientas",
     "yours": "Tus herramientas",
     "included": "Incluido en tu plan",
     "inPro": "Incluido en Pro",
@@ -1518,6 +1451,21 @@
       "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
       "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
       "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
+    },
+    "crumb": "Inicio",
+    "sub": "Todas están incluidas en tu plan {plan} y se abren aquí mismo.",
+    "also": "También incluido",
+    "openArrow": "Abrir ›",
+    "status": {
+      "clipsBoth": "{n} en proceso · {m} listos {cuando}",
+      "clipsWorking": "{n} en proceso",
+      "clipsReady": "{m} listos {cuando}",
+      "clipsNone": "Aún no tienes clips",
+      "signalsToday": "{n, plural, one {# señal nueva hoy} other {# señales nuevas hoy}}",
+      "signalsNone": "Sin señales nuevas hoy",
+      "liveSetup": "Te falta un paso: conectar",
+      "liveReady": "Listo para transmitir",
+      "liveOn": "Transmitiendo ahora"
     }
   },
   "assistant": {
@@ -1987,7 +1935,9 @@
         "yes": "Sí, ocultar",
         "no": "No, volver"
       },
-      "err": "No pudimos guardar el cambio. Intenta de nuevo."
+      "err": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "incident": "Incidente",
+      "incidentToggle": "Incidente abierto en {herramienta}: la pantalla de error dice que ya nos avisaron"
     },
     "settings": {
       "metaTitle": "Ajustes",
@@ -2531,5 +2481,497 @@
       "sentBody": "Lo revisamos y te contactamos al medio que nos diste.",
       "folio": "Folio {folio}."
     }
+  },
+  "toolShell": {
+    "crumb": "Inicio",
+    "included": "Incluido en tu plan",
+    "inProTry": "Incluido en Pro · Pruébalo gratis",
+    "inPro": "Incluido en Pro",
+    "tabsAria": "Secciones de {herramienta}",
+    "tab": {
+      "chalybclip": {
+        "main": "Hacer clips",
+        "history": "Mis clips",
+        "settings": "Ajustes"
+      },
+      "chalybcrypto": {
+        "main": "Señales",
+        "history": "Historial",
+        "settings": "Ajustes"
+      },
+      "chalybobs": {
+        "main": "Transmitir",
+        "history": "Mis transmisiones",
+        "settings": "Ajustes"
+      }
+    },
+    "error": {
+      "title": "{herramienta} no abrió esta vez",
+      "body": "Algo falló de nuestro lado, no es tu culpa.",
+      "saved": "Lo que ya hiciste está guardado.",
+      "retry": "Intentar otra vez",
+      "retrying": "Intentando…",
+      "human": "Hablar con una persona",
+      "known": "Ya nos avisaron, lo estamos arreglando.",
+      "code": "Si nos escribes, menciona este código: <b>{codigo}</b>",
+      "meanwhile": {
+        "chalybclip": "Mientras tanto, tus clips anteriores siguen en",
+        "chalybcrypto": "Mientras tanto, las últimas señales siguen en",
+        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue en OBS."
+      },
+      "meanwhileLink": {
+        "chalybclip": "Mis resultados",
+        "chalybcrypto": "Historial"
+      }
+    },
+    "locked": {
+      "title": "{herramienta} viene en Pro",
+      "bodyTrial": "Pruébalo gratis 7 días. Cancela cuando quieras.",
+      "ctaTrial": "Empezar mis 7 días gratis",
+      "bodyPlans": "Está incluido en el plan Pro.",
+      "ctaPlans": "Ver planes"
+    },
+    "advanced": {
+      "title": "Opciones avanzadas",
+      "sub": "Para creadores profesionales"
+    },
+    "risk": {
+      "sub": "Léelo una vez. Son 3 cosas.",
+      "b1": {
+        "title": "Son ideas informativas, no consejos personales.",
+        "body": "No es asesoría financiera ni una recomendación para ti."
+      },
+      "b2": {
+        "title": "Las señales son iguales para todos en tu plan.",
+        "body": "No usamos tus saldos, tus inversiones ni tus metas."
+      },
+      "b3": {
+        "title": "Tú decides y el riesgo es tuyo.",
+        "body": "No garantizamos resultados. Puedes perder dinero."
+      },
+      "legalK": "El aviso, palabra por palabra",
+      "hint": "Te lo volvemos a pedir solo si cambia el aviso."
+    },
+    "disclaimer": {
+      "text": "<b>Esto es informativo, no es asesoría financiera.</b> Las señales son iguales para todos y no usan tus saldos ni tus inversiones. Tú decides.",
+      "read": "Leer aviso completo",
+      "sheetTitle": "Aviso de riesgo",
+      "close": "Cerrar"
+    },
+    "autosave": "Los cambios se guardan solos.",
+    "saving": "Guardando…",
+    "saved": "Guardado"
+  },
+  "signalsTool": {
+    "metaTitle": "Señales",
+    "metaDetail": "Señal de {moneda}",
+    "metaHistory": "Historial de señales",
+    "metaSettings": "Ajustes de Señales",
+    "listTitle": "Tus señales más recientes",
+    "filter": {
+      "all": "Todas",
+      "aria": "Filtrar por moneda"
+    },
+    "new": "Nueva",
+    "when": {
+      "today": "Hoy, {hora}",
+      "yesterday": "Ayer, {hora}",
+      "date": "{fecha}, {hora}"
+    },
+    "verdict": {
+      "buy": "Momento de compra",
+      "sell": "Momento de venta",
+      "wait": "Sin señal clara"
+    },
+    "ref": "Precio de referencia",
+    "why": "<b>Por qué:</b> {texto}",
+    "detail": "Ver detalle",
+    "detailAria": "Ver detalle de {moneda}",
+    "alerts": {
+      "title": "Mis avisos",
+      "change": "Cambiar",
+      "yes": "Sí",
+      "no": "No",
+      "whatsapp": "WhatsApp",
+      "email": "Correo",
+      "app": "En la app",
+      "schedule": "Horario",
+      "range": "{desde} a {hasta}",
+      "allDay": "Todo el día"
+    },
+    "legend": {
+      "title": "¿Qué significa cada una?",
+      "buy": "El precio va subiendo de forma estable.",
+      "sell": "Subió rápido y podría bajar.",
+      "wait": "No hay nada claro por ahora."
+    },
+    "empty": "Aún no hay señales de tus monedas. Te avisamos en cuanto haya una.",
+    "emptyAdd": "Agregar más monedas",
+    "partial": "No pudimos traer las señales nuevas. Te mostramos las últimas que teníamos.",
+    "retry": "Intentar otra vez",
+    "history": {
+      "empty": "Aún no hay señales en tu historial.",
+      "today": "Hoy",
+      "yesterday": "Ayer"
+    },
+    "detailPage": {
+      "back": "Señales",
+      "range": {
+        "1d": "1 día",
+        "7d": "7 días",
+        "1m": "1 mes"
+      },
+      "rangeAria": "Periodo de la gráfica",
+      "marker": "Aquí te avisamos · {hora}",
+      "chartAria": "Precio de {moneda} en los últimos {periodo}",
+      "whyTitle": "Por qué, en palabras simples",
+      "follow": "Recibir avisos de esta moneda",
+      "followVia": "Por {canales}",
+      "same": "Esta misma señal la ven todas las personas de tu plan. No usa tus saldos ni tus inversiones.",
+      "old": "Esta señal es del {fecha}. Puede que ya no aplique.",
+      "notFound": {
+        "title": "No encontramos esta señal",
+        "body": "Puede que ya no esté disponible.",
+        "cta": "Ver señales"
+      }
+    },
+    "settings": {
+      "coins": "Tus monedas",
+      "coinsHint": "Solo eliges de qué monedas te avisamos. La señal es la misma para todos.",
+      "addCoin": "Agregar moneda",
+      "removeCoin": "Quitar {moneda}",
+      "how": "Cómo te avisamos",
+      "appHint": "Una notificación en tu celular",
+      "when": "Horario",
+      "from": "Avisarme desde",
+      "to": "Hasta",
+      "night": "En la noche no te molestamos",
+      "days": "Días",
+      "daysAll": "Todos los días",
+      "daysWeekdays": "De lunes a viernes",
+      "legal": "Información importante",
+      "riskNotice": "Aviso de riesgo",
+      "riskAccepted": "Lo aceptaste el {fecha}",
+      "readAgain": "Leer otra vez",
+      "advSummary": "Temporalidad, resumen diario y formato del aviso",
+      "timeframe": "Temporalidad",
+      "short": "Corto plazo",
+      "medium": "Mediano plazo",
+      "timeframeHint": "Filtra qué señales recibes. Son iguales para todos.",
+      "daily": "Resumen diario",
+      "dailyHint": "Una vez al día, a la hora en que empieza tu horario.",
+      "format": "Formato del aviso",
+      "formatShort": "Corto",
+      "formatExplained": "Con explicación",
+      "error": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "noCoins": "Elige al menos una moneda."
+    }
+  },
+  "liveTool": {
+    "metaTitle": "En vivo",
+    "metaConnect": "Conecta tu computadora",
+    "metaStreams": "Mis transmisiones",
+    "metaSettings": "Ajustes de En vivo",
+    "setup": {
+      "title": "Conecta tu computadora",
+      "sub": "Solo se hace una vez. Toma unos 2 minutos.",
+      "obs": "<b>¿Qué es OBS?</b> Es el programa gratis que manda la imagen de tu computadora a YouTube o Twitch. Nosotros lo manejamos por ti.",
+      "now": "Ahora",
+      "later": "Después",
+      "last": "Al final",
+      "s1": {
+        "title": "Descarga el programa de En vivo",
+        "body": "Ábrelo en la computadora donde transmites. Si no tienes OBS, lo instala por ti.",
+        "windows": "Descargar para Windows",
+        "mac": "Descargar para Mac",
+        "otherWindows": "¿Tienes Windows?",
+        "otherMac": "¿Tienes Mac?",
+        "again": "¿No empezó la descarga? Descárgalo otra vez."
+      },
+      "s2": {
+        "title": "Escribe este código en el programa",
+        "body": "El programa te lo pide al abrirlo. Así sabemos que es tu computadora.",
+        "valid": "Este código sirve por 10 minutos.",
+        "expired": "Este código ya venció.",
+        "newCode": "Ver un código nuevo",
+        "aria": "Tu código: {codigo}"
+      },
+      "s3": {
+        "title": "¡Listo!",
+        "body": "Cuando se conecte, aquí verás una palomita verde y ya podrás transmitir.",
+        "done": "¡Listo! Tu computadora está conectada."
+      },
+      "wait": "Esperando tu computadora… Esta página se actualiza sola.",
+      "human": "Hablar con una persona",
+      "codeError": "No pudimos darte un código. Intenta de nuevo."
+    },
+    "room": {
+      "title": "Tu transmisión",
+      "sub": "Todo listo. Cuando quieras, toca el botón grande.",
+      "obsOk": "OBS conectado",
+      "platforms": "Tu transmisión saldrá en {plataformas}",
+      "change": "Cambiar",
+      "start": "Iniciar transmisión",
+      "startSub": "Empieza en 3 segundos. Puedes detenerla cuando quieras.",
+      "on": "En vivo · {tiempo}",
+      "onLabel": "En vivo",
+      "viewers": "{n, plural, one {# persona viendo} other {# personas viendo}}",
+      "internet": "Internet",
+      "good": "Bueno",
+      "slow": "Lento",
+      "offline": "Sin conexión",
+      "slowNote": "Bajamos la calidad para que no se corte.",
+      "previewLive": "EN VIVO",
+      "previewLabel": "Lo que ve tu público",
+      "scenes": "Escenas",
+      "scenesSub": "Toca una para cambiar lo que ve tu público",
+      "onAir": "En pantalla",
+      "stop": "Terminar transmisión",
+      "stopSub": "Te preguntamos antes de terminar.",
+      "mic": "Micrófono",
+      "cam": "Cámara",
+      "micOn": "Encendido",
+      "micOff": "Apagado",
+      "camOn": "Encendida",
+      "camOff": "Apagada",
+      "clipsAfter": "Hacer clips al terminar",
+      "quick": "Controles rápidos",
+      "before": "Antes de empezar",
+      "streamTitle": "Título",
+      "clipNow": "Hacer clip de este momento",
+      "clipNowSub": "Guarda el último minuto en Clips.",
+      "clipNowDone": "Listo, guardamos este momento. Lo verás en Clips en unos minutos.",
+      "clipNowNeedsRec": "Para hacer clips en vivo, enciende Guardar la grabación en Ajustes.",
+      "clipNowError": "No pudimos guardar este momento. Intenta otra vez.",
+      "advSummary": "Calidad, servidores y atajos",
+      "advBody": "La calidad, los servidores y los atajos están en Ajustes.",
+      "advLink": "Ir a Ajustes",
+      "confirmTitle": "¿Terminar tu transmisión?",
+      "confirmBody": "Tu público dejará de verte.",
+      "confirmYes": "Sí, terminar",
+      "confirmNo": "Seguir transmitiendo",
+      "ended": "Tu transmisión terminó · Duró {duracion}.",
+      "endedClips": "Hacer clips de esta transmisión",
+      "endedList": "Ver mis transmisiones",
+      "startError": "No pudimos iniciar tu transmisión. Revisa que {plataforma} siga conectada.",
+      "retry": "Intentar otra vez",
+      "human": "Hablar con una persona",
+      "actionError": "No pudimos hacerlo. Intenta otra vez.",
+      "lost": "Se perdió la conexión con tu computadora. Tu transmisión puede seguir en OBS.",
+      "reconnect": "Volver a conectar",
+      "offlineTitle": "Tu computadora no está conectada",
+      "offlineBody": "Abre el programa de En vivo en tu computadora.",
+      "offlineCta": "Volver a intentar",
+      "noDestTitle": "Elige dónde transmitir",
+      "noDestBody": "Enciende al menos una plataforma para empezar.",
+      "noDestCta": "Ir a Ajustes",
+      "confirmClose": "Cerrar"
+    },
+    "streams": {
+      "title": "Mis transmisiones",
+      "duration": "Duró {duracion}",
+      "watch": "Ver grabación",
+      "clips": "Hacer clips",
+      "noRecording": "No se guardó la grabación.",
+      "emptyTitle": "Aún no tienes transmisiones",
+      "emptyBody": "Cuando termines tu primera transmisión, aparece aquí.",
+      "emptyCta": "Ir a Transmitir"
+    },
+    "settings": {
+      "where": "Dónde transmites",
+      "whereNote": "Puedes transmitir en varias a la vez.",
+      "connected": "{usuario} · conectado",
+      "connect": "Conectar",
+      "streamThere": "Transmitir en {plataforma}",
+      "device": "Tu computadora",
+      "deviceReady": "OBS listo · {sistema}",
+      "deviceNotReady": "Falta OBS · {sistema}",
+      "deviceOn": "Conectado",
+      "deviceOff": "Sin conexión",
+      "disconnect": "Desconectar",
+      "addDevice": "Conectar otra computadora",
+      "noDevice": "Aún no conectas tu computadora.",
+      "noDeviceCta": "Conectar mi computadora",
+      "quality": "Calidad",
+      "recommended": "Recomendada",
+      "auto": "Automática",
+      "autoBody": "Se ajusta sola a tu internet.",
+      "high": "Alta",
+      "highBody": "Para internet muy rápido.",
+      "saver": "Ahorro",
+      "saverBody": "Si tu internet es lento o usas datos.",
+      "after": "Al terminar",
+      "clipsAfter": "Hacer clips al terminar",
+      "clipsAfterBody": "Te llegan a Clips",
+      "saveRecording": "Guardar la grabación",
+      "saveRecordingBody": "Así puedes hacer clips mientras transmites.",
+      "keyNote": "Tu clave de transmisión está oculta por seguridad. Solo se ve en Opciones avanzadas.",
+      "advSummary": "Bitrate, servidores, atajos y clave de transmisión",
+      "bitrate": "Tasa de bits (kbps)",
+      "resolution": "Resolución y fps",
+      "server": "Servidor de ingesta",
+      "serverAuto": "Automático",
+      "key": "Clave de transmisión de {plataforma}",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "revealTitle": "Confirma que eres tú",
+      "revealBody": "Escribe tu contraseña para ver la clave.",
+      "password": "Tu contraseña",
+      "revealCta": "Mostrar la clave",
+      "revealError": "La contraseña no coincide.",
+      "revealSignIn": "¿Entraste con un enlace o con Google? Vuelve a iniciar sesión y regresa aquí.",
+      "revealSignInCta": "Volver a iniciar sesión",
+      "shortcuts": "Atajos de teclado",
+      "shortcutsBody": "Los atajos los configuras en el programa de En vivo de tu computadora.",
+      "manual": "Conexión manual a OBS",
+      "manualBody": "Si prefieres no usar el programa, conecta OBS con su dirección, puerto y contraseña desde el programa de En vivo.",
+      "saveError": "No pudimos guardar el cambio. Intenta otra vez.",
+      "connectTitle": "Conectar {plataforma}",
+      "close": "Cerrar"
+    }
+  },
+  "clipsTool": {
+    "metaTitle": "Clips",
+    "metaMine": "Mis clips",
+    "metaDetail": "Detalle del clip",
+    "metaSettings": "Ajustes de Clips",
+    "home": {
+      "hero": {
+        "title": "Hacer clips nuevos",
+        "body": "Pega el enlace de tu stream o video. Te damos clips con subtítulos, listos para publicar.",
+        "cta": "Hacer clips nuevos",
+        "hint": "Toma 1 minuto. Funciona con {plataformas}."
+      },
+      "noCredits": {
+        "title": "Te quedaste sin créditos este mes. Se renuevan el {fecha}.",
+        "cta": "Ver mi plan"
+      },
+      "accounts": "Cuentas conectadas",
+      "accountsSettings": "Ajustes",
+      "connected": "Conectado",
+      "connect": "Conectar",
+      "processing": "En proceso",
+      "processingHint": "Te avisamos cuando estén listos",
+      "row": {
+        "title": "Clips de “{titulo}”",
+        "step": "{paso}…",
+        "eta": "Faltan unos {n} minutos.",
+        "stepOf": "Paso {n} de 4",
+        "progress": "Avance de “{titulo}”",
+        "see": "Ver avance",
+        "failed": "No pudimos terminar “{titulo}”.",
+        "noCharge": "No se usaron créditos.",
+        "retry": "Intentar otra vez"
+      },
+      "steps": {
+        "receiving": "Recibiendo tu video",
+        "finding": "Buscando los mejores momentos",
+        "captions": "Agregando subtítulos",
+        "preparing": "Preparando la descarga"
+      },
+      "more": "y {n} más",
+      "latest": "Tus últimos clips",
+      "latestAll": "Ver todos ({n})",
+      "empty": {
+        "title": "Aún no tienes clips",
+        "body": "Haz el primero en 1 minuto. Solo pega el enlace de tu stream."
+      }
+    },
+    "card": {
+      "meta": "{fecha} · {formato}",
+      "open": "Abrir {titulo}"
+    },
+    "format": {
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "square": "Cuadrado"
+    },
+    "mine": {
+      "title": "Mis clips",
+      "search": "Buscar en mis clips",
+      "filters": "Filtrar por formato",
+      "all": "Todos",
+      "count": "{n, plural, one {# clip} other {# clips}}",
+      "none": "No hay clips con ese filtro.",
+      "empty": {
+        "title": "Aún no tienes clips",
+        "body": "Haz el primero en 1 minuto. Solo pega el enlace de tu stream."
+      }
+    },
+    "detail": {
+      "back": "Mis clips",
+      "position": "Clip {n} de {total}",
+      "prev": "Clip anterior",
+      "next": "Clip siguiente",
+      "title": "Título del clip",
+      "titleHint": "Así se llamará al publicarlo",
+      "captions": "Subtítulos",
+      "captionsSub": "{idioma} · {estilo}",
+      "trim": "Recortar",
+      "trimHint": "Arrastra los bordes morados",
+      "trimStart": "Empieza en <b>{t}</b>",
+      "trimLength": "Dura <b>{t}</b>",
+      "trimEnd": "Termina en <b>{t}</b>",
+      "trimStartHandle": "Inicio del recorte",
+      "trimEndHandle": "Final del recorte",
+      "format": "Formato",
+      "download": "Descargar",
+      "preparing": "Preparando tu descarga…",
+      "share": "Compartir",
+      "copied": "Enlace copiado",
+      "publish": "Publicar en {plataforma}",
+      "published": "Listo, lo mandamos a {plataforma}.",
+      "publishError": "{plataforma} no respondió. Lo intentamos otra vez en unos minutos y te avisamos.",
+      "autosave": "Los cambios se guardan solos. Tu clip original no se borra.",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "saveError": "No pudimos guardar el cambio. Intenta de nuevo.",
+      "player": "Vista previa de {titulo}",
+      "notFound": {
+        "title": "No encontramos este clip",
+        "cta": "Ver mis clips"
+      }
+    },
+    "langs": {
+      "es": "Español (México)",
+      "en": "Inglés"
+    },
+    "presets": {
+      "clasico": "Clásico",
+      "amarillo": "Amarillo",
+      "fondo": "Con fondo",
+      "sample": "ESTO FUE ÉPICO"
+    },
+    "settings": {
+      "accounts": "Cuentas conectadas",
+      "tiktokSub": "Para publicar con un toque",
+      "captions": "Subtítulos",
+      "captionsOn": "Poner subtítulos en mis clips",
+      "captionLang": "Idioma de los subtítulos",
+      "style": "Estilo de subtítulos",
+      "styleHint": "Toca uno. Lo usamos en tus próximos clips.",
+      "brand": "Tu marca",
+      "watermark": "Marca de agua / logo",
+      "watermarkSub": "Tu logo en una esquina de cada clip",
+      "autosave": "Los cambios se guardan solos y se usan en tus próximos clips.",
+      "autopublish": "Publicar automáticamente en mis redes",
+      "autopublishAccount": "Cuenta",
+      "autopublishOn": "Publicación automática activada en {cuenta}.",
+      "duration": "Duración de los clips",
+      "durationAuto": "Automática",
+      "durationFixed": "{n} segundos",
+      "framing": "Encuadre",
+      "framingCenter": "Centro automático",
+      "framingFollow": "Seguir a la persona",
+      "bulk": "Subir varios videos a la vez",
+      "bulkHint": "Pega varios enlaces en el paso 1 de Hacer clips nuevos.",
+      "bulkCta": "Hacer clips nuevos"
+    },
+    "connect": {
+      "title": "Conectar {plataforma}",
+      "close": "Cerrar",
+      "error": "No pudimos empezar la conexión. Intenta de nuevo."
+    },
+    "close": "Cerrar y volver a Clips"
   }
 }

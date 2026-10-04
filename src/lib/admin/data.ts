@@ -283,6 +283,7 @@ const AUDIT_TITLES: Record<string, string> = {
   'admin.dispute': 'Registró un paso de una disputa',
   'admin.cancel': 'Canceló la suscripción',
   'engine.visibility': 'Cambió la visibilidad de una herramienta',
+  'tool.incident': 'Marcó un incidente de herramienta',
   'settings.billing_toggle': 'Cambió Mensual/Anual',
   'tier.change': 'Cambió un plan o una herramienta',
   'role.change': 'Cambió un rol',
@@ -367,24 +368,10 @@ export async function loadActivity(now = new Date()) {
       created_at: string;
     }>(audit).map((a) =>
       a.action === 'clips.job_failed'
-        ? {
-            id: `a:${a.id}`,
-            at: a.created_at,
-            type: 'tool',
-            tool: 'chalybclip',
-            title: 'Clips falló',
-            detail: String(a.metadata?.reason ?? ''),
-            who: a.target_email,
-          }
-        : {
-            id: `a:${a.id}`,
-            at: a.created_at,
-            type: 'admin',
-            tool: typeof a.metadata?.slug === 'string' ? (a.metadata.slug as string) : null,
-            title: AUDIT_TITLES[a.action] ?? a.action,
-            detail: a.target_email,
-            who: a.actor_email,
-          },
+        ? { id: `a:${a.id}`, at: a.created_at, type: 'tool', tool: 'chalybclip', title: 'Clips falló', detail: String(a.metadata?.reason ?? ''), who: a.target_email }
+        : a.action === 'tool.error'
+        ? { id: `a:${a.id}`, at: a.created_at, type: 'tool', tool: typeof a.metadata?.tool === 'string' ? (a.metadata.tool as string) : null, title: 'Una herramienta no abrió', detail: `${String(a.metadata?.reason ?? '')} · ${String(a.metadata?.supportCode ?? '')}`, who: a.target_email }
+        : { id: `a:${a.id}`, at: a.created_at, type: 'admin', tool: typeof a.metadata?.slug === 'string' ? (a.metadata.slug as string) : null, title: AUDIT_TITLES[a.action] ?? a.action, detail: a.target_email, who: a.actor_email },
     );
     const payEvents: ActivityEvent[] = rows<PaymentFact>(pays).map((p) => {
       const refunded = (p.refunded_cents ?? 0) > 0 || p.status === 'refunded';

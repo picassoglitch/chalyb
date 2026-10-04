@@ -65,7 +65,7 @@ export function TermsReacceptModal({ v }: { v: TermsUpdateView }) {
           </ul>
         )}
         <p>
-          <a href={v.changesHref} className="ch-lnk" target="_blank" rel="noopener">
+          <a href={v.changesHref} className="ch-lnk">
             {t('seeAll')}
           </a>
         </p>
@@ -114,8 +114,6 @@ export function TermsNoticeBanner({ v }: { v: TermsUpdateView }) {
       <a
         href={v.changesHref}
         className="ch-btn ch-btn--white ch-btn--compact"
-        target="_blank"
-        rel="noopener"
       >
         {t('bannerLink')}
       </a>

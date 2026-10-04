@@ -1,120 +1,185 @@
-import type { Metadata } from 'next';
+import type { Metadata, Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { listEngines } from '@/lib/data/engines';
-import { paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
-import { requireClipsAccess } from '@/lib/tools/clips-access';
+import { Scissors } from 'lucide-react';
+import { Link } from '@/i18n/routing';
+import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
-import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
-import { EngineLaunchButton } from '@/components/workspace/engine-launch-button';
-import { WizardShell } from '@/components/ui/wizard-shell';
-import { ClipError } from '@/components/app/clips/clip-error';
-import { PasteButton } from '@/components/app/clips/paste-button';
+import { listClipJobs } from '@/lib/tools/clips-jobs';
+import { processingRows } from '@/lib/tools/clips-home';
+import { creditsRenewDate } from '@/lib/tools/clips-copy';
+import { getTokenBalance } from '@/lib/usage/tokens';
+import { socialsAllowed } from '@/lib/tools/clips-bff';
+import { ToolShell } from '@/components/tools/tool-shell';
+import { ToolErrorState } from '@/components/tools/tool-error-state';
+import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
+import { ClipCard } from '@/components/tools/clips/clip-card';
+import { JobProgressRow } from '@/components/tools/clips/job-progress-row';
+import { AccountsList, accountRows } from '@/components/tools/clips/accounts-list';
+import { AutoRefresh } from '@/components/app/clips/auto-refresh';
+import { ButtonLink } from '@/components/ui/primitives';
+import { SetupState } from '@/components/ui/setup-state';
+import '@/styles/tools-clips.css';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('clips');
-  return { title: t('s1.metaTitle') };
+  const t = await getTranslations('clipsTool');
+  return { title: t('metaTitle') };
 }
 
-// Clips · Paso 1 (SCR-02): paste a link. With TOOL_HUB_MODE_CHALYBCLIP=off
-// (no engine job API yet) it hands off to the Clips app over SSO (P0-14).
-// Connect / upload alternatives show only when the adapter supports them
-// (none does yet); "Pegar" only where the Clipboard API can read.
+// Inicio de Clips (TOOLS-SPEC §4.1, mockup 50). One primary action: "Hacer
+// clips nuevos" (or "Ver mi plan" when the month's credits ran out). Jobs
+// re-run the job policy on every read; the page re-reads itself every few
+// seconds while something is in progress (polling fallback, §1.2).
 
-export default async function ClipsStep1Page({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; link?: string }>;
-}) {
+const LATEST = 6;
+
+export default async function ClipsHomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { entitlements } = await requireClipsAccess(locale, '/app/clips');
-  // A trial offer only while it can be honoured (K-7).
-  const trialFlow = trialFlowEnabled() && !entitlements.trialUsed;
-  const t = await getTranslations('clips');
-  const { error, link } = await searchParams;
-  const chrome = {
-    slug: 'chalybclip',
-    toolName: 'Clips',
-    backHref: '/app',
-    backLabel: t('home'),
-    closeLabel: t('close'),
-  };
-
-  if (!getClipsAdapter()) {
-    const engine = (await listEngines().catch(() => [])).find((e) => e.slug === 'chalybclip');
+  const gate = await loadTool(locale, 'chalybclip', '/app/clips', getClipsAdapter);
+  if (gate.kind === 'locked')
     return (
-      <WizardShell {...chrome} narrow>
-        <div className="ch-center-col">
-          <h1 className="ch-h1">{t('handoff.title')}</h1>
-          <p className="ch-sub">{t('handoff.body')}</p>
-          {engine && (
-            <EngineLaunchButton
-              engineId={engine.id}
-              slug={engine.slug}
-              toolName={engine.name}
-              planHref={
-                trialFlow
-                  ? '/app/prueba'
-                  : paidCheckoutEnabled()
-                    ? '/app/planes'
-                    : '/app/subscription'
-              }
-              trialFlow={trialFlow}
-            />
-          )}
-        </div>
-      </WizardShell>
+      <ToolShell
+        slug="chalybclip"
+        tab={null}
+        plan={lockedOffer(gate.entitlements).trial ? 'offer' : 'pro'}
+      >
+        <ToolLockedState slug="chalybclip" entitlements={gate.entitlements} />
+      </ToolShell>
     );
-  }
+  if (gate.kind !== 'ready')
+    return (
+      <ToolShell slug="chalybclip" tab="main">
+        {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
+        {gate.kind === 'setup' && (
+          <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
+        )}
+      </ToolShell>
+    );
 
-  const caps = getClipsAdapter()!.capabilities();
+  const { adapter, session } = gate;
+  const userId = session.user.id;
+  const caps = adapter.capabilities();
+  const [jobs, clips, accounts, balance] = await Promise.all([
+    listClipJobs(userId),
+    adapter.listClips(userId),
+    adapter.accounts(userId),
+    // Display only: an unknown balance never blocks the hero (the job
+    // submit enforces credits on the server either way).
+    getTokenBalance(userId).catch(() => null),
+  ]);
+  const noCredits = !!balance && !balance.unlimited && balance.remaining <= 0;
+  const t = await getTranslations('clipsTool');
   const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
-
-  const reason = (CLIP_FAILURE_REASONS as readonly string[]).includes(error ?? '')
-    ? (error as ClipFailureReason)
-    : null;
-
-  if (reason) {
-    return (
-      <WizardShell {...chrome} narrow>
-        <ClipError reason={reason} sourceUrl={link} noCharge />
-      </WizardShell>
-    );
-  }
+  const { rows, more } = processingRows(jobs);
+  const working = rows.some((j) => j.state !== 'failed');
+  const acctRows = accountRows(
+    accounts,
+    ['youtube', 'twitch', 'tiktok'],
+    caps.supportsConnect && socialsAllowed(gate.entitlements.plan),
+  );
+  const firstTime = jobs.length === 0 && clips.length === 0;
+  const now = new Date();
 
   return (
-    <WizardShell {...chrome} step={1} stepLabel={t('step', { n: 1 })} narrow>
-      <form action="/app/clips/formato" method="get" className="ch-center-col">
-        <h1 className="ch-h1">
-          <label htmlFor="clip-link">{t('s1.title')}</label>
-        </h1>
-        <p className="ch-sub" id="clip-link-sub">
-          {t('s1.sub')}
-        </p>
-        <div className="ch-paste">
-          <input
-            id="clip-link"
-            name="link"
-            type="url"
-            inputMode="url"
-            required
-            autoComplete="off"
-            defaultValue={link ?? ''}
-            placeholder={t('s1.placeholder')}
-            aria-describedby="clip-link-sub clip-link-works"
-            className="ch-input"
-          />
-          <PasteButton targetId="clip-link" label={t('s1.paste')} />
-        </div>
-        <p id="clip-link-works" className="ch-muted" style={{ fontSize: 17 }}>
-          {t('s1.works', { plataformas: list.format(caps.sources) })}
-        </p>
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
-          {t('s1.cta')}
-        </button>
-      </form>
-    </WizardShell>
+    <ToolShell slug="chalybclip" tab="main">
+      {working && <AutoRefresh everyMs={5000} />}
+      <div className={`ch-clipshome${acctRows.length ? '' : ' ch-clipshome--solo'}`}>
+        <section className="ch-card ch-cliphero" aria-labelledby="clips-hero">
+          <div className="ch-cliphero__tx">
+            <h2 id="clips-hero" className="ch-h2">
+              {noCredits
+                ? t('home.noCredits.title', { fecha: creditsRenewDate(now, locale) })
+                : t('home.hero.title')}
+            </h2>
+            {!noCredits && <p className="ch-sub">{t('home.hero.body')}</p>}
+            {noCredits ? (
+              <ButtonLink href="/app/billing" size="xl">
+                {t('home.noCredits.cta')}
+              </ButtonLink>
+            ) : (
+              <ButtonLink href="/app/clips/nuevo" size="xl">
+                <Scissors aria-hidden="true" />
+                {t('home.hero.cta')}
+              </ButtonLink>
+            )}
+            {!noCredits && (
+              <p className="ch-muted ch-cliphero__hint">
+                {t('home.hero.hint', { plataformas: list.format(caps.sources) })}
+              </p>
+            )}
+          </div>
+          <div className="ch-cliphero__art" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        </section>
+
+        {acctRows.length > 0 && (
+          <section className="ch-card ch-clipaccts" aria-labelledby="clips-accts">
+            <header>
+              <h2 id="clips-accts" className="ch-h3">
+                {t('home.accounts')}
+              </h2>
+              <Link href={'/app/clips/ajustes' as Route} className="ch-lnk">
+                {t('home.accountsSettings')}
+              </Link>
+            </header>
+            <AccountsList rows={acctRows} returnTo="/app/clips" />
+          </section>
+        )}
+      </div>
+
+      {rows.length > 0 && (
+        <section aria-labelledby="clips-proc" className="ch-clipsec">
+          <header>
+            <h2 id="clips-proc" className="ch-h2">
+              {t('home.processing')}
+            </h2>
+            <span className="ch-muted">{t('home.processingHint')}</span>
+          </header>
+          <ul className="ch-jobrows">
+            {rows.map((job) => (
+              <JobProgressRow key={job.id} job={job} noCharge={caps.confirmsNoChargeOnFailure} />
+            ))}
+          </ul>
+          {more > 0 && (
+            <Link href={'/app/history' as Route} className="ch-lnk">
+              {t('home.more', { n: more })}
+            </Link>
+          )}
+        </section>
+      )}
+
+      {clips.length > 0 && (
+        <section aria-labelledby="clips-latest" className="ch-clipsec">
+          <header>
+            <h2 id="clips-latest" className="ch-h2">
+              {t('home.latest')}
+            </h2>
+            <Link href={'/app/clips/mis-clips' as Route} className="ch-lnk">
+              {t('home.latestAll', { n: clips.length })}
+            </Link>
+          </header>
+          <ul className="ch-clipgrid">
+            {clips.slice(0, LATEST).map((c) => (
+              <ClipCard key={c.id} clip={c} now={now} />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {firstTime && (
+        <section className="ch-card ch-state" aria-labelledby="clips-empty">
+          <span className="ch-state__ic" aria-hidden="true">
+            <Scissors />
+          </span>
+          <h2 id="clips-empty" className="ch-h2">
+            {t('home.empty.title')}
+          </h2>
+          <p className="ch-muted">{t('home.empty.body')}</p>
+        </section>
+      )}
+    </ToolShell>
   );
 }

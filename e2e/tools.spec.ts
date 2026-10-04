@@ -10,11 +10,20 @@ import { expectNoLeaks } from './utils/no-leaks';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
 const MOCK = process.env.E2E_TOOLS_MODE === 'mock';
-const TOOLS = ['Clips', 'Señales', 'En vivo', 'Asistente', 'Pronósticos', 'Inmuebles', 'Inversiones'];
+const TOOLS = [
+  'Clips',
+  'Señales',
+  'En vivo',
+  'Asistente',
+  'Pronósticos',
+  'Inmuebles',
+  'Inversiones',
+];
 
 /** The risk notice (aceptacion-ux §6): blocks until the box is ticked. */
 async function passRiskGate(page: Page) {
   const gate = page.getByRole('dialog', { name: 'Antes de empezar' });
+  await gate.waitFor({ timeout: 5_000 }).catch(() => {});
   if (!(await gate.isVisible().catch(() => false))) return;
   const cta = gate.getByRole('button', { name: 'Entendido, continuar' });
   await expect(cta).toBeDisabled();
@@ -33,83 +42,88 @@ test.describe('as pro', () => {
   asRole('pro');
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set (server must run the tools in mock mode)');
 
-  test('Más herramientas: every tool included, each opens its own screens', async ({ page }, info) => {
-    const res = await page.request.get('/app/engines', { maxRedirects: 0 });
-    expect(res.status()).toBe(308);
-    expect(res.headers().location).toMatch(/\/app\/herramientas$/);
+  test('Tus herramientas: the 3 tools included, each opens inside the app', async ({ page }, info) => {
+    // WS-11: the old URLs answer 307 (first 4 weeks), keep the query, never 404.
+    for (const [from, to] of [
+      ['/app/engines?x=1', /\/app\/herramientas\?x=1$/],
+      ['/app/engines/chalybclip?from=mail', /\/app\/clips\?from=mail$/],
+      ['/app/engines/chalybcrypto/anything', /\/app\/senales$/],
+      ['/app/engines/chalybobs', /\/app\/en-vivo$/],
+      ['/app/engines/chalybtrade', /\/app\/herramientas$/],
+      ['/en/app/engines/chalybclip', /\/en\/app\/clips$/],
+    ] as const) {
+      const res = await page.request.get(from, { maxRedirects: 0 });
+      expect(res.status(), from).toBe(307);
+      expect(res.headers().location, from).toMatch(to);
+    }
     await page.goto('/app/herramientas');
-    await expect(page.getByRole('heading', { level: 1, name: 'Más herramientas' })).toBeVisible();
-    for (const name of TOOLS) {
+    await expect(page.getByRole('heading', { level: 1, name: 'Tus herramientas' })).toBeVisible();
+    for (const name of ['Clips', 'Señales', 'En vivo']) {
       const card = page.locator('.ch-tool', { has: page.getByRole('heading', { name, exact: true }) });
       await expect(card.getByText('Incluido en tu plan')).toBeVisible();
       await expect(card.getByRole('link', { name: `Abrir ${name}` })).toBeVisible();
+      await expect(card.locator('.ch-tool__status')).toBeVisible();
     }
+    // Q9: no other tool is live, so "También incluido" doesn't exist.
+    await expect(page.getByRole('heading', { name: 'También incluido' })).toHaveCount(0);
     await expect(page.getByText(/Disponible|Próximamente|Llega pronto/i)).toHaveCount(0);
-    await page.getByRole('link', { name: 'Abrir Señales' }).click();
-    await expect(page).toHaveURL(/\/app\/senales$/);
-    // The old tool page sends an included tool to its own screens.
-    await page.goto('/app/engines/chalybobs');
+    await page.getByRole('link', { name: 'Abrir En vivo' }).click();
     await expect(page).toHaveURL(/\/app\/en-vivo$/);
+    expect(page.context().pages()).toHaveLength(1);
     await page.goto('/app/herramientas');
     await clean(page, info);
   });
 
-  test('Señales: risk notice → coins → channels → listo, disclaimer always on', async ({ page }, info) => {
+  test('Señales: risk sheet → coins → channels → listo, disclaimer always on', async ({
+    page,
+  }, info) => {
     const refused = await page.request.post('/api/tools/consent', {
       data: { kind: 'risk', slug: 'chalybcrypto', checked: false, locale: 'es' },
     });
     expect(refused.status(), 'no box, no consent').toBe(422);
     await page.goto('/app/senales');
     await passRiskGate(page);
-    await expect(page.getByRole('heading', { level: 1, name: '¿Qué monedas te interesan?' })).toBeVisible();
+    // Accepted: either the first activation (no coins yet) or the home.
+    await page.goto('/app/senales/empezar');
+    await expect(
+      page.getByRole('heading', { level: 1, name: '¿Qué monedas te interesan?' }),
+    ).toBeVisible();
     const btc = page.getByRole('button', { name: /BTC/ });
     if ((await btc.getAttribute('aria-pressed')) !== 'true') await btc.click();
     await page.getByRole('link', { name: 'Continuar' }).click();
     await expect(page.getByText('¿Cómo te avisamos?')).toBeVisible();
     await page.getByRole('checkbox', { name: 'En la app' }).check();
     await page.getByRole('button', { name: 'Continuar' }).click();
-    await expect(page).toHaveURL(/\/app\/senales\/listo$/);
+    await expect(page).toHaveURL(/\/app\/senales\/empezar\/listo$/);
     await expect(page.getByRole('note')).toContainText('no es asesoría financiera');
-    await expect(page.getByText(/copiar automáticamente|seguir señales|te conviene/i)).toHaveCount(0);
+    await expect(page.getByText(/copiar automáticamente|seguir señales|te conviene/i)).toHaveCount(
+      0,
+    );
     await clean(page, info);
+    await page.goto('/app/senales');
+    await expect(page.getByTestId('signals-disclaimer').filter({ visible: true })).toBeVisible();
   });
 
-  test('En vivo: start, switch scene, toggle mic, end with the confirm', async ({ page }, info) => {
-    await page.goto('/app/en-vivo');
-    await expect(page.getByText('OBS conectado')).toBeVisible();
-    const stop = page.getByRole('button', { name: /Terminar transmisión/ });
-    if (await stop.isVisible().catch(() => false)) {
-      await stop.click();
-      await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    }
-    await page.getByRole('button', { name: /Iniciar transmisión/ }).click();
-    await expect(stop).toBeVisible();
-    await page.getByRole('button', { name: /Juego/ }).click();
-    await expect(page.getByRole('button', { name: /Juego/ })).toHaveAttribute('aria-pressed', 'true');
-    const mic = page.getByRole('switch', { name: 'Micrófono' });
-    const before = await mic.getAttribute('aria-checked');
-    await mic.click();
-    await expect(mic).not.toHaveAttribute('aria-checked', before ?? '');
-    await clean(page, info);
-    await stop.click();
-    await expect(page.getByRole('dialog', { name: '¿Terminar tu transmisión?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Seguir' }).last().click();
-    await expect(stop).toBeVisible();
-    await stop.click();
-    await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    await expect(page.getByRole('button', { name: /Iniciar transmisión/ })).toBeVisible();
-  });
+  // En vivo's flow (connect → live → end) lives in e2e/tools-envivo.spec.ts.
 
   test('Asistente: 3 steps, and it always says it is automatic', async ({ page }, info) => {
     await page.goto('/app/herramientas/asistente');
     const edit = page.getByRole('button', { name: 'Cambiar' });
-    if (await edit.isVisible().catch(() => false)) await page.goto('/app/herramientas/asistente?paso=1');
-    if (await page.getByLabel('Nombre de tu negocio').isVisible().catch(() => false)) {
+    if (await edit.isVisible().catch(() => false))
+      await page.goto('/app/herramientas/asistente?paso=1');
+    if (
+      await page
+        .getByLabel('Nombre de tu negocio')
+        .isVisible()
+        .catch(() => false)
+    ) {
       await page.getByLabel('Nombre de tu negocio').fill('Tacos Doña Rosa');
       await page.getByRole('radio', { name: 'WhatsApp' }).check();
       await page.getByRole('button', { name: 'Continuar' }).click();
       await expect(page.getByRole('heading', { level: 1, name: '¿Qué debe saber?' })).toBeFocused();
-      await page.getByLabel('Lo que debe saber tu Asistente').fill('Abrimos de 9 a 18. Tacos a $20.');
+      await page
+        .getByLabel('Lo que debe saber tu Asistente')
+        .fill('Abrimos de 9 a 18. Tacos a $20.');
       await page.getByRole('button', { name: 'Continuar' }).click();
     }
     await expect(page.getByRole('heading', { level: 1, name: 'Pruébalo' })).toBeVisible();
@@ -135,21 +149,33 @@ test.describe('as pro', () => {
     await expect(page).toHaveURL(/paso=2/);
     await page.getByLabel('Detalles').fill('3 recámaras, 2 baños, 180 m².');
     await page.getByRole('button', { name: 'Continuar' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Tu ficha está lista' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Tu ficha está lista' }),
+    ).toBeVisible();
     await page.evaluate(() => {
       // No share sheet in a headless browser: exercise the copy fallback.
       Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
-      Object.defineProperty(navigator, 'clipboard', { value: { writeText: async () => {} }, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: async () => {} },
+        configurable: true,
+      });
     });
     await page.getByRole('button', { name: 'Compartir' }).click();
     await expect(page.getByText('Enlace copiado')).toBeVisible();
     await clean(page, info);
   });
 
-  test('Inversiones: withdrawal keys refused; rules need the box; pause works', async ({ page }, info) => {
+  test('Inversiones: withdrawal keys refused; rules need the box; pause works', async ({
+    page,
+  }, info) => {
     await page.goto('/app/herramientas/inversiones');
     await passRiskGate(page);
-    if (await page.getByLabel('Clave de API').isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByLabel('Clave de API')
+        .isVisible()
+        .catch(() => false)
+    ) {
       await page.getByLabel('Clave de API').fill('key-withdraw-123');
       await page.getByLabel('Clave secreta').fill('secret-123456');
       const connect = page.getByRole('button', { name: 'Conectar' });
@@ -159,7 +185,12 @@ test.describe('as pro', () => {
       await expect(page.locator('.ch-err')).toHaveText(/Esta clave permite retiros/);
       await page.getByLabel('Clave de API').fill('key-trade-123');
       await connect.click();
-    } else if (await page.getByRole('button', { name: 'Escribir otra regla' }).isVisible().catch(() => false)) {
+    } else if (
+      await page
+        .getByRole('button', { name: 'Escribir otra regla' })
+        .isVisible()
+        .catch(() => false)
+    ) {
       await page.getByRole('button', { name: 'Escribir otra regla' }).click();
     }
     await expect(page.getByRole('heading', { level: 1, name: 'Escribe tu regla' })).toBeVisible();
@@ -179,40 +210,52 @@ test.describe('as pro', () => {
     await clean(page, info);
   });
 
-  test('Avisos: bell, mark all read, a billing notice stays until its charge', async ({ page }, info) => {
+  test('Avisos: bell, mark all read, a billing notice stays until its charge', async ({
+    page,
+  }, info) => {
     await page.goto('/app/avisos');
     await expect(page.getByRole('heading', { level: 1, name: 'Avisos' })).toBeVisible();
     await expect(page.getByText('Tu plan se renueva en 7 días')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Borrar: Tu plan se renueva en 7 días' })).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Borrar: Tu plan se renueva en 7 días' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Borrar: / }).first()).toBeVisible();
     const markRead = page.getByRole('button', { name: 'Marcar como leídos' });
     if (await markRead.isVisible().catch(() => false)) await markRead.click();
     // Other specs may add notices meanwhile; the ones that were here are read.
-    await expect(page.locator('.ch-notice', { hasText: 'Tu plan se renueva en 7 días' })).toHaveAttribute('data-unread', 'false');
+    await expect(
+      page.locator('.ch-notice', { hasText: 'Tu plan se renueva en 7 días' }),
+    ).toHaveAttribute('data-unread', 'false');
     // The bell says "Avisos", or "Avisos (n sin leer)" if another spec just added one.
-    await expect(page.getByRole('link', { name: /^Avisos( \(\d+ sin leer\))?$/ }).first()).toBeAttached();
+    await expect(
+      page.getByRole('link', { name: /^Avisos( \(\d+ sin leer\))?$/ }).first(),
+    ).toBeAttached();
     await clean(page, info);
   });
 
   test('Mis resultados: in progress, search and no match', async ({ page }, info) => {
-    await page.goto('/app/clips');
+    await page.goto('/app/clips/nuevo');
     await page.getByLabel(/Pega el enlace/).fill('https://www.youtube.com/watch?v=resultados');
     await page.getByRole('button', { name: 'Continuar' }).click();
     await page.getByRole('button', { name: 'Crear mis clips' }).click();
     // Wait for the job to exist before leaving the page.
-    await expect(page).toHaveURL(/\/app\/clips\/[^/?]+$/);
+    await expect(page).toHaveURL(/\/app\/clips\/trabajo\/[^/?]+$/);
     await page.goto('/app/resultados');
     await expect(page).toHaveURL(/\/app\/history$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Mis resultados' })).toBeVisible();
     await expect(page.getByText(/Creando… \d+%|\d+ clips/).first()).toBeVisible();
     await page.getByLabel('Buscar en mis resultados').fill('nada-que-coincida');
-    await expect(page.getByText('No encontramos “nada-que-coincida”. Prueba con otra palabra.')).toBeVisible();
+    await expect(
+      page.getByText('No encontramos “nada-que-coincida”. Prueba con otra palabra.'),
+    ).toBeVisible();
     await page.getByLabel('Buscar en mis resultados').fill('resultados');
     await expect(page.locator('.ch-result').first()).toBeVisible();
     await clean(page, info);
   });
 
-  test('Ayuda: a person first, no WhatsApp without its link, cobro goes to the form', async ({ page }, info) => {
+  test('Ayuda: a person first, no WhatsApp without its link, cobro goes to the form', async ({
+    page,
+  }, info) => {
     await page.goto('/app/ayuda');
     await expect(page).toHaveURL(/\/app\/help$/);
     await expect(page.getByRole('heading', { name: 'Hablar con una persona' })).toBeVisible();
@@ -234,15 +277,17 @@ test.describe('as free', () => {
   asRole('free');
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
-  test('Más herramientas: Pro tools offer the trial, never a lock', async ({ page }, info) => {
+  test('Tus herramientas: Pro tools offer the trial, never a lock', async ({ page }, info) => {
     await page.goto('/app/herramientas');
     const offers = page.getByText('Incluido en Pro', { exact: true });
     await expect(offers.first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /Pruébalo gratis|Volver a Pro|Ver planes/ }).first()).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: /Pruébalo gratis|Volver a Pro|Ver planes/ }).first(),
+    ).toBeVisible();
     await expect(page.getByText(/Disponible|bloquead/i)).toHaveCount(0);
-    // A Pro-only tool's own screens send Free back to the offer.
+    // A Pro-only tool outside the registry sends Free back to Tus herramientas.
     await page.goto('/app/herramientas/inversiones');
-    await expect(page).toHaveURL(/\/app\/engines\/chalybtrade$/);
+    await expect(page).toHaveURL(/\/app\/herramientas$/);
     await clean(page, info);
   });
 });

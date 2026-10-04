@@ -24,7 +24,7 @@ export async function ClipError({
 
   let title = t('title');
   let body: string;
-  let primary = { href: '/app/clips', label: t('retry') };
+  let primary = { href: '/app/clips/nuevo', label: t('retry') };
   switch (reason) {
     case 'link_private':
       title = t('link.title');

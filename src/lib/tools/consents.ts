@@ -42,6 +42,22 @@ export async function hasRiskAck(userId: string, slug: string): Promise<boolean>
   return hasEvent(userId, 'risk_ack_accepted', { tool: slug, version: riskVersion() });
 }
 
+/** When this user accepted the current risk notice for a tool, or null
+ *  ("Lo aceptaste el {fecha}", TOOLS-SPEC §5.4). */
+export async function riskAckAt(userId: string, slug: string): Promise<string | null> {
+  const { data } = await createAdminClient()
+    .from('consent_events')
+    .select('inserted_at')
+    .eq('user_id', userId)
+    .eq('event_type', 'risk_ack_accepted')
+    .eq('details->>tool', slug)
+    .eq('details->>version', riskVersion())
+    .order('inserted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as { inserted_at?: string } | null)?.inserted_at ?? null;
+}
+
 export async function requireLikenessConsent(userId: string, feature: string): Promise<void> {
   assertLikenessConsent(await hasEvent(userId, 'voice_likeness_consent', { feature }), feature);
 }
@@ -55,6 +71,8 @@ export async function recordToolConsent(
     buttonLabel: string;
     details: Record<string, string>;
     locale: string;
+    /** The notice text the screen showed (stored as its SHA-256). */
+    disclosureText?: string;
   },
 ) {
   const ctx = await requestContext();
@@ -72,7 +90,7 @@ export async function recordToolConsent(
     locale: input.locale === 'es' ? 'es-MX' : 'en',
     surface: input.surface,
     ui_version: UI_VERSION,
-    disclosure_text: null,
+    disclosure_text: input.disclosureText ?? null,
     checkbox_text: input.checkboxText,
     checkbox_checked: true,
     button_label: input.buttonLabel,

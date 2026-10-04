@@ -671,40 +671,6 @@
       "cta": "Make my first clip"
     }
   },
-  "tool": {
-    "back": "Home",
-    "badge": {
-      "included": "Included in your plan",
-      "trialOffer": "Included in Pro · Try it free",
-      "otherTool": "Switch to it to use it",
-      "setup": "One step left"
-    },
-    "ready": {
-      "body": "{tool} opens in a new tab."
-    },
-    "offer": {
-      "title": "Included in Pro · Try it free",
-      "body": "With Pro you can use {tool}.",
-      "trialCta": "Try Pro free",
-      "plansCta": "See plans"
-    },
-    "switch": {
-      "title": "Your plan includes one tool at a time.",
-      "body": "To use {tool}, pick it under Tools.",
-      "cta": "Switch tool"
-    }
-  },
-  "launch": {
-    "open": "Open",
-    "opening": "Opening…",
-    "blocked": "Your browser did not open the new tab.",
-    "openNamed": "Open {tool}",
-    "retry": "Try again",
-    "help": "Talk to a person",
-    "trialCta": "Try Pro free",
-    "plansCta": "See plans",
-    "signIn": "Sign in"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Included in Pro · Try it free",
@@ -753,10 +719,6 @@
     "back": "Back",
     "close": "Close and go back to Home",
     "step": "Step {n} of 3",
-    "handoff": {
-      "title": "Make your clips",
-      "body": "Clips opens in a new tab. Paste your stream link there and we do the rest."
-    },
     "s1": {
       "metaTitle": "Clips · Step 1",
       "title": "Paste the link to your stream or video",
@@ -887,7 +849,8 @@
         "pro": "Pro plan",
         "pro_anual": "Pro annual plan",
         "vip": "VIP plan"
-      }
+      },
+      "yourAccount": "Your account"
     }
   },
   "account": {
@@ -1468,38 +1431,8 @@
       "none": "No rush"
     }
   },
-  "live": {
-    "metaTitle": "Live",
-    "title": "Your stream",
-    "sub": "All set. Whenever you’re ready, tap the big button.",
-    "obsOk": "OBS connected",
-    "platforms": "Your stream will go out on {plataformas}",
-    "start": "Start stream",
-    "startSub": "Starts in 3 seconds. You can stop it any time.",
-    "stop": "End stream",
-    "liveFor": "Live · {tiempo}",
-    "confirmTitle": "End your stream?",
-    "confirmYes": "Yes, end it",
-    "confirmNo": "Keep going",
-    "scenes": "Scenes",
-    "scenesSub": "Tap one to change what your audience sees",
-    "onAir": "On screen",
-    "quick": "Quick controls",
-    "mic": "Microphone",
-    "cam": "Camera",
-    "clipsAfter": "Make clips when it ends",
-    "check": "Before you start",
-    "internet": "Internet",
-    "good": "Good",
-    "slow": "Slow",
-    "offline": "Offline",
-    "streamTitle": "Title",
-    "adv": "Quality, servers and shortcuts",
-    "advBody": "You manage these in OBS. Shortcuts will show here when your tool offers them."
-  },
   "tools": {
     "metaTitle": "Tools",
-    "title": "More tools",
     "yours": "Your tools",
     "included": "Included in your plan",
     "inPro": "Included in Pro",
@@ -1518,6 +1451,21 @@
       "chalybpicks": "Today’s sports forecasts, explained simply.",
       "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
       "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+    },
+    "crumb": "Home",
+    "sub": "They're all included in your {plan} plan and open right here.",
+    "also": "Also included",
+    "openArrow": "Open ›",
+    "status": {
+      "clipsBoth": "{n} in progress · {m} ready {cuando}",
+      "clipsWorking": "{n} in progress",
+      "clipsReady": "{m} ready {cuando}",
+      "clipsNone": "You don't have clips yet",
+      "signalsToday": "{n, plural, one {# new signal today} other {# new signals today}}",
+      "signalsNone": "No new signals today",
+      "liveSetup": "One step left: connect",
+      "liveReady": "Ready to go live",
+      "liveOn": "Live now"
     }
   },
   "assistant": {
@@ -1987,7 +1935,9 @@
         "yes": "Yes, hide",
         "no": "No, go back"
       },
-      "err": "We couldn’t save the change. Try again."
+      "err": "We couldn’t save the change. Try again.",
+      "incident": "Incident",
+      "incidentToggle": "Open incident in {herramienta}: the error screen says we've been alerted"
     },
     "settings": {
       "metaTitle": "Settings",
@@ -2531,5 +2481,497 @@
       "sentBody": "We’ll review it and contact you through the details you gave.",
       "folio": "Reference {folio}."
     }
+  },
+  "toolShell": {
+    "crumb": "Home",
+    "included": "Included in your plan",
+    "inProTry": "Included in Pro · Try it free",
+    "inPro": "Included in Pro",
+    "tabsAria": "{herramienta} sections",
+    "tab": {
+      "chalybclip": {
+        "main": "Make clips",
+        "history": "My clips",
+        "settings": "Settings"
+      },
+      "chalybcrypto": {
+        "main": "Signals",
+        "history": "History",
+        "settings": "Settings"
+      },
+      "chalybobs": {
+        "main": "Go live",
+        "history": "My streams",
+        "settings": "Settings"
+      }
+    },
+    "error": {
+      "title": "{herramienta} didn't open this time",
+      "body": "Something failed on our side, it's not your fault.",
+      "saved": "What you already did is saved.",
+      "retry": "Try again",
+      "retrying": "Trying…",
+      "human": "Talk to a person",
+      "known": "We've been alerted and are fixing it.",
+      "code": "If you write to us, mention this code: <b>{codigo}</b>",
+      "meanwhile": {
+        "chalybclip": "Meanwhile, your earlier clips are still in",
+        "chalybcrypto": "Meanwhile, the latest signals are still in",
+        "chalybobs": "If you were already live, your stream keeps going in OBS."
+      },
+      "meanwhileLink": {
+        "chalybclip": "My results",
+        "chalybcrypto": "History"
+      }
+    },
+    "locked": {
+      "title": "{herramienta} comes with Pro",
+      "bodyTrial": "Try it free for 7 days. Cancel anytime.",
+      "ctaTrial": "Start my 7 free days",
+      "bodyPlans": "It's included in the Pro plan.",
+      "ctaPlans": "See plans"
+    },
+    "advanced": {
+      "title": "Advanced options",
+      "sub": "For professional creators"
+    },
+    "risk": {
+      "sub": "Read it once. It's 3 things.",
+      "b1": {
+        "title": "These are informational ideas, not personal advice.",
+        "body": "It's not financial advice or a recommendation for you."
+      },
+      "b2": {
+        "title": "Signals are the same for everyone on your plan.",
+        "body": "We don't use your balances, your investments or your goals."
+      },
+      "b3": {
+        "title": "You decide and the risk is yours.",
+        "body": "We don't guarantee results. You can lose money."
+      },
+      "legalK": "The notice, word for word",
+      "hint": "We'll only ask again if the notice changes."
+    },
+    "disclaimer": {
+      "text": "<b>This is informational, not financial advice.</b> Signals are the same for everyone and don't use your balances or your investments. You decide.",
+      "read": "Read full notice",
+      "sheetTitle": "Risk notice",
+      "close": "Close"
+    },
+    "autosave": "Changes save on their own.",
+    "saving": "Saving…",
+    "saved": "Saved"
+  },
+  "signalsTool": {
+    "metaTitle": "Signals",
+    "metaDetail": "{moneda} signal",
+    "metaHistory": "Signal history",
+    "metaSettings": "Signals settings",
+    "listTitle": "Your latest signals",
+    "filter": {
+      "all": "All",
+      "aria": "Filter by coin"
+    },
+    "new": "New",
+    "when": {
+      "today": "Today, {hora}",
+      "yesterday": "Yesterday, {hora}",
+      "date": "{fecha}, {hora}"
+    },
+    "verdict": {
+      "buy": "Buying moment",
+      "sell": "Selling moment",
+      "wait": "No clear signal"
+    },
+    "ref": "Reference price",
+    "why": "<b>Why:</b> {texto}",
+    "detail": "See details",
+    "detailAria": "See details for {moneda}",
+    "alerts": {
+      "title": "My alerts",
+      "change": "Change",
+      "yes": "On",
+      "no": "Off",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "app": "In the app",
+      "schedule": "Hours",
+      "range": "{desde} to {hasta}",
+      "allDay": "All day"
+    },
+    "legend": {
+      "title": "What does each one mean?",
+      "buy": "The price is rising steadily.",
+      "sell": "It rose fast and could drop.",
+      "wait": "Nothing is clear for now."
+    },
+    "empty": "There are no signals for your coins yet. We'll let you know as soon as there is one.",
+    "emptyAdd": "Add more coins",
+    "partial": "We couldn't get the new signals. Here are the latest ones we had.",
+    "retry": "Try again",
+    "history": {
+      "empty": "There are no signals in your history yet.",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "detailPage": {
+      "back": "Signals",
+      "range": {
+        "1d": "1 day",
+        "7d": "7 days",
+        "1m": "1 month"
+      },
+      "rangeAria": "Chart period",
+      "marker": "We alerted you here · {hora}",
+      "chartAria": "{moneda} price over the last {periodo}",
+      "whyTitle": "Why, in plain words",
+      "follow": "Get alerts for this coin",
+      "followVia": "By {canales}",
+      "same": "Everyone on your plan sees this same signal. It doesn't use your balances or your investments.",
+      "old": "This signal is from {fecha}. It may no longer apply.",
+      "notFound": {
+        "title": "We couldn't find this signal",
+        "body": "It may no longer be available.",
+        "cta": "See signals"
+      }
+    },
+    "settings": {
+      "coins": "Your coins",
+      "coinsHint": "You only choose which coins we alert you about. The signal is the same for everyone.",
+      "addCoin": "Add coin",
+      "removeCoin": "Remove {moneda}",
+      "how": "How we alert you",
+      "appHint": "A notification on your phone",
+      "when": "Hours",
+      "from": "Alert me from",
+      "to": "Until",
+      "night": "We don't bother you at night",
+      "days": "Days",
+      "daysAll": "Every day",
+      "daysWeekdays": "Monday to Friday",
+      "legal": "Important information",
+      "riskNotice": "Risk notice",
+      "riskAccepted": "You accepted it on {fecha}",
+      "readAgain": "Read again",
+      "advSummary": "Time frame, daily summary and alert format",
+      "timeframe": "Time frame",
+      "short": "Short term",
+      "medium": "Medium term",
+      "timeframeHint": "Filters which signals you get. They're the same for everyone.",
+      "daily": "Daily summary",
+      "dailyHint": "Once a day, when your hours start.",
+      "format": "Alert format",
+      "formatShort": "Short",
+      "formatExplained": "With explanation",
+      "error": "We couldn't save the change. Try again.",
+      "noCoins": "Choose at least one coin."
+    }
+  },
+  "liveTool": {
+    "metaTitle": "Live",
+    "metaConnect": "Connect your computer",
+    "metaStreams": "My streams",
+    "metaSettings": "Live settings",
+    "setup": {
+      "title": "Connect your computer",
+      "sub": "You only do this once. It takes about 2 minutes.",
+      "obs": "<b>What is OBS?</b> It's the free program that sends your computer's picture to YouTube or Twitch. We run it for you.",
+      "now": "Now",
+      "later": "Next",
+      "last": "Last",
+      "s1": {
+        "title": "Download the Live program",
+        "body": "Open it on the computer you stream from. If you don't have OBS, it installs it for you.",
+        "windows": "Download for Windows",
+        "mac": "Download for Mac",
+        "otherWindows": "Have Windows?",
+        "otherMac": "Have a Mac?",
+        "again": "Download didn't start? Download it again."
+      },
+      "s2": {
+        "title": "Type this code in the program",
+        "body": "The program asks for it when it opens. That's how we know it's your computer.",
+        "valid": "This code works for 10 minutes.",
+        "expired": "This code has expired.",
+        "newCode": "Get a new code",
+        "aria": "Your code: {codigo}"
+      },
+      "s3": {
+        "title": "Done!",
+        "body": "When it connects, you'll see a green check here and you can go live.",
+        "done": "Done! Your computer is connected."
+      },
+      "wait": "Waiting for your computer… This page updates on its own.",
+      "human": "Talk to a person",
+      "codeError": "We couldn't get you a code. Try again."
+    },
+    "room": {
+      "title": "Your stream",
+      "sub": "All set. Whenever you want, tap the big button.",
+      "obsOk": "OBS connected",
+      "platforms": "Your stream will go to {plataformas}",
+      "change": "Change",
+      "start": "Go live",
+      "startSub": "Starts in 3 seconds. You can stop it whenever you want.",
+      "on": "Live · {tiempo}",
+      "onLabel": "Live",
+      "viewers": "{n, plural, one {# person watching} other {# people watching}}",
+      "internet": "Internet",
+      "good": "Good",
+      "slow": "Slow",
+      "offline": "Offline",
+      "slowNote": "We lowered the quality so it doesn't cut out.",
+      "previewLive": "LIVE",
+      "previewLabel": "What your audience sees",
+      "scenes": "Scenes",
+      "scenesSub": "Tap one to change what your audience sees",
+      "onAir": "On screen",
+      "stop": "End stream",
+      "stopSub": "We'll ask before ending.",
+      "mic": "Microphone",
+      "cam": "Camera",
+      "micOn": "On",
+      "micOff": "Off",
+      "camOn": "On",
+      "camOff": "Off",
+      "clipsAfter": "Make clips when it ends",
+      "quick": "Quick controls",
+      "before": "Before you start",
+      "streamTitle": "Title",
+      "clipNow": "Clip this moment",
+      "clipNowSub": "Saves the last minute to Clips.",
+      "clipNowDone": "Done, we saved this moment. You'll see it in Clips in a few minutes.",
+      "clipNowNeedsRec": "To clip while live, turn on Save the recording in Settings.",
+      "clipNowError": "We couldn't save this moment. Try again.",
+      "advSummary": "Quality, servers and shortcuts",
+      "advBody": "Quality, servers and shortcuts are in Settings.",
+      "advLink": "Go to Settings",
+      "confirmTitle": "End your stream?",
+      "confirmBody": "Your audience will stop seeing you.",
+      "confirmYes": "Yes, end it",
+      "confirmNo": "Keep streaming",
+      "ended": "Your stream ended · It lasted {duracion}.",
+      "endedClips": "Make clips from this stream",
+      "endedList": "See my streams",
+      "startError": "We couldn't start your stream. Check that {plataforma} is still connected.",
+      "retry": "Try again",
+      "human": "Talk to a person",
+      "actionError": "We couldn't do that. Try again.",
+      "lost": "We lost the connection to your computer. Your stream may keep going in OBS.",
+      "reconnect": "Reconnect",
+      "offlineTitle": "Your computer isn't connected",
+      "offlineBody": "Open the Live program on your computer.",
+      "offlineCta": "Try again",
+      "noDestTitle": "Choose where to stream",
+      "noDestBody": "Turn on at least one platform to start.",
+      "noDestCta": "Go to Settings",
+      "confirmClose": "Close"
+    },
+    "streams": {
+      "title": "My streams",
+      "duration": "Lasted {duracion}",
+      "watch": "Watch recording",
+      "clips": "Make clips",
+      "noRecording": "The recording wasn't saved.",
+      "emptyTitle": "You don't have streams yet",
+      "emptyBody": "When you finish your first stream, it shows up here.",
+      "emptyCta": "Go to Go live"
+    },
+    "settings": {
+      "where": "Where you stream",
+      "whereNote": "You can stream to several at once.",
+      "connected": "{usuario} · connected",
+      "connect": "Connect",
+      "streamThere": "Stream on {plataforma}",
+      "device": "Your computer",
+      "deviceReady": "OBS ready · {sistema}",
+      "deviceNotReady": "OBS missing · {sistema}",
+      "deviceOn": "Connected",
+      "deviceOff": "Offline",
+      "disconnect": "Disconnect",
+      "addDevice": "Connect another computer",
+      "noDevice": "You haven't connected your computer yet.",
+      "noDeviceCta": "Connect my computer",
+      "quality": "Quality",
+      "recommended": "Recommended",
+      "auto": "Automatic",
+      "autoBody": "Adjusts itself to your internet.",
+      "high": "High",
+      "highBody": "For very fast internet.",
+      "saver": "Saver",
+      "saverBody": "If your internet is slow or you use data.",
+      "after": "When it ends",
+      "clipsAfter": "Make clips when it ends",
+      "clipsAfterBody": "They arrive in Clips",
+      "saveRecording": "Save the recording",
+      "saveRecordingBody": "So you can make clips while you stream.",
+      "keyNote": "Your stream key is hidden for security. It only shows in Advanced options.",
+      "advSummary": "Bitrate, servers, shortcuts and stream key",
+      "bitrate": "Bitrate (kbps)",
+      "resolution": "Resolution and fps",
+      "server": "Ingest server",
+      "serverAuto": "Automatic",
+      "key": "{plataforma} stream key",
+      "show": "Show",
+      "hide": "Hide",
+      "revealTitle": "Confirm it's you",
+      "revealBody": "Type your password to see the key.",
+      "password": "Your password",
+      "revealCta": "Show the key",
+      "revealError": "The password doesn't match.",
+      "revealSignIn": "Signed in with a link or Google? Sign in again and come back here.",
+      "revealSignInCta": "Sign in again",
+      "shortcuts": "Keyboard shortcuts",
+      "shortcutsBody": "You set the shortcuts in the Live program on your computer.",
+      "manual": "Manual OBS connection",
+      "manualBody": "If you'd rather not use the program, connect OBS with its address, port and password from the Live program.",
+      "saveError": "We couldn't save the change. Try again.",
+      "connectTitle": "Connect {plataforma}",
+      "close": "Close"
+    }
+  },
+  "clipsTool": {
+    "metaTitle": "Clips",
+    "metaMine": "My clips",
+    "metaDetail": "Clip details",
+    "metaSettings": "Clips settings",
+    "home": {
+      "hero": {
+        "title": "Make new clips",
+        "body": "Paste the link to your stream or video. We give you clips with captions, ready to post.",
+        "cta": "Make new clips",
+        "hint": "Takes 1 minute. Works with {plataformas}."
+      },
+      "noCredits": {
+        "title": "You ran out of credits this month. They renew on {fecha}.",
+        "cta": "See my plan"
+      },
+      "accounts": "Connected accounts",
+      "accountsSettings": "Settings",
+      "connected": "Connected",
+      "connect": "Connect",
+      "processing": "In progress",
+      "processingHint": "We'll let you know when they're ready",
+      "row": {
+        "title": "Clips from “{titulo}”",
+        "step": "{paso}…",
+        "eta": "About {n} minutes left.",
+        "stepOf": "Step {n} of 4",
+        "progress": "Progress of “{titulo}”",
+        "see": "See progress",
+        "failed": "We couldn't finish “{titulo}”.",
+        "noCharge": "No credits were used.",
+        "retry": "Try again"
+      },
+      "steps": {
+        "receiving": "Receiving your video",
+        "finding": "Finding the best moments",
+        "captions": "Adding captions",
+        "preparing": "Preparing the download"
+      },
+      "more": "and {n} more",
+      "latest": "Your latest clips",
+      "latestAll": "See all ({n})",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "card": {
+      "meta": "{fecha} · {formato}",
+      "open": "Open {titulo}"
+    },
+    "format": {
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "square": "Square"
+    },
+    "mine": {
+      "title": "My clips",
+      "search": "Search my clips",
+      "filters": "Filter by format",
+      "all": "All",
+      "count": "{n, plural, one {# clip} other {# clips}}",
+      "none": "No clips match that filter.",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "detail": {
+      "back": "My clips",
+      "position": "Clip {n} of {total}",
+      "prev": "Previous clip",
+      "next": "Next clip",
+      "title": "Clip title",
+      "titleHint": "This is its name when you post it",
+      "captions": "Captions",
+      "captionsSub": "{idioma} · {estilo}",
+      "trim": "Trim",
+      "trimHint": "Drag the purple edges",
+      "trimStart": "Starts at <b>{t}</b>",
+      "trimLength": "Lasts <b>{t}</b>",
+      "trimEnd": "Ends at <b>{t}</b>",
+      "trimStartHandle": "Trim start",
+      "trimEndHandle": "Trim end",
+      "format": "Format",
+      "download": "Download",
+      "preparing": "Preparing your download…",
+      "share": "Share",
+      "copied": "Link copied",
+      "publish": "Post to {plataforma}",
+      "published": "Done, we sent it to {plataforma}.",
+      "publishError": "{plataforma} didn't respond. We'll try again in a few minutes and let you know.",
+      "autosave": "Changes save on their own. Your original clip isn't deleted.",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "We couldn't save that change. Try again.",
+      "player": "Preview of {titulo}",
+      "notFound": {
+        "title": "We couldn't find this clip",
+        "cta": "See my clips"
+      }
+    },
+    "langs": {
+      "es": "Spanish (Mexico)",
+      "en": "English"
+    },
+    "presets": {
+      "clasico": "Classic",
+      "amarillo": "Yellow",
+      "fondo": "With background",
+      "sample": "THIS WAS EPIC"
+    },
+    "settings": {
+      "accounts": "Connected accounts",
+      "tiktokSub": "To post with one tap",
+      "captions": "Captions",
+      "captionsOn": "Add captions to my clips",
+      "captionLang": "Caption language",
+      "style": "Caption style",
+      "styleHint": "Tap one. We'll use it on your next clips.",
+      "brand": "Your brand",
+      "watermark": "Watermark / logo",
+      "watermarkSub": "Your logo in a corner of every clip",
+      "autosave": "Changes save on their own and apply to your next clips.",
+      "autopublish": "Post automatically to my accounts",
+      "autopublishAccount": "Account",
+      "autopublishOn": "Automatic posting is on for {cuenta}.",
+      "duration": "Clip length",
+      "durationAuto": "Automatic",
+      "durationFixed": "{n} seconds",
+      "framing": "Framing",
+      "framingCenter": "Auto center",
+      "framingFollow": "Follow the person",
+      "bulk": "Upload several videos at once",
+      "bulkHint": "Paste several links in step 1 of Make new clips.",
+      "bulkCta": "Make new clips"
+    },
+    "connect": {
+      "title": "Connect {plataforma}",
+      "close": "Close",
+      "error": "We couldn't start the connection. Try again."
+    },
+    "close": "Close and go back to Clips"
   }
 }

@@ -145,7 +145,7 @@ export function InvestWizard({
               text={t.markup('s1.consentText', {
                 exchange,
                 b: (c) => `<b>${c}</b>`,
-                privacy: (c) => `<a href="/legal/privacy" class="ch-lnk" target="_blank" rel="noopener">${c}</a>`,
+                privacy: (c) => `<a href="/legal/privacy" class="ch-lnk">${c}</a>`,
               })}
             />
           </p>

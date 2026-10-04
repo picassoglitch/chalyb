@@ -10,7 +10,7 @@ import { X } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/routing';
 import { Sheet } from './sheet';
 
-export function WizardClose({ label }: { label: string }) {
+export function WizardClose({ label, href = '/app' }: { label: string; href?: string }) {
   const t = useTranslations('wizard');
   const [confirmTitle, leaveLabel, stayLabel] = [t('unsaved'), t('leave'), t('stay')];
   const dirty = useRef(false);
@@ -40,7 +40,7 @@ export function WizardClose({ label }: { label: string }) {
   return (
     <>
       <Link
-        href={'/app' as Route}
+        href={href as Route}
         className="ch-close"
         aria-label={label}
         onClick={(e) => {
@@ -53,7 +53,7 @@ export function WizardClose({ label }: { label: string }) {
       </Link>
       <Sheet open={asking} onClose={() => setAsking(false)} title={confirmTitle} closeLabel={stayLabel}>
         <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
-          <button type="button" className="ch-btn ch-btn--danger" onClick={() => router.push('/app')}>
+          <button type="button" className="ch-btn ch-btn--danger" onClick={() => router.push(href as Route)}>
             {leaveLabel}
           </button>
           <button type="button" className="ch-btn ch-btn--primary" onClick={() => setAsking(false)}>

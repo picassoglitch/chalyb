@@ -13,14 +13,18 @@
 //   …flaky…          → the first attempt fails with platform_down, then works
 //   anything else    → ready, with `count` clips
 
-import type {
-  Clip,
-  ClipFailureReason,
-  ClipJob,
-  ClipJobState,
-  ClipsAdapter,
-  CreateClipJobInput,
-  CreateClipJobResult,
+import {
+  DEFAULT_CLIPS_SETTINGS,
+  type Clip,
+  type ClipDetail,
+  type ClipFailureReason,
+  type ClipJob,
+  type ClipJobState,
+  type ClipPatch,
+  type ClipsAdapter,
+  type ClipsSettings,
+  type CreateClipJobInput,
+  type CreateClipJobResult,
 } from './types';
 
 interface StoredJob {
@@ -42,6 +46,35 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
   let counter = 0;
   const newId = options.newId ?? (() => `mock_${now().toString(36)}_${(counter++).toString(36)}`);
   const jobs = new Map<string, StoredJob>();
+  /** The person's edits per clip (the original is never touched). */
+  const edits = new Map<string, ClipPatch>();
+  const settings = new Map<string, ClipsSettings>();
+
+  function detail(job: ClipJob, clip: Clip): ClipDetail {
+    const e = edits.get(clip.id) ?? {};
+    return {
+      id: clip.id,
+      jobId: job.id,
+      title: e.title ?? clip.title,
+      sourceDurationSec: clip.durationSec,
+      format: e.format ?? job.format,
+      captionsOn: e.captionsOn ?? true,
+      trim: e.trim ?? { startS: 0, endS: clip.durationSec },
+      createdAt: job.createdAt,
+      downloadUrl: clip.downloadUrl,
+      thumbUrl: null,
+      previewUrl: null,
+    };
+  }
+
+  function readyClips(userId: string): ClipDetail[] {
+    return [...jobs.values()]
+      .filter((s) => s.job.userId === userId)
+      .map(view)
+      .filter((j) => j.state === 'ready')
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .flatMap((j) => j.clips.map((c) => detail(j, c)));
+  }
 
   function scenario(url: string): { failAt: ClipJobState; reason: ClipFailureReason } | null {
     const u = url.toLowerCase();
@@ -64,8 +97,10 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
       return { ...job, state: 'failed', reason: failure.reason, momentsFound: null, clips: [] };
     }
     const found = PROGRESS.indexOf(reached) >= PROGRESS.indexOf('adding_captions');
+    const left = PROGRESS.length - 1 - PROGRESS.indexOf(reached);
     return {
       ...job,
+      etaMinutes: left > 0 ? left : undefined,
       state: reached,
       momentsFound: found ? job.count : null,
       clips: reached === 'ready' ? makeClips(job.id, job.count) : [],
@@ -82,6 +117,9 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
       fileUpload: false,
       supportsConnect: false,
       confirmsNoChargeOnFailure: true,
+      editClips: true,
+      framing: true,
+      apiAccess: false,
     }),
 
     async createJob(input: CreateClipJobInput): Promise<CreateClipJobResult> {
@@ -93,6 +131,7 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
           id,
           userId: input.userId,
           sourceUrl: input.sourceUrl,
+          title: titleFrom(input.sourceUrl),
           format: input.format,
           count: input.count,
           attempts: 1,
@@ -118,10 +157,15 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
         .slice(0, limit);
     },
 
-    async retryJob(userId, jobId) {
+    async retryJob(userId, jobId, opts) {
       const stored = jobs.get(jobId);
       if (!stored || stored.job.userId !== userId) return;
-      stored.job = { ...stored.job, attempts: stored.job.attempts + 1 };
+      stored.job = {
+        ...stored.job,
+        attempts: stored.job.attempts + 1,
+        settled: false,
+        manualRetries: (stored.job.manualRetries ?? 0) + (opts?.manual ? 1 : 0),
+      };
       stored.attemptStartedMs = now();
     },
 
@@ -131,13 +175,68 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
       stored.job = { ...stored.job, settled: true };
       return true;
     },
+
+    async listClips(userId, limit = 200) {
+      return readyClips(userId).slice(0, limit);
+    },
+
+    async getClip(userId, clipId) {
+      return readyClips(userId).find((c) => c.id === clipId) ?? null;
+    },
+
+    async patchClip(userId, clipId, patch) {
+      const clip = readyClips(userId).find((c) => c.id === clipId);
+      if (!clip) return null;
+      edits.set(clipId, { ...(edits.get(clipId) ?? {}), ...patch });
+      return readyClips(userId).find((c) => c.id === clipId) ?? null;
+    },
+
+    async getSettings(userId) {
+      return settings.get(userId) ?? DEFAULT_CLIPS_SETTINGS;
+    },
+
+    async saveSettings(userId, next) {
+      settings.set(userId, next);
+    },
+
+    // No account connection without an engine API (supportsConnect=false).
+    async accounts() {
+      return [];
+    },
+    async connectUrl() {
+      return null;
+    },
+    async publishClip() {
+      return { ok: false };
+    },
   };
 }
+
+/** "…watch?v=torneo-del-sabado" → "torneo del sabado"; undefined otherwise. */
+function titleFrom(url: string): string | undefined {
+  try {
+    const u = new URL(url);
+    const v = u.searchParams.get('v') ?? u.pathname.split('/').filter(Boolean).pop();
+    return v ? v.replace(/[-_]+/g, ' ').slice(0, 60) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Sample titles for the mock's clips (development and previews only). */
+const MOCK_TITLES = [
+  'El mejor momento del stream',
+  'Reacción épica',
+  'La jugada final',
+  'Respondiendo al chat',
+  'Risa con los amigos',
+  'El consejo del día',
+];
 
 function makeClips(jobId: string, count: number): Clip[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `${jobId}_${i + 1}`,
-    title: `Clip ${i + 1}`,
+    title: MOCK_TITLES[i % MOCK_TITLES.length]!,
     durationSec: 15 + ((i * 7) % 46),
     downloadUrl: `/api/clips/mock/${encodeURIComponent(jobId)}/${i + 1}`,
   }));

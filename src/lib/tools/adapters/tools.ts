@@ -44,6 +44,19 @@ export interface Signal {
   /** The engine's own general explanation; the hub never writes signal text. */
   explanation: string;
   at: string;
+  /** Reference price when the signal was made (Q5 default: MXN). */
+  refPriceMXN?: number;
+  /** The engine's "por qué": a short line about the PRICE, never the person,
+   *  and up to 3 bullets for the detail (TOOLS-SPEC §5.2–§5.3). */
+  why?: { short: string; bullets: string[] };
+}
+
+export type SignalRange = '1d' | '7d' | '1m';
+
+/** One point of the past price (the detail chart shows the past only). */
+export interface PricePoint {
+  at: string;
+  priceMXN: number;
 }
 
 export interface Coin {
@@ -59,8 +72,17 @@ export type SignalChannel = 'whatsapp' | 'email' | 'app';
 export interface SignalPrefs {
   coins: string[];
   channels: SignalChannel[];
+  /** Corto plazo (day) / Mediano plazo (week): filters which signals
+   *  arrive; the signals are the same for everyone. */
   timeframe: 'day' | 'week';
   quietHours: boolean;
+  /** Horario (TOOLS-SPEC §5.4), 'HH:MM' 24 h. */
+  from?: string;
+  to?: string;
+  days?: 'all' | 'weekdays';
+  /** Opciones avanzadas: one summary a day; short or explained notices. */
+  dailySummary?: boolean;
+  format?: 'short' | 'explained';
 }
 
 export interface SenalesAdapter {
@@ -68,20 +90,39 @@ export interface SenalesAdapter {
   coins(): Promise<Coin[]>;
   channels(): Promise<SignalChannel[]>;
   /** CONTENT: by plan only. There is deliberately no user parameter. */
-  getSignals(input: { plan: PlanTierKey; coins?: string[] }): Promise<Signal[]>;
+  getSignals(input: { plan: PlanTierKey; coins?: string[]; since?: string }): Promise<Signal[]>;
+  /** One signal and its past price, by plan. No user parameter either. */
+  getSignal(input: {
+    plan: PlanTierKey;
+    id: string;
+    range: SignalRange;
+  }): Promise<{ signal: Signal; series: PricePoint[] } | null>;
   /** DELIVERY: the user's filter. */
   getPrefs(userId: string): Promise<SignalPrefs | null>;
   savePrefs(userId: string, prefs: SignalPrefs): Promise<void>;
 }
 
 // ── En vivo ──────────────────────────────────────────────────────────
+// TOOLS-SPEC §1.3 / §6. The engine pairs a small desktop program with a
+// 6-digit code and drives OBS through it (Q6 default). Viewers come from the
+// platforms with the user's connected accounts, null when unknown (Q7).
+
 export interface LiveScene {
   id: string;
   name: string;
+  /** Short description under the name ("Solo tú", "Vuelvo enseguida"). */
+  note?: string;
 }
 
+export type LivePlatform = 'youtube' | 'twitch' | 'kick' | 'facebook';
+export const LIVE_PLATFORMS: readonly LivePlatform[] = ['youtube', 'twitch', 'kick', 'facebook'];
+
 export interface LiveStatus {
+  /** A paired computer is online with OBS ready. */
   obsConnected: boolean;
+  /** At least one computer was ever paired (57 vs "no está conectada"). */
+  paired: boolean;
+  /** Display names of the destinations this stream goes to. */
   platforms: string[];
   title: string;
   scenes: LiveScene[];
@@ -92,7 +133,65 @@ export interface LiveStatus {
   internet: 'good' | 'slow' | 'offline';
   /** ISO time the stream started, or null when off air. */
   liveSince: string | null;
+  /** People watching, or null when the platforms don't tell us (Q7). */
+  viewers: number | null;
 }
+
+export interface LiveDevice {
+  id: string;
+  name: string;
+  os: 'windows' | 'mac' | 'linux';
+  obsReady: boolean;
+  online: boolean;
+  lastSeenAt: string;
+}
+
+export interface PairingCode {
+  /** 6 digits, single use. */
+  code: string;
+  /** 10 minutes after it was issued. */
+  expiresAt: string;
+}
+
+export type LiveQuality = 'auto' | 'high' | 'saver';
+
+export interface LiveDestination {
+  platform: LivePlatform;
+  connected: boolean;
+  /** "@usuario" on the platform, once connected. */
+  handle: string | null;
+  /** Stream there (the switch). Only a connected destination can be on. */
+  enabled: boolean;
+}
+
+export interface LiveAdvanced {
+  bitrateKbps: number;
+  resolution: '1080p60' | '1080p30' | '720p60' | '720p30';
+  /** Ingest server per platform, "auto" by default. */
+  server: string;
+}
+
+export interface LiveSettings {
+  destinations: LiveDestination[];
+  quality: LiveQuality;
+  clipsAfter: boolean;
+  /** "Guardar la grabación": needed for "Hacer clip de este momento". */
+  saveRecording: boolean;
+  advanced: LiveAdvanced;
+}
+
+export interface PastStream {
+  id: string;
+  title: string;
+  startedAt: string;
+  durationSec: number;
+  platforms: string[];
+  /** A link the Clips wizard can read, when the recording was kept. */
+  recordingUrl: string | null;
+}
+
+/** The desktop program, served from our own domain in the same tab. */
+export type LiveDownload = { url: string } | { filename: string; body: string };
 
 export interface EnVivoAdapter {
   capabilities(): ToolCapabilities;
@@ -101,6 +200,23 @@ export interface EnVivoAdapter {
   stop(userId: string): Promise<LiveStatus>;
   setScene(userId: string, sceneId: string): Promise<LiveStatus>;
   toggle(userId: string, what: 'mic' | 'cam' | 'clipsAfter'): Promise<LiveStatus>;
+  devices(userId: string): Promise<LiveDevice[]>;
+  createPairingCode(userId: string): Promise<PairingCode>;
+  disconnectDevice(userId: string, deviceId: string): Promise<void>;
+  settings(userId: string): Promise<LiveSettings>;
+  saveSettings(userId: string, patch: Partial<Omit<LiveSettings, 'destinations'>> & {
+    enabled?: Partial<Record<LivePlatform, boolean>>;
+  }): Promise<LiveSettings>;
+  /** After the platform's OAuth (same tab) comes back. */
+  connectDestination(userId: string, platform: LivePlatform): Promise<LiveSettings>;
+  streams(userId: string): Promise<PastStream[]>;
+  /** The secret stream key. Only called when the person asks to see it;
+   *  never logged, never rendered before that. */
+  streamKey(userId: string, platform: LivePlatform): Promise<string>;
+  /** A link to the last `windowSec` seconds of the live recording, or null
+   *  when nothing is being recorded. */
+  clipMoment(userId: string, windowSec: number): Promise<{ sourceUrl: string } | null>;
+  download(os: 'windows' | 'mac'): Promise<LiveDownload | null>;
 }
 
 // ── Asistente ────────────────────────────────────────────────────────
