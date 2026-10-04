@@ -12,7 +12,7 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { TOOLS } from '@/config/tools';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
-import { getEnVivo, getSenales } from '@/lib/tools/registry';
+import { getEnVivo, getSenales, hubRunsTool } from '@/lib/tools/registry';
 import { recordToolHealth } from '@/lib/tools/status';
 import { TOOL_TIMEOUT_MS } from '@/lib/tools/bff-core';
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
   if (!authorized(req)) return NextResponse.json({ ok: false }, { status: 401 });
   const results: Record<string, string> = {};
   for (const tool of TOOLS) {
-    const probe = PROBES[tool.slug]?.() ?? null;
+    const probe = hubRunsTool(tool.slug) ? (PROBES[tool.slug]?.() ?? null) : null;
     if (!probe) {
       results[tool.slug] = 'skipped';
       continue;

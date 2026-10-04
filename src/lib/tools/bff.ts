@@ -16,6 +16,7 @@ import {
   closedBreaker,
   countsAsOutage,
   failureEffect,
+  shouldRecordOk,
   supportCode,
   ToolCircuitOpenError,
   ToolTimeoutError,
@@ -28,8 +29,20 @@ import {
 } from './bff-core';
 import { recordToolHealth } from './status';
 
-const store = globalThis as unknown as { __chalybBreakers?: Map<string, BreakerState> };
+const store = globalThis as unknown as {
+  __chalybBreakers?: Map<string, BreakerState>;
+  __chalybOkAt?: Map<string, number>;
+};
 const breakers = () => (store.__chalybBreakers ??= new Map());
+const okAt = () => (store.__chalybOkAt ??= new Map());
+
+/** Write a healthy observation now and then (throttled per tool). */
+function noteHealthy(slug: string, latencyMs: number) {
+  const now = Date.now();
+  if (!shouldRecordOk(okAt().get(slug), now)) return;
+  okAt().set(slug, now);
+  void recordToolHealth(slug, { ok: true, latencyMs }).catch(() => {});
+}
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -93,8 +106,10 @@ export async function runTool<T>(
       break;
     }
     try {
+      const started = Date.now();
       const data = await withTimeout(op(), TOOL_TIMEOUT_MS);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
+      noteHealthy(slug, Date.now() - started);
       return { ok: true, data };
     } catch (err) {
       last = err;

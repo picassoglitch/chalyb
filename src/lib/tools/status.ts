@@ -55,6 +55,20 @@ async function save(slug: string, s: ToolStatusRow, reason: string | null, nowIs
   if (error) console.error('[tool-status] save failed', slug, error.message);
 }
 
+/** Set alerted_at only if no one has yet. True for the one caller that did. */
+async function claimOwnerAlert(slug: string, nowIso: string): Promise<boolean> {
+  const db = createAdminClient();
+  await db.from('tool_status').upsert({ slug }, { onConflict: 'slug', ignoreDuplicates: true });
+  const { data, error } = await db
+    .from('tool_status')
+    .update({ alerted_at: nowIso, updated_at: nowIso })
+    .eq('slug', slug)
+    .is('alerted_at', null)
+    .select('slug');
+  if (error) return false;
+  return (data ?? []).length > 0;
+}
+
 /** Who hears that a tool is down (Q10 default: the contact inbox). */
 function ownerAlertTo(): string {
   return process.env.TOOL_ALERT_EMAIL || getContactInbox();
@@ -74,6 +88,23 @@ export async function recordToolHealth(
   const prev = await getToolStatus(slug);
   const decision = nextToolStatus(prev, check, nowIso);
   let next = decision.next;
+  // Claim the alert atomically (alerted_at was null and now is ours), so two
+  // servers seeing the same outage send ONE email.
+  if (decision.alertOwner && !(await claimOwnerAlert(slug, nowIso))) {
+    const current = await getToolStatus(slug);
+    await save(
+      slug,
+      {
+        ...next,
+        alertedAt: current.alertedAt,
+        incidentActive: current.incidentActive,
+        incidentSince: current.incidentSince,
+      },
+      check.reason ?? 'unknown',
+      nowIso,
+    );
+    return current;
+  }
   if (decision.alertOwner) {
     const name = toolBySlug(slug)?.name ?? slug;
     const sent = await sendEmail({
@@ -83,7 +114,9 @@ export async function recordToolHealth(
         next.downSince ?? nowIso,
       )}.</p><p>Último motivo: ${escapeHtml(check.reason ?? 'sin respuesta')}.</p><p>Las personas ven "Ya nos avisaron, lo estamos arreglando" mientras el incidente siga abierto en /dashboard/herramientas.</p>`,
     }).catch(() => ({ ok: false }));
-    if (sent.ok) next = afterOwnerAlert(next, nowIso);
+    // Only a delivered alert opens the incident; otherwise release the claim
+    // so the next check tries again.
+    next = sent.ok ? afterOwnerAlert(next, nowIso) : { ...next, alertedAt: null };
   }
   await save(slug, next, check.ok ? null : (check.reason ?? 'unknown'), nowIso);
   return next;

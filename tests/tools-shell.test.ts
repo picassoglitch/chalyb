@@ -336,3 +336,20 @@ test('mock adapters: refused on VERCEL_ENV=production even with the e2e flag', (
     }
   }
 });
+
+// ── Review fix 5: healthy answers clear an outage; alerts are claimed once ─
+import { OK_RECORD_EVERY_MS, shouldRecordOk } from '@/lib/tools/bff-core';
+
+test('healthy answers are recorded (throttled), so one blip does not stay down', () => {
+  assert.ok(shouldRecordOk(undefined, 0));
+  assert.ok(!shouldRecordOk(1_000, 1_000 + OK_RECORD_EVERY_MS - 1));
+  assert.ok(shouldRecordOk(1_000, 1_000 + OK_RECORD_EVERY_MS));
+  // One failure, then a recorded success: down_since is cleared, so a later
+  // single failure starts a new 5-minute clock instead of alerting at once.
+  const t0 = '2026-10-03T12:00:00.000Z';
+  const blip = nextToolStatus(okStatus(), { ok: false, latencyMs: 8000 }, t0).next;
+  const healed = nextToolStatus(blip, { ok: true, latencyMs: 100 }, '2026-10-03T12:01:00.000Z').next;
+  assert.equal(healed.downSince, null);
+  const later = nextToolStatus(healed, { ok: false, latencyMs: 8000 }, '2026-10-03T13:00:00.000Z');
+  assert.equal(later.alertOwner, false);
+});

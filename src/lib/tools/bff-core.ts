@@ -214,6 +214,14 @@ export const okStatus = (): ToolStatusRow => ({
   alertedAt: null,
 });
 
+/** A healthy answer is written to tool_status at most this often per tool
+ *  and server, so one blip can't leave down_since set forever. */
+export const OK_RECORD_EVERY_MS = 60_000;
+
+export function shouldRecordOk(lastRecordedMs: number | undefined, nowMs: number): boolean {
+  return lastRecordedMs === undefined || nowMs - lastRecordedMs >= OK_RECORD_EVERY_MS;
+}
+
 /** Slow when a healthy answer takes over half the timeout. */
 export const SLOW_AFTER_MS = TOOL_TIMEOUT_MS / 2;
 
