@@ -9,8 +9,7 @@ import { mergePrefs } from '@/lib/tools/signals-prefs';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const handler = toolRoute('chalybcrypto', getSenales, async (a, { req, session }) => {
-  const body = await req.json().catch(() => ({}));
+const handler = toolRoute('chalybcrypto', getSenales, async (a, { session, body }) => {
   const [coins, channels, prev] = await Promise.all([
     a.coins(),
     a.channels(),

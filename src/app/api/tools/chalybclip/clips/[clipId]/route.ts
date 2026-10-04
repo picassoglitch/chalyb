@@ -23,11 +23,11 @@ export const GET = toolRoute(
 export const PATCH = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  async (a, { req, session, params }) => {
+  async (a, { session, params, body }) => {
     const id = params.clipId ?? '';
     const clip = await a.getClip(session.user.id, id);
     if (!clip) throw new NotFoundError('clip');
-    const patch = parseClipPatch(await req.json().catch(() => ({})), clip);
+    const patch = parseClipPatch(body, clip);
     const next = await a.patchClip(session.user.id, id, patch);
     if (!next) throw new NotFoundError('clip');
     return next;

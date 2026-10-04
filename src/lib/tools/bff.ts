@@ -15,7 +15,7 @@ import {
   breakerAllows,
   closedBreaker,
   countsAsOutage,
-  normalizeToolError,
+  failureEffect,
   supportCode,
   ToolCircuitOpenError,
   ToolTimeoutError,
@@ -58,6 +58,8 @@ export async function reportToolError(
   userId: string,
   reason: ToolErrorReason,
   retryable: boolean,
+  /** Whether this failure says the tool is down (feeds tool_status). */
+  outage = countsAsOutage(reason),
 ): Promise<ToolError> {
   const error: ToolError = { reason, retryable, supportCode: newSupportCode(slug) };
   await logAudit({
@@ -65,7 +67,7 @@ export async function reportToolError(
     targetUserId: userId,
     metadata: { tool: slug, reason, supportCode: error.supportCode },
   });
-  if (countsAsOutage(reason) && reason !== 'unavailable')
+  if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
   return error;
 }
@@ -74,7 +76,12 @@ export async function runTool<T>(
   slug: string,
   userId: string,
   op: () => Promise<T>,
-  opts: { idempotent?: boolean } = {},
+  opts: {
+    idempotent?: boolean;
+    /** Only errors the engine adapter threw (and timeouts) count against
+     *  the breaker and health; the BFF routes set this (see bff-route). */
+    adapterErrorsOnly?: boolean;
+  } = {},
 ): Promise<ToolResult<T>> {
   const attempts = 1 + (opts.idempotent ? TOOL_GET_RETRIES : 0);
   let last: unknown;
@@ -91,11 +98,11 @@ export async function runTool<T>(
       return { ok: true, data };
     } catch (err) {
       last = err;
-      const { reason, retryable } = normalizeToolError(err);
-      if (countsAsOutage(reason)) breakers().set(slug, breakerAfter(b, false, Date.now()));
+      const { outage, retryable } = failureEffect(err, opts);
+      if (outage) breakers().set(slug, breakerAfter(b, false, Date.now()));
       if (!retryable) break;
     }
   }
-  const { reason, retryable } = normalizeToolError(last);
-  return { ok: false, error: await reportToolError(slug, userId, reason, retryable) };
+  const { reason, retryable, outage } = failureEffect(last, opts);
+  return { ok: false, error: await reportToolError(slug, userId, reason, retryable, outage) };
 }

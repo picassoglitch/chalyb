@@ -5,6 +5,7 @@
 // is never logged and the response is never cached.
 
 import { NextResponse } from 'next/server';
+import { asJsonObject } from '@/lib/tools/bff-core';
 import { createClient } from '@supabase/supabase-js';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
@@ -37,7 +38,10 @@ export async function POST(req: Request) {
   const adapter = hubRunsTool('chalybobs') ? getEnVivo() : null;
   if (ent.tools.chalybobs?.state !== 'included' || !adapter)
     return NextResponse.json({ ok: false, code: 'NOT_INCLUDED' }, { status: 403 });
-  const body = (await req.json().catch(() => ({}))) as { platform?: string; password?: string };
+  const body = asJsonObject(await req.json().catch(() => null)) as {
+    platform?: string;
+    password?: string;
+  };
   const platform = String(body.platform ?? '') as LivePlatform;
   if (!LIVE_PLATFORMS.includes(platform))
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });

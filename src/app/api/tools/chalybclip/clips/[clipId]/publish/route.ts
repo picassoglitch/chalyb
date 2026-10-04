@@ -11,8 +11,7 @@ export const runtime = 'nodejs';
 export const POST = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  async (a, { req, session, params }) => {
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  async (a, { session, params, body }) => {
     const platform = parsePlatform(body.platform);
     const accounts = await a.accounts(session.user.id);
     if (!platform || !accounts.some((x) => x.platform === platform && x.connected))

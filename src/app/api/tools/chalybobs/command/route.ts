@@ -5,18 +5,15 @@
 import { getLocale } from 'next-intl/server';
 import { getEnVivo } from '@/lib/tools/registry';
 import { toolRoute } from '@/lib/tools/bff-route';
+import { ToolRequestError } from '@/lib/tools/bff-core';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { formatDuration } from '@/lib/tools/envivo-core';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-class BadCommand extends Error {
-  readonly code = 'FORBIDDEN';
-}
 
-export const POST = toolRoute('chalybobs', getEnVivo, async (a, { req, session }) => {
-  const body = (await req.json().catch(() => ({}))) as { type?: string; sceneId?: string };
+export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body }) => {
   const u = session.user.id;
   switch (body.type) {
     case 'start_stream':
@@ -52,6 +49,6 @@ export const POST = toolRoute('chalybobs', getEnVivo, async (a, { req, session }
       return { status, endedSec, recordingUrl };
     }
     default:
-      throw new BadCommand('unknown command');
+      throw new ToolRequestError('unknown command');
   }
 });

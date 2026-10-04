@@ -3,31 +3,34 @@
 // shows in "En proceso" of /app/clips. Credits are spent only when the clip
 // is ready (the Clips job settles like any other).
 
-import { getEnVivo } from '@/lib/tools/registry';
+import { getEnVivo, hubRunsTool } from '@/lib/tools/registry';
 import { toolRoute } from '@/lib/tools/bff-route';
-import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { submitClips } from '@/lib/tools/clips-jobs';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-class NoRecording extends Error {
+/** No recording to cut, or Clips isn't in the plan / not running: the
+ *  person's state, never an En vivo outage. */
+class CannotClip extends Error {
   readonly code = 'FORBIDDEN';
-}
-class NoClips extends Error {
-  readonly code = 'NOT_IMPLEMENTED';
 }
 
 export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, entitlements }) => {
-  const clips = getClipsAdapter();
-  if (!clips || entitlements.tools.chalybclip?.state !== 'included') throw new NoClips('clips');
+  if (entitlements.tools.chalybclip?.state !== 'included' || !hubRunsTool('chalybclip'))
+    throw new CannotClip('clips not included');
   const moment = await a.clipMoment(session.user.id, 60);
-  if (!moment) throw new NoRecording('no recording');
-  const job = await clips.createJob({
+  if (!moment) throw new CannotClip('no recording');
+  // The Clips job policy: automatic retries, the clips.job_failed audit and
+  // credits only when ready. Its failures are Clips', not En vivo's (only
+  // the En vivo adapter's errors count against this route's breaker).
+  const job = await submitClips({
     userId: session.user.id,
     sourceUrl: moment.sourceUrl,
     format: 'vertical',
     count: 3,
   });
-  if (!job.ok) throw new NoRecording(job.reason);
+  if (!job) throw new CannotClip('clips not running');
+  if (!job.ok) throw new CannotClip(job.reason);
   return { jobId: job.jobId };
 });

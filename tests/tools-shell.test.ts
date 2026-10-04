@@ -260,3 +260,56 @@ test('the risk notice is aceptacion-ux §6 word for word', () => {
     'Entiendo y acepto que las decisiones y los riesgos son míos.',
   );
 });
+
+// ── Review fix 1: a bad request never trips the breaker ─────────────────
+import {
+  asJsonObject,
+  failureEffect,
+  isAdapterError,
+  markingAdapter,
+  ToolRequestError,
+} from '@/lib/tools/bff-core';
+
+test('request bodies: null, arrays and junk become {}', () => {
+  assert.deepEqual(asJsonObject(null), {});
+  assert.deepEqual(asJsonObject([1, 2]), {});
+  assert.deepEqual(asJsonObject('stop_stream'), {});
+  assert.deepEqual(asJsonObject(7), {});
+  assert.deepEqual(asJsonObject({ type: 'stop_stream' }), { type: 'stop_stream' });
+});
+
+test('only engine errors and timeouts count against the breaker in BFF routes', async () => {
+  // A handler bug (e.g. reading a field of a null body) is not an outage.
+  const typeError = new TypeError("Cannot read properties of null (reading 'type')");
+  assert.deepEqual(failureEffect(typeError, { adapterErrorsOnly: true }), {
+    reason: 'unknown',
+    retryable: false,
+    outage: false,
+  });
+  assert.equal(failureEffect(new ToolRequestError('x'), { adapterErrorsOnly: true }).outage, false);
+  assert.equal(failureEffect(new ToolRequestError('x')).reason, 'bad_request');
+  assert.equal(failureEffect({ code: 'TOOL_TIMEOUT' }, { adapterErrorsOnly: true }).outage, true);
+  // The same error thrown by the adapter is an outage.
+  const adapter = markingAdapter({
+    async boom(): Promise<void> {
+      throw new Error('engine 502');
+    },
+    sync(): void {
+      throw new Error('engine down');
+    },
+  });
+  const asyncErr = await adapter.boom().catch((e: unknown) => e);
+  assert.ok(isAdapterError(asyncErr));
+  assert.equal(failureEffect(asyncErr, { adapterErrorsOnly: true }).outage, true);
+  let syncErr: unknown;
+  try {
+    adapter.sync();
+  } catch (e) {
+    syncErr = e;
+  }
+  assert.ok(isAdapterError(syncErr));
+  // A wrong request is a 400 that is never retried and never an outage.
+  assert.equal(statusForReason('bad_request'), 400);
+  assert.ok(!countsAsOutage('bad_request'));
+  assert.ok(!countsAsOutage('circuit_open'), 'a refused call is not a new observation');
+});

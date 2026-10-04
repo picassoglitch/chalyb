@@ -4,6 +4,7 @@
 // rendered again here from the same messages.
 
 import { NextResponse } from 'next/server';
+import { asJsonObject } from '@/lib/tools/bff-core';
 import { getTranslations } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { RISK_TOOLS } from '@/lib/tools/routes';
@@ -20,7 +21,7 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const session = await getSessionUser();
   if (!session) return NextResponse.json({ ok: false, code: 'SESSION_EXPIRED' }, { status: 401 });
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = asJsonObject(await req.json().catch(() => null));
   if (body.checked !== true)
     return NextResponse.json({ ok: false, code: 'CONSENT_REQUIRED' }, { status: 422 });
   // Every path below re-reads the plan and capabilities: the client's word

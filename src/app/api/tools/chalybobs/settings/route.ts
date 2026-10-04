@@ -20,8 +20,7 @@ export const GET = toolRoute(
   },
 );
 
-export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { req, session }) => {
-  const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { session, body: b }) => {
   const patch: Parameters<typeof a.saveSettings>[1] = {};
   if (QUALITIES.includes(b.quality as LiveQuality)) patch.quality = b.quality as LiveQuality;
   if (typeof b.clipsAfter === 'boolean') patch.clipsAfter = b.clipsAfter;

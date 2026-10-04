@@ -16,13 +16,15 @@ import { toolBySlug } from '@/config/tools';
 import { hasRiskAck } from './consents';
 import { hubRunsTool } from './registry';
 import { reportToolError, runTool } from './bff';
-import { statusForReason } from './bff-core';
+import { asJsonObject, markingAdapter, statusForReason } from './bff-core';
 
 export interface ToolRouteCtx {
   req: Request;
   session: SessionUser;
   entitlements: Entitlements;
   params: Record<string, string>;
+  /** The JSON body as a plain object ({} for GET, null, arrays or junk). */
+  body: Record<string, unknown>;
 }
 
 export function toolRoute<A, T>(
@@ -48,11 +50,18 @@ export function toolRoute<A, T>(
     if (toolBySlug(slug)?.needsRiskAck && !(await hasRiskAck(session.user.id, slug)))
       return NextResponse.json({ ok: false, code: 'RISK_ACK_REQUIRED' }, { status: 403 });
     const params = (await route?.params) ?? {};
+    const body =
+      req.method === 'GET' || req.method === 'HEAD'
+        ? {}
+        : asJsonObject(await req.json().catch(() => null));
+    // Only what the engine adapter throws counts against the tool's breaker
+    // and health: a malformed request or a bug in this handler is not an
+    // outage and must not lock everyone out.
     const res = await runTool(
       slug,
       session.user.id,
-      () => handler(a, { req, session, entitlements, params }),
-      opts,
+      () => handler(markingAdapter(a as object) as A, { req, session, entitlements, params, body }),
+      { ...opts, adapterErrorsOnly: true },
     );
     if (res.ok) return NextResponse.json({ ok: true, data: res.data });
     return NextResponse.json(

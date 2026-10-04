@@ -10,6 +10,7 @@ export const TOOL_ERROR_REASONS = [
   'not_found',
   'forbidden',
   'risk_ack_required',
+  'bad_request', // the request itself was wrong (body, params): never an outage
   'unknown',
 ] as const;
 export type ToolErrorReason = (typeof TOOL_ERROR_REASONS)[number];
@@ -36,6 +37,70 @@ export class ToolTimeoutError extends Error {
 }
 export class ToolCircuitOpenError extends Error {
   readonly code = 'CIRCUIT_OPEN';
+}
+export class ToolRequestError extends Error {
+  readonly code = 'BAD_REQUEST';
+}
+
+/** A JSON request body as a plain object. `null`, arrays, primitives and
+ *  unparsable bodies all become {} so handlers can read fields safely. */
+export function asJsonObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+// Errors thrown by an engine adapter carry this mark (bff-route wraps the
+// adapter), so a bug or bad input in the app's own handler code never counts
+// as the tool being down.
+const FROM_ADAPTER = Symbol.for('chalyb.tool.fromAdapter');
+
+export function markAdapterError(err: unknown): unknown {
+  if (err && typeof err === 'object') {
+    try {
+      Object.defineProperty(err, FROM_ADAPTER, { value: true });
+    } catch {}
+  }
+  return err;
+}
+
+export function isAdapterError(err: unknown): boolean {
+  return !!err && typeof err === 'object' && (err as Record<symbol, unknown>)[FROM_ADAPTER] === true;
+}
+
+/** Wrap an adapter so every error its methods throw (sync or async) is
+ *  marked as coming from the engine. */
+export function markingAdapter<A extends object>(adapter: A): A {
+  return new Proxy(adapter, {
+    get(target, prop, receiver) {
+      const v = Reflect.get(target, prop, receiver);
+      if (typeof v !== 'function') return v;
+      return (...args: unknown[]) => {
+        try {
+          const out = (v as (...a: unknown[]) => unknown).apply(target, args);
+          return out instanceof Promise
+            ? out.catch((e) => {
+                throw markAdapterError(e);
+              })
+            : out;
+        } catch (e) {
+          throw markAdapterError(e);
+        }
+      };
+    },
+  });
+}
+
+/** What a failed call means: its reason, whether to retry, and whether it
+ *  counts against the tool's breaker and health. With `adapterErrorsOnly`
+ *  (the BFF routes) only engine errors and timeouts count. */
+export function failureEffect(
+  err: unknown,
+  opts: { adapterErrorsOnly?: boolean } = {},
+): { reason: ToolErrorReason; retryable: boolean; outage: boolean } {
+  const { reason, retryable } = normalizeToolError(err);
+  const fromTool = !opts.adapterErrorsOnly || isAdapterError(err) || reason === 'timeout';
+  return { reason, retryable: retryable && fromTool, outage: countsAsOutage(reason) && fromTool };
 }
 
 /** `CLP-0427`. `rand` is a number in [0, 1). */
@@ -65,6 +130,8 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
       return { reason: 'forbidden', retryable: false };
     case 'RISK_ACK_REQUIRED':
       return { reason: 'risk_ack_required', retryable: false };
+    case 'BAD_REQUEST':
+      return { reason: 'bad_request', retryable: false };
     default:
       return { reason: 'unknown', retryable: true };
   }
@@ -75,6 +142,8 @@ export function statusForReason(reason: ToolErrorReason): number {
   switch (reason) {
     case 'not_found':
       return 404;
+    case 'bad_request':
+      return 400;
     case 'forbidden':
     case 'risk_ack_required':
       return 403;
@@ -92,7 +161,9 @@ export function statusForReason(reason: ToolErrorReason): number {
 /** Whether a failure counts against the tool's health (a missing clip or a
  *  missing risk notice is the person's state, not an outage). */
 export function countsAsOutage(reason: ToolErrorReason): boolean {
-  return !['not_found', 'forbidden', 'risk_ack_required'].includes(reason);
+  return !['not_found', 'forbidden', 'risk_ack_required', 'bad_request', 'circuit_open'].includes(
+    reason,
+  );
 }
 
 // ── Circuit breaker (one per tool, per server process) ───────────────────

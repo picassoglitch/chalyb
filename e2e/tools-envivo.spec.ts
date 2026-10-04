@@ -161,6 +161,27 @@ test.describe('as pro', () => {
     expect(context.pages()).toHaveLength(1);
   });
 
+  test('junk request bodies are 400s and never lock the tool for everyone', async ({ page }) => {
+    // Review fix 1: a JSON null body used to throw inside the handler, count
+    // as an outage and open the breaker after 5 tries (stop_stream → 503).
+    for (let i = 0; i < 7; i++) {
+      const r = await page.request.post('/api/tools/chalybobs/command', {
+        data: 'null',
+        headers: { 'content-type': 'application/json' },
+      });
+      expect(r.status(), `try ${i + 1}`).toBe(400);
+    }
+    const status = await page.request.get('/api/tools/chalybobs/status');
+    expect(status.status()).toBe(200);
+    for (const path of ['/api/tools/chalybobs/stream-key', '/api/tools/consent']) {
+      const r = await page.request.post(path, {
+        data: 'null',
+        headers: { 'content-type': 'application/json' },
+      });
+      expect(r.status(), path).toBeLessThan(500);
+    }
+  });
+
   test('old URL: /app/engines/chalybobs answers 307 to /app/en-vivo with the query', async ({
     page,
   }) => {

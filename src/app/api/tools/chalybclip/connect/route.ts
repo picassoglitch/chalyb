@@ -20,8 +20,7 @@ const NAMES = {
   facebook: 'Facebook',
 };
 
-export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { req, session }) => {
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { session, body }) => {
   const platform = parsePlatform(body.platform);
   if (!platform || !a.capabilities().supportsConnect) throw new NotFoundError('platform');
   // Only back to a Clips screen of this app.

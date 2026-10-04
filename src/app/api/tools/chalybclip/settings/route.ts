@@ -17,9 +17,9 @@ export const GET = toolRoute(
   },
 );
 
-export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { req, session }) => {
+export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { session, body }) => {
   const prev = await a.getSettings(session.user.id);
-  const next = parseSettings(await req.json().catch(() => ({})), prev);
+  const next = parseSettings(body, prev);
   await a.saveSettings(session.user.id, next);
   return next;
 });
