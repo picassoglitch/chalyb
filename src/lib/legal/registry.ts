@@ -11,6 +11,7 @@ import registryJson from './registry.json' with { type: 'json' };
 import { ARCHIVE, type ArchivedVersion } from '@/content/legal/archive/index';
 import { bindAmounts } from './amounts';
 import { blocksText, parseMarkdown, type Block } from './markdown';
+import { subscriptionConsistency } from './consistency';
 
 export type LegalDoc = 'terminos' | 'suscripcion' | 'privacidad' | 'uso_aceptable';
 export const LEGAL_DOCS: readonly LegalDoc[] = [
@@ -99,8 +100,16 @@ export function placeholders(doc: LegalDoc, version = currentVersion(doc)): stri
   return blocks ? [...blocksText(blocks).matchAll(PLACEHOLDER_RE)].map((m) => m[0]) : [];
 }
 
+/** Where the current text disagrees with the config (consistency.ts). */
+export function consistencyIssues(doc: LegalDoc, version = currentVersion(doc)): string[] {
+  if (doc !== 'suscripcion') return [];
+  const src = renderedSource(doc, version);
+  return src === null ? [] : subscriptionConsistency(src);
+}
+
 /** What keeps LEGAL_PUBLISH from taking effect: any current version with a
- *  placeholder, missing from the archive, or not marked published. */
+ *  placeholder, missing from the archive, not marked published, or out of
+ *  step with the config. */
 export function legalPublishBlockers(): string[] {
   const out: string[] = [];
   for (const doc of LEGAL_DOCS) {
@@ -109,6 +118,7 @@ export function legalPublishBlockers(): string[] {
     if (!versionMeta(doc, v)?.published) out.push(`${doc}@${v}:draft`);
     const left = placeholders(doc, v).length;
     if (left) out.push(`${doc}@${v}:${left}-placeholders`);
+    for (const issue of consistencyIssues(doc, v)) out.push(`${doc}@${v}:${issue}`);
   }
   return out;
 }

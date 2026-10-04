@@ -8,5 +8,5 @@ export const generateMetadata = legalChangesMetadata;
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: Params) {
-  return <LegalChangesPage doc="terminos" params={params} />;
+  return <LegalChangesPage doc="privacidad" params={params} />;
 }

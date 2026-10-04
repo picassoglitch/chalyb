@@ -2243,14 +2243,22 @@
     }
   },
   "termsUpdate": {
-    "title": "We updated our Terms",
+    "titles": {
+      "terminos": "We updated our Terms",
+      "suscripcion": "We updated our Subscription Terms",
+      "privacidad": "We updated our Privacy Notice"
+    },
     "lead": "Starting <b>{fecha}</b>, a few things change:",
     "seeAll": "See all changes",
     "disagree": "If you don’t agree, you can cancel your plan at no cost.",
     "accept": "Accept and continue",
     "options": "I don’t accept, see options",
     "error": "We couldn’t save your answer. Please try again.",
-    "bannerText": "We updated the Terms.",
+    "banner": {
+      "terminos": "We updated the Terms.",
+      "suscripcion": "We updated the Subscription Terms.",
+      "privacidad": "We updated the Privacy Notice."
+    },
     "bannerLink": "See changes",
     "optionsPage": {
       "title": "Your options",

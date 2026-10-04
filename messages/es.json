@@ -2243,14 +2243,22 @@
     }
   },
   "termsUpdate": {
-    "title": "Actualizamos nuestros Términos",
+    "titles": {
+      "terminos": "Actualizamos nuestros Términos",
+      "suscripcion": "Actualizamos nuestros Términos de Suscripción",
+      "privacidad": "Actualizamos nuestro Aviso de privacidad"
+    },
     "lead": "A partir del <b>{fecha}</b> cambian algunos puntos:",
     "seeAll": "Ver todos los cambios",
     "disagree": "Si no estás de acuerdo, puedes cancelar tu plan sin costo.",
     "accept": "Aceptar y continuar",
     "options": "No acepto, ver opciones",
     "error": "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
-    "bannerText": "Actualizamos los Términos.",
+    "banner": {
+      "terminos": "Actualizamos los Términos.",
+      "suscripcion": "Actualizamos los Términos de Suscripción.",
+      "privacidad": "Actualizamos el Aviso de privacidad."
+    },
     "bannerLink": "Ver cambios",
     "optionsPage": {
       "title": "Tus opciones",

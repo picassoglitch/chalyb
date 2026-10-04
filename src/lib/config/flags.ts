@@ -10,7 +10,10 @@
 
 import publishState from '../legal/publish-state.json' with { type: 'json' };
 
-type LegalPublishState = Record<string, { version: string; published: boolean; placeholders: number }>;
+type LegalPublishState = Record<
+  string,
+  { version: string; published: boolean; placeholders: number; consistency?: string[] }
+>;
 let legalState: LegalPublishState = publishState;
 
 /** Tests only: pretend the legal texts are (or aren't) ready, to exercise
@@ -262,6 +265,7 @@ export function legalPublishBlockers(): string[] {
   for (const [doc, s] of Object.entries(legalState)) {
     if (!s.published) out.push(`${doc}@${s.version}:draft`);
     if (s.placeholders > 0) out.push(`${doc}@${s.version}:${s.placeholders}-placeholders`);
+    for (const issue of s.consistency ?? []) out.push(`${doc}@${s.version}:${issue}`);
   }
   return out;
 }

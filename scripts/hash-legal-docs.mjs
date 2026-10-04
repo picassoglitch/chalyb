@@ -116,8 +116,9 @@ console.log(hashes);
 
 // What the publish gate reads (flags.ts stays import-free apart from this
 // small JSON): per document, the current version, whether it's marked
-// published and how many bracket placeholders its rendered text still has.
-const { LEGAL_DOCS, currentVersion, placeholders, versionMeta } =
+// published, how many bracket placeholders its rendered text still has, and
+// where it disagrees with the config (consistency.ts).
+const { LEGAL_DOCS, consistencyIssues, currentVersion, placeholders, versionMeta } =
   await import('../src/lib/legal/registry.ts');
 const state = Object.fromEntries(
   LEGAL_DOCS.map((doc) => [
@@ -126,6 +127,7 @@ const state = Object.fromEntries(
       version: currentVersion(doc),
       published: Boolean(versionMeta(doc)?.published),
       placeholders: placeholders(doc).length,
+      consistency: consistencyIssues(doc),
     },
   ]),
 );

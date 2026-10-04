@@ -1,6 +1,13 @@
-// Re-acceptance of the Terms (aceptacion-ux §8), the server part: reads the
-// user's consent log, decides what to show (reaccept.ts) and records the
-// answer as evidence (`terms_reaccepted`, `terms_notice_shown`).
+// Re-acceptance (aceptacion-ux §8), the server part: reads the user's
+// consent log, decides what to show for each of REACCEPT_DOCS (reaccept.ts)
+// and records the answer as evidence (`terms_reaccepted`,
+// `terms_notice_shown`, citing the document and version).
+//
+// §8: "Mientras no acepte: no se le aplica la nueva versión a ningún cobro".
+// Enforced where a new charge is agreed: starting a plan (trial or paid) and
+// changing plan refuse while a relevant change is unaccepted
+// (termsAcceptancePending). Renewals of an existing subscription keep the
+// version it was agreed under, so nothing new applies to them.
 
 import 'server-only';
 import { getTranslations } from 'next-intl/server';
@@ -11,26 +18,42 @@ import { recordConsent, requestContext, UI_VERSION } from '@/lib/billing/consent
 import { formatFechaLarga } from '@/lib/billing/format';
 import { legalDocuments } from './documents';
 import { currentVersion, versionMeta } from './registry';
-import { termsHistory, termsPrompt, type TermsPrompt } from './reaccept';
+import {
+  REACCEPT_DOCS,
+  termsHistory,
+  termsPrompt,
+  type ReacceptDoc,
+  type TermsPrompt,
+} from './reaccept';
 
 export interface TermsPromptView {
   prompt: TermsPrompt;
+  doc: ReacceptDoc;
   version: string;
   /** "1 de diciembre de 2026" */
   effective: string;
   changes: string[];
 }
 
+const NONE: TermsPromptView = {
+  prompt: 'none',
+  doc: 'terminos',
+  version: '',
+  effective: '',
+  changes: [],
+};
+
+/** What to show now: the first document with a relevant change to accept
+ *  (modal) wins over any minor change (banner). */
 export async function termsPromptFor(userId: string, locale: string): Promise<TermsPromptView> {
-  const version = currentVersion('terminos');
-  const meta = versionMeta('terminos', version);
-  const base = {
-    version,
-    effective: meta?.effective ? formatFechaLarga(meta.effective, locale) : '',
-    changes: meta?.changes.slice(0, 3) ?? [],
-  };
+  if (!legalPublished()) return NONE;
+  const live = REACCEPT_DOCS.map((doc) => ({
+    doc,
+    version: currentVersion(doc),
+    meta: versionMeta(doc),
+  })).filter((d) => d.meta?.published && d.meta.effective);
   // Cheap exit before touching the database: nothing to show.
-  if (!legalPublished() || !meta?.published || !meta.effective) return { ...base, prompt: 'none' };
+  if (!live.length) return NONE;
   const { data } = await createAdminClient()
     .from('consent_events')
     .select('event_type, documents')
@@ -42,14 +65,29 @@ export async function termsPromptFor(userId: string, locale: string): Promise<Te
       'subscription_started',
       'terms_notice_shown',
     ]);
-  const prompt = termsPrompt({
-    published: true,
-    current: version,
-    meta,
-    history: termsHistory((data ?? []) as Parameters<typeof termsHistory>[0]),
-    now: new Date(),
-  });
-  return { ...base, prompt };
+  const rows = (data ?? []) as Parameters<typeof termsHistory>[0];
+  const now = new Date();
+  const views = live.map(({ doc, version, meta }) => ({
+    prompt: termsPrompt({
+      published: true,
+      current: version,
+      meta,
+      history: termsHistory(rows, doc),
+      now,
+    }),
+    doc,
+    version,
+    effective: meta?.effective ? formatFechaLarga(meta.effective, locale) : '',
+    changes: meta?.changes.slice(0, 3) ?? [],
+  }));
+  return (
+    views.find((v) => v.prompt === 'modal') ?? views.find((v) => v.prompt === 'banner') ?? NONE
+  );
+}
+
+/** §8: a new charge can't be agreed while a relevant change is unaccepted. */
+export async function termsAcceptancePending(userId: string): Promise<boolean> {
+  return (await termsPromptFor(userId, 'es')).prompt === 'modal';
 }
 
 /** The modal or banner exactly as shown, for the evidence. */
@@ -59,9 +97,9 @@ async function shownText(
   kind: 'modal' | 'banner',
 ): Promise<string> {
   const t = await getTranslations({ locale, namespace: 'termsUpdate' });
-  if (kind === 'banner') return `${t('bannerText')} ${t('bannerLink')}`;
+  if (kind === 'banner') return `${t(`banner.${v.doc}`)} ${t('bannerLink')}`;
   return [
-    t('title'),
+    t(`titles.${v.doc}`),
     t('lead', { fecha: v.effective }),
     ...v.changes.map((c) => `• ${c}`),
     t('seeAll'),
@@ -76,10 +114,9 @@ export async function answerTerms(
   locale: string,
 ): Promise<{ ok: true } | { ok: false; code: 'NOTHING_PENDING' }> {
   const v = await termsPromptFor(session.user.id, locale);
-  const want = action === 'accept' ? 'modal' : 'banner';
-  // A minor change can also be accepted from its banner's page; a relevant
-  // one is never "acknowledged" by a banner view.
-  if (v.prompt === 'none' || (action === 'shown' && v.prompt !== want)) {
+  // A minor change can also be accepted; a relevant one is never
+  // "acknowledged" by a banner view.
+  if (v.prompt === 'none' || (action === 'shown' && v.prompt !== 'banner')) {
     return { ok: false, code: 'NOTHING_PENDING' };
   }
   const ctx = await requestContext();
@@ -88,7 +125,7 @@ export async function answerTerms(
     event_type: action === 'accept' ? 'terms_reaccepted' : 'terms_notice_shown',
     user_id: session.user.id,
     account_email: session.user.email ?? null,
-    documents: legalDocuments('terminos'),
+    documents: legalDocuments(v.doc),
     client_timezone: null,
     ip_address: ctx.ip,
     user_agent: ctx.userAgent,
@@ -109,7 +146,7 @@ export async function answerTerms(
     reminder_date_utc: null,
     payment_method: null,
     marketing_opt_in: false,
-    details: { terms_version: v.version },
+    details: { doc: v.doc, version: v.version },
   });
   return { ok: true };
 }

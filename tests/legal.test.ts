@@ -25,7 +25,9 @@ import {
 } from '@/lib/legal/registry';
 import { legalDocument } from '@/lib/legal/documents';
 import { LEGAL_PAGES } from '@/lib/legal/public-pages';
+import { subscriptionConsistency } from '@/lib/legal/consistency';
 import {
+  REACCEPT_DOCS,
   compareVersions,
   termsHistory,
   termsModalExempt,
@@ -404,23 +406,58 @@ test('re-accept: the modal never blocks cancelling, its options, downloads or he
     '/app/history',
     '/app/help',
     '/app/messages',
+    // A clip job's page is where its clips download (7a review).
+    '/app/clips/mock_abc_1',
+    '/en/app/clips/mock_abc_1',
   ]) {
     assert.equal(termsModalExempt(p), true, p);
   }
-  for (const p of ['/app', '/app/clips', '/en/app/planes', '/app/billingx'])
+  for (const p of ['/app', '/app/clips', '/app/clips/formato', '/en/app/planes', '/app/billingx']) {
     assert.equal(termsModalExempt(p), false, p);
+  }
+});
+
+test('re-accept: Suscripción and Privacidad are re-accepted too, each on its own history', () => {
+  assert.deepEqual([...REACCEPT_DOCS], ['terminos', 'suscripcion', 'privacidad']);
+  const rows = [
+    {
+      event_type: 'trial_started',
+      documents: [
+        { doc: 'terminos', version: '1.0' },
+        { doc: 'suscripcion', version: '1.0' },
+      ],
+    },
+    { event_type: 'terms_reaccepted', documents: [{ doc: 'privacidad', version: '1.2' }] },
+  ];
+  assert.equal(termsHistory(rows, 'suscripcion').acceptedVersion, '1.0');
+  assert.equal(termsHistory(rows, 'privacidad').acceptedVersion, '1.2');
+  assert.equal(termsHistory(rows).acceptedVersion, '1.0');
+});
+
+test('re-accept: no new charge is agreed while a relevant change is unaccepted (§8)', () => {
+  for (const f of ['src/app/api/billing/trial/route.ts', 'src/app/api/billing/change/route.ts']) {
+    assert.match(
+      readFileSync(join(ROOT, f), 'utf8'),
+      /termsAcceptancePending\(session\.user\.id\)[\s\S]{0,120}TERMS_PENDING/,
+      f,
+    );
+  }
+  assert.match(
+    readFileSync(join(ROOT, 'src/lib/payments/subscription-actions.ts'), 'utf8'),
+    /termsAcceptancePending\(session\.user\.id\)[\s\S]{0,120}terms_pending/,
+  );
 });
 
 test('re-accept: Law’s §8 copy is verbatim in es.json', () => {
   const es = JSON.parse(readFileSync(join(ROOT, 'messages/es.json'), 'utf8')).termsUpdate;
   const law = readFileSync(join(LAW, 'aceptacion-ux.md'), 'utf8');
   for (const s of [
-    es.title,
+    es.titles.terminos,
     es.seeAll,
     es.disagree,
     es.accept,
     es.options,
-    es.bannerText,
+    es.banner.terminos,
     es.bannerLink,
   ]) {
     assert.ok(law.includes(s), s);
@@ -448,4 +485,24 @@ test('publish gate: the e2e override needs mock adapters (never on a real deploy
     },
     () => assert.equal(legalPublished(), true),
   );
+});
+
+test('consistency: Suscripción must match the trial plans and grace in config before publish', () => {
+  const issues = subscriptionConsistency(lawSource('suscripcion'));
+  // Owner put the trial on every plan; §2.1 still says Pro only (Law item).
+  assert.ok(issues.includes('trial-plans:vip_month,vip_year'), issues.join());
+  // No grace after the trial (firstChargeGraceDays 0); §8 doesn't say so.
+  assert.ok(issues.includes('trial-grace'), issues.join());
+  assert.ok(legalPublishBlockers().includes('suscripcion@1.0:trial-plans:vip_month,vip_year'));
+  const cfg = {
+    trialPlans: ['pro_month', 'pro_year'] as const,
+    graceDays: 7,
+    firstChargeGraceDays: 0,
+  };
+  const ok =
+    '## 2. Prueba\n\n2.1. La Prueba está disponible para **Pro mensual** y **Pro anual**.\n\n## 8. Pagos\n\n8.2. tendrás **7 días naturales** (no aplica al cobro que termina la Prueba)\n';
+  assert.deepEqual(subscriptionConsistency(ok, cfg), []);
+  assert.deepEqual(subscriptionConsistency(ok.replace('**7 días', '**5 días'), cfg), [
+    'grace-days:5!=7',
+  ]);
 });
