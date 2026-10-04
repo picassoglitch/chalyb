@@ -7,6 +7,7 @@ import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { track } from '@/lib/analytics/track';
 import { getClipsAdapter } from './adapters/clips';
+import { isContentBlocked } from '@/lib/legal/legal-server';
 import { refreshClipJob, submitClipJob, type JobPolicyDeps } from './adapters/run-job';
 import type { ClipJob, ClipsAdapter, CreateClipJobInput } from './adapters/types';
 
@@ -52,6 +53,11 @@ function policyDeps(adapter: ClipsAdapter): JobPolicyDeps {
 export async function submitClips(input: CreateClipJobInput) {
   const adapter = getClipsAdapter();
   if (!adapter) return null;
+  // Re-upload blocking (Uso aceptable §5.2.3): content removed after a
+  // copyright notice is refused before the engine sees it.
+  if (await isContentBlocked(input.sourceUrl)) {
+    return { ok: false as const, reason: 'content_blocked' as const };
+  }
   return submitClipJob(policyDeps(adapter), input);
 }
 

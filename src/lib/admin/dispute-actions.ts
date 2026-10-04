@@ -55,7 +55,11 @@ export async function disputeStep(id: string, step: DisputeStep): Promise<Disput
         payUrl: step.payUrl || null,
         medida: step.medida === 'cerrar' ? 'cerrar' : 'suspender',
       });
-      if (!r.ok) return { ok: false, code: r.code === 'PAY_URL' || r.code === 'EMAIL' ? r.code : 'NOT_ALLOWED' };
+      if (!r.ok)
+        return {
+          ok: false,
+          code: r.code === 'PAY_URL' || r.code === 'EMAIL' ? r.code : 'NOT_ALLOWED',
+        };
       done = true;
       break;
     }

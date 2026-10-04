@@ -8,6 +8,11 @@ export interface AttentionCounts {
   newIdeas: number;
   bouncedNotices: number;
   chargesWithoutNotice: number;
+  /** ARCO requests whose legal answer date is within 5 days or past
+   *  (Aviso de privacidad §5.3). Optional: older callers count 0. */
+  arcoDue?: number;
+  /** Copyright notices waiting for a removal or a counter-notice step. */
+  takedownsOpen?: number;
 }
 
 export type AttentionKey = keyof AttentionCounts;
@@ -19,12 +24,16 @@ const TARGETS: Record<AttentionKey, string> = {
   newIdeas: '/dashboard/messages',
   bouncedNotices: '/dashboard/actividad?tipo=notice',
   chargesWithoutNotice: '/dashboard/dinero',
+  arcoDue: '/dashboard/legal',
+  takedownsOpen: '/dashboard/legal',
 };
 
-export function attentionItems(c: AttentionCounts): { key: AttentionKey; n: number; href: string }[] {
+export function attentionItems(
+  c: AttentionCounts,
+): { key: AttentionKey; n: number; href: string }[] {
   return (Object.keys(TARGETS) as AttentionKey[])
-    .filter((k) => c[k] > 0)
-    .map((k) => ({ key: k, n: c[k], href: TARGETS[k] }));
+    .filter((k) => (c[k] ?? 0) > 0)
+    .map((k) => ({ key: k, n: c[k] ?? 0, href: TARGETS[k] }));
 }
 
 export type ToolHealth = 'ok' | 'slow' | 'down';

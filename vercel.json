@@ -22,5 +22,8 @@
       ]
     }
   ],
-  "crons": [{ "path": "/api/cron/billing", "schedule": "0 15 * * *" }]
+  "crons": [
+    { "path": "/api/cron/billing", "schedule": "0 15 * * *" },
+    { "path": "/api/cron/legal", "schedule": "30 15 * * *" }
+  ]
 }

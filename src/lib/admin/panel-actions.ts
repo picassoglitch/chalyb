@@ -27,19 +27,30 @@ export type ToolVisibilityResult =
  * Hiding a tool paying users used in the last 30 days needs the second step
  * (terms §7.3 / REVISION-LEGAL M5: notice and an alternative or refund).
  */
-export async function setToolVisible(slug: string, visible: boolean, confirmed = false): Promise<ToolVisibilityResult> {
+export async function setToolVisible(
+  slug: string,
+  visible: boolean,
+  confirmed = false,
+): Promise<ToolVisibilityResult> {
   const actor = await adminSession();
   if (!actor) return { ok: false, code: 'FORBIDDEN' };
   if (HIDDEN_FROM_CUSTOMERS.has(slug)) return { ok: false, code: 'NOT_FOUND' };
   const db = createAdminClient();
-  const { data: engine } = await db.from('engines').select('id, slug, status').eq('slug', slug).maybeSingle();
+  const { data: engine } = await db
+    .from('engines')
+    .select('id, slug, status')
+    .eq('slug', slug)
+    .maybeSingle();
   if (!engine) return { ok: false, code: 'NOT_FOUND' };
   if (!visible && !confirmed) {
     const payingUsers = await payingUsersOfTool(engine.id as string);
     if (payingUsers > 0) return { ok: false, code: 'CONFIRM_REQUIRED', payingUsers };
   }
   const next = visible ? 'active' : 'coming_soon';
-  const { error } = await db.from('engines').update({ status: next }).eq('id', engine.id as string);
+  const { error } = await db
+    .from('engines')
+    .update({ status: next })
+    .eq('id', engine.id as string);
   if (error) return { ok: false, code: 'ERROR' };
   await logAudit({
     action: 'engine.visibility',

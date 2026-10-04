@@ -41,6 +41,10 @@ export async function ClipError({
       body = t('noCredits', { fecha: creditsRenewDate(new Date(), locale) });
       primary = { href: '/app/billing', label: t('seePlan') };
       break;
+    case 'content_blocked':
+      title = t('blocked.title');
+      body = t('blocked.body');
+      break;
     case 'platform_down':
       body = t('platform', { plataforma: platformName(sourceUrl) ?? t('platformFallback') });
       break;

@@ -814,7 +814,11 @@
       "unknown": "Something went wrong on our side. We are already looking into it.",
       "noCharge": "No credits were used.",
       "retry": "Try again",
-      "help": "Talk to a person"
+      "help": "Talk to a person",
+      "blocked": {
+        "title": "We can’t use that video",
+        "body": "That content was removed after a copyright notice and can’t be uploaded again. If you think this is a mistake, talk to a person."
+      }
     },
     "adv": {
       "title": "Advanced options",
@@ -1670,6 +1674,18 @@
     "liveEnded": {
       "title": "Your stream ended",
       "body": "It lasted {duracion}. Shall we make clips?"
+    },
+    "arcoReceived": {
+      "title": "We received your request about your data",
+      "body": "We’ll answer by {fecha}, at your account’s email."
+    },
+    "contentRemoved": {
+      "title": "We removed content after a copyright notice",
+      "body": "\"{contenido}\". If you think this was a mistake, you can send a counter-notice."
+    },
+    "contentRestored": {
+      "title": "We restored your content",
+      "body": "Your counter-notice was upheld: the content is available again."
     }
   },
   "admin": {
@@ -1697,7 +1713,8 @@
       "analytics": "Analytics",
       "api": "API & Keys",
       "labs": "Labs (not connected)",
-      "overview": "Technical view"
+      "overview": "Technical view",
+      "legal": "Legal"
     },
     "hello": {
       "morning": "Good morning 👋",
@@ -1739,7 +1756,9 @@
           "newIdeas": "Read",
           "bouncedNotices": "See",
           "chargesWithoutNotice": "Review"
-        }
+        },
+        "arcoDue": "{n, plural, one {# ARCO request due soon} other {# ARCO requests due soon}}",
+        "takedownsOpen": "{n, plural, one {# copyright notice} other {# copyright notices}}"
       },
       "tools": "Tools",
       "health": {
@@ -2034,6 +2053,54 @@
         "PAY_URL": "A valid Mercado Pago payment link is missing.",
         "EMAIL": "The email couldn’t be sent."
       }
+    },
+    "legal": {
+      "title": "Legal",
+      "sub": "Data requests (ARCO) and copyright notices, with their legal deadlines.",
+      "error": "Couldn’t save. Try again.",
+      "arco": {
+        "title": "Open ARCO requests ({n})",
+        "none": "No open requests.",
+        "rights": {
+          "access": "Access",
+          "rectification": "Rectification",
+          "cancellation": "Cancellation",
+          "opposition": "Opposition",
+          "automated": "Objection to an automated decision"
+        },
+        "correct": "Correct value: {valor}",
+        "due": "Received {recibida} · answer by {fecha}",
+        "extended": "deadline extended",
+        "outcome": "Outcome",
+        "outcomes": {
+          "granted": "Granted",
+          "partially_granted": "Partly granted",
+          "denied": "Denied",
+          "incomplete": "Missing information"
+        },
+        "answer": "Record answer",
+        "extend": "Extend deadline (once)"
+      },
+      "takedown": {
+        "title": "Copyright notices ({n})",
+        "none": "No pending notices.",
+        "status": {
+          "received": "New",
+          "removed": "Removed",
+          "counter_noticed": "Counter-noticed"
+        },
+        "counterShown": "Counter-notice: {texto}",
+        "received": "Received {fecha}",
+        "deadline": "the claimant has until {fecha}",
+        "targetEmail": "Uploader’s email",
+        "remove": "Remove and block",
+        "reject": "Reject (type the reason)",
+        "counterText": "Counter-notice text",
+        "counter": "Record counter-notice",
+        "uphold": "Claimant showed a proceeding",
+        "repeat": "This account reached the repeat-infringer limit: review closing it (Acceptable Use §5.4).",
+        "noUser": "No account with that email."
+      }
     }
   },
   "priceChange": {
@@ -2292,6 +2359,106 @@
       "noDate": "date to be confirmed",
       "none": "This version has no listed changes.",
       "fullText": "Read the full text of this version"
+    }
+  },
+  "arco": {
+    "title": "My data (ARCO rights)",
+    "sub": "Ask to see, correct or delete your data, or object to a use. It’s free.",
+    "mine": "Your requests",
+    "answered": "Answered on {fecha}",
+    "pending": "We’ll answer by {fecha}",
+    "folio": "Reference {folio}",
+    "limits": "We may keep some data even if you ask us to delete it when the law requires it (for example, the evidence of your acceptance and your charges). In that case we lock it and use it only for that.",
+    "form": {
+      "right": "What would you like to do?",
+      "rights": {
+        "access": {
+          "title": "See my data (access)",
+          "body": "What data we hold about you and how we use it."
+        },
+        "rectification": {
+          "title": "Correct my data (rectification)",
+          "body": "Something inaccurate or incomplete."
+        },
+        "cancellation": {
+          "title": "Delete my data (cancellation)",
+          "body": "Erase it once the law no longer requires us to keep it."
+        },
+        "opposition": {
+          "title": "Object to a use (opposition)",
+          "body": "Stop using your data for a specific purpose."
+        },
+        "automated": {
+          "title": "Ask for human review of an automated decision",
+          "body": "For example, if the anti-fraud system refused you the free trial."
+        }
+      },
+      "description": "Tell us which data and what you need",
+      "dataLocation": "Where you saw it (screen, email, date)",
+      "correctValue": "The correct value",
+      "optional": "optional",
+      "identity": "We’ll answer at {correo}, your account’s email. If you act for someone else, reply to our email with their power of attorney.",
+      "submit": "Send request",
+      "sent": "Done. We received your request and will answer within 20 days at your account’s email.",
+      "errors": {
+        "description": "Tell us which data and what you need.",
+        "correctValue": "Enter the correct value.",
+        "send": "We couldn’t send your request. Please try again."
+      }
+    }
+  },
+  "takedown": {
+    "metaTitle": "Copyright notice",
+    "metaDescription": "Report content on Chalyb that infringes your copyright.",
+    "title": "Copyright notice",
+    "policy": "Acceptable Use Policy, section 5",
+    "intro": "If you own a copyright (or represent the owner) and believe content on Chalyb infringes it, send us this notice.",
+    "steps": {
+      "remove": "If it has the minimum details, we remove the content promptly.",
+      "block": "We take steps so the same content can’t be uploaded again.",
+      "notify": "We tell the person who uploaded it and send them a copy of the notice.",
+      "counter": "If that person sends a counter-notice, we tell you: you have 15 business days to show you started a proceeding, or we restore the content."
+    },
+    "policyLinkLead": "The full procedure is in the",
+    "policyLink": "Acceptable Use Policy, section 5",
+    "form": {
+      "claimantName": {
+        "label": "Your name (owner or legal representative)",
+        "hint": "Full name or company name"
+      },
+      "claimantContact": {
+        "label": "How we can reach you",
+        "hint": "Email or phone"
+      },
+      "contentIdentification": {
+        "label": "Which content you’re reporting",
+        "hint": "For example: the clip with song X"
+      },
+      "rightStatement": {
+        "label": "What right you hold over the work",
+        "hint": "For example: I’m the author; I represent label Y"
+      },
+      "contentLocation": {
+        "label": "Where the content is",
+        "hint": "Link, account name and date"
+      },
+      "workDescription": {
+        "label": "Description of the protected work",
+        "hint": "For example: song, video, photograph"
+      },
+      "ownershipEvidence": {
+        "label": "Documents proving your ownership or representation",
+        "hint": "Links or a description"
+      },
+      "optional": "optional",
+      "optionalNote": "The rest is optional: it helps us resolve faster, but removal never depends on it.",
+      "truthful": "I declare the information in this notice is true",
+      "required": "This field is required.",
+      "submit": "Send notice",
+      "error": "We couldn’t send the notice. Check the details and try again.",
+      "sentTitle": "We received your notice.",
+      "sentBody": "We’ll review it and contact you through the details you gave.",
+      "folio": "Reference {folio}."
     }
   }
 }

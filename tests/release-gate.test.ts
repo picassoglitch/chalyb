@@ -146,9 +146,14 @@ export const SECTION_11: Line[] = [
   },
   {
     starts: 'Aviso y retirada',
-    tests: [],
+    tests: [
+      ['legal-p6', 'takedown: the four minimum fields'],
+      ['legal-p6', 'takedown: one fingerprint per video'],
+      ['legal-p6', 'takedown: a removed source is refused'],
+      ['legal-p6', 'takedown: repeat infringers'],
+    ],
     manual:
-      'Takedown form, re-upload hash blocking and the repeat-infringer policy are old P6-8, not built yet; Uso aceptable §5 still has [POLÍTICA DE REINCIDENCIA].',
+      'The repeat-infringer policy is still [POLÍTICA DE REINCIDENCIA] in Uso aceptable §5.4 (the code follows its example: 3 in 12 months, flagged for an admin to close); [CORREO DE DERECHOS DE AUTOR] → LEGAL_COPYRIGHT_EMAIL.',
   },
   {
     starts: 'Quebec: versión en francés antes de vender',

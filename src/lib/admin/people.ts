@@ -23,17 +23,23 @@ export function personStatus(
   now: number,
 ): PersonStatus {
   if (!sub) return 'free';
-  if (sub.status === 'paused' || (sub.grace_ends_at && Date.parse(sub.grace_ends_at) > now)) return 'past_due';
+  if (sub.status === 'paused' || (sub.grace_ends_at && Date.parse(sub.grace_ends_at) > now))
+    return 'past_due';
   if (sub.status === 'cancelled' || sub.cancel_at_period_end) {
     const until = sub.access_until ? Date.parse(sub.access_until) : 0;
     return until > now && until - now <= 14 * DAY ? 'ending' : 'cancelled';
   }
-  if (sub.status === 'authorized' && sub.trial_ends_at && Date.parse(sub.trial_ends_at) > now) return 'trial';
+  if (sub.status === 'authorized' && sub.trial_ends_at && Date.parse(sub.trial_ends_at) > now)
+    return 'trial';
   if (sub.status === 'authorized') return 'active';
   return 'cancelled';
 }
 
-export function filterPeople(rows: readonly PersonRow[], chip: PeopleChip, query: string): PersonRow[] {
+export function filterPeople(
+  rows: readonly PersonRow[],
+  chip: PeopleChip,
+  query: string,
+): PersonRow[] {
   const q = query.trim().toLowerCase();
   return rows.filter(
     (r) =>
