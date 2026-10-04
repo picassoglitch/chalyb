@@ -6,7 +6,7 @@ export async function expectAccessible(page: Page) {
   const results = await new AxeBuilder({ page }).analyze();
   const blocking = results.violations
     .filter((v) => v.impact === 'serious' || v.impact === 'critical')
-    .map((v) => `${v.id} (${v.impact}): ${v.nodes.length} node(s)`);
+    .map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`);
   expect(blocking, `axe on ${page.url()}`).toEqual([]);
 }
 

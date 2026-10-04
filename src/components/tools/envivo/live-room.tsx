@@ -326,7 +326,7 @@ export function LiveRoom({
           open={confirm}
           onClose={() => setConfirm(false)}
           title={t('confirmTitle')}
-          closeLabel={t('confirmNo')}
+          closeLabel={t('confirmClose')}
         >
           <p className="ch-muted" style={{ marginBottom: 20 }}>
             {t('confirmBody')}

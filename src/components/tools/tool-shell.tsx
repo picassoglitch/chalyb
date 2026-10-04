@@ -50,7 +50,11 @@ export async function ToolShell({
           </div>
         </div>
         {plan === 'included' && (
-          <nav className="ch-tooltabs" role="tablist" aria-label={t('tabsAria', { herramienta: tool.name })}>
+          <nav
+            className="ch-tooltabs"
+            role="tablist"
+            aria-label={t('tabsAria', { herramienta: tool.name })}
+          >
             {tool.tabs.map((x) => (
               <Link
                 key={x.key}

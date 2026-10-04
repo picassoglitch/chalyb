@@ -8,12 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { sendEmail, getContactInbox } from '@/lib/email/resend';
 import { escapeHtml } from '@/lib/email/escape';
 import { toolBySlug } from '@/config/tools';
-import {
-  afterOwnerAlert,
-  nextToolStatus,
-  okStatus,
-  type ToolStatusRow,
-} from './bff-core';
+import { afterOwnerAlert, nextToolStatus, okStatus, type ToolStatusRow } from './bff-core';
 
 interface Row {
   slug: string;
@@ -46,19 +41,17 @@ export async function getToolStatus(slug: string): Promise<ToolStatusRow> {
 }
 
 async function save(slug: string, s: ToolStatusRow, reason: string | null, nowIso: string) {
-  const { error } = await createAdminClient()
-    .from('tool_status')
-    .upsert({
-      slug,
-      state: s.state,
-      down_since: s.downSince,
-      incident_active: s.incidentActive,
-      incident_since: s.incidentSince,
-      alerted_at: s.alertedAt,
-      last_check_at: nowIso,
-      last_reason: reason,
-      updated_at: nowIso,
-    });
+  const { error } = await createAdminClient().from('tool_status').upsert({
+    slug,
+    state: s.state,
+    down_since: s.downSince,
+    incident_active: s.incidentActive,
+    incident_since: s.incidentSince,
+    alerted_at: s.alertedAt,
+    last_check_at: nowIso,
+    last_reason: reason,
+    updated_at: nowIso,
+  });
   if (error) console.error('[tool-status] save failed', slug, error.message);
 }
 
@@ -102,7 +95,11 @@ export async function setToolIncident(slug: string, active: boolean): Promise<vo
   const prev = await getToolStatus(slug);
   await save(
     slug,
-    { ...prev, incidentActive: active, incidentSince: active ? (prev.incidentSince ?? nowIso) : null },
+    {
+      ...prev,
+      incidentActive: active,
+      incidentSince: active ? (prev.incidentSince ?? nowIso) : null,
+    },
     null,
     nowIso,
   );

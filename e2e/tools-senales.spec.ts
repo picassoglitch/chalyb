@@ -64,7 +64,9 @@ test.describe('Señales · as pro (annual)', () => {
       'aria-selected',
       'true',
     );
-    await expect(page.getByTestId('signals-disclaimer')).toContainText('no es asesoría financiera');
+    await expect(page.getByTestId('signals-disclaimer').filter({ visible: true })).toContainText(
+      'no es asesoría financiera',
+    );
     await expect(
       page.getByText(/Momento de compra|Momento de venta|Sin señal clara/).first(),
     ).toBeVisible();
@@ -80,7 +82,7 @@ test.describe('Señales · as pro (annual)', () => {
     await expect(
       page.getByText(/Esta misma señal la ven todas las personas de tu plan/),
     ).toBeVisible();
-    await expect(page.getByTestId('signals-disclaimer')).toBeVisible();
+    await expect(page.getByTestId('signals-disclaimer').filter({ visible: true })).toBeVisible();
     await page.getByRole('link', { name: '1 mes' }).click();
     await expect(page).toHaveURL(/rango=1m/);
 
@@ -88,7 +90,7 @@ test.describe('Señales · as pro (annual)', () => {
     await page.getByRole('tab', { name: 'Historial' }).click();
     await expect(page).toHaveURL(/\/app\/senales\/historial$/);
     await expect(page.getByRole('heading', { level: 2, name: 'Hoy' })).toBeVisible();
-    await expect(page.getByTestId('signals-disclaimer')).toBeVisible();
+    await expect(page.getByTestId('signals-disclaimer').filter({ visible: true })).toBeVisible();
 
     // Ajustes: autosave, risk notice accepted, advanced closed by default.
     await page.getByRole('tab', { name: 'Ajustes' }).click();
@@ -97,7 +99,7 @@ test.describe('Señales · as pro (annual)', () => {
     const adv = page.getByRole('button', { name: /Opciones avanzadas/ });
     await expect(adv).toHaveAttribute('aria-expanded', 'false');
     await adv.click();
-    await expect(page.getByText('Temporalidad')).toBeVisible();
+    await expect(page.getByText('Temporalidad', { exact: true })).toBeVisible();
     await expect(page.getByText(/saldo|cartera|perfil de riesgo|exchange/i)).toHaveCount(0);
 
     expect(context.pages()).toHaveLength(1);

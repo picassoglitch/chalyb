@@ -2453,7 +2453,8 @@
       "offlineCta": "Try again",
       "noDestTitle": "Choose where to stream",
       "noDestBody": "Turn on at least one platform to start.",
-      "noDestCta": "Go to Settings"
+      "noDestCta": "Go to Settings",
+      "confirmClose": "Close"
     },
     "streams": {
       "title": "My streams",

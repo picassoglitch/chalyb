@@ -100,7 +100,7 @@ test.describe('as pro', () => {
     );
     await clean(page, info);
     await page.goto('/app/senales');
-    await expect(page.getByTestId('signals-disclaimer')).toBeVisible();
+    await expect(page.getByTestId('signals-disclaimer').filter({ visible: true })).toBeVisible();
   });
 
   // En vivo's flow (connect → live → end) lives in e2e/tools-envivo.spec.ts.

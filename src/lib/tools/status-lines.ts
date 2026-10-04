@@ -46,7 +46,11 @@ export async function toolStatusLines(
         if (!a) return;
         const r = await runTool(slug, userId, () => a.getSignals({ plan }), { idempotent: true });
         if (!r.ok) return;
-        out[slug] = signalsLine(r.data.map((s) => s.at), now, tz);
+        out[slug] = signalsLine(
+          r.data.map((s) => s.at),
+          now,
+          tz,
+        );
       }
       if (slug === 'chalybobs') {
         const a = getEnVivo();

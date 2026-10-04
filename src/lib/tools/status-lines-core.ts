@@ -9,7 +9,12 @@ export interface ToolStatusLine {
 }
 
 const dayKey = (d: Date, tz: string) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
 
 /** "hoy" / "ayer" / "el 3 oct", in the tool's time zone. */
 export function relativeDay(iso: string, now: Date, locale: string, tz: string): string {
@@ -20,7 +25,11 @@ export function relativeDay(iso: string, now: Date, locale: string, tz: string):
   const es = locale !== 'en';
   if (k === today) return es ? 'hoy' : 'today';
   if (k === yesterday) return es ? 'ayer' : 'yesterday';
-  const date = new Intl.DateTimeFormat(es ? 'es-MX' : 'en-US', { timeZone: tz, day: 'numeric', month: 'short' }).format(d);
+  const date = new Intl.DateTimeFormat(es ? 'es-MX' : 'en-US', {
+    timeZone: tz,
+    day: 'numeric',
+    month: 'short',
+  }).format(d);
   return es ? `el ${date}` : `on ${date}`;
 }
 

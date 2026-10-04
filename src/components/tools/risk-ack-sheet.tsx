@@ -79,7 +79,13 @@ export function RiskAckSheet({
   return (
     <div className="ch-risk" data-testid="risk-sheet">
       <div className="ch-risk__scrim" onClick={() => router.push(backHref as Route)} />
-      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby="risk-title" className="ch-risk__sheet">
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="risk-title"
+        className="ch-risk__sheet"
+      >
         <button
           type="button"
           className="ch-close ch-risk__x"

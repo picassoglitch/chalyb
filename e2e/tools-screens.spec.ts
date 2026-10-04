@@ -57,7 +57,9 @@ test.describe('pro', () => {
     await go('/app/clips/ajustes', '52-clips-ajustes');
     await go('/app/senales', '54-senales-home');
     await go('/app/senales/historial', '54b-senales-historial');
-    const sig = page.locator('a[href*="/app/senales/"]:not([href$="historial"]):not([href$="ajustes"])').first();
+    const sig = page
+      .locator('a[href*="/app/senales/"]:not([href$="historial"]):not([href$="ajustes"])')
+      .first();
     if (await sig.count()) {
       await sig.click();
       await page.waitForLoadState('networkidle');

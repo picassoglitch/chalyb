@@ -8,6 +8,7 @@ import { runTool } from '@/lib/tools/bff';
 import { screenSignal } from '@/lib/tools/signals-screen';
 import { formatRefPrice, isOldSignal, SIGNAL_TZ } from '@/lib/tools/signals-view';
 import type { SignalRange } from '@/lib/tools/adapters/tools';
+import { RiskAck } from '@/components/tools/risk-ack';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { StateBlock } from '@/components/ui/primitives';
@@ -45,7 +46,15 @@ export default async function SenalDetalle({
         <SignalsDisclaimer />
       </ToolShell>
     );
-  if (gate.kind !== 'ready' || gate.riskPending) return redirect({ href: '/app/senales', locale });
+  if (gate.kind !== 'ready') return redirect({ href: '/app/senales', locale });
+  // The notice opens right here, over the tool (§5.1); no content until accepted.
+  if (gate.riskPending)
+    return (
+      <ToolShell slug="chalybcrypto" tab="main">
+        <RiskAck slug="chalybcrypto" locale={locale} />
+        <SignalsDisclaimer />
+      </ToolShell>
+    );
 
   const { session, entitlements, adapter } = gate;
   const t = await getTranslations('signalsTool');

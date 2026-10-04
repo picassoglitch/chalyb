@@ -55,6 +55,9 @@ export function toolRoute<A, T>(
       opts,
     );
     if (res.ok) return NextResponse.json({ ok: true, data: res.data });
-    return NextResponse.json({ ok: false, error: res.error }, { status: statusForReason(res.error.reason) });
+    return NextResponse.json(
+      { ok: false, error: res.error },
+      { status: statusForReason(res.error.reason) },
+    );
   };
 }

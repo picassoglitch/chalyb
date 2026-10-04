@@ -69,7 +69,10 @@ test('support codes: prefix + 4 digits', () => {
 });
 
 test('BFF errors: normalized reasons, never the engine message', () => {
-  assert.deepEqual(normalizeToolError({ code: 'TOOL_TIMEOUT' }), { reason: 'timeout', retryable: true });
+  assert.deepEqual(normalizeToolError({ code: 'TOOL_TIMEOUT' }), {
+    reason: 'timeout',
+    retryable: true,
+  });
   assert.deepEqual(normalizeToolError({ code: 'NOT_IMPLEMENTED' }), {
     reason: 'not_implemented',
     retryable: false,
@@ -120,7 +123,10 @@ test('tool_status: down → owner alert once after 5 min → incident only after
   assert.equal(nextToolStatus(okStatus(), { ok: true, latencyMs: 5000 }, t0).next.state, 'slow');
   // An incident the owner opened by hand stays until the owner closes it.
   const manual = { ...okStatus(), incidentActive: true, incidentSince: t0 };
-  assert.equal(nextToolStatus(manual, { ok: true, latencyMs: 100 }, at(1)).next.incidentActive, true);
+  assert.equal(
+    nextToolStatus(manual, { ok: true, latencyMs: 100 }, at(1)).next.incidentActive,
+    true,
+  );
 });
 
 test('Tus herramientas status lines', () => {
@@ -129,17 +135,32 @@ test('Tus herramientas status lines', () => {
   assert.equal(relativeDay('2026-10-03T15:00:00.000Z', now, 'es', tz), 'hoy');
   assert.equal(relativeDay('2026-10-02T15:00:00.000Z', now, 'es', tz), 'ayer');
   assert.match(relativeDay('2026-09-20T15:00:00.000Z', now, 'es', tz), /^el 20 sept?\.?$/);
-  assert.deepEqual(clipsLine({ inProgress: 1, ready: 6, latestReadyAt: '2026-10-02T15:00:00.000Z' }, now, 'es', tz), {
-    key: 'clipsBoth',
-    values: { n: 1, m: 6, cuando: 'ayer' },
-  });
-  assert.equal(clipsLine({ inProgress: 0, ready: 0, latestReadyAt: null }, now, 'es', tz).key, 'clipsNone');
+  assert.deepEqual(
+    clipsLine(
+      { inProgress: 1, ready: 6, latestReadyAt: '2026-10-02T15:00:00.000Z' },
+      now,
+      'es',
+      tz,
+    ),
+    {
+      key: 'clipsBoth',
+      values: { n: 1, m: 6, cuando: 'ayer' },
+    },
+  );
+  assert.equal(
+    clipsLine({ inProgress: 0, ready: 0, latestReadyAt: null }, now, 'es', tz).key,
+    'clipsNone',
+  );
   assert.deepEqual(signalsLine(['2026-10-03T13:00:00.000Z', '2026-10-01T13:00:00.000Z'], now, tz), {
     key: 'signalsToday',
     values: { n: 1 },
   });
   assert.equal(signalsLine([], now, tz).key, 'signalsNone');
-  assert.deepEqual(liveLine({ connected: false, live: false }), { key: 'liveSetup', values: {}, warn: true });
+  assert.deepEqual(liveLine({ connected: false, live: false }), {
+    key: 'liveSetup',
+    values: {},
+    warn: true,
+  });
   assert.equal(liveLine({ connected: true, live: false }).key, 'liveReady');
   assert.equal(liveLine({ connected: true, live: true }).key, 'liveOn');
 });
@@ -234,5 +255,8 @@ test('the risk notice is aceptacion-ux §6 word for word', () => {
   const law = readFileSync(join(ROOT, 'docs/design/app-reimagine/legal/aceptacion-ux.md'), 'utf8');
   const quoted = body.replace('{herramienta}', '{Herramienta}');
   assert.ok(law.includes(quoted), 'consents.risk.body drifted from aceptacion-ux §6');
-  assert.equal(messages('es').consents.risk.check, 'Entiendo y acepto que las decisiones y los riesgos son míos.');
+  assert.equal(
+    messages('es').consents.risk.check,
+    'Entiendo y acepto que las decisiones y los riesgos son míos.',
+  );
 });

@@ -62,7 +62,8 @@ test.describe('as pro', () => {
     await expect(
       page
         .getByText('Clips de “torneo del sabado”')
-        .or(page.getByRole('heading', { name: 'Tus últimos clips' })),
+        .or(page.getByRole('heading', { name: 'Tus últimos clips' }))
+        .first(),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Tus últimos clips' })).toBeVisible({
       timeout: 30_000,
@@ -148,7 +149,7 @@ test.describe('as pro', () => {
       String(Math.round((before - 1.1) * 10) / 10),
     );
 
-    await page.getByText('Cuadrado', { exact: true }).click();
+    await page.getByRole('radio', { name: 'Cuadrado' }).check();
     await expect(page.getByRole('radio', { name: 'Cuadrado' })).toBeChecked();
     await expect(page.getByText(/^Guardado/)).toBeVisible();
 
@@ -182,7 +183,7 @@ test.describe('as pro', () => {
     await expectToolChrome(page, 'Ajustes');
     await expect(page.getByRole('switch', { name: 'Poner subtítulos en mis clips' })).toBeVisible();
     // Whatever another run left, pick Con fondo and see it stick.
-    await page.getByText('Con fondo', { exact: true }).click();
+    await page.getByRole('radio', { name: /Con fondo/ }).check();
     await expect(page.getByRole('radio', { name: /Con fondo/ })).toBeChecked();
 
     const adv = page.getByRole('button', { name: /Opciones avanzadas/ });

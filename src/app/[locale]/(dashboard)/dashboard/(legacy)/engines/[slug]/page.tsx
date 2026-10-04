@@ -16,6 +16,8 @@ import { Link } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getEngineMetrics } from '@/lib/engines/admin-metrics';
+import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscriptions';
+import { EngineDiagnostics } from '@/components/dashboard/engine-diagnostics';
 import {
   EngineCostRateInput,
   EngineFixedCostInput,
@@ -84,6 +86,11 @@ export default async function EngineDetailPage({
     partnerRoyaltyPerMillionTokensCents: engine.partnerRoyaltyPerMillionTokensCents,
   });
 
+  // The provisioning diagnostics (P0-5) lived on the old /app/engines/[slug]
+  // launch page; with the tools inside the app (WS-11) they live here.
+  await ensureAdminEngineAccess(session!.user.id, engine.id);
+  const access = await getEngineAccess(session!.user.id, engine.id);
+
   const stateMeta = STATE_LABEL[engine.state] ?? { label: engine.state, cls: '' };
   const marginColor =
     metrics.marginPct === null
@@ -96,6 +103,12 @@ export default async function EngineDetailPage({
 
   return (
     <div className="cc-scroll">
+      <EngineDiagnostics
+        engineId={engine.id}
+        slug={engine.slug}
+        requiresProvisioning={engine.requiresProvisioning}
+        access={access}
+      />
       {/* ── Header row: identity + nav back ───────────────────────────── */}
       <div
         style={{

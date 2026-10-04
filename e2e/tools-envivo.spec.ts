@@ -145,6 +145,8 @@ test.describe('as pro', () => {
     expect(await page.content()).not.toContain(key);
     await field.locator('xpath=..').getByRole('button', { name: 'Mostrar' }).click();
     const reauth = page.getByRole('dialog', { name: 'Confirma que eres tú' });
+    // Recent sign-in skips the password step; otherwise the dialog opens.
+    await reauth.waitFor({ timeout: 5_000 }).catch(() => {});
     if (await reauth.isVisible().catch(() => false)) {
       await reauth.getByLabel('Tu contraseña').fill(process.env.E2E_PRO_PASSWORD ?? '');
       await reauth.getByRole('button', { name: 'Mostrar la clave' }).click();

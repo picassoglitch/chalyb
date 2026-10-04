@@ -20,13 +20,13 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
 
   if (job.state === 'failed') {
     return (
-      <li className="ch-jobrow ch-jobrow--failed" role="alert">
+      <li className="ch-jobrow ch-jobrow--failed">
         <span
           className="ch-jobrow__thumb"
           style={{ background: thumbFor(job.id) }}
           aria-hidden="true"
         />
-        <div className="ch-jobrow__tx">
+        <div className="ch-jobrow__tx" role="alert">
           <b>{t('failed', { titulo })}</b>
           <span className="ch-muted">
             {await failureBody(job.reason ?? 'unknown', job.sourceUrl, locale)}
