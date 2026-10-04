@@ -46,7 +46,7 @@ import {
   priceIncreaseNoAnswer,
   trialDay6ReminderEnabled,
 } from '@/lib/config/flags';
-import { chargeFor, planPrice, type PlanKey } from '@/config/pricing';
+import { nextChargeCents, planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { nextStep } from '@/lib/billing/price-change';
@@ -180,7 +180,7 @@ export async function GET(req: Request) {
                   : {
                       nombre,
                       plan: PLAN_NAMES[planKey],
-                      monto: formatMXN(chargeFor(row as never)),
+                      monto: formatMXN(nextChargeCents({ ...row, plan_key: planKey })),
                       periodicidad:
                         price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
                       fecha_fin_prueba: row.trial_ends_at
@@ -196,7 +196,7 @@ export async function GET(req: Request) {
           const inApp = inAppBillingNotice(notice.kind, {
             nextChargeAt,
             fechaCobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : '',
-            monto: formatMXN(price.totalCents),
+            monto: formatMXN(nextChargeCents({ ...row, plan_key: planKey })),
             periodKey: notice.periodKey,
           });
           if (inApp)

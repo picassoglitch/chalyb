@@ -180,3 +180,22 @@ test('#5 a validly signed but stale notification is refused', async () => {
   const route = readFileSync(new URL('../src/app/api/mp/webhook/route.ts', import.meta.url), 'utf8');
   assert.match(route, /checkMpSignature\(\{[\s\S]*?nowMs: Date\.now\(\)/);
 });
+
+// ── #6 · Notices show what will actually be charged ──────────────────
+test('#6 the next charge amount: grandfathered price, Lealtad step, else the plan price', async () => {
+  const { nextChargeCents, lealtadPriceCents, planPrice } = await import('@/config/pricing');
+  assert.equal(nextChargeCents({ plan_key: 'pro_month', amount_cents: 74_900 }), 74_900);
+  assert.equal(nextChargeCents({ plan_key: 'pro_month', amount_cents: null }), planPrice('pro_month').totalCents);
+  assert.equal(nextChargeCents({ plan_key: 'vip_year', amount_cents: 0 }), planPrice('vip_year').totalCents);
+  // Lealtad: always its step, whatever the preapproval still says.
+  assert.equal(nextChargeCents({ plan_key: 'pro_lealtad', loyalty_step: 4, amount_cents: 166_200 }), lealtadPriceCents(4));
+
+  const { readFileSync } = await import('node:fs');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const cron = read('src/app/api/cron/billing/route.ts');
+  // Both the email and the in-app copy of a notice.
+  assert.equal(cron.match(/monto: formatMXN\(nextChargeCents\(\{ \.\.\.row, plan_key: planKey \}\)\)/g)?.length, 2);
+  assert.doesNotMatch(cron, /monto: formatMXN\(price\.totalCents\)/);
+  assert.match(read('src/components/app/billing/billing-banner.tsx'), /nextChargeCents\(\{/);
+  assert.match(read('src/components/app/billing/mi-plan-view.tsx'), /nextChargeCents\(\{/);
+});

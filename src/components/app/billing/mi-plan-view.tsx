@@ -22,8 +22,8 @@ import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   annualMath,
   floorToPeso,
-  lealtadPriceCents,
   lealtadSchedule,
+  nextChargeCents,
   planPrice,
   type PlanKey,
 } from '@/config/pricing';
@@ -95,7 +95,16 @@ export async function MiPlanView({
   const lealtad = planKey === 'pro_lealtad';
   const loyaltyStep = (billing?.primaryRow?.loyalty_step as number | undefined) ?? 0;
   const lealtadUi = lealtad && lealtadEnabled();
-  const monto = price ? formatMXN(lealtad ? lealtadPriceCents(loyaltyStep) : price.totalCents) : '';
+  // What the next charge really is: Lealtad's step, a grandfathered price.
+  const monto = planKey
+    ? formatMXN(
+        nextChargeCents({
+          plan_key: planKey,
+          loyalty_step: loyaltyStep,
+          amount_cents: (billing?.primaryRow?.amount_cents as number | null | undefined) ?? null,
+        }),
+      )
+    : '';
   const yearly = price?.interval === 'year';
   const schedule = lealtadSchedule();
   const m1 = formatMXN(schedule[0]!.cents);

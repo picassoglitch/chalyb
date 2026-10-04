@@ -150,6 +150,24 @@ export function chargeFor(sub: { plan_key: PlanKey | null; loyalty_step?: number
   return planPrice(sub.plan_key ?? 'pro_month').totalCents;
 }
 
+/**
+ * What a running subscription's next charge will actually be — the amount
+ * every notice, banner and Mi plan must show. Pro Lealtad: that month's
+ * step. Any other plan: the amount its preapproval charges when we know it
+ * (a grandfathered subscriber renews at their old price, GRANDFATHERED_CENTS,
+ * until they accept a new one), else the plan's price.
+ */
+export function nextChargeCents(sub: {
+  plan_key: PlanKey | null;
+  loyalty_step?: number | null;
+  amount_cents?: number | null;
+}): number {
+  if (sub.plan_key === 'pro_lealtad') return chargeFor(sub);
+  return typeof sub.amount_cents === 'number' && sub.amount_cents > 0
+    ? sub.amount_cents
+    : chargeFor(sub);
+}
+
 export function packPriceCents(id: PackId): number {
   return PACK_CENTS[id];
 }
