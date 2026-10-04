@@ -46,3 +46,36 @@ test('#2 the delivery of every mandatory notice email (incl. lealtad_7d) is reco
   for (const kind of ['trial_7d', 'renew_7d', 'lealtad_7d']) assert.ok(MANDATORY_NOTICE_KINDS.has(kind), kind);
   for (const kind of ['trial_1d', 'renew_30d', 'annual_summary']) assert.ok(!MANDATORY_NOTICE_KINDS.has(kind), kind);
 });
+
+// ── #3 · The subscription price gate runs before our copy is written ─
+test('#3 an authorised preapproval at an unpriced amount is stored non-granting', async () => {
+  const { gatePreapproval } = await import('@/lib/payments/webhook-verify');
+  const { planPrice, lealtadPriceCents } = await import('@/config/pricing');
+  const base = { status: 'authorized', tier: 'VIP' as const, currency: 'MXN' };
+  // $100 for VIP: refused, stored as amount_mismatch.
+  const bad = gatePreapproval({ ...base, planKey: 'vip_month', amountMajor: 100 });
+  assert.equal(bad.refused, true);
+  assert.equal(bad.storedStatus, 'amount_mismatch');
+  // Right amount: stored as Mercado Pago says.
+  const ok = gatePreapproval({ ...base, planKey: 'vip_year', amountMajor: planPrice('vip_year').totalCents / 100 });
+  assert.deepEqual(ok, { storedStatus: 'authorized', refused: false });
+  // Wrong currency: refused.
+  assert.equal(gatePreapproval({ ...base, planKey: 'vip_year', amountMajor: planPrice('vip_year').totalCents / 100, currency: 'USD' }).refused, true);
+  // Pro Lealtad: any step of its schedule.
+  assert.equal(gatePreapproval({ ...base, tier: 'PRO', planKey: 'pro_lealtad', amountMajor: lealtadPriceCents(3) / 100 }).refused, false);
+  // Not authorised: nothing to gate.
+  assert.deepEqual(gatePreapproval({ ...base, status: 'paused', planKey: 'vip_month', amountMajor: 100 }), { storedStatus: 'paused', refused: false });
+
+  // The stored row grants nothing, even with a grace window open.
+  const r = row({ status: 'amount_mismatch', tier: 'VIP', plan_key: 'vip_month', grace_ends_at: '2099-01-01T00:00:00Z', next_charge_at: '2000-01-01T00:00:00Z' });
+  assert.equal(deriveBillingState(r, Date.now()).grantsTier, 'FREE');
+  assert.equal(deriveBillingState({ ...r, grace_ends_at: null }, Date.now()).grantsTier, 'FREE');
+
+  // And the sync decides the gate before the upsert, writing its status.
+  const { readFileSync } = await import('node:fs');
+  const sync = readFileSync(new URL('../src/lib/payments/subscription-sync.ts', import.meta.url), 'utf8');
+  const gateAt = sync.indexOf('const gate = gatePreapproval(');
+  const upsertAt = sync.indexOf("from('subscriptions').upsert(");
+  assert.ok(gateAt > 0 && gateAt < upsertAt, 'gate before upsert');
+  assert.match(sync.slice(upsertAt, upsertAt + 400), /status: gate\.storedStatus/);
+});

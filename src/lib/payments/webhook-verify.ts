@@ -11,8 +11,16 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { TIER_PRICING, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
-import { GRANDFATHERED_CENTS } from '@/config/pricing';
+import {
+  GRANDFATHERED_CENTS,
+  grandfatheredFor,
+  lealtadSchedule,
+  planPrice,
+  PRICING,
+  type PlanKey,
+} from '@/config/pricing';
 import type { SubscriptionTier } from '@/lib/auth/session';
+import { AMOUNT_MISMATCH_STATUS } from '@/lib/billing/billing-state';
 
 export type SignatureFailure =
   | 'not_configured'
@@ -152,4 +160,47 @@ export function checkCharge(
     return { ok: false, reason: 'amount', expected, paidCents, paidCurrency };
   }
   return { ok: true };
+}
+
+/** What a subscription's preapproval may charge: its plan's price (Pro
+ *  Lealtad: any step of its schedule, each charge is gated against its own
+ *  step in onLealtadCharge), or the tier's for rows older than plan keys. */
+export function expectedChargeForPlan(
+  planKey: PlanKey | null,
+  tier: SubscriptionTier,
+): ExpectedCharge | null {
+  if (!planKey) return expectedChargeForTier(tier);
+  return {
+    amountCents: planPrice(planKey).totalCents,
+    alsoAcceptCents:
+      planKey === 'pro_lealtad' ? lealtadSchedule().map((s) => s.cents) : grandfatheredFor(planKey),
+    currency: PRICING.currency,
+    label: `plan ${planKey}`,
+  };
+}
+
+/**
+ * The price gate for a preapproval, decided BEFORE our copy is written: an
+ * authorised preapproval whose amount doesn't match the plan is stored as
+ * AMOUNT_MISMATCH_STATUS, never as 'authorized' (any authorised row grants
+ * its tier).
+ */
+export function gatePreapproval(input: {
+  status: string;
+  planKey: PlanKey | null;
+  tier: SubscriptionTier;
+  amountMajor: number | null | undefined;
+  currency: string | null | undefined;
+}): { storedStatus: string; refused: false } | {
+  storedStatus: typeof AMOUNT_MISMATCH_STATUS;
+  refused: true;
+  expected: ExpectedCharge | null;
+} {
+  if (input.status !== 'authorized') return { storedStatus: input.status, refused: false };
+  const expected = expectedChargeForPlan(input.planKey, input.tier);
+  const charge = expected
+    ? checkCharge(expected, { amountMajor: input.amountMajor, currency: input.currency })
+    : null;
+  if (expected && charge?.ok) return { storedStatus: input.status, refused: false };
+  return { storedStatus: AMOUNT_MISMATCH_STATUS, refused: true, expected };
 }

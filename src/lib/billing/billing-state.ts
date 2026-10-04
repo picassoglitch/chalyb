@@ -68,6 +68,10 @@ const FREE: BillingState = {
   chargeHoldUntil: null,
 };
 
+/** Our copy of a preapproval Mercado Pago authorised at an amount we never
+ *  priced (the price gate, subscription-sync): visible, grants nothing. */
+export const AMOUNT_MISMATCH_STATUS = 'amount_mismatch';
+
 const ms = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -153,6 +157,8 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
   };
 
   const status = row.status.toLowerCase();
+  // Refused by the price gate: nothing, whatever else the row says.
+  if (status === AMOUNT_MISMATCH_STATUS) return { ...FREE, trialEndsAt: row.trial_ends_at };
   const inTrial = !Number.isNaN(ms(row.trial_ends_at)) && nowMs < ms(row.trial_ends_at);
 
   // Cancelled (by the user or by us): access runs to the end of what was
