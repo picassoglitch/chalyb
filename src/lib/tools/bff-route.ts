@@ -25,6 +25,8 @@ export interface ToolRouteCtx {
   params: Record<string, string>;
   /** The JSON body as a plain object ({} for GET, null, arrays or junk). */
   body: Record<string, unknown>;
+  /** Fires at the BFF timeout: pass it to engine calls. */
+  signal: AbortSignal;
 }
 
 export function toolRoute<A, T>(
@@ -60,7 +62,15 @@ export function toolRoute<A, T>(
     const res = await runTool(
       slug,
       session.user.id,
-      () => handler(markingAdapter(a as object) as A, { req, session, entitlements, params, body }),
+      (signal) =>
+        handler(markingAdapter(a as object) as A, {
+          req,
+          session,
+          entitlements,
+          params,
+          body,
+          signal,
+        }),
       { ...opts, adapterErrorsOnly: true },
     );
     if (res.ok) return NextResponse.json({ ok: true, data: res.data });

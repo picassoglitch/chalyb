@@ -66,7 +66,9 @@ export function markAdapterError(err: unknown): unknown {
 }
 
 export function isAdapterError(err: unknown): boolean {
-  return !!err && typeof err === 'object' && (err as Record<symbol, unknown>)[FROM_ADAPTER] === true;
+  return (
+    !!err && typeof err === 'object' && (err as Record<symbol, unknown>)[FROM_ADAPTER] === true
+  );
 }
 
 /** Wrap an adapter so every error its methods throw (sync or async) is
@@ -179,20 +181,35 @@ export function countsAsOutage(reason: ToolErrorReason): boolean {
 export interface BreakerState {
   failures: number;
   openedAt: number | null;
+  /** When the single half-open trial call started (null: none running). */
+  trialAt: number | null;
 }
 
-export const closedBreaker = (): BreakerState => ({ failures: 0, openedAt: null });
+export const closedBreaker = (): BreakerState => ({ failures: 0, openedAt: null, trialAt: null });
 
-/** Whether a call may go through at `now`. After the cooldown one trial
- *  call is let through (half-open). */
-export function breakerAllows(s: BreakerState, now: number): boolean {
-  return s.openedAt === null || now - s.openedAt >= BREAKER_COOLDOWN_MS;
+/**
+ * May a call go through at `now`? Closed: yes. Open: no until the cooldown
+ * ends; then exactly ONE trial call is let through (half-open) while every
+ * other call is still refused, until that trial succeeds (closed) or fails
+ * (open again). A trial that never reports back frees the slot after the
+ * timeout.
+ */
+export function breakerAcquire(
+  s: BreakerState,
+  now: number,
+): { allowed: boolean; next: BreakerState } {
+  if (s.openedAt === null) return { allowed: true, next: s };
+  if (now - s.openedAt < BREAKER_COOLDOWN_MS) return { allowed: false, next: s };
+  if (s.trialAt !== null && now - s.trialAt < TOOL_TIMEOUT_MS) return { allowed: false, next: s };
+  return { allowed: true, next: { ...s, trialAt: now } };
 }
 
 export function breakerAfter(s: BreakerState, ok: boolean, now: number): BreakerState {
   if (ok) return closedBreaker();
   const failures = s.failures + 1;
-  return { failures, openedAt: failures >= BREAKER_THRESHOLD ? now : s.openedAt };
+  // A failed half-open trial reopens at once.
+  const open = failures >= BREAKER_THRESHOLD || s.openedAt !== null;
+  return { failures, openedAt: open ? now : null, trialAt: null };
 }
 
 // ── Health (tool_status) ─────────────────────────────────────────────────

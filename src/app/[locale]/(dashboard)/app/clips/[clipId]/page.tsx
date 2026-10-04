@@ -7,6 +7,7 @@ import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { CLIP_FORMATS } from '@/lib/tools/adapters/types';
 import { clipNeighbours } from '@/lib/tools/clips-home';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
+import { runTool } from '@/lib/tools/bff';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -59,11 +60,24 @@ export default async function ClipDetailPage({
   const td = await getTranslations('clipsTool.detail');
   const userId = gate.session.user.id;
   const { adapter } = gate;
-  const [all, settings, accounts] = await Promise.all([
-    adapter.listClips(userId),
-    adapter.getSettings(userId),
-    adapter.accounts(userId),
-  ]);
+  const reads = await runTool(
+    'chalybclip',
+    userId,
+    () =>
+      Promise.all([
+        adapter.listClips(userId),
+        adapter.getSettings(userId),
+        adapter.accounts(userId),
+      ]),
+    { idempotent: true },
+  );
+  if (!reads.ok)
+    return (
+      <ToolShell slug="chalybclip" tab="history">
+        <ToolErrorState slug="chalybclip" error={reads.error} savedWork />
+      </ToolShell>
+    );
+  const [all, settings, accounts] = reads.data;
   const clip = all.find((c) => c.id === clipId) ?? null;
 
   if (!clip)

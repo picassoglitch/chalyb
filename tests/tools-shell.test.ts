@@ -13,7 +13,7 @@ import {
   OWNER_ALERT_AFTER_MS,
   afterOwnerAlert,
   breakerAfter,
-  breakerAllows,
+  breakerAcquire,
   closedBreaker,
   countsAsOutage,
   isSupportCode,
@@ -90,14 +90,23 @@ test('BFF errors: normalized reasons, never the engine message', () => {
   assert.ok(!countsAsOutage('risk_ack_required'));
 });
 
-test('circuit breaker: opens after the threshold, half-opens after the cooldown', () => {
+test('circuit breaker: opens after the threshold, then ONE half-open trial', () => {
   let b = closedBreaker();
   for (let i = 0; i < BREAKER_THRESHOLD - 1; i++) b = breakerAfter(b, false, 1000);
-  assert.ok(breakerAllows(b, 1000));
+  assert.ok(breakerAcquire(b, 1000).allowed);
   b = breakerAfter(b, false, 1000);
-  assert.ok(!breakerAllows(b, 1000 + BREAKER_COOLDOWN_MS - 1));
-  assert.ok(breakerAllows(b, 1000 + BREAKER_COOLDOWN_MS));
-  assert.deepEqual(breakerAfter(b, true, 99_999), closedBreaker());
+  assert.ok(!breakerAcquire(b, 1000 + BREAKER_COOLDOWN_MS - 1).allowed);
+  // After the cooldown exactly one call goes through…
+  const t = 1000 + BREAKER_COOLDOWN_MS;
+  const trial = breakerAcquire(b, t);
+  assert.ok(trial.allowed);
+  assert.ok(!breakerAcquire(trial.next, t + 1).allowed, 'a second call waits for the trial');
+  // …a failed trial reopens at once; a good one closes.
+  const reopened = breakerAfter(trial.next, false, t + 5);
+  assert.ok(!breakerAcquire(reopened, t + 6).allowed);
+  assert.deepEqual(breakerAfter(trial.next, true, t + 5), closedBreaker());
+  // A trial that never reports back frees the slot after the timeout.
+  assert.ok(breakerAcquire(trial.next, t + 8000).allowed);
 });
 
 test('tool_status: down → owner alert once after 5 min → incident only after delivery', () => {

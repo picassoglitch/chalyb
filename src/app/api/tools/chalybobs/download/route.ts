@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { getEnVivo, hubRunsTool } from '@/lib/tools/registry';
-import { reportToolError } from '@/lib/tools/bff';
+import { runTool } from '@/lib/tools/bff';
+import { statusForReason } from '@/lib/tools/bff-core';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,11 +20,17 @@ export async function GET(req: Request) {
   if (ent.tools.chalybobs?.state !== 'included' || !adapter)
     return NextResponse.json({ ok: false, code: 'NOT_INCLUDED' }, { status: 403 });
   const os = new URL(req.url).searchParams.get('os') === 'mac' ? 'mac' : 'windows';
-  const file = await adapter.download(os).catch(() => null);
-  if (!file) {
-    const error = await reportToolError('chalybobs', session.user.id, 'unavailable', true);
-    return NextResponse.json({ ok: false, error }, { status: 503 });
-  }
+  // Through the BFF: timeout, breaker and a support code like any tool call.
+  const res = await runTool('chalybobs', session.user.id, () => adapter.download(os), {
+    idempotent: true,
+  });
+  if (!res.ok)
+    return NextResponse.json(
+      { ok: false, error: res.error },
+      { status: statusForReason(res.error.reason) },
+    );
+  const file = res.data;
+  if (!file) return NextResponse.json({ ok: false, code: 'NOT_FOUND' }, { status: 404 });
   if ('url' in file) return NextResponse.redirect(new URL(file.url, req.url), 302);
   return new NextResponse(file.body, {
     headers: {

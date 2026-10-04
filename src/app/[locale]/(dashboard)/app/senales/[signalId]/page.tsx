@@ -96,11 +96,20 @@ export default async function SenalDetalle({
     );
 
   const signal = screenSignal(res.data.signal);
-  const [coins, prefs, channels] = await Promise.all([
-    adapter.coins(),
-    adapter.getPrefs(session.user.id),
-    adapter.channels(),
-  ]);
+  const extra = await runTool(
+    'chalybcrypto',
+    session.user.id,
+    () => Promise.all([adapter.coins(), adapter.getPrefs(session.user.id), adapter.channels()]),
+    { idempotent: true },
+  );
+  if (!extra.ok)
+    return (
+      <ToolShell slug="chalybcrypto" tab="main">
+        <ToolErrorState slug="chalybcrypto" error={extra.error} />
+        <SignalsDisclaimer />
+      </ToolShell>
+    );
+  const [coins, prefs, channels] = extra.data;
   const name = coins.find((c) => c.symbol === signal.coin)?.name ?? signal.coin;
   const now = new Date().getTime();
   const loc = locale === 'es' ? 'es-MX' : 'en-US';

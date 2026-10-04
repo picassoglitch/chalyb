@@ -12,7 +12,7 @@ import { logAudit } from '@/lib/audit/log';
 import { toolBySlug } from '@/config/tools';
 import {
   breakerAfter,
-  breakerAllows,
+  breakerAcquire,
   closedBreaker,
   countsAsOutage,
   failureEffect,
@@ -44,9 +44,12 @@ function noteHealthy(slug: string, latencyMs: number) {
   void recordToolHealth(slug, { ok: true, latencyMs }).catch(() => {});
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+function withTimeout<T>(p: Promise<T>, ms: number, ctl?: AbortController): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new ToolTimeoutError(`timed out after ${ms} ms`)), ms);
+    const timer = setTimeout(() => {
+      ctl?.abort();
+      reject(new ToolTimeoutError(`timed out after ${ms} ms`));
+    }, ms);
     p.then(
       (v) => {
         clearTimeout(timer);
@@ -88,7 +91,9 @@ export async function reportToolError(
 export async function runTool<T>(
   slug: string,
   userId: string,
-  op: () => Promise<T>,
+  /** Gets an AbortSignal that fires at the timeout; pass it to the engine
+   *  call so the request is really cancelled. */
+  op: (signal: AbortSignal) => Promise<T>,
   opts: {
     idempotent?: boolean;
     /** Only errors the engine adapter threw (and timeouts) count against
@@ -99,22 +104,25 @@ export async function runTool<T>(
   const attempts = 1 + (opts.idempotent ? TOOL_GET_RETRIES : 0);
   let last: unknown;
   for (let i = 0; i < attempts; i++) {
-    const now = Date.now();
-    const b = breakers().get(slug) ?? closedBreaker();
-    if (!breakerAllows(b, now)) {
+    const gate = breakerAcquire(breakers().get(slug) ?? closedBreaker(), Date.now());
+    if (!gate.allowed) {
       last = new ToolCircuitOpenError(slug);
       break;
     }
+    const b = gate.next;
+    breakers().set(slug, b);
     try {
       const started = Date.now();
-      const data = await withTimeout(op(), TOOL_TIMEOUT_MS);
+      const ctl = new AbortController();
+      const data = await withTimeout(op(ctl.signal), TOOL_TIMEOUT_MS, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
       noteHealthy(slug, Date.now() - started);
       return { ok: true, data };
     } catch (err) {
       last = err;
       const { outage, retryable } = failureEffect(err, opts);
-      if (outage) breakers().set(slug, breakerAfter(b, false, Date.now()));
+      // Not an outage: release a half-open trial without changing the count.
+      breakers().set(slug, outage ? breakerAfter(b, false, Date.now()) : { ...b, trialAt: null });
       if (!retryable) break;
     }
   }
