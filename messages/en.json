@@ -206,6 +206,7 @@
       "legalDocs": {
         "terms": "Terms and Conditions",
         "subscription": "Subscription Terms",
+        "packs": "Credit packs",
         "privacy": "Privacy Notice",
         "acceptable": "Acceptable use"
       },
@@ -554,6 +555,16 @@
       "otherVersions": "Other versions:",
       "reviewLine": "Under review",
       "currentLead": "Until then, these apply:"
+    },
+    "packs": {
+      "metaTitle": "Credit pack terms",
+      "metaDescription": "One-time purchase of extra Chalyb credits: prices, use, validity and refunds.",
+      "title": "Credit pack terms"
+    },
+    "seller": {
+      "metaTitle": "Who sells",
+      "metaDescription": "Who sells Chalyb: seller details, customer service and PROFECO.",
+      "title": "Who sells"
     }
   },
   "workspace": {

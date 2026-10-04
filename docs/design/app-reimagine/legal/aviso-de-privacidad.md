@@ -6,7 +6,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 > **Resumen en palabras simples**
 >
-> - **[RAZÓN SOCIAL]** (Chalyb) es responsable de tus datos personales.
+> - **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial que opera bajo el nombre comercial Chalyb (RFC RAAA960329GA2), es responsable de tus datos personales.
 > - Usamos tus datos principalmente para **darte el servicio**: tu cuenta, tus clips y herramientas, tus cobros y la atención a clientes.
 > - **No guardamos el número de tu tarjeta**: lo guarda Mercado Pago.
 > - Si conectas tus redes (TikTok, YouTube, Instagram, etc.), **no vemos tu contraseña**; usamos un permiso que puedes quitar cuando quieras.
@@ -18,7 +18,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 ## 1. Identidad y domicilio del responsable
 
-**[RAZÓN SOCIAL]**, con nombre comercial **Chalyb**, RFC **[RFC]**, con domicilio en **[DOMICILIO]** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
+**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb**, con domicilio en **[DOMICILIO FISCAL COMPLETO]** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
 
 **Departamento de datos personales:** [DEPARTAMENTO DE DATOS PERSONALES] · Correo: **[CORREO DE PRIVACIDAD]** · Teléfono: [TELÉFONO].
 
@@ -184,7 +184,7 @@ Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consi
 
 > **Resumen en palabras simples:** Chalyb usa tus datos para darte el servicio y cobrar tu plan. Las promociones son opcionales. Puedes ver, corregir o borrar tus datos escribiendo a [CORREO DE PRIVACIDAD].
 
-**[RAZÓN SOCIAL]** (Chalyb), con domicilio en [DOMICILIO], es responsable del tratamiento de tus datos personales.
+**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial (RFC RAAA960329GA2) que opera bajo el nombre comercial Chalyb, con domicilio en [DOMICILIO FISCAL COMPLETO], es responsable del tratamiento de tus datos personales.
 
 **Datos que tratamos:** identificación y contacto (nombre, correo, usuario, país); datos de autenticación; facturación y pago (plan, historial de cobros, token y últimos 4 dígitos de tu tarjeta, datos fiscales); el contenido que subes y los resultados generados; datos de las cuentas que conectes; datos de uso y dispositivo (IP, navegador, cookies); comunicaciones con soporte y con el Asistente; evidencia de tu aceptación; y, solo si los proporcionas y con tu consentimiento expreso, datos patrimoniales o financieros (claves de API, saldos, posiciones u operaciones). **No tratamos datos personales sensibles.**
 

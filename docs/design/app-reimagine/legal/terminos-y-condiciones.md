@@ -16,7 +16,7 @@
 
 ## 1. Quiénes somos y a qué se aplican estos Términos
 
-1.1. Chalyb es una marca operada por **[RAZÓN SOCIAL]** ("**Chalyb**", "**nosotros**"), con RFC **[RFC]** y domicilio en **[DOMICILIO]**. Puedes contactarnos en **[CORREO DE CONTACTO]** o al **[TELÉFONO]** ([HORARIO DE ATENCIÓN]).
+1.1. Chalyb es el nombre comercial con el que opera **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **[DOMICILIO FISCAL COMPLETO]**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **[CORREO DE CONTACTO]** o al **[TELÉFONO]** ([HORARIO DE ATENCIÓN]).
 
 1.2. Estos Términos y Condiciones (los "**Términos**") regulan el acceso y uso del sitio chalyb.com, sus aplicaciones, herramientas, API, extensiones y cualquier servicio relacionado (en conjunto, el "**Servicio**").
 
@@ -112,7 +112,7 @@ Al usar Chalyb **no puedes**:
 
 ## 9. Propiedad intelectual
 
-9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a [RAZÓN SOCIAL] o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
+9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb) o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
 
 9.2. **Tu contenido.** Lo que tú subes o enlazas (videos, streams, imágenes, textos) sigue siendo tuyo o de quien corresponda. Nos otorgas únicamente la licencia necesaria para prestarte el Servicio, descrita en la Política de Uso Aceptable y Contenido.
 
@@ -197,7 +197,7 @@ Al usar Chalyb **no puedes**:
 
 17.2. **Fuerza mayor.** No seremos responsables por incumplimientos causados por hechos fuera de nuestro control razonable (fallas generales de internet o energía, desastres, actos de autoridad, caídas de proveedores críticos, ataques informáticos a gran escala).
 
-17.3. **Cesión.** Podemos ceder estos Términos a una empresa de nuestro grupo o a quien adquiera el negocio, avisándote previamente; tus derechos y condiciones se mantendrán y podrás cancelar sin penalización si no estás de acuerdo. El tratamiento de tus datos en ese caso se rige por el Aviso de Privacidad. Tú no puedes cederlos sin nuestro consentimiento.
+17.3. **Cesión.** Podemos ceder estos Términos a una sociedad que constituya o controle el titular de Chalyb, o a quien adquiera el negocio, avisándote previamente; tus derechos y condiciones se mantendrán y podrás cancelar sin penalización si no estás de acuerdo. El tratamiento de tus datos en ese caso se rige por el Aviso de Privacidad. Tú no puedes cederlos sin nuestro consentimiento.
 
 17.4. **Divisibilidad.** Si alguna cláusula es inválida, las demás siguen vigentes.
 
@@ -209,9 +209,9 @@ Al usar Chalyb **no puedes**:
 
 ## 18. Contacto
 
-**[RAZÓN SOCIAL]** (Chalyb)
-RFC: [RFC]
-Domicilio: [DOMICILIO]
+**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, nombre comercial **Chalyb**
+RFC: RAAA960329GA2
+Domicilio: [DOMICILIO FISCAL COMPLETO]
 Correo: [CORREO DE CONTACTO]
 Teléfono: [TELÉFONO] · Horario: [HORARIO DE ATENCIÓN]
 

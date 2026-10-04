@@ -14,6 +14,7 @@
 
 import {
   LEALTAD,
+  PACK_CENTS,
   USD_CENTS,
   annualMath,
   lealtadSchedule,
@@ -43,12 +44,18 @@ export function legalAmountRoles(): Record<string, AmountRole> {
   for (const s of lealtadSchedule()) roles[`mxn:lealtad_${s.step}`] = mxn(s.cents);
   roles['mxn:lealtad_step'] = mxn((LEALTAD.baseCents * LEALTAD.stepPct) / 100);
   roles['mxn:zero'] = mxn(0);
+  roles['mxn:pack_100k'] = mxn(PACK_CENTS.tokens_100k);
+  roles['mxn:pack_500k'] = mxn(PACK_CENTS.tokens_500k);
+  roles['mxn:pack_2m'] = mxn(PACK_CENTS.tokens_2m);
   for (const tier of ['pro', 'vip'] as const) {
     roles[`usd:${tier}_month`] = usd(USD_CENTS[tier].month);
     roles[`usd:${tier}_year`] = usd(USD_CENTS[tier].year);
   }
   return roles;
 }
+
+/** A bracket that isn't a Markdown link's text: an owner/attorney note. */
+const OWNER_NOTE_RE = /\[[^[\]]*\](?!\()/g;
 
 /** "$9,970", "$166.20", "US$500". */
 export const AMOUNT_RE = /(US)?\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?(?![\d,])/g;
@@ -84,14 +91,20 @@ export function tokenizeAmounts(
   const invalid: string[] = [];
   const seen = new Map<string, number>();
   const counts = new Map<string, number>();
+  // An amount no role explains is allowed only inside an unfinished bracket
+  // ("[NOTA PARA EL DUEÑO: … si son antes de IVA, $149 …]"): that is Law
+  // talking to the owner, not a price the text promises, and the publish gate
+  // refuses the text while the bracket is there. It stays a literal.
+  const notes = [...source.matchAll(OWNER_NOTE_RE)].map((m) => [m.index, m.index + m[0].length]);
+  const inNote = (at: number) => notes.some(([a, b]) => at > a! && at < b!);
   for (const m of source.matchAll(AMOUNT_RE)) counts.set(m[0], (counts.get(m[0]) ?? 0) + 1);
-  const template = source.replace(AMOUNT_RE, (literal) => {
+  const template = source.replace(AMOUNT_RE, (literal, ...rest) => {
     const want = parseLiteral(literal);
     const hits = roles.filter(([, r]) => r.currency === want.currency && r.cents === want.cents);
     const i = seen.get(literal) ?? 0;
     seen.set(literal, i + 1);
     if (!hits.length) {
-      unknown.push(literal);
+      if (!inNote(rest[rest.length - 2] as number)) unknown.push(literal);
       return literal;
     }
     const list = explicit[literal];

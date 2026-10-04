@@ -38,6 +38,8 @@ const MESSAGE_KEY: Record<LegalDoc, string> = {
   suscripcion: 'subscription',
   privacidad: 'privacy',
   uso_aceptable: 'acceptableUse',
+  paquetes: 'packs',
+  quien_vende: 'seller',
 };
 
 /** A version page is live when that version is published; the draft of the
@@ -50,7 +52,7 @@ function resolveVersion(doc: LegalDoc, slug?: string): string | null {
 
 /** Whether a version is the text in force (the local e2e override treats
  *  drafts as published). */
-function inForce(doc: LegalDoc, version: string): boolean {
+export function inForce(doc: LegalDoc, version = currentVersion(doc)): boolean {
   return (
     legalPublished() && (Boolean(versionMeta(doc, version)?.published) || legalDraftsAsPublished())
   );

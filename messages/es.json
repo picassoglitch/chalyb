@@ -206,6 +206,7 @@
       "legalDocs": {
         "terms": "Términos y Condiciones",
         "subscription": "Términos de Suscripción",
+        "packs": "Paquetes de créditos",
         "privacy": "Aviso de Privacidad",
         "acceptable": "Uso aceptable"
       },
@@ -554,6 +555,16 @@
       "otherVersions": "Otras versiones:",
       "reviewLine": "En revisión",
       "currentLead": "Mientras tanto rigen:"
+    },
+    "packs": {
+      "metaTitle": "Términos de los paquetes de créditos",
+      "metaDescription": "Compra única de créditos extra para Chalyb: precios, uso, vigencia y reembolsos.",
+      "title": "Términos de los paquetes de créditos"
+    },
+    "seller": {
+      "metaTitle": "Quién vende",
+      "metaDescription": "Quién vende Chalyb: datos del vendedor, atención a clientes y PROFECO.",
+      "title": "Quién vende"
     }
   },
   "workspace": {

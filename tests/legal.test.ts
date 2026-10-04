@@ -9,6 +9,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { blocksText, parseMarkdown } from '@/lib/legal/markdown';
 import { AMOUNT_RE, bindAmounts, tokenizeAmounts } from '@/lib/legal/amounts';
+import { stripInternalNotes } from '@/lib/legal/internal-notes';
 import {
   LEGAL_DOCS,
   PLACEHOLDER_RE,
@@ -48,6 +49,10 @@ const ROOT = new URL('../', import.meta.url).pathname;
 const LAW = join(ROOT, 'docs/design/app-reimagine/legal');
 const lawSource = (doc: string) =>
   readFileSync(join(LAW, (registryJson as Record<string, { file: string }>)[doc]!.file), 'utf8');
+/** What renders: Law's file without its "Notas internas (no publicar)". */
+const lawPublished = (doc: string) => stripInternalNotes(lawSource(doc));
+/** Law's notes to the owner ([…], not a link's text) may quote amounts. */
+const withoutOwnerNotes = (s: string) => s.replace(/\[[^[\]]*\](?!\()/g, '');
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
 function withEnv(env: Record<string, string | undefined>, fn: () => void) {
@@ -99,7 +104,7 @@ test('archive: each current version is Law’s file byte for byte, with its sha2
     assert.ok(a, `${doc} archived — run pnpm legal:hash`);
     const src = lawSource(doc);
     assert.equal(a.source, src, `${doc}: docs changed since the archive — run pnpm legal:hash`);
-    assert.equal(a.sha256, sha(src), doc);
+    assert.equal(a.sha256, sha(lawPublished(doc)), doc);
     assert.equal((hashes as Record<string, string>)[doc], a.sha256, `${doc} document-hashes.json`);
   }
 });
@@ -109,7 +114,11 @@ test('archive: every version listed in the registry has its module', () => {
     assert.ok(listVersions(doc).includes(currentVersion(doc)), doc);
     for (const v of listVersions(doc)) {
       const a = archived(doc, v)!;
-      assert.equal(a.sha256, sha(a.source), `${doc}@${v} archive is self-consistent`);
+      assert.equal(
+        a.sha256,
+        sha(stripInternalNotes(a.source)),
+        `${doc}@${v} archive is self-consistent`,
+      );
     }
   }
 });
@@ -144,18 +153,42 @@ const amountRoles = (doc: string) =>
 test('amounts: every amount Law wrote is one config role, none typed', () => {
   for (const doc of LEGAL_DOCS) {
     const { template, unknown, ambiguous, invalid } = tokenizeAmounts(
-      lawSource(doc),
+      lawPublished(doc),
       amountRoles(doc),
       false,
     );
     assert.deepEqual([unknown, ambiguous, invalid], [[], [], []], doc);
     assert.equal(
-      [...template.matchAll(AMOUNT_RE)].length,
+      [...withoutOwnerNotes(template).matchAll(AMOUNT_RE)].length,
       0,
       `${doc} template has no literal amount`,
     );
     assert.equal(template, archived(doc)!.template, `${doc} archived template current`);
   }
+});
+
+test('internal notes: archived and hashed without "Notas internas", source kept as written', () => {
+  const law = '# Doc\n\nTexto.\n\n---\n\n## Notas internas (no publicar esta sección)\n\nNo va.\n\n### Sub\n\nTampoco.\n';
+  assert.equal(stripInternalNotes(law), '# Doc\n\nTexto.\n');
+  assert.equal(
+    stripInternalNotes('# A\n\n## Notas internas\n\nx\n\n## Sigue\n\ny\n'),
+    '# A\n## Sigue\n\ny\n',
+  );
+  for (const doc of ['paquetes', 'quien_vende'] as const) {
+    assert.match(archived(doc)!.source, /Notas internas/, `${doc} source is Law's file`);
+    assert.doesNotMatch(archived(doc)!.rendered, /Notas internas|chalyb-src/, `${doc} renders without`);
+  }
+});
+
+test('amounts: an unexplained amount passes only inside an owner note', () => {
+  const ok = tokenizeAmounts('Total $1,999,999.00 [NOTA: antes de IVA $149]', {}, false);
+  assert.deepEqual(ok.unknown, ['$1,999,999.00']);
+  assert.throws(() => tokenizeAmounts('Paga $149.'), /not in pricing/);
+  assert.equal(tokenizeAmounts('[NOTA: si no, $149]').template, '[NOTA: si no, $149]');
+  // A link's text is not a note.
+  assert.throws(() => tokenizeAmounts('[Paga $149](/paquetes)'), /not in pricing/);
+  // Pack totals bind to pricing.ts.
+  assert.equal(tokenizeAmounts('Chico $172.84').template, 'Chico {{mxn:pack_100k}}');
 });
 
 test('amounts: an amount two roles share is never guessed', () => {
@@ -177,8 +210,8 @@ test('amounts: an amount two roles share is never guessed', () => {
 
 test('amounts: under today’s config the render equals Law’s text, and the hash is of that render', () => {
   for (const doc of LEGAL_DOCS) {
-    assert.equal(renderedSource(doc), lawSource(doc), doc);
-    assert.equal(archived(doc)!.rendered, lawSource(doc), `${doc} archived render current`);
+    assert.equal(renderedSource(doc), lawPublished(doc), doc);
+    assert.equal(archived(doc)!.rendered, lawPublished(doc), `${doc} archived render current`);
     assert.equal(archived(doc)!.sha256, sha(archived(doc)!.rendered), doc);
   }
 });
@@ -241,7 +274,7 @@ test('placeholders: the regex catches Law’s owner brackets, not prose', () => 
 test('placeholders: today’s drafts would fail as "published"', () => {
   for (const doc of LEGAL_DOCS)
     assert.ok(placeholders(doc).length > 0, `${doc} still has brackets`);
-  assert.ok(placeholders('terminos').includes('[RAZÓN SOCIAL]'));
+  assert.ok(placeholders('terminos').includes('[NOMBRE COMPLETO DE LA PERSONA FÍSICA]'));
   assert.ok(placeholders('suscripcion').includes('[IVA: CONFIRMAR]'));
   assert.ok(placeholders('suscripcion').includes('[conservarás / tendrás limitado]'));
   assert.ok(placeholders('terminos').includes('[30]'));
@@ -296,7 +329,13 @@ test('routes: each document has its current page and its versioned page', () => 
 test('routes: every footer legal link has a page (no 404)', () => {
   assert.deepEqual(
     LEGAL_PAGES.map((p) => p.href),
-    ['/legal/terms', '/legal/subscription', '/legal/privacy', '/legal/acceptable-use'],
+    [
+      '/legal/terms',
+      '/legal/subscription',
+      '/legal/packs',
+      '/legal/privacy',
+      '/legal/acceptable-use',
+    ],
   );
   for (const p of LEGAL_PAGES) assert.ok(pageAt(p.href), p.href);
 });

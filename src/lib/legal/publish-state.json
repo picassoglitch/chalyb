@@ -2,13 +2,13 @@
   "terminos": {
     "version": "1.0",
     "published": false,
-    "placeholders": 28,
+    "placeholders": 26,
     "consistency": []
   },
   "suscripcion": {
     "version": "1.0",
     "published": false,
-    "placeholders": 38,
+    "placeholders": 36,
     "consistency": [
       "trial-plans:vip_month,vip_year",
       "trial-excluded:vip_year",
@@ -18,13 +18,25 @@
   "privacidad": {
     "version": "1.0",
     "published": false,
-    "placeholders": 38,
+    "placeholders": 37,
     "consistency": []
   },
   "uso_aceptable": {
     "version": "1.0",
     "published": false,
     "placeholders": 15,
+    "consistency": []
+  },
+  "paquetes": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 18,
+    "consistency": []
+  },
+  "quien_vende": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 19,
     "consistency": []
   }
 }

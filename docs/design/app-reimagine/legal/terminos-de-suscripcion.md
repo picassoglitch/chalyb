@@ -189,19 +189,19 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 9.1. Algunas herramientas consumen **créditos** (por ejemplo, minutos de video procesados, clips generados o consultas). La cantidad de créditos de cada Plan y el consumo por acción se informan en chalyb.com/precios y en la herramienta antes de usarlos.
 
-9.2. **Los créditos no son dinero:** no tienen valor en efectivo, no son reembolsables, no se cambian por dinero, no son transferibles a otras cuentas y no constituyen un depósito ni un medio de pago.
+9.2. **Los créditos no son dinero:** no tienen valor en efectivo, no son reembolsables (salvo en los casos de las secciones 7.2 y 9.5), no se cambian por dinero, no son transferibles a otras cuentas y no constituyen un depósito ni un medio de pago.
 
-9.3. **Vencimiento.** Los créditos incluidos en tu Plan **se renuevan en cada periodo de facturación y no se acumulan**: los no usados vencen al terminar el periodo (mensual; en Pro anual, los créditos se asignan mensualmente). Los créditos adicionales comprados por separado, si se ofrecen, vencen a los **[VIGENCIA DE CRÉDITOS ADICIONALES]** desde su compra, lo cual te informaremos antes de comprarlos.
+9.3. **Vencimiento.** Los créditos incluidos en tu Plan **se renuevan en cada periodo de facturación y no se acumulan**: los no usados vencen al terminar el periodo (mensual; en los planes anuales, los créditos se asignan mensualmente). Los **créditos extra** que compras en paquetes **no vencen** mientras tu cuenta exista, se usan después de los créditos de tu Plan y se rigen por los **Términos de los Paquetes de Créditos** (chalyb.com/paquetes).
 
 9.4. Los créditos de promoción o cortesía pueden tener condiciones y vigencias propias, que se informarán al otorgarlos.
 
-9.5. Si cerramos tu cuenta **sin causa**, te reembolsaremos los créditos adicionales comprados y no usados. Si la cerramos por incumplimiento o fraude, los créditos se pierden en la medida permitida por la ley.
+9.5. Si cerramos tu cuenta **sin causa** o dejamos de ofrecer Chalyb, te reembolsamos lo que pagaste por los créditos extra comprados y no usados. Si la cerramos por un contracargo de mala fe (sección 10.6), también te los reembolsamos, descontando lo que nos debas y sin incluir los del paquete disputado (Términos de los Paquetes de Créditos, sección 7.3).
 
 ## 10. Contracargos (disputas con tu banco o Mercado Pago)
 
 10.1. **Tu derecho a disputar un cargo.** Puedes disputar cualquier cargo ante tu banco o Mercado Pago. Si prefieres, escríbenos antes a [CORREO DE CONTACTO]: muchas veces lo resolvemos más rápido, pero **no es obligatorio**.
 
-10.2. **Presentar una disputa no tiene consecuencias por sí solo.** Mientras tu disputa se resuelve, tu cuenta y tu plan siguen funcionando normalmente. Presentar una disputa **nunca**, por sí solo, da lugar a una suspensión, cierre o bloqueo de tu cuenta, a un cargo adicional ni a un cambio o reinicio de tu precio (incluido tu calendario de Pro Lealtad). Tampoco tiene consecuencias una disputa por un **cargo no autorizado** o por un cobro que, conforme a la sección 7.2, debíamos devolverte: en esos casos te devolvemos el dinero y, si ya lo recuperaste por medio de tu banco, damos el caso por cerrado.
+10.2. **Presentar una disputa no tiene consecuencias por sí solo.** Mientras tu disputa se resuelve, tu cuenta y tu plan siguen funcionando normalmente. (Si disputas la compra de un paquete de créditos, solo los créditos no usados de ese paquete pueden quedar apartados mientras se resuelve; ver Términos de los Paquetes de Créditos, sección 8.) Presentar una disputa **nunca**, por sí solo, da lugar a una suspensión, cierre o bloqueo de tu cuenta, a un cargo adicional ni a un cambio o reinicio de tu precio (incluido tu calendario de Pro Lealtad). Tampoco tiene consecuencias una disputa por un **cargo no autorizado** o por un cobro que, conforme a la sección 7.2, debíamos devolverte: en esos casos te devolvemos el dinero y, si ya lo recuperaste por medio de tu banco, damos el caso por cerrado.
 
 10.3. **Nuestra respuesta a la disputa.** Para responder a tu banco o a Mercado Pago podemos presentar la evidencia descrita en la sección 10.7. Si al revisar tu disputa vemos que el cobro corresponde a un caso de la sección 7.2, no lo impugnamos y te reembolsamos.
 
@@ -253,7 +253,7 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 ## 15. Contacto
 
-[RAZÓN SOCIAL] · RFC [RFC] · [DOMICILIO] · [CORREO DE CONTACTO] · [TELÉFONO] ([HORARIO DE ATENCIÓN]).
+[NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · [DOMICILIO FISCAL COMPLETO] · [CORREO DE CONTACTO] · [TELÉFONO] ([HORARIO DE ATENCIÓN]).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
 Última actualización: [FECHA] · Versión [VERSIÓN]

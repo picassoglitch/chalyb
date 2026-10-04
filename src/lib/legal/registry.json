@@ -62,5 +62,31 @@
         "changes": []
       }
     }
+  },
+  "paquetes": {
+    "file": "terminos-paquetes-de-tokens.md",
+    "path": "/legal/packs",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  },
+  "quien_vende": {
+    "file": "quien-vende.md",
+    "path": "/quien-vende",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": false,
+        "effective": null,
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
   }
 }

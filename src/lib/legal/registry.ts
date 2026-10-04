@@ -13,12 +13,20 @@ import { bindAmounts } from './amounts';
 import { blocksText, parseMarkdown, type Block } from './markdown';
 import { subscriptionConsistency } from './consistency';
 
-export type LegalDoc = 'terminos' | 'suscripcion' | 'privacidad' | 'uso_aceptable';
+export type LegalDoc =
+  | 'terminos'
+  | 'suscripcion'
+  | 'privacidad'
+  | 'uso_aceptable'
+  | 'paquetes'
+  | 'quien_vende';
 export const LEGAL_DOCS: readonly LegalDoc[] = [
   'terminos',
   'suscripcion',
   'privacidad',
   'uso_aceptable',
+  'paquetes',
+  'quien_vende',
 ];
 
 export interface VersionMeta {

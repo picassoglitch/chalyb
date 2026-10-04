@@ -110,7 +110,7 @@ Para reportar otro tipo de contenido prohibido (imagen, privacidad, fraude, meno
 
 ### 6.1. Lo que Chalyb no es
 
-[RAZÓN SOCIAL] **no es**, ni actúa como: asesor en inversiones registrado ante la Comisión Nacional Bancaria y de Valores (CNBV) conforme a la Ley del Mercado de Valores; casa de bolsa, intermediario bursátil o bróker; institución de crédito; **institución de tecnología financiera** (ITF) autorizada conforme a la Ley para Regular las Instituciones de Tecnología Financiera (Ley Fintech); exchange, custodio u operador de **activos virtuales** (criptomonedas); corredor público, valuador o perito inmobiliario; ni casa de apuestas, sorteos o juegos con permiso de la Secretaría de Gobernación.
+Chalyb ([NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad empresarial, RFC RAAA960329GA2) **no es**, ni actúa como: asesor en inversiones registrado ante la Comisión Nacional Bancaria y de Valores (CNBV) conforme a la Ley del Mercado de Valores; casa de bolsa, intermediario bursátil o bróker; institución de crédito; **institución de tecnología financiera** (ITF) autorizada conforme a la Ley para Regular las Instituciones de Tecnología Financiera (Ley Fintech); exchange, custodio u operador de **activos virtuales** (criptomonedas); corredor público, valuador o perito inmobiliario; ni casa de apuestas, sorteos o juegos con permiso de la Secretaría de Gobernación.
 
 ### 6.2. Lo que Chalyb no hace
 

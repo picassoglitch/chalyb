@@ -4,6 +4,8 @@ import * as terminos_v1_0 from './terminos/v1-0';
 import * as suscripcion_v1_0 from './suscripcion/v1-0';
 import * as privacidad_v1_0 from './privacidad/v1-0';
 import * as uso_aceptable_v1_0 from './uso_aceptable/v1-0';
+import * as paquetes_v1_0 from './paquetes/v1-0';
+import * as quien_vende_v1_0 from './quien_vende/v1-0';
 
 export interface ArchivedVersion {
   version: string;
@@ -25,5 +27,11 @@ export const ARCHIVE: Record<string, Record<string, ArchivedVersion>> = {
   },
   uso_aceptable: {
     '1.0': uso_aceptable_v1_0,
+  },
+  paquetes: {
+    '1.0': paquetes_v1_0,
+  },
+  quien_vende: {
+    '1.0': quien_vende_v1_0,
   },
 };
