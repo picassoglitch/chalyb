@@ -179,6 +179,17 @@ export function sqlCaps(caps: TierCapabilities, allocation: number, unlimited: b
  *  (cost_usd_micros / 4); what it will actually draw is that plus the
  *  margin. Reserving the raw figure let a job reserve ~3× less than it
  *  spends (a 1.4-min test run: 22.6k reserved, 70.4k billed). */
-export function reserveWithMargin(estTokens: number, marginPercent: number): number {
+export function reserveWithMargin(
+  estTokens: number,
+  marginPercent: number,
+  operation?: string | null,
+): number {
+  if (operation && PRICED_OPERATIONS.has(operation)) return Math.ceil(estTokens);
   return Math.ceil(estTokens * (1 + Math.max(0, marginPercent) / 100));
 }
+
+/** Operations whose estimate is already the price in billable tokens
+ *  (Chalito's store: the event is `store.purchase`, billed with no margin —
+ *  migration 0052). Reserving the price plus the margin would refuse a
+ *  purchase the balance covers. */
+export const PRICED_OPERATIONS: ReadonlySet<string> = new Set(['store.purchase']);
