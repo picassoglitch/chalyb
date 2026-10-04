@@ -1,8 +1,8 @@
 // WS-11 PR screenshots (TOOLS-SPEC §10): every tool screen at 1440×900 and
 // 390×844, committed under docs/qa/tools/. Opt-in, mock adapters:
 //   E2E_TOOL_SHOTS=1 pnpm e2e e2e/tools-screens.spec.ts --project=desktop-chromium
-// Mockup 60 needs the Clips engine off: TOOL_HUB_MODE_CHALYBCLIP=off and
-// E2E_TOOL_SHOTS=error. The data the screens show is made first (a clip
+// Mockup 60 (ToolErrorState) is no longer reachable with the engine off: the
+// screen hands off over SSO instead (OPS-13), so its shot is not retaken. The data the screens show is made first (a clip
 // job, Señales set up, a computer paired), so nothing depends on mock ids.
 
 import { test, expect, type Page } from '@playwright/test';
@@ -152,7 +152,7 @@ test.describe('free', () => {
 });
 
 test.describe('engine off', () => {
-  test.skip(process.env.E2E_TOOL_SHOTS !== 'error', 'E2E_TOOL_SHOTS=error not set');
+  test.skip(true, 'engine off hands off over SSO now; see clips-launch.spec.ts');
   asRole('pro');
   onlyDesktop();
 

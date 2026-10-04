@@ -35,11 +35,19 @@ export async function GET(
 ): Promise<NextResponse> {
   const { slug } = await ctx.params;
   const origin = request.nextUrl.origin;
+  // From a hub tool screen (loadTool) that has no in-hub adapter: a failure
+  // must not go back to /app/engines/<slug>, which leads to that same screen.
+  const fromHub = request.nextUrl.searchParams.get('via') === 'hub';
+  const fallback = (path: string) =>
+    NextResponse.redirect(new URL(fromHub ? '/app/herramientas' : path, origin));
 
   const session = await getSessionUser();
   if (!session) {
     return NextResponse.redirect(
-      new URL(`/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}`)}`, origin),
+      new URL(
+        `/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}${fromHub ? '?via=hub' : ''}`)}`,
+        origin,
+      ),
     );
   }
 
@@ -57,7 +65,7 @@ export async function GET(
   if (slug !== CHALYBCLIP_TRIAL_SLUG) {
     const entitlements = await getEntitlements(session);
     if (entitlements.tools[slug]?.state !== 'included') {
-      return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+      return fallback(`/app/engines/${slug}`);
     }
   }
 
@@ -85,7 +93,7 @@ export async function GET(
   // the engine's admin_api_base, so skipping it also avoids hanging the
   // request on a dead backend until the socket times out.
   if (engine.status !== 'active') {
-    return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+    return fallback(`/app/engines/${slug}`);
   }
 
   const engineId = engine.id as string;
@@ -129,5 +137,5 @@ export async function GET(
   }
   // Couldn't build the launch URL (engine not configured / provisioning
   // failed) — drop the user on the engine page where the error surfaces.
-  return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+  return fallback(`/app/engines/${slug}`);
 }

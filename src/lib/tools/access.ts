@@ -6,11 +6,13 @@
 //   trial_offer          → the screen renders ToolLockedState
 //   setup_needed         → the screen renders SetupState for the named step
 //   no adapter (engine has no API yet, TOOL_HUB_MODE_<SLUG>=off)
-//                        → the screen renders ToolErrorState with a support
-//                          code; the failure is logged to Actividad
+//                        → hand off to the engine's app over SSO
+//                          (/auth/launch/<slug>?via=hub), as before the
+//                          rebuild, until the engine's job API exists (OPS-13)
 //   included + adapter   → the screen; riskPending opens the risk sheet
 
 import 'server-only';
+import { redirect as redirectPath } from 'next/navigation';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser, type SessionUser } from '@/lib/auth/session';
 import { getEntitlements, type Entitlements } from '@/lib/billing/entitlement';
@@ -46,7 +48,10 @@ export async function loadTool<A>(
   if (access.state === 'trial_offer') return { kind: 'locked', session, entitlements };
   if (access.state === 'setup_needed')
     return { kind: 'setup', session, entitlements, step: access.missing };
-  const a = hubRunsTool(slug) ? adapter() : null;
+  // Without an in-hub adapter the engine's own app is the only way in. A failed
+  // launch with via=hub lands on Tus herramientas, never back here (no loop).
+  if (!hubRunsTool(slug)) redirectPath(`/auth/launch/${slug}?via=hub`);
+  const a = adapter();
   if (!a)
     return {
       kind: 'error',
