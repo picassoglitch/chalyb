@@ -1,6 +1,6 @@
 # Política de Uso Aceptable, Contenido y Avisos sobre Herramientas Financieras de Chalyb
 
-**Versión:** [VERSIÓN] · **Fecha de entrada en vigor:** [FECHA] · Forma parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.0 · **Fecha de entrada en vigor:** [FECHA] · Forma parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
@@ -61,7 +61,7 @@ Las demás conductas prohibidas están en la sección 8 de los Términos y Condi
 
 4.3. **La responsabilidad de lo publicado es tuya**, incluso con publicación automática: revisa periódicamente tus reglas y tus clips. Chalyb no es responsable de: (a) contenido publicado conforme a tus instrucciones o configuración; (b) sanciones, bloqueos, desmonetización, reclamaciones de derechos de autor ("strikes") o pérdida de alcance que apliquen las plataformas; (c) cambios de las plataformas en sus API o reglas que afecten la publicación.
 
-4.4. Puedes **desconectar** una cuenta en cualquier momento desde **Mi cuenta → Cuentas conectadas** o desde la configuración de la plataforma. Al desconectarla dejaremos de publicar en ella.
+4.4. Puedes **desconectar** una cuenta en cualquier momento desde **Clips → Ajustes → Cuentas conectadas** o desde la configuración de la plataforma. Al desconectarla dejaremos de publicar en ella.
 
 4.5. Al usar estas conexiones aceptas también los términos de cada plataforma (por ejemplo, los Términos de Servicio de YouTube: www.youtube.com/t/terms).
 
@@ -84,7 +84,7 @@ Si eres titular de derechos de autor o derechos conexos (o su representante auto
 
 1. Revisaremos que el aviso contenga la información mínima; si falta alguno de esos datos, te lo pediremos.
 2. Si la contiene, **retiraremos o inhabilitaremos de manera expedita y eficaz** el acceso al contenido señalado. Haremos lo mismo cuando recibamos una resolución de autoridad competente que lo ordene.
-3. **Tomaremos medidas razonables para prevenir que el mismo contenido se vuelva a subir** a Chalyb (por ejemplo, mediante huellas digitales o comparación de archivos).
+3. **Tomaremos medidas razonables para prevenir que el mismo enlace se vuelva a publicar** en Chalyb.
 4. **Notificaremos al usuario** que subió el contenido, explicando el motivo y enviándole copia del aviso (sin datos que no sean necesarios).
 
 ### 5.3. Contra-aviso
@@ -96,7 +96,7 @@ Informaremos del contra-aviso a quien presentó el aviso original y **restablece
 ### 5.4. Avisos falsos y reincidencia
 
 - Presentar un aviso o contra-aviso falso o de mala fe puede generar responsabilidad por los daños y perjuicios causados, conforme a la ley.
-- **Cancelaremos las cuentas de usuarios reincidentes** que infrinjan derechos de autor de manera reiterada: [POLÍTICA DE REINCIDENCIA, p. ej., al tercer retiro procedente en 12 meses, sin contra-aviso exitoso].
+- **Cancelaremos las cuentas de usuarios reincidentes** que infrinjan derechos de autor de manera reiterada: al tercer retiro procedente en un periodo de 365 días, sin contra-aviso exitoso.
 - Chalyb no prejuzga sobre la titularidad de los derechos; la disputa de fondo corresponde a las autoridades o mecanismos competentes.
 - Las solicitudes de autoridades competentes se atenderán conforme a la ley.
 
@@ -104,7 +104,7 @@ Informaremos del contra-aviso a quien presentó el aviso original y **restablece
 
 Para reportar otro tipo de contenido prohibido (imagen, privacidad, fraude, menores), escribe a [CORREO DE CONTACTO] con el enlace y el motivo.
 
-## 6. Avisos importantes sobre Señales, Pronósticos, Inversiones e Inmuebles
+## 6. Avisos importantes sobre Señales y, cuando estén disponibles, Pronósticos, Inversiones e Inmuebles
 
 > **AVISO DE RIESGO.** Las herramientas **Señales**, **Pronósticos**, **Inversiones** e **Inmuebles** ofrecen **información general, educativa y de entretenimiento**, igual para todos los usuarios de un mismo plan, generada en gran parte de forma automática con inteligencia artificial. **No son asesoría financiera, de inversión, bursátil, fiscal, legal, inmobiliaria ni de apuestas**, ni una recomendación personalizada para ti. **No garantizamos resultados ni ganancias. Los resultados pasados no garantizan resultados futuros. Puedes perder la totalidad del dinero que inviertas o apuestes.** Toda decisión y todo riesgo son **exclusivamente tuyos**.
 
@@ -127,11 +127,11 @@ Chalyb ([NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad e
 
 Las señales son análisis automatizados de mercado generados con base en datos públicos y modelos estadísticos o de IA, que pueden tener errores, retrasos o fallas. Se publican de manera general para todos los usuarios del plan y no toman en cuenta tu situación personal. Los activos virtuales son **altamente volátiles**, no son moneda de curso legal en México, **no están respaldados por el Gobierno Federal ni por el Banco de México** y su operación implica riesgos tecnológicos, de fraude y de pérdida total. Verifica siempre la información y la legalidad de operar en tu país.
 
-### 6.4. Pronósticos
+### 6.4. Pronósticos (cuando esté disponible)
 
 Los pronósticos son estimaciones probabilísticas con fines informativos y de entretenimiento. **No garantizan ningún resultado.** Chalyb **no recibe, cruza ni intermedia apuestas**, no administra saldos para apostar y no organiza concursos de pronósticos con premio. Si decides apostar, hazlo solo en casas de apuestas autorizadas en tu país (en México, con permiso vigente de la Secretaría de Gobernación), si eres mayor de edad, y con dinero que puedas perder. Si sientes que pierdes el control al apostar, busca ayuda: [LÍNEA DE AYUDA SOBRE JUEGO RESPONSABLE]. Si Chalyb llegara a mencionar o enlazar a una casa de apuestas, solo lo hará respecto de operadores con permiso vigente de la Secretaría de Gobernación, mostrando la información que exige la normatividad de juegos y sorteos (por ejemplo, el número de permiso y los mensajes de juego responsable y de prohibición a menores).
 
-### 6.5. Inversiones
+### 6.5. Inversiones (cuando esté disponible)
 
 Los análisis, alertas, simulaciones o automatizaciones de Inversiones son herramientas de apoyo. Si conectas una cuenta de un bróker o exchange:
 - **Tú autorizas** cada conexión, defines los permisos y **eres el único responsable** de las órdenes enviadas desde tu cuenta.
@@ -140,7 +140,7 @@ Los análisis, alertas, simulaciones o automatizaciones de Inversiones son herra
 - Te recomendamos dar a Chalyb **solo permisos de lectura** (y de operación únicamente si usas automatizaciones) y **nunca** permisos de retiro de fondos; Chalyb rechazará claves con permiso de retiro.
 - Chalyb no es responsable de fallas, retrasos, deslizamientos de precio (slippage), errores de datos, caídas o decisiones del bróker o exchange.
 
-### 6.6. Inmuebles
+### 6.6. Inmuebles (cuando esté disponible)
 
 Las estimaciones de precio, descripciones, comparables y textos para anuncios **no son avalúos** ni dictámenes. Verifica la información (superficies, régimen de propiedad, gravámenes, permisos) con profesionales y documentos oficiales antes de comprar, vender, rentar o publicar. Si usas Inmuebles para anunciar propiedades, eres responsable de que los anuncios sean veraces y de cumplir la normatividad aplicable a la intermediación inmobiliaria.
 
@@ -160,4 +160,4 @@ La primera vez que actives Señales, Pronósticos o Inversiones te pediremos con
 
 Si incumples esta Política podemos, según la gravedad: advertirte; retirar o bloquear contenido; desconectar integraciones; suspender funciones; suspender o cancelar tu cuenta conforme a la sección 13 de los Términos; y, cuando corresponda, informar a las autoridades. Cuando sea razonable, te explicaremos el motivo y podrás pedir una revisión escribiendo a [CORREO DE CONTACTO].
 
-Última actualización: [FECHA] · Versión [VERSIÓN]
+Última actualización: [FECHA] · Versión 1.0

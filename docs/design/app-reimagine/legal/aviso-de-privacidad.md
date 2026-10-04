@@ -1,6 +1,6 @@
 # Aviso de Privacidad Integral de Chalyb
 
-**Versión:** [VERSIÓN] · **Última actualización:** [FECHA]
+**Versión:** 1.0 · **Última actualización:** [FECHA]
 
 Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesión de los Particulares** publicada en el Diario Oficial de la Federación el 20 de marzo de 2025 (la "**LFPDPPP**") y demás disposiciones aplicables.
 
@@ -50,7 +50,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 ### 3.1. Finalidades primarias (necesarias para el servicio)
 
 1. Crear, administrar y proteger tu cuenta, y verificar tu identidad.
-2. Prestarte las herramientas que uses: procesar tus videos y streams para generar clips, subtítulos y textos (Clips); gestionar tus transmisiones (En vivo); responder tus consultas (Asistente); generar información de Señales, Pronósticos, Inmuebles e Inversiones.
+2. Prestarte las herramientas que uses: procesar tus videos y streams para generar clips, subtítulos y textos (Clips); gestionar tus transmisiones (En vivo); generar información de Señales; y, cuando estén disponibles, responder tus consultas (Asistente) y generar información de Pronósticos, Inmuebles e Inversiones.
 3. Conectar tus cuentas de redes sociales y **publicar en ellas únicamente cuando tú lo indiques** o configures la publicación automática.
 4. Procesar pagos, renovaciones, reembolsos y facturas (CFDI) a través de Mercado Pago, y enviarte avisos de cobro, recordatorios de fin de prueba y de renovación.
 5. Enviarte comunicaciones de servicio (seguridad, cambios a los Términos o al Aviso de Privacidad, confirmaciones de cancelación).
@@ -64,7 +64,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 1. Enviarte **promociones, novedades, ofertas y boletines** de Chalyb por correo, notificaciones o mensajes.
 2. Realizar encuestas de satisfacción y estudios de mercado.
 3. Personalizar ofertas y publicidad dentro y fuera de Chalyb (por ejemplo, con cookies de publicidad).
-4. Elaborar estadísticas para mejorar el servicio, cuando no sean necesarias para prestarlo [CONFIRMAR si se desea tratar como primaria la analítica básica].
+4. Elaborar estadísticas para mejorar el servicio, cuando no sean necesarias para prestarlo (solo si lo aceptas).
 
 **Tu negativa a las finalidades secundarias no afecta tu servicio.** Puedes negarte:
 - **Desde el inicio**, dejando **sin marcar** la casilla "Quiero recibir novedades y promociones" al crear tu cuenta (viene desmarcada).
@@ -84,13 +84,12 @@ Compartimos datos con proveedores que nos ayudan a prestar el servicio, que est�
 
 | Tipo de proveedor | Proveedor | Para qué |
 |---|---|---|
-| Hospedaje, almacenamiento y nube | [PROVEEDOR DE HOSTING] | Guardar tu cuenta y contenido; procesar videos |
+| Hospedaje, almacenamiento y nube | Vercel, Supabase y Google Cloud | Guardar tu cuenta y contenido; procesar videos |
 | Pagos | Mercado Pago | Procesar cobros, tokenizar tu tarjeta, reembolsos y contracargos |
-| Modelos de inteligencia artificial | [PROVEEDORES DE IA] | Transcribir, analizar y generar clips, textos y respuestas |
-| Correo electrónico transaccional y de marketing | [PROVEEDOR DE CORREO] | Avisos de cobro, recordatorios, soporte y, si aceptas, promociones |
-| Analítica y medición | [PROVEEDOR DE ANALÍTICA] | Medir uso y errores del servicio |
+| Modelos de inteligencia artificial | Anthropic y Google (Gemini) | Transcribir, analizar y generar clips, textos y respuestas |
+| Correo electrónico transaccional y de marketing | Resend | Avisos de cobro, recordatorios, soporte y, si aceptas, promociones |
+| Analítica y medición | Vercel Analytics, solo si lo aceptas | Medir uso y errores del servicio |
 | Facturación electrónica | [PROVEEDOR DE FACTURACIÓN / PAC] | Emitir CFDI |
-| Conservación de evidencia (NOM-151) | [PROVEEDOR PSC NOM-151, si aplica] | Constancias de conservación de mensajes de datos |
 
 ### 4.2. Plataformas que tú conectas
 
@@ -114,7 +113,7 @@ Quien reciba tus datos asumirá las mismas obligaciones que Chalyb frente a ti.
 
 5.1. Tienes derecho a **conocer** qué datos tenemos y cómo los usamos (Acceso); **corregirlos** si son inexactos o incompletos (Rectificación); pedir que los **eliminemos** de nuestros registros cuando no se usen conforme a la ley (Cancelación); y **oponerte** a su uso para fines específicos (Oposición), incluido el tratamiento **automatizado** que, sin intervención humana, te produzca efectos jurídicos no deseados o afecte de manera significativa tus intereses.
 
-5.2. **Cómo ejercerlos.** Envía tu solicitud a **[CORREO DE PRIVACIDAD]** desde el correo de tu cuenta, o desde **Mi cuenta → Privacidad → Mis derechos ARCO**, con:
+5.2. **Cómo ejercerlos.** Envía tu solicitud a **[CORREO DE PRIVACIDAD]** desde el correo de tu cuenta, o desde **Mi cuenta → Privacidad y cuenta → Mis datos (derechos ARCO)**, con:
 1. Tu nombre y el correo o medio para comunicarte la respuesta.
 2. Un documento que acredite tu identidad (y, en su caso, la de tu representante y su poder).
 3. La descripción clara del dato y del derecho que quieres ejercer.
@@ -131,7 +130,7 @@ Quien reciba tus datos asumirá las mismas obligaciones que Chalyb frente a ti.
 
 ## 6. Revocación del consentimiento
 
-Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguiendo el procedimiento de la sección 5.2. Ten en cuenta que, si revocas el consentimiento para finalidades primarias, **no podremos seguir prestándote el servicio** y no podremos borrar los datos que debamos conservar por ley. Para quitar el acceso a tus redes conectadas, usa **Mi cuenta → Cuentas conectadas → Desconectar** o la configuración de la plataforma (en Google: myaccount.google.com/permissions).
+Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguiendo el procedimiento de la sección 5.2. Ten en cuenta que, si revocas el consentimiento para finalidades primarias, **no podremos seguir prestándote el servicio** y no podremos borrar los datos que debamos conservar por ley. Para quitar el acceso a tus redes conectadas, usa **Clips → Ajustes → Cuentas conectadas** o la configuración de la plataforma (en Google: myaccount.google.com/permissions).
 
 ## 7. Cómo limitar el uso o divulgación de tus datos
 
@@ -148,7 +147,7 @@ Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguie
 |---|---|---|
 | **Necesarias** | Iniciar sesión, seguridad, recordar tu plan, prevenir fraude, procesar pagos | No, sin ellas el servicio no funciona |
 | **De preferencias** | Idioma, configuración | Sí |
-| **Analíticas** | Medir uso y errores ([PROVEEDOR DE ANALÍTICA]) | Sí |
+| **Analíticas** | Medir uso y errores (Vercel Analytics) | Sí (desactivadas hasta que las aceptes) |
 | **De publicidad** | Medir campañas y mostrarte anuncios de Chalyb en otras plataformas | Sí (desactivadas hasta que las aceptes) |
 
 8.2. Datos que obtienen: IP, identificadores de dispositivo y navegador, páginas visitadas, tiempo de uso, fecha y hora, y origen de la visita.
@@ -157,7 +156,7 @@ Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguie
 
 ## 9. Conservación y seguridad
 
-9.1. Conservamos tus datos mientras tengas cuenta y, después, solo por el tiempo necesario para las finalidades descritas y para cumplir plazos legales: por ejemplo, el contenido de una cuenta cerrada durante **[PLAZO DE CONSERVACIÓN DE CONTENIDO]**; datos de facturación y fiscales por el plazo que exijan las leyes fiscales; y la evidencia de aceptación y cobros (mensajes de datos que contienen el contrato) **hasta por 10 años** para defensa de derechos y obligaciones mercantiles, bloqueados y con acceso restringido. Los datos relativos a un **incumplimiento de obligaciones contractuales** (por ejemplo, adeudos, contracargos o abuso de pruebas) se eliminan a más tardar **72 meses** después de la fecha del incumplimiento. Después los eliminamos o anonimizamos.
+9.1. Conservamos tus datos mientras tengas cuenta y, después, solo por el tiempo necesario para las finalidades descritas y para cumplir plazos legales: por ejemplo, el contenido de una cuenta cerrada durante **[PLAZO DE CONSERVACIÓN DE CONTENIDO]**; datos de facturación y fiscales por el plazo que exijan las leyes fiscales; y la evidencia de aceptación y cobros (mensajes de datos que contienen el contrato) durante **al menos 10 años** para defensa de derechos y obligaciones mercantiles, bloqueados y con acceso restringido. Los datos relativos a un **incumplimiento de obligaciones contractuales** (por ejemplo, adeudos, contracargos o abuso de pruebas) se eliminan a más tardar **72 meses** después de la fecha del incumplimiento. Después los eliminamos o anonimizamos.
 
 9.2. Aplicamos medidas de seguridad administrativas, técnicas y físicas razonables (cifrado en tránsito, control de accesos, tokens en lugar de contraseñas o tarjetas). Si ocurre una vulneración de seguridad que afecte de forma significativa tus derechos patrimoniales o morales, **te lo informaremos de forma inmediata** para que puedas tomar medidas para proteger tus derechos.
 
@@ -176,7 +175,7 @@ Si usas Chalyb desde otro país, tus datos se tratarán en México y en los paí
 
 Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consientes el tratamiento de tus datos para las finalidades primarias. Para los datos patrimoniales o financieros y para las finalidades secundarias te pediremos tu **consentimiento expreso** por separado.
 
-Última actualización: [FECHA] · Versión [VERSIÓN]
+Última actualización: [FECHA] · Versión 1.0
 
 ---
 
@@ -188,7 +187,7 @@ Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consi
 
 **Datos que tratamos:** identificación y contacto (nombre, correo, usuario, país); datos de autenticación; facturación y pago (plan, historial de cobros, token y últimos 4 dígitos de tu tarjeta, datos fiscales); el contenido que subes y los resultados generados; datos de las cuentas que conectes; datos de uso y dispositivo (IP, navegador, cookies); comunicaciones con soporte y con el Asistente; evidencia de tu aceptación; y, solo si los proporcionas y con tu consentimiento expreso, datos patrimoniales o financieros (claves de API, saldos, posiciones u operaciones). **No tratamos datos personales sensibles.**
 
-**Finalidades principales:** crear y administrar tu cuenta; prestarte las herramientas de Chalyb (Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles, Inversiones); conectar y publicar en tus redes cuando tú lo indiques; procesar pagos con Mercado Pago (no guardamos tu tarjeta); enviarte avisos de cobro y de servicio; dar soporte; prevenir fraude; conservar evidencia de tu aceptación; y cumplir la ley.
+**Finalidades principales:** crear y administrar tu cuenta; prestarte las herramientas de Chalyb (Clips, Señales y En vivo; y, cuando estén disponibles, Asistente, Pronósticos, Inmuebles e Inversiones); conectar y publicar en tus redes cuando tú lo indiques; procesar pagos con Mercado Pago (no guardamos tu tarjeta); enviarte avisos de cobro y de servicio; dar soporte; prevenir fraude; conservar evidencia de tu aceptación; y cumplir la ley.
 
 **Finalidades opcionales:** enviarte promociones y novedades, encuestas y publicidad personalizada. Si no quieres, deja sin marcar la casilla de promociones o desactívalas en **Mi cuenta → Privacidad y notificaciones**. Tu negativa no afecta tu servicio.
 

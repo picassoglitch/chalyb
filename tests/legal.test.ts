@@ -104,7 +104,7 @@ test('archive: each current version is Law’s file byte for byte, with its sha2
     assert.ok(a, `${doc} archived — run pnpm legal:hash`);
     const src = lawSource(doc);
     assert.equal(a.source, src, `${doc}: docs changed since the archive — run pnpm legal:hash`);
-    assert.equal(a.sha256, sha(lawPublished(doc)), doc);
+    assert.equal(a.sha256, sha(bindAmounts(lawPublished(doc))), doc);
     assert.equal((hashes as Record<string, string>)[doc], a.sha256, `${doc} document-hashes.json`);
   }
 });
@@ -114,10 +114,15 @@ test('archive: every version listed in the registry has its module', () => {
     assert.ok(listVersions(doc).includes(currentVersion(doc)), doc);
     for (const v of listVersions(doc)) {
       const a = archived(doc, v)!;
+      assert.equal(a.sha256, sha(a.rendered), `${doc}@${v} archive is self-consistent`);
       assert.equal(
-        a.sha256,
-        sha(stripInternalNotes(a.source)),
-        `${doc}@${v} archive is self-consistent`,
+        a.template.replace(/\{\{[^}]+\}\}/g, ''),
+        stripInternalNotes(a.source)
+          .replace(/\{\{[^}]+\}\}/g, '')
+          .replace(AMOUNT_RE, (m, _us, at: number, all: string) =>
+            /\[[^[\]]*$/.test(all.slice(0, at)) ? m : '',
+          ),
+        `${doc}@${v} template is Law's text without its notes`,
       );
     }
   }
@@ -191,6 +196,16 @@ test('amounts: an unexplained amount passes only inside an owner note', () => {
   assert.equal(tokenizeAmounts('Chico $172.84').template, 'Chico {{mxn:pack_100k}}');
 });
 
+test('amounts: the packs page shows the pack prices in force, never typed ones', () => {
+  // Law's text names the roles; a role that doesn't exist is refused.
+  assert.throws(() => tokenizeAmounts('{{mxn:pack_1m}}'), /no such role/);
+  const packs = { tokens_100k: 14_900, tokens_500k: 59_900, tokens_2m: 199_900 };
+  const live = renderedSource('paquetes', undefined, packs)!;
+  assert.match(live, /\| Chico \| 100,000 \| \$149 MXN \| \$1\.49 \|/);
+  assert.match(live, /\| Mediano \| 500,000 \| \$599 MXN \| \$1\.20 \|/);
+  assert.doesNotMatch(live, /\{\{|\[PRECIO/);
+});
+
 test('amounts: an amount two roles share is never guessed', () => {
   // Pro mensual and Lealtad month 5 are both $997 today.
   const r = tokenizeAmounts('Pro $997 · mes 5 $997', {}, false);
@@ -210,8 +225,13 @@ test('amounts: an amount two roles share is never guessed', () => {
 
 test('amounts: under today’s config the render equals Law’s text, and the hash is of that render', () => {
   for (const doc of LEGAL_DOCS) {
-    assert.equal(renderedSource(doc), lawPublished(doc), doc);
-    assert.equal(archived(doc)!.rendered, lawPublished(doc), `${doc} archived render current`);
+    // Law's text binds the roles it names ({{mxn:pack_100k}}) to config.
+    assert.equal(renderedSource(doc), bindAmounts(lawPublished(doc)), doc);
+    assert.equal(
+      archived(doc)!.rendered,
+      bindAmounts(lawPublished(doc)),
+      `${doc} archived render current`,
+    );
     assert.equal(archived(doc)!.sha256, sha(archived(doc)!.rendered), doc);
   }
 });
@@ -233,7 +253,7 @@ test('amounts: a published version is frozen: today’s prices never change it',
   const frozen = { ...a, rendered: a.rendered };
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
     // What renderedSource does for a published version: the archived render.
-    assert.equal(frozen.rendered, lawSource('suscripcion'));
+    assert.equal(frozen.rendered, bindAmounts(lawPublished('suscripcion')));
     assert.notEqual(
       bindAmounts(a.template),
       frozen.rendered,
@@ -243,7 +263,7 @@ test('amounts: a published version is frozen: today’s prices never change it',
   const reg = readFileSync(join(ROOT, 'src/lib/legal/registry.ts'), 'utf8');
   assert.match(
     reg,
-    /versionMeta\(doc, version\)\?\.published \? a\.rendered : bindAmounts\(a\.template\)/,
+    /versionMeta\(doc, version\)\?\.published \? a\.rendered : bindAmounts\(a\.template, packs\)/,
   );
   const script = readFileSync(join(ROOT, 'scripts/hash-legal-docs.mjs'), 'utf8');
   assert.match(script, /today's prices render it differently/);
@@ -274,11 +294,11 @@ test('placeholders: the regex catches Law’s owner brackets, not prose', () => 
 test('placeholders: today’s drafts would fail as "published"', () => {
   for (const doc of LEGAL_DOCS)
     assert.ok(placeholders(doc).length > 0, `${doc} still has brackets`);
+  // What only the owner can fill stays in brackets.
   assert.ok(placeholders('terminos').includes('[NOMBRE COMPLETO DE LA PERSONA FÍSICA]'));
-  assert.ok(placeholders('suscripcion').includes('[IVA: CONFIRMAR]'));
-  assert.ok(placeholders('suscripcion').includes('[conservarás / tendrás limitado]'));
-  assert.ok(placeholders('terminos').includes('[30]'));
+  assert.ok(placeholders('suscripcion').includes('[BENEFICIOS VIP]'));
   assert.ok(placeholders('terminos').includes('[15]'));
+  assert.ok(placeholders('paquetes').includes('[24]'));
   assert.ok(legalPublishBlockers().length > 0);
 });
 
@@ -553,14 +573,10 @@ test('drafts never render publicly: a version not in force is the review stub', 
 });
 
 test('consistency: Suscripción must match the trial plans and grace in config before publish', () => {
-  const issues = subscriptionConsistency(lawSource('suscripcion'));
-  // Owner put the trial on every plan; §2.1 still says Pro only (Law item).
-  assert.ok(issues.includes('trial-plans:vip_month,vip_year'), issues.join());
-  // No grace after the trial (firstChargeGraceDays 0); §8 doesn't say so.
-  assert.ok(issues.includes('trial-grace'), issues.join());
-  // "VIP anual no incluye Prueba gratis" (§4) contradicts the config too.
-  assert.ok(issues.includes('trial-excluded:vip_year'), issues.join());
-  assert.ok(legalPublishBlockers().includes('suscripcion@1.0:trial-plans:vip_month,vip_year'));
+  // §2.1 offers the trial on every plan in config, nothing excludes one, and
+  // §8.2 bis says the grace period doesn't apply to the charge that ends it.
+  assert.deepEqual(subscriptionConsistency(lawSource('suscripcion')), []);
+  assert.ok(!legalPublishBlockers().some((b) => /trial|grace/.test(b)));
   const cfg = {
     trialPlans: ['pro_month', 'pro_year'] as const,
     graceDays: 7,

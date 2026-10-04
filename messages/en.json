@@ -1351,7 +1351,7 @@
   },
   "seller": {
     "title": "Who sells",
-    "name": "Legal name",
+    "name": "Name",
     "rfc": "Tax ID (RFC)",
     "address": "Address",
     "phone": "Phone",

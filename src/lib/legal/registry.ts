@@ -9,7 +9,7 @@
 
 import registryJson from './registry.json' with { type: 'json' };
 import { ARCHIVE, type ArchivedVersion } from '@/content/legal/archive/index';
-import { bindAmounts } from './amounts';
+import { bindAmounts, type PackTotalsCents } from './amounts';
 import { blocksText, parseMarkdown, type Block } from './markdown';
 import { subscriptionConsistency } from './consistency';
 
@@ -110,14 +110,25 @@ export function archived(doc: LegalDoc, version = currentVersion(doc)): Archived
  *  consent events cite (a later price change needs a new version, and
  *  `pnpm legal:hash` fails until there is one). A draft re-binds every
  *  amount from src/config/pricing.ts on each render. */
-export function renderedSource(doc: LegalDoc, version = currentVersion(doc)): string | null {
+export function renderedSource(
+  doc: LegalDoc,
+  version = currentVersion(doc),
+  /** The pack prices in force (the server's setting), when the caller has
+   *  them. A published version ignores them: it shows the prices it was
+   *  published with. */
+  packs?: PackTotalsCents,
+): string | null {
   const a = archived(doc, version);
   if (!a) return null;
-  return versionMeta(doc, version)?.published ? a.rendered : bindAmounts(a.template);
+  return versionMeta(doc, version)?.published ? a.rendered : bindAmounts(a.template, packs);
 }
 
-export function renderedBlocks(doc: LegalDoc, version = currentVersion(doc)): Block[] | null {
-  const src = renderedSource(doc, version);
+export function renderedBlocks(
+  doc: LegalDoc,
+  version = currentVersion(doc),
+  packs?: PackTotalsCents,
+): Block[] | null {
+  const src = renderedSource(doc, version, packs);
   return src === null ? null : parseMarkdown(src);
 }
 

@@ -1,7 +1,7 @@
 # Términos de los Paquetes de Créditos
 
 **Página pública:** `chalyb.com/paquetes`
-**Versión:** [VERSIÓN] · **Vigente desde:** [FECHA DE PUBLICACIÓN]
+**Versión:** 1.0 · **Vigente desde:** [FECHA DE PUBLICACIÓN]
 
 Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · [DOMICILIO FISCAL COMPLETO] · [CORREO DE CONTACTO] · [TELÉFONO] ([HORARIO DE ATENCIÓN]). Más datos en chalyb.com/quien-vende.
 
@@ -22,11 +22,9 @@ Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con activ
 
 | Paquete | Créditos extra | Precio total | Precio por cada 1,000 créditos |
 |---|---|---|---|
-| Chico | 100,000 | [PRECIO 100K] MXN | [≈ PRECIO 100K ÷ 100] |
-| Mediano | 500,000 | [PRECIO 500K] MXN | [≈ PRECIO 500K ÷ 500] |
-| Grande | 2,000,000 | [PRECIO 2M] MXN | [≈ PRECIO 2M ÷ 2,000] |
-
-> [NOTA PARA EL DUEÑO, BORRAR AL PUBLICAR: el código cobra $149 / $599 / $1,999 como total. Si esos montos ya incluyen IVA, ponlos tal cual. Si son antes de IVA, el total es $172.84 / $694.84 / $2,318.84. El precio que aparece aquí, en la tienda y en el checkout tiene que ser el mismo número.]
+| Chico | 100,000 | {{mxn:pack_100k}} MXN | {{mxn:pack_100k_per1k}} |
+| Mediano | 500,000 | {{mxn:pack_500k}} MXN | {{mxn:pack_500k_per1k}} |
+| Grande | 2,000,000 | {{mxn:pack_2m}} MXN | {{mxn:pack_2m_per1k}} |
 
 1.3. El precio que ves al pagar es el que se cobra. **No hay cargos adicionales** (comisiones, cargos por servicio ni por método de pago). Si cambiamos los precios de los paquetes, el cambio solo aplica a compras futuras; nunca cambia el valor de los créditos que ya compraste.
 
@@ -84,7 +82,7 @@ Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con activ
 
 7.4. **Pedir un reembolso nunca te perjudica.** Aplica la sección 7.3 de los Términos de Suscripción: pedir o recibir un reembolso no da lugar a penalizaciones, cargos, suspensión, bloqueo ni cambio de tu precio o plan.
 
-7.5. Cómo pedirlo: escribe a [CORREO DE CONTACTO] o entra a **Mi cuenta → Ayuda**. Te respondemos en un máximo de **5 días hábiles** y el reembolso se hace al mismo medio de pago.
+7.5. Cómo pedirlo: escribe a [CORREO DE CONTACTO] o entra a **Ayuda → Problema con un cobro**. Te respondemos en un máximo de **5 días hábiles** y el reembolso se hace al mismo medio de pago.
 
 ## 8. Contracargos
 
@@ -110,7 +108,7 @@ Botón: **Pagar ${precio_total} MXN**
 
 10.1. Después de cada compra te enviamos por correo un **comprobante** con: paquete, número de créditos, precio total, IVA desglosado, fecha y hora, número de operación de Mercado Pago, la indicación "Cargo único, no se renueva" y un enlace a estos términos.
 
-10.2. Para pedir tu **factura (CFDI)**, emitida por RAAA960329GA2, entra a **Mi cuenta → Facturas** o escribe a [CORREO DE FACTURACIÓN] dentro del plazo que se indica ahí.
+10.2. Para pedir tu **factura (CFDI)**, emitida por RAAA960329GA2, escribe a [CORREO DE FACTURACIÓN] dentro del plazo que establecen las disposiciones fiscales.
 
 ## 11. Cambios a estos términos
 

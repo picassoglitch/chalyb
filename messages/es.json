@@ -1351,7 +1351,7 @@
   },
   "seller": {
     "title": "Quién vende",
-    "name": "Razón social",
+    "name": "Nombre",
     "rfc": "RFC",
     "address": "Domicilio",
     "phone": "Teléfono",

@@ -1,7 +1,7 @@
 # Quién vende
 
 **Página pública:** `chalyb.com/quien-vende`
-**Versión:** [VERSIÓN] · **Vigente desde:** [FECHA DE PUBLICACIÓN]
+**Versión:** 1.0 · **Vigente desde:** [FECHA DE PUBLICACIÓN]
 
 > **Resumen**
 > - Chalyb es un **nombre comercial**, no una empresa. Quien te vende, te cobra y te emite la factura es **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**.
@@ -28,7 +28,7 @@ Cuando en nuestros documentos decimos "**Chalyb**", "**nosotros**" o "**el Respo
 
 ## 2. Dudas, aclaraciones y reclamaciones
 
-- Escríbenos a **[CORREO DE CONTACTO]**, llámanos al **[TELÉFONO]** o entra a **Mi cuenta → Ayuda**.
+- Escríbenos a **[CORREO DE CONTACTO]**, llámanos al **[TELÉFONO]** o entra a **Ayuda → Problema con un cobro**.
 - Te respondemos en un máximo de **5 días hábiles**. Si tu reclamación es por un cobro, te decimos en ese plazo si procede un reembolso y cuándo lo recibes (Términos de Suscripción, sección 7).
 - En el domicilio indicado arriba también recibimos reclamaciones por escrito.
 - Escribirnos primero **no es obligatorio**: puedes acudir directamente a la PROFECO, a tu banco o a Mercado Pago.
@@ -43,36 +43,36 @@ Tienes derecho a presentar una queja ante la Procuraduría Federal del Consumido
 ## 4. Cómo pagas y cómo protegemos tu pago
 
 - Los pagos se procesan con **Mercado Pago**. Chalyb **no guarda** el número completo de tu tarjeta ni su código de seguridad: Mercado Pago los resguarda y nos entrega un identificador (token).
-- Medidas de seguridad generales: conexión cifrada (HTTPS/TLS) en todo el sitio, datos de tarjeta tokenizados por Mercado Pago y acceso restringido a la información de tu cuenta. [CONFIRMAR CON EL EQUIPO TÉCNICO ANTES DE PUBLICAR]
+- Medidas de seguridad generales: conexión cifrada (HTTPS/TLS) en todo el sitio, datos de tarjeta tokenizados por Mercado Pago y acceso restringido a la información de tu cuenta.
 - Todos los precios están en **pesos mexicanos con IVA incluido**, salvo que se indique otra moneda; el total que pagarás se muestra antes de confirmar.
 
 ## 5. Facturas (CFDI)
 
-El comprobante fiscal (CFDI) lo emite **RAAA960329GA2**. Puedes pedirlo en **Mi cuenta → Facturas** o escribiendo a [CORREO DE FACTURACIÓN] con tus datos fiscales, dentro del plazo que se indica ahí. Cada pago genera también un comprobante por correo con el concepto, el monto, el IVA desglosado y la fecha.
+El comprobante fiscal (CFDI) lo emite **RAAA960329GA2**. Puedes pedirlo escribiendo a [CORREO DE FACTURACIÓN] con tus datos fiscales, dentro del plazo que establecen las disposiciones fiscales. Cada pago genera también un comprobante por correo con el concepto, el monto, el IVA desglosado y la fecha.
 
 ## 6. Tus datos personales
 
 El responsable de tus datos personales es [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb), con el domicilio indicado arriba. Para ejercer tus derechos de acceso, rectificación, cancelación u oposición (ARCO) escribe a **[CORREO DE PRIVACIDAD]**. Consulta el **Aviso de Privacidad** en chalyb.com/privacidad.
 
-No te enviaremos publicidad si no la aceptaste, y puedes dejar de recibirla en cualquier momento desde el enlace al final de cada correo o en **Mi cuenta → Notificaciones**.
+No te enviaremos publicidad si no la aceptaste, y puedes dejar de recibirla en cualquier momento desde el enlace al final de cada correo o en **Mi cuenta → Privacidad y notificaciones**.
 
 ## 7. Documentos que aplican cuando compras
 
 | Documento | Dirección | Versión vigente |
 |---|---|---|
-| Términos y Condiciones | chalyb.com/terminos | [VERSIÓN] |
-| Términos de Suscripción | chalyb.com/suscripcion | [VERSIÓN] |
-| Términos de los Paquetes de Créditos | chalyb.com/paquetes | [VERSIÓN] |
-| Aviso de Privacidad | chalyb.com/privacidad | [VERSIÓN] |
-| Uso aceptable y contenido | chalyb.com/uso-aceptable | [VERSIÓN] |
+| Términos y Condiciones | chalyb.com/terminos | 1.0 |
+| Términos de Suscripción | chalyb.com/suscripcion | 1.0 |
+| Términos de los Paquetes de Créditos | chalyb.com/paquetes | 1.0 |
+| Aviso de Privacidad | chalyb.com/privacidad | 1.0 |
+| Uso aceptable y contenido | chalyb.com/uso-aceptable | 1.0 |
 
-Las versiones anteriores siguen disponibles en su dirección fija (por ejemplo, `chalyb.com/terminos/v1-3`).
+Las versiones anteriores siguen disponibles en su dirección fija (por ejemplo, `chalyb.com/terminos/v1-0`).
 
 ## 8. Cómo celebramos contratos por internet
 
 - Contratas con nosotros por medios electrónicos: tu aceptación (casilla marcada y botón de pago) tiene la misma validez que una firma (Código de Comercio, arts. 89 a 94).
 - Al contratar te enviamos por correo una copia de las condiciones aceptadas y el comprobante del cobro. También puedes verlas en **Mi cuenta → Mi plan**.
-- Guardamos el registro de tu aceptación (versión del documento, texto mostrado, fecha y hora) durante al menos **10 años** (Código de Comercio, art. 49) y lo conservamos sin alteraciones conforme a la NOM-151-SCFI-2016.
+- Guardamos el registro de tu aceptación (versión del documento, texto mostrado, fecha y hora) durante al menos **10 años** (Código de Comercio, art. 49).
 - Todos nuestros documentos y avisos están en **español**.
 
 ---

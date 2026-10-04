@@ -1,10 +1,10 @@
 # Términos y Condiciones de Uso de Chalyb
 
-**Versión:** [VERSIÓN] · **Fecha de entrada en vigor:** [FECHA] · **Sitio:** chalyb.com
+**Versión:** 1.0 · **Fecha de entrada en vigor:** [FECHA] · **Sitio:** chalyb.com
 
 > **Resumen en palabras simples**
 >
-> - Chalyb es una plataforma de herramientas con inteligencia artificial (Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones). Al crear tu cuenta (con el botón o la casilla de aceptación) aceptas estos Términos.
+> - Chalyb es una plataforma de herramientas con inteligencia artificial (Clips, Señales y En vivo; y, cuando estén disponibles, Asistente, Pronósticos, Inmuebles e Inversiones). Al crear tu cuenta (con el botón o la casilla de aceptación) aceptas estos Términos.
 > - Debes tener **18 años o más**. Tu cuenta es personal y tú cuidas tu contraseña.
 > - Te damos permiso (licencia) para usar Chalyb; **no te vendemos el software**. Podemos mejorar, cambiar o retirar funciones.
 > - Lo que genera la IA puede tener errores. **Revísalo antes de usarlo o publicarlo.** Señales, Pronósticos e Inversiones son **información general, no personalizada**: no son asesoría financiera ni de inversión, y Chalyb no recibe apuestas.
@@ -25,6 +25,7 @@
 | Documento | Qué regula | Dónde está |
 |---|---|---|
 | Términos de Suscripción | Planes, precios, prueba gratis, cobros, cancelación y reembolsos | chalyb.com/suscripcion |
+| Términos de los Paquetes de Créditos | Compra única de créditos extra, su uso, vigencia y reembolsos | chalyb.com/paquetes |
 | Aviso de Privacidad | Cómo tratamos tus datos personales | chalyb.com/privacidad |
 | Política de Uso Aceptable y Contenido | Qué contenido puedes subir, derechos de autor, avisos sobre herramientas financieras | chalyb.com/uso-aceptable |
 
@@ -78,9 +79,9 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 6.4. **Tú decides** si usas, editas, publicas o actúas con base en un Resultado, y eres responsable de revisarlo antes. Esto es especialmente importante en:
 - **Clips:** revisa que el clip no incluya contenido de terceros sin permiso ni información que no quieras publicar.
-- **Señales, Pronósticos e Inversiones:** son **información general y educativa, igual para todos los usuarios de un mismo plan, no personalizada**, y no constituyen asesoría financiera, de inversión, fiscal ni de apuestas. Chalyb **no administra tu dinero, no tiene custodia de tus fondos o activos, no toma decisiones de inversión por ti y no recibe ni intermedia apuestas**. Ver la sección 6 de la Política de Uso Aceptable y Contenido.
-- **Inmuebles:** las estimaciones de precio o descripciones **no son avalúos** ni sustituyen la revisión de un profesional.
-- **Asistente:** sus respuestas no sustituyen la asesoría de un profesional (legal, médico, fiscal, financiero u otro).
+- **Señales y, cuando estén disponibles, Pronósticos e Inversiones:** son **información general y educativa, igual para todos los usuarios de un mismo plan, no personalizada**, y no constituyen asesoría financiera, de inversión, fiscal ni de apuestas. Chalyb **no administra tu dinero, no tiene custodia de tus fondos o activos, no toma decisiones de inversión por ti y no recibe ni intermedia apuestas**. Ver la sección 6 de la Política de Uso Aceptable y Contenido.
+- **Inmuebles (cuando esté disponible):** las estimaciones de precio o descripciones **no son avalúos** ni sustituyen la revisión de un profesional.
+- **Asistente (cuando esté disponible):** sus respuestas no sustituyen la asesoría de un profesional (legal, médico, fiscal, financiero u otro).
 
 6.5. Sujeto a tus derechos sobre tu propio contenido y a los derechos de terceros, puedes usar los Resultados que generes, incluso con fines comerciales, siempre que cumplas estos Términos y la ley.
 
@@ -90,7 +91,7 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 7.2. Varias funciones dependen de **plataformas de terceros** (por ejemplo, TikTok, YouTube, Instagram, Facebook, Twitch, Kick, OBS, Mercado Pago, exchanges o brókers, proveedores de modelos de IA). Si esas plataformas cambian sus reglas, sus API o dejan de dar servicio, alguna función de Chalyb podría limitarse o dejar de funcionar. No somos responsables de los actos de esas plataformas.
 
-7.3. Podemos **agregar, modificar, limitar o retirar** herramientas o funciones, y lanzar funciones de prueba ("beta") que pueden cambiar o desaparecer. Si retiramos de forma permanente una función esencial de tu plan de pago, te avisaremos con anticipación razonable (cuando sea posible, al menos [30] días naturales) y, durante un periodo ya pagado, te ofreceremos una alternativa razonable o el **reembolso proporcional** del periodo no usado, a tu elección. Esto no aplica a cambios impuestos por la ley, por una autoridad o por plataformas de terceros fuera de nuestro control, en cuyo caso te avisaremos tan pronto como sea posible y procederá el reembolso proporcional si la función era esencial.
+7.3. Podemos **agregar, modificar, limitar o retirar** herramientas o funciones, y lanzar funciones de prueba ("beta") que pueden cambiar o desaparecer. Si retiramos de forma permanente una función esencial de tu plan de pago, te avisaremos con anticipación razonable (cuando sea posible, al menos 30 días naturales) y, durante un periodo ya pagado, te ofreceremos una alternativa razonable o el **reembolso proporcional** del periodo no usado, a tu elección. Esto no aplica a cambios impuestos por la ley, por una autoridad o por plataformas de terceros fuera de nuestro control, en cuyo caso te avisaremos tan pronto como sea posible y procederá el reembolso proporcional si la función era esencial.
 
 7.4. Podemos fijar límites razonables de uso (por ejemplo, minutos de video procesados, créditos, número de clips o solicitudes) según tu plan, informados en chalyb.com/precios.
 
@@ -153,7 +154,7 @@ Al usar Chalyb **no puedes**:
 
 13.2. **Por nosotros, con causa.** Podemos suspender o cancelar tu cuenta, total o parcialmente, si: (a) incumples estos Términos o la Política de Uso Aceptable; (b) lo exige la ley o una autoridad; (c) detectamos fraude, abuso de pruebas gratis, un **contracargo de mala fe** (definido en la sección 10.4 de los Términos de Suscripción, y solo con el aviso y el plazo de 10 días hábiles de su sección 10.5) o riesgo de seguridad; o (d) tu contenido infringe derechos de terceros. Cuando sea razonable y legalmente posible, te avisaremos y te daremos oportunidad de corregir la falta. En casos graves (fraude, contenido ilegal, riesgo para otros usuarios) podemos actuar de inmediato. En caso de terminación por tu incumplimiento, **no procede reembolso** del periodo pagado, salvo que la ley disponga otra cosa.
 
-13.3. **Por nosotros, sin causa.** Podemos dejar de ofrecer el Servicio o cerrar tu cuenta con **al menos [30] días naturales** de aviso por escrito (correo electrónico); si resides en Quebec, Canadá, el aviso será de **al menos 60 días**. En ese caso te reembolsaremos la parte proporcional no usada de cualquier periodo que hayas pagado por adelantado y no haremos nuevos cobros.
+13.3. **Por nosotros, sin causa.** Podemos dejar de ofrecer el Servicio o cerrar tu cuenta con **al menos 30 días naturales** de aviso por escrito (correo electrónico); si resides en Quebec, Canadá, el aviso será de **al menos 60 días**. En ese caso te reembolsaremos la parte proporcional no usada de cualquier periodo que hayas pagado por adelantado y no haremos nuevos cobros.
 
 13.4. **Efectos.** Al terminar, la licencia termina. Podrás descargar tu contenido durante **[PLAZO DE CONSERVACIÓN DE CONTENIDO]** después del cierre, salvo en casos de contenido ilegal o cuando la ley lo impida; después podremos eliminarlo conforme al Aviso de Privacidad. Las secciones que por su naturaleza deban sobrevivir (propiedad intelectual, limitación de responsabilidad, indemnización, ley aplicable) seguirán vigentes.
 
@@ -215,4 +216,4 @@ Domicilio: [DOMICILIO FISCAL COMPLETO]
 Correo: [CORREO DE CONTACTO]
 Teléfono: [TELÉFONO] · Horario: [HORARIO DE ATENCIÓN]
 
-Última actualización: [FECHA] · Versión [VERSIÓN]
+Última actualización: [FECHA] · Versión 1.0
