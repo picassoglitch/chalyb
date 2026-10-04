@@ -2608,14 +2608,25 @@ html body:has(.ch-flow) {
     .ch-toolbody, .ch-pair, .ch-live, .ch-live__main, .ch-live__side, .ch-live__panel,
     .ch-ev-streams, .ch-ev-set, .ch-ev-set__col, .ch-ev-adv, .ch-jobrows, .ch-sig-list,
     .ch-sig-side, .ch-sig-detail__side, .ch-sig-panel, .ch-sig-day, .ch-sig-chartcard,
-    .ch-sigset, .ch-sigset__col, .ch-toolerr
+    .ch-sigset, .ch-sigset__col, .ch-sigset__adv, .ch-ev-q, .ch-toolerr
   ) {
   grid-template-columns: minmax(0, 1fr);
 }
 .chalyb-app .ch-toolbody > * {
   min-width: 0;
 }
+/* Inside Opciones avanzadas a row's control drops under its label on a
+   phone instead of pushing past the screen. */
+.chalyb-app .ch-adv__body > * {
+  min-width: 0;
+}
 @media (max-width: 899px) {
+  .chalyb-app .ch-adv__body .ch-row {
+    flex-wrap: wrap;
+  }
+  .chalyb-app .ch-adv__body .ch-row .ch-select {
+    max-width: 100%;
+  }
   .chalyb-app .ch-adv__bar {
     flex-wrap: wrap;
     padding: 12px 16px;
