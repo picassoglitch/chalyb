@@ -5,6 +5,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { formatMXN } from '@/lib/billing/format';
 import { BrandMark } from './brand-mark';
+import { claimKey } from './claims';
 
 // 1 · Hero (LANDING-SPEC §3.2, mockup 42). The only h1. The visual is the
 // real app: the "Tus clips están listos" screen in a CSS laptop, Inicio in a
@@ -15,11 +16,14 @@ export async function Hero({
   trialHref,
   ctaLabel,
   trialOffered,
+  claimAll,
 }: {
   trialHref: Route;
   ctaLabel: string;
   /** hero.noteRest ("Hoy pagas …") only when this visitor can start the trial (K-7). */
   trialOffered: boolean;
+  /** allToolsClaimAllowed(): "Todo incluido" and "un solo plan" only then. */
+  claimAll: boolean;
 }) {
   const t = await getTranslations('landing.hero');
   const cero = formatMXN(0);
@@ -28,11 +32,11 @@ export async function Hero({
       <div className="pub-hero2__in">
         <div className="pub-hero2__copy">
           <p className="pub-kick">
-            <span>{t('eyebrowTag')}</span>
-            <span className="pub-kick__rest">{t('eyebrow')}</span>
+            <span>{t(claimKey('heroTag', claimAll))}</span>
+            <span className="pub-kick__rest">{t(claimKey('heroEyebrow', claimAll))}</span>
           </p>
           <h1 id="hero-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h1>
-          <p className="pub-hero2__sub">{t('sub')}</p>
+          <p className="pub-hero2__sub">{t(claimKey('heroSub', claimAll))}</p>
           <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
             {ctaLabel}
             <ArrowRight aria-hidden="true" />

@@ -32,9 +32,12 @@
     },
     "hero": {
       "eyebrowTag": "Todo incluido",
+      "eyebrowTagNoClaim": "Todo en español",
       "eyebrow": "Un plan, todas las herramientas",
+      "eyebrowNoClaim": "Herramientas que trabajan por ti",
       "title": "Tú duermes. <em>Tus bots trabajan.</em>",
       "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más, en un solo plan.",
+      "subNoClaim": "Clips para tus redes, señales de cripto, tu transmisión y mucho más.",
       "noteStrong": "Cancela cuando quieras.",
       "noteRest": "Hoy pagas {cero}.",
       "seal1": "En español",
@@ -51,6 +54,7 @@
     "tools": {
       "label": "Herramientas",
       "title": "Todo en un solo plan",
+      "titleNoClaim": "Herramientas que trabajan por ti",
       "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen incluidas en Pro.",
       "subNoClaim": "Cada herramienta hace una cosa y la hace por ti.",
       "included": "Incluido en Pro",
@@ -180,7 +184,9 @@
     "final": {
       "title": "Empieza hoy. <em>Mañana ya trabajan por ti.</em>",
       "sub": "{lista}. Todo en un solo plan.",
+      "subNoClaim": "{lista}.",
       "subMobile": "Todas las herramientas en un solo plan.",
+      "subMobileNoClaim": "Todo desde tu celular o tu computadora.",
       "note": "Hoy pagas {cero}. Cancela cuando quieras."
     },
     "publicFooter": {
@@ -232,7 +238,7 @@
     "ctaSubShort": "Cancela cuando quieras.",
     "meta": {
       "title": "Chalyb: bots que trabajan por ti mientras duermes",
-      "description": "Clips para tus redes, señales de cripto, tu transmisión y más en un solo plan. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
+      "description": "Clips para tus redes, señales de cripto, tu transmisión y más. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
     }
   },
   "auth": {

@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { landingTrialHref, tagPricingHref } from '@/components/landing/links';
 import { faqItems } from '@/components/landing/faq-items';
+import { CLAIM_COPY, claimKey } from '@/components/landing/claims';
 import { planPrice } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { faqPageData, jsonLdData } from '@/lib/seo/json-ld';
@@ -23,6 +24,7 @@ function filesUnder(dir: string): string[] {
 }
 
 const es = JSON.parse(readFileSync(join(ROOT, 'messages/es.json'), 'utf8'));
+const en = JSON.parse(readFileSync(join(ROOT, 'messages/en.json'), 'utf8'));
 const faqT = (key: string, values: Record<string, string> = {}) =>
   (es.landing.faq[key] as string).replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
 
@@ -187,4 +189,49 @@ test('FAQPage: the 8 questions, Q1 only with the trial, Q6 only with Señales', 
     name: all[0]!.q,
     acceptedAnswer: { '@type': 'Answer', text: all[0]!.a },
   });
+});
+
+// ---------- C4 / C15 · all-tools claims only with allToolsClaimAllowed ----------
+
+const CLAIM =
+  /todo incluido|incluidas|un solo plan|un plan, todas|todas las herramientas(?! funcionan)|all included|every tool included|in one plan|one plan, every|every tool:|everything in one plan|all in one/i;
+
+test('C4 · every landing claim has a NoClaim variant that makes no all-tools claim', () => {
+  for (const [name, c] of Object.entries(CLAIM_COPY)) {
+    for (const [loc, m] of [
+      ['es', es],
+      ['en', en],
+    ] as const) {
+      const copy = m.landing[c.ns] as Record<string, string>;
+      assert.ok(copy[c.claim], `${loc} landing.${c.ns}.${c.claim}`);
+      assert.ok(copy[c.noClaim], `${loc} landing.${c.ns}.${c.noClaim}`);
+      assert.doesNotMatch(copy[c.noClaim]!, CLAIM, `${loc} ${name}: ${copy[c.noClaim]}`);
+    }
+    assert.equal(claimKey(name as keyof typeof CLAIM_COPY, false), c.noClaim);
+    assert.equal(claimKey(name as keyof typeof CLAIM_COPY, true), c.claim);
+  }
+  // The regex catches the claims it guards.
+  for (const k of ['eyebrowTag', 'eyebrow', 'sub'])
+    assert.match(es.landing.hero[k], CLAIM, `es hero.${k}`);
+  assert.match(es.landing.final.subMobile, CLAIM);
+});
+
+test('C4 · the meta description makes no all-tools claim', () => {
+  for (const m of [es, en]) assert.doesNotMatch(m.landing.meta.description, CLAIM);
+});
+
+test('C4 · landing components read claim copy only through claimKey()', () => {
+  const dir = join(ROOT, 'src/components/landing');
+  for (const f of filesUnder(dir)) {
+    const src = readFileSync(f, 'utf8');
+    const ns = src.match(/getTranslations\('landing\.(\w+)'\)/)?.[1];
+    if (!ns) continue;
+    for (const c of Object.values(CLAIM_COPY).filter((x) => x.ns === ns))
+      for (const key of [c.claim, c.noClaim])
+        assert.doesNotMatch(
+          src,
+          new RegExp(`\\bt\\('${key}'`),
+          `${f.slice(ROOT.length)} reads landing.${ns}.${key} without claimKey()`,
+        );
+  }
 });

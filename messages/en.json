@@ -32,9 +32,12 @@
     },
     "hero": {
       "eyebrowTag": "All included",
+      "eyebrowTagNoClaim": "In Spanish",
       "eyebrow": "One plan, every tool",
+      "eyebrowNoClaim": "Tools that work for you",
       "title": "You sleep. <em>Your bots work.</em>",
       "sub": "Clips for your socials, crypto signals, your stream and much more, in one plan.",
+      "subNoClaim": "Clips for your socials, crypto signals, your stream and much more.",
       "noteStrong": "Cancel anytime.",
       "noteRest": "You pay {cero} today.",
       "seal1": "In Spanish",
@@ -51,6 +54,7 @@
     "tools": {
       "label": "Tools",
       "title": "Everything in one plan",
+      "titleNoClaim": "Tools that work for you",
       "sub": "Each tool does one thing and does it for you. All of them come with Pro.",
       "subNoClaim": "Each tool does one thing and does it for you.",
       "included": "Included in Pro",
@@ -180,7 +184,9 @@
     "final": {
       "title": "Start today. <em>Tomorrow they work for you.</em>",
       "sub": "{lista}. All in one plan.",
+      "subNoClaim": "{lista}.",
       "subMobile": "Every tool in one plan.",
+      "subMobileNoClaim": "All from your phone or your computer.",
       "note": "You pay {cero} today. Cancel anytime."
     },
     "publicFooter": {
@@ -232,7 +238,7 @@
     "ctaSubShort": "Cancel any time.",
     "meta": {
       "title": "Chalyb: bots that work for you while you sleep",
-      "description": "Clips for your socials, crypto signals, your stream and more in one plan. Try Pro free for 7 days and cancel anytime. In Spanish."
+      "description": "Clips for your socials, crypto signals, your stream and more. Try Pro free for 7 days and cancel anytime. In Spanish."
     }
   },
   "auth": {

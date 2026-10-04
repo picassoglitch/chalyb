@@ -52,7 +52,12 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
       </a>
       <PublicNav signedIn={signedIn} />
       <main id="main">
-        <Hero trialHref={href('hero_trial')} ctaLabel={ctaLabel} trialOffered={trialOffered} />
+        <Hero
+          trialHref={href('hero_trial')}
+          ctaLabel={ctaLabel}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+        />
         <ToolsSection
           tools={tools}
           claimAll={claimAll}
@@ -71,6 +76,7 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
           trialHref={href('final_trial')}
           ctaLabel={ctaLabel}
           trialOffered={trialOffered}
+          claimAll={claimAll}
         />
       </main>
       <PublicFooter onLanding />

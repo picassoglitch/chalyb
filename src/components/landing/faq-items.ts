@@ -1,6 +1,7 @@
 import { planPrice } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { toolList, type PublicTool } from '@/lib/tools/public-tools';
+import { claimKey } from './claims';
 
 // The 8 FAQ entries (LANDING-SPEC §3.8), shared by the FAQPage JSON-LD so the
 // structured data says exactly what the page says: Q1 only when the trial can
@@ -35,7 +36,7 @@ export function faqItems(
     {
       id: 5,
       q: t('q5'),
-      a: claimAll ? t('a5', { lista: toolList(tools, locale) }) : t('a5NoClaim'),
+      a: t(claimKey('faqA5', claimAll), { lista: toolList(tools, locale) }),
     },
     ...(tools.some((x) => x.slug === 'chalybcrypto') ? [{ id: 6, q: t('q6'), a: t('a6') }] : []),
     { id: 7, q: t('q7'), a: t('a7') },
