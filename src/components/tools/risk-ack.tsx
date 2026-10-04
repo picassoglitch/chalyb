@@ -20,6 +20,7 @@ export async function RiskAck({ slug, locale }: { slug: string; locale: string }
         points: [1, 2, 3].map((n) => ({ title: t(`b${n}.title`), body: t(`b${n}.body`) })),
         legalK: t('legalK'),
         legal: tc.markup('body', { herramienta: name, b: (c) => `<b>${c}</b>` }),
+        read: tc('read'),
         check: tc('check'),
         cta: tc('cta'),
         hint: t('hint'),

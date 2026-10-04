@@ -20,6 +20,11 @@ async function acceptRiskSheet(page: Page) {
   await expect(sheet.getByText('Léelo una vez. Son 3 cosas.')).toBeVisible();
   await expect(sheet.getByText('El aviso, palabra por palabra')).toBeVisible();
   await expect(sheet.getByText(/puedes perder todo tu dinero/)).toBeVisible();
+  // aceptacion-ux §6: the link to the full notice, in the same tab.
+  const read = sheet.getByRole('link', { name: 'Leer aviso completo' });
+  await expect(read).toHaveAttribute('href', /\/uso-aceptable#avisos$/);
+  await expect(read).not.toHaveAttribute('target', '_blank');
+  await expect(sheet.getByText('Te lo volvemos a pedir solo si cambia el aviso.')).toBeVisible();
   const box = sheet.getByRole('checkbox', { name: /las decisiones y los riesgos son míos/ });
   await expect(box).not.toBeChecked();
   const cta = sheet.getByRole('button', { name: 'Entendido, continuar' });

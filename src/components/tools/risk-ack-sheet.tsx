@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Route } from 'next';
 import { Check, X } from 'lucide-react';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { Markup } from '@/components/ui/markup';
 import { ToolIcon } from '@/components/ui/tool-icon';
 
@@ -22,6 +22,8 @@ export interface RiskAckCopy {
   legalK: string;
   /** aceptacion-ux §6 with {Herramienta} filled; may carry <b>. */
   legal: string;
+  /** "Leer aviso completo" (aceptacion-ux §6). */
+  read: string;
   check: string;
   cta: string;
   hint: string;
@@ -121,6 +123,9 @@ export function RiskAckSheet({
           <p>
             <Markup text={copy.legal} />
           </p>
+          <Link href={'/uso-aceptable#avisos' as Route} className="ch-lnk">
+            {copy.read}
+          </Link>
         </div>
         <label className="ch-check">
           <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />

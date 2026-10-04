@@ -353,3 +353,13 @@ test('healthy answers are recorded (throttled), so one blip does not stay down',
   const later = nextToolStatus(healed, { ok: false, latencyMs: 8000 }, '2026-10-03T13:00:00.000Z');
   assert.equal(later.alertOwner, false);
 });
+
+// ── Review fix 7: the sheet never promises it won't ask again ───────────
+test('risk sheet: hint is true for a new notice version; full-notice link', () => {
+  const es = messages('es');
+  assert.equal(es.toolShell.risk.hint, 'Te lo volvemos a pedir solo si cambia el aviso.');
+  assert.doesNotMatch(JSON.stringify(es.toolShell), /Solo te lo pedimos esta vez/);
+  assert.equal(es.consents.risk.read, 'Leer aviso completo');
+  const sheet = readFileSync(join(ROOT, 'src/components/tools/risk-ack-sheet.tsx'), 'utf8');
+  assert.match(sheet, /\/uso-aceptable#avisos/);
+});
