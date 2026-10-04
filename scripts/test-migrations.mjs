@@ -379,6 +379,40 @@ try {
   }
 }
 
+// ── 0056: who is still owed a change notice ───────────────────────────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else { console.error(`FAIL: ${label} ${extra}`); process.exitCode = 1; }
+  };
+  const mk = async (email) => {
+    const id = (await db.query(`insert into auth.users (email) values ($1) returning id`, [email])).rows[0].id;
+    await db.query(`insert into public.profiles (id, email) values ($1, $2) on conflict (id) do update set email = excluded.email`, [id, email]);
+    return id;
+  };
+  const key = 'terminos:9.9';
+  const d = async (uid, status, ageMin = 0) =>
+    db.query(`insert into public.email_dispatches (user_id, kind, period_key, template_id, template_version, delivery_status, sent_at)
+              values ($1, 'terms_change', $2, 'terms_change', '1', $3, now() - ($4 || ' minutes')::interval)`, [uid, key, status, String(ageMin)]);
+  const sent = await mk('n-sent@example.com'); await d(sent, 'sent');
+  const delivered = await mk('n-deliv@example.com'); await d(delivered, 'delivered');
+  const bounced = await mk('n-bounce@example.com'); await d(bounced, 'bounced');
+  const fresh = await mk('n-fresh@example.com'); await d(fresh, 'pending', 2);
+  const stale = await mk('n-stale@example.com'); await d(stale, 'pending', 30);
+  const failed = await mk('n-failed@example.com'); await d(failed, 'failed');
+  const never = await mk('n-never@example.com');
+  const accepted = await mk('n-acc@example.com');
+  await db.query(`insert into public.consent_events (consent_id, event_type, user_id, timestamp_utc, locale, surface, ui_version, event_hash, documents)
+                  values (gen_random_uuid(), 'plan_changed', $1, now(), 'es-MX', 't', 't', 'h', '[{"doc":"terminos","version":"9.9"}]'::jsonb)`, [accepted]);
+  const ids = new Set((await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1000)`, [key])).rows.map((r) => r.id));
+  check('owed: never sent, failed, stale pending', ids.has(never) && ids.has(failed) && ids.has(stale));
+  check('not owed: sent, delivered, bounced, in-flight pending, already accepted',
+    ![sent, delivered, bounced, fresh, accepted].some((u) => ids.has(u)));
+  const page1 = (await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1)`, [key])).rows;
+  const page2 = (await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, $2, 1)`, [key, page1[0].id])).rows;
+  check('keyset pagination moves forward', page1.length === 1 && page2.length === 1 && page2[0].id > page1[0].id);
+}
+
 console.log(
   `${files.length} migrations applied twice${process.exitCode ? ' — WITH FAILURES' : ''}`,
 );

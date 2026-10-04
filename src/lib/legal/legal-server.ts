@@ -31,6 +31,7 @@ import {
   type TakedownInput,
 } from './takedown';
 import { termsChangeDecision, termsChangeEmail, termsChangePeriodKey } from './terms-change';
+import { claimNoticeDispatch, finishNoticeDispatch } from './notice-dispatch';
 import { REACCEPT_DOCS, type ReacceptDoc } from './reaccept';
 
 /** Where ARCO requests and copyright notices land. TODO(owner): Law's
@@ -268,15 +269,13 @@ export async function removeTakedown(
   if (error) return { ok: false, code: 'db' };
   const fp = contentFingerprint(n.content_location as string);
   if (fp) {
-    await db
-      .from('blocked_content')
-      .upsert({
-        fingerprint: fp,
-        kind: 'url',
-        source: n.content_location,
-        takedown_id: id,
-        lifted_at: null,
-      });
+    await db.from('blocked_content').upsert({
+      fingerprint: fp,
+      kind: 'url',
+      source: n.content_location,
+      takedown_id: id,
+      lifted_at: null,
+    });
   }
   // §5.2.4: tell the uploader, with a copy of the notice and no claimant
   // data beyond what's needed.
@@ -510,34 +509,35 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
     cancelUrl: `${origin}/app/billing?cancelar=1`,
   };
   const periodKey = termsChangePeriodKey(version, doc);
-  const PAGE = 500;
-  for (let from = 0; ; from += PAGE) {
-    const { data: people, error } = await db
-      .from('profiles')
-      .select('id, email, full_name')
-      .not('email', 'is', null)
-      .order('created_at', { ascending: true })
-      .range(from, from + PAGE - 1);
+  // Only the people still owed the notice (no successful or in-flight
+  // dispatch, no acceptance of this version), keyset-paginated; claimed one
+  // by one so a concurrent run can't send twice; "sent" only with a
+  // provider id (notice-dispatch.ts).
+  let after: string | null = null;
+  for (;;) {
+    const { data: page, error } = await db.rpc('legal_change_notice_recipients', {
+      p_doc: doc,
+      p_version: version,
+      p_period_key: periodKey,
+      p_after: after,
+      p_limit: 200,
+    });
     if (error) throw new Error(error.message);
-    for (const p of (people ?? []) as { id: string; email: string; full_name: string | null }[]) {
+    const people = (page ?? []) as { id: string; email: string; full_name: string | null }[];
+    for (const p of people) {
       const mail = termsChangeEmail({
         ...vars,
         nombre: p.full_name?.split(' ')[0] || p.email.split('@')[0]!,
       });
-      const { data: claimed, error: claimErr } = await db
-        .from('email_dispatches')
-        .insert({
-          user_id: p.id,
-          kind: 'terms_change',
-          period_key: periodKey,
-          template_id: mail.templateId,
-          template_version: mail.templateVersion,
-        })
-        .select('id')
-        .maybeSingle();
-      if (claimErr) {
-        if (claimErr.code === '23505') report.skipped += 1;
-        else report.failed += 1;
+      const claimed = await claimNoticeDispatch(db, {
+        userId: p.id,
+        kind: 'terms_change',
+        periodKey,
+        templateId: mail.templateId,
+        templateVersion: mail.templateVersion,
+      }).catch(() => null);
+      if (!claimed) {
+        report.skipped += 1;
         continue;
       }
       const res = await sendEmail({
@@ -546,17 +546,11 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
         html: mail.html,
         text: mail.text,
       });
-      await db
-        .from('email_dispatches')
-        .update({
-          provider_message_id: res.ok ? (res.id ?? null) : null,
-          delivery_status: res.ok ? 'sent' : 'failed',
-        })
-        .eq('id', claimed!.id as string);
-      if (res.ok) report.sent += 1;
+      if ((await finishNoticeDispatch(db, claimed, res)) === 'sent') report.sent += 1;
       else report.failed += 1;
     }
-    if (!people || people.length < PAGE) break;
+    if (people.length < 200) break;
+    after = people[people.length - 1]!.id;
   }
   return report;
 }
