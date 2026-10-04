@@ -11,6 +11,7 @@
     "placeholders": 38,
     "consistency": [
       "trial-plans:vip_month,vip_year",
+      "trial-excluded:vip_year",
       "trial-grace"
     ]
   },

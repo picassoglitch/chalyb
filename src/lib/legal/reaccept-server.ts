@@ -20,6 +20,7 @@ import { legalDocuments } from './documents';
 import { currentVersion, versionMeta } from './registry';
 import {
   REACCEPT_DOCS,
+  TERMS_ACCEPTING_EVENTS,
   termsHistory,
   termsPrompt,
   type ReacceptDoc,
@@ -58,13 +59,7 @@ export async function termsPromptFor(userId: string, locale: string): Promise<Te
     .from('consent_events')
     .select('event_type, documents')
     .eq('user_id', userId)
-    .in('event_type', [
-      'signup_terms_accepted',
-      'terms_reaccepted',
-      'trial_started',
-      'subscription_started',
-      'terms_notice_shown',
-    ]);
+    .in('event_type', [...TERMS_ACCEPTING_EVENTS, 'terms_notice_shown']);
   const rows = (data ?? []) as Parameters<typeof termsHistory>[0];
   const now = new Date();
   const views = live.map(({ doc, version, meta }) => ({

@@ -115,22 +115,10 @@ writeFileSync(
 console.log(hashes);
 
 // What the publish gate reads (flags.ts stays import-free apart from this
-// small JSON): per document, the current version, whether it's marked
-// published, how many bracket placeholders its rendered text still has, and
-// where it disagrees with the config (consistency.ts).
-const { LEGAL_DOCS, consistencyIssues, currentVersion, placeholders, versionMeta } =
-  await import('../src/lib/legal/registry.ts');
-const state = Object.fromEntries(
-  LEGAL_DOCS.map((doc) => [
-    doc,
-    {
-      version: currentVersion(doc),
-      published: Boolean(versionMeta(doc)?.published),
-      placeholders: placeholders(doc).length,
-      consistency: consistencyIssues(doc),
-    },
-  ]),
-);
+// small JSON). scripts/legal-state.mjs computes it; the build gate
+// recomputes it when LEGAL_PUBLISH=true, so a stale file can't open the gate.
+const { computeLegalState } = await import('./legal-state.mjs');
+const state = computeLegalState();
 writeFileSync(
   new URL('src/lib/legal/publish-state.json', root),
   `${JSON.stringify(state, null, 2)}\n`,

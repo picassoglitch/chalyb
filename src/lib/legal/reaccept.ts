@@ -58,6 +58,10 @@ export const TERMS_ACCEPTING_EVENTS = [
   'terms_reaccepted',
   'trial_started',
   'subscription_started',
+  // Both cite Términos, Suscripción and Privacidad with the consent they
+  // record, so accepting a plan change or Pro Lealtad accepts those versions.
+  'plan_changed',
+  'lealtad_started',
 ] as const;
 
 /** The documents a change of which asks for re-acceptance (rights, payments
@@ -97,10 +101,29 @@ export const TERMS_MODAL_EXEMPT_PATHS = [
   '/app/messages',
 ];
 
+/** Clip paths that are never a job or a clip: settings (connected
+ *  accounts, auto-publish) and the new-clip steps stay covered. */
+const CLIP_NON_ID_SEGMENTS = new Set([
+  'ajustes',
+  'formato',
+  'nuevo',
+  'trabajo',
+  'mis-clips',
+  'conectar',
+]);
+
+/** Where clips download: a job (/app/clips/<id>, WS-11's
+ *  /app/clips/trabajo/<id>), one clip (/app/clips/<clipId>) and the list
+ *  of my clips (/app/clips/mis-clips). An id is 6+ letters, digits, "_" or
+ *  "-" and never one of CLIP_NON_ID_SEGMENTS. */
+function clipDownloadPage(p: string): boolean {
+  if (p === '/app/clips/mis-clips') return true;
+  const m = /^\/app\/clips\/(?:trabajo\/)?([^/]+)$/.exec(p);
+  return !!m && /^[A-Za-z0-9_-]{6,}$/.test(m[1]!) && !CLIP_NON_ID_SEGMENTS.has(m[1]!);
+}
+
 export function termsModalExempt(pathname: string): boolean {
   const p = pathname.replace(/^\/en(?=\/|$)/, '');
-  // A clip job (/app/clips/<id>) is where its clips download; the new-clip
-  // steps (/app/clips, /app/clips/formato) stay covered.
-  if (/^\/app\/clips\/(?!formato(?:\/|$))[^/]+/.test(p)) return true;
+  if (clipDownloadPage(p)) return true;
   return TERMS_MODAL_EXEMPT_PATHS.some((x) => p === x || p.startsWith(`${x}/`));
 }
