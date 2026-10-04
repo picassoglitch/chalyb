@@ -211,5 +211,14 @@ test.describe('signed in', () => {
     for (const block of ['#hero', '#final', '.pub-sticky'])
       await expect(page.locator(block), block).not.toContainText('Hoy pagas');
     await expect(page.locator('[data-faq="1"]')).toHaveCount(0);
+
+    // The mobile menu's button too (below 1024 px).
+    const burger = page.locator('.pub-nav__burger');
+    if (await burger.isVisible()) {
+      await burger.click();
+      const menuCta = page.locator('[data-cta="menu_trial"]');
+      await expect(menuCta).toHaveText(/Ver planes/);
+      await expect(menuCta).toHaveAttribute('href', '/planes');
+    }
   });
 });

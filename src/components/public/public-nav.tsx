@@ -8,7 +8,12 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/ui/primitives';
 import { trialFlowEnabled } from '@/lib/config/flags';
-import { APP_HREF, LOGIN_HREF, landingTrialHref } from '@/components/landing/links';
+import {
+  APP_HREF,
+  LOGIN_HREF,
+  landingTrialHref,
+  trialCtaLabel,
+} from '@/components/landing/links';
 import { MobileMenu } from './mobile-menu';
 
 const LINKS = [
@@ -51,7 +56,7 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
         <MobileMenu
           links={links}
           login={{ href: signedIn ? APP_HREF : LOGIN_HREF, label: signedIn ? t('app') : t('login') }}
-          cta={{ href: menuTrialHref, label: flow ? tl('cta') : tl('ctaNoTrial') }}
+          cta={{ href: menuTrialHref, label: tl(trialCtaLabel({ trialFlowEnabled: flow, signedIn })) }}
           labels={{ open: t('menu'), close: t('close'), aria: t('aria') }}
         />
       </div>
