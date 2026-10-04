@@ -98,7 +98,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   const { data: before } = await admin
     .from('subscriptions')
     .select(
-      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at',
+      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at, first_charge_at',
     )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
@@ -123,6 +123,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     last_charge_at: lastChargeAt,
     charge_hold_until: (before?.charge_hold_until as string | null) ?? null,
     reminder_delivered_at: (before?.reminder_delivered_at as string | null) ?? null,
+    first_charge_at: (before?.first_charge_at as string | null) ?? null,
   });
   // The trial's annual charge, or a renewal, is due and hasn't landed (yet).
   const overdue = !!unpaid && !inTrial && Date.now() >= Date.parse(unpaid.dueAt);
@@ -415,7 +416,7 @@ export async function recordAuthorizedPayment(
     }
     const { data: subRow } = await admin
       .from('subscriptions')
-      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at')
+      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
     if (paymentStatus === 'approved') {

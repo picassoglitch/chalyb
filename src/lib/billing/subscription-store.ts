@@ -7,7 +7,7 @@ import { restrictionState, type RestrictionRow, type RestrictionState } from './
 import { trialUsedFrom } from './trial-eligibility';
 
 const COLUMNS =
-  'id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, amount_cents, last_charge_at, created_at';
+  'id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, amount_cents, last_charge_at, first_charge_at, created_at';
 
 export interface BillingSnapshot {
   /** The subscription that grants the most right now (or the latest). */

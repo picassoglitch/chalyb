@@ -33,6 +33,8 @@ export interface SubscriptionRow {
   charge_hold_until?: string | null;
   /** When a charge of this subscription last went through (null: never). */
   last_charge_at?: string | null;
+  /** When its first charge was scheduled (0057; null on older rows). */
+  first_charge_at?: string | null;
 }
 
 export interface BillingState {
@@ -92,10 +94,12 @@ export interface UnpaidCharge {
  *                                (PRICING.trial.firstChargeGraceDays)
  *   renewal                      due one period after the last charge,
  *                                PRICING.graceDays of grace
+ *   paid start or plan change,   due at first_charge_at (today, or the
+ *   never charged                change date), PRICING.graceDays of grace
  *
  * The due date only moves for a bounce hold (no charge until 5 days after an
- * effective notice). Null when nothing is owed yet that we can date: a paid
- * start or plan change that hasn't charged for the first time.
+ * effective notice). Null when nothing is owed that we can date: a row
+ * from before first_charge_at (0057) that never charged.
  */
 export function unpaidCharge(
   row: Pick<
@@ -106,6 +110,7 @@ export function unpaidCharge(
     | 'last_charge_at'
     | 'charge_hold_until'
     | 'reminder_delivered_at'
+    | 'first_charge_at'
   >,
   p = PRICING,
 ): UnpaidCharge | null {
@@ -119,6 +124,10 @@ export function unpaidCharge(
   } else if (row.trial_ends_at) {
     scheduled = ms(row.trial_ends_at);
     graceDays = p.trial.firstChargeGraceDays;
+  } else if (row.first_charge_at) {
+    // A paid start or a plan change whose first charge never landed.
+    scheduled = ms(row.first_charge_at);
+    graceDays = p.graceDays;
   } else {
     return null;
   }

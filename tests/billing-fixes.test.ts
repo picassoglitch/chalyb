@@ -233,3 +233,29 @@ test('#7 a returning customer (any charged plan) has used the trial', async () =
   assert.match(read('src/lib/billing/api.ts'), /case 'CARD_UNVERIFIED':/);
   assert.match(read('src/components/app/billing/pay-form.tsx'), /t\('cardUnverified'\)/);
 });
+
+// ── #9 · A never-charged paid start or change has a deadline ─────────
+test('#9 a paid start whose first charge never lands ends after graceDays', async () => {
+  const { PRICING } = await import('@/config/pricing');
+  const first = '2026-10-04T12:00:00.000Z';
+  const r = row({ plan_key: 'pro_month', first_charge_at: first, next_charge_at: '2026-10-09T12:00:00.000Z' });
+  const deadline = new Date(Date.parse(first) + PRICING.graceDays * DAY).toISOString();
+  assert.deepEqual(unpaidCharge(r), { dueAt: first, deadline });
+  // MP still 'authorized' (retrying), next_payment_date moved: no Pro after the deadline.
+  assert.equal(deriveBillingState(r, Date.parse(deadline) - 1).grantsTier, 'PRO');
+  assert.equal(deriveBillingState(r, Date.parse(deadline)).state, 'free');
+  // The charge landed: renewal rules take over.
+  assert.equal(deriveBillingState({ ...r, last_charge_at: '2026-10-05T00:00:00.000Z' }, Date.parse(deadline) + DAY).state, 'pro');
+  // A plan change starting later: due on its change date.
+  const later = row({ plan_key: 'pro_month', first_charge_at: '2026-11-01T00:00:00.000Z' });
+  assert.equal(unpaidCharge(later)?.dueAt, '2026-11-01T00:00:00.000Z');
+  // Rows from before 0057 (no first_charge_at) keep today's behaviour.
+  assert.equal(unpaidCharge(row({ plan_key: 'pro_month' })), null);
+
+  const { readFileSync } = await import('node:fs');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  assert.match(read('src/lib/billing/start-subscription.ts'), /first_charge_at: dates\.chargeAt\.toISOString\(\)/);
+  assert.match(read('supabase/migrations/0057_subscription_first_charge.sql'), /add column if not exists first_charge_at timestamptz/);
+  for (const f of ['src/lib/billing/subscription-store.ts', 'src/app/api/cron/billing/route.ts', 'src/lib/payments/subscription-sync.ts'])
+    assert.match(read(f), /first_charge_at/, f);
+});

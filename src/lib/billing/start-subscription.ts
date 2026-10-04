@@ -460,6 +460,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       started_at: now.toISOString(),
       trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
       next_charge_at: firstChargeLater ? dates.chargeAt.toISOString() : null,
+      // Fixed at creation: dates the deadline if this never charges (0057).
+      first_charge_at: dates.chargeAt.toISOString(),
       next_payment_date: firstChargeLater ? dates.chargeAt.toISOString() : null,
       reminder_due_at: trialLike ? dates.reminderAt.toISOString() : null,
       card_brand: card.payment_method_id ?? null,
