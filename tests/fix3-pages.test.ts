@@ -76,3 +76,24 @@ test('B · Mis créditos: no legacy, no technical words on screen, packs from co
   assert.doesNotMatch(copy, /\$\s?\d|% de descuento|nunca caducan|Mejor relación/);
   assert.equal(es.credits.sheet.cta, 'Continuar al pago · {monto} MXN');
 });
+
+test('C · Mi perfil: server values, one save action, real controls only', () => {
+  const page = src('src/app/[locale]/(dashboard)/app/settings/perfil/page.tsx');
+  const form = src('src/components/app/profile-form.tsx');
+  const action = src('src/lib/auth/profile-actions.ts');
+  assert.doesNotMatch(page + form, LEGACY);
+  assert.doesNotMatch(form, /dangerouslySetInnerHTML|TOTP|mfa|2FA/i, 'no fake security switch');
+  assert.match(form, /localStorage\.removeItem\(LEGACY_KEY\)/, 'the browser-only prefs are dropped');
+  assert.doesNotMatch(form, /localStorage\.getItem/, 'values never come from the browser');
+  assert.match(page, /showNotifications=\{profileNotificationPrefs\(\)\}/, 'D-F3-5');
+  // One client, one write; redirect only on a language change; no DB text.
+  assert.equal((action.match(/createClient\(\)/g) ?? []).length, 1);
+  assert.match(action, /if \(input\.locale !== input\.currentLocale\) \{\s*\/\/[\s\S]*?redirect\(/);
+  assert.doesNotMatch(action, /error\.message \}/);
+  assert.match(action, /'marketing_opt_in' : 'marketing_opt_out'/, 'consent is an event, never a column');
+  const mig = src('supabase/migrations/0049_profile_prefs.sql');
+  assert.match(mig, /alter column preferred_locale set default 'es'/);
+  assert.match(mig, /grant update \(timezone, notify_critical, notify_daily, notify_viral\)/);
+  assert.equal(es.language.es, 'Español (México)');
+  assert.equal(es.profile.saved, 'Listo, guardamos tus cambios.');
+});

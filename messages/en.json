@@ -450,7 +450,7 @@
   },
   "language": {
     "label": "Language",
-    "es": "Spanish",
+    "es": "Español (México)",
     "en": "English"
   },
   "contact": {
@@ -574,32 +574,6 @@
         "title": "Your workspace",
         "sub": ""
       }
-    },
-    "settings": {
-      "loading": "Loading…",
-      "accountSection": "Account",
-      "name": "Name",
-      "email": "Email",
-      "save": "Save changes",
-      "saving": "Saving…",
-      "savedToast": "Profile updated",
-      "saveErrorPrefix": "Error",
-      "saveErrorFallback": "We couldn't save your profile.",
-      "prefsSection": "Preferences",
-      "prefsNote": "Language is saved to your account with the “Save changes” button above. The timezone and the switches below are stored in this browser only.",
-      "language": "Language",
-      "timezone": "Timezone",
-      "notifsSection": "Notifications",
-      "critical": "Critical errors",
-      "criticalSub": "We email and push you when something goes down.",
-      "daily": "Daily digest",
-      "dailySub": "Yesterday's revenue, jobs and errors, at 09:00.",
-      "marketing": "Marketing events",
-      "marketingSub": "When a post goes viral or engagement spikes.",
-      "securitySection": "Security",
-      "twofa": "2FA with an authenticator app",
-      "twofaSub": "The TOTP code is mandatory for Admin and Super Admin roles.",
-      "toggleAria": "Toggle {label}"
     }
   },
   "home": {
@@ -890,7 +864,7 @@
     "prefs": {
       "title": "Preferences",
       "language": "Language",
-      "profile": "Profile and password"
+      "profile": "My profile"
     },
     "help": {
       "title": "Help",
@@ -2173,6 +2147,59 @@
       "title": "Your partner earnings",
       "month": "This month · paid when the month closes",
       "paid": "Paid on {fecha}"
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "data": "Your details",
+    "photo": "Your photo",
+    "photoSub": "Optional",
+    "photoCta": "Change photo",
+    "name": "Your name",
+    "nameError": "Enter your name (at least 2 letters).",
+    "nameTooLong": "Your name can have up to 120 letters.",
+    "email": "Email",
+    "emailHint": "We send your notices and receipts here.",
+    "langTime": "Language and time",
+    "language": "Language",
+    "timezone": "Time zone",
+    "tzHint": "We use this time in your notices and dates.",
+    "tz": {
+      "America_Mexico_City": "Mexico City",
+      "America_Tijuana": "Tijuana",
+      "America_Hermosillo": "Hermosillo",
+      "America_Cancun": "Cancún",
+      "America_New_York": "New York",
+      "America_Los_Angeles": "Los Angeles",
+      "Europe_Madrid": "Madrid"
+    },
+    "notifs": "Notifications",
+    "n": {
+      "critical": "If something stops working",
+      "criticalSub": "We let you know by email and on your phone.",
+      "daily": "Daily summary",
+      "dailySub": "What your tools did yesterday, at {hora}.",
+      "dailyHour": "9:00 a.m.",
+      "viral": "When one of your clips does really well",
+      "viralSub": "If it goes viral or gets lots of reactions.",
+      "marketing": "News and offers",
+      "marketingSub": "Tips and offers by email. Turn it off anytime."
+    },
+    "adv": "Advanced options",
+    "advTag": "Security",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "note": {
+      "clean": "Everything is saved to your account: it looks the same on your phone and your computer.",
+      "dirty": "You have unsaved changes."
+    },
+    "saved": "Done, your changes are saved.",
+    "saveError": "We couldn’t save. Check your connection and try again. Your changes are still here.",
+    "retry": "Try again",
+    "leave": {
+      "title": "Leave without saving? Your changes will be lost.",
+      "stay": "Keep editing",
+      "go": "Leave without saving"
     }
   }
 }

@@ -450,8 +450,8 @@
   },
   "language": {
     "label": "Idioma",
-    "es": "Español",
-    "en": "Inglés"
+    "es": "Español (México)",
+    "en": "English"
   },
   "contact": {
     "metaTitle": "Contacto",
@@ -574,32 +574,6 @@
         "title": "Tu espacio",
         "sub": ""
       }
-    },
-    "settings": {
-      "loading": "Cargando…",
-      "accountSection": "Cuenta",
-      "name": "Nombre",
-      "email": "Correo",
-      "save": "Guardar cambios",
-      "saving": "Guardando…",
-      "savedToast": "Perfil actualizado",
-      "saveErrorPrefix": "Error",
-      "saveErrorFallback": "No pudimos guardar tu perfil.",
-      "prefsSection": "Preferencias",
-      "prefsNote": "El idioma se guarda en tu cuenta con el botón «Guardar cambios» de arriba. La zona horaria y los interruptores de abajo se guardan solo en este navegador.",
-      "language": "Idioma",
-      "timezone": "Zona horaria",
-      "notifsSection": "Notificaciones",
-      "critical": "Errores críticos",
-      "criticalSub": "Te avisamos por email y push cuando algo se cae.",
-      "daily": "Resumen diario",
-      "dailySub": "Ingresos, tareas y errores del día anterior, a las 09:00.",
-      "marketing": "Eventos de marketing",
-      "marketingSub": "Cuando una publicación se vuelve viral o sube la interacción.",
-      "securitySection": "Seguridad",
-      "twofa": "2FA con app autenticadora",
-      "twofaSub": "El código TOTP es obligatorio para los roles Admin y Super Admin.",
-      "toggleAria": "Cambiar {label}"
     }
   },
   "home": {
@@ -890,7 +864,7 @@
     "prefs": {
       "title": "Preferencias",
       "language": "Idioma",
-      "profile": "Perfil y contraseña"
+      "profile": "Mi perfil"
     },
     "help": {
       "title": "Ayuda",
@@ -2173,6 +2147,59 @@
       "title": "Tus ganancias como socio",
       "month": "Este mes · se paga al cerrar el mes",
       "paid": "Pagado el {fecha}"
+    }
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "data": "Tus datos",
+    "photo": "Tu foto",
+    "photoSub": "Opcional",
+    "photoCta": "Cambiar foto",
+    "name": "Tu nombre",
+    "nameError": "Escribe tu nombre (mínimo 2 letras).",
+    "nameTooLong": "Tu nombre puede tener hasta 120 letras.",
+    "email": "Correo",
+    "emailHint": "Aquí te mandamos tus avisos y recibos.",
+    "langTime": "Idioma y hora",
+    "language": "Idioma",
+    "timezone": "Zona horaria",
+    "tzHint": "Usamos esta hora en tus avisos y fechas.",
+    "tz": {
+      "America_Mexico_City": "Ciudad de México",
+      "America_Tijuana": "Tijuana",
+      "America_Hermosillo": "Hermosillo",
+      "America_Cancun": "Cancún",
+      "America_New_York": "Nueva York",
+      "America_Los_Angeles": "Los Ángeles",
+      "Europe_Madrid": "Madrid"
+    },
+    "notifs": "Notificaciones",
+    "n": {
+      "critical": "Si algo deja de funcionar",
+      "criticalSub": "Te avisamos por correo y en tu celular.",
+      "daily": "Resumen del día",
+      "dailySub": "Lo que hicieron tus herramientas ayer, a las {hora}.",
+      "dailyHour": "9:00 a.m.",
+      "viral": "Cuando a un clip tuyo le va muy bien",
+      "viralSub": "Si se vuelve viral o recibe muchas reacciones.",
+      "marketing": "Novedades y promociones",
+      "marketingSub": "Consejos y ofertas por correo. Quítalo cuando quieras."
+    },
+    "adv": "Opciones avanzadas",
+    "advTag": "Seguridad",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "note": {
+      "clean": "Todo se guarda en tu cuenta: se ve igual en tu celular y en tu computadora.",
+      "dirty": "Tienes cambios sin guardar."
+    },
+    "saved": "Listo, guardamos tus cambios.",
+    "saveError": "No pudimos guardar. Revisa tu internet e intenta otra vez. Tus cambios siguen aquí.",
+    "retry": "Intentar otra vez",
+    "leave": {
+      "title": "¿Salir sin guardar? Tus cambios se pierden.",
+      "stay": "Seguir editando",
+      "go": "Salir sin guardar"
     }
   }
 }

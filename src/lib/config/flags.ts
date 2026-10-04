@@ -204,6 +204,13 @@ export function chargebackCloseAfterDays(): number {
   return Number.isFinite(n) && n >= 30 ? Math.trunc(n) : 30;
 }
 
+/** WS-9 · FIX-3 D-F3-5: the three notification switches on Mi perfil. Off
+ *  until a sender reads notify_critical / notify_daily / notify_viral; a
+ *  control with no effect is never shown. */
+export function profileNotificationPrefs(): boolean {
+  return readBool('PROFILE_NOTIFICATION_PREFS', false);
+}
+
 /** Q3 · whether the trial offers Mensual as well as Anual. */
 export function trialPlanChoiceEnabled(): boolean {
   return readBool('TRIAL_PLAN_CHOICE_ENABLED', true);

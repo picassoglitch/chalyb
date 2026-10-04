@@ -71,3 +71,18 @@ test.describe('B · Mis créditos', () => {
     await expect(page.getByText(/\btokens?\b|engine|LLM|telemetry/i).locator('visible=true')).toHaveCount(0);
   });
 });
+
+test.describe('C · Mi perfil', () => {
+  asRole('pro');
+  test('no legacy style, one save button that starts disabled, no fake switches', async ({ page }) => {
+    await page.goto('/app/settings/perfil');
+    await expect(page.getByRole('heading', { level: 1, name: 'Mi perfil' })).toBeVisible();
+    await noLegacyStyle(page);
+    await expect(page.getByRole('button', { name: 'Guardar cambios' })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
+    // D-F3-5: only consent that does something is shown with the flag off.
+    await expect(page.getByRole('switch')).toHaveCount(1);
+    await expect(page.getByRole('switch', { name: 'Novedades y promociones' })).toBeVisible();
+    await expect(page.locator('#idioma')).toHaveValue('es');
+  });
+});

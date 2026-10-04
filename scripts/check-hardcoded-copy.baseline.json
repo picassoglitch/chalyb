@@ -10,7 +10,6 @@
   "src/components/workspace/help-faq.tsx": 43,
   "src/components/workspace/live-engine-selector.tsx": 1,
   "src/components/workspace/pack-checkout.tsx": 4,
-  "src/components/workspace/settings-form.tsx": 6,
   "src/components/workspace/subscription-checkout.tsx": 5,
   "src/components/workspace/welcome-gift-banner.tsx": 7
 }

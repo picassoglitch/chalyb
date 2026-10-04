@@ -21,6 +21,7 @@ const MODERN = new Set([
   '/app/billing',
   '/app/subscription',
   '/app/usage',
+  '/app/settings/perfil',
   '/app/planes',
   '/app/_ui',
   '/app/herramientas',

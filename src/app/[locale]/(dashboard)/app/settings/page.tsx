@@ -153,7 +153,7 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
               iconColor="#0A84FF"
               title={t('prefs.language')}
               value={tLang(locale === 'es' ? 'es' : 'en')}
-              href="/app/settings/perfil"
+              href="/app/settings/perfil#idioma"
             />
             <Row
               icon={<User />}

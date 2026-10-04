@@ -33,6 +33,15 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
   'plans.lealtad.yearMonthlySub', // "12 × {monto}"
+  // FIX-3 §C.4: each language is written in its own language; city names and
+  // the hour don't change.
+  'language.es',
+  'language.en',
+  'profile.tz.America_Tijuana',
+  'profile.tz.America_Hermosillo',
+  'profile.tz.America_Cancun',
+  'profile.tz.Europe_Madrid',
+  'profile.n.dailyHour',
   // Law §16.7: the US/CA footers exist only in English (USD market, flag off).
   'billing.price.taxUS',
   'billing.price.taxCA',
