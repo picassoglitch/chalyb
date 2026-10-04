@@ -60,9 +60,20 @@ export interface ClipJob {
   /** How many times the job has been submitted (1 + automatic retries). */
   attempts: number;
   /** Whether the hub has applied its policy to the finished job: charged
-   *  credits for 'ready', logged the reason for 'failed'. Done exactly once. */
+   *  credits for 'ready', logged the reason for 'failed'. Done exactly once
+   *  per attempt: a retry starts unsettled again. */
   settled: boolean;
+  /** Times the person pressed "Intentar otra vez" (capped, see
+   *  MAX_MANUAL_RETRIES). */
+  manualRetries?: number;
   createdAt: string;
+}
+
+/** "Intentar otra vez" on a failed job: at most this many times. */
+export const MAX_MANUAL_RETRIES = 3;
+
+export function manualRetryAllowed(job: Pick<ClipJob, 'state' | 'manualRetries'>): boolean {
+  return job.state === 'failed' && (job.manualRetries ?? 0) < MAX_MANUAL_RETRIES;
 }
 
 export const CAPTION_STYLES = ['clasico', 'grande', 'ninguno'] as const;
@@ -183,8 +194,10 @@ export interface ClipsAdapter {
   getJob(userId: string, jobId: string): Promise<ClipJob | null>;
   /** The user's jobs, newest first (Mis resultados). */
   listJobs(userId: string, limit?: number): Promise<ClipJob[]>;
-  /** Resubmit a failed job in place (same id). */
-  retryJob(userId: string, jobId: string): Promise<void>;
+  /** Resubmit a failed job in place (same id). The job starts a new
+   *  attempt UNSETTLED, so a retry that ends 'ready' is charged and
+   *  notified. `manual` counts toward manualRetries. */
+  retryJob(userId: string, jobId: string, opts?: { manual?: boolean }): Promise<void>;
   /** Atomically mark a finished job settled (see ClipJob.settled). Returns
    *  true only for the one call that flipped it, so concurrent readers can't
    *  charge twice. */

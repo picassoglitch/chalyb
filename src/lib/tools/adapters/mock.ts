@@ -157,10 +157,15 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
         .slice(0, limit);
     },
 
-    async retryJob(userId, jobId) {
+    async retryJob(userId, jobId, opts) {
       const stored = jobs.get(jobId);
       if (!stored || stored.job.userId !== userId) return;
-      stored.job = { ...stored.job, attempts: stored.job.attempts + 1 };
+      stored.job = {
+        ...stored.job,
+        attempts: stored.job.attempts + 1,
+        settled: false,
+        manualRetries: (stored.job.manualRetries ?? 0) + (opts?.manual ? 1 : 0),
+      };
       stored.attemptStartedMs = now();
     },
 

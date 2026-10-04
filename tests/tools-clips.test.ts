@@ -202,3 +202,30 @@ test('social connect and publish: only plans with clipConnectSocials', () => {
   assert.deepEqual(refusal, { reason: 'needs_plan', retryable: false, outage: false });
   assert.equal(status('needs_plan'), 403);
 });
+
+// Review fix 6: a manual retry starts a new, unsettled attempt; capped at 3.
+import { MAX_MANUAL_RETRIES, manualRetryAllowed } from '@/lib/tools/adapters/types';
+
+test('manual retry: the job settles again (charge + notice), at most 3 times', async () => {
+  const a = createMockClipsAdapter();
+  const created = await a.createJob({
+    userId: 'u1',
+    sourceUrl: 'https://www.youtube.com/watch?v=retry',
+    format: 'vertical',
+    count: 3,
+  });
+  assert.ok(created.ok);
+  const id = created.ok ? created.jobId : '';
+  assert.equal(await a.markSettled('u1', id), true);
+  await a.retryJob('u1', id, { manual: true });
+  const after = await a.getJob('u1', id);
+  assert.equal(after?.settled, false, 'a ready retry must be charged and notified');
+  assert.equal(after?.manualRetries, 1);
+  assert.equal(await a.markSettled('u1', id), true, 'settles once per attempt');
+  await a.retryJob('u1', id); // an automatic retry doesn't use the allowance
+  assert.equal((await a.getJob('u1', id))?.manualRetries, 1);
+  assert.equal(MAX_MANUAL_RETRIES, 3);
+  assert.ok(manualRetryAllowed({ state: 'failed', manualRetries: 2 }));
+  assert.ok(!manualRetryAllowed({ state: 'failed', manualRetries: 3 }));
+  assert.ok(!manualRetryAllowed({ state: 'ready', manualRetries: 0 }));
+});

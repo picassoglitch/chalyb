@@ -11,7 +11,14 @@ import { submitClips } from './clips-jobs';
 import { getClipsAdapter } from './adapters/clips';
 import { checkSourceUrl } from './adapters/run-job';
 import { extraLinks, parseClipOptions } from './clips-options';
-import { CLIP_COUNTS, CLIP_FORMATS, type ClipCount, type ClipFormat } from './adapters/types';
+import {
+  CLIP_COUNTS,
+  CLIP_FORMATS,
+  manualRetryAllowed,
+  type ClipCount,
+  type ClipFormat,
+} from './adapters/types';
+import { logAudit } from '@/lib/audit/log';
 
 export async function createClipJob(formData: FormData): Promise<void> {
   const locale = await getLocale();
@@ -66,7 +73,15 @@ export async function retryClipJob(formData: FormData): Promise<void> {
   if (entitlements.tools.chalybclip?.state === 'included' && adapter) {
     const jobId = String(formData.get('jobId') ?? '').slice(0, 120);
     const job = jobId ? await adapter.getJob(session.user.id, jobId) : null;
-    if (job?.state === 'failed') await adapter.retryJob(session.user.id, job.id);
+    if (job && manualRetryAllowed(job)) {
+      await adapter.retryJob(session.user.id, job.id, { manual: true });
+      await logAudit({
+        action: 'clips.job_retry',
+        actorId: session.user.id,
+        targetUserId: session.user.id,
+        metadata: { job_id: job.id, manual_retry: (job.manualRetries ?? 0) + 1 },
+      });
+    }
   }
   return redirect({ href: '/app/clips', locale });
 }

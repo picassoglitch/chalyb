@@ -6,7 +6,7 @@
 import type { Route } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import type { ClipJob } from '@/lib/tools/adapters/types';
+import { manualRetryAllowed, type ClipJob } from '@/lib/tools/adapters/types';
 import { jobProgress, thumbFor } from '@/lib/tools/clips-home';
 import { platformName } from '@/lib/tools/clips-copy';
 import { retryClipJob } from '@/lib/tools/clips-actions';
@@ -33,12 +33,14 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
             {noCharge && <> {t('noCharge')}</>}
           </span>
         </div>
-        <form action={retryClipJob}>
-          <input type="hidden" name="jobId" value={job.id} />
-          <button type="submit" className="ch-btn ch-btn--gray ch-btn--compact">
-            {t('retry')}
-          </button>
-        </form>
+        {manualRetryAllowed(job) && (
+          <form action={retryClipJob}>
+            <input type="hidden" name="jobId" value={job.id} />
+            <button type="submit" className="ch-btn ch-btn--gray ch-btn--compact">
+              {t('retry')}
+            </button>
+          </form>
+        )}
       </li>
     );
   }
