@@ -183,8 +183,8 @@ test('JSON-LD offers VIP anual only when it is on sale', () => {
   });
 });
 
-test('migration 0046 adds vip_year (and pro_lealtad) to both plan-key CHECKs', () => {
-  const sql = readFileSync(join(ROOT, 'supabase/migrations/0046_plan_keys_vip_year.sql'), 'utf8');
+test('migration 0051 adds vip_year (and pro_lealtad) to both plan-key CHECKs', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/0051_plan_keys_vip_year.sql'), 'utf8');
   assert.equal((sql.match(/'vip_year', 'pro_lealtad'/g) ?? []).length, 2);
 });
 

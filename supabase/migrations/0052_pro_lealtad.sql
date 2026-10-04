@@ -1,5 +1,5 @@
--- 0047 · Pro Lealtad (all-pending WS-7; PRICING-CARDS-SPEC §15.5/§15.12;
--- Términos §4 bis). The plan key itself was added to the CHECKs by 0046.
+-- 0052 · Pro Lealtad (all-pending WS-7; PRICING-CARDS-SPEC §15.5/§15.12;
+-- Términos §4 bis). The plan key itself was added to the CHECKs by 0051.
 --
 --   subscriptions.loyalty_step            the schedule step of the NEXT charge
 --                                         (0 = month 1 … 6 = month 7+)

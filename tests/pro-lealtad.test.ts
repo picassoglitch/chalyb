@@ -373,8 +373,8 @@ test('optional return window (O-15): resumes the step only inside it', () => {
   );
 });
 
-test('migration 0047 adds the loyalty columns', () => {
-  const sql = readFileSync(join(ROOT, 'supabase/migrations/0047_pro_lealtad.sql'), 'utf8');
+test('migration 0052 adds the loyalty columns', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/0052_pro_lealtad.sql'), 'utf8');
   assert.match(sql, /loyalty_step smallint not null default 0/);
   assert.match(sql, /check \(loyalty_step between 0 and 6\)/);
   assert.match(sql, /payments[\s\S]*loyalty_step smallint/);

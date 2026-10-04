@@ -89,7 +89,7 @@ test('S.4 #2 · refund reasons are exactly legal_7_2_a … legal_7_2_i; no court
   // The admin refund requires one of them.
   assert.match(fnBody(src('src/lib/admin/people-actions.ts'), 'refundLastCharge'), /isRefundReason\(reason\)/);
   // The DB refuses anything else.
-  assert.match(src('supabase/migrations/0048_refunds_chargebacks.sql'), /payments_refund_reason_check/);
+  assert.match(src('supabase/migrations/0053_refunds_chargebacks.sql'), /payments_refund_reason_check/);
 });
 
 test('S.4 #2 · overcharges refund automatically with legal_7_2_d within 5 business days', () => {

@@ -4,7 +4,7 @@
 //
 // Deliberately uses the USER-scoped Supabase client, not the service-role one:
 // name, language, time zone and the notification switches are exactly the
-// columns migrations 0032/0049 leave writable by `authenticated`, so RLS and
+// columns migrations 0032/0054 leave writable by `authenticated`, so RLS and
 // the column GRANTs are the enforcement here rather than a trust-me check in
 // this file. If this action is ever made to write something privileged, the
 // database rejects it. The one exception is marketing consent, which is not a

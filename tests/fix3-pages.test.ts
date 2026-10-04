@@ -91,7 +91,7 @@ test('C · Mi perfil: server values, one save action, real controls only', () =>
   assert.match(action, /if \(input\.locale !== input\.currentLocale\) \{\s*\/\/[\s\S]*?redirect\(/);
   assert.doesNotMatch(action, /error\.message \}/);
   assert.match(action, /'marketing_opt_in' : 'marketing_opt_out'/, 'consent is an event, never a column');
-  const mig = src('supabase/migrations/0049_profile_prefs.sql');
+  const mig = src('supabase/migrations/0054_profile_prefs.sql');
   assert.match(mig, /alter column preferred_locale set default 'es'/);
   assert.match(mig, /grant update \(timezone, notify_critical, notify_daily, notify_viral\)/);
   assert.equal(es.language.es, 'Español (México)');

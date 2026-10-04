@@ -1,4 +1,4 @@
--- 0046 · VIP anual (all-pending WS-5, PRICING-CARDS-SPEC §12.4 #1) and the
+-- 0051 · VIP anual (all-pending WS-5, PRICING-CARDS-SPEC §12.4 #1) and the
 -- key Pro Lealtad will use (WS-7, behind LEALTAD_ENABLED), so that WS-7 needs
 -- no second rewrite of these CHECKs.
 --

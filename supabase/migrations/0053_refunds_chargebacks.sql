@@ -1,4 +1,4 @@
--- 0048 · Refunds and chargebacks (all-pending WS-8; REVISION §S; Términos de
+-- 0053 · Refunds and chargebacks (all-pending WS-8; REVISION §S; Términos de
 -- Suscripción §7 and §10; aceptacion-ux §10.5).
 --
 --   chargebacks           one row per disputed Mercado Pago payment: triage,
