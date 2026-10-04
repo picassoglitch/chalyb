@@ -25,12 +25,28 @@ const SIGNUP_MIN_PASSWORD = 8;
 
 const ACCOUNT_ROUTE = '/account' as Route;
 
+/** /auth/* are route handlers, not pages: /auth/launch/<slug> 302s into the
+ *  engine's app. A client-side push would run them as an RSC fetch first
+ *  (minting a token and provisioning for nothing) before falling back to a
+ *  full load, so they get a full navigation straight away. */
+function useGoNext(next: string | undefined) {
+  const router = useRouter();
+  return () => {
+    if (next?.startsWith('/auth/')) {
+      window.location.assign(next);
+      return;
+    }
+    router.push((next ?? ACCOUNT_ROUTE) as Route);
+    router.refresh();
+  };
+}
+
 export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = true, legal }: Props) {
   const t = useTranslations('auth.signIn');
   const locale = useLocale();
   const [name, setName] = useState('');
   const [marketing, setMarketing] = useState(false);
-  const router = useRouter();
+  const goNext = useGoNext(next);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -79,8 +95,7 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
           setError(mapError(err.code, err.message));
           return;
         }
-        router.push((next ?? ACCOUNT_ROUTE) as Route);
-        router.refresh();
+        goNext();
       } else {
         const { data, error: err } = await supabase.auth.signUp({
           email,
@@ -109,8 +124,7 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
         }
         // If email confirmation is required (Supabase default), no session is returned.
         if (data.session) {
-          router.push((next ?? ACCOUNT_ROUTE) as Route);
-          router.refresh();
+          goNext();
         } else {
           setCheckInboxEmail(email);
         }

@@ -31,10 +31,12 @@ export default async function SignInPage({
   const { error, next: rawNext, mode, reset, plan, intent, interval } = await searchParams;
   // A plan card's CTA (SCR-13 → SCR-14): after the account, the trial picker
   // or the plan's checkout, with the card's interval kept (K-2).
-  const next =
+  // Validated once here: the email form and the Google button hand `next` to
+  // the browser as-is, so an off-site value must never reach them.
+  const wanted =
     rawNext ??
-    signupNext({ intent, plan, interval, flow: trialFlowEnabled(), paid: paidCheckoutEnabled() }) ??
-    undefined;
+    signupNext({ intent, plan, interval, flow: trialFlowEnabled(), paid: paidCheckoutEnabled() });
+  const next = wanted ? safeNextPath(wanted, '/account') : undefined;
   const t = await getTranslations('auth.signIn');
 
   const supabase = await createClient();
@@ -47,10 +49,9 @@ export default async function SignInPage({
     // lands on /app/billing instead of the generic /account. safeNextPath is
     // the shared allowlist (same one /auth/callback uses) so we can't get used
     // as an open redirect.
-    const safeNext = safeNextPath(next, '/account');
     // typedRoutes can't statically know what `next` is — cast through
     // Route since we've already validated it's a same-origin path.
-    redirect(safeNext as Route);
+    redirect((next ?? '/account') as Route);
   }
 
   const upstreamError =
