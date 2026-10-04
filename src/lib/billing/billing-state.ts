@@ -7,7 +7,7 @@
 //   past_due          a charge failed; full access until graceEndsAt
 //   cancelled_active  cancelled, but paid (or trial) access runs to accessUntil
 
-import { PRICING, type PlanKey } from '@/config/pricing';
+import { planPrice, PRICING, type PlanKey } from '@/config/pricing';
 import { addInterval } from './trial-dates';
 
 export type BillingStateName = 'free' | 'trialing' | 'pro' | 'past_due' | 'cancelled_active';
@@ -109,7 +109,7 @@ export function unpaidCharge(
   let graceDays: number;
   if (row.last_charge_at) {
     const planKey = row.plan_key ?? (row.tier === 'VIP' ? 'vip_month' : 'pro_month');
-    const interval = planKey === 'pro_year' ? 'year' : 'month';
+    const interval = planPrice(planKey).interval;
     scheduled = addInterval(new Date(row.last_charge_at), interval).getTime();
     graceDays = p.graceDays;
   } else if (row.trial_ends_at) {
