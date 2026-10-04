@@ -2976,5 +2976,13 @@
       "error": "We couldn't start the connection. Try again."
     },
     "close": "Close and go back to Clips"
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "We couldn't find this page",
+    "lead": "The link may be mistyped, or the page may no longer exist.",
+    "home": "Go to the home page",
+    "app": "Back to Chalyb",
+    "help": "Get help"
   }
 }
