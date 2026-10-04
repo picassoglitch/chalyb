@@ -372,3 +372,8 @@ test('risk sheet: hint is true for a new notice version; full-notice link', () =
   const sheet = readFileSync(join(ROOT, 'src/components/tools/risk-ack-sheet.tsx'), 'utf8');
   assert.match(sheet, /\/uso-aceptable#avisos/);
 });
+
+test('tools-health cron clears each probe timer', () => {
+  const src = readFileSync(join(ROOT, 'src/app/api/cron/tools-health/route.ts'), 'utf8');
+  assert.match(src, /finally\s*\{[\s\S]*?clearTimeout\(timer\)/);
+});

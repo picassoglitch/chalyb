@@ -56,14 +56,20 @@ export async function GET(req: Request) {
     const started = Date.now();
     let ok = true;
     let reason: string | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       await Promise.race([
         probe(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), TOOL_TIMEOUT_MS)),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('timeout')), TOOL_TIMEOUT_MS);
+        }),
       ]);
     } catch (err) {
       ok = false;
       reason = err instanceof Error && err.message === 'timeout' ? 'timeout' : 'unknown';
+    } finally {
+      // A probe that answered in time must not leave its 8 s timer behind.
+      clearTimeout(timer);
     }
     const next = await recordToolHealth(tool.slug, { ok, latencyMs: Date.now() - started, reason });
     results[tool.slug] = next.state;
