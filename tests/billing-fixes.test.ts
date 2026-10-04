@@ -390,3 +390,27 @@ test('LOW the cron grants approved, correctly priced packs with no purchase on f
   const cron = readFileSync(new URL('../src/app/api/cron/billing/route.ts', import.meta.url), 'utf8');
   assert.match(cron, /await reconcilePackGrants\(now\)/);
 });
+
+// ── #8 · Documents CURRENT behaviour (owner decision pending; unchanged) ─
+test('#8 (current behaviour) a late in-trial switch is held only on paper unless MP_PAUSE_IN_TRIAL_VERIFIED', async () => {
+  const { holdDecision } = await import('@/lib/billing/reminders');
+  const { mpPauseInTrialVerified } = await import('@/lib/config/flags');
+  // T-6: the trial switch on day 5 sends a fresh notice 2 days before the
+  // charge; it's delivered at once.
+  const start = Date.parse('2026-10-01T15:00:00Z');
+  const charge = new Date(start + 7 * DAY).toISOString();
+  const switchedAt = new Date(start + 5 * DAY);
+  const d = holdDecision({ nextChargeAt: charge, noticeDeliveredAt: switchedAt.toISOString(), holdUntil: null, now: switchedAt });
+  // The rule says hold until 5 days after that notice…
+  assert.deepEqual(d, { action: 'hold', until: new Date(switchedAt.getTime() + 5 * DAY) });
+  // …but during a trial the cron only touches Mercado Pago with the flag on
+  // (default off): otherwise an admin notice, and MP charges at trial end.
+  assert.equal(mpPauseInTrialVerified(), false);
+  const { readFileSync } = await import('node:fs');
+  const cron = readFileSync(new URL('../src/app/api/cron/billing/route.ts', import.meta.url), 'utf8');
+  assert.match(cron, /const touchMp = state\.state !== 'trialing' \|\| mpPauseInTrialVerified\(\);/);
+  assert.match(cron, /if \(touchMp\) \{\s*await getMercadoPago\(\)\.preapproval\.update\(\{\s*id: preapprovalId,\s*body: \{ status: 'paused' \}/);
+  // And the in-trial switch is allowed at any point of the trial.
+  const { changeTiming } = await import('@/lib/billing/plan-change');
+  assert.equal(changeTiming('pro_month', 'vip_year', true), 'trial_end');
+});
