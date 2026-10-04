@@ -466,25 +466,26 @@ test('re-accept: Law’s §8 copy is verbatim in es.json', () => {
   assert.equal(es.lead, 'A partir del <b>{fecha}</b> cambian algunos puntos:');
 });
 
-test('publish gate: the e2e override needs mock adapters (never on a real deployment)', () => {
-  withEnv(
-    {
-      E2E_LEGAL_DRAFTS_AS_PUBLISHED: '1',
-      LEGAL_PUBLISH: 'true',
-      NODE_ENV: 'production',
-      E2E_USE_MOCK_ADAPTERS: undefined,
-    },
-    () => assert.equal(legalPublished(), false),
+test('publish gate: the e2e override needs mock adapters and a non-production Vercel env', () => {
+  const base = {
+    E2E_LEGAL_DRAFTS_AS_PUBLISHED: '1',
+    LEGAL_PUBLISH: 'true',
+    NODE_ENV: 'production',
+  };
+  withEnv({ ...base, E2E_USE_MOCK_ADAPTERS: undefined, VERCEL_ENV: undefined }, () =>
+    assert.equal(legalPublished(), false),
   );
-  withEnv(
-    {
-      E2E_LEGAL_DRAFTS_AS_PUBLISHED: '1',
-      LEGAL_PUBLISH: 'true',
-      NODE_ENV: 'production',
-      E2E_USE_MOCK_ADAPTERS: '1',
-    },
-    () => assert.equal(legalPublished(), true),
+  withEnv({ ...base, E2E_USE_MOCK_ADAPTERS: '1', VERCEL_ENV: 'production' }, () =>
+    assert.equal(legalPublished(), false, 'never on Vercel production'),
   );
+  withEnv({ ...base, E2E_USE_MOCK_ADAPTERS: '1', VERCEL_ENV: 'preview' }, () =>
+    assert.equal(legalPublished(), true),
+  );
+});
+
+test('drafts never render publicly: a version not in force is the review stub', () => {
+  const page = readFileSync(join(ROOT, 'src/components/legal/legal-doc-page.tsx'), 'utf8');
+  assert.match(page, /if \(!inForce\(doc, version\)\) \{[\s\S]{0,200}<LegalPage/);
 });
 
 test('consistency: Suscripción must match the trial plans and grace in config before publish', () => {

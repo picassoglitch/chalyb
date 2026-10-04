@@ -260,7 +260,7 @@ export function supportSlaConfirmed(): boolean {
 export function legalPublishBlockers(): string[] {
   // Local e2e only (mock adapters allowed): exercise the published flows
   // against Law's drafts. Never honored on a real deployment.
-  if (mockAdaptersAllowed() && readBool('E2E_LEGAL_DRAFTS_AS_PUBLISHED', false)) return [];
+  if (legalDraftsAsPublished()) return [];
   const out: string[] = [];
   for (const [doc, s] of Object.entries(legalState)) {
     if (!s.published) out.push(`${doc}@${s.version}:draft`);
@@ -268,6 +268,17 @@ export function legalPublishBlockers(): string[] {
     for (const issue of s.consistency ?? []) out.push(`${doc}@${s.version}:${issue}`);
   }
   return out;
+}
+
+/** Local e2e only: treat Law's drafts as published so the published flows
+ *  can run. Needs mock adapters allowed AND a non-production Vercel env;
+ *  never honored on a real deployment. */
+export function legalDraftsAsPublished(): boolean {
+  return (
+    readBool('E2E_LEGAL_DRAFTS_AS_PUBLISHED', false) &&
+    mockAdaptersAllowed() &&
+    process.env.VERCEL_ENV !== 'production'
+  );
 }
 
 /** LEGAL_PUBLISH as requested, before the placeholder gate. */

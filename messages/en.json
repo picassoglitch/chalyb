@@ -526,10 +526,12 @@
       "versionLine": "Version {version} · In force from {fecha}",
       "noDate": "date to be confirmed",
       "draftTitle": "Draft under review.",
-      "draftBody": "This text is not in force yet: it still needs some details and an attorney’s signature. Until then, the current Terms and Privacy Notice apply.",
+      "draftBody": "This document is not in force yet: it still needs some details and an attorney’s signature.",
       "spanishPrevails": "This document is available in Spanish. The Spanish version prevails.",
       "fixedUrl": "Fixed link to this version:",
-      "otherVersions": "Other versions:"
+      "otherVersions": "Other versions:",
+      "reviewLine": "Under review",
+      "currentLead": "Until then, these apply:"
     }
   },
   "workspace": {

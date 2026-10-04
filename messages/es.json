@@ -526,10 +526,12 @@
       "versionLine": "Versión {version} · En vigor desde {fecha}",
       "noDate": "fecha por confirmar",
       "draftTitle": "Borrador en revisión.",
-      "draftBody": "Este texto todavía no está vigente: aún le faltan datos y la firma de un abogado. Mientras tanto rigen los Términos y el Aviso de privacidad actuales.",
+      "draftBody": "Este documento todavía no está vigente: le faltan datos y la firma de un abogado.",
       "spanishPrevails": "Este documento está disponible en español. La versión en español prevalece.",
       "fixedUrl": "Enlace fijo de esta versión:",
-      "otherVersions": "Otras versiones:"
+      "otherVersions": "Otras versiones:",
+      "reviewLine": "En revisión",
+      "currentLead": "Mientras tanto rigen:"
     }
   },
   "workspace": {
