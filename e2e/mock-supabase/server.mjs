@@ -28,6 +28,15 @@ const users = {
   past_due: { role: 'CLIENT', tier: 'PRO', name: 'Pepe Pendiente' },
   cancelled: { role: 'CLIENT', tier: 'PRO', name: 'Carla Cancelada' },
 };
+// Screenshot-only accounts (docs/qa/plans, mockups 87 and 89), off unless
+// MOCK_CAPTURE_USERS=1 so the e2e fixtures (counts, totals) stay as they are:
+// a Pro Lealtad subscriber on step 2, and a grandfathered $749 Pro mensual
+// renewing in 30 days, the day its price-change notice is due (NOTICE_DAYS).
+const CAPTURE = process.env.MOCK_CAPTURE_USERS === '1';
+if (CAPTURE) {
+  users.lealtad = { role: 'CLIENT', tier: 'PRO', name: 'Lía Lealtad' };
+  users.legacy = { role: 'CLIENT', tier: 'PRO', name: 'Gael Precio' };
+}
 const DAY = 86400000;
 const iso = (ms) => new Date(Date.now() + ms).toISOString();
 const sub = (k, over) => ({
@@ -62,6 +71,12 @@ const tables = {
     sub('pro_annual', { plan_key: 'pro_year', amount_cents: 997000, next_charge_at: iso(5 * DAY), next_payment_date: iso(5 * DAY), reminder_delivered_at: iso(-2 * DAY) }),
     sub('past_due', { status: 'paused', next_charge_at: iso(-1 * DAY), next_payment_date: iso(-1 * DAY), grace_ends_at: iso(6 * DAY) }),
     sub('cancelled', { status: 'cancelled', cancel_at_period_end: true, access_until: iso(12 * DAY), cancelled_at: iso(-2 * DAY) }),
+    ...(CAPTURE
+      ? [
+          sub('lealtad', { plan_key: 'pro_lealtad', loyalty_step: 2, amount_cents: 132900, started_at: iso(-35 * DAY), next_charge_at: iso(25 * DAY), next_payment_date: iso(25 * DAY) }),
+          sub('legacy', { plan_key: 'pro_month', amount_cents: 74900, started_at: iso(-400 * DAY), next_charge_at: iso(30 * DAY), next_payment_date: iso(30 * DAY) }),
+        ]
+      : []),
   ],
   payments: [
     { id: 'p1', user_id: 'u-pro', tier: 'PRO', kind: 'subscription', pack_id: null, tokens_granted: null, mp_payment_id: '1001', mp_preapproval_id: 'pre-pro', amount_cents: 86884, currency: 'MXN', status: 'approved', created_at: iso(-10 * DAY) },
