@@ -301,3 +301,34 @@ test('#10 a refused charge is auto-refunded only when MP said what was paid and 
   // A failed automatic refund is raised, not swallowed.
   assert.match(settle, /if \(!refunded\.ok\) \{[\s\S]*?severity: 'critical'/);
 });
+
+// ── #11 · Dispute triage judges the disputed charge, on its own subscription ─
+test('#11 an older grandfathered charge is not an overcharge after a newer price', async () => {
+  const { chargeWasPriced } = await import('@/lib/payments/webhook-verify');
+  const { planPrice, lealtadPriceCents } = await import('@/config/pricing');
+  // Disputed $749 charge on a pro_month sub that now pays $997: priced right.
+  assert.equal(chargeWasPriced({ chargedCents: 74_900, planKey: 'pro_month', tier: 'PRO' }), true);
+  assert.equal(chargeWasPriced({ chargedCents: planPrice('pro_month').totalCents, planKey: 'pro_month', tier: 'PRO' }), true);
+  // An amount the plan never charged: an overcharge (Términos §7.2(d)).
+  assert.equal(chargeWasPriced({ chargedCents: 120_000, planKey: 'pro_month', tier: 'PRO' }), false);
+  // Yearly plans were only ever sold at their price.
+  assert.equal(chargeWasPriced({ chargedCents: 74_900, planKey: 'vip_year', tier: 'VIP' }), false);
+  // Pro Lealtad: the step that charge paid for.
+  assert.equal(chargeWasPriced({ chargedCents: lealtadPriceCents(2), planKey: 'pro_lealtad', tier: 'PRO', loyaltyStep: 2 }), true);
+  assert.equal(chargeWasPriced({ chargedCents: lealtadPriceCents(0), planKey: 'pro_lealtad', tier: 'PRO', loyaltyStep: 2 }), false);
+
+  const { readFileSync } = await import('node:fs');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const disputes = read('src/lib/billing/disputes-server.ts');
+  assert.match(disputes, /amountMismatch: priced === false/);
+  assert.doesNotMatch(disputes, /expected !== cb\.amount_cents/);
+});
+
+test('#11 the payment topic never replaces (or nulls) a charge\'s subscription link', async () => {
+  const { readFileSync } = await import('node:fs');
+  const route = readFileSync(new URL('../src/app/api/mp/webhook/route.ts', import.meta.url), 'utf8');
+  const branch = route.slice(route.indexOf('const subRef = parseSubscriptionReference(charge.externalReference);'));
+  assert.doesNotMatch(branch, /mp_preapproval_id: \(sub\?\.mp_preapproval_id as string \| undefined\) \?\? null/);
+  assert.match(branch, /\.\.\.\(knownPreapproval \|\| !guessedPreapproval \? \{\} : \{ mp_preapproval_id: guessedPreapproval \}\)/);
+  assert.match(branch, /status: ledgerStatus\(charge\.status/);
+});

@@ -9,13 +9,14 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMercadoPagoIsolated, getAppUrl } from '@/lib/payments/mercadopago';
 import { isOrderPaymentId } from '@/lib/payments/order-charge';
+import { chargeWasPriced } from '@/lib/payments/webhook-verify';
 import { getContactInbox } from '@/lib/email/resend';
 import { notify } from '@/lib/notifications/notify';
 import {
   chargebackCloseAfterDays,
   chargebackMeasuresEnabled,
 } from '@/lib/config/flags';
-import { lealtadPriceCents } from '@/config/pricing';
+import type { PlanKey } from '@/config/pricing';
 import { legalDocument } from '@/lib/legal/documents';
 import { recordConsent, UI_VERSION } from './consent';
 import { openPersonal } from './consent-crypto';
@@ -262,17 +263,24 @@ async function triageInputs(cb: { user_id: string; mp_preapproval_id: string | n
     ? Math.floor((chargedAt.getTime() - Date.parse(delivered.sent_at as string)) / DAY)
     : null;
   const cancelledAt = (sub?.cancelled_at as string | null) ?? null;
-  const expected =
-    sub?.plan_key === 'pro_lealtad' && pay?.loyalty_step !== null && pay?.loyalty_step !== undefined
-      ? lealtadPriceCents(pay.loyalty_step as number)
-      : ((sub?.amount_cents as number | null) ?? null);
+  // Against the amounts the plan could charge when this charge landed (its
+  // price, a grandfathered price, its Lealtad step) — not against what the
+  // subscription charges today.
+  const priced = sub
+    ? chargeWasPriced({
+        chargedCents: cb.amount_cents,
+        planKey: (sub.plan_key as PlanKey | null) ?? null,
+        tier: ((pay?.tier as string | undefined) === 'VIP' ? 'VIP' : 'PRO') as 'PRO' | 'VIP',
+        loyaltyStep: (pay?.loyalty_step as number | null | undefined) ?? null,
+      })
+    : null;
   return {
     consentOnRecord: (consent ?? []).length > 0,
     unauthorizedSignals: false,
     noticeRequired: isSub,
     noticeDeliveredDaysBefore: noticeDays,
     cancelledBeforeCharge: !!cancelledAt && Date.parse(cancelledAt) < chargedAt.getTime(),
-    amountMismatch: expected !== null && expected !== cb.amount_cents,
+    amountMismatch: priced === false,
     serviceFailure: false,
   };
 }
@@ -290,7 +298,7 @@ export async function onChargebackOpened(input: {
   const admin = createAdminClient();
   const { data: pay } = await admin
     .from('payments')
-    .select('mp_payment_id, user_id, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
+    .select('mp_payment_id, user_id, tier, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
     .eq('mp_payment_id', input.mpPaymentId)
     .maybeSingle();
   // A pack paid through the Orders API sits on the ledger under its order
@@ -300,7 +308,7 @@ export async function onChargebackOpened(input: {
   if (!found?.user_id && !isOrderPaymentId(input.mpPaymentId)) {
     const { data: viaOrder } = await admin
       .from('payments')
-      .select('mp_payment_id, user_id, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
+      .select('mp_payment_id, user_id, tier, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
       .eq('raw->transactions->payments->0->>reference_id', input.mpPaymentId)
       .limit(1)
       .maybeSingle();

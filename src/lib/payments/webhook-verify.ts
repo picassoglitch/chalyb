@@ -14,6 +14,7 @@ import { TIER_PRICING, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
 import {
   GRANDFATHERED_CENTS,
   grandfatheredFor,
+  lealtadPriceCents,
   lealtadSchedule,
   planPrice,
   PRICING,
@@ -243,4 +244,26 @@ export function autoRefundMismatch(
   if (paid.amountMajor === null || paid.amountMajor === undefined) return false;
   if (!paid.currency || !paid.currency.trim()) return false;
   return check.paidCents > 0;
+}
+
+/**
+ * Whether a charge that landed was one of the amounts its plan may charge —
+ * the same price list the gate checked it against (its plan's price, the
+ * grandfathered prices it may still renew at, a Pro Lealtad step). Dispute
+ * triage asks this of the DISPUTED charge, not of the subscription's amount
+ * today (a price accepted since doesn't make an older charge wrong).
+ */
+export function chargeWasPriced(input: {
+  chargedCents: number;
+  planKey: PlanKey | null;
+  tier: SubscriptionTier;
+  /** The Pro Lealtad step this charge paid for (payments.loyalty_step). */
+  loyaltyStep?: number | null;
+}): boolean | null {
+  if (input.planKey === 'pro_lealtad' && input.loyaltyStep !== null && input.loyaltyStep !== undefined) {
+    return input.chargedCents === lealtadPriceCents(input.loyaltyStep);
+  }
+  const expected = expectedChargeForPlan(input.planKey, input.tier);
+  if (!expected) return null;
+  return checkCharge(expected, { amountMajor: input.chargedCents / 100, currency: expected.currency }).ok;
 }
