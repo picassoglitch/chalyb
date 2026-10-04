@@ -16,21 +16,25 @@ class CannotClip extends Error {
   readonly code = 'FORBIDDEN';
 }
 
-export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, entitlements }) => {
-  if (entitlements.tools.chalybclip?.state !== 'included' || !hubRunsTool('chalybclip'))
-    throw new CannotClip('clips not included');
-  const moment = await a.clipMoment(session.user.id, 60);
-  if (!moment) throw new CannotClip('no recording');
-  // The Clips job policy: automatic retries, the clips.job_failed audit and
-  // credits only when ready. Its failures are Clips', not En vivo's (only
-  // the En vivo adapter's errors count against this route's breaker).
-  const job = await submitClips({
-    userId: session.user.id,
-    sourceUrl: moment.sourceUrl,
-    format: 'vertical',
-    count: 3,
-  });
-  if (!job) throw new CannotClip('clips not running');
-  if (!job.ok) throw new CannotClip(job.reason);
-  return { jobId: job.jobId };
-});
+export const POST = toolRoute(
+  'chalybobs',
+  getEnVivo,
+  async (a, { session, entitlements, signal }) => {
+    if (entitlements.tools.chalybclip?.state !== 'included' || !hubRunsTool('chalybclip'))
+      throw new CannotClip('clips not included');
+    const moment = await a.clipMoment(session.user.id, 60, signal);
+    if (!moment) throw new CannotClip('no recording');
+    // The Clips job policy: automatic retries, the clips.job_failed audit and
+    // credits only when ready. Its failures are Clips', not En vivo's (only
+    // the En vivo adapter's errors count against this route's breaker).
+    const job = await submitClips({
+      userId: session.user.id,
+      sourceUrl: moment.sourceUrl,
+      format: 'vertical',
+      count: 3,
+    });
+    if (!job) throw new CannotClip('clips not running');
+    if (!job.ok) throw new CannotClip(job.reason);
+    return { jobId: job.jobId };
+  },
+);

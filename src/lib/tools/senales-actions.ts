@@ -17,15 +17,26 @@ export async function saveSignalPrefs(formData: FormData): Promise<void> {
   if (!session) return redirect({ href: '/sign-in?next=/app/senales', locale });
   const ent = await getEntitlements(session);
   const adapter = hubRunsTool('chalybcrypto') ? getSenales() : null;
-  if (ent.tools.chalybcrypto?.state !== 'included' || !adapter) return redirect({ href: '/app/senales', locale });
-  if (!(await hasRiskAck(session.user.id, 'chalybcrypto'))) return redirect({ href: '/app/senales', locale });
+  if (ent.tools.chalybcrypto?.state !== 'included' || !adapter)
+    return redirect({ href: '/app/senales', locale });
+  if (!(await hasRiskAck(session.user.id, 'chalybcrypto')))
+    return redirect({ href: '/app/senales', locale });
 
   const known = new Set((await adapter.coins()).map((c) => c.symbol));
-  const coins = String(formData.get('coins') ?? '').split(',').filter((c) => known.has(c));
+  const coins = String(formData.get('coins') ?? '')
+    .split(',')
+    .filter((c) => known.has(c));
   const supported = new Set(await adapter.channels());
-  const channels = formData.getAll('channel').map(String).filter((c): c is SignalChannel => supported.has(c as SignalChannel));
+  const channels = formData
+    .getAll('channel')
+    .map(String)
+    .filter((c): c is SignalChannel => supported.has(c as SignalChannel));
   if (!coins.length) return redirect({ href: '/app/senales/empezar', locale });
-  if (!channels.length) return redirect({ href: `/app/senales/empezar/avisos?coins=${coins.join(',')}&error=channels`, locale });
+  if (!channels.length)
+    return redirect({
+      href: `/app/senales/empezar/avisos?coins=${coins.join(',')}&error=channels`,
+      locale,
+    });
   await adapter.savePrefs(session.user.id, {
     coins,
     channels,

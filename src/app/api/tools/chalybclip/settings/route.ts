@@ -11,15 +11,19 @@ export const runtime = 'nodejs';
 export const GET = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  (a, { session }) => a.getSettings(session.user.id),
+  (a, { session, signal }) => a.getSettings(session.user.id, signal),
   {
     idempotent: true,
   },
 );
 
-export const POST = toolRoute('chalybclip', getClipsAdapter, async (a, { session, body }) => {
-  const prev = await a.getSettings(session.user.id);
-  const next = parseSettings(body, prev);
-  await a.saveSettings(session.user.id, next);
-  return next;
-});
+export const POST = toolRoute(
+  'chalybclip',
+  getClipsAdapter,
+  async (a, { session, body, signal }) => {
+    const prev = await a.getSettings(session.user.id, signal);
+    const next = parseSettings(body, prev);
+    await a.saveSettings(session.user.id, next, signal);
+    return next;
+  },
+);

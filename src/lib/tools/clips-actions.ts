@@ -51,7 +51,13 @@ export async function createClipJob(formData: FormData): Promise<void> {
     : 6;
 
   const options = parseClipOptions((k) => formData.get(k));
-  const result = await submitClips({ userId: session.user.id, sourceUrl: first!, format, count, options });
+  const result = await submitClips({
+    userId: session.user.id,
+    sourceUrl: first!,
+    format,
+    count,
+    options,
+  });
   if (!result) return redirect({ href: '/app/clips', locale });
   if (!result.ok) return redirect({ href: `/app/clips/nuevo?error=${result.reason}`, locale });
 
@@ -60,7 +66,13 @@ export async function createClipJob(formData: FormData): Promise<void> {
   // Mis resultados.
   let started = 0;
   for (const url of extras) {
-    const r = await submitClips({ userId: session.user.id, sourceUrl: url, format, count, options });
+    const r = await submitClips({
+      userId: session.user.id,
+      sourceUrl: url,
+      format,
+      count,
+      options,
+    });
     if (r?.ok) started += 1;
   }
   if (started > 0) return redirect({ href: '/app/history', locale });

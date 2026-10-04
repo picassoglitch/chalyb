@@ -27,7 +27,9 @@ export default async function EnVivoTransmisionesPage({
   if ('fallback' in g) return g.fallback;
   const { session, adapter } = g.ready;
   const u = session.user.id;
-  const streams = await runTool(SLUG, u, () => adapter.streams(u), { idempotent: true });
+  const streams = await runTool(SLUG, u, (signal) => adapter.streams(u, signal), {
+    idempotent: true,
+  });
   if (!streams.ok) return <EnVivoError tab="history" error={streams.error} />;
   const t = await getTranslations('liveTool.streams');
   const date = new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', {

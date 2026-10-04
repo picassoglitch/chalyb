@@ -9,17 +9,17 @@ import { mergePrefs } from '@/lib/tools/signals-prefs';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const handler = toolRoute('chalybcrypto', getSenales, async (a, { session, body }) => {
+const handler = toolRoute('chalybcrypto', getSenales, async (a, { session, body, signal }) => {
   const [coins, channels, prev] = await Promise.all([
-    a.coins(),
-    a.channels(),
-    a.getPrefs(session.user.id),
+    a.coins(signal),
+    a.channels(signal),
+    a.getPrefs(session.user.id, signal),
   ]);
   const next = mergePrefs(prev, body, {
     coins: new Set(coins.map((c) => c.symbol)),
     channels: new Set(channels),
   });
-  await a.savePrefs(session.user.id, next);
+  await a.savePrefs(session.user.id, next, signal);
   return next;
 });
 

@@ -21,9 +21,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, code: 'NOT_INCLUDED' }, { status: 403 });
   const os = new URL(req.url).searchParams.get('os') === 'mac' ? 'mac' : 'windows';
   // Through the BFF: timeout, breaker and a support code like any tool call.
-  const res = await runTool('chalybobs', session.user.id, () => adapter.download(os), {
-    idempotent: true,
-  });
+  const res = await runTool(
+    'chalybobs',
+    session.user.id,
+    (signal) => adapter.download(os, signal),
+    {
+      idempotent: true,
+    },
+  );
   if (!res.ok)
     return NextResponse.json(
       { ok: false, error: res.error },

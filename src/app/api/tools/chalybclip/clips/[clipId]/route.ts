@@ -12,8 +12,8 @@ export const runtime = 'nodejs';
 export const GET = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  async (a, { session, params }) => {
-    const clip = await a.getClip(session.user.id, params.clipId ?? '');
+  async (a, { session, params, signal }) => {
+    const clip = await a.getClip(session.user.id, params.clipId ?? '', signal);
     if (!clip) throw new NotFoundError('clip');
     return clip;
   },
@@ -23,12 +23,12 @@ export const GET = toolRoute(
 export const PATCH = toolRoute(
   'chalybclip',
   getClipsAdapter,
-  async (a, { session, params, body }) => {
+  async (a, { session, params, body, signal }) => {
     const id = params.clipId ?? '';
-    const clip = await a.getClip(session.user.id, id);
+    const clip = await a.getClip(session.user.id, id, signal);
     if (!clip) throw new NotFoundError('clip');
     const patch = parseClipPatch(body, clip);
-    const next = await a.patchClip(session.user.id, id, patch);
+    const next = await a.patchClip(session.user.id, id, patch, signal);
     if (!next) throw new NotFoundError('clip');
     return next;
   },

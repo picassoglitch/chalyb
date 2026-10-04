@@ -12,26 +12,25 @@ import { formatDuration } from '@/lib/tools/envivo-core';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-
-export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body }) => {
+export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body, signal }) => {
   const u = session.user.id;
   switch (body.type) {
     case 'start_stream':
-      return { status: await a.start(u), endedSec: null };
+      return { status: await a.start(u, signal), endedSec: null };
     case 'set_scene':
       return {
-        status: await a.setScene(u, String(body.sceneId ?? '').slice(0, 64)),
+        status: await a.setScene(u, String(body.sceneId ?? '').slice(0, 64), signal),
         endedSec: null,
       };
     case 'set_mic':
-      return { status: await a.toggle(u, 'mic'), endedSec: null };
+      return { status: await a.toggle(u, 'mic', signal), endedSec: null };
     case 'set_cam':
-      return { status: await a.toggle(u, 'cam'), endedSec: null };
+      return { status: await a.toggle(u, 'cam', signal), endedSec: null };
     case 'set_clips_after':
-      return { status: await a.toggle(u, 'clipsAfter'), endedSec: null };
+      return { status: await a.toggle(u, 'clipsAfter', signal), endedSec: null };
     case 'stop_stream': {
-      const before = await a.status(u);
-      const status = await a.stop(u);
+      const before = await a.status(u, signal);
+      const status = await a.stop(u, signal);
       if (!before.liveSince) return { status, endedSec: null };
       const endedSec = Math.max(1, Math.round((Date.now() - Date.parse(before.liveSince)) / 1000));
       await addUserNotice({
@@ -45,7 +44,7 @@ export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body 
         href: '/app/en-vivo/transmisiones',
         dedupeKey: `live:${before.liveSince}`,
       }).catch(() => {});
-      const recordingUrl = (await a.streams(u))[0]?.recordingUrl ?? null;
+      const recordingUrl = (await a.streams(u, signal))[0]?.recordingUrl ?? null;
       return { status, endedSec, recordingUrl };
     }
     default:

@@ -27,8 +27,8 @@ export default async function EnVivoConectarPage({
   const { session, adapter } = g.ready;
   const u = session.user.id;
   const [devices, code] = await Promise.all([
-    runTool(SLUG, u, () => adapter.devices(u), { idempotent: true }),
-    runTool(SLUG, u, () => adapter.createPairingCode(u)),
+    runTool(SLUG, u, (signal) => adapter.devices(u, signal), { idempotent: true }),
+    runTool(SLUG, u, (signal) => adapter.createPairingCode(u, signal)),
   ]);
   if (!devices.ok) return <EnVivoError tab="main" error={devices.error} />;
   if (!code.ok) return <EnVivoError tab="main" error={code.error} />;

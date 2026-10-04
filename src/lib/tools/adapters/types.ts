@@ -192,30 +192,50 @@ export type CreateClipJobResult =
 
 export interface ClipsAdapter {
   capabilities(): ClipsCapabilities;
-  createJob(input: CreateClipJobInput): Promise<CreateClipJobResult>;
+  createJob(input: CreateClipJobInput, signal?: AbortSignal): Promise<CreateClipJobResult>;
   /** Null when the job doesn't exist or belongs to another user. */
-  getJob(userId: string, jobId: string): Promise<ClipJob | null>;
+  getJob(userId: string, jobId: string, signal?: AbortSignal): Promise<ClipJob | null>;
   /** The user's jobs, newest first (Mis resultados). */
-  listJobs(userId: string, limit?: number): Promise<ClipJob[]>;
+  listJobs(userId: string, limit?: number, signal?: AbortSignal): Promise<ClipJob[]>;
   /** Resubmit a failed job in place (same id). The job starts a new
    *  attempt UNSETTLED, so a retry that ends 'ready' is charged and
    *  notified. `manual` counts toward manualRetries. */
-  retryJob(userId: string, jobId: string, opts?: { manual?: boolean }): Promise<void>;
+  retryJob(
+    userId: string,
+    jobId: string,
+    opts?: { manual?: boolean },
+    signal?: AbortSignal,
+  ): Promise<void>;
   /** Atomically mark a finished job settled (see ClipJob.settled). Returns
    *  true only for the one call that flipped it, so concurrent readers can't
    *  charge twice. */
-  markSettled(userId: string, jobId: string): Promise<boolean>;
+  markSettled(userId: string, jobId: string, signal?: AbortSignal): Promise<boolean>;
 
   // Clip level (WS-11). Null when the clip doesn't exist or isn't theirs.
   /** The user's finished clips, newest first. */
-  listClips(userId: string, limit?: number): Promise<ClipDetail[]>;
-  getClip(userId: string, clipId: string): Promise<ClipDetail | null>;
-  patchClip(userId: string, clipId: string, patch: ClipPatch): Promise<ClipDetail | null>;
-  getSettings(userId: string): Promise<ClipsSettings>;
-  saveSettings(userId: string, settings: ClipsSettings): Promise<void>;
+  listClips(userId: string, limit?: number, signal?: AbortSignal): Promise<ClipDetail[]>;
+  getClip(userId: string, clipId: string, signal?: AbortSignal): Promise<ClipDetail | null>;
+  patchClip(
+    userId: string,
+    clipId: string,
+    patch: ClipPatch,
+    signal?: AbortSignal,
+  ): Promise<ClipDetail | null>;
+  getSettings(userId: string, signal?: AbortSignal): Promise<ClipsSettings>;
+  saveSettings(userId: string, settings: ClipsSettings, signal?: AbortSignal): Promise<void>;
   /** Accounts the person connected. Empty without supportsConnect. */
-  accounts(userId: string): Promise<ConnectedAccount[]>;
+  accounts(userId: string, signal?: AbortSignal): Promise<ConnectedAccount[]>;
   /** Where the same-tab OAuth starts; null when the engine can't connect. */
-  connectUrl(userId: string, platform: SocialPlatform, returnTo: string): Promise<string | null>;
-  publishClip(userId: string, clipId: string, platform: SocialPlatform): Promise<{ ok: boolean }>;
+  connectUrl(
+    userId: string,
+    platform: SocialPlatform,
+    returnTo: string,
+    signal?: AbortSignal,
+  ): Promise<string | null>;
+  publishClip(
+    userId: string,
+    clipId: string,
+    platform: SocialPlatform,
+    signal?: AbortSignal,
+  ): Promise<{ ok: boolean }>;
 }

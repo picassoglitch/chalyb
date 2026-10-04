@@ -26,6 +26,7 @@ import {
   type CreateClipJobInput,
   type CreateClipJobResult,
 } from './types';
+import { honorSignal } from './signal';
 
 interface StoredJob {
   job: Omit<ClipJob, 'state' | 'reason' | 'momentsFound' | 'clips'>;
@@ -107,7 +108,7 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
     };
   }
 
-  return {
+  return honorSignal({
     capabilities: () => ({
       sources: ['YouTube', 'Twitch', 'Kick', 'Facebook'],
       bulkUpload: true,
@@ -209,7 +210,7 @@ export function createMockClipsAdapter(options: MockClipsOptions = {}): ClipsAda
     async publishClip() {
       return { ok: false };
     },
-  };
+  });
 }
 
 /** "…watch?v=torneo-del-sabado" → "torneo del sabado"; undefined otherwise. */

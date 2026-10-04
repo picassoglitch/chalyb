@@ -7,6 +7,6 @@ import { toolRoute } from '@/lib/tools/bff-route';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export const POST = toolRoute('chalybobs', getEnVivo, (a, { session }) =>
-  a.createPairingCode(session.user.id),
+export const POST = toolRoute('chalybobs', getEnVivo, (a, { session, signal }) =>
+  a.createPairingCode(session.user.id, signal),
 );

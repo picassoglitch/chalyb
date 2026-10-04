@@ -87,19 +87,25 @@ export interface SignalPrefs {
 
 export interface SenalesAdapter {
   capabilities(): ToolCapabilities;
-  coins(): Promise<Coin[]>;
-  channels(): Promise<SignalChannel[]>;
+  coins(signal?: AbortSignal): Promise<Coin[]>;
+  channels(signal?: AbortSignal): Promise<SignalChannel[]>;
   /** CONTENT: by plan only. There is deliberately no user parameter. */
-  getSignals(input: { plan: PlanTierKey; coins?: string[]; since?: string }): Promise<Signal[]>;
+  getSignals(
+    input: { plan: PlanTierKey; coins?: string[]; since?: string },
+    signal?: AbortSignal,
+  ): Promise<Signal[]>;
   /** One signal and its past price, by plan. No user parameter either. */
-  getSignal(input: {
-    plan: PlanTierKey;
-    id: string;
-    range: SignalRange;
-  }): Promise<{ signal: Signal; series: PricePoint[] } | null>;
+  getSignal(
+    input: {
+      plan: PlanTierKey;
+      id: string;
+      range: SignalRange;
+    },
+    signal?: AbortSignal,
+  ): Promise<{ signal: Signal; series: PricePoint[] } | null>;
   /** DELIVERY: the user's filter. */
-  getPrefs(userId: string): Promise<SignalPrefs | null>;
-  savePrefs(userId: string, prefs: SignalPrefs): Promise<void>;
+  getPrefs(userId: string, signal?: AbortSignal): Promise<SignalPrefs | null>;
+  savePrefs(userId: string, prefs: SignalPrefs, signal?: AbortSignal): Promise<void>;
 }
 
 // ── En vivo ──────────────────────────────────────────────────────────
@@ -195,28 +201,44 @@ export type LiveDownload = { url: string } | { filename: string; body: string };
 
 export interface EnVivoAdapter {
   capabilities(): ToolCapabilities;
-  status(userId: string): Promise<LiveStatus>;
-  start(userId: string): Promise<LiveStatus>;
-  stop(userId: string): Promise<LiveStatus>;
-  setScene(userId: string, sceneId: string): Promise<LiveStatus>;
-  toggle(userId: string, what: 'mic' | 'cam' | 'clipsAfter'): Promise<LiveStatus>;
-  devices(userId: string): Promise<LiveDevice[]>;
-  createPairingCode(userId: string): Promise<PairingCode>;
-  disconnectDevice(userId: string, deviceId: string): Promise<void>;
-  settings(userId: string): Promise<LiveSettings>;
-  saveSettings(userId: string, patch: Partial<Omit<LiveSettings, 'destinations'>> & {
-    enabled?: Partial<Record<LivePlatform, boolean>>;
-  }): Promise<LiveSettings>;
+  status(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
+  start(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
+  stop(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
+  setScene(userId: string, sceneId: string, signal?: AbortSignal): Promise<LiveStatus>;
+  toggle(
+    userId: string,
+    what: 'mic' | 'cam' | 'clipsAfter',
+    signal?: AbortSignal,
+  ): Promise<LiveStatus>;
+  devices(userId: string, signal?: AbortSignal): Promise<LiveDevice[]>;
+  createPairingCode(userId: string, signal?: AbortSignal): Promise<PairingCode>;
+  disconnectDevice(userId: string, deviceId: string, signal?: AbortSignal): Promise<void>;
+  settings(userId: string, signal?: AbortSignal): Promise<LiveSettings>;
+  saveSettings(
+    userId: string,
+    patch: Partial<Omit<LiveSettings, 'destinations'>> & {
+      enabled?: Partial<Record<LivePlatform, boolean>>;
+    },
+    signal?: AbortSignal,
+  ): Promise<LiveSettings>;
   /** After the platform's OAuth (same tab) comes back. */
-  connectDestination(userId: string, platform: LivePlatform): Promise<LiveSettings>;
-  streams(userId: string): Promise<PastStream[]>;
+  connectDestination(
+    userId: string,
+    platform: LivePlatform,
+    signal?: AbortSignal,
+  ): Promise<LiveSettings>;
+  streams(userId: string, signal?: AbortSignal): Promise<PastStream[]>;
   /** The secret stream key. Only called when the person asks to see it;
    *  never logged, never rendered before that. */
-  streamKey(userId: string, platform: LivePlatform): Promise<string>;
+  streamKey(userId: string, platform: LivePlatform, signal?: AbortSignal): Promise<string>;
   /** A link to the last `windowSec` seconds of the live recording, or null
    *  when nothing is being recorded. */
-  clipMoment(userId: string, windowSec: number): Promise<{ sourceUrl: string } | null>;
-  download(os: 'windows' | 'mac'): Promise<LiveDownload | null>;
+  clipMoment(
+    userId: string,
+    windowSec: number,
+    signal?: AbortSignal,
+  ): Promise<{ sourceUrl: string } | null>;
+  download(os: 'windows' | 'mac', signal?: AbortSignal): Promise<LiveDownload | null>;
 }
 
 // ── Asistente ────────────────────────────────────────────────────────

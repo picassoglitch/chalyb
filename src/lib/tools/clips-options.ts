@@ -8,7 +8,8 @@ export const MAX_EXTRA_LINKS = 4;
 export function parseClipOptions(get: (k: string) => unknown): ClipJobOptions {
   const out: ClipJobOptions = {};
   const style = String(get('captionStyle') ?? '');
-  if ((CAPTION_STYLES as readonly string[]).includes(style)) out.captionStyle = style as CaptionStyle;
+  if ((CAPTION_STYLES as readonly string[]).includes(style))
+    out.captionStyle = style as CaptionStyle;
   const lang = get('captionLang');
   if (lang === 'es' || lang === 'en') out.captionLang = lang;
   const sec = (k: string) => {

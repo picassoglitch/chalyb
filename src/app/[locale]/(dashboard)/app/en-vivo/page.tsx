@@ -27,11 +27,13 @@ export default async function EnVivoPage({ params }: { params: Promise<{ locale:
   const { session, entitlements, adapter } = g.ready;
   const u = session.user.id;
 
-  const status = await runTool(SLUG, u, () => adapter.status(u), { idempotent: true });
+  const status = await runTool(SLUG, u, (signal) => adapter.status(u, signal), {
+    idempotent: true,
+  });
   if (!status.ok) return <EnVivoError tab="main" error={status.error} />;
 
   if (!status.data.paired) {
-    const code = await runTool(SLUG, u, () => adapter.createPairingCode(u));
+    const code = await runTool(SLUG, u, (signal) => adapter.createPairingCode(u, signal));
     if (!code.ok) return <EnVivoError tab="main" error={code.error} />;
     return (
       <ToolShell slug={SLUG} tab="main">
@@ -51,7 +53,9 @@ export default async function EnVivoPage({ params }: { params: Promise<{ locale:
       </ToolShell>
     );
 
-  const settings = await runTool(SLUG, u, () => adapter.settings(u), { idempotent: true });
+  const settings = await runTool(SLUG, u, (signal) => adapter.settings(u, signal), {
+    idempotent: true,
+  });
   if (!settings.ok) return <EnVivoError tab="main" error={settings.error} />;
   const ta = await getTranslations('toolShell.advanced');
   return (

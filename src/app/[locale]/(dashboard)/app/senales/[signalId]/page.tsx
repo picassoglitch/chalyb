@@ -64,7 +64,8 @@ export default async function SenalDetalle({
   const res = await runTool(
     'chalybcrypto',
     session.user.id,
-    () => adapter.getSignal({ plan: planKeyFor(entitlements.plan), id: signalId, range }),
+    (signal) =>
+      adapter.getSignal({ plan: planKeyFor(entitlements.plan), id: signalId, range }, signal),
     { idempotent: true },
   );
   const back = (
@@ -99,7 +100,12 @@ export default async function SenalDetalle({
   const extra = await runTool(
     'chalybcrypto',
     session.user.id,
-    () => Promise.all([adapter.coins(), adapter.getPrefs(session.user.id), adapter.channels()]),
+    (signal) =>
+      Promise.all([
+        adapter.coins(signal),
+        adapter.getPrefs(session.user.id, signal),
+        adapter.channels(signal),
+      ]),
     { idempotent: true },
   );
   if (!extra.ok)

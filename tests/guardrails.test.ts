@@ -32,9 +32,11 @@ function* files(dir: string, ext: RegExp): Generator<string> {
 // ── Señales ──────────────────────────────────────────────────────────
 test('signal content takes no user: the contract has only { plan, coins }', () => {
   const src = read('src/lib/tools/adapters/tools.ts');
-  const sig = src.match(/getSignals\(input: \{([^}]*)\}\)/);
-  assert.ok(sig, 'getSignals signature found');
-  assert.doesNotMatch(sig![1]!, /user/i);
+  // The whole parameter list: the input object, then only the BFF timeout
+  // signal. No user anywhere.
+  const sig = src.match(/getSignals\(\s*input: \{([^}]*)\},?\s*(signal\?: AbortSignal,?)?\s*\)/);
+  assert.ok(sig, 'getSignals signature found (input, then at most the AbortSignal)');
+  assert.doesNotMatch(sig![0]!, /user/i);
   assert.match(sig![1]!, /plan/);
 });
 

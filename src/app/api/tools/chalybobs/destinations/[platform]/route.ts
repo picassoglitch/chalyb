@@ -13,9 +13,9 @@ class Refused extends Error {
   readonly code = 'FORBIDDEN';
 }
 
-export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, params }) => {
+export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, params, signal }) => {
   const platform = String(params.platform ?? '') as LivePlatform;
   if (!LIVE_PLATFORMS.includes(platform) || !a.capabilities().supportsConnect)
     throw new Refused('cannot connect');
-  return a.connectDestination(session.user.id, platform);
+  return a.connectDestination(session.user.id, platform, signal);
 });

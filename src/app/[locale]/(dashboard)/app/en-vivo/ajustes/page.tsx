@@ -25,8 +25,8 @@ export default async function EnVivoAjustesPage({
   const { session, adapter } = g.ready;
   const u = session.user.id;
   const [settings, devices] = await Promise.all([
-    runTool(SLUG, u, () => adapter.settings(u), { idempotent: true }),
-    runTool(SLUG, u, () => adapter.devices(u), { idempotent: true }),
+    runTool(SLUG, u, (signal) => adapter.settings(u, signal), { idempotent: true }),
+    runTool(SLUG, u, (signal) => adapter.devices(u, signal), { idempotent: true }),
   ]);
   if (!settings.ok) return <EnVivoError tab="settings" error={settings.error} />;
   if (!devices.ok) return <EnVivoError tab="settings" error={devices.error} />;

@@ -26,7 +26,9 @@ export async function toolStatusLines(
       if (slug === 'chalybclip') {
         const a = getClipsAdapter();
         if (!a) return;
-        const r = await runTool(slug, userId, () => a.listJobs(userId, 50), { idempotent: true });
+        const r = await runTool(slug, userId, (signal) => a.listJobs(userId, 50, signal), {
+          idempotent: true,
+        });
         if (!r.ok) return;
         const working = r.data.filter((j) => j.state !== 'ready' && j.state !== 'failed');
         const ready = r.data.filter((j) => j.state === 'ready');
@@ -44,7 +46,9 @@ export async function toolStatusLines(
       if (slug === 'chalybcrypto') {
         const a = getSenales();
         if (!a) return;
-        const r = await runTool(slug, userId, () => a.getSignals({ plan }), { idempotent: true });
+        const r = await runTool(slug, userId, (signal) => a.getSignals({ plan }, signal), {
+          idempotent: true,
+        });
         if (!r.ok) return;
         out[slug] = signalsLine(
           r.data.map((s) => s.at),
@@ -55,7 +59,9 @@ export async function toolStatusLines(
       if (slug === 'chalybobs') {
         const a = getEnVivo();
         if (!a) return;
-        const r = await runTool(slug, userId, () => a.status(userId), { idempotent: true });
+        const r = await runTool(slug, userId, (signal) => a.status(userId, signal), {
+          idempotent: true,
+        });
         if (!r.ok) return;
         out[slug] = liveLine({ connected: r.data.obsConnected, live: r.data.liveSince !== null });
       }

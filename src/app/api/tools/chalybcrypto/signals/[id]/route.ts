@@ -14,14 +14,17 @@ export const runtime = 'nodejs';
 const handler = toolRoute(
   'chalybcrypto',
   getSenales,
-  async (a, { req, entitlements, params }) => {
+  async (a, { req, entitlements, params, signal }) => {
     const r = new URL(req.url).searchParams.get('range');
     const range: SignalRange = r === '1d' || r === '1m' ? r : '7d';
-    const res = await a.getSignal({
-      plan: planKeyFor(entitlements.plan),
-      id: params.id ?? '',
-      range,
-    });
+    const res = await a.getSignal(
+      {
+        plan: planKeyFor(entitlements.plan),
+        id: params.id ?? '',
+        range,
+      },
+      signal,
+    );
     if (!res) throw Object.assign(new Error('signal not found'), { code: 'NOT_FOUND' });
     return { signal: screenSignal(res.signal), series: res.series };
   },

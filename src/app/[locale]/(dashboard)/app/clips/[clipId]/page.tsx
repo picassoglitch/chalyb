@@ -64,11 +64,11 @@ export default async function ClipDetailPage({
   const reads = await runTool(
     'chalybclip',
     userId,
-    () =>
+    (signal) =>
       Promise.all([
-        adapter.listClips(userId),
-        adapter.getSettings(userId),
-        adapter.accounts(userId),
+        adapter.listClips(userId, undefined, signal),
+        adapter.getSettings(userId, signal),
+        adapter.accounts(userId, signal),
       ]),
     { idempotent: true },
   );

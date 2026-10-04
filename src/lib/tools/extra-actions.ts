@@ -16,7 +16,10 @@ import { getAsistente, getInmuebles, getInversiones, hubRunsTool } from './regis
 import { hasRiskAck, recordToolConsent } from './consents';
 import type { AssistantChannel, AutomationRule, PropertyCard } from './adapters/tools';
 
-async function gate<A>(slug: string, get: () => A | null): Promise<{ session: SessionUser; adapter: A } | null> {
+async function gate<A>(
+  slug: string,
+  get: () => A | null,
+): Promise<{ session: SessionUser; adapter: A } | null> {
   const session = await getSessionUser();
   if (!session) return null;
   const ent = await getEntitlements(session);
@@ -38,8 +41,13 @@ export async function saveAssistant(input: {
   const channels = await g.adapter.channels();
   const businessName = input.businessName.trim().slice(0, 80);
   const knowledge = input.knowledge.trim().slice(0, 8000);
-  if (!businessName || !channels.includes(input.channel) || !knowledge) return { ok: false, code: 'INVALID' };
-  await g.adapter.saveConfig(g.session.user.id, { businessName, channel: input.channel, knowledge });
+  if (!businessName || !channels.includes(input.channel) || !knowledge)
+    return { ok: false, code: 'INVALID' };
+  await g.adapter.saveConfig(g.session.user.id, {
+    businessName,
+    channel: input.channel,
+    knowledge,
+  });
   return { ok: true };
 }
 
@@ -81,9 +89,11 @@ export async function connectExchange(input: {
 }): Promise<{ ok: true } | Fail> {
   const g = await gate('chalybtrade', getInversiones);
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
-  if (!(await hasRiskAck(g.session.user.id, 'chalybtrade'))) return { ok: false, code: 'RISK_ACK_REQUIRED' };
+  if (!(await hasRiskAck(g.session.user.id, 'chalybtrade')))
+    return { ok: false, code: 'RISK_ACK_REQUIRED' };
   if (input.consentChecked !== true) return { ok: false, code: 'CONSENT_REQUIRED' };
-  if (!(await g.adapter.exchanges()).includes(input.exchange)) return { ok: false, code: 'INVALID' };
+  if (!(await g.adapter.exchanges()).includes(input.exchange))
+    return { ok: false, code: 'INVALID' };
   const apiKey = input.apiKey.trim();
   const apiSecret = input.apiSecret.trim();
   if (apiKey.length < 8 || apiSecret.length < 8) return { ok: false, code: 'INVALID' };
@@ -92,7 +102,8 @@ export async function connectExchange(input: {
   // Withdrawal permission → refused before anything is stored.
   const perms = await g.adapter.checkPermissions({ exchange: input.exchange, apiKey, apiSecret });
   const decision = decideKey(perms);
-  if (!decision.ok) return { ok: false, code: decision.reason === 'withdraw' ? 'KEY_WITHDRAW' : 'KEY_NO_READ' };
+  if (!decision.ok)
+    return { ok: false, code: decision.reason === 'withdraw' ? 'KEY_WITHDRAW' : 'KEY_NO_READ' };
 
   const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: 'invest.s1' });
@@ -129,7 +140,11 @@ export async function activateRule(input: {
   exchange: string;
   summary: string;
   confirmChecked: boolean;
-}): Promise<{ ok: true; rule: AutomationRule } | Fail | { ok: false; code: 'INVALID'; errors: Exclude<RuleCheck, { ok: true }>['errors'] }> {
+}): Promise<
+  | { ok: true; rule: AutomationRule }
+  | Fail
+  | { ok: false; code: 'INVALID'; errors: Exclude<RuleCheck, { ok: true }>['errors'] }
+> {
   const g = await gate('chalybtrade', getInversiones);
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
   const u = g.session.user.id;
@@ -147,7 +162,12 @@ export async function activateRule(input: {
 
   const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: 'invest.s3' });
-  const rule: AutomationRule = { ...check.rule, id: crypto.randomUUID(), active: true, createdAt: new Date().toISOString() };
+  const rule: AutomationRule = {
+    ...check.rule,
+    id: crypto.randomUUID(),
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
   await recordToolConsent(g.session, {
     type: 'automation_rule_activated',
     surface: 'invest_rule',
@@ -173,7 +193,8 @@ export async function setRuleActive(ruleId: string, active: boolean): Promise<{ 
   const g = await gate('chalybtrade', getInversiones);
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
   // Pausing is always allowed; resuming needs the risk notice still current.
-  if (active && !(await hasRiskAck(g.session.user.id, 'chalybtrade'))) return { ok: false, code: 'RISK_ACK_REQUIRED' };
+  if (active && !(await hasRiskAck(g.session.user.id, 'chalybtrade')))
+    return { ok: false, code: 'RISK_ACK_REQUIRED' };
   const own = (await g.adapter.rules(g.session.user.id)).some((r) => r.id === ruleId);
   if (!own) return { ok: false, code: 'INVALID' };
   await g.adapter.setActive(g.session.user.id, ruleId, active);

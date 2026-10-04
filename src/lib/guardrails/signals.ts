@@ -16,8 +16,9 @@ export async function signalsFor(
   adapter: SenalesAdapter,
   plan: PlanTierKey,
   coins: string[],
+  signal?: AbortSignal,
 ): Promise<Signal[]> {
-  const content = await adapter.getSignals({ plan });
+  const content = await adapter.getSignals({ plan }, signal);
   return coins.length ? content.filter((s) => coins.includes(s.coin)) : content;
 }
 

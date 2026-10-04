@@ -24,9 +24,14 @@ export async function loadSignalFeed(
   userId: string,
   coins: string[],
 ): Promise<FeedResult> {
-  const res = await runTool('chalybcrypto', userId, () => signalsFor(adapter, plan, []), {
-    idempotent: true,
-  });
+  const res = await runTool(
+    'chalybcrypto',
+    userId,
+    (signal) => signalsFor(adapter, plan, [], signal),
+    {
+      idempotent: true,
+    },
+  );
   const filter = (all: Signal[]) =>
     (coins.length ? all.filter((s) => coins.includes(s.coin)) : all).map(screenSignal);
   if (res.ok) {

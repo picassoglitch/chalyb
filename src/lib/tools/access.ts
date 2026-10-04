@@ -75,10 +75,16 @@ export async function requireTool<A>(
   if (!session) return redirect({ href: `/sign-in?next=${encodeURIComponent(path)}`, locale });
   const entitlements = await getEntitlements(session);
   const access = entitlements.tools[slug];
-  if (!access || access.state !== 'included') return redirect({ href: '/app/herramientas', locale });
+  if (!access || access.state !== 'included')
+    return redirect({ href: '/app/herramientas', locale });
   const a = hubRunsTool(slug) ? adapter() : null;
   if (!a) return redirect({ href: '/app/herramientas', locale });
-  return { session, entitlements, adapter: a, riskPending: !(await hasRiskAck(session.user.id, slug)) };
+  return {
+    session,
+    entitlements,
+    adapter: a,
+    riskPending: !(await hasRiskAck(session.user.id, slug)),
+  };
 }
 
 export const planKeyFor = (plan: string): 'FREE' | 'PRO' | 'VIP' =>

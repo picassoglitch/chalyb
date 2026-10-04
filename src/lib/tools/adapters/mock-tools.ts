@@ -27,6 +27,7 @@ import type {
   SignalRange,
   ToolCapabilities,
 } from './tools';
+import { honorSignal } from './signal';
 
 const CAPS: ToolCapabilities = { supportsConnect: false, likenessOptions: [] };
 
@@ -134,7 +135,7 @@ export function createMockSenales(now = () => Date.now()): SenalesAdapter {
     }
     return out;
   };
-  return {
+  return honorSignal({
     capabilities: () => CAPS,
     coins: async () => COINS,
     channels: async () => ['email', 'app'],
@@ -156,7 +157,7 @@ export function createMockSenales(now = () => Date.now()): SenalesAdapter {
     savePrefs: async (userId, p) => {
       prefs.set(userId, p);
     },
-  };
+  });
 }
 
 /** How long after a pairing code is issued the mock "program" types it in. */
@@ -239,7 +240,7 @@ export function createMockEnVivo(now = () => Date.now()): EnVivoAdapter {
     u.status = { ...u.status, ...p };
     return view(userId);
   };
-  return {
+  return honorSignal({
     capabilities: () => ({ supportsConnect: true, likenessOptions: [] }),
     status: async (u) => view(u),
     start: async (u) => patch(u, { liveSince: new Date(now()).toISOString() }),
@@ -313,7 +314,7 @@ export function createMockEnVivo(now = () => Date.now()): EnVivoAdapter {
       filename: `chalyb-en-vivo-${os}.txt`,
       body: 'Archivo de prueba del programa de En vivo (solo desarrollo).\n',
     }),
-  };
+  });
 }
 
 export function createMockAsistente(): AsistenteAdapter {

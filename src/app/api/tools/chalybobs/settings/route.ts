@@ -14,13 +14,13 @@ const RESOLUTIONS = ['1080p60', '1080p30', '720p60', '720p30'] as const;
 export const GET = toolRoute(
   'chalybobs',
   getEnVivo,
-  (a, { session }) => a.settings(session.user.id),
+  (a, { session, signal }) => a.settings(session.user.id, signal),
   {
     idempotent: true,
   },
 );
 
-export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { session, body: b }) => {
+export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { session, body: b, signal }) => {
   const patch: Parameters<typeof a.saveSettings>[1] = {};
   if (QUALITIES.includes(b.quality as LiveQuality)) patch.quality = b.quality as LiveQuality;
   if (typeof b.clipsAfter === 'boolean') patch.clipsAfter = b.clipsAfter;
@@ -33,7 +33,7 @@ export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { session, body
     }
   }
   if (b.advanced && typeof b.advanced === 'object') {
-    const cur = (await a.settings(session.user.id)).advanced;
+    const cur = (await a.settings(session.user.id, signal)).advanced;
     const adv = b.advanced as Record<string, unknown>;
     const bitrate = Number(adv.bitrateKbps);
     patch.advanced = {
@@ -46,5 +46,5 @@ export const PATCH = toolRoute('chalybobs', getEnVivo, async (a, { session, body
       server: typeof adv.server === 'string' && adv.server.length <= 120 ? adv.server : cur.server,
     };
   }
-  return a.saveSettings(session.user.id, patch);
+  return a.saveSettings(session.user.id, patch, signal);
 });

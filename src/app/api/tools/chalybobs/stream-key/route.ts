@@ -103,8 +103,8 @@ export async function POST(req: Request) {
       { ok: false, code: 'REAUTH_REQUIRED' },
       { status: 403, headers: NO_STORE },
     );
-  const res = await runTool('chalybobs', session.user.id, () =>
-    adapter.streamKey(session.user.id, platform),
+  const res = await runTool('chalybobs', session.user.id, (signal) =>
+    adapter.streamKey(session.user.id, platform, signal),
   );
   if (!res.ok)
     return NextResponse.json(

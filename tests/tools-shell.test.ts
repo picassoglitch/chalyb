@@ -377,3 +377,55 @@ test('tools-health cron clears each probe timer', () => {
   const src = readFileSync(join(ROOT, 'src/app/api/cron/tools-health/route.ts'), 'utf8');
   assert.match(src, /finally\s*\{[\s\S]*?clearTimeout\(timer\)/);
 });
+
+// ── Residual: the BFF timeout signal reaches the adapters ───────────────
+import { createMockSenales, createMockEnVivo } from '@/lib/tools/adapters/mock-tools';
+import { createMockClipsAdapter as mockClips } from '@/lib/tools/adapters/mock';
+import { ToolTimeoutError } from '@/lib/tools/bff-core';
+
+test('a write whose signal aborts before it completes does not complete', async () => {
+  const senales = createMockSenales();
+  const before = await senales.getPrefs('u-sig');
+  const ctl = new AbortController();
+  const write = senales.savePrefs(
+    'u-sig',
+    { coins: ['BTC'], channels: ['app'], timeframe: 'day', quietHours: false },
+    ctl.signal,
+  );
+  ctl.abort(); // the BFF timeout fires before the write gets to run
+  await assert.rejects(write, (e: unknown) => e instanceof ToolTimeoutError);
+  assert.deepEqual(await senales.getPrefs('u-sig'), before, 'nothing was saved');
+
+  // An already-aborted signal is refused at once; no signal behaves as before.
+  const live = createMockEnVivo();
+  const dead = AbortSignal.abort();
+  await assert.rejects(live.start('u-sig', dead), (e: unknown) => e instanceof ToolTimeoutError);
+  assert.equal((await live.status('u-sig')).liveSince, null, 'the stream did not start');
+  const clips = mockClips();
+  await assert.rejects(
+    clips.saveSettings('u-sig', await clips.getSettings('u-sig'), dead),
+    (e: unknown) => e instanceof ToolTimeoutError,
+  );
+  // A live signal lets the call through.
+  const ok = new AbortController();
+  assert.ok(Array.isArray(await clips.listClips('u-sig', undefined, ok.signal)));
+});
+
+test('every route passes the timeout signal to the adapter', () => {
+  const routes = walk(join(ROOT, 'src/app/api/tools')).filter((f) => f.endsWith('route.ts'));
+  for (const f of routes) {
+    const src = readFileSync(f, 'utf8');
+    if (!src.includes('toolRoute(')) continue;
+    for (const m of src.matchAll(/\ba\.(?!capabilities)([a-zA-Z]+)\(/g)) {
+      // The call's own arguments, up to its matching parenthesis.
+      let depth = 1;
+      let i = m.index! + m[0].length;
+      for (; i < src.length && depth > 0; i++) {
+        if ('([{'.includes(src[i]!)) depth++;
+        else if (')]}'.includes(src[i]!)) depth--;
+      }
+      const args = src.slice(m.index! + m[0].length, i - 1);
+      assert.match(args, /\bsignal\b/, `${f}: a.${m[1]}(…) without the signal`);
+    }
+  }
+});

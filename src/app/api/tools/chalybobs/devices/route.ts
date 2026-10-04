@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 export const GET = toolRoute(
   'chalybobs',
   getEnVivo,
-  (a, { session }) => a.devices(session.user.id),
+  (a, { session, signal }) => a.devices(session.user.id, signal),
   {
     idempotent: true,
   },
