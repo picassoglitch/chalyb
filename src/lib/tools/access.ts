@@ -6,7 +6,10 @@
 //   trial_offer          → the screen renders ToolLockedState
 //   setup_needed         → the screen renders SetupState for the named step
 //   no adapter (engine has no API yet, TOOL_HUB_MODE_<SLUG>=off)
-//                        → hand off to the engine's app over SSO
+//                        → a risk tool with its notice pending renders the
+//                          risk sheet first (kind 'risk'; the launch refuses
+//                          without it, aceptacion-ux §6); otherwise
+//                          hand off to the engine's app over SSO
 //                          (/auth/launch/<slug>?via=hub), as before the
 //                          rebuild, until the engine's job API exists (OPS-13)
 //   included + adapter   → the screen; riskPending opens the risk sheet
@@ -26,6 +29,7 @@ export type ToolGate<A> =
   | { kind: 'locked'; session: SessionUser; entitlements: Entitlements }
   | { kind: 'setup'; session: SessionUser; entitlements: Entitlements; step: SetupStep }
   | { kind: 'error'; session: SessionUser; entitlements: Entitlements; error: ToolError }
+  | { kind: 'risk'; session: SessionUser; entitlements: Entitlements }
   | {
       kind: 'ready';
       session: SessionUser;
@@ -50,7 +54,12 @@ export async function loadTool<A>(
     return { kind: 'setup', session, entitlements, step: access.missing };
   // Without an in-hub adapter the engine's own app is the only way in. A failed
   // launch with via=hub lands on Tus herramientas, never back here (no loop).
-  if (!hubRunsTool(slug)) redirectPath(`/auth/launch/${slug}?via=hub`);
+  // The launch refuses a risk tool whose notice isn't accepted, so the sheet
+  // has to open here first; accepting it refreshes this screen into the hand-off.
+  if (!hubRunsTool(slug)) {
+    if (!(await hasRiskAck(session.user.id, slug))) return { kind: 'risk', session, entitlements };
+    redirectPath(`/auth/launch/${slug}?via=hub`);
+  }
   const a = adapter();
   if (!a)
     return {

@@ -63,7 +63,9 @@ export default async function SenalesHome({
       </ToolShell>
     );
 
-  if (gate.riskPending)
+  // 'risk': the engine runs in its own app (mode off) and the notice is still
+  // pending; accepting it refreshes this page into the SSO hand-off.
+  if (gate.kind === 'risk' || gate.riskPending)
     return (
       <ToolShell slug="chalybcrypto" tab="main">
         <div className="ch-sig-skel" aria-hidden="true">

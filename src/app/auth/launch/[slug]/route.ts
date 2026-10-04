@@ -29,6 +29,8 @@ import { getEntitlements } from '@/lib/billing/entitlement';
 import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 import { reportToolError } from '@/lib/tools/bff';
+import { hasRiskAck } from '@/lib/tools/consents';
+import { RISK_TOOLS, toolHref } from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -106,6 +108,15 @@ export async function GET(
   // request on a dead backend until the socket times out.
   if (engine.status !== 'active') {
     return launchFailed(`/app/engines/${slug}`, session.user.id);
+  }
+
+  // A risk tool (Señales) needs its notice accepted first (aceptacion-ux §6);
+  // getEngineLaunchUrl would refuse anyway, but only after provisioning, and
+  // via=hub would then strand the person on Tus herramientas. The tool's own
+  // screen opens the sheet, and accepting it comes back here. Not a failure:
+  // no launchFailed, so no "no abrió" banner.
+  if (RISK_TOOLS.has(slug) && !(await hasRiskAck(session.user.id, slug))) {
+    return NextResponse.redirect(new URL(toolHref(slug), origin));
   }
 
   const engineId = engine.id as string;
