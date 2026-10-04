@@ -2,7 +2,15 @@
 // Pure: the readers normalise rows into ActivityEvent; this merges, sorts
 // and filters. No IP or user agent ever reaches it.
 
-export type ActivityType = 'charge' | 'failed' | 'refund' | 'cancel' | 'notice' | 'consent' | 'admin' | 'tool';
+export type ActivityType =
+  | 'charge'
+  | 'failed'
+  | 'refund'
+  | 'cancel'
+  | 'notice'
+  | 'consent'
+  | 'admin'
+  | 'tool';
 
 export interface ActivityEvent {
   id: string;

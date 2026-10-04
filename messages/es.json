@@ -826,7 +826,11 @@
       "unknown": "Algo salió mal de nuestro lado. Ya lo estamos revisando.",
       "noCharge": "No se usaron créditos.",
       "retry": "Intentar otra vez",
-      "help": "Hablar con una persona"
+      "help": "Hablar con una persona",
+      "blocked": {
+        "title": "No podemos usar ese video",
+        "body": "Ese contenido se retiró por un aviso de derechos de autor y no se puede volver a subir. Si crees que es un error, habla con una persona."
+      }
     },
     "adv": {
       "title": "Opciones avanzadas",
@@ -1684,6 +1688,18 @@
     "liveEnded": {
       "title": "Tu transmisión terminó",
       "body": "Duró {duracion}. ¿Hacemos clips?"
+    },
+    "arcoReceived": {
+      "title": "Recibimos tu solicitud sobre tus datos",
+      "body": "Te respondemos a más tardar el {fecha}, al correo de tu cuenta."
+    },
+    "contentRemoved": {
+      "title": "Retiramos contenido por un aviso de derechos de autor",
+      "body": "\"{contenido}\". Si crees que fue un error, puedes enviar un contra-aviso."
+    },
+    "contentRestored": {
+      "title": "Restablecimos tu contenido",
+      "body": "Tu contra-aviso procedió: el contenido vuelve a estar disponible."
     }
   },
   "admin": {
@@ -1711,7 +1727,8 @@
       "analytics": "Analytics",
       "api": "API & Keys",
       "labs": "Labs (no conectado)",
-      "overview": "Vista técnica"
+      "overview": "Vista técnica",
+      "legal": "Legal"
     },
     "hello": {
       "morning": "Buenos días 👋",
@@ -1753,7 +1770,9 @@
           "newIdeas": "Leer",
           "bouncedNotices": "Ver",
           "chargesWithoutNotice": "Revisar"
-        }
+        },
+        "arcoDue": "{n, plural, one {# solicitud ARCO por vencer} other {# solicitudes ARCO por vencer}}",
+        "takedownsOpen": "{n, plural, one {# aviso de derechos de autor} other {# avisos de derechos de autor}}"
       },
       "tools": "Herramientas",
       "health": {
@@ -2048,6 +2067,54 @@
         "PAY_URL": "Falta un enlace de pago de Mercado Pago válido.",
         "EMAIL": "No se pudo enviar el correo."
       }
+    },
+    "legal": {
+      "title": "Legal",
+      "sub": "Solicitudes de datos (ARCO) y avisos de derechos de autor, con sus plazos legales.",
+      "error": "No se pudo guardar. Intenta de nuevo.",
+      "arco": {
+        "title": "Solicitudes ARCO abiertas ({n})",
+        "none": "No hay solicitudes abiertas.",
+        "rights": {
+          "access": "Acceso",
+          "rectification": "Rectificación",
+          "cancellation": "Cancelación",
+          "opposition": "Oposición",
+          "automated": "Oposición a decisión automática"
+        },
+        "correct": "Dato correcto: {valor}",
+        "due": "Recibida el {recibida} · responder antes del {fecha}",
+        "extended": "plazo ampliado",
+        "outcome": "Resultado",
+        "outcomes": {
+          "granted": "Procede",
+          "partially_granted": "Procede en parte",
+          "denied": "No procede",
+          "incomplete": "Falta información"
+        },
+        "answer": "Registrar respuesta",
+        "extend": "Ampliar plazo (una vez)"
+      },
+      "takedown": {
+        "title": "Avisos de derechos de autor ({n})",
+        "none": "No hay avisos pendientes.",
+        "status": {
+          "received": "Nuevo",
+          "removed": "Retirado",
+          "counter_noticed": "Con contra-aviso"
+        },
+        "counterShown": "Contra-aviso: {texto}",
+        "received": "Recibido el {fecha}",
+        "deadline": "el titular tiene hasta el {fecha}",
+        "targetEmail": "Correo de quien lo subió",
+        "remove": "Retirar y bloquear",
+        "reject": "Rechazar (escribe el motivo)",
+        "counterText": "Texto del contra-aviso",
+        "counter": "Registrar contra-aviso",
+        "uphold": "El titular acreditó un procedimiento",
+        "repeat": "Esta cuenta llegó al límite de reincidencia: revisa si se cierra (Uso aceptable §5.4).",
+        "noUser": "No encontramos una cuenta con ese correo."
+      }
     }
   },
   "priceChange": {
@@ -2306,6 +2373,106 @@
       "noDate": "fecha por confirmar",
       "none": "Esta versión no tiene cambios listados.",
       "fullText": "Leer el texto completo de esta versión"
+    }
+  },
+  "arco": {
+    "title": "Mis datos (derechos ARCO)",
+    "sub": "Pide ver, corregir o borrar tus datos, u oponerte a un uso. Es gratis.",
+    "mine": "Tus solicitudes",
+    "answered": "Respondida el {fecha}",
+    "pending": "Te respondemos a más tardar el {fecha}",
+    "folio": "Folio {folio}",
+    "limits": "Podemos conservar algunos datos aunque pidas borrarlos cuando la ley nos obliga (por ejemplo, la evidencia de tu aceptación y de tus cobros). En ese caso los bloqueamos y solo los usamos para eso.",
+    "form": {
+      "right": "¿Qué quieres hacer?",
+      "rights": {
+        "access": {
+          "title": "Ver mis datos (acceso)",
+          "body": "Qué datos tenemos de ti y cómo los usamos."
+        },
+        "rectification": {
+          "title": "Corregir un dato (rectificación)",
+          "body": "Un dato inexacto o incompleto."
+        },
+        "cancellation": {
+          "title": "Borrar mis datos (cancelación)",
+          "body": "Que los eliminemos cuando ya no los necesitemos por ley."
+        },
+        "opposition": {
+          "title": "Oponerme a un uso (oposición)",
+          "body": "Que dejemos de usar tus datos para un fin específico."
+        },
+        "automated": {
+          "title": "Pedir revisión humana de una decisión automática",
+          "body": "Por ejemplo, si el sistema antifraude te negó la prueba gratis."
+        }
+      },
+      "description": "Cuéntanos qué datos y qué necesitas",
+      "dataLocation": "Dónde los viste (pantalla, correo, fecha)",
+      "correctValue": "El dato correcto",
+      "optional": "opcional",
+      "identity": "Te respondemos a {correo}, el correo de tu cuenta. Si actúas por otra persona, adjunta su poder respondiendo a nuestro correo.",
+      "submit": "Enviar solicitud",
+      "sent": "Listo. Recibimos tu solicitud; te respondemos a más tardar en 20 días al correo de tu cuenta.",
+      "errors": {
+        "description": "Escribe qué datos y qué necesitas.",
+        "correctValue": "Escribe el dato correcto.",
+        "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo."
+      }
+    }
+  },
+  "takedown": {
+    "metaTitle": "Aviso de derechos de autor",
+    "metaDescription": "Reporta contenido en Chalyb que infringe tus derechos de autor.",
+    "title": "Aviso de derechos de autor",
+    "policy": "Política de Uso Aceptable, sección 5",
+    "intro": "Si eres titular de derechos de autor (o su representante) y crees que contenido en Chalyb los infringe, envíanos este aviso.",
+    "steps": {
+      "remove": "Si tiene los datos mínimos, retiramos el contenido de manera expedita.",
+      "block": "Tomamos medidas para que el mismo contenido no se vuelva a subir.",
+      "notify": "Avisamos a quien lo subió y le enviamos copia del aviso.",
+      "counter": "Si esa persona envía un contra-aviso, te lo informamos: tienes 15 días hábiles para acreditar que iniciaste un procedimiento, o restablecemos el contenido."
+    },
+    "policyLinkLead": "Todo el procedimiento está en la",
+    "policyLink": "Política de Uso Aceptable, sección 5",
+    "form": {
+      "claimantName": {
+        "label": "Tu nombre (titular o representante legal)",
+        "hint": "Nombre completo o razón social"
+      },
+      "claimantContact": {
+        "label": "Cómo te contactamos",
+        "hint": "Correo o teléfono"
+      },
+      "contentIdentification": {
+        "label": "Qué contenido reclamas",
+        "hint": "Por ejemplo: el clip con la canción X"
+      },
+      "rightStatement": {
+        "label": "Qué derecho tienes sobre la obra",
+        "hint": "Por ejemplo: soy el autor; represento al sello Y"
+      },
+      "contentLocation": {
+        "label": "Dónde está el contenido",
+        "hint": "Enlace, nombre de la cuenta y fecha"
+      },
+      "workDescription": {
+        "label": "Descripción de la obra protegida",
+        "hint": "Por ejemplo: canción, video, fotografía"
+      },
+      "ownershipEvidence": {
+        "label": "Documentos que acreditan tu titularidad o representación",
+        "hint": "Enlaces o descripción"
+      },
+      "optional": "opcional",
+      "optionalNote": "Lo siguiente es opcional: nos ayuda a resolver más rápido, pero no condiciona el retiro.",
+      "truthful": "Declaro que la información de este aviso es verdadera",
+      "required": "Este dato es obligatorio.",
+      "submit": "Enviar aviso",
+      "error": "No pudimos enviar el aviso. Revisa los datos e inténtalo de nuevo.",
+      "sentTitle": "Recibimos tu aviso.",
+      "sentBody": "Lo revisamos y te contactamos al medio que nos diste.",
+      "folio": "Folio {folio}."
     }
   }
 }

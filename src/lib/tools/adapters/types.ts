@@ -23,6 +23,9 @@ export const CLIP_FAILURE_REASONS = [
   'video_too_long',
   'no_credits',
   'platform_down',
+  // Hub-side: the source was removed after a copyright notice and can't be
+  // uploaded again (Uso aceptable §5.2.3). Refused before the engine sees it.
+  'content_blocked',
   'unknown',
 ] as const;
 export type ClipFailureReason = (typeof CLIP_FAILURE_REASONS)[number];

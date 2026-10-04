@@ -14,7 +14,11 @@ import type { ActivityEvent } from './activity';
 const DAY = 86_400_000;
 type Admin = ReturnType<typeof createAdminClient>;
 
-async function safe<T>(label: string, fallback: T, fn: (db: Admin) => Promise<T>): Promise<{ data: T; failed: boolean }> {
+async function safe<T>(
+  label: string,
+  fallback: T,
+  fn: (db: Admin) => Promise<T>,
+): Promise<{ data: T; failed: boolean }> {
   try {
     return { data: await fn(createAdminClient()), failed: false };
   } catch (e) {
@@ -47,7 +51,9 @@ export function loadPayments(now = new Date()) {
     rows<PaymentFact>(
       await db
         .from('payments')
-        .select('id, user_id, amount_cents, currency, status, refunded_cents, kind, plan_key, mp_preapproval_id, created_at')
+        .select(
+          'id, user_id, amount_cents, currency, status, refunded_cents, kind, plan_key, mp_preapproval_id, created_at',
+        )
         .gte('created_at', since)
         .order('created_at', { ascending: false })
         .limit(5000),
@@ -70,11 +76,17 @@ export interface ToolHealthRow {
 }
 
 /** Customer tools with their health (hidden internal ones left out). */
-export async function loadToolHealth(now = new Date()): Promise<{ data: ToolHealthRow[]; failed: boolean }> {
+export async function loadToolHealth(
+  now = new Date(),
+): Promise<{ data: ToolHealthRow[]; failed: boolean }> {
   return safe('tool health', [] as ToolHealthRow[], async (db) => {
-    const engines = rows<{ id: string; slug: string; name: string; status: string; engine_health: { state: string }[] | null }>(
-      await db.from('engines').select('id, slug, name, status, engine_health(state)'),
-    );
+    const engines = rows<{
+      id: string;
+      slug: string;
+      name: string;
+      status: string;
+      engine_health: { state: string }[] | null;
+    }>(await db.from('engines').select('id, slug, name, status, engine_health(state)'));
     const failures = rows<{ metadata: { tool?: string } | null }>(
       await db
         .from('audit_events')
@@ -103,24 +115,59 @@ export async function loadToolHealth(now = new Date()): Promise<{ data: ToolHeal
   });
 }
 
-export async function loadAttention(subs: readonly SubRow[], tools: readonly ToolHealthRow[], now = new Date()) {
+export async function loadAttention(
+  subs: readonly SubRow[],
+  tools: readonly ToolHealthRow[],
+  now = new Date(),
+) {
   const t = now.getTime();
   const since30 = new Date(t - 30 * DAY).toISOString();
   return safe('attention', null as AttentionCounts | null, async (db) => {
-    const [cobro, ideas, bounced] = await Promise.all([
-      db.from('partner_inquiries').select('id', { count: 'exact', head: true }).ilike('message', '[cobro]%').is('read_at_admin', null),
-      db.from('partner_inquiries').select('id', { count: 'exact', head: true }).eq('pane', 'idea').is('read_at_admin', null),
-      db.from('email_dispatches').select('user_id').not('bounced_at', 'is', null).gte('sent_at', since30).limit(1000),
+    const soon = new Date(t + 5 * DAY).toISOString();
+    const [cobro, ideas, bounced, arco, takedowns] = await Promise.all([
+      db
+        .from('partner_inquiries')
+        .select('id', { count: 'exact', head: true })
+        .ilike('message', '[cobro]%')
+        .is('read_at_admin', null),
+      db
+        .from('partner_inquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('pane', 'idea')
+        .is('read_at_admin', null),
+      db
+        .from('email_dispatches')
+        .select('user_id')
+        .not('bounced_at', 'is', null)
+        .gte('sent_at', since30)
+        .limit(1000),
+      db
+        .from('arco_requests')
+        .select('id', { count: 'exact', head: true })
+        .is('responded_at', null)
+        .lte('respond_by', soon),
+      db
+        .from('takedown_notices')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['received', 'counter_noticed']),
     ]);
     for (const r of [cobro, ideas, bounced]) if (r.error) throw new Error(r.error.message);
-    const bouncedUsers = new Set(((bounced.data ?? []) as { user_id: string }[]).map((r) => r.user_id));
-    for (const s of subs) if (s.charge_hold_until && Date.parse(s.charge_hold_until) > t) bouncedUsers.add(s.user_id);
+    const bouncedUsers = new Set(
+      ((bounced.data ?? []) as { user_id: string }[]).map((r) => r.user_id),
+    );
+    for (const s of subs)
+      if (s.charge_hold_until && Date.parse(s.charge_hold_until) > t) bouncedUsers.add(s.user_id);
     return {
-      failedCharges: subs.filter((s) => s.status === 'paused' || (s.grace_ends_at && Date.parse(s.grace_ends_at) > t)).length,
+      failedCharges: subs.filter(
+        (s) => s.status === 'paused' || (s.grace_ends_at && Date.parse(s.grace_ends_at) > t),
+      ).length,
       refundRequests: cobro.count ?? 0,
       slowTools: tools.filter((x) => x.status === 'active' && x.health !== 'ok').length,
       newIdeas: ideas.count ?? 0,
       bouncedNotices: bouncedUsers.size,
+      // Legal (0055); before the migration runs these read as 0.
+      arcoDue: arco.error ? 0 : (arco.count ?? 0),
+      takedownsOpen: takedowns.error ? 0 : (takedowns.count ?? 0),
       // Charged after the notice was due without it ever being delivered
       // (terms §7.3: refundable).
       chargesWithoutNotice: subs.filter(
@@ -144,23 +191,47 @@ export interface PeopleData {
 export async function loadPeople(now = new Date()) {
   return safe('people', { people: [], lastCharge: new Map() } as PeopleData, async (db) => {
     const [profiles, subs, pays] = await Promise.all([
-      db.from('profiles').select('id, email, full_name, role, tier, created_at').order('created_at', { ascending: false }).limit(2000),
-      db.from('subscriptions').select(SUB_COLS).order('created_at', { ascending: false }).limit(5000),
+      db
+        .from('profiles')
+        .select('id, email, full_name, role, tier, created_at')
+        .order('created_at', { ascending: false })
+        .limit(2000),
+      db
+        .from('subscriptions')
+        .select(SUB_COLS)
+        .order('created_at', { ascending: false })
+        .limit(5000),
       db
         .from('payments')
-        .select('id, user_id, amount_cents, currency, status, refunded_cents, mp_payment_id, created_at')
+        .select(
+          'id, user_id, amount_cents, currency, status, refunded_cents, mp_payment_id, created_at',
+        )
         .in('status', ['approved', 'accredited', 'processed'])
         .order('created_at', { ascending: false })
         .limit(5000),
     ]);
-    const prof = rows<{ id: string; email: string | null; full_name: string | null; role: string; tier: string; created_at: string }>(profiles);
+    const prof = rows<{
+      id: string;
+      email: string | null;
+      full_name: string | null;
+      role: string;
+      tier: string;
+      created_at: string;
+    }>(profiles);
     const subByUser = new Map<string, SubRow>();
     for (const s of rows<SubRow>(subs)) if (!subByUser.has(s.user_id)) subByUser.set(s.user_id, s);
     const lastCharge: PeopleData['lastCharge'] = new Map();
-    for (const p of rows<{ id: string; user_id: string; amount_cents: number; refunded_cents: number | null; mp_payment_id: string | null }>(pays)) {
+    for (const p of rows<{
+      id: string;
+      user_id: string;
+      amount_cents: number;
+      refunded_cents: number | null;
+      mp_payment_id: string | null;
+    }>(pays)) {
       if (lastCharge.has(p.user_id)) continue;
       const left = p.amount_cents - (p.refunded_cents ?? 0);
-      if (left > 0) lastCharge.set(p.user_id, { paymentId: p.id, cents: left, mpPaymentId: p.mp_payment_id });
+      if (left > 0)
+        lastCharge.set(p.user_id, { paymentId: p.id, cents: left, mpPaymentId: p.mp_payment_id });
     }
     const t = now.getTime();
     const people: PersonRow[] = prof
@@ -171,7 +242,8 @@ export async function loadPeople(now = new Date()) {
           id: p.id,
           name: p.full_name || (p.email ?? '').split('@')[0] || '—',
           email: p.email ?? '',
-          plan: p.tier === 'VIP' ? 'VIP' : p.tier === 'PRO' || p.tier === 'PARTNER' ? 'Pro' : 'Gratis',
+          plan:
+            p.tier === 'VIP' ? 'VIP' : p.tier === 'PRO' || p.tier === 'PARTNER' ? 'Pro' : 'Gratis',
           status: personStatus(sub, t),
           since: sub?.started_at ?? sub?.created_at ?? p.created_at ?? '',
           sub,
@@ -246,21 +318,73 @@ export async function loadActivity(now = new Date()) {
   const since = new Date(now.getTime() - 30 * DAY).toISOString();
   return safe('activity', [] as ActivityEvent[][], async (db) => {
     const [audit, pays, cancels, bounces, consents, profiles] = await Promise.all([
-      db.from('audit_events').select('id, action, actor_email, target_email, metadata, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(300),
-      db.from('payments').select('id, user_id, amount_cents, currency, status, refunded_cents, kind, plan_key, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(300),
-      db.from('cancellation_events').select('folio_cancelacion, user_id, requested_at').gte('requested_at', since).limit(300),
-      db.from('email_dispatches').select('id, user_id, kind, bounced_at').not('bounced_at', 'is', null).gte('sent_at', since).limit(300),
-      db.from('consent_events').select('consent_id, user_id, event_type, inserted_at').gte('inserted_at', since).order('inserted_at', { ascending: false }).limit(300),
+      db
+        .from('audit_events')
+        .select('id, action, actor_email, target_email, metadata, created_at')
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(300),
+      db
+        .from('payments')
+        .select(
+          'id, user_id, amount_cents, currency, status, refunded_cents, kind, plan_key, created_at',
+        )
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(300),
+      db
+        .from('cancellation_events')
+        .select('folio_cancelacion, user_id, requested_at')
+        .gte('requested_at', since)
+        .limit(300),
+      db
+        .from('email_dispatches')
+        .select('id, user_id, kind, bounced_at')
+        .not('bounced_at', 'is', null)
+        .gte('sent_at', since)
+        .limit(300),
+      db
+        .from('consent_events')
+        .select('consent_id, user_id, event_type, inserted_at')
+        .gte('inserted_at', since)
+        .order('inserted_at', { ascending: false })
+        .limit(300),
       db.from('profiles').select('id, email').limit(5000),
     ]);
-    const emails = new Map(rows<{ id: string; email: string | null }>(profiles).map((p) => [p.id, p.email]));
+    const emails = new Map(
+      rows<{ id: string; email: string | null }>(profiles).map((p) => [p.id, p.email]),
+    );
     const who = (id: string | null) => (id ? (emails.get(id) ?? null) : null);
-    const money = (c: number) => `$${(c / 100).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
+    const money = (c: number) =>
+      `$${(c / 100).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
 
-    const auditEvents: ActivityEvent[] = rows<{ id: string; action: string; actor_email: string | null; target_email: string | null; metadata: Record<string, unknown> | null; created_at: string }>(audit).map((a) =>
+    const auditEvents: ActivityEvent[] = rows<{
+      id: string;
+      action: string;
+      actor_email: string | null;
+      target_email: string | null;
+      metadata: Record<string, unknown> | null;
+      created_at: string;
+    }>(audit).map((a) =>
       a.action === 'clips.job_failed'
-        ? { id: `a:${a.id}`, at: a.created_at, type: 'tool', tool: 'chalybclip', title: 'Clips falló', detail: String(a.metadata?.reason ?? ''), who: a.target_email }
-        : { id: `a:${a.id}`, at: a.created_at, type: 'admin', tool: typeof a.metadata?.slug === 'string' ? (a.metadata.slug as string) : null, title: AUDIT_TITLES[a.action] ?? a.action, detail: a.target_email, who: a.actor_email },
+        ? {
+            id: `a:${a.id}`,
+            at: a.created_at,
+            type: 'tool',
+            tool: 'chalybclip',
+            title: 'Clips falló',
+            detail: String(a.metadata?.reason ?? ''),
+            who: a.target_email,
+          }
+        : {
+            id: `a:${a.id}`,
+            at: a.created_at,
+            type: 'admin',
+            tool: typeof a.metadata?.slug === 'string' ? (a.metadata.slug as string) : null,
+            title: AUDIT_TITLES[a.action] ?? a.action,
+            detail: a.target_email,
+            who: a.actor_email,
+          },
     );
     const payEvents: ActivityEvent[] = rows<PaymentFact>(pays).map((p) => {
       const refunded = (p.refunded_cents ?? 0) > 0 || p.status === 'refunded';
@@ -275,14 +399,46 @@ export async function loadActivity(now = new Date()) {
         who: who(p.user_id),
       };
     });
-    const cancelEvents: ActivityEvent[] = rows<{ folio_cancelacion: string; user_id: string; requested_at: string }>(cancels).map((c) => ({
-      id: `c:${c.folio_cancelacion}`, at: c.requested_at, type: 'cancel', tool: null, title: 'Canceló su plan', detail: `Folio ${c.folio_cancelacion}`, who: who(c.user_id),
+    const cancelEvents: ActivityEvent[] = rows<{
+      folio_cancelacion: string;
+      user_id: string;
+      requested_at: string;
+    }>(cancels).map((c) => ({
+      id: `c:${c.folio_cancelacion}`,
+      at: c.requested_at,
+      type: 'cancel',
+      tool: null,
+      title: 'Canceló su plan',
+      detail: `Folio ${c.folio_cancelacion}`,
+      who: who(c.user_id),
     }));
-    const bounceEvents: ActivityEvent[] = rows<{ id: string; user_id: string; kind: string; bounced_at: string }>(bounces).map((b) => ({
-      id: `b:${b.id}`, at: b.bounced_at, type: 'notice', tool: null, title: 'Un aviso de cobro rebotó', detail: `${b.kind} · el cobro espera 5 días después de un aviso entregado`, who: who(b.user_id),
+    const bounceEvents: ActivityEvent[] = rows<{
+      id: string;
+      user_id: string;
+      kind: string;
+      bounced_at: string;
+    }>(bounces).map((b) => ({
+      id: `b:${b.id}`,
+      at: b.bounced_at,
+      type: 'notice',
+      tool: null,
+      title: 'Un aviso de cobro rebotó',
+      detail: `${b.kind} · el cobro espera 5 días después de un aviso entregado`,
+      who: who(b.user_id),
     }));
-    const consentEvents: ActivityEvent[] = rows<{ consent_id: string; user_id: string; event_type: string; inserted_at: string }>(consents).map((c) => ({
-      id: `k:${c.consent_id}`, at: c.inserted_at, type: 'consent', tool: null, title: CONSENT_TITLES[c.event_type] ?? c.event_type, detail: `Folio ${c.consent_id.slice(0, 8)}`, who: who(c.user_id),
+    const consentEvents: ActivityEvent[] = rows<{
+      consent_id: string;
+      user_id: string;
+      event_type: string;
+      inserted_at: string;
+    }>(consents).map((c) => ({
+      id: `k:${c.consent_id}`,
+      at: c.inserted_at,
+      type: 'consent',
+      tool: null,
+      title: CONSENT_TITLES[c.event_type] ?? c.event_type,
+      detail: `Folio ${c.consent_id.slice(0, 8)}`,
+      who: who(c.user_id),
     }));
     return [auditEvents, payEvents, cancelEvents, bounceEvents, consentEvents];
   });
@@ -313,7 +469,9 @@ export async function loadDisputes() {
     const list = rows<Omit<DisputeRow, 'person'>>(
       await db
         .from('chargebacks')
-        .select('id, user_id, mp_payment_id, amount_cents, charged_at, opened_at, triage, triage_reason, resolution, evidence_sha256, notice_sent_at, deadline_utc, response_accepted, paid_at, decision')
+        .select(
+          'id, user_id, mp_payment_id, amount_cents, charged_at, opened_at, triage, triage_reason, resolution, evidence_sha256, notice_sent_at, deadline_utc, response_accepted, paid_at, decision',
+        )
         .order('opened_at', { ascending: false })
         .limit(100),
     );

@@ -39,7 +39,12 @@ export type AuditAction =
   | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
   | 'engine.visibility' // showed or hid a tool for customers
   | 'settings.billing_toggle' // Mensual/Anual offered or not
-  | 'settings.usage_margin'; // margin charged on top of provider cost
+  | 'settings.usage_margin' // margin charged on top of provider cost
+  // Old P6-7/P6-8 (legal): ARCO requests, copyright takedowns, retention.
+  | 'legal.arco' // an ARCO request received or answered (Aviso de privacidad §5)
+  | 'legal.takedown' // a step of a copyright notice (Uso aceptable §5)
+  | 'legal.repeat_infringer' // an account reached the repeat-infringer threshold (§5.4)
+  | 'legal.retention'; // the 72-month purge of non-compliance marks (Aviso §9.1)
 
 export interface AuditPayload {
   action: AuditAction;

@@ -7,7 +7,16 @@ import 'server-only';
 import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export type UserNoticeKind = 'clipsReady' | 'trial7' | 'renew' | 'pastDue' | 'liveEnded' | 'signal';
+export type UserNoticeKind =
+  | 'clipsReady'
+  | 'trial7'
+  | 'renew'
+  | 'pastDue'
+  | 'liveEnded'
+  | 'signal'
+  | 'contentRemoved'
+  | 'contentRestored'
+  | 'arcoReceived';
 
 export async function addUserNotice(input: {
   userId: string;

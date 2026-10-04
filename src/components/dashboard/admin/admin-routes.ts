@@ -18,6 +18,8 @@ export const ADMIN_NAV: { key: AdminNavKey; href: string }[] = [
 
 /** Main's other admin screens, unchanged, under "Más". */
 export const ADMIN_MORE: { key: string; href: string }[] = [
+  // Old P6-8: ARCO requests and copyright notices (light design, (admin)).
+  { key: 'legal', href: '/dashboard/legal' },
   { key: 'overview', href: '/dashboard/overview' },
   { key: 'team', href: '/dashboard/team' },
   { key: 'engines', href: '/dashboard/engines' },

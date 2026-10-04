@@ -219,7 +219,7 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
               icon={<Database />}
               iconColor="#5E5E66"
               title={t('privacy.arco')}
-              href="/app/messages"
+              href="/app/settings/arco"
             />
             <Row
               icon={<ReceiptText />}

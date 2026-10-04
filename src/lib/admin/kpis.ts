@@ -77,7 +77,10 @@ export interface NetRevenue {
 }
 
 /** Revenue of a window = settled charges − refunds on them. */
-export function netRevenue(payments: readonly PaymentFact[], w: { start: Date; end: Date }): NetRevenue {
+export function netRevenue(
+  payments: readonly PaymentFact[],
+  w: { start: Date; end: Date },
+): NetRevenue {
   const rows = payments.filter((p) => inWindow(p.created_at, w));
   const gross = summariseMoney(rows);
   let refunded = 0;
@@ -148,7 +151,8 @@ export function commandKpis(
 
   return {
     revenue,
-    revenueDelta: prev.count === 0 ? null : delta(revenue.netCents, prev.netCents, MIN_BASE.revenueCents),
+    revenueDelta:
+      prev.count === 0 ? null : delta(revenue.netCents, prev.netCents, MIN_BASE.revenueCents),
     subscribers: paying.length,
     subscribersNew,
     trials: trials.length,
@@ -181,7 +185,9 @@ export function moneyPage(
   const k = commandKpis(payments, subs, now);
   const thisMonth = payments.filter((p) => inWindow(p.created_at, month));
   const firsts = firstCharges(payments);
-  const started = subs.filter((s) => s.trial_ends_at && inWindow(s.started_at ?? s.created_at, month));
+  const started = subs.filter(
+    (s) => s.trial_ends_at && inWindow(s.started_at ?? s.created_at, month),
+  );
   return {
     revenue: k.revenue,
     trialsPaid: k.trialsPaid,
@@ -208,7 +214,8 @@ export type MovementState = 'charged' | 'failed' | 'refunded' | 'pending';
 
 /** Estado for the movements table: Cobrado / Falló / Reembolsado / Pendiente. */
 export function movementState(p: Pick<PaymentFact, 'status' | 'refunded_cents'>): MovementState {
-  if (p.status === 'refunded' || p.status === 'charged_back' || (p.refunded_cents ?? 0) > 0) return 'refunded';
+  if (p.status === 'refunded' || p.status === 'charged_back' || (p.refunded_cents ?? 0) > 0)
+    return 'refunded';
   if (isSettledPaymentStatus(p.status)) return 'charged';
   if (p.status === 'rejected' || p.status === 'cancelled') return 'failed';
   return 'pending';
