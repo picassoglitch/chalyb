@@ -32,9 +32,12 @@
     },
     "hero": {
       "eyebrowTag": "Todo incluido",
+      "eyebrowTagNoClaim": "Todo en español",
       "eyebrow": "Un plan, todas las herramientas",
+      "eyebrowNoClaim": "Herramientas que trabajan por ti",
       "title": "Tú duermes. <em>Tus bots trabajan.</em>",
       "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más, en un solo plan.",
+      "subNoClaim": "Clips para tus redes, señales de cripto, tu transmisión y mucho más.",
       "noteStrong": "Cancela cuando quieras.",
       "noteRest": "Hoy pagas {cero}.",
       "seal1": "En español",
@@ -51,6 +54,7 @@
     "tools": {
       "label": "Herramientas",
       "title": "Todo en un solo plan",
+      "titleNoClaim": "Herramientas que trabajan por ti",
       "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen incluidas en Pro.",
       "subNoClaim": "Cada herramienta hace una cosa y la hace por ti.",
       "included": "Incluido en Pro",
@@ -162,7 +166,10 @@
       "q1": "¿De verdad los primeros 7 días son gratis?",
       "a1": "Sí, en cualquier plan, mensual o anual, la primera vez. Hoy pagas {cero} y hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Si no quieres seguir, cancelas en 1 clic antes de esa fecha y no se te cobra nada.",
       "q2": "¿Cuánto pago después de los 7 días?",
+      "q2NoTrial": "¿Cuánto cuesta Pro?",
       "a2": "Pro cuesta {pro_mes} MXN al mes o {pro_anual} MXN al año, IVA incluido. Antes de cada renovación te avisamos por correo.",
+      "a2Month": "Pro cuesta {pro_mes} MXN al mes, IVA incluido. Antes de cada renovación te avisamos por correo.",
+      "a2Year": "Pro cuesta {pro_anual} MXN al año, IVA incluido. Antes de cada renovación te avisamos por correo.",
       "q3": "¿Cómo cancelo?",
       "a3": "Entra a Mi cuenta → Mi plan → Cancelar. Es 1 clic y 1 confirmación, sin llamadas. Sigues con tu plan hasta el final del periodo que pagaste.",
       "q4": "¿Necesito saber de tecnología?",
@@ -175,12 +182,15 @@
       "q7": "¿Cómo pago?",
       "a7": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
       "q8": "¿Puedo cambiar de plan?",
-      "a8": "Sí. Desde Mi cuenta → Mi plan puedes pasar de mensual a anual, subir a VIP o volver a Gratis cuando quieras."
+      "a8": "Sí. Desde Mi cuenta → Mi plan puedes pasar de mensual a anual, subir a VIP o volver a Gratis cuando quieras.",
+      "a8OneInterval": "Sí. Desde Mi cuenta → Mi plan puedes subir a VIP o volver a Gratis cuando quieras."
     },
     "final": {
       "title": "Empieza hoy. <em>Mañana ya trabajan por ti.</em>",
       "sub": "{lista}. Todo en un solo plan.",
+      "subNoClaim": "{lista}.",
       "subMobile": "Todas las herramientas en un solo plan.",
+      "subMobileNoClaim": "Todo desde tu celular o tu computadora.",
       "note": "Hoy pagas {cero}. Cancela cuando quieras."
     },
     "publicFooter": {
@@ -232,7 +242,7 @@
     "ctaSubShort": "Cancela cuando quieras.",
     "meta": {
       "title": "Chalyb: bots que trabajan por ti mientras duermes",
-      "description": "Clips para tus redes, señales de cripto, tu transmisión y más en un solo plan. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
+      "description": "Clips para tus redes, señales de cripto, tu transmisión y más. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
     }
   },
   "auth": {

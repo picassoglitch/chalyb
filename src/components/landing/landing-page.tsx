@@ -11,7 +11,7 @@ import { allToolsClaimAllowed, trialFlowEnabled } from '@/lib/config/flags';
 import { listActiveTools } from '@/lib/tools/public-tools-server';
 import { loadPlansProps } from '@/lib/billing/plans-props';
 import { formatMXN } from '@/lib/billing/format';
-import { landingTrialHref } from './links';
+import { landingTrialHref, trialCtaLabel } from './links';
 import { Hero } from './hero';
 import { ToolsSection } from './tools';
 import { HowItWorks } from './how-it-works';
@@ -38,7 +38,11 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
   const claimAll = allToolsClaimAllowed();
   const href = (from: Parameters<typeof landingTrialHref>[0]['from']) =>
     landingTrialHref({ from, trialFlowEnabled: flow, signedIn });
-  const ctaLabel = flow ? t('cta') : t('ctaNoTrial');
+  // Signed in: "Ver planes" → /planes, never the trial promise; the trial
+  // notes (hero.noteRest, sticky.note, final.note) only for a visitor who
+  // can still start it (K-7).
+  const ctaLabel = t(trialCtaLabel({ trialFlowEnabled: flow, signedIn }));
+  const trialOffered = flow && !signedIn;
   const plans = await loadPlansProps(locale);
 
   return (
@@ -48,7 +52,12 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
       </a>
       <PublicNav signedIn={signedIn} />
       <main id="main">
-        <Hero trialHref={href('hero_trial')} ctaLabel={ctaLabel} />
+        <Hero
+          trialHref={href('hero_trial')}
+          ctaLabel={ctaLabel}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+        />
         <ToolsSection
           tools={tools}
           claimAll={claimAll}
@@ -59,21 +68,28 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
         {tools.some((tool) => tool.slug === 'chalybclip') && <Gallery />}
         <Audience tools={tools} />
         <PlansSummary {...plans} />
-        <Faq tools={tools} locale={locale} trialOffered={flow} claimAll={claimAll} />
+        <Faq
+          tools={tools}
+          locale={locale}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+          intervals={plans.intervals}
+        />
         <Partner />
         <FinalCta
           tools={tools}
           locale={locale}
           trialHref={href('final_trial')}
           ctaLabel={ctaLabel}
-          trialOffered={flow}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
         />
       </main>
       <PublicFooter onLanding />
       <StickyCta
         href={href('sticky_trial')}
         label={ctaLabel}
-        note={flow ? t('sticky.note', { cero: formatMXN(0) }) : null}
+        note={trialOffered ? t('sticky.note', { cero: formatMXN(0) }) : null}
       />
       <LandingClient signedIn={signedIn} />
       <JsonLd />

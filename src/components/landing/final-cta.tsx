@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { formatMXN } from '@/lib/billing/format';
 import { toolList, type PublicTool } from '@/lib/tools/public-tools';
+import { claimKey } from './claims';
 
 // 9 · CTA final (LANDING-SPEC §3.10), with the active tools.
 
@@ -12,12 +13,14 @@ export async function FinalCta({
   trialHref,
   ctaLabel,
   trialOffered,
+  claimAll,
 }: {
   tools: PublicTool[];
   locale: string;
   trialHref: Route;
   ctaLabel: string;
   trialOffered: boolean;
+  claimAll: boolean;
 }) {
   const t = await getTranslations('landing.final');
   return (
@@ -26,10 +29,16 @@ export async function FinalCta({
         <div className="pub-final2">
           <h2 id="final-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h2>
           <p>
-            <span className="pub-only-desk">{t('sub', { lista: toolList(tools, locale) })}</span>
-            <span className="pub-only-mob">{t('subMobile')}</span>
+            <span className="pub-only-desk">
+              {t(claimKey('finalSub', claimAll), { lista: toolList(tools, locale) })}
+            </span>
+            <span className="pub-only-mob">{t(claimKey('finalSubMobile', claimAll))}</span>
           </p>
-          <Link href={trialHref} className="ch-btn ch-btn--white pub-final2__cta" data-cta="final_trial">
+          <Link
+            href={trialHref}
+            className="ch-btn ch-btn--white pub-final2__cta"
+            data-cta="final_trial"
+          >
             {ctaLabel}
           </Link>
           {trialOffered && <small>{t('note', { cero: formatMXN(0) })}</small>}

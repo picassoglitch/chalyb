@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { landingTrialHref, tagPricingHref } from '@/components/landing/links';
 import { faqItems } from '@/components/landing/faq-items';
+import { CLAIM_COPY, claimKey } from '@/components/landing/claims';
 import { planPrice } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { faqPageData, jsonLdData } from '@/lib/seo/json-ld';
@@ -23,6 +24,7 @@ function filesUnder(dir: string): string[] {
 }
 
 const es = JSON.parse(readFileSync(join(ROOT, 'messages/es.json'), 'utf8'));
+const en = JSON.parse(readFileSync(join(ROOT, 'messages/en.json'), 'utf8'));
 const faqT = (key: string, values: Record<string, string> = {}) =>
   (es.landing.faq[key] as string).replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
 
@@ -77,14 +79,14 @@ test('landingTrialHref: sign-up with the trial intent, the toggle interval and `
     );
 });
 
-test('landingTrialHref: no trial claim without the flow; the app for a signed-in visitor', () => {
+test('landingTrialHref: no trial claim without the flow; Planes for a signed-in visitor', () => {
   const off = landingTrialHref({ from: 'final_trial', trialFlowEnabled: false, signedIn: false });
   assert.equal(off, '/sign-in?mode=signup&plan=pro&interval=year&from=final_trial');
   assert.doesNotMatch(off, /intent=trial/);
   for (const trialFlowEnabled of [true, false])
     assert.equal(
       landingTrialHref({ from: 'hero_trial', trialFlowEnabled, signedIn: true }),
-      '/app/prueba',
+      '/planes',
     );
 });
 
@@ -149,7 +151,13 @@ test('json-ld.tsx still gates the offers on paid checkout and published terms', 
 });
 
 test('FAQPage: the 8 questions, Q1 only with the trial, Q6 only with Señales', () => {
-  const opts = { tools: TOOLS, locale: 'es', trialOffered: true, claimAll: true };
+  const opts = {
+    tools: TOOLS,
+    locale: 'es',
+    trialOffered: true,
+    claimAll: true,
+    intervals: ['month', 'year'] as const,
+  };
   const all = faqItems(faqT, opts);
   assert.deepEqual(
     all.map((i) => i.id),
@@ -187,4 +195,71 @@ test('FAQPage: the 8 questions, Q1 only with the trial, Q6 only with Señales', 
     name: all[0]!.q,
     acceptedAnswer: { '@type': 'Answer', text: all[0]!.a },
   });
+});
+
+test('FAQ q2/a2/a8 name only what is on sale', () => {
+  const base = { tools: TOOLS, locale: 'es', trialOffered: true, claimAll: true };
+  const item = (id: number, o: Partial<Parameters<typeof faqItems>[1]>) =>
+    faqItems(faqT, { ...base, intervals: ['month', 'year'], ...o }).find((i) => i.id === id)!;
+  const mes = formatMXN(planPrice('pro_month').totalCents);
+  const anual = formatMXN(planPrice('pro_year').totalCents);
+
+  assert.equal(item(2, {}).q, es.landing.faq.q2);
+  assert.equal(item(2, { trialOffered: false }).q, es.landing.faq.q2NoTrial);
+  assert.doesNotMatch(item(2, { trialOffered: false }).q, /7 días/);
+
+  const onlyMonth = item(2, { intervals: ['month'] }).a;
+  assert.ok(onlyMonth.includes(mes));
+  assert.ok(!onlyMonth.includes(anual), 'no annual price when annual is not sold');
+  const onlyYear = item(2, { intervals: ['year'] }).a;
+  assert.ok(onlyYear.includes(anual) && !onlyYear.includes(mes));
+
+  assert.match(item(8, {}).a, /mensual a anual/);
+  for (const intervals of [['month'], ['year']] as const)
+    assert.doesNotMatch(item(8, { intervals }).a, /mensual|anual/);
+});
+
+// ---------- C4 / C15 · all-tools claims only with allToolsClaimAllowed ----------
+
+const CLAIM =
+  /todo incluido|incluidas|un solo plan|un plan, todas|todas las herramientas(?! funcionan)|all included|every tool included|in one plan|one plan, every|every tool:|everything in one plan|all in one/i;
+
+test('C4 · every landing claim has a NoClaim variant that makes no all-tools claim', () => {
+  for (const [name, c] of Object.entries(CLAIM_COPY)) {
+    for (const [loc, m] of [
+      ['es', es],
+      ['en', en],
+    ] as const) {
+      const copy = m.landing[c.ns] as Record<string, string>;
+      assert.ok(copy[c.claim], `${loc} landing.${c.ns}.${c.claim}`);
+      assert.ok(copy[c.noClaim], `${loc} landing.${c.ns}.${c.noClaim}`);
+      assert.doesNotMatch(copy[c.noClaim]!, CLAIM, `${loc} ${name}: ${copy[c.noClaim]}`);
+    }
+    assert.equal(claimKey(name as keyof typeof CLAIM_COPY, false), c.noClaim);
+    assert.equal(claimKey(name as keyof typeof CLAIM_COPY, true), c.claim);
+  }
+  // The regex catches the claims it guards.
+  for (const k of ['eyebrowTag', 'eyebrow', 'sub'])
+    assert.match(es.landing.hero[k], CLAIM, `es hero.${k}`);
+  assert.match(es.landing.final.subMobile, CLAIM);
+});
+
+test('C4 · the meta description makes no all-tools claim', () => {
+  for (const m of [es, en]) assert.doesNotMatch(m.landing.meta.description, CLAIM);
+});
+
+test('C4 · landing components read claim copy only through claimKey()', () => {
+  const dir = join(ROOT, 'src/components/landing');
+  for (const f of filesUnder(dir)) {
+    const src = readFileSync(f, 'utf8');
+    const ns = src.match(/getTranslations\('landing\.(\w+)'\)/)?.[1];
+    if (!ns) continue;
+    for (const c of Object.values(CLAIM_COPY).filter((x) => x.ns === ns))
+      for (const key of [c.claim, c.noClaim])
+        assert.doesNotMatch(
+          src,
+          new RegExp(`\\bt\\('${key}'`),
+          `${f.slice(ROOT.length)} reads landing.${ns}.${key} without claimKey()`,
+        );
+  }
 });

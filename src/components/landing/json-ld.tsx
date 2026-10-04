@@ -12,6 +12,7 @@ import {
   trialFlowEnabled,
   vipYearEnabled,
 } from '@/lib/config/flags';
+import { offeredIntervals } from '@/lib/billing/plans-props';
 import { faqPageData, jsonLdData } from '@/lib/seo/json-ld';
 import { listActiveTools } from '@/lib/tools/public-tools-server';
 import { faqItems } from './faq-items';
@@ -27,10 +28,11 @@ function LdScript({ data }: { data: unknown }) {
 }
 
 export async function JsonLd() {
-  const [tools, locale, t] = await Promise.all([
+  const [tools, locale, t, intervals] = await Promise.all([
     listActiveTools(),
     getLocale(),
     getTranslations('landing.faq'),
+    offeredIntervals(),
   ]);
   const offers = paidCheckoutEnabled() && legalPublished();
   const faq = faqItems(t, {
@@ -38,6 +40,7 @@ export async function JsonLd() {
     locale,
     trialOffered: trialFlowEnabled(),
     claimAll: allToolsClaimAllowed(),
+    intervals,
   });
   return (
     <>

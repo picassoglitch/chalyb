@@ -5,13 +5,26 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { formatMXN } from '@/lib/billing/format';
 import { BrandMark } from './brand-mark';
+import { claimKey } from './claims';
 
 // 1 · Hero (LANDING-SPEC §3.2, mockup 42). The only h1. The visual is the
 // real app: the "Tus clips están listos" screen in a CSS laptop, Inicio in a
 // CSS phone (no person's name on either), and the clips notification. Only
 // the laptop image has priority (LCP).
 
-export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel: string }) {
+export async function Hero({
+  trialHref,
+  ctaLabel,
+  trialOffered,
+  claimAll,
+}: {
+  trialHref: Route;
+  ctaLabel: string;
+  /** hero.noteRest ("Hoy pagas …") only when this visitor can start the trial (K-7). */
+  trialOffered: boolean;
+  /** allToolsClaimAllowed(): "Todo incluido" and "un solo plan" only then. */
+  claimAll: boolean;
+}) {
   const t = await getTranslations('landing.hero');
   const cero = formatMXN(0);
   return (
@@ -19,17 +32,18 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
       <div className="pub-hero2__in">
         <div className="pub-hero2__copy">
           <p className="pub-kick">
-            <span>{t('eyebrowTag')}</span>
-            <span className="pub-kick__rest">{t('eyebrow')}</span>
+            <span>{t(claimKey('heroTag', claimAll))}</span>
+            <span className="pub-kick__rest">{t(claimKey('heroEyebrow', claimAll))}</span>
           </p>
           <h1 id="hero-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h1>
-          <p className="pub-hero2__sub">{t('sub')}</p>
+          <p className="pub-hero2__sub">{t(claimKey('heroSub', claimAll))}</p>
           <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
             {ctaLabel}
             <ArrowRight aria-hidden="true" />
           </Link>
           <p className="pub-hero2__note">
-            <b>{t('noteStrong')}</b> {t('noteRest', { cero })}
+            <b>{t('noteStrong')}</b>
+            {trialOffered && <> {t('noteRest', { cero })}</>}
           </p>
           <ul className="pub-trust">
             {(['seal1', 'seal2', 'seal3'] as const).map((k) => (
@@ -51,7 +65,11 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
                 width={1072}
                 height={670}
                 sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
-                priority
+                // The LCP: high fetch priority straight from the HTML (Next
+                // 16 deprecated `priority`; its preload carried no
+                // fetchpriority). The only image with priority (§7).
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
             <div className="pub-laptop__base" />

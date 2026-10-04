@@ -65,6 +65,15 @@ function lealtadProps(input: {
   return { offered: true, href: '/app/billing/cambiar?plan=pro_lealtad' };
 }
 
+/** Which Pro intervals are on sale: annual needs the new paid checkout
+ *  (V-1), monthly the owner's toggle. Shared with the landing's FAQ so its
+ *  answers quote only what the cards sell. */
+export async function offeredIntervals(): Promise<Interval[]> {
+  const annualOffered = paidCheckoutEnabled();
+  const monthlyOffered = await billingToggleEnabled();
+  return annualOffered ? (monthlyOffered ? ['month', 'year'] : ['year']) : ['month'];
+}
+
 export async function loadPlansProps(locale: string): Promise<PlansProps> {
   const user = await getCurrentUser().catch(() => null);
   const session = user ? await getSessionUser() : null;
@@ -74,13 +83,8 @@ export async function loadPlansProps(locale: string): Promise<PlansProps> {
   // Annual plans need the new paid checkout (V-1); the trial needs it too.
   const annualOffered = paidCheckoutEnabled();
   const vipYearOffered = vipYearEnabled();
-  const monthlyOffered = await billingToggleEnabled();
   const quebecBlocked = false;
-  const intervals: Interval[] = annualOffered
-    ? monthlyOffered
-      ? ['month', 'year']
-      : ['year']
-    : ['month'];
+  const intervals = await offeredIntervals();
   const defaultInterval: Interval = intervals.includes(PRICING.defaultInterval)
     ? PRICING.defaultInterval
     : intervals[0]!;

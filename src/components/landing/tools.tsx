@@ -5,6 +5,7 @@ import { Check, Info } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { PublicTool, ToolSlug } from '@/lib/tools/public-tools';
 import { ToolTile } from './tool-tile';
+import { claimKey } from './claims';
 import { SectionHead } from './section-head';
 
 // 2 · "Todo en un solo plan" (#herramientas, LANDING-SPEC §3.3). A bento of
@@ -78,8 +79,8 @@ export async function ToolsSection({
         <SectionHead
           id="tools-title"
           label={t('label')}
-          title={t('title')}
-          sub={claimAll ? t('sub') : t('subNoClaim')}
+          title={t(claimKey('toolsTitle', claimAll))}
+          sub={t(claimKey('toolsSub', claimAll))}
         />
         <ul className="pub-bento">
           {cards.map((c, i) => {

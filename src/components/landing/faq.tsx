@@ -14,16 +14,19 @@ export async function Faq({
   locale,
   trialOffered,
   claimAll,
+  intervals,
 }: {
   tools: PublicTool[];
   locale: string;
   /** The trial Q&A only when the trial can be started (K-7). */
   trialOffered: boolean;
   claimAll: boolean;
+  /** The Pro intervals on sale (offeredIntervals()). */
+  intervals: readonly ('month' | 'year')[];
 }) {
   const t = await getTranslations('landing.faq');
   // One source with the FAQPage JSON-LD (faq-items.ts).
-  const items = faqItems((k, v) => t(k, v), { tools, locale, trialOffered, claimAll });
+  const items = faqItems((k, v) => t(k, v), { tools, locale, trialOffered, claimAll, intervals });
 
   return (
     <section id="preguntas" className="pub-band" aria-labelledby="faq-title">
