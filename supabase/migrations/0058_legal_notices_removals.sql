@@ -1,4 +1,4 @@
--- 0056 · Legal follow-ups (7a review of #49).
+-- 0058 · Legal follow-ups (7a review of #49).
 --
 --   legal_change_notices        one row per (document, version) whose change
 --                               must be emailed ≥ 30 days ahead (aceptacion-ux

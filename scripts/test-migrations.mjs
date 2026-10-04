@@ -379,7 +379,7 @@ try {
   }
 }
 
-// ── 0056: who is still owed a change notice ───────────────────────────────
+// ── 0058: who is still owed a change notice ───────────────────────────────
 {
   const check = (label, cond, extra = '') => {
     if (cond) console.log(`ok: ${label}`);
