@@ -144,9 +144,9 @@
       "name": "Tu nombre",
       "email": "Tu correo",
       "idea": "¿Qué herramienta te gustaría?",
-      "submit": "Proponer mi idea",
+      "submit": "Enviar mi idea",
       "sending": "Enviando…",
-      "done": "¡Gracias! Recibimos tu idea. Si la hacemos, te escribimos a tu correo.",
+      "done": "¡Gracias! Recibimos tu idea. Te escribimos a {correo}.",
       "clickwrap": "Al enviar, aceptas que usemos tus datos para responderte, como dice el <aviso>Aviso de Privacidad</aviso>.",
       "errors": {
         "name": "Escribe tu nombre.",

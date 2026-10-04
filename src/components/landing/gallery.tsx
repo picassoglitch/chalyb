@@ -27,7 +27,8 @@ export async function Gallery() {
             <span className="pub-only-mob">{t('subMobile')}</span>
           </p>
         </div>
-        <ul className="pub-gall2">
+        {/* A horizontal carousel on phones: focusable so it scrolls by keyboard. */}
+        <ul className="pub-gall2" tabIndex={0} aria-label={t('title')}>
           {CLIPS.map(({ n, dur }) => (
             <li key={n} className="pub-gall2__c">
               <div className={`pub-thumb pub-thumb--${n} pub-gall2__v`} aria-hidden="true">

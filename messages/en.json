@@ -146,7 +146,7 @@
       "idea": "What tool would you like?",
       "submit": "Send my idea",
       "sending": "Sending…",
-      "done": "Thank you! We got your idea. If we build it, we'll email you.",
+      "done": "Thanks! We got your idea. We’ll write to you at {correo}.",
       "clickwrap": "By sending, you agree that we use your data to reply to you, as described in the <aviso>Privacy Notice</aviso>.",
       "errors": {
         "name": "Enter your name.",

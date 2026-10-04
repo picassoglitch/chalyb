@@ -31,18 +31,20 @@ test('the trial button is visible without scrolling at 390×844 and goes to sign
     hasTouch: true,
   });
   await page.goto('/');
-  const cta = page.locator('[data-cta="trial-hero"]');
+  const cta = page.locator('[data-cta="hero_trial"]');
   await expect(cta).toBeInViewport();
-  // TRIAL_FLOW_ENABLED is off by default, so it opens the existing sign-up;
-  // the flag-on target is covered by tests/public-site.test.ts.
+  // LANDING-SPEC §4: sign-up with the plan, the trial intent when the flow is
+  // on, the toggle's interval and from=hero_trial.
   const href = await cta.getAttribute('href');
-  expect(href).toMatch(/^\/sign-in\?mode=signup&(plan=pro|intent=trial)$/);
+  expect(href).toMatch(
+    /^\/sign-in\?mode=signup&plan=pro(&intent=trial)?&interval=year&from=hero_trial$/,
+  );
   await page.close();
 });
 
 test('prices sit in a block that says IVA incluido', async ({ page }) => {
   await page.goto('/');
-  const plans = page.locator('#planes');
+  const plans = page.locator('#precios');
   // Anual only exists with the trial flow on; Mensual always does.
   await expect(plans.getByTestId('plan-cards')).toContainText(/MXN al (año|mes)/);
   await expect(plans).toContainText('Precios en MXN, IVA incluido.');
@@ -52,7 +54,9 @@ test('prices sit in a block that says IVA incluido', async ({ page }) => {
 
 test('only the active tools are listed', async ({ page }) => {
   await page.goto('/');
-  const names = await page.locator('#herramientas .pub-tc h3').allInnerTexts();
+  const names = (await page.locator('#herramientas .pub-bc h3').allInnerTexts()).flatMap((n) =>
+    n.split(' + '),
+  );
   // The catalog decides how many; the order and the hidden ones are fixed.
   const order = [
     'Clips',
@@ -63,8 +67,8 @@ test('only the active tools are listed', async ({ page }) => {
     'Inmuebles',
     'Inversiones',
   ];
-  const tools = names.slice(0, -1);
-  expect(names.at(-1)).toBe('Tu idea');
+  // The "todo incluido" card (only with tool claims on) isn't a tool.
+  const tools = names.filter((n) => order.includes(n));
   expect(tools.length).toBeGreaterThan(0);
   expect(tools).toEqual(order.filter((n) => tools.includes(n)));
   expect(names).not.toContain('Stream Manager');
@@ -133,12 +137,14 @@ test('the idea form submits', async ({ page }) => {
     'writes a lead; runs only against the local mock',
   );
   await page.goto('/#idea');
-  const form = page.locator('#idea form');
+  // LANDING-SPEC §3.9: the form opens in a sheet from the partner strip.
+  await page.locator('#idea').getByRole('button', { name: 'Proponer mi idea' }).click();
+  const form = page.getByRole('dialog').locator('form');
   await form.getByLabel('Tu nombre').fill('Prueba E2E');
   await form.getByLabel('Tu correo').fill('e2e@example.com');
   await form
     .getByLabel('¿Qué herramienta te gustaría?')
     .fill('Una herramienta para agendar citas con clientes');
-  await form.getByRole('button', { name: 'Proponer mi idea' }).click();
-  await expect(page.locator('#idea [role="status"]')).toContainText('Recibimos tu idea');
+  await form.getByRole('button', { name: 'Enviar mi idea' }).click();
+  await expect(page.getByRole('dialog').locator('[role="status"]')).toContainText('Recibimos tu idea');
 });
