@@ -2149,12 +2149,13 @@
           "suscripcion": "Términos de Suscripción",
           "privacidad": "Aviso de privacidad"
         },
-        "counts": "Enviados: {sent} · en curso: {pending} · fallidos: {failed} · rebotados: {bounced}",
+        "counts": "Enviados: {sent} · en curso: {pending} · fallidos: {failed} · rebotados: {bounced} · sin entregar: {undeliverable}",
         "complete": "Todos los avisos salieron el {fecha}.",
         "sending": "Enviando desde el {fecha}; aún faltan personas.",
         "notStarted": "Aún no empieza el envío.",
         "inForce": "Aplica desde el {fecha}.",
-        "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde)."
+        "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde).",
+        "lost": "{n, plural, one {# persona sin aviso} other {# personas sin aviso}} (siguen con los términos que tienen y no se les pide aceptar)"
       },
       "blocks": {
         "title": "Videos bloqueados ({n})",

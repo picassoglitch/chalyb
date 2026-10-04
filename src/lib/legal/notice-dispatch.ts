@@ -1,11 +1,11 @@
 // One legal change notice to one person, claimed so two cron runs can't
 // both send it, and recorded honestly (7a review of #49, HIGH 2):
 //
-//   claim     insert email_dispatches with delivery_status 'pending' (not the
-//             column's 'sent' default). If the row exists, take it over only
-//             through a conditional UPDATE when it is 'failed' or a 'pending'
-//             older than 10 minutes (an interrupted run). Whoever gets a row
-//             back sends; everyone else skips.
+//   claim     claim_notice_dispatch() (migration 0060), one statement:
+//             insert 'pending' (not the column's 'sent' default); or retake a
+//             'failed' or > 10-minute 'pending' row (attempts + 1); or, after
+//             5 attempts or 72 hours, mark it 'undeliverable' and skip.
+//             Whoever gets an id back sends; everyone else skips.
 //   finish    'sent' only with the provider's message id; anything else is
 //             'failed' and is retried on the next run. The evidence never
 //             says sent without a provider id.
@@ -16,6 +16,11 @@ import type { createAdminClient } from '@/lib/supabase/admin';
 type SupabaseClient = ReturnType<typeof createAdminClient>;
 
 export const STALE_PENDING_MS = 10 * 60_000;
+/** After this many attempts, or this long since the first, a notice is
+ *  'undeliverable': it stops holding the version back, and the person is
+ *  never asked to accept it (they stay on the terms they have). */
+export const MAX_ATTEMPTS = 5;
+export const GIVE_UP_HOURS = 72;
 
 /** What a send result becomes in email_dispatches. */
 export function dispatchStatusAfterSend(res: { ok: boolean; id?: string | null }): {
@@ -36,34 +41,21 @@ export async function claimNoticeDispatch(
     templateId: string;
     templateVersion: string;
   },
-  now = new Date(),
 ): Promise<string | null> {
-  const { data, error } = await db
-    .from('email_dispatches')
-    .insert({
-      user_id: row.userId,
-      kind: row.kind,
-      period_key: row.periodKey,
-      template_id: row.templateId,
-      template_version: row.templateVersion,
-      delivery_status: 'pending',
-      sent_at: now.toISOString(),
-    })
-    .select('id')
-    .maybeSingle();
-  if (!error) return (data?.id as string | undefined) ?? null;
-  if (error.code !== '23505') throw new Error(error.message);
-  const stale = new Date(now.getTime() - STALE_PENDING_MS).toISOString();
-  const { data: retaken } = await db
-    .from('email_dispatches')
-    .update({ delivery_status: 'pending', sent_at: now.toISOString(), provider_message_id: null })
-    .eq('user_id', row.userId)
-    .eq('kind', row.kind)
-    .eq('period_key', row.periodKey)
-    .or(`delivery_status.eq.failed,and(delivery_status.eq.pending,sent_at.lt.${stale})`)
-    .select('id')
-    .maybeSingle();
-  return (retaken?.id as string | undefined) ?? null;
+  // One statement (claim_notice_dispatch, migration 0060): insert pending,
+  // or retake a failed / stale-pending row, or give it up as
+  // 'undeliverable' after MAX_ATTEMPTS or GIVE_UP_HOURS.
+  const { data, error } = await db.rpc('claim_notice_dispatch', {
+    p_user: row.userId,
+    p_kind: row.kind,
+    p_period: row.periodKey,
+    p_template: row.templateId,
+    p_version: row.templateVersion,
+    p_max_attempts: MAX_ATTEMPTS,
+    p_give_up: `${GIVE_UP_HOURS} hours`,
+  });
+  if (error) throw new Error(error.message);
+  return (data as string | null) ?? null;
 }
 
 export async function finishNoticeDispatch(

@@ -1,4 +1,4 @@
--- 0060 · Retention purge, revised (7a review of #49, MEDIUM 10 + LOW).
+-- 0060 · Retention purge revised + change-notice retry cap (7a reviews of #49 and #52).
 --
 -- Aviso de privacidad §9.1: non-compliance data goes "a más tardar 72 meses
 -- después de la fecha del incumplimiento". For a chargeback the incident is
@@ -71,3 +71,105 @@ $$;
 
 revoke all on function public.legal_retention_purge(timestamptz, boolean) from public, anon, authenticated;
 grant execute on function public.legal_retention_purge(timestamptz, boolean) to service_role;
+
+-- ── Change notices: retry cap (7a review of #52, H1 gaps) ────────────────
+-- A notice is claimed, retried and given up in one statement:
+--   new            insert 'pending', attempts 1
+--   failed, or pending > 10 min (an interrupted run)
+--                  after 5 attempts or 72 h since the first one →
+--                  'undeliverable' (done: it no longer holds the version
+--                  back; the person is never asked to accept, and the
+--                  owner panel lists them); otherwise retaken: 'pending',
+--                  attempts + 1
+-- Returns the row id to send with, or null when someone else holds it or
+-- it was just given up.
+
+alter table public.email_dispatches
+  add column if not exists attempts integer not null default 1,
+  add column if not exists first_attempt_at timestamptz;
+
+create or replace function public.claim_notice_dispatch(
+  p_user uuid,
+  p_kind text,
+  p_period text,
+  p_template text,
+  p_version text,
+  p_max_attempts integer default 5,
+  p_give_up interval default interval '72 hours'
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid;
+begin
+  insert into public.email_dispatches
+    (user_id, kind, period_key, template_id, template_version, delivery_status, sent_at, attempts, first_attempt_at)
+  values (p_user, p_kind, p_period, p_template, p_version, 'pending', now(), 1, now())
+  on conflict (user_id, kind, period_key) do nothing
+  returning id into v_id;
+  if v_id is not null then
+    return v_id;
+  end if;
+
+  update public.email_dispatches
+     set delivery_status = 'undeliverable'
+   where user_id = p_user and kind = p_kind and period_key = p_period
+     and (delivery_status = 'failed'
+          or (delivery_status = 'pending' and sent_at < now() - interval '10 minutes'))
+     and (attempts >= p_max_attempts or coalesce(first_attempt_at, sent_at) < now() - p_give_up);
+
+  update public.email_dispatches
+     set delivery_status = 'pending', sent_at = now(), provider_message_id = null,
+         attempts = attempts + 1, first_attempt_at = coalesce(first_attempt_at, sent_at)
+   where user_id = p_user and kind = p_kind and period_key = p_period
+     and (delivery_status = 'failed'
+          or (delivery_status = 'pending' and sent_at < now() - interval '10 minutes'))
+  returning id into v_id;
+  return v_id;
+end;
+$$;
+
+revoke all on function public.claim_notice_dispatch(uuid, text, text, text, text, integer, interval) from public, anon, authenticated;
+grant execute on function public.claim_notice_dispatch(uuid, text, text, text, text, integer, interval) to service_role;
+
+-- Recipients: 'undeliverable' counts as done, like sent/delivered/bounced.
+create or replace function public.legal_change_notice_recipients(
+  p_doc text,
+  p_version text,
+  p_period_key text,
+  p_after uuid default null,
+  p_limit integer default 200
+)
+returns table (id uuid, email text, full_name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p.id, p.email, p.full_name
+  from public.profiles p
+  where p.email is not null
+    and (p_after is null or p.id > p_after)
+    and not exists (
+      select 1 from public.email_dispatches d
+      where d.user_id = p.id
+        and d.kind = 'terms_change'
+        and d.period_key = p_period_key
+        and (
+          d.delivery_status in ('sent', 'delivered', 'bounced', 'undeliverable')
+          or (d.delivery_status = 'pending' and d.sent_at > now() - interval '10 minutes')
+        )
+    )
+    and not exists (
+      select 1 from public.consent_events c
+      where c.user_id = p.id
+        and c.event_type in ('signup_terms_accepted', 'terms_reaccepted', 'trial_started',
+                             'subscription_started', 'plan_changed', 'lealtad_started')
+        and c.documents @> jsonb_build_array(jsonb_build_object('doc', p_doc, 'version', p_version))
+    )
+  order by p.id
+  limit greatest(1, least(p_limit, 1000));
+$$;

@@ -19,7 +19,14 @@ import { legalPublished } from '@/lib/config/flags';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
-import { currentVersion, legalPath, noticeRequired, versionMeta, versionSlug } from './registry';
+import {
+  currentVersion,
+  legalPath,
+  noticeRequired,
+  versionMeta,
+  versionSlug,
+  type LegalDoc,
+} from './registry';
 import {
   ARCO_DAILY_LIMIT,
   arcoAnswerEmail,
@@ -41,6 +48,8 @@ import {
   type TakedownInput,
 } from './takedown';
 import {
+  TERMS_CHANGE_NOTICE_DAYS,
+  inForceFrom,
   noticeIsLate,
   termsChangeDecision,
   termsChangeEmail,
@@ -393,17 +402,15 @@ export async function removeTakedown(
   // Someone else moved it first (two admins, a double click): stop.
   if (!n) return { ok: false, code: 'state' };
   if (plan.hideJobIds.length) {
-    const { error } = await db
-      .from('content_removals')
-      .upsert(
-        plan.hideJobIds.map((job) => ({
-          takedown_id: id,
-          user_id: target.userId,
-          job_id: job,
-          removed_at: now,
-          restored_at: null,
-        })),
-      );
+    const { error } = await db.from('content_removals').upsert(
+      plan.hideJobIds.map((job) => ({
+        takedown_id: id,
+        user_id: target.userId,
+        job_id: job,
+        removed_at: now,
+        restored_at: null,
+      })),
+    );
     if (error) {
       // Never tell the uploader something is hidden when it isn't.
       console.error('[takedown] hiding jobs failed', error.message);
@@ -635,6 +642,30 @@ export async function liftBlock(fingerprint: string, actorId: string): Promise<b
   return true;
 }
 
+/** The date a version really applies from, for the legal pages: its
+ *  registry date, or later when its change notices finished late; null while
+ *  notices are still owed (terms-change.ts inForceFrom). */
+export async function versionInForceAt(doc: LegalDoc, version: string): Promise<string | null> {
+  const meta = versionMeta(doc, version);
+  if (!meta?.effective) return null;
+  const required = meta.relevance === 'relevant' && noticeRequired(doc, version);
+  if (!required) return meta.effective;
+  const { data } = await createAdminClient()
+    .from('legal_change_notices')
+    .select('complete_at')
+    .eq('doc', doc)
+    .eq('version', version)
+    .maybeSingle()
+    .then(
+      (r) => r,
+      () => ({ data: null }),
+    );
+  return inForceFrom(meta, {
+    noticeRequired: true,
+    completeAt: (data?.complete_at as string | null) ?? null,
+  });
+}
+
 /** Re-upload blocking (§5.2.3): the source of a new job, checked before it
  *  is created. Fails open on a database error (logged), never on a match. */
 export async function isContentBlocked(sourceUrl: string): Promise<boolean> {
@@ -748,7 +779,13 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date, budget: NoticeBu
   const origin = canonicalOrigin();
   const vars = {
     doc,
-    fecha: formatFechaLarga(meta.effective, 'es'),
+    // The earliest it can apply: its date, or 30 days from this notice.
+    fecha: formatFechaLarga(
+      new Date(
+        Math.max(Date.parse(meta.effective), now.getTime() + TERMS_CHANGE_NOTICE_DAYS * 86_400_000),
+      ),
+      'es',
+    ),
     changes: meta.changes,
     changesUrl: `${origin}${legalPath(doc)}/changes/${versionSlug(version)}`,
     docUrl: `${origin}${legalPath(doc)}/${versionSlug(version)}`,
@@ -815,7 +852,15 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date, budget: NoticeBu
     p_after: null,
     p_limit: 1,
   });
-  const remaining = ((left ?? []) as unknown[]).length;
+  // In-flight sends (another run, < 10 min) are still owed: never complete
+  // over them.
+  const { count: inFlight } = await db
+    .from('email_dispatches')
+    .select('id', { count: 'exact', head: true })
+    .eq('kind', 'terms_change')
+    .eq('period_key', periodKey)
+    .eq('delivery_status', 'pending');
+  const remaining = ((left ?? []) as unknown[]).length + (inFlight ?? 0);
   report.late = noticeIsLate(meta, now, remaining);
   if (report.late)
     console.error(
