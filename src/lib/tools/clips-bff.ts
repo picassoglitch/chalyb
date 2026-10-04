@@ -25,6 +25,12 @@ export class NeedsPlanError extends Error {
   readonly code = 'NEEDS_PLAN';
 }
 
+/** New publishing activity while a relevant Terms change is unaccepted
+ *  (aceptacion-ux §8). Downloads stay allowed; 403, never an outage. */
+export class TermsPendingError extends Error {
+  readonly code = 'FORBIDDEN';
+}
+
 /** Whether a plan may connect social accounts and publish to them. */
 export function socialsAllowed(plan: SubscriptionTier): boolean {
   return TIER_CAPS[plan]?.clipConnectSocials === true;

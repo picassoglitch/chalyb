@@ -71,11 +71,15 @@ export function sessionAuthTimeMs(accessToken: string | null | undefined): numbe
   try {
     const json = JSON.parse(
       Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'),
-    ) as { amr?: { timestamp?: number }[]; iat?: number };
+    ) as { amr?: { timestamp?: number }[] };
+    // Only the sign-in methods' own time proves a recent sign-in: `iat`
+    // renews on every token refresh, so without amr the answer is "no".
+    // Decoding without verifying is safe only because getSessionUser()
+    // verified this same cookie token (getUser) earlier in the request.
     const amr = (json.amr ?? [])
       .map((m) => m.timestamp)
       .filter((x): x is number => typeof x === 'number');
-    const sec = amr.length ? Math.max(...amr) : json.iat;
+    const sec = amr.length ? Math.max(...amr) : null;
     return typeof sec === 'number' && Number.isFinite(sec) ? sec * 1000 : null;
   } catch {
     return null;

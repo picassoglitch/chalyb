@@ -13,6 +13,7 @@ import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
 import { ClipEditor } from '@/components/tools/clips/clip-editor';
 import { PublishButton } from '@/components/tools/clips/publish-button';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { ConnectAccount } from '@/components/tools/clips/connect-account';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
@@ -104,7 +105,10 @@ export default async function ClipDetailPage({
   const tx = await getTranslations('clipsTool.connect');
   const publishLabel = td('publish', { plataforma: 'TikTok' });
   // Publishing and connecting need a plan with social accounts (TIER_CAPS).
-  const socials = socialsAllowed(gate.entitlements.plan);
+  // While a relevant Terms change is unaccepted, no new publishing or
+  // connecting (aceptacion-ux §8); downloads stay (the modal exempts this page).
+  const termsPending = await termsAcceptancePending(gate.session.user.id);
+  const socials = socialsAllowed(gate.entitlements.plan) && !termsPending;
   const publish = !socials ? null : tiktok ? (
     <PublishButton
       clipId={clip.id}

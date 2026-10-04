@@ -86,10 +86,8 @@ test('"Mostrar" needs THIS session to be under 5 minutes old (or the password)',
     false,
     'a refreshed token is not a sign-in',
   );
-  assert.equal(
-    recentSignIn(sessionAuthTimeMs(jwt({ iat: sec('2026-10-03T09:58:00Z') })), now),
-    true,
-  );
+  // No amr: no proof of a recent sign-in, whatever iat says.
+  assert.equal(sessionAuthTimeMs(jwt({ iat: sec('2026-10-03T09:58:00Z') })), null);
   assert.equal(sessionAuthTimeMs('not-a-jwt'), null);
   assert.equal(sessionAuthTimeMs(null), null);
   assert.equal(recentSignIn(null, now), false);
