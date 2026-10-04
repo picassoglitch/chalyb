@@ -1008,7 +1008,8 @@
     "gratis": {
       "name": "Gratis",
       "tag": "Para conocer Chalyb",
-      "cta": "Crear cuenta gratis"
+      "cta": "Crear cuenta gratis",
+      "ctaManage": "Ver mi plan"
     },
     "pro": {
       "badge": "Recomendado",
