@@ -1129,6 +1129,7 @@
       "declined": "Your bank didn’t accept this card. Try another one or talk to your bank.",
       "saving": "Saving your card…",
       "cardUsed": "This card already had a free trial. You can pick a plan and start today.",
+      "cardUnverified": "We couldn't verify this card for the free trial. Try again with the same card or another one.",
       "review": "Ask a person to review it",
       "unavailable": "This isn’t available right now. Try later or write to us.",
       "error": "We couldn’t save your card. Try again in a moment.",

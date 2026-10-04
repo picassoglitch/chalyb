@@ -71,6 +71,7 @@ import { dispatchBillingEmail, trialNoticeVars } from './notices';
 import { trialNoticeKey } from './reminders';
 import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
+import { trialCardCheck } from './trial-eligibility';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 export type StartMode = 'trial' | 'paid' | 'change';
@@ -96,6 +97,7 @@ export type StartError =
   | 'ADMIN'
   | 'QUEBEC'
   | 'CARD_TRIAL_USED'
+  | 'CARD_UNVERIFIED'
   | 'ACCOUNT_CLOSED'
   | 'PAID_REFUSED'
   | 'BAD_TOKEN'
@@ -165,7 +167,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   if (billing.restriction.closed) return { ok: false, code: 'ACCOUNT_CLOSED' };
   if (billing.restriction.prepaymentRequired && chargebackRefuseNewSubscriptions())
     return { ok: false, code: 'PAID_REFUSED' };
-  // 7 days free on Pro mensual and Pro anual, once per account (and card).
+  // 7 days free on any plan, for first-time customers only: once per
+  // account (and card), never after a charged subscription (trialUsed).
   const wantsTrial =
     trialFlowEnabled() &&
     planHasTrial(input.planKey) &&
@@ -195,13 +198,24 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     console.warn('[billing/start] card token lookup failed; continuing without card details', err);
   }
   const fp = fingerprint(card);
+  // One trial per card: a card we can't fingerprint gets no trial (fail
+  // closed). The customer saw the trial terms, not a charge today, so this
+  // is an error to retry, never a silent switch to the paid path.
+  const cardCheck = trialCardCheck({ mode, fingerprint: fp, seenUserId: undefined, userId });
+  if (!cardCheck.ok) return { ok: false, code: cardCheck.code };
   if (mode === 'trial' && fp) {
     const { data: seen } = await admin
       .from('payment_method_fingerprints')
       .select('user_id')
       .eq('hash', fp)
       .maybeSingle();
-    if (seen && seen.user_id !== userId) return { ok: false, code: 'CARD_TRIAL_USED' };
+    const seenCheck = trialCardCheck({
+      mode,
+      fingerprint: fp,
+      seenUserId: (seen?.user_id as string | undefined) ?? null,
+      userId,
+    });
+    if (!seenCheck.ok) return { ok: false, code: seenCheck.code };
   }
 
   const now = new Date();
@@ -464,11 +478,13 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       })
       .eq('id', userId)
       .is('pro_trial_started_at', null);
-    if (fp)
-      await admin
-        .from('payment_method_fingerprints')
-        .upsert({ hash: fp, user_id: userId }, { onConflict: 'hash', ignoreDuplicates: true });
   }
+  // Every card that starts a plan, trial or paid: a card that already paid
+  // for one account can't open a trial on another.
+  if (fp)
+    await admin
+      .from('payment_method_fingerprints')
+      .upsert({ hash: fp, user_id: userId }, { onConflict: 'hash', ignoreDuplicates: true });
 
   // Same path the webhook takes: grants the plan, retires an older
   // subscription (it stops charging now; its paid access is kept by

@@ -199,3 +199,37 @@ test('#6 the next charge amount: grandfathered price, Lealtad step, else the pla
   assert.match(read('src/components/app/billing/billing-banner.tsx'), /nextChargeCents\(\{/);
   assert.match(read('src/components/app/billing/mi-plan-view.tsx'), /nextChargeCents\(\{/);
 });
+
+// ── #7 · Trial: first-time customers only, one per card, fail closed ──
+test('#7 a card we cannot fingerprint gets no trial; a card used elsewhere neither', async () => {
+  const { trialCardCheck } = await import('@/lib/billing/trial-eligibility');
+  const base = { userId: 'u1', seenUserId: null };
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'trial', fingerprint: null }), { ok: false, code: 'CARD_UNVERIFIED' });
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'trial', fingerprint: 'h', seenUserId: 'u2' }), { ok: false, code: 'CARD_TRIAL_USED' });
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'trial', fingerprint: 'h', seenUserId: 'u1' }), { ok: true });
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'trial', fingerprint: 'h' }), { ok: true });
+  // Paid starts and changes don't need the fingerprint.
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'paid', fingerprint: null }), { ok: true });
+  assert.deepEqual(trialCardCheck({ ...base, mode: 'change', fingerprint: null }), { ok: true });
+});
+
+test('#7 a returning customer (any charged plan) has used the trial', async () => {
+  const { trialUsedFrom } = await import('@/lib/billing/trial-eligibility');
+  const none = { trialStartedAt: null, prepaymentRequired: false, chargedBefore: false };
+  assert.equal(trialUsedFrom(none), false);
+  assert.equal(trialUsedFrom({ ...none, chargedBefore: true }), true);
+  assert.equal(trialUsedFrom({ ...none, trialStartedAt: '2026-01-01T00:00:00Z' }), true);
+  assert.equal(trialUsedFrom({ ...none, prepaymentRequired: true }), true);
+
+  const { readFileSync } = await import('node:fs');
+  const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const store = read('src/lib/billing/subscription-store.ts');
+  assert.match(store, /trialUsed: trialUsedFrom\(\{[\s\S]*?chargedBefore:/);
+  const start = read('src/lib/billing/start-subscription.ts');
+  // Every card is fingerprinted at start, not only trial cards.
+  assert.match(start, /\n  if \(fp\)\n    await admin\n      \.from\('payment_method_fingerprints'\)/);
+  // Fail closed: the check runs on a null fingerprint too.
+  assert.match(start, /trialCardCheck\(\{ mode, fingerprint: fp, seenUserId: undefined, userId \}\)/);
+  assert.match(read('src/lib/billing/api.ts'), /case 'CARD_UNVERIFIED':/);
+  assert.match(read('src/components/app/billing/pay-form.tsx'), /t\('cardUnverified'\)/);
+});

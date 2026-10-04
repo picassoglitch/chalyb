@@ -1129,6 +1129,7 @@
       "declined": "Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.",
       "saving": "Guardando tu tarjeta…",
       "cardUsed": "Esta tarjeta ya tuvo una prueba gratis. Puedes elegir un plan y empezar hoy.",
+      "cardUnverified": "No pudimos verificar esta tarjeta para la prueba gratis. Inténtalo de nuevo con la misma tarjeta u otra.",
       "review": "Pedir que una persona lo revise",
       "unavailable": "Esto no está disponible por ahora. Intenta más tarde o escríbenos.",
       "error": "No pudimos guardar tu tarjeta. Intenta de nuevo en un momento.",
