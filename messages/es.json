@@ -1038,6 +1038,7 @@
       "ctaTrial": "Empezar mis 7 días gratis"
     },
     "current": "Tu plan actual",
+    "soon": "Muy pronto",
     "trialing": "Ya estás probando Pro",
     "notIncluded": "No incluye",
     "faqTitle": "Preguntas frecuentes",
@@ -2194,7 +2195,9 @@
     "human": "Hablar con una persona",
     "payError": "No pudimos abrir el pago. Intenta otra vez en un momento.",
     "retry": "Intentar otra vez",
-    "activated": "Listo, tu plan ya está activo."
+    "activated": "Listo, tu plan ya está activo.",
+    "salesSoon": "Muy pronto podrás contratar Pro y VIP desde aquí.",
+    "salesSoonBody": "Mientras tanto, sigue usando Chalyb gratis. No te cobramos nada."
   },
   "credits": {
     "title": "Mis créditos",
@@ -2270,7 +2273,8 @@
       "title": "Tus ganancias como socio",
       "month": "Este mes · se paga al cerrar el mes",
       "paid": "Pagado el {fecha}"
-    }
+    },
+    "soon": "Muy pronto podrás conseguir más créditos desde aquí."
   },
   "profile": {
     "title": "Mi perfil",

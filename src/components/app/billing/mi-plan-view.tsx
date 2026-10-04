@@ -84,8 +84,9 @@ export async function MiPlanView({
   const flow = paidCheckoutEnabled();
   // Plan changes create charges: they go through the new flow only when it
   // is live; otherwise the existing subscription page keeps handling them.
-  const changeHref = (to: PlanKey) =>
-    flow ? `/app/billing/cambiar?plan=${to}` : '/app/subscription';
+  // Off, sales are closed: there is no paid change to make, and
+  // /app/subscription only sends a subscriber back here. A person helps.
+  const changeHref = (to: PlanKey) => (flow ? `/app/billing/cambiar?plan=${to}` : '/app/messages');
 
   const planKey: PlanKey | null = s && s.state !== 'free' ? (s.planKey ?? 'pro_month') : null;
   const planName = planKey ? t(`planName.${planKey}`) : '';
@@ -262,6 +263,8 @@ export async function MiPlanView({
         detail: '',
       });
   }
+  // Sales closed (paid checkout off): only the move to Gratis is offered.
+  const shownChanges = flow ? changes : changes.filter((c) => c.to === 'gratis');
 
   // ── Movements ────────────────────────────────────────────────────
   const statusLabel = (st: string) =>
@@ -435,9 +438,9 @@ export async function MiPlanView({
         </p>
       )}
 
-      {changes.length > 0 && (
+      {shownChanges.length > 0 && (
         <Group title={t('change.title')}>
-          {changes.map((c) => (
+          {shownChanges.map((c) => (
             <Row
               key={c.to}
               title={c.title}

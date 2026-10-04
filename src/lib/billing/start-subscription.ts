@@ -57,6 +57,7 @@ import {
   lealtadEnabled,
   lealtadOpenToNewCustomers,
   lealtadReturnWindowDays,
+  paidCheckoutEnabled,
   trialFlowEnabled,
   chargebackRefuseNewSubscriptions,
 } from '@/lib/config/flags';
@@ -142,6 +143,9 @@ function fingerprint(card: CardToken): string | null {
 export async function startSubscription(input: StartInput): Promise<StartResult> {
   if (input.consentChecked !== true) return { ok: false, code: 'CONSENT_REQUIRED' };
   if (!isCheckoutReady()) return { ok: false, code: 'NOT_CONFIGURED' };
+  // The routes that call this check it too; refuse here as well so no new
+  // caller can sell while paid checkout is off.
+  if (!paidCheckoutEnabled()) return { ok: false, code: 'NOT_CONFIGURED' };
   const token = input.cardTokenId?.trim();
   if (!token || token.length > 128) return { ok: false, code: 'BAD_TOKEN' };
   if (paidPlansBlocked({ declared: input.declaredProvince })) return { ok: false, code: 'QUEBEC' };

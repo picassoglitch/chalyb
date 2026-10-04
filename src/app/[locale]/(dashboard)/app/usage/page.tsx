@@ -28,6 +28,7 @@ import { Banner, Group, Pill, Row, StateBlock } from '@/components/ui/primitives
 import { ToolIcon } from '@/components/ui/tool-icon';
 import { Markup } from '@/components/ui/markup';
 import { CreditsSheet, RefreshWhilePending } from '@/components/app/credits-sheet';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('credits');
@@ -296,16 +297,24 @@ export default async function UsagePage({
       ? data.balance.periodStart
       : monthStart(),
   };
-  const balanceBroken = data.warnings.some((w) => w.startsWith('balance_') || w.startsWith('session_'));
+  const balanceBroken = data.warnings.some(
+    (w) => w.startsWith('balance_') || w.startsWith('session_'),
+  );
   const total = balance.monthlyAllocation;
   const used = balance.monthlyUsed;
   const left = Math.max(0, balance.remaining);
   const usedPct = total > 0 ? Math.min(100, Math.floor((used / total) * 100)) : 0;
   // Credits renew on the 1st (calendar month; D-F3-3: show what the code does).
   const start = new Date(balance.periodStart);
-  const renew = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1, 12)).toISOString();
+  const renew = new Date(
+    Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1, 12),
+  ).toISOString();
   const low = !balance.unlimited && total > 0 && usedPct >= 80;
-  const packs = TOKEN_PACKS.map((p) => ({ id: p.id, tokens: p.tokens, amount: formatMXN(p.amountCents) }));
+  const packs = TOKEN_PACKS.map((p) => ({
+    id: p.id,
+    tokens: p.tokens,
+    amount: formatMXN(p.amountCents),
+  }));
   const toolName = (engineId: string) => data.engineMap.get(engineId)?.name ?? t('tool');
   const toolSlug = (engineId: string) => data.engineMap.get(engineId)?.slug ?? 'more';
 
@@ -313,14 +322,22 @@ export default async function UsagePage({
   type Use = { key: string; engineId: string; at: string; credits: number; operation: string };
   const uses = new Map<string, Use>();
   for (const e of data.events) {
-    const key = e.operation ? `${e.engine_id}|${e.operation}|${(e.occurred_at || '').slice(0, 10)}` : e.id;
+    const key = e.operation
+      ? `${e.engine_id}|${e.operation}|${(e.occurred_at || '').slice(0, 10)}`
+      : e.id;
     const credits = e.kind === 'llm.tokens' ? e.amount : 0;
     const u = uses.get(key);
     if (u) {
       u.credits += credits;
       if (e.occurred_at > u.at) u.at = e.occurred_at;
     } else
-      uses.set(key, { key, engineId: e.engine_id, at: e.occurred_at, credits, operation: e.operation ?? e.kind });
+      uses.set(key, {
+        key,
+        engineId: e.engine_id,
+        at: e.occurred_at,
+        credits,
+        operation: e.operation ?? e.kind,
+      });
   }
   const thisMonth = [...uses.values()].filter((u) => u.at >= balance.periodStart);
   const byTool = new Map<string, { n: number; credits: number }>();
@@ -331,7 +348,15 @@ export default async function UsagePage({
     byTool.set(u.engineId, x);
   }
 
-  type Hist = { key: string; at: string; title: string; detail: string; value: string; plus: boolean; slug: string };
+  type Hist = {
+    key: string;
+    at: string;
+    title: string;
+    detail: string;
+    value: string;
+    plus: boolean;
+    slug: string;
+  };
   const history: Hist[] = [
     ...[...uses.values()].map((u) => ({
       key: u.key,
@@ -440,7 +465,9 @@ export default async function UsagePage({
                       <RefreshCw />
                     </span>
                     <span>
-                      <Markup text={t.markup('renew', { fecha: date(renew), total: nf(total), b })} />
+                      <Markup
+                        text={t.markup('renew', { fecha: date(renew), total: nf(total), b })}
+                      />
                     </span>
                   </p>
                   <p className="ch-credits__li">
@@ -453,7 +480,15 @@ export default async function UsagePage({
                   </p>
                 </>
               )}
-              <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+              {paidCheckoutEnabled() ? (
+                <CreditsSheet
+                  packs={packs}
+                  defaultOpen={sp.comprar === '1'}
+                  triggerLabel={t('cta')}
+                />
+              ) : (
+                <p className="ch-muted">{t('soon')}</p>
+              )}
             </section>
 
             {byTool.size > 0 && (
@@ -496,11 +531,21 @@ export default async function UsagePage({
                   {shown.map((h) => (
                     <Row
                       key={h.key}
-                      icon={h.slug === 'renew' ? <RefreshCw /> : <ToolIcon slug={h.slug} filled size="sm" />}
+                      icon={
+                        h.slug === 'renew' ? (
+                          <RefreshCw />
+                        ) : (
+                          <ToolIcon slug={h.slug} filled size="sm" />
+                        )
+                      }
                       iconColor={h.plus ? '#8E8E93' : (TOOL_COLOR[h.slug] ?? '#8E8E93')}
                       title={h.title}
                       detail={h.detail}
-                      value={<span style={h.plus ? { color: 'var(--accent)' } : undefined}>{h.value}</span>}
+                      value={
+                        <span style={h.plus ? { color: 'var(--accent)' } : undefined}>
+                          {h.value}
+                        </span>
+                      }
                     />
                   ))}
                 </div>
@@ -508,7 +553,11 @@ export default async function UsagePage({
             )}
 
             {(data.royaltyAccruals.length > 0 || data.royaltyPayouts.length > 0) && (
-              <PartnerEarnings accruals={data.royaltyAccruals} payouts={data.royaltyPayouts} locale={locale} />
+              <PartnerEarnings
+                accruals={data.royaltyAccruals}
+                payouts={data.royaltyPayouts}
+                locale={locale}
+              />
             )}
 
             <details className="ch-card ch-adv">
@@ -520,7 +569,9 @@ export default async function UsagePage({
                 <h3 className="ch-adv__h">{t('adv.limits')}</h3>
                 <ul className="ch-adv__list">
                   <li>{t('adv.historyDays', { n: caps.historyDays })}</li>
-                  {Number.isFinite(caps.clipStreamsPerMonth) && caps.clipStreamsPerMonth > 0 && <li>{t('adv.streams', { n: caps.clipStreamsPerMonth })}</li>}
+                  {Number.isFinite(caps.clipStreamsPerMonth) && caps.clipStreamsPerMonth > 0 && (
+                    <li>{t('adv.streams', { n: caps.clipStreamsPerMonth })}</li>
+                  )}
                 </ul>
                 <h3 className="ch-adv__h">{t('adv.tech')}</h3>
                 <ul className="ch-adv__list">
@@ -535,7 +586,12 @@ export default async function UsagePage({
                   ))}
                 </ul>
                 {data.events.length > 0 && (
-                  <div className="ch-table-wrap" role="region" aria-label={t('adv.tech')} tabIndex={0}>
+                  <div
+                    className="ch-table-wrap"
+                    role="region"
+                    aria-label={t('adv.tech')}
+                    tabIndex={0}
+                  >
                     <table className="ch-table">
                       <thead>
                         <tr>
@@ -563,7 +619,9 @@ export default async function UsagePage({
                   </div>
                 )}
                 {data.isAdmin && data.warnings.length > 0 && (
-                  <p className="ch-muted">{t('adv.diag', { warnings: data.warnings.join(', ') })}</p>
+                  <p className="ch-muted">
+                    {t('adv.diag', { warnings: data.warnings.join(', ') })}
+                  </p>
                 )}
               </div>
             </details>
