@@ -220,7 +220,7 @@ test('6 · a mandatory notice 7 days before EVERY charge, with that step’s amo
     [['renew_7d', true]],
   );
   const cron = readFileSync(join(ROOT, 'src/app/api/cron/billing/route.ts'), 'utf8');
-  assert.match(cron, /lealtad && notice\.kind === 'renew_7d' \? 'lealtad_7d'/);
+  assert.match(cron, /noticeEmailKind\(notice\.kind, planKey\)/);
   const late = billingEmail('lealtad_7d', {
     nombre: 'María',
     plan: 'Pro Lealtad',
@@ -326,10 +326,8 @@ test('12 · the amount gate', () => {
 
 test('12 · each charge counts once (a replayed webhook changes nothing)', () => {
   const src = readFileSync(join(ROOT, 'src/lib/billing/lealtad-server.ts'), 'utf8');
-  assert.match(
-    src,
-    /if \(pay\?\.loyalty_step !== null && pay\?\.loyalty_step !== undefined\) return; \/\/ already counted/,
-  );
+  // Claimed with a conditional update before anything else happens.
+  assert.match(src, /\.update\(\{ loyalty_step: step \}\)[\s\S]*?\.is\('loyalty_step', null\)[\s\S]*?if \(!claimed\?\.length\) return; \/\/ already counted/);
 });
 
 test('13 · flags: off by default; withdrawn for new customers keeps existing schedules', () => {

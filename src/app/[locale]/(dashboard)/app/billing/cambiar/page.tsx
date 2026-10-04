@@ -112,7 +112,7 @@ export default async function CambiarPlanPage({
       ? t('credit', { credito: formatMXN(quote.refundCents) })
       : null
     : quote.timing === 'trial_end'
-      ? t('trialSwitch', { fecha: effective, monto, periodo })
+      ? t(quote.switchMoved ? 'trialSwitchMoved' : 'trialSwitch', { fecha: effective, monto, periodo })
       : t('whenLater', { fecha: effective, plan: fromName || tPlan(to) });
 
   // Switching during the trial is consent to the trial's charge with the new

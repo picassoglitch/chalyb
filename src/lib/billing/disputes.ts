@@ -243,3 +243,77 @@ export function disputeStage(cb: {
   if (!cb.notice_sent_at) return 'ready_for_notice';
   return 'notice_running';
 }
+
+// ── Refund claims (one refund, once) ───────────────────────────────────────
+
+/** The ledger operations a refund claim needs: read a charge, and move its
+ *  refunded total only if nobody moved it since (compare-and-set). */
+export interface RefundLedger {
+  read(paymentId: string): Promise<{ amountCents: number; refundedCents: number } | null>;
+  /** Sets refunded_cents to `to` where it is still `from`; whether it did. */
+  swap(paymentId: string, from: number, to: number): Promise<boolean>;
+}
+
+export type RefundClaim =
+  /** Reserved on the ledger: refund exactly `cents`, starting at `offset`. */
+  | { kind: 'claimed'; cents: number; offset: number }
+  /** Nothing left to refund on this charge. */
+  | { kind: 'nothing_left' }
+  /** No ledger row for the charge: refund as asked, nothing to reserve. */
+  | { kind: 'unledgered'; cents: number }
+  /** Lost the race too many times: try again later. */
+  | { kind: 'contended' };
+
+/**
+ * Reserves a refund on the ledger BEFORE Mercado Pago is asked, so two
+ * concurrent refunds of one charge (a replayed webhook, a double click) can't
+ * both go out: only one compare-and-set wins each offset, the other re-reads
+ * and gets what is left — never past the charge.
+ */
+export async function claimRefund(
+  ledger: RefundLedger,
+  paymentId: string,
+  cents: number,
+  attempts = 5,
+): Promise<RefundClaim> {
+  for (let i = 0; i < attempts; i++) {
+    const pay = await ledger.read(paymentId);
+    if (!pay) return { kind: 'unledgered', cents };
+    const take = Math.min(cents, pay.amountCents - pay.refundedCents);
+    if (take <= 0) return { kind: 'nothing_left' };
+    if (await ledger.swap(paymentId, pay.refundedCents, pay.refundedCents + take)) {
+      return { kind: 'claimed', cents: take, offset: pay.refundedCents };
+    }
+  }
+  return { kind: 'contended' };
+}
+
+/** Gives back a claim Mercado Pago refused (same compare-and-set, so a
+ *  claim made meanwhile is kept). */
+export async function releaseRefund(
+  ledger: RefundLedger,
+  paymentId: string,
+  cents: number,
+  attempts = 5,
+): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    const pay = await ledger.read(paymentId);
+    if (!pay) return false;
+    if (await ledger.swap(paymentId, pay.refundedCents, Math.max(0, pay.refundedCents - cents))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Mercado Pago's idempotency key for a refund: the same claim always sends
+ *  the same key (a retried request can't refund twice); a later refund of
+ *  the same amount starts at another offset, so it isn't mistaken for it. */
+export function refundIdempotencyKey(input: {
+  paymentId: string;
+  reason: string;
+  cents: number;
+  offset: number;
+}): string {
+  return `refund:${input.paymentId}:${input.reason}:${input.cents}:${input.offset}`;
+}

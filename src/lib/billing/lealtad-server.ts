@@ -67,7 +67,8 @@ export async function putNextAmount(preapprovalId: string, step: number): Promis
 /**
  * An approved Pro Lealtad charge: gate the amount against its step, record
  * the step on the payment, move the subscription one step down and set the
- * next amount. Idempotent on the payment: a replayed webhook finds
+ * next amount. Idempotent on the payment: the step is claimed with a
+ * conditional update first, so a replayed or concurrent webhook finds
  * payments.loyalty_step already set and changes nothing.
  */
 export async function onLealtadCharge(input: {
@@ -79,26 +80,33 @@ export async function onLealtadCharge(input: {
 }): Promise<void> {
   const now = input.now ?? new Date();
   const admin = createAdminClient();
-  const { data: pay } = await admin
-    .from('payments')
-    .select('loyalty_step')
-    .eq('mp_payment_id', input.paymentId)
-    .maybeSingle();
-  if (pay?.loyalty_step !== null && pay?.loyalty_step !== undefined) return; // already counted
   const { data: sub } = await admin
     .from('subscriptions')
     .select('loyalty_step')
     .eq('mp_preapproval_id', input.preapprovalId)
     .maybeSingle();
   const step = (sub?.loyalty_step as number | null) ?? 0;
+  // When the schedule last moved: the latest OTHER counted charge.
   const { data: lastPaid } = await admin
     .from('payments')
     .select('created_at')
     .eq('mp_preapproval_id', input.preapprovalId)
+    .neq('mp_payment_id', input.paymentId)
     .not('loyalty_step', 'is', null)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
+  // Claim the charge atomically: the first delivery stamps its step, a
+  // concurrent replay finds it stamped and changes nothing (no second
+  // refund, no second step).
+  const { data: claimed, error: claimErr } = await admin
+    .from('payments')
+    .update({ loyalty_step: step })
+    .eq('mp_payment_id', input.paymentId)
+    .is('loyalty_step', null)
+    .select('mp_payment_id');
+  if (claimErr) throw claimErr;
+  if (!claimed?.length) return; // already counted
 
   const gate = lealtadGate({
     chargedCents: input.chargedCents,
@@ -136,11 +144,12 @@ export async function onLealtadCharge(input: {
   }
 
   const next = stepAfterCharge(step);
-  await admin.from('payments').update({ loyalty_step: step }).eq('mp_payment_id', input.paymentId);
+  // From the step this charge paid for only: never two steps for one charge.
   await admin
     .from('subscriptions')
     .update({ loyalty_step: next })
-    .eq('mp_preapproval_id', input.preapprovalId);
+    .eq('mp_preapproval_id', input.preapprovalId)
+    .eq('loyalty_step', step);
   await recordConsent({
     event_type: 'lealtad_step_advanced',
     user_id: input.userId,

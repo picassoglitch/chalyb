@@ -42,7 +42,7 @@ import {
 } from './order-charge';
 import { settleOneOffCharge } from './one-off-settlement';
 import {
-  getMercadoPago,
+  getMercadoPagoIsolated,
   isCheckoutReady,
   checkoutNotReadyError,
   logMpCreate,
@@ -104,7 +104,7 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
 
     // B33: the test buyer in `test`, the user (if any) in `prod`.
     const payerEmail = mpPayerEmail(session.user.email);
-    const { order } = getMercadoPago();
+    const { order } = getMercadoPagoIsolated();
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
 
@@ -286,7 +286,7 @@ export async function payTokenPackWithCard(input: {
         : 'credit_card';
 
     const payerEmail = mpPayerEmail(session.user.email);
-    const { order } = getMercadoPago();
+    const { order } = getMercadoPagoIsolated();
     const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
     const externalReference = packReference(session.user.id, pack.id);

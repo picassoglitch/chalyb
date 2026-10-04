@@ -14,7 +14,7 @@ import { pendingIncrease, type PendingIncrease } from '@/lib/billing/price-chang
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { PriceChangeModal, type PriceChangeView } from './price-change-modal';
 import { formatFechaCorta, formatFechaLarga, formatMXN } from '@/lib/billing/format';
-import { lealtadSchedule, planPrice } from '@/config/pricing';
+import { lealtadSchedule, nextChargeCents, planPrice } from '@/config/pricing';
 import { recordConsent, UI_VERSION } from '@/lib/billing/consent';
 import { Markup } from '@/components/ui/markup';
 import { ClosableBanner } from './closable-banner';
@@ -72,7 +72,16 @@ async function renderBanner(
   const locale = await getLocale();
   const t = await getTranslations('banner');
   const tPlan = await getTranslations('myplan.planName');
-  const monto = s.planKey ? formatMXN(planPrice(s.planKey).totalCents) : '';
+  // What the next charge really is (a grandfathered price, Lealtad's step).
+  const monto = s.planKey
+    ? formatMXN(
+        nextChargeCents({
+          plan_key: s.planKey,
+          loyalty_step: (billing.primaryRow?.loyalty_step as number | null | undefined) ?? null,
+          amount_cents: (billing.primaryRow?.amount_cents as number | null | undefined) ?? null,
+        }),
+      )
+    : '';
   const date = (iso: string | null) => (iso ? formatFechaLarga(iso, locale) : '');
   const b = (c: string) => `<b>${c}</b>`;
   const text = (() => {

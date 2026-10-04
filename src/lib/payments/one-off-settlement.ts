@@ -18,12 +18,13 @@ import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from './pricing';
 import { getAppUrl } from './mercadopago';
 import {
+  autoRefundMismatch,
   checkCharge,
   expectedChargeForPack,
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import { isDispute, type NormalizedCharge } from './order-charge';
+import { isDispute, ledgerStatus, type NormalizedCharge } from './order-charge';
 import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { parsePackReference } from './subscription-reference';
 import type { SubscriptionTier } from '@/lib/auth/session';
@@ -97,6 +98,16 @@ export async function settleOneOffCharge(
   }
   const packForRow = isPackPurchase ? getTokenPack(packIdRaw!) : undefined;
 
+  // What we knew before this notification: a legacy plan is granted on the
+  // charge's FIRST move to approved only, so replaying an old approved
+  // payment (an unsigned IPN anyone can send) can't grant the plan again.
+  const { data: before } = await admin
+    .from('payments')
+    .select('status')
+    .eq('mp_payment_id', mpId)
+    .maybeSingle();
+  const previousStatus = (before?.status as string | null | undefined) ?? null;
+
   // Always record the charge regardless of status — pending/rejected ones
   // are useful audit data. UNIQUE on mp_payment_id makes this idempotent.
   const { error: paymentErr } = await admin.from('payments').upsert(
@@ -112,7 +123,7 @@ export async function settleOneOffCharge(
       mp_payment_id: mpId,
       amount_cents: amountCents,
       currency,
-      status,
+      status: ledgerStatus(status, previousStatus),
       raw,
     },
     { onConflict: 'mp_payment_id' },
@@ -305,15 +316,35 @@ export async function settleOneOffCharge(
         source: 'mp.webhook',
       });
       // Nothing was granted, so the whole amount goes back (Términos
-      // §7.2(d): an amount other than the one shown), within 5 business days.
-      if (userId && check.paidCents > 0) {
-        await issueRefund({
+      // §7.2(d): an amount other than the one shown), within 5 business days
+      // — but only when MP told us what was paid and in what currency. A
+      // response missing either is a person's call, never a refund on a guess.
+      const paid = { amountMajor: charge.amountMajor, currency: charge.currency };
+      if (userId && autoRefundMismatch(check, paid)) {
+        const refunded = await issueRefund({
           userId,
           mpPaymentId: mpId,
           cents: check.paidCents,
           reason: 'legal_7_2_d',
           surface: 'mp_webhook',
           actor: null,
+        });
+        if (!refunded.ok) {
+          await notify({
+            severity: 'critical',
+            title: 'Reembolso automático fallido — reembolsar a mano',
+            body: `MP ${charge.mpReference} (pago ${mpId}) · $${(check.paidCents / 100).toFixed(2)} ${check.paidCurrency} · Términos §7.2(d), dentro de 5 días hábiles`,
+            href: '/dashboard/dinero',
+            source: 'mp.webhook',
+          });
+        }
+      } else if (userId) {
+        await notify({
+          severity: 'critical',
+          title: 'Pago rechazado sin datos completos — revisar y reembolsar si procede',
+          body: `MP ${charge.mpReference} (pago ${mpId}) · monto ${charge.amountMajor ?? '?'} · moneda ${charge.currency ?? '?'}: no se otorgó nada ni se reembolsó automáticamente`,
+          href: '/dashboard/dinero',
+          source: 'mp.webhook',
         });
       }
       return ok({
@@ -375,6 +406,11 @@ export async function settleOneOffCharge(
   // Plans are sold as subscriptions now (subscription-sync.ts); this stays
   // for preferences created before that, which Mercado Pago may still
   // settle. Only flip the tier if the payment is actually approved.
+  if (status === 'approved' && previousStatus === 'approved') {
+    // Already settled: a replay or a repeat changes nothing — not a plan
+    // the user has since cancelled, nor one they've changed.
+    return ok({ ok: true, status, tier, alreadySettled: true });
+  }
   if (status === 'approved') {
     const { data: targetBefore } = await admin
       .from('profiles')
@@ -390,6 +426,11 @@ export async function settleOneOffCharge(
       .eq('id', userId);
     if (tierErr) {
       console.error('[mp/webhook] tier update failed', tierErr);
+      // Undo "approved" on our row, so MP's retry is a first approval again.
+      await admin
+        .from('payments')
+        .update({ status: previousStatus ?? 'pending' })
+        .eq('mp_payment_id', mpId);
       return retry({ error: 'db tier update failed' });
     }
     // Auto-provision engine access on VIP upgrades. PRO upgrades wait

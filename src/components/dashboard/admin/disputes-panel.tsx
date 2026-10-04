@@ -141,13 +141,14 @@ export function DisputesPanel({ rows }: { rows: DisputeRow[] }) {
             )}
 
             {stage !== 'legal_closed' && (
-              <a
-                className="ch-btn ch-btn--secondary"
-                href={`/api/admin/disputes/${open.id}/evidence`}
-                download
-              >
-                {t('evidence')}
-              </a>
+              // A POST: generating the package records it as submitted
+              // evidence, which a link prefetch must never do. The PDF
+              // comes back as an attachment, so the page stays put.
+              <form method="post" action={`/api/admin/disputes/${open.id}/evidence`}>
+                <button type="submit" className="ch-btn ch-btn--secondary">
+                  {t('evidence')}
+                </button>
+              </form>
             )}
 
             {stage === 'awaiting_resolution' && (

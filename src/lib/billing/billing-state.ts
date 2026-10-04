@@ -7,7 +7,7 @@
 //   past_due          a charge failed; full access until graceEndsAt
 //   cancelled_active  cancelled, but paid (or trial) access runs to accessUntil
 
-import { PRICING, type PlanKey } from '@/config/pricing';
+import { planPrice, PRICING, type PlanKey } from '@/config/pricing';
 import { addInterval } from './trial-dates';
 
 export type BillingStateName = 'free' | 'trialing' | 'pro' | 'past_due' | 'cancelled_active';
@@ -33,6 +33,8 @@ export interface SubscriptionRow {
   charge_hold_until?: string | null;
   /** When a charge of this subscription last went through (null: never). */
   last_charge_at?: string | null;
+  /** When its first charge was scheduled (0057; null on older rows). */
+  first_charge_at?: string | null;
 }
 
 export interface BillingState {
@@ -68,6 +70,10 @@ const FREE: BillingState = {
   chargeHoldUntil: null,
 };
 
+/** Our copy of a preapproval Mercado Pago authorised at an amount we never
+ *  priced (the price gate, subscription-sync): visible, grants nothing. */
+export const AMOUNT_MISMATCH_STATUS = 'amount_mismatch';
+
 const ms = (iso: string | null | undefined) => (iso ? Date.parse(iso) : NaN);
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -88,10 +94,12 @@ export interface UnpaidCharge {
  *                                (PRICING.trial.firstChargeGraceDays)
  *   renewal                      due one period after the last charge,
  *                                PRICING.graceDays of grace
+ *   paid start or plan change,   due at first_charge_at (today, or the
+ *   never charged                change date), PRICING.graceDays of grace
  *
  * The due date only moves for a bounce hold (no charge until 5 days after an
- * effective notice). Null when nothing is owed yet that we can date: a paid
- * start or plan change that hasn't charged for the first time.
+ * effective notice). Null when nothing is owed that we can date: a row
+ * from before first_charge_at (0057) that never charged.
  */
 export function unpaidCharge(
   row: Pick<
@@ -102,6 +110,7 @@ export function unpaidCharge(
     | 'last_charge_at'
     | 'charge_hold_until'
     | 'reminder_delivered_at'
+    | 'first_charge_at'
   >,
   p = PRICING,
 ): UnpaidCharge | null {
@@ -109,12 +118,16 @@ export function unpaidCharge(
   let graceDays: number;
   if (row.last_charge_at) {
     const planKey = row.plan_key ?? (row.tier === 'VIP' ? 'vip_month' : 'pro_month');
-    const interval = planKey === 'pro_year' ? 'year' : 'month';
+    const interval = planPrice(planKey).interval;
     scheduled = addInterval(new Date(row.last_charge_at), interval).getTime();
     graceDays = p.graceDays;
   } else if (row.trial_ends_at) {
     scheduled = ms(row.trial_ends_at);
     graceDays = p.trial.firstChargeGraceDays;
+  } else if (row.first_charge_at) {
+    // A paid start or a plan change whose first charge never landed.
+    scheduled = ms(row.first_charge_at);
+    graceDays = p.graceDays;
   } else {
     return null;
   }
@@ -153,6 +166,8 @@ export function deriveBillingState(row: SubscriptionRow | null, nowMs: number): 
   };
 
   const status = row.status.toLowerCase();
+  // Refused by the price gate: nothing, whatever else the row says.
+  if (status === AMOUNT_MISMATCH_STATUS) return { ...FREE, trialEndsAt: row.trial_ends_at };
   const inTrial = !Number.isNaN(ms(row.trial_ends_at)) && nowMs < ms(row.trial_ends_at);
 
   // Cancelled (by the user or by us): access runs to the end of what was

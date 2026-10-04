@@ -39,7 +39,8 @@
 // Mercado Pago wants an answer fast. Processing gets ACK_BUDGET_MS; if it is
 // still running then, the route answers 200 and finishes in after(). Only a
 // failure inside that budget can still ask MP to retry; one after it is
-// logged and the daily billing cron's re-sync catches the subscription.
+// logged; the daily billing cron re-syncs the subscription and grants a
+// pack whose grant failed (pack-reconcile.ts).
 
 import { NextResponse, after } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -63,6 +64,7 @@ import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-ser
 import {
   chargeFromOrder,
   chargeFromPayment,
+  ledgerStatus,
   isDispute,
   type NormalizedCharge,
 } from '@/lib/payments/order-charge';
@@ -102,6 +104,7 @@ export async function POST(req: Request) {
       paymentId: manifestId(n.dataId),
       requestId: req.headers.get('x-request-id'),
       signatureHeader,
+      nowMs: Date.now(),
     });
     if (!signature.ok) {
       if (signature.reason === 'not_configured') {
@@ -274,13 +277,28 @@ async function handleCharge(topic: 'payment' | 'orders', dataId: string): Promis
   const subRef = parseSubscriptionReference(charge.externalReference);
   if (subRef) {
     const admin = createAdminClient();
-    const { data: sub } = await admin
-      .from('subscriptions')
-      .select('mp_preapproval_id')
-      .eq('external_reference', charge.externalReference)
-      .order('created_at', { ascending: false })
-      .limit(1)
+    // Which subscription this charge belongs to is known for sure only from
+    // the authorized_payment (recordAuthorizedPayment). The reference is
+    // shared by every subscription of this user and tier, so the latest one
+    // is only a guess: used to fill an empty link, never to replace one (a
+    // dispute is triaged against the subscription the row names).
+    const { data: existing } = await admin
+      .from('payments')
+      .select('mp_preapproval_id, status')
+      .eq('mp_payment_id', charge.mpPaymentId)
       .maybeSingle();
+    const knownPreapproval = (existing?.mp_preapproval_id as string | null | undefined) ?? null;
+    let guessedPreapproval: string | null = null;
+    if (!knownPreapproval) {
+      const { data: sub } = await admin
+        .from('subscriptions')
+        .select('mp_preapproval_id')
+        .eq('external_reference', charge.externalReference)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      guessedPreapproval = (sub?.mp_preapproval_id as string | undefined) ?? null;
+    }
     const { error: ledgerErr } = await admin.from('payments').upsert(
       {
         user_id: subRef.userId,
@@ -290,10 +308,10 @@ async function handleCharge(topic: 'payment' | 'orders', dataId: string): Promis
         // two different ways depending on which topic reported it first.
         kind: 'subscription',
         mp_payment_id: charge.mpPaymentId,
-        mp_preapproval_id: (sub?.mp_preapproval_id as string | undefined) ?? null,
+        ...(knownPreapproval || !guessedPreapproval ? {} : { mp_preapproval_id: guessedPreapproval }),
         amount_cents: Math.round((charge.amountMajor ?? 0) * 100),
         currency: charge.currency ?? 'MXN',
-        status: charge.status,
+        status: ledgerStatus(charge.status, (existing?.status as string | null | undefined) ?? null),
         raw,
       },
       { onConflict: 'mp_payment_id' },
@@ -328,9 +346,10 @@ async function handleCharge(topic: 'payment' | 'orders', dataId: string): Promis
         { status: 200 },
       );
     }
-    if (sub?.mp_preapproval_id) {
+    const preapprovalId = knownPreapproval ?? guessedPreapproval;
+    if (preapprovalId) {
       try {
-        const outcome = await syncSubscription(sub.mp_preapproval_id as string);
+        const outcome = await syncSubscription(preapprovalId);
         if (!outcome.ok && outcome.retry) {
           return NextResponse.json({ error: 'subscription sync failed' }, { status: 500 });
         }

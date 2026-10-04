@@ -6,6 +6,7 @@
 //   header:         "v1,<sig> v1,<sig2>" (any match passes)
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { MANDATORY_NOTICE_EMAIL_KINDS } from '@/lib/billing/reminders';
 
 const TOLERANCE_S = 5 * 60;
 
@@ -32,5 +33,6 @@ export function verifyResendSignature(input: {
   });
 }
 
-/** Notices whose delivery gates the next charge (the bounce rule). */
-export const MANDATORY_NOTICE_KINDS = new Set(['trial_7d', 'renew_7d']);
+/** Notices whose delivery gates the next charge (the bounce rule): the
+ *  same list the cron sends them from. */
+export const MANDATORY_NOTICE_KINDS = MANDATORY_NOTICE_EMAIL_KINDS;

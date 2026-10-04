@@ -7,14 +7,16 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
+import { getMercadoPagoIsolated, getAppUrl } from '@/lib/payments/mercadopago';
+import { isOrderPaymentId } from '@/lib/payments/order-charge';
+import { chargeWasPriced } from '@/lib/payments/webhook-verify';
 import { getContactInbox } from '@/lib/email/resend';
 import { notify } from '@/lib/notifications/notify';
 import {
   chargebackCloseAfterDays,
   chargebackMeasuresEnabled,
 } from '@/lib/config/flags';
-import { lealtadPriceCents } from '@/config/pricing';
+import type { PlanKey } from '@/config/pricing';
 import { legalDocument } from '@/lib/legal/documents';
 import { recordConsent, UI_VERSION } from './consent';
 import { openPersonal } from './consent-crypto';
@@ -23,13 +25,17 @@ import { formatMXN } from './format';
 import { dispatchBillingEmail } from './notices';
 import { PLAN_NAMES } from './plan-names';
 import {
+  claimRefund,
   closeDue,
   decide,
   measuresFor,
   noticeDeadline,
+  refundIdempotencyKey,
+  releaseRefund,
   triage,
   type BadFaithInput,
   type MeasureKind,
+  type RefundLedger,
   type RefundReason,
 } from './disputes';
 import { evidenceLines, renderPdf, sha256Hex, type EvidenceInput } from './evidence-pdf';
@@ -94,6 +100,34 @@ async function evidenceEvent(
 
 // ── Refunds ───────────────────────────────────────────────────────────────
 
+/** The payments ledger as refund claims see it (disputes.ts claimRefund). */
+function paymentsLedger(admin: ReturnType<typeof createAdminClient>): RefundLedger {
+  return {
+    async read(paymentId) {
+      const { data } = await admin
+        .from('payments')
+        .select('amount_cents, refunded_cents')
+        .eq('mp_payment_id', paymentId)
+        .maybeSingle();
+      if (!data) return null;
+      return {
+        amountCents: (data.amount_cents as number | null) ?? 0,
+        refundedCents: (data.refunded_cents as number | null) ?? 0,
+      };
+    },
+    async swap(paymentId, from, to) {
+      const { data, error } = await admin
+        .from('payments')
+        .update({ refunded_cents: to })
+        .eq('mp_payment_id', paymentId)
+        .eq('refunded_cents', from)
+        .select('mp_payment_id');
+      if (error) throw error;
+      return (data?.length ?? 0) > 0;
+    },
+  };
+}
+
 /**
  * Refund through Mercado Pago with a Términos §7.2 reason, and record
  * refund_issued. Touches nothing else: not the plan, the price, the
@@ -110,29 +144,62 @@ export async function issueRefund(input: {
 }): Promise<{ ok: boolean }> {
   if (input.cents <= 0) return { ok: false };
   const admin = createAdminClient();
-  const { data: pay } = await admin
-    .from('payments')
-    .select('amount_cents, refunded_cents')
-    .eq('mp_payment_id', input.mpPaymentId)
-    .maybeSingle();
-  // Idempotent: never refund past what is left of the charge.
-  const already = (pay?.refunded_cents as number | null) ?? 0;
-  const left = pay ? ((pay.amount_cents as number | null) ?? 0) - already : input.cents;
-  const cents = Math.min(input.cents, left);
-  if (cents <= 0) return { ok: true };
-  try {
-    await getMercadoPago().refund.create({
-      payment_id: input.mpPaymentId,
-      body: { amount: cents / 100 },
-    });
-  } catch (err) {
-    console.error('[disputes] Mercado Pago refused the refund', input.mpPaymentId, err);
+  // Reserve the amount on the ledger first (compare-and-set): a concurrent
+  // refund of the same charge can't also go out, and never past the charge.
+  const ledger = paymentsLedger(admin);
+  const claim = await claimRefund(ledger, input.mpPaymentId, input.cents);
+  if (claim.kind === 'nothing_left') return { ok: true };
+  if (claim.kind === 'contended') {
+    console.error('[disputes] refund claim kept losing the race', input.mpPaymentId);
     return { ok: false };
   }
-  await admin
-    .from('payments')
-    .update({ refunded_cents: already + cents, refund_reason: input.reason })
-    .eq('mp_payment_id', input.mpPaymentId);
+  const cents = claim.cents;
+  const idempotencyKey = refundIdempotencyKey({
+    paymentId: input.mpPaymentId,
+    reason: input.reason,
+    cents,
+    offset: claim.kind === 'claimed' ? claim.offset : 0,
+  });
+  try {
+    // An isolated client: the idempotency key must not stick to the shared
+    // one (getMercadoPagoIsolated).
+    const mp = getMercadoPagoIsolated();
+    if (isOrderPaymentId(input.mpPaymentId)) {
+      // A pack paid through the Orders API: its payment (PAY01…) is refunded
+      // through its order, whose id is on our row (raw is the order).
+      const { data: row } = await admin
+        .from('payments')
+        .select('order_id:raw->>id')
+        .eq('mp_payment_id', input.mpPaymentId)
+        .maybeSingle();
+      const orderId = (row as { order_id?: string | null } | null)?.order_id;
+      if (!orderId) throw new Error(`no order id on file for payment ${input.mpPaymentId}`);
+      await mp.order.refund({
+        id: orderId,
+        body: { transactions: [{ id: input.mpPaymentId, amount: (cents / 100).toFixed(2) }] },
+        requestOptions: { idempotencyKey },
+      });
+    } else {
+      await mp.refund.create({
+        payment_id: input.mpPaymentId,
+        body: { amount: cents / 100 },
+        requestOptions: { idempotencyKey },
+      });
+    }
+  } catch (err) {
+    console.error('[disputes] Mercado Pago refused the refund', input.mpPaymentId, err);
+    if (claim.kind === 'claimed' && !(await releaseRefund(ledger, input.mpPaymentId, cents))) {
+      console.error('[disputes] COULD NOT release a refused refund claim', input.mpPaymentId, cents);
+    }
+    return { ok: false };
+  }
+  if (claim.kind === 'claimed') {
+    const { error } = await admin
+      .from('payments')
+      .update({ refund_reason: input.reason })
+      .eq('mp_payment_id', input.mpPaymentId);
+    if (error) console.error('[disputes] refund reason not recorded', input.mpPaymentId, error);
+  }
   await evidenceEvent(
     'refund_issued',
     input.userId,
@@ -196,17 +263,24 @@ async function triageInputs(cb: { user_id: string; mp_preapproval_id: string | n
     ? Math.floor((chargedAt.getTime() - Date.parse(delivered.sent_at as string)) / DAY)
     : null;
   const cancelledAt = (sub?.cancelled_at as string | null) ?? null;
-  const expected =
-    sub?.plan_key === 'pro_lealtad' && pay?.loyalty_step !== null && pay?.loyalty_step !== undefined
-      ? lealtadPriceCents(pay.loyalty_step as number)
-      : ((sub?.amount_cents as number | null) ?? null);
+  // Against the amounts the plan could charge when this charge landed (its
+  // price, a grandfathered price, its Lealtad step) — not against what the
+  // subscription charges today.
+  const priced = sub
+    ? chargeWasPriced({
+        chargedCents: cb.amount_cents,
+        planKey: (sub.plan_key as PlanKey | null) ?? null,
+        tier: ((pay?.tier as string | undefined) === 'VIP' ? 'VIP' : 'PRO') as 'PRO' | 'VIP',
+        loyaltyStep: (pay?.loyalty_step as number | null | undefined) ?? null,
+      })
+    : null;
   return {
     consentOnRecord: (consent ?? []).length > 0,
     unauthorizedSignals: false,
     noticeRequired: isSub,
     noticeDeliveredDaysBefore: noticeDays,
     cancelledBeforeCharge: !!cancelledAt && Date.parse(cancelledAt) < chargedAt.getTime(),
-    amountMismatch: expected !== null && expected !== cb.amount_cents,
+    amountMismatch: priced === false,
     serviceFailure: false,
   };
 }
@@ -224,20 +298,41 @@ export async function onChargebackOpened(input: {
   const admin = createAdminClient();
   const { data: pay } = await admin
     .from('payments')
-    .select('user_id, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
+    .select('mp_payment_id, user_id, tier, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
     .eq('mp_payment_id', input.mpPaymentId)
     .maybeSingle();
-  if (!pay?.user_id) {
+  // A pack paid through the Orders API sits on the ledger under its order
+  // payment id (PAY01…); a dispute names the Payments API id, which the
+  // order carries as the transaction's reference_id.
+  let found = pay;
+  if (!found?.user_id && !isOrderPaymentId(input.mpPaymentId)) {
+    const { data: viaOrder } = await admin
+      .from('payments')
+      .select('mp_payment_id, user_id, tier, amount_cents, mp_preapproval_id, created_at, kind, loyalty_step')
+      .eq('raw->transactions->payments->0->>reference_id', input.mpPaymentId)
+      .limit(1)
+      .maybeSingle();
+    found = viaOrder;
+  }
+  if (!found?.user_id) {
     console.error('[disputes] dispute for a payment we do not have', input);
+    await notify({
+      severity: 'critical',
+      title: 'Contracargo de un pago que no encontramos — revisar a mano',
+      body: `MP pago ${input.mpPaymentId} · estado ${input.mpStatus}: no quedó registrado ni se le dio seguimiento`,
+      href: '/dashboard/dinero',
+      source: 'mp.webhook',
+    }).catch(() => {});
     return { ok: true };
   }
   const row = {
-    user_id: pay.user_id as string,
-    mp_payment_id: input.mpPaymentId,
+    user_id: found.user_id as string,
+    // The ledger's own key, so the case and the charge always match.
+    mp_payment_id: found.mp_payment_id as string,
     mp_chargeback_id: input.mpChargebackId ?? null,
-    mp_preapproval_id: (pay.mp_preapproval_id as string | null) ?? null,
-    amount_cents: (pay.amount_cents as number | null) ?? 0,
-    charged_at: (pay.created_at as string | null) ?? null,
+    mp_preapproval_id: (found.mp_preapproval_id as string | null) ?? null,
+    amount_cents: (found.amount_cents as number | null) ?? 0,
+    charged_at: (found.created_at as string | null) ?? null,
     mp_status: input.mpStatus,
   };
   const { data: inserted, error } = await admin
@@ -257,7 +352,7 @@ export async function onChargebackOpened(input: {
     mp_status: input.mpStatus,
   }, row.amount_cents);
 
-  const t = triage(await triageInputs(row, pay as Row));
+  const t = triage(await triageInputs(row, found as Row));
   await admin
     .from('chargebacks')
     .update({

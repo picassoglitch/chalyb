@@ -45,7 +45,13 @@ import { cancelPreapproval, syncSubscription } from '@/lib/payments/subscription
 import { track } from '@/lib/analytics/track';
 import { legalDocuments } from '@/lib/legal/documents';
 import type { SessionUser } from '@/lib/auth/session';
-import { addInterval, trialDates, type TrialDates } from './trial-dates';
+import {
+  addInterval,
+  switchChargeDate,
+  switchMovesCharge,
+  trialDates,
+  type TrialDates,
+} from './trial-dates';
 import { formatFechaLarga, formatMXN } from './format';
 import {
   lealtadEnabled,
@@ -71,6 +77,7 @@ import { dispatchBillingEmail, trialNoticeVars } from './notices';
 import { trialNoticeKey } from './reminders';
 import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
+import { trialCardCheck } from './trial-eligibility';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 
 export type StartMode = 'trial' | 'paid' | 'change';
@@ -96,6 +103,7 @@ export type StartError =
   | 'ADMIN'
   | 'QUEBEC'
   | 'CARD_TRIAL_USED'
+  | 'CARD_UNVERIFIED'
   | 'ACCOUNT_CLOSED'
   | 'PAID_REFUSED'
   | 'BAD_TOKEN'
@@ -165,7 +173,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   if (billing.restriction.closed) return { ok: false, code: 'ACCOUNT_CLOSED' };
   if (billing.restriction.prepaymentRequired && chargebackRefuseNewSubscriptions())
     return { ok: false, code: 'PAID_REFUSED' };
-  // 7 days free on Pro mensual and Pro anual, once per account (and card).
+  // 7 days free on any plan, for first-time customers only: once per
+  // account (and card), never after a charged subscription (trialUsed).
   const wantsTrial =
     trialFlowEnabled() &&
     planHasTrial(input.planKey) &&
@@ -195,13 +204,24 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     console.warn('[billing/start] card token lookup failed; continuing without card details', err);
   }
   const fp = fingerprint(card);
+  // One trial per card: a card we can't fingerprint gets no trial (fail
+  // closed). The customer saw the trial terms, not a charge today, so this
+  // is an error to retry, never a silent switch to the paid path.
+  const cardCheck = trialCardCheck({ mode, fingerprint: fp, seenUserId: undefined, userId });
+  if (!cardCheck.ok) return { ok: false, code: cardCheck.code };
   if (mode === 'trial' && fp) {
     const { data: seen } = await admin
       .from('payment_method_fingerprints')
       .select('user_id')
       .eq('hash', fp)
       .maybeSingle();
-    if (seen && seen.user_id !== userId) return { ok: false, code: 'CARD_TRIAL_USED' };
+    const seenCheck = trialCardCheck({
+      mode,
+      fingerprint: fp,
+      seenUserId: (seen?.user_id as string | undefined) ?? null,
+      userId,
+    });
+    if (!seenCheck.ok) return { ok: false, code: seenCheck.code };
   }
 
   const now = new Date();
@@ -228,12 +248,23 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     });
   }
   const chargeCents = lealtad ? lealtadPriceCents(startStep) : price.totalCents;
-  const switchEnds = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
+  // T-6: the switch's fresh notice goes out now, so its charge comes at
+  // least 5 days later — pushed past the trial's end when the switch is late
+  // (owner, 2026-10-03); the trial runs to the same instant.
+  const originalTrialEnd = trialSwitch ? new Date(billing.primary.trialEndsAt as string) : null;
+  const switchEnds = originalTrialEnd ? switchChargeDate(originalTrialEnd, now) : null;
+  const switchMoved = !!originalTrialEnd && switchMovesCharge(originalTrialEnd, now);
+  const trialStartedAt = (billing.primaryRow?.started_at as string | undefined) ?? null;
   const dates: TrialDates =
     mode === 'trial'
       ? trialDates(now)
       : switchEnds
-        ? { startsAt: now, trialEndsAt: switchEnds, chargeAt: switchEnds, reminderAt: now }
+        ? {
+            startsAt: trialStartedAt ? new Date(trialStartedAt) : now,
+            trialEndsAt: switchEnds,
+            chargeAt: switchEnds,
+            reminderAt: now,
+          }
         : { startsAt: now, trialEndsAt: now, chargeAt: input.effectiveAt ?? now, reminderAt: now };
 
   // The texts the user saw, rendered again here exactly as the page renders
@@ -263,6 +294,14 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // Pro Lealtad: Law's checkout block with the real dates, from the first
   // charge (today, or when the current plan ends).
   const lealtadStart = firstChargeLater ? dates.chargeAt : now;
+  // A trial switch: the change page's own paragraph, with the (moved) date.
+  const switchParagraph = trialSwitch
+    ? tChangeText(switchMoved ? 'trialSwitchMoved' : 'trialSwitch', {
+        fecha: formatFechaLarga(dates.chargeAt, input.locale),
+        monto: formatMXN(chargeCents),
+        periodo: tb(price.interval === 'year' ? 'vars.cadaPeriodo.year' : 'vars.cadaPeriodo.month'),
+      })
+    : null;
   const disclosureText = lealtad
     ? evidenceText(
         lealtadCheckoutParagraphs(t, {
@@ -271,9 +310,11 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
           locale: input.locale,
         }),
       )
-    : trialLike
-      ? evidenceText(disclosureParagraphs(t, disclosure))
-      : chargedToday
+    : switchParagraph
+      ? evidenceText([switchParagraph])
+      : trialLike
+        ? evidenceText(disclosureParagraphs(t, disclosure))
+        : chargedToday
         ? evidenceText(paidParagraphs(t, paidInput))
         : null;
   const checkboxText = lealtad
@@ -446,6 +487,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       started_at: now.toISOString(),
       trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
       next_charge_at: firstChargeLater ? dates.chargeAt.toISOString() : null,
+      // Fixed at creation: dates the deadline if this never charges (0057).
+      first_charge_at: dates.chargeAt.toISOString(),
       next_payment_date: firstChargeLater ? dates.chargeAt.toISOString() : null,
       reminder_due_at: trialLike ? dates.reminderAt.toISOString() : null,
       card_brand: card.payment_method_id ?? null,
@@ -464,11 +507,20 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       })
       .eq('id', userId)
       .is('pro_trial_started_at', null);
-    if (fp)
-      await admin
-        .from('payment_method_fingerprints')
-        .upsert({ hash: fp, user_id: userId }, { onConflict: 'hash', ignoreDuplicates: true });
   }
+  // A switch that pushed the charge back extends the trial to it.
+  if (switchMoved) {
+    await admin
+      .from('profiles')
+      .update({ pro_trial_ends_at: dates.trialEndsAt.toISOString() })
+      .eq('id', userId);
+  }
+  // Every card that starts a plan, trial or paid: a card that already paid
+  // for one account can't open a trial on another.
+  if (fp)
+    await admin
+      .from('payment_method_fingerprints')
+      .upsert({ hash: fp, user_id: userId }, { onConflict: 'hash', ignoreDuplicates: true });
 
   // Same path the webhook takes: grants the plan, retires an older
   // subscription (it stops charging now; its paid access is kept by

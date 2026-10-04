@@ -4,7 +4,7 @@
 // ends; the charge notice goes out PRICING.trial.reminderDaysBefore (7) days
 // before, i.e. the moment the trial starts. Start 3 oct 2026 → charge 10 oct.
 
-import { PRICING } from '@/config/pricing';
+import { MIN_NOTICE_DAYS, PRICING } from '@/config/pricing';
 
 const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
@@ -29,6 +29,25 @@ export function noticeRunBefore(chargeAt: Date, days: number): Date {
   return run;
 }
 
+/**
+ * T-6 · Switching plans during the trial sends a fresh charge notice right
+ * away; a switch late in the trial would leave it under the legal 5 days.
+ * Owner, 2026-10-03: push the first charge back — never before the trial's
+ * own end, and at least MIN_NOTICE_DAYS (plus the notice slack) after the
+ * notice. The trial (and its access) runs to the same instant: the extra
+ * days are free, and there is no gap with no grace after a trial.
+ */
+export function switchChargeDate(trialEndsAt: Date, noticeAt: Date): Date {
+  return new Date(
+    Math.max(trialEndsAt.getTime(), noticeAt.getTime() + MIN_NOTICE_DAYS * DAY + NOTICE_SLACK_MS),
+  );
+}
+
+/** Whether a switch at `noticeAt` moves the charge past the trial's end. */
+export function switchMovesCharge(trialEndsAt: Date, noticeAt: Date): boolean {
+  return switchChargeDate(trialEndsAt, noticeAt).getTime() > trialEndsAt.getTime();
+}
+
 export interface TrialDates {
   startsAt: Date;
   trialEndsAt: Date;
@@ -51,6 +70,13 @@ export function trialDates(start: Date, p = PRICING): TrialDates {
         ? start
         : noticeRunBefore(trialEndsAt, p.trial.reminderDaysBefore),
   };
+}
+
+/** A trial's real length in days: PRICING.trial.days, or more when a late
+ *  plan switch pushed the first charge back (switchChargeDate). */
+export function trialLengthDays(startedAt: string | Date, trialEndsAt: string | Date, p = PRICING): number {
+  const ms = new Date(trialEndsAt).getTime() - new Date(startedAt).getTime();
+  return Math.max(p.trial.days, Math.round(ms / DAY));
 }
 
 /** Whole days left in a trial, rounded up (the banner's "te quedan {n} días"). */

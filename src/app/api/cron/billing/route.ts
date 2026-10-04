@@ -14,7 +14,9 @@
 //   3b. ends Pro at the deadline of a charge that never landed: the trial's
 //      annual charge (no grace) or a renewal (PRICING.graceDays);
 //   4. re-reads stale subscriptions from Mercado Pago (the webhook keeps them
-//      current in between).
+//      current in between);
+//   5. decides chargebacks whose 10 business days ran out;
+//   6. grants token packs whose webhook grant failed after the ack.
 // Grace and cancelled periods lapse on their own: the session reads
 // profiles.tier_ends_at.
 
@@ -29,7 +31,7 @@ import {
   unpaidCharge,
   type SubscriptionRow,
 } from '@/lib/billing/billing-state';
-import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
+import { dueNotices, holdDecision, noticeEmailKind, type NoticeKind } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
 import {
@@ -40,13 +42,14 @@ import {
 } from '@/lib/billing/notices';
 import { reconcileLealtad } from '@/lib/billing/lealtad-server';
 import { sweepChargebacks } from '@/lib/billing/disputes-server';
+import { reconcilePackGrants } from '@/lib/payments/pack-reconcile';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   mpPauseInTrialVerified,
   priceIncreaseNoAnswer,
   trialDay6ReminderEnabled,
 } from '@/lib/config/flags';
-import { chargeFor, planPrice, type PlanKey } from '@/config/pricing';
+import { nextChargeCents, planPrice, type PlanKey } from '@/config/pricing';
 import type { BillingEmailKind } from '@/lib/email/billing-templates';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { nextStep } from '@/lib/billing/price-change';
@@ -99,13 +102,14 @@ export async function GET(req: Request) {
     unpaidCharges: 0,
     synced: 0,
     priceChanges: 0,
+    packsGranted: 0,
     errors: 0,
   };
 
   const { data: rows } = await admin
     .from('subscriptions')
     .select(
-      'id, user_id, status, tier, plan_key, amount_cents, loyalty_step, loyalty_mp_amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_due_at, reminder_delivered_at, charge_hold_until, last_charge_at, mp_preapproval_id, consent_id, updated_at',
+      'id, user_id, status, tier, plan_key, amount_cents, loyalty_step, loyalty_mp_amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_due_at, reminder_delivered_at, charge_hold_until, last_charge_at, first_charge_at, mp_preapproval_id, consent_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
@@ -144,8 +148,9 @@ export async function GET(req: Request) {
           const lealtad = planKey === 'pro_lealtad';
           // Pro Lealtad: the notice before every charge carries that month's
           // amount and step (Términos 4 bis.6).
-          const kind =
-            lealtad && notice.kind === 'renew_7d' ? 'lealtad_7d' : EMAIL_FOR[notice.kind];
+          const emailKind = noticeEmailKind(notice.kind, planKey);
+          const kind: BillingEmailKind =
+            emailKind === 'lealtad_7d' ? 'lealtad_7d' : EMAIL_FOR[emailKind];
           if (!email) continue;
           const nombre = ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '';
           const trialNotice = notice.kind === 'trial_7d' || notice.kind === 'trial_1d';
@@ -179,7 +184,7 @@ export async function GET(req: Request) {
                   : {
                       nombre,
                       plan: PLAN_NAMES[planKey],
-                      monto: formatMXN(chargeFor(row as never)),
+                      monto: formatMXN(nextChargeCents({ ...row, plan_key: planKey })),
                       periodicidad:
                         price.interval === 'year' ? 'por 1 año de Pro' : 'por tu primer mes de Pro',
                       fecha_fin_prueba: row.trial_ends_at
@@ -195,7 +200,7 @@ export async function GET(req: Request) {
           const inApp = inAppBillingNotice(notice.kind, {
             nextChargeAt,
             fechaCobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : '',
-            monto: formatMXN(price.totalCents),
+            monto: formatMXN(nextChargeCents({ ...row, plan_key: planKey })),
             periodKey: notice.periodKey,
           });
           if (inApp)
@@ -410,7 +415,13 @@ export async function GET(req: Request) {
           stats.unpaidCharges += 1;
           await notify({
             severity: 'warning',
-            title: row.last_charge_at ? 'Renovación sin cobro' : 'Prueba terminada sin cobro anual',
+            // Every plan has the trial now, and a paid start or change has a
+            // deadline too (first_charge_at): name the charge that's missing.
+            title: row.last_charge_at
+              ? 'Renovación sin cobro'
+              : row.trial_ends_at
+                ? 'Prueba terminada sin primer cobro'
+                : 'Primer cobro sin entrar',
             body: `Suscripción ${preapprovalId} · ${row.tier} hasta el ${formatFechaLarga(unpaid.deadline, 'es')} si no entra el cobro`,
             href: '/dashboard/dinero',
             source: 'billing.cron',
@@ -435,6 +446,18 @@ export async function GET(req: Request) {
     stats.errors += 1;
     console.error('[cron/billing] chargeback sweep failed', err);
   });
+
+  // 6. Token packs the webhook didn't grant (a failure after it answered
+  // Mercado Pago gets no retry).
+  await reconcilePackGrants(now)
+    .then((r) => {
+      stats.packsGranted += r.granted;
+      stats.errors += r.failed;
+    })
+    .catch((err) => {
+      stats.errors += 1;
+      console.error('[cron/billing] pack reconcile failed', err);
+    });
 
   console.info('[cron/billing]', stats);
   return NextResponse.json({ ok: true, ...stats });

@@ -12,7 +12,7 @@
 // Each notice carries a period key; the email_dispatches unique index on
 // (user_id, kind, period_key) is what makes two cron runs send once.
 
-import { MIN_NOTICE_DAYS, PRICING } from '@/config/pricing';
+import { MIN_NOTICE_DAYS, PRICING, type PlanKey } from '@/config/pricing';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -116,6 +116,24 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
   }
   return out.filter((n) => now >= n.dueAt);
 }
+
+/** The email a notice goes out as: Pro Lealtad's renewal notice is its own
+ *  email, with that month's step and amount (Términos 4 bis.6). */
+export function noticeEmailKind(
+  kind: NoticeKind,
+  planKey: PlanKey | null,
+): NoticeKind | 'lealtad_7d' {
+  return planKey === 'pro_lealtad' && kind === 'renew_7d' ? 'lealtad_7d' : kind;
+}
+
+/** The notices whose delivery gates the charge (dueNotices' `mandatory`),
+ *  by the email kind they are sent as. The Resend webhook records their
+ *  delivery; one list, so a new notice email can't be left out of the
+ *  bounce rule. */
+const MANDATORY_KINDS: readonly NoticeKind[] = ['trial_7d', 'renew_7d'];
+export const MANDATORY_NOTICE_EMAIL_KINDS: ReadonlySet<string> = new Set(
+  MANDATORY_KINDS.flatMap((k) => [noticeEmailKind(k, null), noticeEmailKind(k, 'pro_lealtad')]),
+);
 
 /** The dedupe key of a trial's charge notice: the day-0 send at trial start
  *  and the cron use the same one, so it goes out once. */

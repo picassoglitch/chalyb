@@ -15,6 +15,7 @@ import { formatFechaLarga } from './format';
 import { loadBilling } from './subscription-store';
 import { changeTiming, reactivationStart, upgradeQuote } from './plan-change';
 import { startSubscription, type StartResult } from './start-subscription';
+import { switchChargeDate, switchMovesCharge } from './trial-dates';
 
 /** "C-K7Q2M9" — short, unambiguous, shown to the user and in the email. */
 export function newFolio(): string {
@@ -220,7 +221,7 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
       ? undefined
       : timing === 'trial_end'
         ? s.trialEndsAt
-          ? new Date(s.trialEndsAt)
+          ? switchChargeDate(new Date(s.trialEndsAt), new Date())
           : undefined
         : timing === 'reactivate'
           ? (reactivationStart({
@@ -366,9 +367,15 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
       thenCents: q.thenCents,
     };
   }
+  // A trial switch: the charge date after the fresh notice (pushed past the
+  // trial's end when the switch is late; switchChargeDate).
+  const switchMoved =
+    timing === 'trial_end' && !!s.trialEndsAt && switchMovesCharge(new Date(s.trialEndsAt), new Date());
   const effectiveAt =
     timing === 'trial_end'
       ? s.trialEndsAt
+        ? switchChargeDate(new Date(s.trialEndsAt), new Date()).toISOString()
+        : null
       : timing === 'period_end'
         ? s.nextChargeAt
         : timing === 'reactivate'
@@ -379,5 +386,5 @@ export async function quoteChange(session: SessionUser, to: PlanKey) {
               now: new Date(),
             })?.toISOString() ?? null)
           : null;
-  return { timing, effectiveAt, from, ...quote, billing };
+  return { timing, effectiveAt, switchMoved, from, ...quote, billing };
 }

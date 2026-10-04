@@ -22,10 +22,8 @@ import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
 import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
-import { checkCharge, expectedChargeForTier, type ExpectedCharge } from './webhook-verify';
+import { gatePreapproval } from './webhook-verify';
 import {
-  grandfatheredFor,
-  lealtadSchedule,
   PRICING,
   ivaPortion,
   planPrice,
@@ -100,7 +98,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   const { data: before } = await admin
     .from('subscriptions')
     .select(
-      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at',
+      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at, first_charge_at',
     )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
@@ -125,9 +123,19 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     last_charge_at: lastChargeAt,
     charge_hold_until: (before?.charge_hold_until as string | null) ?? null,
     reminder_delivered_at: (before?.reminder_delivered_at as string | null) ?? null,
+    first_charge_at: (before?.first_charge_at as string | null) ?? null,
   });
   // The trial's annual charge, or a renewal, is due and hasn't landed (yet).
   const overdue = !!unpaid && !inTrial && Date.now() >= Date.parse(unpaid.dueAt);
+
+  // ── Price gate ──────────────────────────────────────────────────────
+  // The reference names the tier; the preapproval carries what is actually
+  // being charged each month. They were both set by us, so any difference
+  // means the preapproval was made elsewhere. Same rule as the one-off
+  // webhook: a mismatch grants nothing and does not retry. Decided BEFORE
+  // our copy is written: an 'authorized' row grants its tier by itself
+  // (deriveBillingState), so a refused one is stored as amount_mismatch.
+  const gate = gatePreapproval({ status, planKey, tier, amountMajor, currency });
 
   // Our copy of the preapproval — written whatever the status, so a paused or
   // cancelled one is visible in /dashboard/billing even when nothing is
@@ -138,7 +146,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
       tier,
       mp_preapproval_id: preapprovalId,
       external_reference: mp.external_reference,
-      status,
+      status: gate.storedStatus,
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',
       next_payment_date: nextPaymentDate,
@@ -157,61 +165,38 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     return { ok: false, reason: 'db', retry: true };
   }
 
-  // ── Price gate ──────────────────────────────────────────────────────
-  // The reference names the tier; the preapproval carries what is actually
-  // being charged each month. They were both set by us, so any difference
-  // means the preapproval was made elsewhere. Same rule as the one-off
-  // webhook: a mismatch grants nothing and does not retry.
-  if (status === 'authorized') {
-    // P2 subscriptions carry their plan (Pro anual charges a yearly amount);
-    // older ones are priced by tier.
-    const expected: ExpectedCharge | null = planKey
-      ? {
-          // Pro Lealtad's amount follows its schedule (always down): the
-          // preapproval may be on any of its steps; each charge is gated
-          // against its own step in onLealtadCharge().
-          amountCents: planPrice(planKey).totalCents,
-          alsoAcceptCents:
-            planKey === 'pro_lealtad'
-              ? lealtadSchedule().map((s) => s.cents)
-              : grandfatheredFor(planKey),
-          currency: PRICING.currency,
-          label: `plan ${planKey}`,
-        }
-      : expectedChargeForTier(tier);
-    const charge = expected ? checkCharge(expected, { amountMajor, currency }) : null;
-    if (!expected || !charge?.ok) {
-      console.error('[mp/subscription] REFUSING grant — charge does not match the price', {
-        preapprovalId,
-        userId,
-        tier,
-        expected: expected ? `${expected.amountCents} ${expected.currency}` : null,
-        charged: `${Math.round((amountMajor ?? 0) * 100)} ${currency ?? '?'}`,
-      });
-      await logAudit({
-        action: 'tier.payment',
-        actorId: null,
-        actorEmail: null,
-        targetUserId: userId,
-        metadata: {
-          mp_preapproval_id: preapprovalId,
-          kind: 'subscription.amount_mismatch',
-          rejected: true,
-          expected_amount_cents: expected?.amountCents ?? null,
-          expected_currency: expected?.currency ?? null,
-          charged_amount_cents: Math.round((amountMajor ?? 0) * 100),
-          charged_currency: currency ?? null,
-        },
-      });
-      await notify({
-        severity: 'critical',
-        title: 'Suscripción con monto que no corresponde — no se otorgó nada',
-        body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
-        href: '/dashboard/dinero',
-        source: 'mp.webhook',
-      });
-      return { ok: false, reason: 'amount_mismatch', retry: false };
-    }
+  if (gate.refused) {
+    const expected = gate.expected;
+    console.error('[mp/subscription] REFUSING grant — charge does not match the price', {
+      preapprovalId,
+      userId,
+      tier,
+      expected: expected ? `${expected.amountCents} ${expected.currency}` : null,
+      charged: `${Math.round((amountMajor ?? 0) * 100)} ${currency ?? '?'}`,
+    });
+    await logAudit({
+      action: 'tier.payment',
+      actorId: null,
+      actorEmail: null,
+      targetUserId: userId,
+      metadata: {
+        mp_preapproval_id: preapprovalId,
+        kind: 'subscription.amount_mismatch',
+        rejected: true,
+        expected_amount_cents: expected?.amountCents ?? null,
+        expected_currency: expected?.currency ?? null,
+        charged_amount_cents: Math.round((amountMajor ?? 0) * 100),
+        charged_currency: currency ?? null,
+      },
+    });
+    await notify({
+      severity: 'critical',
+      title: 'Suscripción con monto que no corresponde — no se otorgó nada',
+      body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
+      href: '/dashboard/dinero',
+      source: 'mp.webhook',
+    });
+    return { ok: false, reason: 'amount_mismatch', retry: false };
   }
 
   // A bounce hold pauses the preapproval on purpose (no charge until an
@@ -431,7 +416,7 @@ export async function recordAuthorizedPayment(
     }
     const { data: subRow } = await admin
       .from('subscriptions')
-      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at')
+      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
     if (paymentStatus === 'approved') {

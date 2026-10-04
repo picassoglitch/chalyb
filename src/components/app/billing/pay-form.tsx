@@ -88,6 +88,8 @@ export function PayForm({
             ? t('consentError')
             : body.code === 'CARD_TRIAL_USED'
               ? t('cardUsed')
+              : body.code === 'CARD_UNVERIFIED'
+                ? t('cardUnverified')
               : body.code === 'DECLINED'
                 ? t('declined')
                 : body.code === 'QUEBEC'

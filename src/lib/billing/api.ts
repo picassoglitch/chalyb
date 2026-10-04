@@ -24,6 +24,7 @@ export function statusForStartError(code: StartError): number {
     case 'PAID_REFUSED':
       return 403;
     case 'CARD_TRIAL_USED':
+    case 'CARD_UNVERIFIED':
       return 409;
     case 'BAD_TOKEN':
       return 400;

@@ -11,10 +11,20 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { TIER_PRICING, getTokenPack, TOKEN_PACK_CURRENCY } from './pricing';
-import { GRANDFATHERED_CENTS } from '@/config/pricing';
+import {
+  GRANDFATHERED_CENTS,
+  grandfatheredFor,
+  lealtadPriceCents,
+  lealtadSchedule,
+  planPrice,
+  PRICING,
+  type PlanKey,
+} from '@/config/pricing';
 import type { SubscriptionTier } from '@/lib/auth/session';
+import { AMOUNT_MISMATCH_STATUS } from '@/lib/billing/billing-state';
 
 export type SignatureFailure =
+  | 'stale'
   | 'not_configured'
   | 'missing_headers'
   | 'malformed_signature'
@@ -48,6 +58,10 @@ export function checkMpSignature(opts: {
   paymentId: string | null;
   requestId: string | null;
   signatureHeader: string | null;
+  /** With it, a validly signed notification whose ts is further than
+   *  MP_SIGNATURE_MAX_SKEW_MS from this clock is refused as 'stale' (a
+   *  captured request replayed later). */
+  nowMs?: number;
 }): SignatureCheck {
   const secret = opts.secret?.trim();
   // No secret configured → we cannot tell MP from anyone else on the internet.
@@ -77,10 +91,29 @@ export function checkMpSignature(opts: {
     // timingSafeEqual throws on a length mismatch; a wrong-length digest is a
     // mismatch either way.
     if (a.length !== b.length) return { ok: false, reason: 'mismatch' };
-    return timingSafeEqual(a, b) ? { ok: true } : { ok: false, reason: 'mismatch' };
+    if (!timingSafeEqual(a, b)) return { ok: false, reason: 'mismatch' };
   } catch {
     return { ok: false, reason: 'mismatch' };
   }
+  if (opts.nowMs !== undefined) {
+    const at = signatureTsMs(ts);
+    if (at === null || Math.abs(opts.nowMs - at) > MP_SIGNATURE_MAX_SKEW_MS) {
+      return { ok: false, reason: 'stale' };
+    }
+  }
+  return { ok: true };
+}
+
+/** How far a signature's ts may be from our clock (either way). */
+export const MP_SIGNATURE_MAX_SKEW_MS = 10 * 60 * 1000;
+
+/** The x-signature ts as epoch milliseconds. MP documents it in
+ *  milliseconds (13 digits) but some notifications carry seconds (10
+ *  digits): anything below 1e12 is read as seconds. */
+export function signatureTsMs(ts: string): number | null {
+  if (!/^\d{1,16}$/.test(ts)) return null;
+  const n = Number(ts);
+  return n < 1e12 ? n * 1000 : n;
 }
 
 export interface ExpectedCharge {
@@ -152,4 +185,85 @@ export function checkCharge(
     return { ok: false, reason: 'amount', expected, paidCents, paidCurrency };
   }
   return { ok: true };
+}
+
+/** What a subscription's preapproval may charge: its plan's price (Pro
+ *  Lealtad: any step of its schedule, each charge is gated against its own
+ *  step in onLealtadCharge), or the tier's for rows older than plan keys. */
+export function expectedChargeForPlan(
+  planKey: PlanKey | null,
+  tier: SubscriptionTier,
+): ExpectedCharge | null {
+  if (!planKey) return expectedChargeForTier(tier);
+  return {
+    amountCents: planPrice(planKey).totalCents,
+    alsoAcceptCents:
+      planKey === 'pro_lealtad' ? lealtadSchedule().map((s) => s.cents) : grandfatheredFor(planKey),
+    currency: PRICING.currency,
+    label: `plan ${planKey}`,
+  };
+}
+
+/**
+ * The price gate for a preapproval, decided BEFORE our copy is written: an
+ * authorised preapproval whose amount doesn't match the plan is stored as
+ * AMOUNT_MISMATCH_STATUS, never as 'authorized' (any authorised row grants
+ * its tier).
+ */
+export function gatePreapproval(input: {
+  status: string;
+  planKey: PlanKey | null;
+  tier: SubscriptionTier;
+  amountMajor: number | null | undefined;
+  currency: string | null | undefined;
+}): { storedStatus: string; refused: false } | {
+  storedStatus: typeof AMOUNT_MISMATCH_STATUS;
+  refused: true;
+  expected: ExpectedCharge | null;
+} {
+  if (input.status !== 'authorized') return { storedStatus: input.status, refused: false };
+  const expected = expectedChargeForPlan(input.planKey, input.tier);
+  const charge = expected
+    ? checkCharge(expected, { amountMajor: input.amountMajor, currency: input.currency })
+    : null;
+  if (expected && charge?.ok) return { storedStatus: input.status, refused: false };
+  return { storedStatus: AMOUNT_MISMATCH_STATUS, refused: true, expected };
+}
+
+/**
+ * Whether a refused charge is refunded automatically. Only when Mercado
+ * Pago told us both what was paid and in what currency: a response missing
+ * either is refused and handed to a person, never refunded on a guess (a
+ * correctly priced purchase would otherwise go back).
+ */
+export function autoRefundMismatch(
+  check: ChargeCheck,
+  paid: { amountMajor: number | null | undefined; currency: string | null | undefined },
+): boolean {
+  if (check.ok) return false;
+  if (paid.amountMajor === null || paid.amountMajor === undefined) return false;
+  if (!paid.currency || !paid.currency.trim()) return false;
+  return check.paidCents > 0;
+}
+
+/**
+ * Whether a charge that landed was one of the amounts its plan may charge —
+ * the same price list the gate checked it against (its plan's price, the
+ * grandfathered prices it may still renew at, a Pro Lealtad step). Dispute
+ * triage asks this of the DISPUTED charge, not of the subscription's amount
+ * today (a price accepted since doesn't make an older charge wrong).
+ */
+export function chargeWasPriced(input: {
+  chargedCents: number;
+  planKey: PlanKey | null;
+  tier: SubscriptionTier;
+  /** The Pro Lealtad step this charge paid for (payments.loyalty_step). */
+  loyaltyStep?: number | null;
+}): boolean | null {
+  if (input.planKey === 'pro_lealtad' && input.loyaltyStep !== null && input.loyaltyStep !== undefined) {
+    return input.chargedCents === lealtadPriceCents(input.loyaltyStep);
+  }
+  const expected = expectedChargeForPlan(input.planKey, input.tier);
+  if (!expected) return null;
+  return checkCharge(expected, { amountMajor: input.chargedCents / 100, currency: expected.currency }).ok;
 }
