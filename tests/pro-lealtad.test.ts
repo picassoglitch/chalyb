@@ -220,7 +220,7 @@ test('6 · a mandatory notice 7 days before EVERY charge, with that step’s amo
     [['renew_7d', true]],
   );
   const cron = readFileSync(join(ROOT, 'src/app/api/cron/billing/route.ts'), 'utf8');
-  assert.match(cron, /lealtad && notice\.kind === 'renew_7d' \? 'lealtad_7d'/);
+  assert.match(cron, /noticeEmailKind\(notice\.kind, planKey\)/);
   const late = billingEmail('lealtad_7d', {
     nombre: 'María',
     plan: 'Pro Lealtad',

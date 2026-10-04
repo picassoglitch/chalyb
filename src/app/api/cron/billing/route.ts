@@ -29,7 +29,7 @@ import {
   unpaidCharge,
   type SubscriptionRow,
 } from '@/lib/billing/billing-state';
-import { dueNotices, holdDecision, type NoticeKind } from '@/lib/billing/reminders';
+import { dueNotices, holdDecision, noticeEmailKind, type NoticeKind } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
 import {
@@ -144,8 +144,9 @@ export async function GET(req: Request) {
           const lealtad = planKey === 'pro_lealtad';
           // Pro Lealtad: the notice before every charge carries that month's
           // amount and step (Términos 4 bis.6).
-          const kind =
-            lealtad && notice.kind === 'renew_7d' ? 'lealtad_7d' : EMAIL_FOR[notice.kind];
+          const emailKind = noticeEmailKind(notice.kind, planKey);
+          const kind: BillingEmailKind =
+            emailKind === 'lealtad_7d' ? 'lealtad_7d' : EMAIL_FOR[emailKind];
           if (!email) continue;
           const nombre = ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '';
           const trialNotice = notice.kind === 'trial_7d' || notice.kind === 'trial_1d';
