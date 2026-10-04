@@ -4,13 +4,19 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { contentFingerprint, normalizeContentUrl } from '@/lib/legal/takedown';
 import { checkSourceUrl } from '@/lib/tools/adapters/run-job';
-import { handleTakedownPost, readBodyCapped, TAKEDOWN_MAX_BYTES } from '@/lib/legal/takedown-http';
+import {
+  clientIp,
+  handleTakedownPost,
+  hashIp,
+  readBodyCapped,
+  TAKEDOWN_MAX_BYTES,
+} from '@/lib/legal/takedown-http';
 import { planClipLinks } from '@/lib/tools/clips-links';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -205,8 +211,39 @@ test('MED 6 · the notice stores a hashed IP and the user agent as evidence', as
   assert.ok(!JSON.stringify(calls.submitted).includes('203.0.113.7'), 'the raw IP is never stored');
   assert.equal(
     evidence.ipHash,
-    createHash('sha256').update('takedown-evidence:203.0.113.7').digest('hex'),
+    createHmac('sha256', 'chalyb-dev-takedown-evidence').update('203.0.113.7').digest('hex'),
+    'outside production, the dev key',
   );
+});
+
+test('LOW · the IP hash is an HMAC with LEGAL_EVIDENCE_HASH_KEY; prod without it stores none', () => {
+  const key = 'k'.repeat(32);
+  const h = hashIp('203.0.113.7', { LEGAL_EVIDENCE_HASH_KEY: key, VERCEL_ENV: 'production' });
+  assert.equal(h, createHmac('sha256', key).update('203.0.113.7').digest('hex'));
+  assert.match(h!, /^[0-9a-f]{64}$/, 'migration 0059 CHECK (hex-64)');
+  assert.notEqual(h, createHash('sha256').update('203.0.113.7').digest('hex'));
+  assert.equal(hashIp('203.0.113.7', { VERCEL_ENV: 'production' }), null, 'fail closed');
+  assert.equal(hashIp(null, { LEGAL_EVIDENCE_HASH_KEY: key }), null);
+});
+
+test('LOW · the IP comes from x-vercel-forwarded-for, then x-real-ip, then x-forwarded-for', () => {
+  const h = (o: Record<string, string>) => new Headers(o);
+  assert.equal(
+    clientIp(
+      h({
+        'x-vercel-forwarded-for': '198.51.100.1',
+        'x-real-ip': '198.51.100.2',
+        'x-forwarded-for': '6.6.6.6, 198.51.100.3',
+      }),
+    ),
+    '198.51.100.1',
+  );
+  assert.equal(
+    clientIp(h({ 'x-real-ip': '198.51.100.2', 'x-forwarded-for': '6.6.6.6' })),
+    '198.51.100.2',
+  );
+  assert.equal(clientIp(h({ 'x-forwarded-for': '198.51.100.3, 10.0.0.1' })), '198.51.100.3');
+  assert.equal(clientIp(h({})), null);
 });
 
 test('MED 6 · the route uses the handler with the durable limiter; migration 0059 adds the columns', () => {

@@ -3,7 +3,7 @@
 // content-length to trust), limits notices per IP and per claimant contact,
 // and stores a hashed IP and the user agent with the notice as evidence.
 
-import { createHash } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { takedownMissing, takedownTooLong, type TakedownInput } from './takedown';
 
 export const TAKEDOWN_MAX_BYTES = 64_000;
@@ -15,7 +15,8 @@ export const TAKEDOWN_RATE = {
 } as const;
 
 export interface TakedownEvidence {
-  /** sha256 of the IP; the IP itself is never stored. */
+  /** HMAC-SHA256 of the IP with LEGAL_EVIDENCE_HASH_KEY (hex); the IP itself
+   *  is never stored. Null when there's no IP or no key in production. */
   ipHash: string | null;
   userAgent: string | null;
 }
@@ -49,12 +50,49 @@ export async function readBodyCapped(req: Request, max: number): Promise<string 
   return Buffer.concat(chunks).toString('utf8');
 }
 
-export function hashIp(ip: string | null): string | null {
-  return ip ? createHash('sha256').update(`takedown-evidence:${ip}`).digest('hex') : null;
+/** Outside production only: a fixed key so local runs and tests still
+ *  produce a hash. Never used where VERCEL_ENV=production. */
+const DEV_EVIDENCE_KEY = 'chalyb-dev-takedown-evidence';
+let warnedNoKey = false;
+
+/**
+ * HMAC-SHA256(LEGAL_EVIDENCE_HASH_KEY, ip) as 64 hex chars (migration 0059's
+ * CHECK). A plain hash of an IPv4 address can be reversed by trying all of
+ * them; the server secret prevents that. Without the key in production it
+ * fails closed: no hash is stored (null), it logs once, and the notice is
+ * still accepted.
+ */
+export function hashIp(
+  ip: string | null,
+  env: Record<string, string | undefined> = process.env,
+): string | null {
+  if (!ip) return null;
+  let key = env.LEGAL_EVIDENCE_HASH_KEY?.trim();
+  if (!key) {
+    if (env.VERCEL_ENV === 'production') {
+      if (!warnedNoKey) {
+        warnedNoKey = true;
+        console.error(
+          '[takedown] LEGAL_EVIDENCE_HASH_KEY is not set: notices are stored without the IP hash',
+        );
+      }
+      return null;
+    }
+    key = DEV_EVIDENCE_KEY;
+  }
+  return createHmac('sha256', key).update(ip).digest('hex');
 }
 
-function clientIp(h: Headers): string | null {
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip')?.trim() || null;
+/** The caller's IP: Vercel's own header first (clients can't set it), then
+ *  x-real-ip, then the first x-forwarded-for entry. */
+export function clientIp(h: Headers): string | null {
+  const first = (v: string | null) => v?.split(',')[0]?.trim() || null;
+  return (
+    first(h.get('x-vercel-forwarded-for')) ||
+    h.get('x-real-ip')?.trim() ||
+    first(h.get('x-forwarded-for')) ||
+    null
+  );
 }
 
 export async function handleTakedownPost(
