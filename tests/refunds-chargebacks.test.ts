@@ -99,7 +99,7 @@ test('S.4 #2 · overcharges refund automatically with legal_7_2_d within 5 busin
   const oneOff = src('src/lib/payments/one-off-settlement.ts');
   assert.match(oneOff, /issueRefund\(\{[\s\S]*?reason: 'legal_7_2_d'/, 'amount ≠ displayed price');
   // Refunded right away, so inside the 5 business days; and never twice.
-  assert.match(fnBody(DISPUTES, 'issueRefund'), /Math\.min\(input\.cents, left\)/);
+  assert.match(fnBody(DISPUTES, 'issueRefund'), /claimRefund\(ledger, input\.mpPaymentId, input\.cents\)/);
   // 5 business days from Fri 13 Nov 2026 skip the weekend and Mon 16 Nov:
   // 17, 18, 19, 20, 23.
   assert.equal(

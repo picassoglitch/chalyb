@@ -7,7 +7,7 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
+import { getMercadoPagoIsolated, getAppUrl } from '@/lib/payments/mercadopago';
 import { getContactInbox } from '@/lib/email/resend';
 import { notify } from '@/lib/notifications/notify';
 import {
@@ -23,13 +23,17 @@ import { formatMXN } from './format';
 import { dispatchBillingEmail } from './notices';
 import { PLAN_NAMES } from './plan-names';
 import {
+  claimRefund,
   closeDue,
   decide,
   measuresFor,
   noticeDeadline,
+  refundIdempotencyKey,
+  releaseRefund,
   triage,
   type BadFaithInput,
   type MeasureKind,
+  type RefundLedger,
   type RefundReason,
 } from './disputes';
 import { evidenceLines, renderPdf, sha256Hex, type EvidenceInput } from './evidence-pdf';
@@ -94,6 +98,34 @@ async function evidenceEvent(
 
 // ── Refunds ───────────────────────────────────────────────────────────────
 
+/** The payments ledger as refund claims see it (disputes.ts claimRefund). */
+function paymentsLedger(admin: ReturnType<typeof createAdminClient>): RefundLedger {
+  return {
+    async read(paymentId) {
+      const { data } = await admin
+        .from('payments')
+        .select('amount_cents, refunded_cents')
+        .eq('mp_payment_id', paymentId)
+        .maybeSingle();
+      if (!data) return null;
+      return {
+        amountCents: (data.amount_cents as number | null) ?? 0,
+        refundedCents: (data.refunded_cents as number | null) ?? 0,
+      };
+    },
+    async swap(paymentId, from, to) {
+      const { data, error } = await admin
+        .from('payments')
+        .update({ refunded_cents: to })
+        .eq('mp_payment_id', paymentId)
+        .eq('refunded_cents', from)
+        .select('mp_payment_id');
+      if (error) throw error;
+      return (data?.length ?? 0) > 0;
+    },
+  };
+}
+
 /**
  * Refund through Mercado Pago with a Términos §7.2 reason, and record
  * refund_issued. Touches nothing else: not the plan, the price, the
@@ -110,29 +142,45 @@ export async function issueRefund(input: {
 }): Promise<{ ok: boolean }> {
   if (input.cents <= 0) return { ok: false };
   const admin = createAdminClient();
-  const { data: pay } = await admin
-    .from('payments')
-    .select('amount_cents, refunded_cents')
-    .eq('mp_payment_id', input.mpPaymentId)
-    .maybeSingle();
-  // Idempotent: never refund past what is left of the charge.
-  const already = (pay?.refunded_cents as number | null) ?? 0;
-  const left = pay ? ((pay.amount_cents as number | null) ?? 0) - already : input.cents;
-  const cents = Math.min(input.cents, left);
-  if (cents <= 0) return { ok: true };
+  // Reserve the amount on the ledger first (compare-and-set): a concurrent
+  // refund of the same charge can't also go out, and never past the charge.
+  const ledger = paymentsLedger(admin);
+  const claim = await claimRefund(ledger, input.mpPaymentId, input.cents);
+  if (claim.kind === 'nothing_left') return { ok: true };
+  if (claim.kind === 'contended') {
+    console.error('[disputes] refund claim kept losing the race', input.mpPaymentId);
+    return { ok: false };
+  }
+  const cents = claim.cents;
   try {
-    await getMercadoPago().refund.create({
+    // An isolated client: the idempotency key must not stick to the shared
+    // one (getMercadoPagoIsolated).
+    await getMercadoPagoIsolated().refund.create({
       payment_id: input.mpPaymentId,
       body: { amount: cents / 100 },
+      requestOptions: {
+        idempotencyKey: refundIdempotencyKey({
+          paymentId: input.mpPaymentId,
+          reason: input.reason,
+          cents,
+          offset: claim.kind === 'claimed' ? claim.offset : 0,
+        }),
+      },
     });
   } catch (err) {
     console.error('[disputes] Mercado Pago refused the refund', input.mpPaymentId, err);
+    if (claim.kind === 'claimed' && !(await releaseRefund(ledger, input.mpPaymentId, cents))) {
+      console.error('[disputes] COULD NOT release a refused refund claim', input.mpPaymentId, cents);
+    }
     return { ok: false };
   }
-  await admin
-    .from('payments')
-    .update({ refunded_cents: already + cents, refund_reason: input.reason })
-    .eq('mp_payment_id', input.mpPaymentId);
+  if (claim.kind === 'claimed') {
+    const { error } = await admin
+      .from('payments')
+      .update({ refund_reason: input.reason })
+      .eq('mp_payment_id', input.mpPaymentId);
+    if (error) console.error('[disputes] refund reason not recorded', input.mpPaymentId, error);
+  }
   await evidenceEvent(
     'refund_issued',
     input.userId,

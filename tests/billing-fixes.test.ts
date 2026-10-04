@@ -79,3 +79,67 @@ test('#3 an authorised preapproval at an unpriced amount is stored non-granting'
   assert.ok(gateAt > 0 && gateAt < upsertAt, 'gate before upsert');
   assert.match(sync.slice(upsertAt, upsertAt + 400), /status: gate\.storedStatus/);
 });
+
+// ── #4 · One refund, once ────────────────────────────────────────────
+function fakeLedger(amountCents: number, refundedCents = 0) {
+  const state = { amountCents, refundedCents };
+  return {
+    state,
+    ledger: {
+      async read() {
+        // Yield, so two claims interleave their read and their swap.
+        await new Promise((r) => setTimeout(r, 0));
+        return { ...state };
+      },
+      async swap(_id: string, from: number, to: number) {
+        await new Promise((r) => setTimeout(r, 0));
+        if (state.refundedCents !== from) return false;
+        state.refundedCents = to;
+        return true;
+      },
+    },
+  };
+}
+
+test('#4 two concurrent refunds of one charge reserve it once', async () => {
+  const { claimRefund } = await import('@/lib/billing/disputes');
+  const { state, ledger } = fakeLedger(16_700);
+  const [a, b] = await Promise.all([claimRefund(ledger, 'p1', 16_700), claimRefund(ledger, 'p1', 16_700)]);
+  const kinds = [a.kind, b.kind].sort();
+  assert.deepEqual(kinds, ['claimed', 'nothing_left']);
+  assert.equal(state.refundedCents, 16_700);
+});
+
+test('#4 partial refunds never exceed the charge; a refused one is released', async () => {
+  const { claimRefund, releaseRefund } = await import('@/lib/billing/disputes');
+  const { state, ledger } = fakeLedger(10_000, 7_000);
+  const [a, b] = await Promise.all([claimRefund(ledger, 'p', 2_000), claimRefund(ledger, 'p', 2_000)]);
+  assert.deepEqual([a, b].map((c) => (c.kind === 'claimed' ? c.cents : 0)).sort(), [1_000, 2_000]);
+  assert.equal(state.refundedCents, 10_000);
+  assert.equal(await releaseRefund(ledger, 'p', 2_000), true);
+  assert.equal(state.refundedCents, 8_000);
+});
+
+test('#4 the idempotency key is deterministic per claim', async () => {
+  const { refundIdempotencyKey } = await import('@/lib/billing/disputes');
+  const k = { paymentId: '123', reason: 'legal_7_2_d', cents: 16_700, offset: 0 };
+  assert.equal(refundIdempotencyKey(k), 'refund:123:legal_7_2_d:16700:0');
+  assert.equal(refundIdempotencyKey(k), refundIdempotencyKey({ ...k }));
+  assert.notEqual(refundIdempotencyKey(k), refundIdempotencyKey({ ...k, offset: 16_700 }));
+});
+
+test('#4 issueRefund claims before calling MP, on an isolated client with the key', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/lib/billing/disputes-server.ts', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('export async function issueRefund'));
+  const claimAt = body.indexOf('claimRefund(ledger');
+  const mpAt = body.indexOf('refund.create(');
+  assert.ok(claimAt > 0 && claimAt < mpAt, 'claim before the MP call');
+  assert.match(body, /getMercadoPagoIsolated\(\)\.refund\.create\(\{[\s\S]*?idempotencyKey: refundIdempotencyKey/);
+  assert.match(body, /releaseRefund\(ledger/);
+  // No keyed call anywhere goes through the shared, cached client.
+  for (const f of ['src/lib/payments/token-checkout-actions.ts', 'src/lib/billing/disputes-server.ts']) {
+    const code = readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+    assert.doesNotMatch(code, /getMercadoPago\(\)[\s\S]{0,400}requestOptions/, f);
+  }
+});

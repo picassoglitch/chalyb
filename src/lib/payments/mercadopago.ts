@@ -235,6 +235,23 @@ export function logMpCreate(
 
 export function getMercadoPago() {
   if (cached) return cached;
+  cached = buildClients();
+  return cached;
+}
+
+/**
+ * Clients on a config of their own, for a call that passes `requestOptions`
+ * (an idempotency key above all). SDK 3.6 merges a call's requestOptions
+ * into its client's config for good (`this.config.options = {…}`), so on
+ * the shared cached config one call's key would be sent by every later call
+ * of this instance — and Mercado Pago would answer them with the first
+ * call's response.
+ */
+export function getMercadoPagoIsolated() {
+  return buildClients();
+}
+
+function buildClients() {
   const token = getAccessToken();
   if (!token) {
     throw new Error(
@@ -253,7 +270,7 @@ export function getMercadoPago() {
     // serve its generic "page couldn't load" 500.
     options: { timeout: 7000 },
   });
-  cached = {
+  return {
     config,
     payment: new Payment(config),
     preapproval: new PreApproval(config),
@@ -264,7 +281,6 @@ export function getMercadoPago() {
     user: new User(config),
     chargeback: new Chargeback(config),
   };
-  return cached;
 }
 
 /** Same cap as the SDK client above, for the calls that go around it. */

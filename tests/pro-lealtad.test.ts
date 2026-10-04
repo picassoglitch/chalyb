@@ -326,10 +326,8 @@ test('12 · the amount gate', () => {
 
 test('12 · each charge counts once (a replayed webhook changes nothing)', () => {
   const src = readFileSync(join(ROOT, 'src/lib/billing/lealtad-server.ts'), 'utf8');
-  assert.match(
-    src,
-    /if \(pay\?\.loyalty_step !== null && pay\?\.loyalty_step !== undefined\) return; \/\/ already counted/,
-  );
+  // Claimed with a conditional update before anything else happens.
+  assert.match(src, /\.update\(\{ loyalty_step: step \}\)[\s\S]*?\.is\('loyalty_step', null\)[\s\S]*?if \(!claimed\?\.length\) return; \/\/ already counted/);
 });
 
 test('13 · flags: off by default; withdrawn for new customers keeps existing schedules', () => {
