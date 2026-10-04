@@ -35,7 +35,7 @@ to push the expiry out again.
   "external_job_id": "stream_123", // engine's id; re-admitting the same id returns the same reservation
   "class": "job", // "job" (uploads, renders, analyses) | "stream" (live)
   "operation": "clips.pipeline",
-  "est_tokens": 40000, // estimated provider cost ÷ 4 µ$, BEFORE margin (the hub adds it when reserving)
+  "est_tokens": 40000, // estimated provider cost ÷ 4 µ$, BEFORE margin (the hub adds it when reserving); for store.purchase, the price itself (no margin)
   "upload_mb": 812.4, // size of the file about to be uploaded/processed (0 if none)
   "source_minutes": 95.5, // duration of the media to process (0 if unknown/none)
   "storage_mb_after": 3120, // what the user will hold on this engine after this job
@@ -111,7 +111,7 @@ default **160%** — every unit consumed earns 160% over its cost):
 ```
 billable_tokens = max(1, ceil(cost_usd_micros × (1 + margin) / 4))  when cost_usd_micros is sent
                 = max(1, ceil(amount × (1 + margin)))              for llm.tokens without a cost
-                = ceil(cost_usd_micros / 4)                        for boost.fee (already a price)
+                = ceil(cost_usd_micros / 4)                        for boost.fee and store.purchase (already a price)
                 = 1                                                otherwise
 ```
 
