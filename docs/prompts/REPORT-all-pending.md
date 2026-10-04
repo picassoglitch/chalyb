@@ -4,17 +4,17 @@ Combined branch: **`claude/rebuild-p6-final`**. It holds every workstream below,
 
 **Final gates on `claude/rebuild-p6-final`:** typecheck ✓ · lint 0 errors · unit **575/575** · test:legal **172/172** · check:copy ✓ · test:migrations **59 applied twice** · build ✓ · e2e trial flow **ON 469 passed / 0 failed** · e2e flow **OFF 454 passed / 0 failed**.
 
-Every PR from #46 on was reviewed read-only by a second session (picassoglitch-7a). Each finding came back fixed and re-verified, or is listed in §5.
+Every PR from #46 on, except #51 (merged into final without a second review), was reviewed read-only by a second session (picassoglitch-7a). Each finding came back fixed and re-verified, or is listed in §5. This report was audited against the code by the same session.
 
 ## 1. Workstreams
 
 | WS | Branch | PR | Status | Tests added |
 |---|---|---|---|---|
-| WS-0 docs + WS-1 Mercado Pago | claude/rebuild-p6a-mp | [#26](https://github.com/picassoglitch/chalyb/pull/26) | ready (stack) | mp-integration, webhook-notification |
+| WS-0 docs + WS-1 Mercado Pago | claude/rebuild-p6a-mp | [#26](https://github.com/picassoglitch/chalyb/pull/26) | ready (stack) | mp-integration, webhook-verify |
 | WS-1-H hotfix on main | claude/mp-integration-fixes | [#27](https://github.com/picassoglitch/chalyb/pull/27) | ready | (hotfix suite) |
-| WS-2 prices (IVA-included) | claude/rebuild-p6b-prices | [#28](https://github.com/picassoglitch/chalyb/pull/28) | ready | price-rules, pricing |
+| WS-2 prices (IVA-included) | claude/rebuild-p6b-prices | [#28](https://github.com/picassoglitch/chalyb/pull/28) | ready | price-rules (updated) |
 | WS-3 7-day trial, day-0 notice, hold rule | claude/rebuild-p6c-trial7 | [#29](https://github.com/picassoglitch/chalyb/pull/29) | ready | trial-7d, billing-core |
-| WS-4 plan cards | claude/rebuild-p6d-plan-cards | [#31](https://github.com/picassoglitch/chalyb/pull/31) | ready | plan-cards, plan-features |
+| WS-4 plan cards | claude/rebuild-p6d-plan-cards | [#31](https://github.com/picassoglitch/chalyb/pull/31) | ready | plan-cards |
 | WS-5 VIP anual + paid checkout split | claude/rebuild-p6e-vip-year | [#32](https://github.com/picassoglitch/chalyb/pull/32) | ready | vip-year |
 | WS-6 price increase (mockup 89) | claude/rebuild-p6f-price-change | [#33](https://github.com/picassoglitch/chalyb/pull/33) | ready | price-change |
 | Owner: trial on every plan | claude/rebuild-p6f-trial-every-plan | [#34](https://github.com/picassoglitch/chalyb/pull/34) | ready | trial-7d (updated) |
@@ -31,11 +31,11 @@ Every PR from #46 on was reviewed read-only by a second session (picassoglitch-7
 | Billing review fixes | claude/rebuild-p6-billing-fixes | [#46](https://github.com/picassoglitch/chalyb/pull/46) | ready | billing-fixes |
 | WS-11 tools inside the app | claude/rebuild-p6k-tools | [#47](https://github.com/picassoglitch/chalyb/pull/47) | ready | tools-*, e2e tools/no-leaks |
 | WS-12/13 review fixes | claude/rebuild-p6-legal-fixes | [#48](https://github.com/picassoglitch/chalyb/pull/48) | ready | legal (+gate/amount cases) |
-| Old P6: ARCO, takedown, change emails, retention | claude/rebuild-p6-legal-p6 | [#49](https://github.com/picassoglitch/chalyb/pull/49) | ready | legal-takedown, legal-notices |
+| Old P6: ARCO, takedown, change emails, retention | claude/rebuild-p6-legal-p6 | [#49](https://github.com/picassoglitch/chalyb/pull/49) | ready | legal-p6 |
 | WS-10 perf + review fixes | claude/rebuild-p6j-landing-perf | [#50](https://github.com/picassoglitch/chalyb/pull/50) | ready | landing (C4 claims) |
-| WS-10 globals.css off public routes | claude/rebuild-p6j-landing-perf2 | [#51](https://github.com/picassoglitch/chalyb/pull/51) | merged into final | e2e menu |
-| Legal residuals + #49 HIGHs | claude/rebuild-p6-legal-residuals | [#52](https://github.com/picassoglitch/chalyb/pull/52) | merged into final | notice/removal cases |
-| #49 review PR B | claude/rebuild-p6-legal-49b | [#53](https://github.com/picassoglitch/chalyb/pull/53) | ready | retention v2, claim/give-up (Postgres) |
+| WS-10 globals.css off public routes | claude/rebuild-p6j-landing-perf2 | [#51](https://github.com/picassoglitch/chalyb/pull/51) | merged into final | e2e landing (menu) |
+| Legal residuals + #49 HIGHs | claude/rebuild-p6-legal-residuals | [#52](https://github.com/picassoglitch/chalyb/pull/52) | merged into final | legal-notices, legal-takedown |
+| #49 review PR B | claude/rebuild-p6-legal-49b | [#53](https://github.com/picassoglitch/chalyb/pull/53) | ready | legal-cron, retention v2 + claim/give-up (test-migrations, Postgres) |
 | Takedown hardening | claude/rebuild-p6-legal-takedown | [#54](https://github.com/picassoglitch/chalyb/pull/54) | merged into final | takedown-hardening |
 | Final integration | claude/rebuild-p6-final | this PR | ready | terms-pending-publish, public-client-namespaces |
 
@@ -43,7 +43,7 @@ Every PR from #46 on was reviewed read-only by a second session (picassoglitch-7
 
 ## 2. Flags and config
 
-The authoritative list, with every default and a one-line comment, is **`.env.local.example`** (79 entries); `tests/env-example.test.ts` fails if any variable read under `src/` is missing from it. Feature flags in `src/lib/config/flags.ts` (generated from the code):
+The authoritative list, with every default and a one-line comment, is **`.env.local.example`** (78 variables); `tests/env-example.test.ts` fails if any variable read under `src/` is missing from it. Feature flags in `src/lib/config/flags.ts` (generated from the code):
 
 | Env var | Default | Read by | Used in |
 |---|---|---|---|
@@ -85,17 +85,21 @@ Other config read outside `flags.ts`: `PRICES_INCLUDE_IVA` (default true), `PCT_
 
 ## 3. Verified as already fixed on `c163dfd`
 
-WS-1 audited the MP integration against `c163dfd` in [`docs/qa/MP-INTEGRATION-FINDINGS-2026-10-02.md`](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/MP-INTEGRATION-FINDINGS-2026-10-02.md). Items already correct there were kept, with a pinning test rather than a rewrite:
-- the signature check is timing-safe and fails closed (`webhook-verify.ts`);
-- payments are idempotent through UNIQUE `mp_payment_id`;
-- the amount gate refuses a grant on mismatch (`one-off-settlement.ts`).
-The B33/B35/B36 gaps (one MP environment per deployment, IPN + merchant_order) were not fixed on `c163dfd`; they are fixed in #27/#26.
+WS-1 audited the MP integration against `c163dfd` (findings F1–F3 in [`docs/qa/MP-INTEGRATION-FINDINGS-2026-10-02.md`](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/MP-INTEGRATION-FINDINGS-2026-10-02.md)). Behavior that was already correct was kept and pinned by tests:
+- the timing-safe, fail-closed signature check (`webhook-verify.test.ts`);
+- idempotency on UNIQUE `mp_payment_id`;
+- the amount gate in `one-off-settlement.ts`.
+
+Fixed in #27/#26:
+- B33, one MP environment per deployment (`mp-config.ts`, `start-subscription.ts`);
+- webhooks in both formats (IPN + merchant_order);
+- B36, MP error codes to the log with a friendly message to the customer (`mp-config.ts`).
 
 ## 4. Choices §4 doesn't cover
 
 | Topic | Inputs in conflict | Choice |
 |---|---|---|
-| Trial scope | Law/Términos §2, LANDING/FIX-3: Pro only, "VIP no tiene prueba" · owner 2026-10-03: any plan, first time | **Owner.** `PRICING.trial.plans` = 4 plans. Copy says "cualquier plan". A legal **publish blocker** stays until Law updates Términos §2/§4.1. |
+| Trial scope | Law/Términos de Suscripción §2, LANDING/FIX-3: Pro only, "VIP no tiene prueba" · owner 2026-10-03: any plan, first time | **Owner.** `PRICING.trial.plans` = 4 plans. Copy says "cualquier plan". Legal **publish blockers** stay until Law updates Términos de Suscripción §2.1/§4 (trial plans) and §8 (trial-end grace). |
 | Charge notice timing | Prod: last cron run ≥5 d before · owner/Law: day 0 | Day 0 (sent at signup). If it isn't delivered by charge − 5 d, the charge is held. |
 | Grace after the trial | Prod 0 · stack's renewal grace | 0 after the trial; renewal grace of 7 d from our own `last_charge_at`. |
 | Late in-trial plan switch | No spec | **Owner:** the first charge moves to notice + 5 d (the trial end moves too). |
@@ -134,17 +138,17 @@ The B33/B35/B36 gaps (one MP environment per deployment, IPN + merchant_order) w
 
 **Launch sequence (OPS-10):**
 1. Fill every bracket: 119 left in the drafts, and the build-time gate refuses publishing while any remain.
-2. Real `LEGAL_ENTITY_*` (validated: no placeholders, a real RFC shape).
+2. Real `LEGAL_ENTITY_*` (validated: no placeholders, a real RFC shape), plus `CONSENT_ENCRYPTION_KEY` and `CRON_SECRET` (paid checkout refuses without them), plus `LEGAL_EVIDENCE_HASH_KEY` (without it, takedown notices are stored with no IP hash).
 3. Attorney sign-off.
 4. `LEGAL_PUBLISH=true` → `PAID_CHECKOUT_ENABLED=true` → `TRIAL_FLOW_ENABLED=true`.
 
 **For Law / the attorney:**
-- Términos §2/§4.1 trial plans (now any plan), and the trial-end grace wording in §8 (both are publish blockers).
+- Términos de Suscripción §2.1/§4 trial plans (now any plan) and §8 trial-end grace wording: both are publish blockers.
 - §9.3 credits expiry.
 - §10.6/§10.8 measures (flags off).
 - Pro Lealtad R items.
 - Chargeback rows in `audit_events` survive the 72-month purge (`consent_events` must, per the 10-year cobros clause): confirm in Aviso §9.1.
-- The claimant IP is stored as an unsalted SHA-256 (pseudonymous; an HMAC would make "never the IP" literal).
+- The claimant IP is stored only as an HMAC-SHA256 keyed with `LEGAL_EVIDENCE_HASH_KEY` (#56); confirm the Aviso wording.
 
 **Owner decisions still open:**
 - `PRO_YEAR_FIRST_YEAR_PROMO` (O-1, not implemented).
@@ -154,18 +158,15 @@ The B33/B35/B36 gaps (one MP environment per deployment, IPN + merchant_order) w
 - Holiday calendar extras (O-18).
 - `LEALTAD_RETURN_WINDOW_DAYS` (O-15).
 
-**Known LOW residuals (not blocking):**
-- The AbortSignal isn't threaded through the adapter signatures (needed when real engines land, OPS-13).
-- The takedown IP header could prefer `x-vercel-forwarded-for`.
-- The tools-health cron's race timers aren't cleared.
+**Known residuals:** none open in code. #56 closed the last three: the AbortSignal reaches every adapter call, the health-cron timers are cleared, and the takedown IP lookup and hashing were hardened. The tools-health cron still needs a sub-daily scheduler (OPS-7).
 
 ## 6. Screenshots (1440 and 390)
 
 | Mockups | Where |
 |---|---|
 | 40–44 landing | [fold 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/landing/landing-1440-fold.png?raw=true) · [fold 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/landing/landing-390-fold.png?raw=true) · [full 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/landing/landing-1440-full.png?raw=true) · [full 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/landing/landing-390-full.png?raw=true) |
-| 50–62 tools | [`docs/qa/tools/`](https://github.com/picassoglitch/chalyb/tree/claude/rebuild-p6-final/docs/qa/tools) (Clips 50–52, Señales 53–56, En vivo 57–59, Tus herramientas 61; both widths) |
+| 50–61 tools | [`docs/qa/tools/`](https://github.com/picassoglitch/chalyb/tree/claude/rebuild-p6-final/docs/qa/tools) (Clips 50–52, Señales 53–56, En vivo 57–59, "la herramienta no abre" 60, Tus herramientas 61; both widths) |
 | 70–74 Mi plan, Mis créditos, Mi perfil | [`docs/qa/fix3/`](https://github.com/picassoglitch/chalyb/tree/claude/rebuild-p6-final/docs/qa/fix3) |
-| 80–85 plan cards | [anual 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/80-planes-anual-1440.png?raw=true) · [anual 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/80-planes-anual-390.png?raw=true) · [mensual 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/81-planes-mensual-1440.png?raw=true) · [mensual 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/81-planes-mensual-390.png?raw=true) |
+| 80–81 plan cards (82–85 not captured) | [anual 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/80-planes-anual-1440.png?raw=true) · [anual 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/80-planes-anual-390.png?raw=true) · [mensual 1440](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/81-planes-mensual-1440.png?raw=true) · [mensual 390](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/qa/plans/81-planes-mensual-390.png?raw=true) |
 | 86–88 Pro Lealtad | Flag off by default. The panel layout was checked at 320/390/1440 during WS-7 (no spill or overflow) but not committed; capture it on a preview with `LEALTAD_ENABLED=true` |
 | 89 price change | Behind `PRICE_INCREASE_NOTICES_ENABLED=false`; covered by `price-change.test.ts` (verbatim modal and email) |
