@@ -33,7 +33,9 @@ async function passRisk(page: Page, shotFirst: boolean) {
 
 test.describe('pro', () => {
   test.skip(!shoot, 'E2E_TOOL_SHOTS=1 not set');
-  test.skip(({}, info) => info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  test.beforeEach(({}, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  });
   asRole('pro');
 
   test('tool screens', async ({ page }) => {
@@ -70,7 +72,9 @@ test.describe('pro', () => {
 
 test.describe('free', () => {
   test.skip(!shoot, 'E2E_TOOL_SHOTS=1 not set');
-  test.skip(({}, info) => info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  test.beforeEach(({}, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  });
   asRole('free');
 
   test('locked states', async ({ page }) => {
@@ -89,7 +93,9 @@ test.describe('free', () => {
 // E2E_TOOL_SHOTS=error.
 test.describe('engine off', () => {
   test.skip(process.env.E2E_TOOL_SHOTS !== 'error', 'E2E_TOOL_SHOTS=error not set');
-  test.skip(({}, info) => info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  test.beforeEach(({}, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'one project sets both sizes');
+  });
   asRole('pro');
 
   test('ToolErrorState', async ({ page }) => {
