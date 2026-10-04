@@ -5,20 +5,23 @@
 // token consumption, revenue, and operational cost. The page-level
 // component just renders what's here.
 //
+// Tokens are billable_tokens (migration 0046): every meter in the unit users
+// are charged in, not llm.tokens alone. Sums come from engine_usage_metrics()
+// (migration 0047), so no row cap can shrink them.
+//
 // Cost math (cents MXN, all integer):
 //
-//   llm_variable    = tokens_this_month × cost_per_million_tokens_cents / 1_000_000
+//   llm_variable    = reported provider cost (cost_usd_micros) in MXN
+//                     + events without a reported cost × cost_per_million_tokens_cents / 1_000_000
 //   royalty_payable = tokens_this_month × partner_royalty_per_million_tokens_cents / 1_000_000
 //   total_monthly   = llm_variable + fixed_monthly_cost_cents + royalty_payable
 //   margin_cents    = revenue_this_month_cents − total_monthly
 //   margin_pct      = margin_cents / revenue_this_month_cents × 100  (when revenue > 0)
 //
-// Revenue source for now: payments rows from this period filtered to users
-// who have an active engine_subscription on THIS engine. Coarse — a user
-// who pays for VIP generates payment rows that get split N ways
-// across the engines they use — but matches the existing /dashboard/overview
-// approximation and is honest about scale (we have ~0 paying users today,
-// fancy attribution is premature).
+// Revenue source for now: payments rows from this period by users who have
+// an active engine_subscription on THIS engine, each payment split evenly
+// across the engines that user is active on — so summing this figure over
+// every engine gives total revenue once, not once per engine.
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -102,9 +105,8 @@ export async function getEngineMetrics(opts: {
     activeSubsResult,
     pausedSubsResult,
     newSubsResult,
-    usageThisMonthResult,
-    usageLifetimeResult,
-    usageLast7dResult,
+    metricsResult,
+    recentResult,
     paymentsResult,
   ] = await Promise.all([
     // Total subs (any status) — gives the "ever activated" count.
@@ -127,29 +129,18 @@ export async function getEngineMetrics(opts: {
       .select('id', { count: 'exact', head: true })
       .eq('engine_id', opts.engineId)
       .gte('created_at', monthStart),
-    // Full usage rows for this month — we aggregate in JS so we can pull
-    // per-user, per-operation, and total in one pass.
+    admin.rpc('engine_usage_metrics', {
+      p_engine_id: opts.engineId,
+      p_month_start: monthStart,
+      p_week_start: weekAgo,
+    }),
+    // Recent events (raw) for the activity feed.
     admin
       .from('usage_events')
-      .select('id, user_id, kind, amount, operation, occurred_at')
+      .select('id, user_id, kind, amount, billable_tokens, operation, occurred_at')
       .eq('engine_id', opts.engineId)
-      .eq('kind', 'llm.tokens')
-      .gte('occurred_at', monthStart)
       .order('occurred_at', { ascending: false })
-      .limit(2000),
-    // Lifetime total — just amounts.
-    admin
-      .from('usage_events')
-      .select('amount')
-      .eq('engine_id', opts.engineId)
-      .eq('kind', 'llm.tokens'),
-    // Last 7 days for the trend chip.
-    admin
-      .from('usage_events')
-      .select('amount')
-      .eq('engine_id', opts.engineId)
-      .eq('kind', 'llm.tokens')
-      .gte('occurred_at', weekAgo),
+      .limit(20),
     // Revenue this month — coarse: any payment from a user who has an
     // active sub on this engine. See file header for caveats.
     admin
@@ -159,50 +150,40 @@ export async function getEngineMetrics(opts: {
       .eq('status', 'active'),
   ]);
 
-  // Token aggregation (this month).
-  let tokensThisMonth = 0;
-  const perUser = new Map<string, number>();
-  const perOp = new Map<string, { tokens: number; calls: number }>();
-  const recentEvents: EngineMetrics['recentEvents'] = [];
-  for (const row of usageThisMonthResult.data ?? []) {
-    const amount = (row.amount as number | null) ?? 0;
-    const userId = (row.user_id as string | null) ?? '';
-    const op = (row.operation as string | null) ?? 'sin tag';
-    tokensThisMonth += amount;
-    if (userId) {
-      perUser.set(userId, (perUser.get(userId) ?? 0) + amount);
-    }
-    const opEntry = perOp.get(op) ?? { tokens: 0, calls: 0 };
-    opEntry.tokens += amount;
-    opEntry.calls += 1;
-    perOp.set(op, opEntry);
-    if (recentEvents.length < 20) {
-      recentEvents.push({
-        id: row.id as string,
-        userId,
-        userEmail: null, // filled in below
-        kind: (row.kind as string) ?? 'llm.tokens',
-        amount,
-        operation: (row.operation as string | null) ?? null,
-        occurredAt: (row.occurred_at as string) ?? '',
-      });
-    }
+  if (metricsResult.error) {
+    throw new Error(`engine_usage_metrics failed: ${metricsResult.error.message}`);
   }
+  const m = (metricsResult.data ?? {}) as {
+    month?: { billable?: number; cost_usd_micros?: number; billable_without_cost?: number; users?: number };
+    lifetime?: number;
+    week?: number;
+    by_operation?: Array<{ operation: string; tokens: number; calls: number }>;
+    top_users?: Array<{ user_id: string; tokens: number; cost_usd_micros: number; billable_without_cost: number }>;
+  };
+  const tokensThisMonth = Number(m.month?.billable ?? 0);
+  const tokensLifetime = Number(m.lifetime ?? 0);
+  const tokensLast7d = Number(m.week ?? 0);
+  const usersActiveThisMonth = Number(m.month?.users ?? 0);
 
-  const tokensLifetime = (usageLifetimeResult.data ?? []).reduce<number>(
-    (sum, r) => sum + ((r.amount as number | null) ?? 0),
-    0,
-  );
-  const tokensLast7d = (usageLast7dResult.data ?? []).reduce<number>(
-    (sum, r) => sum + ((r.amount as number | null) ?? 0),
-    0,
-  );
+  const usdToMxn = Number(process.env.ANTHROPIC_USD_TO_MXN ?? 18);
+  // micros of USD → cents of MXN: / 1e6 × rate × 100.
+  const costCentsOf = (costUsdMicros: number, billableWithoutCost: number) =>
+    Math.floor((costUsdMicros * usdToMxn) / 10_000) +
+    Math.floor((billableWithoutCost * opts.costPerMillionTokensCents) / 1_000_000);
+
+  const recentEvents: EngineMetrics['recentEvents'] = (recentResult.data ?? []).map((row) => ({
+    id: row.id as string,
+    userId: (row.user_id as string | null) ?? '',
+    userEmail: null, // filled in below
+    kind: (row.kind as string) ?? 'llm.tokens',
+    amount: Number(row.billable_tokens ?? row.amount ?? 0),
+    operation: (row.operation as string | null) ?? null,
+    occurredAt: (row.occurred_at as string) ?? '',
+  }));
+  const topRows = m.top_users ?? [];
 
   // Hydrate top users + recent event user emails in a single batch.
-  const topUserIds = Array.from(perUser.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([id]) => id);
+  const topUserIds = topRows.map((r) => r.user_id);
   const recentUserIds = recentEvents.map((e) => e.userId).filter(Boolean);
   const userIdsToFetch = Array.from(new Set([...topUserIds, ...recentUserIds]));
   const profilesById = new Map<
@@ -224,8 +205,9 @@ export async function getEngineMetrics(opts: {
   for (const e of recentEvents) {
     e.userEmail = profilesById.get(e.userId)?.email ?? null;
   }
-  const topUsers = topUserIds.map((userId) => {
-    const tokens = perUser.get(userId) ?? 0;
+  const topUsers = topRows.map((r) => {
+    const userId = r.user_id;
+    const tokens = Number(r.tokens);
     return {
       userId,
       email: profilesById.get(userId)?.email ?? null,
@@ -233,36 +215,53 @@ export async function getEngineMetrics(opts: {
       tokens,
       // Floor at the integer-cent level — never claim a higher cost than
       // the math actually produces.
-      costCents: Math.floor(
-        (tokens * opts.costPerMillionTokensCents) / 1_000_000,
-      ),
+      costCents: costCentsOf(Number(r.cost_usd_micros), Number(r.billable_without_cost)),
       royaltyShareCents: Math.floor(
         (tokens * opts.partnerRoyaltyPerMillionTokensCents) / 1_000_000,
       ),
     };
   });
 
-  // Revenue (coarse): SUM payments from active-sub users this month.
+  // Revenue: payments from active-sub users this month, each split across
+  // the engines its payer is active on.
   const subUserIds = ((paymentsResult.data ?? []) as Array<{ user_id: string }>)
     .map((r) => r.user_id)
     .filter(Boolean);
   let revenueCentsThisMonth = 0;
   if (subUserIds.length > 0) {
-    const { data: payRows } = await admin
-      .from('payments')
-      .select('amount_cents')
-      .in('user_id', subUserIds)
-      .eq('status', 'approved')
-      .gte('created_at', monthStart);
-    revenueCentsThisMonth = (payRows ?? []).reduce<number>(
-      (sum, r) => sum + ((r.amount_cents as number | null) ?? 0),
-      0,
+    const [{ data: payRows }, { data: allSubs }] = await Promise.all([
+      admin
+        .from('payments')
+        .select('user_id, amount_cents')
+        .in('user_id', subUserIds)
+        .eq('status', 'approved')
+        .gte('created_at', monthStart),
+      admin
+        .from('engine_subscriptions')
+        .select('user_id')
+        .in('user_id', subUserIds)
+        .eq('status', 'active'),
+    ]);
+    const enginesPerUser = new Map<string, number>();
+    for (const r of allSubs ?? []) {
+      const id = r.user_id as string;
+      enginesPerUser.set(id, (enginesPerUser.get(id) ?? 0) + 1);
+    }
+    revenueCentsThisMonth = Math.floor(
+      (payRows ?? []).reduce<number>(
+        (sum, r) =>
+          sum +
+          ((r.amount_cents as number | null) ?? 0) /
+            Math.max(1, enginesPerUser.get(r.user_id as string) ?? 1),
+        0,
+      ),
     );
   }
 
   // Cost math.
-  const llmVariableCostCents = Math.floor(
-    (tokensThisMonth * opts.costPerMillionTokensCents) / 1_000_000,
+  const llmVariableCostCents = costCentsOf(
+    Number(m.month?.cost_usd_micros ?? 0),
+    Number(m.month?.billable_without_cost ?? 0),
   );
   const royaltyPayableCents = Math.floor(
     (tokensThisMonth * opts.partnerRoyaltyPerMillionTokensCents) / 1_000_000,
@@ -272,15 +271,17 @@ export async function getEngineMetrics(opts: {
   const marginPct =
     revenueCentsThisMonth > 0 ? (marginCents / revenueCentsThisMonth) * 100 : null;
 
-  const byOperation = Array.from(perOp.entries())
-    .map(([operation, agg]) => ({ operation, tokens: agg.tokens, calls: agg.calls }))
-    .sort((a, b) => b.tokens - a.tokens);
+  const byOperation = (m.by_operation ?? []).map((o) => ({
+    operation: o.operation ?? 'sin tag',
+    tokens: Number(o.tokens),
+    calls: Number(o.calls),
+  }));
 
   return {
     totalSubs: subsResult.count ?? 0,
     activeSubs: activeSubsResult.count ?? 0,
     pausedSubs: pausedSubsResult.count ?? 0,
-    usersActiveThisMonth: perUser.size,
+    usersActiveThisMonth,
     newSubsThisMonth: newSubsResult.count ?? 0,
     tokensThisMonth,
     tokensLifetime,

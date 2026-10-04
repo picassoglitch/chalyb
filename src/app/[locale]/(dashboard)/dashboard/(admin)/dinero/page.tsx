@@ -12,6 +12,7 @@ import { MONTHLY_OPERATING_COSTS } from '@/lib/billing/operating-costs';
 import { PLAN_KEYS } from '@/lib/billing/api';
 import type { PlanKey } from '@/config/pricing';
 import { KpiCard } from '@/components/dashboard/admin/kpi-card';
+import { CostRecon } from '@/components/dashboard/admin/cost-recon';
 import { ExampleTag, Pill } from '@/components/ui/primitives';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -244,6 +245,8 @@ export default async function DineroPage({
           ))}
         </div>
       </section>
+
+      <CostRecon locale={locale} />
 
       <section className="ch-section" aria-labelledby="costs-t">
         <h2 id="costs-t">

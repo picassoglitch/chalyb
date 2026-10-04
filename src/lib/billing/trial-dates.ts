@@ -7,6 +7,27 @@
 import { PRICING } from '@/config/pricing';
 
 const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+
+/** The billing cron's daily run, UTC hour (vercel.json "0 15 * * *"). */
+export const BILLING_CRON_UTC_HOUR = 15;
+/** Room for the cron starting late and the email being delivered, so the
+ *  notice still lands a full `days` before the charge. */
+const NOTICE_SLACK_MS = HOUR;
+
+/**
+ * When the notice for a charge goes out: the last cron run that leaves at
+ * least `days` (plus slack) before the charge. A notice due exactly `days`
+ * before would only be sent at the NEXT run — hours short of the legal
+ * minimum, which the bounce hold would then answer by holding the charge.
+ */
+export function noticeRunBefore(chargeAt: Date, days: number): Date {
+  const latest = chargeAt.getTime() - days * DAY - NOTICE_SLACK_MS;
+  const run = new Date(latest);
+  run.setUTCHours(BILLING_CRON_UTC_HOUR, 0, 0, 0);
+  if (run.getTime() > latest) run.setTime(run.getTime() - DAY);
+  return run;
+}
 
 export interface TrialDates {
   startsAt: Date;
@@ -21,7 +42,14 @@ export function trialDates(start: Date, p = PRICING): TrialDates {
     startsAt: start,
     trialEndsAt,
     chargeAt: trialEndsAt,
-    reminderAt: new Date(trialEndsAt.getTime() - p.trial.reminderDaysBefore * DAY),
+    // Owner, 2026-10-03 (Law aceptacion-ux §3.6): the charge notice goes out
+    // on day 0, sent by the signup itself, not by a later cron run. With
+    // reminderDaysBefore = days that is the start; a shorter lead falls back
+    // to the last cron run that still meets it.
+    reminderAt:
+      p.trial.reminderDaysBefore >= p.trial.days
+        ? start
+        : noticeRunBefore(trialEndsAt, p.trial.reminderDaysBefore),
   };
 }
 

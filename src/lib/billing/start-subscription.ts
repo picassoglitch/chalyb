@@ -1,15 +1,15 @@
 // Creating a subscription from a card token, with its consent evidence
 // (rebuild P2-3, P2-4, P2-9; SCR-15). One path for:
 //
-//   trial    the free month (Pro anual only): first charge when it ends
-//   paid     Pro mensual, VIP, or the trial was already used: first charge today
+//   trial    the 7-day trial (any plan, first time only): first charge when it ends
+//   paid     the trial was already used (or Pro Lealtad): first charge today
 //   change   a plan change (Mensual ↔ Anual, VIP, back to Pro): first charge
 //            on the effective date, the old subscription stops charging now
 //
 // THE MERCADO PAGO APPROACH (documented for the PR): the SDK only supports
 // `free_trial` on preapproval PLANS; the card-token preapproval this app
 // already uses takes `auto_recurring.start_date` — the date of the first
-// charge. So the free month is a preapproval authorised today whose first
+// charge. So the 7-day trial is a preapproval authorised today whose first
 // charge is the trial end. No custom charge job.
 //
 // The consent rule lives HERE, on the server: without `consentChecked: true`

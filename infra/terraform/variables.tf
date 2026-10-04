@@ -26,6 +26,18 @@ variable "domain" {
   default     = "chalyb.com"
 }
 
+variable "hub_url" {
+  description = <<-EOT
+    The hub's public origin. Every engine gets it as CHALYB_BASE_URL, where it
+    admits jobs and reports usage (docs/engines/consumption-contract.md).
+    Empty means https://www.<domain> (the apex 308s there, and a redirect
+    drops the bearer header). Engines treat an unset CHALYB_BASE_URL as
+    local dev and skip metering, so this must never be left out in prod.
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "billing_account" {
   description = <<-EOT
     Billing account id for the budget alert. Leave empty to skip creating the
@@ -120,6 +132,17 @@ variable "engines" {
       allow_unauthenticated = optional(bool, false)
     }))
 
+    # One-shot big machine per paid job; see modules/engine/variables.tf.
+    boost = optional(object({
+      command      = list(string)
+      args         = optional(list(string), [])
+      cpu          = optional(string, "8")
+      memory       = optional(string, "32Gi")
+      timeout      = optional(string, "3600s")
+      env          = optional(map(string), {})
+      name_env_var = string
+    }))
+
     jobs = optional(map(object({
       command  = optional(list(string))
       args     = optional(list(string), [])
@@ -188,6 +211,15 @@ variable "engines" {
         token_env_var = "CHALYBCLIP_MODAL_TOKEN"
       }
 
+      # Boost lane: VIP jobs, and jobs other tiers pay for, run here — one
+      # execution per job, 8 vCPU / 32 GiB, nothing left running afterwards.
+      boost = {
+        command      = ["python"]
+        args         = ["-m", "chalybclip.workers.boost_job"]
+        env          = { CHALYBCLIP_ROLE = "worker", CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
+        name_env_var = "CHALYBCLIP_BOOST_JOB_NAME"
+      }
+
       jobs = {
         # `drive poll` is a Typer command, not an HTTP route. `command` is the
         # image's console-script name (pyproject [project.scripts] in the
@@ -227,6 +259,7 @@ variable "engines" {
       shared_secrets = {
         CHALYBOBS_SUPABASE_SECRET_KEY = "supabase-secret-key"
         CHALYBOBS_SESSION_SECRET      = "chalybobs-session-secret"
+        CHALYBOBS_RELAY_SECRET        = "chalybobs-relay-secret"
       }
     }
 

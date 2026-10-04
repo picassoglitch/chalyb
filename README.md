@@ -68,6 +68,9 @@ Full path, including the new repo and going live:
 - [`docs/infra/gcp-migration.md`](docs/infra/gcp-migration.md) — the GCP
   architecture and why each piece is shaped the way it is
 - [`docs/infra/adding-an-engine.md`](docs/infra/adding-an-engine.md)
+- [`docs/engines/consumption-contract.md`](docs/engines/consumption-contract.md) —
+  how engines ask before spending (tier caps, token reservations, the boost
+  lane) and how they report usage so it is charged and paid correctly
 - [`infra/terraform/README.md`](infra/terraform/README.md) — bootstrap and apply
 - [`docs/payments/mercadopago.md`](docs/payments/mercadopago.md) — Mercado Pago:
   which product sells what, creating the application, webhook, testing, go-live

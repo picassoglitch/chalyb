@@ -187,6 +187,28 @@ http.createServer((req, res) => {
     return;
   }
   if (url.pathname.startsWith('/auth/v1/')) return send(200, {});
+  // usage_balance (prod migration 0046): this month's metered use, the
+  // bonus and the period start, like the SQL function.
+  if (url.pathname === '/rest/v1/rpc/usage_balance') {
+    let raw = '';
+    req.on('data', (c) => (raw += c));
+    req.on('end', () => {
+    let uid = '';
+    try {
+      uid = JSON.parse(raw || '{}').p_user_id ?? '';
+    } catch {
+      /* no body */
+    }
+    const n = new Date();
+    const period = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), 1)).toISOString();
+    const used = tables.usage_events
+      .filter((e) => e.user_id === uid && e.occurred_at >= period)
+      .reduce((a, e) => a + Number(e.billable_tokens ?? e.amount ?? 0), 0);
+    const bonus = tables.profiles.find((p) => p.id === uid)?.token_bonus_balance ?? 0;
+    send(200, { used, reserved: 0, bonus, period_start: period });
+    });
+    return;
+  }
   if (url.pathname.startsWith('/rest/v1/rpc/')) return send(200, null);
   const table = url.pathname.replace('/rest/v1/', '');
   if (req.method !== 'GET' && req.method !== 'HEAD') {

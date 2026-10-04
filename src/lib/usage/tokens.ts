@@ -1,24 +1,23 @@
 // Token balance + usage recording.
 //
 // Balance formula:
-//   balance = monthly_allocation + bonus − monthlyUsed
+//   remaining = monthly_allocation + bonus − monthlyUsed − reserved
 //
 // Where:
 //   monthly_allocation:  TIER_CAPS[effective_tier].tokensPerMonth
 //   bonus:               profiles.token_bonus_balance (top-up packs, persistent)
-//   monthlyUsed:         sum over THIS MONTH's usage_events of
-//                        max(1, per-event) where per-event is —
-//                          kind='llm.tokens'  → amount (native token count)
-//                          everything else    → ceil(cost_usd_micros / 4)
-//                        i.e. all non-LLM provider spend (transcription,
-//                        engine base charge, …) deducts its real USD cost
-//                        as token-equivalents (~$4/1M tokens), and EVERY
-//                        event floors at 1 token — any provider used costs
-//                        at least 1 token even if its raw cost rounds to 0.
+//   monthlyUsed:         sum of usage_events.billable_tokens this calendar
+//                        month (UTC). Set per event when it is written
+//                        (migration 0046): real provider cost plus the
+//                        platform margin (app_settings.usage_margin_percent,
+//                        default 50%), at 4 micros per token, never below 1.
+//   reserved:            what open admitted jobs still hold (their estimate
+//                        minus what they've reported) plus pending boost fees.
 //
-// All reads use the user-scoped supabase client when called from RSC pages
-// (RLS allows self-select); writes use the admin client (RLS blocks anon
-// writes — engines hit the API endpoint which writes via service role).
+// Summed in Postgres by usage_balance(): the old JS sum read rows over
+// PostgREST, which pages at 1000, so a busy user's usage was under-counted.
+// Writes use the admin client (RLS blocks anon writes — engines hit the API
+// endpoint which writes via service role).
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -40,82 +39,93 @@ export interface TokenBalance {
   bonus: number;
   /** Already-spent this calendar month. Tracked for everyone including admins. */
   monthlyUsed: number;
+  /** Held by jobs that were admitted and haven't finished. */
+  reserved: number;
   /** Snapshot of when this balance was computed (the calendar month bucket). */
   periodStart: string;
 }
 
-/** Get the first instant of the current calendar month, UTC. Use for the
- *  occurred_at filter so day-of-month boundaries are consistent regardless
- *  of where the user/engine is in the world. */
-function currentPeriodStartIso(): string {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+export interface BalanceSubject {
+  role: UserRole;
+  tier: SubscriptionTier;
+  unlimited: boolean;
+  monthlyAllocation: number;
 }
 
-export async function getTokenBalance(userId: string): Promise<TokenBalance> {
+/** Who the user is for quota purposes: role overrides tier, admins are
+ *  unlimited. Shared by getTokenBalance and the admission route. */
+export async function getBalanceSubject(userId: string): Promise<BalanceSubject | null> {
   const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('role, tier')
+    .eq('id', userId)
+    .maybeSingle();
+  if (!profile) return null;
+  const role = (profile.role as UserRole | undefined) ?? 'VIEWER';
+  const tier = effectiveTier(role, (profile.tier as SubscriptionTier | undefined) ?? 'FREE');
+  const unlimited = isAdminRole(role);
+  return {
+    role,
+    tier,
+    unlimited,
+    monthlyAllocation: unlimited ? Number.MAX_SAFE_INTEGER : TIER_CAPS[tier].tokensPerMonth,
+  };
+}
 
-  const [{ data: profile }, { data: events }] = await Promise.all([
-    admin.from('profiles').select('role, tier, token_bonus_balance').eq('id', userId).maybeSingle(),
-    // Pull EVERY metered event this month (not just llm.tokens) so the
-    // quota reflects ALL provider spend — transcription, the engine base
-    // charge, future meters — instead of only Claude tokens.
-    admin
-      .from('usage_events')
-      .select('kind, amount, cost_usd_micros')
-      .eq('user_id', userId)
-      .gte('occurred_at', currentPeriodStartIso()),
-  ]);
-
-  const role = (profile?.role as UserRole | undefined) ?? 'VIEWER';
-  const storedTier = (profile?.tier as SubscriptionTier | undefined) ?? 'FREE';
-  const tier = effectiveTier(role, storedTier);
-  const bonus = (profile?.token_bonus_balance as number | undefined) ?? 0;
-
-  // Deduction model (T4 all-provider): llm.tokens deducts its native token
-  // COUNT (amount) — unchanged. Every OTHER meter (transcription.seconds,
-  // engine.base, …) deducts its real USD cost converted to token-equivalents
-  // at MICROS_PER_TOKEN, so a single 'tokens' balance reflects total spend.
-  // Rate = the standard model's blended ~$4 / 1M tokens → 4 micros/token.
-  const MICROS_PER_TOKEN = 4;
-  const monthlyUsed = (events ?? []).reduce<number>((sum, e) => {
-    const kind = (e.kind as string | undefined) ?? '';
-    const raw =
-      kind === 'llm.tokens'
-        ? ((e.amount as number | undefined) ?? 0)
-        : Math.ceil(((e.cost_usd_micros as number | undefined) ?? 0) / MICROS_PER_TOKEN);
-    // Floor: every metered event costs at least 1 token. So any provider
-    // that was used draws down at least 1 token even if its real cost
-    // rounds to zero — covers the per-call overhead we don't otherwise
-    // capture.
-    return sum + Math.max(1, raw);
-  }, 0);
-
+/** Pure: the balance from the subject and usage_balance()'s sums. */
+export function composeBalance(
+  subject: Pick<BalanceSubject, 'unlimited' | 'monthlyAllocation'>,
+  sums: { used: number; reserved: number; bonus: number; periodStart: string },
+): TokenBalance {
   // Admins are exempt from token quotas — they need to run things on behalf
   // of users for support, demos, and engine bring-up. We use MAX_SAFE_INTEGER
   // (not Infinity, which JSON.stringify turns into null) plus an `unlimited`
-  // flag so engines can short-circuit their quota checks cleanly.
-  if (isAdminRole(role)) {
+  // flag so engines can short-circuit their quota checks cleanly. Usage is
+  // still tracked — admins shouldn't be invisible in usage_events.
+  if (subject.unlimited) {
     return {
       remaining: Number.MAX_SAFE_INTEGER,
       unlimited: true,
       monthlyAllocation: Number.MAX_SAFE_INTEGER,
-      bonus,
-      monthlyUsed, // still tracked for analytics — admins shouldn't be invisible in usage_events
-      periodStart: currentPeriodStartIso(),
+      bonus: sums.bonus,
+      monthlyUsed: sums.used,
+      reserved: sums.reserved,
+      periodStart: sums.periodStart,
     };
   }
-
-  const monthlyAllocation = TIER_CAPS[tier].tokensPerMonth;
-  const remaining = Math.max(0, monthlyAllocation + bonus - monthlyUsed);
   return {
-    remaining,
+    remaining: Math.max(0, subject.monthlyAllocation + sums.bonus - sums.used - sums.reserved),
     unlimited: false,
-    monthlyAllocation,
-    bonus,
-    monthlyUsed,
-    periodStart: currentPeriodStartIso(),
+    monthlyAllocation: subject.monthlyAllocation,
+    bonus: sums.bonus,
+    monthlyUsed: sums.used,
+    reserved: sums.reserved,
+    periodStart: sums.periodStart,
   };
+}
+
+export async function getTokenBalance(userId: string): Promise<TokenBalance> {
+  const admin = createAdminClient();
+  const [subject, { data, error }] = await Promise.all([
+    getBalanceSubject(userId),
+    admin.rpc('usage_balance', { p_user_id: userId }),
+  ]);
+  if (error) {
+    // Fail closed: an unknown balance is not a full one.
+    console.error('[usage] usage_balance failed', error.message);
+    throw new Error(`usage_balance failed: ${error.message}`);
+  }
+  const r = (data ?? {}) as { used?: number; reserved?: number; bonus?: number; period_start?: string };
+  return composeBalance(
+    subject ?? { unlimited: false, monthlyAllocation: TIER_CAPS.FREE.tokensPerMonth },
+    {
+      used: Number(r.used ?? 0),
+      reserved: Number(r.reserved ?? 0),
+      bonus: Number(r.bonus ?? 0),
+      periodStart: r.period_start ? new Date(r.period_start).toISOString() : '',
+    },
+  );
 }
 
 /** Has this user run out of monthly + bonus tokens? */
@@ -150,10 +160,11 @@ export interface RecordedEvent {
    *  ('anthropic' | 'openai' | 'assemblyai' | ...). Stored for per-provider
    *  rollups; engines are free to add new values without a Chalyb deploy. */
   provider?: string;
-  /** Optional: real provider cost in USD micros (1e-6 USD). $0.111 → 111000.
-   *  Stored but NOT yet deducted from the token balance — quota math still
-   *  runs off `amount` for kind='llm.tokens'. */
+  /** Real provider cost in USD micros (1e-6 USD). $0.111 → 111000. This is
+   *  what the balance is charged (billable_tokens = ceil(cost / 4)). */
   costUsdMicros?: number;
+  /** The admitted job this event belongs to (usage_reservations.id). */
+  reservationId?: string;
 }
 
 /** Insert (or no-op if duplicate) a batch of usage events. The (engine_id,
@@ -173,6 +184,23 @@ export async function recordUsageEvents(
   const slugToId = new Map<string, string>(
     (engineRows ?? []).map((r) => [r.slug as string, r.id as string]),
   );
+
+  // A reservation_id only counts against the job it names when that job is
+  // this user's on this engine; anything else is dropped rather than let it
+  // shrink another job's hold.
+  const reservationIds = Array.from(
+    new Set(events.map((e) => e.reservationId).filter((id): id is string => !!id)),
+  );
+  const ownedReservations = new Set<string>();
+  if (reservationIds.length > 0) {
+    const { data: resRows } = await admin
+      .from('usage_reservations')
+      .select('id, user_id, engine_id')
+      .in('id', reservationIds);
+    for (const r of resRows ?? []) {
+      ownedReservations.add(`${r.id}:${r.user_id}:${r.engine_id}`);
+    }
+  }
 
   // Build the insert rows. Drop events for unknown slugs (shouldn't happen,
   // but defensive against typos in the engine's outbound payload).
@@ -197,6 +225,10 @@ export async function recordUsageEvents(
         // haven't migrated yet keep working.
         provider: e.provider ?? null,
         cost_usd_micros: e.costUsdMicros ?? null,
+        reservation_id:
+          e.reservationId && ownedReservations.has(`${e.reservationId}:${e.userId}:${engineId}`)
+            ? e.reservationId
+            : null,
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null);

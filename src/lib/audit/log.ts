@@ -38,7 +38,8 @@ export type AuditAction =
   | 'admin.dispute' // a step of a chargeback case (WS-8, aceptacion-ux §10.5)
   | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
   | 'engine.visibility' // showed or hid a tool for customers
-  | 'settings.billing_toggle'; // Mensual/Anual offered or not
+  | 'settings.billing_toggle' // Mensual/Anual offered or not
+  | 'settings.usage_margin'; // margin charged on top of provider cost
 
 export interface AuditPayload {
   action: AuditAction;

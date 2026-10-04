@@ -7,7 +7,16 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { resolveBillingToggle } from '@/config/pricing';
 import { trialPlanChoiceEnabled } from './flags';
 
-export const SETTING_KEYS = { billingToggle: 'billing_toggle_enabled' } as const;
+export const SETTING_KEYS = {
+  billingToggle: 'billing_toggle_enabled',
+  usageMargin: 'usage_margin_percent',
+} as const;
+
+/** Margin on top of real provider cost when usage is charged to a balance.
+ *  Postgres reads the same key when it prices each usage event
+ *  (usage_margin_percent(), migration 0046); this default must match. */
+export const DEFAULT_USAGE_MARGIN_PERCENT = 160;
+export const MAX_USAGE_MARGIN_PERCENT = 500;
 
 const readSetting = cache(async (key: string): Promise<unknown> => {
   try {
@@ -27,6 +36,14 @@ const readSetting = cache(async (key: string): Promise<unknown> => {
 /** Mensual/Anual: the saved override, else TRIAL_PLAN_CHOICE_ENABLED. */
 export async function billingToggleEnabled(): Promise<boolean> {
   return resolveBillingToggle(await readSetting(SETTING_KEYS.billingToggle), trialPlanChoiceEnabled());
+}
+
+/** The saved usage margin, else the default. */
+export async function usageMarginPercent(): Promise<number> {
+  const v = await readSetting(SETTING_KEYS.usageMargin);
+  return typeof v === 'number' && Number.isFinite(v)
+    ? Math.min(MAX_USAGE_MARGIN_PERCENT, Math.max(0, v))
+    : DEFAULT_USAGE_MARGIN_PERCENT;
 }
 
 export async function writeSetting(key: string, value: unknown, actorId: string): Promise<boolean> {

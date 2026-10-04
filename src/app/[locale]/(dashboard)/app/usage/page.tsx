@@ -68,6 +68,7 @@ const DEFAULT_BALANCE: TokenBalance = {
   monthlyAllocation: 0,
   bonus: 0,
   monthlyUsed: 0,
+  reserved: 0,
   periodStart: new Date().toISOString(),
 };
 
@@ -283,7 +284,18 @@ export default async function UsagePage({
   const nf = (v: number) => v.toLocaleString(locale === 'es' ? 'es-MX' : 'en-US');
   const date = (iso: string) => formatFechaLarga(iso, locale);
   const b = (c: string) => `<b>${c}</b>`;
-  const { balance } = data;
+  // The period start comes from the usage_balance RPC; never trust it to be a
+  // valid date (an empty value used to throw on toISOString and 500 the page).
+  const monthStart = () => {
+    const n = new Date();
+    return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), 1)).toISOString();
+  };
+  const balance = {
+    ...data.balance,
+    periodStart: Number.isFinite(Date.parse(data.balance.periodStart))
+      ? data.balance.periodStart
+      : monthStart(),
+  };
   const balanceBroken = data.warnings.some((w) => w.startsWith('balance_') || w.startsWith('session_'));
   const total = balance.monthlyAllocation;
   const used = balance.monthlyUsed;
@@ -508,7 +520,7 @@ export default async function UsagePage({
                 <h3 className="ch-adv__h">{t('adv.limits')}</h3>
                 <ul className="ch-adv__list">
                   <li>{t('adv.historyDays', { n: caps.historyDays })}</li>
-                  {caps.clipStreamsPerMonth > 0 && <li>{t('adv.streams', { n: caps.clipStreamsPerMonth })}</li>}
+                  {Number.isFinite(caps.clipStreamsPerMonth) && caps.clipStreamsPerMonth > 0 && <li>{t('adv.streams', { n: caps.clipStreamsPerMonth })}</li>}
                 </ul>
                 <h3 className="ch-adv__h">{t('adv.tech')}</h3>
                 <ul className="ch-adv__list">

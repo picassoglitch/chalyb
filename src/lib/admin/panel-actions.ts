@@ -1,12 +1,18 @@
 'use server';
 
-// Herramientas show/hide (P5-5) and the Mensual/Anual toggle (P5-6).
+// Herramientas show/hide (P5-5), the Mensual/Anual toggle (P5-6) and the
+// usage margin (docs/engines/consumption-contract.md).
 
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { HIDDEN_FROM_CUSTOMERS } from '@/lib/engines/display-names';
-import { SETTING_KEYS, writeSetting } from '@/lib/config/settings';
+import {
+  MAX_USAGE_MARGIN_PERCENT,
+  SETTING_KEYS,
+  usageMarginPercent,
+  writeSetting,
+} from '@/lib/config/settings';
 import { adminName, adminSession } from './guard';
 import { payingUsersOfTool } from './data';
 
@@ -64,5 +70,29 @@ export async function setBillingToggle(enabled: boolean): Promise<{ ok: boolean 
     metadata: { admin_name: adminName(actor) },
   });
   revalidatePath('/[locale]', 'layout');
+  return { ok: true };
+}
+
+/** Margin charged on top of real provider cost. Applies to usage written
+ *  from now on; events already recorded keep the margin they were priced at. */
+export async function setUsageMargin(percent: number): Promise<{ ok: boolean }> {
+  const actor = await adminSession();
+  if (!actor) return { ok: false };
+  if (!Number.isInteger(percent) || percent < 0 || percent > MAX_USAGE_MARGIN_PERCENT) {
+    return { ok: false };
+  }
+  const before = await usageMarginPercent();
+  const ok = await writeSetting(SETTING_KEYS.usageMargin, percent, actor.user.id);
+  if (!ok) return { ok: false };
+  await logAudit({
+    action: 'settings.usage_margin',
+    actorId: actor.user.id,
+    actorEmail: actor.user.email ?? null,
+    targetUserId: actor.user.id,
+    targetEmail: actor.user.email ?? null,
+    before: { usage_margin_percent: before },
+    after: { usage_margin_percent: percent },
+    metadata: { admin_name: adminName(actor) },
+  });
   return { ok: true };
 }

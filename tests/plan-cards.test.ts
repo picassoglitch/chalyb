@@ -171,14 +171,15 @@ test('K-9 · bullets come from TIER_CAPS, no tool count, no credits', () => {
   ]);
   assert.deepEqual(keys('PRO'), [
     ['noWatermarkHd', null, true],
-    ['streams', { n: 12 }, true],
+    // Credits govern volume, not a stream count (prod b770249).
+    ['streamsUnlimited', null, true],
     ['history', { dias: 90 }, true],
     ['storage', { espacio: '5 GB' }, true],
     ['cancel', null, true],
   ]);
   assert.deepEqual(keys('VIP'), [
     ['clips4k', null, true],
-    ['streamsUnlimited', null, true],
+    // Pro has unlimited streams too now, so VIP ("Todo lo de Pro, más:") doesn't repeat it.
     ['historyYear', null, true],
     ['storage', { espacio: '50 GB' }, true],
   ]);

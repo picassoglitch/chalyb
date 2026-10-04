@@ -47,6 +47,9 @@ export interface NoticeInput {
    *  between Pro mensual and Pro anual keeps its charge date but is a new
    *  subscription with a new amount, so it needs its own notice. */
   subKey?: string;
+  /** The trial notice date the user was shown at signup (reminder_due_at).
+   *  Wins over today's rule, so a trial keeps the date it consented to. */
+  trialReminderDueAt?: string | null;
 }
 
 /** Notices due at `now` (already due, not yet necessarily sent). */
@@ -62,7 +65,9 @@ export function dueNotices(sub: NoticeInput, now: Date, p = PRICING): Notice[] {
     out.push({
       kind: 'trial_7d',
       periodKey: trialNoticeKey(sub.nextChargeAt, sub.subKey),
-      dueAt: at(p.trial.reminderDaysBefore),
+      dueAt: sub.trialReminderDueAt
+        ? new Date(sub.trialReminderDueAt)
+        : at(p.trial.reminderDaysBefore),
       mandatory: true,
     });
     if (sub.day6Enabled)

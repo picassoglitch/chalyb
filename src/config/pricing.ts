@@ -309,6 +309,10 @@ export const PRICING = {
     reminderDaysBefore: 7,
     plans: ['pro_month', 'pro_year', 'vip_month', 'vip_year'] as readonly PlanKey[],
     requiresCard: true,
+    /** Owner, 2026-10-03: none. When the 7 days end, the plan is off until
+     *  the first charge lands — however Mercado Pago retries, and whether or
+     *  not a webhook arrives. */
+    firstChargeGraceDays: 0,
   },
   /** Notice before every charge (art. 76 Bis fr. VIII: ≥ 5 calendar days). */
   reminders: { monthDaysBefore: 7, yearDaysBefore: [30, 7] as const },

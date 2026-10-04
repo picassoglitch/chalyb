@@ -13,6 +13,8 @@ locals {
     "cloudbilling.googleapis.com",
     "billingbudgets.googleapis.com",
     "monitoring.googleapis.com",
+    # The ChalyOBS RTMP relay VM (relay.tf).
+    "compute.googleapis.com",
   ]
 }
 

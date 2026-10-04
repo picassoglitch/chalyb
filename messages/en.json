@@ -1865,7 +1865,23 @@
         "cancelled": "Cancelled"
       },
       "costsNote": "Fixed costs set by hand, not measured. See src/lib/billing/operating-costs.ts.",
-      "iva": "Amounts include VAT."
+      "iva": "Amounts include VAT.",
+      "recon": {
+        "title": "Real vs. recorded costs · Anthropic",
+        "note": "What Anthropic billed us against what the engines recorded (and so charged users). A positive gap is usage we paid for and didn't charge.",
+        "billed": "Billed by Anthropic",
+        "recorded": "Recorded",
+        "gap": "Gap",
+        "model": "Model",
+        "workspaces": "By Anthropic workspace",
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "error": {
+          "no_key": "ANTHROPIC_ADMIN_KEY is missing in Vercel",
+          "api": "Anthropic didn't answer (check it's an Admin key)",
+          "db": "couldn't read recorded usage"
+        }
+      }
     },
     "activity": {
       "metaTitle": "Activity",
@@ -1938,7 +1954,10 @@
         "twofa": "Two-factor"
       },
       "authValue": "Supabase Auth",
-      "twofaValue": "Not connected"
+      "twofaValue": "Not connected",
+      "margin": "Margin on usage cost",
+      "marginHelp": "Users' balances are charged the real provider cost plus this percentage. Applies to new usage; what's already recorded doesn't change.",
+      "marginSave": "Save"
     },
     "example": "Example",
     "disputes": {

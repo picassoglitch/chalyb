@@ -34,6 +34,7 @@ import {
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { dispatchBillingEmail } from '@/lib/billing/notices';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { unpaidCharge } from '@/lib/billing/billing-state';
 import { track } from '@/lib/analytics/track';
 import {
   entitlementFor,
@@ -98,13 +99,35 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // What we last knew, to tell a transition from a repeat.
   const { data: before } = await admin
     .from('subscriptions')
-    .select('status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at')
+    .select(
+      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at',
+    )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
   const planKey = (before?.plan_key as PlanKey | null) ?? null;
   const trialEndsAt = (before?.trial_ends_at as string | null) ?? null;
   const inTrial = !!trialEndsAt && Date.now() < Date.parse(trialEndsAt);
   const previousStatus = before ? normalizePreapprovalStatus(before.status as string) : null;
+  // Mercado Pago's own record of the last charge that went through: one
+  // whose authorized_payment notification never reached us still counts, so
+  // the unpaid-charge deadline below can't take Pro from someone who paid.
+  const chargedByMp =
+    (mp.summarized?.charged_quantity ?? 0) > 0 ? (mp.summarized?.last_charged_date ?? null) : null;
+  const knownChargeAt = (before?.last_charge_at as string | null) ?? null;
+  const newerCharge =
+    !!chargedByMp &&
+    (!knownChargeAt || Date.parse(chargedByMp) > Date.parse(knownChargeAt));
+  const lastChargeAt = newerCharge ? chargedByMp : knownChargeAt;
+  const unpaid = unpaidCharge({
+    tier,
+    plan_key: planKey,
+    trial_ends_at: trialEndsAt,
+    last_charge_at: lastChargeAt,
+    charge_hold_until: (before?.charge_hold_until as string | null) ?? null,
+    reminder_delivered_at: (before?.reminder_delivered_at as string | null) ?? null,
+  });
+  // The trial's annual charge, or a renewal, is due and hasn't landed (yet).
+  const overdue = !!unpaid && !inTrial && Date.now() >= Date.parse(unpaid.dueAt);
 
   // Our copy of the preapproval — written whatever the status, so a paused or
   // cancelled one is visible in /dashboard/billing even when nothing is
@@ -119,6 +142,8 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',
       next_payment_date: nextPaymentDate,
+      // A charge we missed: it settles any grace a failure had opened.
+      ...(newerCharge ? { last_charge_at: chargedByMp, grace_ends_at: null } : {}),
       ...(before?.charge_hold_until
         ? {}
         : { next_charge_at: nextPaymentDate ?? before?.next_charge_at ?? null }),
@@ -210,11 +235,31 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     // granting it until its access_until (entitlements read both), and the
     // billing cron moves profiles.tier when the date comes.
     const RANK: Record<string, number> = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 };
-    const neverCharged = !before?.last_charge_at;
+    const neverCharged = !lastChargeAt;
     const startsLater =
       !inTrial && !!nextPaymentDate && Date.parse(nextPaymentDate) > Date.now() && neverCharged;
     const deferred = startsLater && RANK[tier]! < RANK[tierBefore ?? 'FREE']!;
-    if (!deferred) {
+    if (overdue) {
+      // The charge is due and hasn't landed: Pro runs to the deadline and
+      // no further (the session lapses it then). The charge landing is what
+      // clears the end — the next sync sees a new last_charge_at.
+      const deadline = unpaid!.deadline;
+      const { error: tierErr } =
+        Date.now() < Date.parse(deadline)
+          ? await admin
+              .from('profiles')
+              .update({ tier, tier_ends_at: deadline })
+              .eq('id', userId)
+          : await admin
+              .from('profiles')
+              .update({ tier_ends_at: deadline })
+              .eq('id', userId)
+              .eq('tier', tier);
+      if (tierErr) {
+        console.error('[mp/subscription] unpaid-charge tier_ends_at update failed', tierErr);
+        return { ok: false, reason: 'db', retry: true };
+      }
+    } else if (!deferred) {
       // The tier is theirs with no scheduled end: an authorised subscription
       // also withdraws a pending cancellation (they subscribed again).
       const { error: tierErr } = await admin
@@ -384,12 +429,12 @@ export async function recordAuthorizedPayment(
       console.error('[mp/subscription] payments upsert failed', error);
       return { ok: false, retry: true };
     }
+    const { data: subRow } = await admin
+      .from('subscriptions')
+      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at')
+      .eq('mp_preapproval_id', preapprovalId)
+      .maybeSingle();
     if (paymentStatus === 'approved') {
-      const { data: subRow } = await admin
-        .from('subscriptions')
-        .select('last_charge_at, trial_ends_at, plan_key')
-        .eq('mp_preapproval_id', preapprovalId)
-        .maybeSingle();
       await admin
         .from('subscriptions')
         .update({
@@ -420,9 +465,12 @@ export async function recordAuthorizedPayment(
         });
       }
     } else if (paymentStatus === 'rejected') {
-      // Pago pendiente: full access until the grace window ends (Q12).
+      // Pago pendiente: full access until the grace window ends (Q12), and
+      // never past the charge's own deadline (none at all for the trial's).
+      const graceMs = Date.now() + PRICING.graceDays * 24 * 60 * 60 * 1000;
+      const unpaid = subRow ? unpaidCharge(subRow as Parameters<typeof unpaidCharge>[0]) : null;
       const graceEnds = new Date(
-        Date.now() + PRICING.graceDays * 24 * 60 * 60 * 1000,
+        unpaid ? Math.min(graceMs, Date.parse(unpaid.deadline)) : graceMs,
       ).toISOString();
       await admin
         .from('subscriptions')

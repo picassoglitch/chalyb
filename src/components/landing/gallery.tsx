@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { SectionHead } from './section-head';
 
-// 4 · Galería: 6 gradient frames, tagged "Ejemplo" (P4-4). No photos, no
-// real clips. Shown only while Clips is active.
+// 4 · Galería: 6 example clip stills (AI-generated, see .pub-thumb in
+// chalyb-public.css), tagged "Ejemplo" (P4-4). Shown only while Clips is active.
 
 const CLIPS = ['1', '2', '3', '4', '5', '6'] as const;
 
