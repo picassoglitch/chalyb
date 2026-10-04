@@ -36,4 +36,14 @@ test('every env var read under src/ is in .env.local.example', () => {
   }
   const missing = [...read].filter((v) => !documented.has(v) && !PLATFORM.has(v)).sort();
   assert.deepEqual(missing, []);
+  // Template names (process.env[`TOOL_HUB_MODE_${slug}`]): at least one
+  // documented variable with that prefix.
+  const prefixes = new Set<string>();
+  for (const f of walk(join(ROOT, 'src'))) {
+    for (const m of readFileSync(f, 'utf8').matchAll(/process\.env\[`([A-Z][A-Z0-9_]*)\$\{/g))
+      prefixes.add(m[1]!);
+  }
+  const undocumented = [...prefixes].filter((p) => ![...documented].some((d) => d.startsWith(p)));
+  assert.deepEqual(undocumented, []);
+  assert.ok(prefixes.has('TOOL_HUB_MODE_'), 'template reads are seen');
 });

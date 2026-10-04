@@ -117,7 +117,13 @@ test('archive: every version listed in the registry has its module', () => {
 test('versioned URL: fixed /legal/<slug>/v<x-y>, stable for a version', () => {
   delete process.env.NEXT_PUBLIC_CANONICAL_ORIGIN;
   const d = legalDocument('suscripcion');
-  assert.equal(d.url, `https://www.chalyb.com/legal/subscription/${versionSlug(d.version)}`);
+  assert.equal(
+    d.url,
+    `https://www.chalyb.com/legal/subscription/${versionSlug(currentVersion('suscripcion'))}`,
+  );
+  // Not in force yet: cited as a draft, so anything accepted against it is
+  // asked again after publish (7a review).
+  assert.equal(d.version, `${currentVersion('suscripcion')}-draft`);
   assert.equal(d.sha256, archived('suscripcion')!.sha256);
   assert.equal(parseVersionSlug('v1-0'), '1.0');
   assert.equal(parseVersionSlug('v12-3'), '12.3');

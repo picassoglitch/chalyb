@@ -75,7 +75,8 @@ export function termsHistory(
   const shown = new Set<string>();
   for (const r of rows) {
     const terms = (r.documents ?? []).find((d) => d.doc === doc);
-    if (!terms) continue;
+    // Something accepted against a draft never counts for the real version.
+    if (!terms || terms.version.endsWith('-draft')) continue;
     if ((TERMS_ACCEPTING_EVENTS as readonly string[]).includes(r.event_type)) {
       if (!accepted || compareVersions(terms.version, accepted) > 0) accepted = terms.version;
     } else if (r.event_type === 'terms_notice_shown') {
