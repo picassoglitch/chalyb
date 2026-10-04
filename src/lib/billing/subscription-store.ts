@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { deriveBillingState, type BillingState, type SubscriptionRow } from './billing-state';
 import { restrictionState, type RestrictionRow, type RestrictionState } from './disputes';
 import { trialUsedFrom } from './trial-eligibility';
+import { chargebackMeasuresEnabled } from '@/lib/config/flags';
 
 const COLUMNS =
   'id, status, tier, plan_key, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_delivered_at, charge_hold_until, mp_preapproval_id, amount_cents, last_charge_at, first_charge_at, created_at';
@@ -25,6 +26,9 @@ export interface BillingSnapshot {
 /** Active measures for a user (WS-8). FAILS OPEN: an error, or the table not
  *  being there yet, means no measure. Never restrict on a read failure. */
 export async function accountRestrictions(userId: string): Promise<RestrictionState> {
+  // Measures exist only while CHARGEBACK_MEASURES_ENABLED is on (WS-8):
+  // turning it off lifts their effect at once, whatever rows remain.
+  if (!chargebackMeasuresEnabled()) return restrictionState([]);
   try {
     const { data, error } = await createAdminClient()
       .from('account_restrictions')

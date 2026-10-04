@@ -332,3 +332,15 @@ test('#11 the payment topic never replaces (or nulls) a charge\'s subscription l
   assert.match(branch, /\.\.\.\(knownPreapproval \|\| !guessedPreapproval \? \{\} : \{ mp_preapproval_id: guessedPreapproval \}\)/);
   assert.match(branch, /status: ledgerStatus\(charge\.status/);
 });
+
+// ── LOW · Chargeback measures have no effect while the flag is off ────
+test('LOW restrictions are ignored while CHARGEBACK_MEASURES_ENABLED is off', async () => {
+  const { readFileSync } = await import('node:fs');
+  const store = readFileSync(new URL('../src/lib/billing/subscription-store.ts', import.meta.url), 'utf8');
+  const fn = store.slice(store.indexOf('export async function accountRestrictions'));
+  const flagAt = fn.indexOf('if (!chargebackMeasuresEnabled()) return restrictionState([]);');
+  const readAt = fn.indexOf(".from('account_restrictions')");
+  assert.ok(flagAt > 0 && flagAt < readAt, 'flag checked before any row is read');
+  // Every reader goes through accountRestrictions (via loadBilling).
+  assert.match(store, /accountRestrictions\(userId\),/);
+});
