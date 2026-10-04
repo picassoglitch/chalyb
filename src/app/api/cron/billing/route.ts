@@ -411,7 +411,13 @@ export async function GET(req: Request) {
           stats.unpaidCharges += 1;
           await notify({
             severity: 'warning',
-            title: row.last_charge_at ? 'Renovación sin cobro' : 'Prueba terminada sin cobro anual',
+            // Every plan has the trial now, and a paid start or change has a
+            // deadline too (first_charge_at): name the charge that's missing.
+            title: row.last_charge_at
+              ? 'Renovación sin cobro'
+              : row.trial_ends_at
+                ? 'Prueba terminada sin primer cobro'
+                : 'Primer cobro sin entrar',
             body: `Suscripción ${preapprovalId} · ${row.tier} hasta el ${formatFechaLarga(unpaid.deadline, 'es')} si no entra el cobro`,
             href: '/dashboard/dinero',
             source: 'billing.cron',
