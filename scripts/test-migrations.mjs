@@ -383,34 +383,136 @@ try {
 {
   const check = (label, cond, extra = '') => {
     if (cond) console.log(`ok: ${label}`);
-    else { console.error(`FAIL: ${label} ${extra}`); process.exitCode = 1; }
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
   };
   const mk = async (email) => {
-    const id = (await db.query(`insert into auth.users (email) values ($1) returning id`, [email])).rows[0].id;
-    await db.query(`insert into public.profiles (id, email) values ($1, $2) on conflict (id) do update set email = excluded.email`, [id, email]);
+    const id = (await db.query(`insert into auth.users (email) values ($1) returning id`, [email]))
+      .rows[0].id;
+    await db.query(
+      `insert into public.profiles (id, email) values ($1, $2) on conflict (id) do update set email = excluded.email`,
+      [id, email],
+    );
     return id;
   };
   const key = 'terminos:9.9';
   const d = async (uid, status, ageMin = 0) =>
-    db.query(`insert into public.email_dispatches (user_id, kind, period_key, template_id, template_version, delivery_status, sent_at)
-              values ($1, 'terms_change', $2, 'terms_change', '1', $3, now() - ($4 || ' minutes')::interval)`, [uid, key, status, String(ageMin)]);
-  const sent = await mk('n-sent@example.com'); await d(sent, 'sent');
-  const delivered = await mk('n-deliv@example.com'); await d(delivered, 'delivered');
-  const bounced = await mk('n-bounce@example.com'); await d(bounced, 'bounced');
-  const fresh = await mk('n-fresh@example.com'); await d(fresh, 'pending', 2);
-  const stale = await mk('n-stale@example.com'); await d(stale, 'pending', 30);
-  const failed = await mk('n-failed@example.com'); await d(failed, 'failed');
+    db.query(
+      `insert into public.email_dispatches (user_id, kind, period_key, template_id, template_version, delivery_status, sent_at)
+              values ($1, 'terms_change', $2, 'terms_change', '1', $3, now() - ($4 || ' minutes')::interval)`,
+      [uid, key, status, String(ageMin)],
+    );
+  const sent = await mk('n-sent@example.com');
+  await d(sent, 'sent');
+  const delivered = await mk('n-deliv@example.com');
+  await d(delivered, 'delivered');
+  const bounced = await mk('n-bounce@example.com');
+  await d(bounced, 'bounced');
+  const fresh = await mk('n-fresh@example.com');
+  await d(fresh, 'pending', 2);
+  const stale = await mk('n-stale@example.com');
+  await d(stale, 'pending', 30);
+  const failed = await mk('n-failed@example.com');
+  await d(failed, 'failed');
   const never = await mk('n-never@example.com');
   const accepted = await mk('n-acc@example.com');
-  await db.query(`insert into public.consent_events (consent_id, event_type, user_id, timestamp_utc, locale, surface, ui_version, event_hash, documents)
-                  values (gen_random_uuid(), 'plan_changed', $1, now(), 'es-MX', 't', 't', 'h', '[{"doc":"terminos","version":"9.9"}]'::jsonb)`, [accepted]);
-  const ids = new Set((await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1000)`, [key])).rows.map((r) => r.id));
-  check('owed: never sent, failed, stale pending', ids.has(never) && ids.has(failed) && ids.has(stale));
-  check('not owed: sent, delivered, bounced, in-flight pending, already accepted',
-    ![sent, delivered, bounced, fresh, accepted].some((u) => ids.has(u)));
-  const page1 = (await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1)`, [key])).rows;
-  const page2 = (await db.query(`select id from public.legal_change_notice_recipients('terminos', '9.9', $1, $2, 1)`, [key, page1[0].id])).rows;
-  check('keyset pagination moves forward', page1.length === 1 && page2.length === 1 && page2[0].id > page1[0].id);
+  await db.query(
+    `insert into public.consent_events (consent_id, event_type, user_id, timestamp_utc, locale, surface, ui_version, event_hash, documents)
+                  values (gen_random_uuid(), 'plan_changed', $1, now(), 'es-MX', 't', 't', 'h', '[{"doc":"terminos","version":"9.9"}]'::jsonb)`,
+    [accepted],
+  );
+  const ids = new Set(
+    (
+      await db.query(
+        `select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1000)`,
+        [key],
+      )
+    ).rows.map((r) => r.id),
+  );
+  check(
+    'owed: never sent, failed, stale pending',
+    ids.has(never) && ids.has(failed) && ids.has(stale),
+  );
+  check(
+    'not owed: sent, delivered, bounced, in-flight pending, already accepted',
+    ![sent, delivered, bounced, fresh, accepted].some((u) => ids.has(u)),
+  );
+  const page1 = (
+    await db.query(
+      `select id from public.legal_change_notice_recipients('terminos', '9.9', $1, null, 1)`,
+      [key],
+    )
+  ).rows;
+  const page2 = (
+    await db.query(
+      `select id from public.legal_change_notice_recipients('terminos', '9.9', $1, $2, 1)`,
+      [key, page1[0].id],
+    )
+  ).rows;
+  check(
+    'keyset pagination moves forward',
+    page1.length === 1 && page2.length === 1 && page2[0].id > page1[0].id,
+  );
+}
+
+// ── 0060: retention counts from the chargeback, dry run, audit ────────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const u = (
+    await db.query(`insert into auth.users (email) values ('ret2@example.com') returning id`)
+  ).rows[0].id;
+  // Disputed in Sept 2020, closed in 2025: the incident is the dispute.
+  const cb = (
+    await db.query(
+      `insert into public.chargebacks (user_id, mp_payment_id, amount_cents, mp_status, opened_at, closed_at)
+     values ($1, 'p-2020', 99700, 'closed', '2020-09-01T00:00:00Z', '2025-06-01T00:00:00Z') returning id`,
+      [u],
+    )
+  ).rows[0].id;
+  await db.query(
+    `insert into public.account_restrictions (user_id, kind, chargeback_id) values ($1, 'restricted', $2)`,
+    [u, cb],
+  );
+  const dry = (
+    await db.query(`select public.legal_retention_purge('2026-10-03T00:00:00Z', true) as r`)
+  ).rows[0].r;
+  const still = (
+    await db.query(`select count(*)::int n from public.chargebacks where id = $1`, [cb])
+  ).rows[0].n;
+  check(
+    'dry run counts and deletes nothing',
+    dry.dry_run === true && dry.chargebacks >= 1 && still === 1,
+    JSON.stringify(dry),
+  );
+  const r = (await db.query(`select public.legal_retention_purge('2026-10-03T00:00:00Z') as r`))
+    .rows[0].r;
+  const gone = (
+    await db.query(`select count(*)::int n from public.chargebacks where id = $1`, [cb])
+  ).rows[0].n;
+  check(
+    'measured from opened_at, not the later close date',
+    gone === 0 && r.chargebacks >= 1,
+    JSON.stringify(r),
+  );
+  const audit = (
+    await db.query(
+      `select count(*)::int n from public.audit_events where action = 'legal.retention' and target_user_id = $1`,
+      [u],
+    )
+  ).rows[0].n;
+  check(
+    'lifting an active restriction is audited',
+    audit === 1 && r.active_restrictions_lifted >= 1,
+    JSON.stringify(r),
+  );
 }
 
 console.log(

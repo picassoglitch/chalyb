@@ -249,9 +249,7 @@ export async function submitTakedown(
 /** Admin, step 1 of a removal: the uploader's account (exact email) and
  *  their clip jobs, each with the normalized source the block would use, so
  *  the admin picks the exact source instead of trusting the notice's text. */
-export async function lookupTakedownTarget(
-  email: string,
-): Promise<
+export async function lookupTakedownTarget(email: string): Promise<
   | {
       ok: true;
       userId: string;
@@ -327,17 +325,15 @@ export async function removeTakedown(
     .maybeSingle();
   // Someone else moved it first (two admins, a double click): stop.
   if (!n) return { ok: false, code: 'state' };
-  await db
-    .from('content_removals')
-    .upsert(
-      matches.map((j) => ({
-        takedown_id: id,
-        user_id: target.userId,
-        job_id: j.id,
-        removed_at: now,
-        restored_at: null,
-      })),
-    );
+  await db.from('content_removals').upsert(
+    matches.map((j) => ({
+      takedown_id: id,
+      user_id: target.userId,
+      job_id: j.id,
+      removed_at: now,
+      restored_at: null,
+    })),
+  );
   await db
     .from('blocked_content')
     .upsert({ fingerprint: fp, kind: 'url', source: normalized, takedown_id: id, lifted_at: null });
@@ -562,15 +558,49 @@ export interface LegalCronReport {
 
 /** aceptacion-ux §8: the email ≥ 30 days before a relevant change to any
  *  document people re-accept (Términos, Suscripción, Privacidad). */
+/** At most this many notices per cron run; the rest go out the next day. */
+export const NOTICE_BATCH = 2000;
+/** Pause between sends (~8 a second), under the email provider's rate. */
+export const NOTICE_THROTTLE_MS = 125;
+
+interface NoticeBudget {
+  /** Epoch ms after which no new send starts. */
+  deadline: number;
+  /** Sends left in this run, shared by every document. */
+  maxSends: number;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** aceptacion-ux §8: the email ≥ 30 days before a relevant change to any
+ *  document people re-accept (Términos, Suscripción, Privacidad). One
+ *  document failing is reported and the next one still runs. */
 export async function runTermsChangeNotices(
   now = new Date(),
+  budget: NoticeBudget = { deadline: Date.now() + 240_000, maxSends: NOTICE_BATCH },
 ): Promise<LegalCronReport['termsChange']> {
-  const reports = [];
-  for (const doc of REACCEPT_DOCS) reports.push(await runDocChangeNotices(doc, now));
+  const left = { ...budget };
+  const reports: LegalCronReport['termsChange'] = [];
+  for (const doc of REACCEPT_DOCS) {
+    try {
+      reports.push(await runDocChangeNotices(doc, now, left));
+    } catch (e) {
+      console.error(`[legal] ${doc} notices failed`, e instanceof Error ? e.message : e);
+      reports.push({
+        doc,
+        decision: 'error',
+        version: currentVersion(doc),
+        sent: 0,
+        skipped: 0,
+        failed: 0,
+        late: false,
+      });
+    }
+  }
   return reports;
 }
 
-async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
+async function runDocChangeNotices(doc: ReacceptDoc, now: Date, budget: NoticeBudget) {
   const version = currentVersion(doc);
   const meta = versionMeta(doc, version);
   const db = createAdminClient();
@@ -628,6 +658,10 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
     if (error) throw new Error(error.message);
     const people = (page ?? []) as { id: string; email: string; full_name: string | null }[];
     for (const p of people) {
+      if (budget.maxSends <= 0 || Date.now() >= budget.deadline) {
+        report.decision = 'paused';
+        break;
+      }
       const mail = termsChangeEmail({
         ...vars,
         nombre: p.full_name?.split(' ')[0] || p.email.split('@')[0]!,
@@ -651,10 +685,14 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
       });
       if ((await finishNoticeDispatch(db, claimed, res)) === 'sent') report.sent += 1;
       else report.failed += 1;
+      budget.maxSends -= 1;
+      await sleep(NOTICE_THROTTLE_MS);
     }
-    if (people.length < 200) break;
+    if (report.decision === 'paused' || people.length < 200) break;
     after = people[people.length - 1]!.id;
   }
+  // Out of time or batch: the rest go out on the next run; not complete.
+  if (report.decision === 'paused') return report;
   // Complete once nobody is owed the notice any more (failed sends are
   // owed again); the version then applies 30 days later at the earliest.
   const { data: left } = await db.rpc('legal_change_notice_recipients', {
@@ -707,10 +745,16 @@ export async function runCounterNoticeRestores(now = new Date()): Promise<{ rest
   return { restored };
 }
 
-/** Aviso §9.1: non-compliance marks go 72 months after the incident. */
-export async function runRetention(now = new Date()): Promise<Record<string, unknown> | null> {
+/** Aviso §9.1: non-compliance marks go 72 months after the incident (the
+ *  chargeback's opened_at). `dryRun` counts without deleting. The SQL
+ *  function audits every active restriction it lifts. */
+export async function runRetention(
+  now = new Date(),
+  dryRun = false,
+): Promise<Record<string, unknown> | null> {
   const { data, error } = await createAdminClient().rpc('legal_retention_purge', {
     p_now: now.toISOString(),
+    p_dry_run: dryRun,
   });
   if (error) {
     console.error('[legal] retention purge failed', error.message);
