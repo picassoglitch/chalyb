@@ -87,7 +87,7 @@ export async function LegalDocPage({
   if (!version || !list) notFound();
 
   const t = await getTranslations({ locale, namespace: 'legal' });
-  const meta = versionMeta(doc, version);
+  const user = await getCurrentUser();
 
   if (!inForce(doc, version)) {
     return (
