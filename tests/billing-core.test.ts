@@ -587,3 +587,17 @@ test('reactivating after cancelling a trial: any plan keeps the rest of it', () 
     null,
   );
 });
+
+test('notice hold: a pause MP does not confirm is retried, then cancelled before the charge', async () => {
+  const { pauseOutcome } = await import('@/lib/billing/reminders');
+  const now = new Date('2026-10-05T15:00:00Z');
+  const at = (h: number) => new Date(now.getTime() + h * 3_600_000).toISOString();
+  assert.equal(pauseOutcome({ pauseConfirmed: true, nextChargeAt: at(2), now }), 'held');
+  // Charge 3 days out: tomorrow's run can try again.
+  assert.equal(pauseOutcome({ pauseConfirmed: false, nextChargeAt: at(72), now }), 'retry');
+  // Charge before (or right at) the next run: last chance, cancel.
+  assert.equal(pauseOutcome({ pauseConfirmed: false, nextChargeAt: at(24), now }), 'cancel');
+  assert.equal(pauseOutcome({ pauseConfirmed: false, nextChargeAt: at(-1), now }), 'cancel');
+  // Unknown charge date: fail closed.
+  assert.equal(pauseOutcome({ pauseConfirmed: false, nextChargeAt: null, now }), 'cancel');
+});

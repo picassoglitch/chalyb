@@ -137,10 +137,7 @@ export async function submitArco(
     locale: locale === 'es' ? 'es-MX' : 'en',
     surface: evidence?.surface ?? 'arco_form',
     ui_version: UI_VERSION,
-    // Never the person's own words: the closure's warning is our text, as shown.
-    disclosure_text:
-      `Solicitud ARCO (${input.right}) · folio ${String(data.id)}` +
-      (evidence ? `\n\n${evidence.disclosureText}` : ''),
+    disclosure_text: `Solicitud ARCO (${input.right}) · folio ${String(data.id)}`,
     checkbox_text: evidence?.checkboxText ?? null,
     checkbox_checked: evidence ? true : null,
     button_label: evidence?.buttonLabel ?? null,
@@ -154,7 +151,12 @@ export async function submitArco(
     reminder_date_utc: respondBy.toISOString(),
     payment_method: null,
     marketing_opt_in: false,
-    details: { ...(evidence?.details ?? {}), right: input.right, request_id: data.id },
+    // Never the person's own words: the closure's warning is our text, as shown.
+    details: {
+      ...(evidence ? { ...evidence.details, warning_shown: evidence.disclosureText } : {}),
+      right: input.right,
+      request_id: data.id,
+    },
   });
   await db.from('arco_requests').update({ consent_id: consent.consent_id }).eq('id', data.id);
   const fecha = formatFechaLarga(respondBy, 'es');
