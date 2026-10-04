@@ -11,7 +11,16 @@ import { BrandMark } from './brand-mark';
 // CSS phone (no person's name on either), and the clips notification. Only
 // the laptop image has priority (LCP).
 
-export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel: string }) {
+export async function Hero({
+  trialHref,
+  ctaLabel,
+  trialOffered,
+}: {
+  trialHref: Route;
+  ctaLabel: string;
+  /** hero.noteRest ("Hoy pagas …") only when this visitor can start the trial (K-7). */
+  trialOffered: boolean;
+}) {
   const t = await getTranslations('landing.hero');
   const cero = formatMXN(0);
   return (
@@ -29,7 +38,8 @@ export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel
             <ArrowRight aria-hidden="true" />
           </Link>
           <p className="pub-hero2__note">
-            <b>{t('noteStrong')}</b> {t('noteRest', { cero })}
+            <b>{t('noteStrong')}</b>
+            {trialOffered && <> {t('noteRest', { cero })}</>}
           </p>
           <ul className="pub-trust">
             {(['seal1', 'seal2', 'seal3'] as const).map((k) => (

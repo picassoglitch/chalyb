@@ -77,14 +77,14 @@ test('landingTrialHref: sign-up with the trial intent, the toggle interval and `
     );
 });
 
-test('landingTrialHref: no trial claim without the flow; the app for a signed-in visitor', () => {
+test('landingTrialHref: no trial claim without the flow; Planes for a signed-in visitor', () => {
   const off = landingTrialHref({ from: 'final_trial', trialFlowEnabled: false, signedIn: false });
   assert.equal(off, '/sign-in?mode=signup&plan=pro&interval=year&from=final_trial');
   assert.doesNotMatch(off, /intent=trial/);
   for (const trialFlowEnabled of [true, false])
     assert.equal(
       landingTrialHref({ from: 'hero_trial', trialFlowEnabled, signedIn: true }),
-      '/app/prueba',
+      '/planes',
     );
 });
 

@@ -64,7 +64,7 @@ export type TrialCtaId =
  * the interval the pricing toggle shows (display only: /app/prueba never
  * preselects the annual charge) and `from` for attribution without cookies.
  * Without the trial flow it's the plain Pro sign-up; a signed-in visitor goes
- * to the app's trial step.
+ * to Planes, which knows their plan (as trialCtaHref).
  */
 export function landingTrialHref(opts: {
   from: TrialCtaId;
@@ -72,7 +72,7 @@ export function landingTrialHref(opts: {
   trialFlowEnabled: boolean;
   signedIn: boolean;
 }): Route {
-  if (opts.signedIn) return '/app/prueba' as Route;
+  if (opts.signedIn) return PLANES_HREF;
   const interval = opts.interval ?? 'year';
   if (!opts.trialFlowEnabled)
     return `/sign-in?mode=signup&plan=pro&interval=${interval}&from=${opts.from}` as Route;

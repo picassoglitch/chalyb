@@ -198,4 +198,18 @@ test.describe('signed in', () => {
       await expect(link).toHaveAttribute('href', '/app');
     }
   });
+
+  test('no trial promise: the CTAs say "Ver planes" and go to /planes', async ({ page }) => {
+    await page.goto('/');
+    for (const id of ['hero_trial', 'final_trial', 'sticky_trial']) {
+      const cta = page.locator(`[data-cta="${id}"]`);
+      await expect(cta, id).toHaveText(/Ver planes/);
+      await expect(cta, id).toHaveAttribute('href', '/planes');
+    }
+    // The pricing cards know the account (a free one may still start the
+    // trial); the landing's own blocks make no promise.
+    for (const block of ['#hero', '#final', '.pub-sticky'])
+      await expect(page.locator(block), block).not.toContainText('Hoy pagas');
+    await expect(page.locator('[data-faq="1"]')).toHaveCount(0);
+  });
 });
