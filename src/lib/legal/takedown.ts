@@ -64,10 +64,56 @@ export function takedownTooLong(i: TakedownInput): boolean {
   });
 }
 
+/** Hosts whose links are the same video on YouTube. */
+function isYouTube(host: string): boolean {
+  return /(^|\.)youtube\.com$|(^|\.)youtube-nocookie\.com$/.test(host);
+}
+
+/** A link's id, trimmed and decoded ("abc%20" → "abc"); only the id's own
+ *  characters are kept. */
+function cleanId(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  let s = raw;
+  try {
+    s = decodeURIComponent(raw);
+  } catch {
+    /* keep it as written */
+  }
+  return /^[A-Za-z0-9_-]+/.exec(s.trim())?.[0] ?? null;
+}
+
+/** The parameters that identify the content on each platform; every other
+ *  one (ref, mibextid, filter, si, utm_*, …) is dropped. Hosts not listed
+ *  keep their parameters minus the known tracking ones. */
+const KEEP_PARAMS: Record<string, readonly string[]> = {
+  'kick.com': ['clip'],
+  'facebook.com': ['v', 'story_fbid', 'fbid', 'id'],
+  'fb.watch': [],
+  'twitch.tv': [],
+  'clips.twitch.tv': [],
+};
+const TRACKING = /^(utm_|si$|t$|feature$|fbclid$|gclid$|ref$|ref_src$|mibextid$|igshid$|share_)/;
+
+/** Paths these platforms read case-insensitively (channels, /videos/); a
+ *  Twitch clip slug and everything else keep their case. */
+function pathFor(host: string, path: string): string {
+  const trimmed = path.replace(/\/+$/, '');
+  if (host === 'kick.com') return trimmed.toLowerCase();
+  if (host === 'twitch.tv') {
+    const seg = trimmed.split('/');
+    return seg
+      .map((x, i) => (seg[i - 1]?.toLowerCase() === 'clip' ? x : x.toLowerCase()))
+      .join('/');
+  }
+  return trimmed;
+}
+
 /**
- * One fingerprint per piece of content, however its link is written:
- * lowercase host without "www."/"m.", YouTube short/long/shorts forms to the
- * video id, tracking parameters and fragments dropped. Not a URL → null.
+ * One fingerprint per piece of content, however its link is written (§5.2.3;
+ * the upload side, checkSourceUrl, accepts the same hosts): lowercase host
+ * without "www."/"m.", every YouTube host and form (watch, youtu.be, embed,
+ * v, e, shorts, live, nocookie, music) to the video id, only the identifying
+ * parameters, no fragment. Not a URL → null.
  */
 export function normalizeContentUrl(raw: string): string | null {
   let u: URL;
@@ -77,18 +123,24 @@ export function normalizeContentUrl(raw: string): string | null {
     return null;
   }
   if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
-  const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '');
-  if (host === 'youtu.be') return `youtube.com/watch?v=${u.pathname.slice(1).split('/')[0]}`;
-  if (host === 'youtube.com') {
-    const shorts = /^\/(shorts|live)\/([^/]+)/.exec(u.pathname);
-    const v = shorts?.[2] ?? u.searchParams.get('v');
-    if (v) return `youtube.com/watch?v=${v}`;
+  const host = u.hostname.toLowerCase().replace(/^(www|m|mobile)\./, '');
+
+  if (host === 'youtu.be' || isYouTube(host)) {
+    const id =
+      host === 'youtu.be'
+        ? cleanId(u.pathname.split('/')[1])
+        : (cleanId(/^\/(?:embed|v|e|shorts|live)\/([^/]+)/i.exec(u.pathname)?.[1]) ??
+          cleanId(u.searchParams.get('v')));
+    if (id) return `youtube.com/watch?v=${id}`;
   }
+
+  const allow = KEEP_PARAMS[host];
   const keep = [...u.searchParams.entries()]
-    .filter(([k]) => !/^(utm_|si$|t$|feature$|fbclid$|gclid$)/.test(k))
+    .filter(([k]) => (allow ? allow.includes(k) : !TRACKING.test(k)))
+    .map(([k, v]) => [k, v.trim()] as [string, string])
     .sort(([a], [b]) => a.localeCompare(b));
   const q = keep.length ? `?${new URLSearchParams(keep).toString()}` : '';
-  return `${host}${u.pathname.replace(/\/+$/, '')}${q}`;
+  return `${host}${pathFor(host, u.pathname)}${q}`;
 }
 
 export function contentFingerprint(raw: string): string | null {
