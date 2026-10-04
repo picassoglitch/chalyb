@@ -1777,7 +1777,23 @@
         "cancelled": "Canceladas"
       },
       "costsNote": "Costos fijos configurados a mano, no medidos. Ver src/lib/billing/operating-costs.ts.",
-      "iva": "Montos con IVA incluido."
+      "iva": "Montos con IVA incluido.",
+      "recon": {
+        "title": "Costos reales vs. registrados · Anthropic",
+        "note": "Lo que Anthropic nos cobró contra lo que los sistemas registraron (y por lo tanto cobraron a los usuarios). Una diferencia positiva es uso que pagamos y no cobramos.",
+        "billed": "Cobrado por Anthropic",
+        "recorded": "Registrado",
+        "gap": "Diferencia",
+        "model": "Modelo",
+        "workspaces": "Por workspace de Anthropic",
+        "thisMonth": "Este mes",
+        "lastMonth": "Mes pasado",
+        "error": {
+          "no_key": "falta ANTHROPIC_ADMIN_KEY en Vercel",
+          "api": "Anthropic no respondió (revisa que la llave sea de Admin)",
+          "db": "no se pudo leer el uso registrado"
+        }
+      }
     },
     "activity": {
       "metaTitle": "Actividad",

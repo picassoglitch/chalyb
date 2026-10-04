@@ -230,3 +230,22 @@ test('reservations hold the estimate plus the margin', () => {
   assert.equal(reserveWithMargin(1000, 0), 1000);
   assert.equal(reserveWithMargin(1000, -5), 1000);
 });
+
+test('reconciliation: cents strings → micros, per model and workspace', async () => {
+  const { sumCostReport, reconcileByModel, centsToMicros } = await import('@/lib/usage/reconciliation-core');
+  assert.equal(centsToMicros('123.45'), 1_234_500); // $1.2345
+  const billed = sumCostReport([
+    { data: [{ starting_at: 'a', ending_at: 'b', results: [
+      { amount: '100', currency: 'USD', model: 'claude-haiku-4-5', workspace_id: null, cost_type: 'tokens' },
+      { amount: '50.5', currency: 'USD', model: 'claude-opus-5-5', workspace_id: 'wrkspc_x', cost_type: 'tokens' },
+      { amount: '7', currency: 'USD', model: null, workspace_id: null, cost_type: 'web_search' },
+    ] }] },
+  ]);
+  assert.equal(billed.totalMicros, 1_575_000);
+  assert.equal(billed.byModel.get('web_search'), 70_000);
+  assert.equal(billed.byWorkspace.get('wrkspc_x'), 505_000);
+  const rows = reconcileByModel(new Map([['claude-haiku-4-5-20251001', 900_000]]), billed.byModel);
+  const haiku = rows.find((r) => r.model === 'claude-haiku-4-5')!;
+  assert.equal(haiku.recordedMicros, 900_000);
+  assert.equal(haiku.gapPct, 10); // billed $1.00, recorded $0.90 → 10% under-recorded
+});
