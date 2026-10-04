@@ -13,7 +13,7 @@
 /* While the cookie banner is open it publishes its height as --consent-h
    (cookie-banner.tsx): the page gets that much room at the bottom, and
    scrolling to an element keeps it clear of the banner, so the banner never
-   covers content or a primary button (TOOLS-SPEC F7). */
+   covers content or a primary button (TOOLS-SPEC F6). */
 html {
   scroll-padding-bottom: var(--consent-h, 0px);
 }
@@ -2590,3 +2590,15 @@ html body:has(.ch-flow) {
     display: none;
   }
 }
+/* Tus herramientas (mockup 61) */
+.chalyb-app .ch-tools--big { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; }
+.chalyb-app .ch-tool--big { flex-direction: column; align-items: stretch; gap: 14px; padding: 22px; }
+.chalyb-app .ch-tool--big .ch-btn { width: 100%; }
+.chalyb-app .ch-tool__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.chalyb-app .ch-tool--big .ch-tool-ic { width: 56px; height: 56px; border-radius: 16px; }
+.chalyb-app .ch-tool--big .ch-tool__tx { min-width: 0; flex: 1; }
+.chalyb-app .ch-tool__status { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; font-size: 15px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-tool__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.chalyb-app .ch-tool__status--warn .ch-tool__dot { background: #ff9f0a; }
+.chalyb-app .ch-tools--light { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.chalyb-app .ch-tool--light { padding: 14px; gap: 12px; }

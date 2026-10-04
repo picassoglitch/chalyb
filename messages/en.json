@@ -627,40 +627,6 @@
       "cta": "Make my first clip"
     }
   },
-  "tool": {
-    "back": "Home",
-    "badge": {
-      "included": "Included in your plan",
-      "trialOffer": "Included in Pro · Try it free",
-      "otherTool": "Switch to it to use it",
-      "setup": "One step left"
-    },
-    "ready": {
-      "body": "{tool} opens in a new tab."
-    },
-    "offer": {
-      "title": "Included in Pro · Try it free",
-      "body": "With Pro you can use {tool}.",
-      "trialCta": "Try Pro free",
-      "plansCta": "See plans"
-    },
-    "switch": {
-      "title": "Your plan includes one tool at a time.",
-      "body": "To use {tool}, pick it under Tools.",
-      "cta": "Switch tool"
-    }
-  },
-  "launch": {
-    "open": "Open",
-    "opening": "Opening…",
-    "blocked": "Your browser did not open the new tab.",
-    "openNamed": "Open {tool}",
-    "retry": "Try again",
-    "help": "Talk to a person",
-    "trialCta": "Try Pro free",
-    "plansCta": "See plans",
-    "signIn": "Sign in"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Included in Pro · Try it free",
@@ -1449,7 +1415,6 @@
   },
   "tools": {
     "metaTitle": "Tools",
-    "title": "More tools",
     "yours": "Your tools",
     "included": "Included in your plan",
     "inPro": "Included in Pro",
@@ -1468,6 +1433,21 @@
       "chalybpicks": "Today’s sports forecasts, explained simply.",
       "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
       "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+    },
+    "crumb": "Home",
+    "sub": "They're all included in your {plan} plan and open right here.",
+    "also": "Also included",
+    "openArrow": "Open ›",
+    "status": {
+      "clipsBoth": "{n} in progress · {m} ready {cuando}",
+      "clipsWorking": "{n} in progress",
+      "clipsReady": "{m} ready {cuando}",
+      "clipsNone": "You don't have clips yet",
+      "signalsToday": "{n, plural, one {# new signal today} other {# new signals today}}",
+      "signalsNone": "No new signals today",
+      "liveSetup": "One step left: connect",
+      "liveReady": "Ready to go live",
+      "liveOn": "Live now"
     }
   },
   "assistant": {

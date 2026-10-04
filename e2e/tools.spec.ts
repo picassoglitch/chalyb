@@ -33,23 +33,34 @@ test.describe('as pro', () => {
   asRole('pro');
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set (server must run the tools in mock mode)');
 
-  test('Más herramientas: every tool included, each opens its own screens', async ({ page }, info) => {
-    const res = await page.request.get('/app/engines', { maxRedirects: 0 });
-    expect(res.status()).toBe(308);
-    expect(res.headers().location).toMatch(/\/app\/herramientas$/);
+  test('Tus herramientas: the 3 tools included, each opens inside the app', async ({ page }, info) => {
+    // WS-11: the old URLs answer 307 (first 4 weeks), keep the query, never 404.
+    for (const [from, to] of [
+      ['/app/engines?x=1', /\/app\/herramientas\?x=1$/],
+      ['/app/engines/chalybclip?from=mail', /\/app\/clips\?from=mail$/],
+      ['/app/engines/chalybcrypto/anything', /\/app\/senales$/],
+      ['/app/engines/chalybobs', /\/app\/en-vivo$/],
+      ['/app/engines/chalybtrade', /\/app\/herramientas$/],
+      ['/en/app/engines/chalybclip', /\/en\/app\/clips$/],
+    ] as const) {
+      const res = await page.request.get(from, { maxRedirects: 0 });
+      expect(res.status(), from).toBe(307);
+      expect(res.headers().location, from).toMatch(to);
+    }
     await page.goto('/app/herramientas');
-    await expect(page.getByRole('heading', { level: 1, name: 'Más herramientas' })).toBeVisible();
-    for (const name of TOOLS) {
+    await expect(page.getByRole('heading', { level: 1, name: 'Tus herramientas' })).toBeVisible();
+    for (const name of ['Clips', 'Señales', 'En vivo']) {
       const card = page.locator('.ch-tool', { has: page.getByRole('heading', { name, exact: true }) });
       await expect(card.getByText('Incluido en tu plan')).toBeVisible();
       await expect(card.getByRole('link', { name: `Abrir ${name}` })).toBeVisible();
+      await expect(card.locator('.ch-tool__status')).toBeVisible();
     }
+    // Q9: no other tool is live, so "También incluido" doesn't exist.
+    await expect(page.getByRole('heading', { name: 'También incluido' })).toHaveCount(0);
     await expect(page.getByText(/Disponible|Próximamente|Llega pronto/i)).toHaveCount(0);
-    await page.getByRole('link', { name: 'Abrir Señales' }).click();
-    await expect(page).toHaveURL(/\/app\/senales$/);
-    // The old tool page sends an included tool to its own screens.
-    await page.goto('/app/engines/chalybobs');
+    await page.getByRole('link', { name: 'Abrir En vivo' }).click();
     await expect(page).toHaveURL(/\/app\/en-vivo$/);
+    expect(page.context().pages()).toHaveLength(1);
     await page.goto('/app/herramientas');
     await clean(page, info);
   });
@@ -234,15 +245,15 @@ test.describe('as free', () => {
   asRole('free');
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
-  test('Más herramientas: Pro tools offer the trial, never a lock', async ({ page }, info) => {
+  test('Tus herramientas: Pro tools offer the trial, never a lock', async ({ page }, info) => {
     await page.goto('/app/herramientas');
     const offers = page.getByText('Incluido en Pro', { exact: true });
     await expect(offers.first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Pruébalo gratis|Volver a Pro|Ver planes/ }).first()).toBeVisible();
     await expect(page.getByText(/Disponible|bloquead/i)).toHaveCount(0);
-    // A Pro-only tool's own screens send Free back to the offer.
+    // A Pro-only tool outside the registry sends Free back to Tus herramientas.
     await page.goto('/app/herramientas/inversiones');
-    await expect(page).toHaveURL(/\/app\/engines\/chalybtrade$/);
+    await expect(page).toHaveURL(/\/app\/herramientas$/);
     await clean(page, info);
   });
 });

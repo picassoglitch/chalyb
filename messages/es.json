@@ -627,40 +627,6 @@
       "cta": "Hacer mi primer clip"
     }
   },
-  "tool": {
-    "back": "Inicio",
-    "badge": {
-      "included": "Incluido en tu plan",
-      "trialOffer": "Incluido en Pro · Pruébalo gratis",
-      "otherTool": "Cámbiala para usarla",
-      "setup": "Te falta un paso"
-    },
-    "ready": {
-      "body": "{tool} se abre en una pestaña nueva."
-    },
-    "offer": {
-      "title": "Incluido en Pro · Pruébalo gratis",
-      "body": "Con Pro puedes usar {tool}.",
-      "trialCta": "Prueba Pro gratis",
-      "plansCta": "Ver planes"
-    },
-    "switch": {
-      "title": "Tu plan incluye una herramienta a la vez.",
-      "body": "Para usar {tool}, elígela en Herramientas.",
-      "cta": "Cambiar herramienta"
-    }
-  },
-  "launch": {
-    "open": "Abrir",
-    "opening": "Abriendo…",
-    "blocked": "Tu navegador no abrió la pestaña nueva.",
-    "openNamed": "Abrir {tool}",
-    "retry": "Intentar de nuevo",
-    "help": "Hablar con una persona",
-    "trialCta": "Prueba Pro gratis",
-    "plansCta": "Ver planes",
-    "signIn": "Entrar"
-  },
   "errors": {
     "tool": {
       "NEEDS_PLAN": "Incluido en Pro · Pruébalo gratis",
@@ -1449,7 +1415,6 @@
   },
   "tools": {
     "metaTitle": "Herramientas",
-    "title": "Más herramientas",
     "yours": "Tus herramientas",
     "included": "Incluido en tu plan",
     "inPro": "Incluido en Pro",
@@ -1468,6 +1433,21 @@
       "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
       "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
       "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
+    },
+    "crumb": "Inicio",
+    "sub": "Todas están incluidas en tu plan {plan} y se abren aquí mismo.",
+    "also": "También incluido",
+    "openArrow": "Abrir ›",
+    "status": {
+      "clipsBoth": "{n} en proceso · {m} listos {cuando}",
+      "clipsWorking": "{n} en proceso",
+      "clipsReady": "{m} listos {cuando}",
+      "clipsNone": "Aún no tienes clips",
+      "signalsToday": "{n, plural, one {# señal nueva hoy} other {# señales nuevas hoy}}",
+      "signalsNone": "Sin señales nuevas hoy",
+      "liveSetup": "Te falta un paso: conectar",
+      "liveReady": "Listo para transmitir",
+      "liveOn": "Transmitiendo ahora"
     }
   },
   "assistant": {

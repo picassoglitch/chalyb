@@ -44,7 +44,7 @@ test.describe('as admin', () => {
     const pro = await browser.newContext({ storageState: storageStatePath('pro') });
     const p = await pro.newPage();
     await p.goto('/app/herramientas');
-    await expect(p.getByRole('heading', { name: 'Más herramientas' })).toBeVisible();
+    await expect(p.getByRole('heading', { name: 'Tus herramientas' })).toBeVisible();
     await expect(p.getByRole('heading', { name: 'Inmuebles', exact: true })).toHaveCount(0);
     await p.goto('/app/herramientas/inmuebles');
     await expect(p).toHaveURL(/\/app\/herramientas$/);
