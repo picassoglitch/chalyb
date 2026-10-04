@@ -273,7 +273,57 @@ variable "engines" {
         database_url = "DATABASE_URL"
       }
     }
+
+    # Chalito's api (picassoglitch/chalito apps/api) reads its own prefixed
+    # pair. Its web app is on Vercel at chalito.chalyb.com, so this service is
+    # api.chalito.chalyb.com: leave enable_domain_mappings off and map that
+    # host by hand. Buckets, the scheduler signer and the api's other secrets
+    # come from Chalito's own Terraform, which runs after this one; they go in
+    # engine_extra_env / engine_extra_secret_env on a second apply.
+    chalito = {
+      display_name = "Chalito"
+      secret_env_names = {
+        admin_token  = "CHALITO_ADMIN_TOKEN"
+        sso_secret   = "CHALITO_SSO_SECRET"
+        database_url = "DATABASE_URL"
+      }
+      env = {
+        SUPABASE_URL           = "https://uqcbziwdgbnzehipzjxp.supabase.co"
+        API_PUBLIC_URL         = "https://api.chalito.chalyb.com"
+        CHALITO_API_ISSUER     = "https://api.chalito.chalyb.com"
+        CHALITO_WEB_ORIGIN     = "https://chalito.chalyb.com"
+        CHALITO_MCP_RESOURCE   = "https://mcp.chalito.chalyb.com/mcp"
+        CHALITO_WEBAUTHN_RP_ID = "chalito.chalyb.com"
+        TRUSTED_PROXIES        = "0"
+      }
+      shared_secrets = {
+        SUPABASE_SECRET_KEY = "supabase-secret-key"
+      }
+    }
   }
+}
+
+variable "engine_extra_env" {
+  description = <<-EOT
+    Extra plain env for an engine's API, by slug: { <slug> = { VAR = "value" } }.
+    For values another apply produces (an engine's own buckets, say), so they
+    can be added without restating the whole `engines` map, whose default
+    describes every live engine.
+  EOT
+  type        = map(map(string))
+  default     = {}
+}
+
+variable "engine_extra_secret_env" {
+  description = <<-EOT
+    Secrets an engine manages itself, in this project, injected into its API,
+    by slug: { <slug> = { VAR = "secret-id" } }. Each secret must exist with a
+    version, and the engine's own Terraform must grant this engine's service
+    account access, before the apply that adds it: Cloud Run refuses a
+    revision it can't read. Nothing here creates or grants.
+  EOT
+  type        = map(map(string))
+  default     = {}
 }
 
 variable "enable_domain_mappings" {

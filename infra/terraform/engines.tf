@@ -33,6 +33,7 @@ module "engine" {
       CHALYB_BASE_URL = coalesce(var.hub_url, "https://www.${var.domain}")
     },
     each.value.env,
+    lookup(var.engine_extra_env, each.key, {}),
     each.key == local.relay_engine ? local.relay_engine_env : {},
   )
 
@@ -41,10 +42,13 @@ module "engine" {
   secret_env_names          = each.value.secret_env_names
   object_storage_env_prefix = each.value.object_storage_env_prefix
 
-  shared_secret_env = {
-    for var_name, secret_key in each.value.shared_secrets :
-    var_name => google_secret_manager_secret.shared[secret_key].secret_id
-  }
+  shared_secret_env = merge(
+    {
+      for var_name, secret_key in each.value.shared_secrets :
+      var_name => google_secret_manager_secret.shared[secret_key].secret_id
+    },
+    lookup(var.engine_extra_secret_env, each.key, {}),
+  )
 
   worker = each.value.worker
   boost  = each.value.boost
