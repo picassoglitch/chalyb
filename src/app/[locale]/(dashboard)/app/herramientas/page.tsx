@@ -12,6 +12,7 @@ import { TOOLS, toolBySlug } from '@/config/tools';
 import { toolHref } from '@/lib/tools/routes';
 import { toolCardAction } from '@/lib/tools/matrix';
 import { planKeyFor } from '@/lib/tools/access';
+import { paidPlanName } from '@/lib/billing/plan-label';
 import { toolStatusLines, type ToolStatusLine } from '@/lib/tools/status-lines';
 import { Banner, ButtonLink, Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
@@ -69,7 +70,7 @@ export default async function HerramientasPage({ params }: { params: Promise<{ l
         </Link>
         <h1 className="ch-h1">{t('yours')}</h1>
         {allIncluded && entitlements.plan !== 'FREE' && (
-          <p className="ch-sub">{t('sub', { plan: entitlements.plan === 'VIP' ? 'VIP' : 'Pro' })}</p>
+          <p className="ch-sub">{t('sub', { plan: paidPlanName(entitlements.plan) })}</p>
         )}
       </header>
       {offer && !entitlements.trialUsed && (
