@@ -2,7 +2,7 @@
 
 Combined branch: **`claude/rebuild-p6-final`**. It holds every workstream below, stacked on #41 (the redesign stack with prod's `claude/consumption-caps` merged in). Nothing was deployed, `main` was not touched, no migration was applied anywhere, and no MP or Vercel setting was changed.
 
-**Final gates on `claude/rebuild-p6-final`:** typecheck ✓ · lint 0 errors · unit **575/575** · test:legal **172/172** · check:copy ✓ · test:migrations **59 applied twice** · build ✓ · e2e trial flow **ON 469 passed / 0 failed** · e2e flow **OFF 454 passed / 0 failed**.
+**Final gates on `claude/rebuild-p6-final`:** typecheck ✓ · lint 0 errors / 0 warnings · unit **580/580** · test:legal **172/172** · check:copy ✓ · test:migrations **59 applied twice** · build ✓ · e2e trial flow **ON 472 passed / 0 failed** · e2e flow **OFF 457 passed / 0 failed**. Launch runbook: [`docs/infra/launch-runbook.md`](https://github.com/picassoglitch/chalyb/blob/claude/rebuild-p6-final/docs/infra/launch-runbook.md) (#57).
 
 Every PR from #46 on, except #51 (merged into final without a second review), was reviewed read-only by a second session (picassoglitch-7a). Each finding came back fixed and re-verified, or is listed in §5. This report was audited against the code by the same session.
 
