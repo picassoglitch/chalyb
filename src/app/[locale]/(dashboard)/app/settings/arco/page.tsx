@@ -21,6 +21,7 @@ interface Row {
   respond_by: string;
   responded_at: string | null;
   outcome: string | null;
+  effective_by: string | null;
 }
 
 export default async function ArcoPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -31,7 +32,7 @@ export default async function ArcoPage({ params }: { params: Promise<{ locale: s
   if (!session) return null;
   const { data } = await createAdminClient()
     .from('arco_requests')
-    .select('id, right_kind, received_at, respond_by, responded_at, outcome')
+    .select('id, right_kind, received_at, respond_by, responded_at, outcome, effective_by')
     .eq('user_id', session.user.id)
     .order('received_at', { ascending: false })
     .limit(20);
@@ -53,9 +54,17 @@ export default async function ArcoPage({ params }: { params: Promise<{ locale: s
                 <b>{t(`form.rights.${r.right_kind}.title`)}</b>
                 <span className="ch-muted">
                   {r.responded_at
-                    ? t('answered', { fecha: formatFechaLarga(r.responded_at, locale) })
+                    ? t('answeredWith', {
+                        fecha: formatFechaLarga(r.responded_at, locale),
+                        resultado: t(`outcome.${r.outcome ?? 'incomplete'}`),
+                      })
                     : t('pending', { fecha: formatFechaLarga(r.respond_by, locale) })}
                 </span>
+                {r.effective_by && (
+                  <span className="ch-muted">
+                    {t('effectiveBy', { fecha: formatFechaLarga(r.effective_by, locale) })}
+                  </span>
+                )}
                 <span className="ch-muted" style={{ fontSize: 13 }}>
                   {t('folio', { folio: r.id.slice(0, 8) })}
                 </span>

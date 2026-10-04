@@ -20,7 +20,15 @@ import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
 import { currentVersion, legalPath, noticeRequired, versionMeta, versionSlug } from './registry';
-import { arcoEffectiveBy, arcoError, arcoRespondBy, type ArcoInput } from './arco';
+import {
+  ARCO_DAILY_LIMIT,
+  arcoAnswerEmail,
+  arcoEffectiveBy,
+  arcoError,
+  arcoRespondBy,
+  type ArcoInput,
+  type ArcoOutcome,
+} from './arco';
 import {
   COUNTER_NOTICE_BUSINESS_DAYS,
   contentFingerprint,
@@ -66,8 +74,34 @@ export async function submitArco(
   const received = new Date();
   const respondBy = arcoRespondBy(received);
   const db = createAdminClient();
+  const { data: limit } = await db.rpc('check_contact_rate_limit', {
+    p_ip: `arco:${session.user.id}`,
+    p_window_seconds: 86_400,
+    p_max_attempts: ARCO_DAILY_LIMIT,
+  });
+  if (limit && (limit as { allowed?: boolean }).allowed === false)
+    return { ok: false, code: 'rateLimited' };
+  const { data, error } = await db
+    .from('arco_requests')
+    .insert({
+      user_id: session.user.id,
+      right_kind: input.right,
+      description: input.description.trim(),
+      data_location: input.dataLocation?.trim() || null,
+      correct_value: input.correctValue?.trim() || null,
+      contact_email: email,
+      received_at: received.toISOString(),
+      respond_by: respondBy.toISOString(),
+    })
+    .select('id')
+    .single();
+  if (error) {
+    console.error('[arco] insert failed', error.message);
+    return { ok: false, code: 'db' };
+  }
+  // The evidence keeps the right and the folio, never the person's own
+  // words (those stay in arco_requests, which is deletable).
   const ctx = await requestContext();
-  const disclosure = `Solicitud ARCO (${input.right}): ${input.description.trim()}`;
   const consent = await recordConsent({
     event_type: 'arco_request_received',
     user_id: session.user.id,
@@ -79,7 +113,7 @@ export async function submitArco(
     locale: locale === 'es' ? 'es-MX' : 'en',
     surface: 'arco_form',
     ui_version: UI_VERSION,
-    disclosure_text: disclosure,
+    disclosure_text: `Solicitud ARCO (${input.right}) · folio ${String(data.id)}`,
     checkbox_text: null,
     checkbox_checked: null,
     button_label: null,
@@ -93,27 +127,9 @@ export async function submitArco(
     reminder_date_utc: respondBy.toISOString(),
     payment_method: null,
     marketing_opt_in: false,
-    details: { right: input.right },
+    details: { right: input.right, request_id: data.id },
   });
-  const { data, error } = await db
-    .from('arco_requests')
-    .insert({
-      user_id: session.user.id,
-      right_kind: input.right,
-      description: input.description.trim(),
-      data_location: input.dataLocation?.trim() || null,
-      correct_value: input.correctValue?.trim() || null,
-      contact_email: email,
-      received_at: received.toISOString(),
-      respond_by: respondBy.toISOString(),
-      consent_id: consent.consent_id,
-    })
-    .select('id')
-    .single();
-  if (error) {
-    console.error('[arco] insert failed', error.message);
-    return { ok: false, code: 'db' };
-  }
+  await db.from('arco_requests').update({ consent_id: consent.consent_id }).eq('id', data.id);
   const fecha = formatFechaLarga(respondBy, 'es');
   await sendEmail({
     to: privacyInbox(),
@@ -147,27 +163,60 @@ export async function submitArco(
   return { ok: true, respondBy: respondBy.toISOString() };
 }
 
+/** Admin: record the answer, then deliver it (email + in-app) and keep the
+ *  dispatch as evidence (7a review of #49, MEDIUM 7). */
 export async function answerArco(
   id: string,
-  outcome: 'granted' | 'partially_granted' | 'denied' | 'incomplete',
+  outcome: ArcoOutcome,
   actorId: string,
 ): Promise<boolean> {
   const now = new Date();
-  const { data, error } = await createAdminClient()
+  const effectiveBy =
+    outcome === 'granted' || outcome === 'partially_granted' ? arcoEffectiveBy(now) : null;
+  const db = createAdminClient();
+  const { data, error } = await db
     .from('arco_requests')
     .update({
       responded_at: now.toISOString(),
       outcome,
-      effective_by:
-        outcome === 'granted' || outcome === 'partially_granted'
-          ? arcoEffectiveBy(now).toISOString()
-          : null,
+      effective_by: effectiveBy?.toISOString() ?? null,
     })
     .eq('id', id)
     .is('responded_at', null)
-    .select('user_id')
+    .select('user_id, contact_email, right_kind')
     .maybeSingle();
   if (error || !data) return false;
+  const folio = id.slice(0, 8);
+  const mail = arcoAnswerEmail({
+    folio,
+    right: data.right_kind as string,
+    outcome,
+    effectiveBy: effectiveBy ? formatFechaLarga(effectiveBy, 'es') : null,
+  });
+  const claimed = await claimNoticeDispatch(db, {
+    userId: data.user_id as string,
+    kind: 'arco_answer',
+    periodKey: `arco:${id}`,
+    templateId: 'arco_answer',
+    templateVersion: '1',
+  }).catch(() => null);
+  if (claimed) {
+    const res = await sendEmail({
+      to: data.contact_email as string,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      replyTo: privacyInbox(),
+    });
+    await finishNoticeDispatch(db, claimed, res);
+  }
+  await addUserNotice({
+    userId: data.user_id as string,
+    kind: 'arcoAnswered',
+    ...(await noticeText('arcoAnswered', { folio })),
+    href: '/app/settings/arco',
+    dedupeKey: `arco-answer:${id}`,
+  }).catch(() => {});
   void logAudit({
     action: 'legal.arco',
     actorId,
@@ -177,22 +226,30 @@ export async function answerArco(
   return true;
 }
 
+/** Admin: the one extension Aviso §5.3 allows, only on an open request
+ *  that isn't extended and isn't overdue. */
 export async function extendArco(id: string, actorId: string): Promise<boolean> {
   const db = createAdminClient();
-  const { data } = await db
+  const now = new Date();
+  const { data: row } = await db
     .from('arco_requests')
-    .select('received_at, extended_at, user_id')
+    .select('received_at')
     .eq('id', id)
     .maybeSingle();
-  if (!data || data.extended_at) return false;
-  const { error } = await db
+  if (!row) return false;
+  const { data } = await db
     .from('arco_requests')
     .update({
-      extended_at: new Date().toISOString(),
-      respond_by: arcoRespondBy(new Date(data.received_at as string), true).toISOString(),
+      extended_at: now.toISOString(),
+      respond_by: arcoRespondBy(new Date(row.received_at as string), true).toISOString(),
     })
-    .eq('id', id);
-  if (error) return false;
+    .eq('id', id)
+    .is('responded_at', null)
+    .is('extended_at', null)
+    .gte('respond_by', now.toISOString())
+    .select('user_id')
+    .maybeSingle();
+  if (!data) return false;
   void logAudit({
     action: 'legal.arco',
     actorId,

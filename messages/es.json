@@ -1710,6 +1710,10 @@
     "contentRestored": {
       "title": "Restablecimos tu contenido",
       "body": "Tu contra-aviso procedió: el contenido vuelve a estar disponible."
+    },
+    "arcoAnswered": {
+      "title": "Respondimos tu solicitud sobre tus datos",
+      "body": "Folio {folio}. Te enviamos la respuesta por correo; también la ves en Mis datos."
     }
   },
   "admin": {
@@ -2452,9 +2456,18 @@
       "errors": {
         "description": "Escribe qué datos y qué necesitas.",
         "correctValue": "Escribe el dato correcto.",
-        "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo."
+        "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo.",
+        "rateLimited": "Ya enviaste varias solicitudes hoy. Inténtalo mañana o escríbenos."
       }
-    }
+    },
+    "outcome": {
+      "granted": "Procede",
+      "partially_granted": "Procede en parte",
+      "denied": "No procede",
+      "incomplete": "Nos falta información"
+    },
+    "effectiveBy": "Se hace efectiva a más tardar el {fecha}.",
+    "answeredWith": "Respondida el {fecha}: {resultado}"
   },
   "takedown": {
     "metaTitle": "Aviso de derechos de autor",

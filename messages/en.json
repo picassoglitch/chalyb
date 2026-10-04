@@ -1710,6 +1710,10 @@
     "contentRestored": {
       "title": "We restored your content",
       "body": "Your counter-notice was upheld: the content is available again."
+    },
+    "arcoAnswered": {
+      "title": "We answered your request about your data",
+      "body": "Reference {folio}. We emailed you the answer; you can also see it in My data."
     }
   },
   "admin": {
@@ -2452,9 +2456,18 @@
       "errors": {
         "description": "Tell us which data and what you need.",
         "correctValue": "Enter the correct value.",
-        "send": "We couldn’t send your request. Please try again."
+        "send": "We couldn’t send your request. Please try again.",
+        "rateLimited": "You sent several requests today. Try tomorrow or write to us."
       }
-    }
+    },
+    "outcome": {
+      "granted": "Granted",
+      "partially_granted": "Partly granted",
+      "denied": "Denied",
+      "incomplete": "Missing information"
+    },
+    "effectiveBy": "Carried out by {fecha} at the latest.",
+    "answeredWith": "Answered on {fecha}: {resultado}"
   },
   "takedown": {
     "metaTitle": "Copyright notice",

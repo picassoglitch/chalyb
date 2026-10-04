@@ -16,7 +16,8 @@ export type UserNoticeKind =
   | 'signal'
   | 'contentRemoved'
   | 'contentRestored'
-  | 'arcoReceived';
+  | 'arcoReceived'
+  | 'arcoAnswered';
 
 export async function addUserNotice(input: {
   userId: string;
