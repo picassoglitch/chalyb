@@ -15,6 +15,7 @@
 //   included + adapter   → the screen; riskPending opens the risk sheet
 
 import 'server-only';
+import type { Route } from 'next';
 import { redirect as redirectPath } from 'next/navigation';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser, type SessionUser } from '@/lib/auth/session';
@@ -59,7 +60,7 @@ export async function loadTool<A>(
   // has to open here first; accepting it navigates (full load) to the hand-off.
   if (!hubRunsTool(slug)) {
     if (!(await hasRiskAck(session.user.id, slug))) return { kind: 'risk', session, entitlements };
-    redirectPath(hubLaunchHref(slug, locale));
+    redirectPath(hubLaunchHref(slug, locale) as Route);
   }
   const a = adapter();
   if (!a)
