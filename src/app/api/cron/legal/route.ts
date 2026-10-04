@@ -35,7 +35,9 @@ export async function GET(req: Request) {
   const report: LegalCronReport = {
     termsChange: await runTermsChangeNotices(now).catch((e: Error) => {
       console.error('[cron/legal] terms change failed', e.message);
-      return [{ doc: '', decision: 'error', version: '', sent: 0, skipped: 0, failed: 0 }];
+      return [
+        { doc: '', decision: 'error', version: '', sent: 0, skipped: 0, failed: 0, late: false },
+      ];
     }),
     counterNotices: await runCounterNoticeRestores(now).catch((e: Error) => {
       console.error('[cron/legal] counter-notice restores failed', e.message);

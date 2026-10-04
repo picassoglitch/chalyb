@@ -42,10 +42,19 @@ export function termsPrompt(input: {
   meta: VersionMeta | null;
   history: TermsHistory;
   now: Date;
+  /** When the version applies (terms-change.ts inForceFrom): the registry
+   *  date, later if the notices finished late, null while still owed.
+   *  Defaults to the registry date. */
+  inForceAt?: string | null;
+  /** The person got the ≥30-day notice (or none was required). A relevant
+   *  change is never put to someone who didn't. Defaults to true. */
+  noticed?: boolean;
 }): TermsPrompt {
   const { published, current, meta, history, now } = input;
   if (!published || !meta?.published || !meta.effective) return 'none';
-  if (now.getTime() < Date.parse(meta.effective)) return 'none';
+  const from = input.inForceAt === undefined ? meta.effective : input.inForceAt;
+  if (!from || now.getTime() < Date.parse(from)) return 'none';
+  if (meta.relevance === 'relevant' && input.noticed === false) return 'none';
   if (history.acceptedVersion && compareVersions(history.acceptedVersion, current) >= 0)
     return 'none';
   if (meta.relevance === 'relevant') return 'modal';

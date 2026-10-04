@@ -2124,6 +2124,21 @@
         "uphold": "Claimant showed a proceeding",
         "repeat": "This account reached the repeat-infringer limit: review closing it (Acceptable Use §5.4).",
         "noUser": "No account with that email."
+      },
+      "notices": {
+        "title": "Change notices (≥ 30 days)",
+        "doc": "{doc}, version {version}",
+        "docs": {
+          "terminos": "Terms",
+          "suscripcion": "Subscription Terms",
+          "privacidad": "Privacy Notice"
+        },
+        "counts": "Sent: {sent} · in progress: {pending} · failed: {failed} · bounced: {bounced}",
+        "complete": "Every notice went out on {fecha}.",
+        "sending": "Sending since {fecha}; people still owed.",
+        "notStarted": "Sending hasn’t started.",
+        "inForce": "Applies from {fecha}.",
+        "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late)."
       }
     }
   },

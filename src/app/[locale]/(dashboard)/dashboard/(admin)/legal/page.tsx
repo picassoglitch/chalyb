@@ -4,6 +4,9 @@ import { requireAdminPage } from '@/lib/admin/guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatFechaLarga } from '@/lib/billing/format';
 import { ArcoActions, TakedownActions } from '@/components/dashboard/admin/legal-actions';
+import { REACCEPT_DOCS } from '@/lib/legal/reaccept';
+import { currentVersion, noticeRequired, versionMeta } from '@/lib/legal/registry';
+import { inForceFrom, termsChangePeriodKey } from '@/lib/legal/terms-change';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('admin.legal');
@@ -63,6 +66,47 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
       .limit(200),
   ]);
   const date = (iso: string) => formatFechaLarga(iso, locale);
+  // aceptacion-ux §8 · change notices: one row per relevant change that
+  // needs them, with how many went out and when the version really applies.
+  const changes = await Promise.all(
+    REACCEPT_DOCS.map((doc) => ({ doc, version: currentVersion(doc), meta: versionMeta(doc) }))
+      .filter(
+        (d) =>
+          d.meta?.published && d.meta.relevance === 'relevant' && noticeRequired(d.doc, d.version),
+      )
+      .map(async ({ doc, version, meta }) => {
+        const key = termsChangePeriodKey(version, doc);
+        const [state, ...counts] = await Promise.all([
+          db
+            .from('legal_change_notices')
+            .select('first_send_at, complete_at')
+            .eq('doc', doc)
+            .eq('version', version)
+            .maybeSingle(),
+          ...(['sent', 'delivered', 'pending', 'failed', 'bounced'] as const).map((st) =>
+            db
+              .from('email_dispatches')
+              .select('id', { count: 'exact', head: true })
+              .eq('kind', 'terms_change')
+              .eq('period_key', key)
+              .eq('delivery_status', st),
+          ),
+        ]);
+        const completeAt = (state.data?.complete_at as string | null) ?? null;
+        return {
+          doc,
+          version,
+          registryDate: meta?.effective ?? null,
+          firstSendAt: (state.data?.first_send_at as string | null) ?? null,
+          completeAt,
+          inForceAt: inForceFrom(meta, { noticeRequired: true, completeAt }),
+          sent: (counts[0]!.count ?? 0) + (counts[1]!.count ?? 0),
+          pending: counts[2]!.count ?? 0,
+          failed: counts[3]!.count ?? 0,
+          bounced: counts[4]!.count ?? 0,
+        };
+      }),
+  );
   const arcoRows = (arco.data ?? []) as Arco[];
   const noticeRows = (notices.data ?? []) as Notice[];
 
@@ -72,6 +116,39 @@ export default async function LegalAdminPage({ params }: { params: Promise<{ loc
         <h1 className="ch-h1">{t('title')}</h1>
         <p className="ch-sub">{t('sub')}</p>
       </header>
+
+      {changes.length > 0 && (
+        <section aria-labelledby="l-notices" style={{ display: 'grid', gap: 12 }}>
+          <h2 id="l-notices" className="ch-h2">
+            {t('notices.title')}
+          </h2>
+          {changes.map((c) => (
+            <article key={c.doc} className="ch-card" style={{ display: 'grid', gap: 6 }}>
+              <b>{t('notices.doc', { doc: t(`notices.docs.${c.doc}`), version: c.version })}</b>
+              <span className="ch-muted">
+                {t('notices.counts', {
+                  sent: c.sent,
+                  pending: c.pending,
+                  failed: c.failed,
+                  bounced: c.bounced,
+                })}
+              </span>
+              <span>
+                {c.completeAt
+                  ? t('notices.complete', { fecha: date(c.completeAt) })
+                  : c.firstSendAt
+                    ? t('notices.sending', { fecha: date(c.firstSendAt) })
+                    : t('notices.notStarted')}
+              </span>
+              <span>
+                {c.inForceAt
+                  ? t('notices.inForce', { fecha: date(c.inForceAt) })
+                  : t('notices.notInForce', { fecha: c.registryDate ? date(c.registryDate) : '—' })}
+              </span>
+            </article>
+          ))}
+        </section>
+      )}
 
       <section aria-labelledby="l-arco" style={{ display: 'grid', gap: 12 }}>
         <h2 id="l-arco" className="ch-h2">

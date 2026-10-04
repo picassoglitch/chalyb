@@ -18,7 +18,7 @@ import { logAudit } from '@/lib/audit/log';
 import { legalPublished } from '@/lib/config/flags';
 import { canonicalOrigin } from '@/lib/site';
 import { legalDocuments } from './documents';
-import { currentVersion, legalPath, versionMeta, versionSlug } from './registry';
+import { currentVersion, legalPath, noticeRequired, versionMeta, versionSlug } from './registry';
 import { arcoEffectiveBy, arcoError, arcoRespondBy, type ArcoInput } from './arco';
 import {
   COUNTER_NOTICE_BUSINESS_DAYS,
@@ -30,7 +30,12 @@ import {
   takedownTooLong,
   type TakedownInput,
 } from './takedown';
-import { termsChangeDecision, termsChangeEmail, termsChangePeriodKey } from './terms-change';
+import {
+  noticeIsLate,
+  termsChangeDecision,
+  termsChangeEmail,
+  termsChangePeriodKey,
+} from './terms-change';
 import { claimNoticeDispatch, finishNoticeDispatch } from './notice-dispatch';
 import { REACCEPT_DOCS, type ReacceptDoc } from './reaccept';
 
@@ -471,6 +476,7 @@ export interface LegalCronReport {
     sent: number;
     skipped: number;
     failed: number;
+    late: boolean;
   }[];
   counterNotices: { restored: number };
   retention: Record<string, unknown> | null;
@@ -489,16 +495,35 @@ export async function runTermsChangeNotices(
 async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
   const version = currentVersion(doc);
   const meta = versionMeta(doc, version);
-  const decision = termsChangeDecision({ published: legalPublished(), meta, now });
-  const report = { doc, decision, version, sent: 0, skipped: 0, failed: 0 };
-  if (decision !== 'send' || !meta?.effective) {
-    if (decision === 'too_late')
-      console.error(
-        `[legal] ${doc} ${version}: less than 30 days to ${meta?.effective}; move the effective date`,
-      );
-    return report;
-  }
   const db = createAdminClient();
+  const required = noticeRequired(doc, version);
+  const { data: state } = await db
+    .from('legal_change_notices')
+    .select('first_send_at, complete_at')
+    .eq('doc', doc)
+    .eq('version', version)
+    .maybeSingle();
+  const decision = termsChangeDecision({
+    published: legalPublished(),
+    meta,
+    noticeRequired: required,
+    completeAt: (state?.complete_at as string | null) ?? null,
+  });
+  const report = {
+    doc,
+    decision: decision as string,
+    version,
+    sent: 0,
+    skipped: 0,
+    failed: 0,
+    late: false,
+  };
+  if (decision !== 'send' || !meta?.effective) return report;
+  if (!state?.first_send_at) {
+    await db
+      .from('legal_change_notices')
+      .upsert({ doc, version, first_send_at: now.toISOString(), updated_at: now.toISOString() });
+  }
   const origin = canonicalOrigin();
   const vars = {
     doc,
@@ -551,6 +576,30 @@ async function runDocChangeNotices(doc: ReacceptDoc, now: Date) {
     }
     if (people.length < 200) break;
     after = people[people.length - 1]!.id;
+  }
+  // Complete once nobody is owed the notice any more (failed sends are
+  // owed again); the version then applies 30 days later at the earliest.
+  const { data: left } = await db.rpc('legal_change_notice_recipients', {
+    p_doc: doc,
+    p_version: version,
+    p_period_key: periodKey,
+    p_after: null,
+    p_limit: 1,
+  });
+  const remaining = ((left ?? []) as unknown[]).length;
+  report.late = noticeIsLate(meta, now, remaining);
+  if (report.late)
+    console.error(
+      `[legal] ${doc} ${version}: notices still owed with < 30 days to ${meta.effective}; it will apply later`,
+    );
+  if (remaining === 0 && report.failed === 0) {
+    await db
+      .from('legal_change_notices')
+      .update({ complete_at: now.toISOString(), updated_at: now.toISOString() })
+      .eq('doc', doc)
+      .eq('version', version)
+      .is('complete_at', null);
+    report.decision = 'complete';
   }
   return report;
 }

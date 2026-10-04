@@ -2124,6 +2124,21 @@
         "uphold": "El titular acreditó un procedimiento",
         "repeat": "Esta cuenta llegó al límite de reincidencia: revisa si se cierra (Uso aceptable §5.4).",
         "noUser": "No encontramos una cuenta con ese correo."
+      },
+      "notices": {
+        "title": "Avisos de cambios (≥ 30 días)",
+        "doc": "{doc}, versión {version}",
+        "docs": {
+          "terminos": "Términos",
+          "suscripcion": "Términos de Suscripción",
+          "privacidad": "Aviso de privacidad"
+        },
+        "counts": "Enviados: {sent} · en curso: {pending} · fallidos: {failed} · rebotados: {bounced}",
+        "complete": "Todos los avisos salieron el {fecha}.",
+        "sending": "Enviando desde el {fecha}; aún faltan personas.",
+        "notStarted": "Aún no empieza el envío.",
+        "inForce": "Aplica desde el {fecha}.",
+        "notInForce": "No aplica todavía: falta avisar a todos (fecha prevista {fecha}; se recorre si los avisos terminan tarde)."
       }
     }
   },
