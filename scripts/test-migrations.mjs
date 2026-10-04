@@ -576,6 +576,35 @@ try {
     `insert into public.profiles (id, email) values ($1, 'claim@example.com') on conflict (id) do update set email = excluded.email`,
     [u],
   );
+  // A provider outage gives the attempt back: no count, no 72 h clock.
+  const e = await claim('t:3');
+  await db.query(`select public.release_notice_attempt($1)`, [e]);
+  const r3 = (
+    await db.query(
+      `select delivery_status, attempts, first_attempt_at from public.email_dispatches where id = $1`,
+      [e],
+    )
+  ).rows[0];
+  check(
+    'a provider failure is not an attempt',
+    r3.delivery_status === 'failed' && r3.attempts === 0 && r3.first_attempt_at === null,
+    JSON.stringify(r3),
+  );
+  await db.query(
+    `update public.email_dispatches set sent_at = now() - interval '100 hours' where id = $1`,
+    [e],
+  );
+  const again = await claim('t:3');
+  const r4 = (
+    await db.query(`select delivery_status, attempts from public.email_dispatches where id = $1`, [
+      e,
+    ])
+  ).rows[0];
+  check(
+    'after an outage the notice is retried, not given up',
+    again === e && r4.delivery_status === 'pending' && r4.attempts === 1,
+    JSON.stringify(r4),
+  );
   const owed = (
     await db.query(
       `select id from public.legal_change_notice_recipients('terminos', '9.8', 't:1', null, 1000)`,

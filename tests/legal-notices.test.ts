@@ -34,7 +34,10 @@ test('H2 · claim inserts pending, takes over only failed or >10 min pending, th
   // insert pending, or retake failed / > 10-minute pending, atomically.
   assert.match(src, /db\.rpc\('claim_notice_dispatch'/);
   const sql = read('supabase/migrations/0060_legal_retention_v2.sql');
-  assert.match(sql, /'pending', now\(\), 1, now\(\)\)\s*on conflict \(user_id, kind, period_key\) do nothing/);
+  assert.match(
+    sql,
+    /'pending', now\(\), 1, now\(\)\)\s*on conflict \(user_id, kind, period_key\) do nothing/,
+  );
   assert.match(sql, /delivery_status = 'pending' and sent_at < now\(\) - interval '10 minutes'/);
   assert.equal(STALE_PENDING_MS, 600_000);
   // finish only moves a row this run still holds as pending.
@@ -231,4 +234,39 @@ test('LOW · no publishing while terms are pending; disputes triage needs a prov
     /\(n\.delivery_status === 'sent' \|\| n\.delivery_status === 'delivered'\) && !!n\.provider_message_id/,
   );
   assert.match(d, /\(notices \?\? \[\]\)\.find\(\(n\) => noticeWasSent\(n\)\)/);
+});
+
+import { countsAsAttempt } from '@/lib/legal/notice-dispatch';
+import { undeliverableAlertDue } from '@/lib/legal/terms-change';
+import { isProviderFailure } from '@/lib/email/resend';
+
+test('#53 · a provider outage is never an attempt, so it can’t make everyone undeliverable', () => {
+  for (const code of [null, undefined, 500, 502, 503, 429])
+    assert.equal(isProviderFailure(code), true, String(code));
+  for (const code of [400, 403, 422]) assert.equal(isProviderFailure(code), false, String(code));
+  assert.equal(countsAsAttempt({ ok: true }), true);
+  assert.equal(countsAsAttempt({ ok: false, transient: false }), true, 'the address was refused');
+  assert.equal(
+    countsAsAttempt({ ok: false, transient: true }),
+    false,
+    'not configured, network, 5xx, 429',
+  );
+  const nd = read('src/lib/legal/notice-dispatch.ts');
+  assert.match(
+    nd,
+    /if \(!countsAsAttempt\(res\)\) \{[\s\S]{0,200}db\.rpc\('release_notice_attempt', \{ p_id: id \}\)/,
+  );
+  const r = read('src/lib/email/resend.ts');
+  assert.match(r, /reason: 'not_configured', transient: true/);
+  assert.match(r, /transient: isProviderFailure\(statusCode\)/);
+});
+
+test('#53 · the owner is warned once when undeliverables pass 5% of a version', () => {
+  assert.equal(undeliverableAlertDue(5, 100), false, 'exactly 5%');
+  assert.equal(undeliverableAlertDue(6, 100), true);
+  assert.equal(undeliverableAlertDue(1, 10), true);
+  assert.equal(undeliverableAlertDue(0, 0), false);
+  const s = read('src/lib/legal/legal-server.ts');
+  assert.match(s, /\.is\('undeliverable_alert_at', null\)/);
+  assert.match(s, /severity: 'warning'/);
 });

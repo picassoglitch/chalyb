@@ -58,11 +58,23 @@ export async function claimNoticeDispatch(
   return (data as string | null) ?? null;
 }
 
+/** A failed send counts against the person only when the provider took
+ *  the request and refused the address (a 4xx other than 429). */
+export function countsAsAttempt(res: { ok: boolean; transient?: boolean }): boolean {
+  return res.ok || !res.transient;
+}
+
 export async function finishNoticeDispatch(
   db: SupabaseClient,
   id: string,
-  res: { ok: boolean; id?: string | null },
+  res: { ok: boolean; id?: string | null; transient?: boolean },
 ): Promise<'sent' | 'failed'> {
+  if (!countsAsAttempt(res)) {
+    // Provider outage or misconfiguration: give the attempt back so it can
+    // never make everyone 'undeliverable' (release_notice_attempt, 0060).
+    await db.rpc('release_notice_attempt', { p_id: id });
+    return 'failed';
+  }
   const status = dispatchStatusAfterSend(res);
   await db.from('email_dispatches').update(status).eq('id', id).eq('delivery_status', 'pending');
   return status.delivery_status;
