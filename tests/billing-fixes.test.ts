@@ -143,3 +143,40 @@ test('#4 issueRefund claims before calling MP, on an isolated client with the ke
     assert.doesNotMatch(code, /getMercadoPago\(\)[\s\S]{0,400}requestOptions/, f);
   }
 });
+
+// ── #5 · Replays: legacy plans granted once; stale signatures refused ─
+test('#5 a legacy plan payment grants the tier only on its first move to approved', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/lib/payments/one-off-settlement.ts', import.meta.url), 'utf8');
+  const prevAt = src.indexOf("const previousStatus =");
+  const upsertAt = src.indexOf("from('payments').upsert(");
+  assert.ok(prevAt > 0 && prevAt < upsertAt, 'previous status read before the row is written');
+  const legacy = src.slice(src.indexOf('LEGACY TIER PURCHASE'));
+  const guardAt = legacy.indexOf("if (status === 'approved' && previousStatus === 'approved')");
+  const flipAt = legacy.indexOf('.update({ tier, tier_ends_at: null })');
+  assert.ok(guardAt > 0 && guardAt < flipAt, 'replay guard before the tier flip');
+  // A failed flip un-approves the row so MP's retry still grants.
+  assert.match(legacy, /tierErr[\s\S]*?update\(\{ status: previousStatus \?\? 'pending' \}\)/);
+});
+
+test('#5 a validly signed but stale notification is refused', async () => {
+  const { createHmac } = await import('node:crypto');
+  const { checkMpSignature, signatureManifest, signatureTsMs, MP_SIGNATURE_MAX_SKEW_MS } = await import('@/lib/payments/webhook-verify');
+  const secret = 's3cret';
+  const now = Date.parse('2026-10-04T12:00:00Z');
+  const sign = (ts: string) => {
+    const v1 = createHmac('sha256', secret).update(signatureManifest({ dataId: '123', requestId: 'r', ts })).digest('hex');
+    return { secret, paymentId: '123', requestId: 'r', signatureHeader: `ts=${ts},v1=${v1}`, nowMs: now };
+  };
+  assert.deepEqual(checkMpSignature(sign(String(now))), { ok: true });
+  assert.deepEqual(checkMpSignature(sign(String(Math.floor(now / 1000)))), { ok: true }); // seconds
+  assert.deepEqual(checkMpSignature(sign(String(now - MP_SIGNATURE_MAX_SKEW_MS - 1))), { ok: false, reason: 'stale' });
+  assert.deepEqual(checkMpSignature(sign(String(now + MP_SIGNATURE_MAX_SKEW_MS + 1))), { ok: false, reason: 'stale' });
+  assert.equal(signatureTsMs('1733520000'), 1_733_520_000_000);
+  assert.equal(signatureTsMs('1733520000123'), 1_733_520_000_123);
+  assert.equal(signatureTsMs('abc'), null);
+  // The route checks freshness.
+  const { readFileSync } = await import('node:fs');
+  const route = readFileSync(new URL('../src/app/api/mp/webhook/route.ts', import.meta.url), 'utf8');
+  assert.match(route, /checkMpSignature\(\{[\s\S]*?nowMs: Date\.now\(\)/);
+});

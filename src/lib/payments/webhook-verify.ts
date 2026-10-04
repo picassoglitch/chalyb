@@ -23,6 +23,7 @@ import type { SubscriptionTier } from '@/lib/auth/session';
 import { AMOUNT_MISMATCH_STATUS } from '@/lib/billing/billing-state';
 
 export type SignatureFailure =
+  | 'stale'
   | 'not_configured'
   | 'missing_headers'
   | 'malformed_signature'
@@ -56,6 +57,10 @@ export function checkMpSignature(opts: {
   paymentId: string | null;
   requestId: string | null;
   signatureHeader: string | null;
+  /** With it, a validly signed notification whose ts is further than
+   *  MP_SIGNATURE_MAX_SKEW_MS from this clock is refused as 'stale' (a
+   *  captured request replayed later). */
+  nowMs?: number;
 }): SignatureCheck {
   const secret = opts.secret?.trim();
   // No secret configured → we cannot tell MP from anyone else on the internet.
@@ -85,10 +90,29 @@ export function checkMpSignature(opts: {
     // timingSafeEqual throws on a length mismatch; a wrong-length digest is a
     // mismatch either way.
     if (a.length !== b.length) return { ok: false, reason: 'mismatch' };
-    return timingSafeEqual(a, b) ? { ok: true } : { ok: false, reason: 'mismatch' };
+    if (!timingSafeEqual(a, b)) return { ok: false, reason: 'mismatch' };
   } catch {
     return { ok: false, reason: 'mismatch' };
   }
+  if (opts.nowMs !== undefined) {
+    const at = signatureTsMs(ts);
+    if (at === null || Math.abs(opts.nowMs - at) > MP_SIGNATURE_MAX_SKEW_MS) {
+      return { ok: false, reason: 'stale' };
+    }
+  }
+  return { ok: true };
+}
+
+/** How far a signature's ts may be from our clock (either way). */
+export const MP_SIGNATURE_MAX_SKEW_MS = 10 * 60 * 1000;
+
+/** The x-signature ts as epoch milliseconds. MP documents it in
+ *  milliseconds (13 digits) but some notifications carry seconds (10
+ *  digits): anything below 1e12 is read as seconds. */
+export function signatureTsMs(ts: string): number | null {
+  if (!/^\d{1,16}$/.test(ts)) return null;
+  const n = Number(ts);
+  return n < 1e12 ? n * 1000 : n;
 }
 
 export interface ExpectedCharge {

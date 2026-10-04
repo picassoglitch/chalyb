@@ -102,6 +102,7 @@ export async function POST(req: Request) {
       paymentId: manifestId(n.dataId),
       requestId: req.headers.get('x-request-id'),
       signatureHeader,
+      nowMs: Date.now(),
     });
     if (!signature.ok) {
       if (signature.reason === 'not_configured') {

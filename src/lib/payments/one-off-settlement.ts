@@ -97,6 +97,16 @@ export async function settleOneOffCharge(
   }
   const packForRow = isPackPurchase ? getTokenPack(packIdRaw!) : undefined;
 
+  // What we knew before this notification: a legacy plan is granted on the
+  // charge's FIRST move to approved only, so replaying an old approved
+  // payment (an unsigned IPN anyone can send) can't grant the plan again.
+  const { data: before } = await admin
+    .from('payments')
+    .select('status')
+    .eq('mp_payment_id', mpId)
+    .maybeSingle();
+  const previousStatus = (before?.status as string | null | undefined) ?? null;
+
   // Always record the charge regardless of status — pending/rejected ones
   // are useful audit data. UNIQUE on mp_payment_id makes this idempotent.
   const { error: paymentErr } = await admin.from('payments').upsert(
@@ -375,6 +385,11 @@ export async function settleOneOffCharge(
   // Plans are sold as subscriptions now (subscription-sync.ts); this stays
   // for preferences created before that, which Mercado Pago may still
   // settle. Only flip the tier if the payment is actually approved.
+  if (status === 'approved' && previousStatus === 'approved') {
+    // Already settled: a replay or a repeat changes nothing — not a plan
+    // the user has since cancelled, nor one they've changed.
+    return ok({ ok: true, status, tier, alreadySettled: true });
+  }
   if (status === 'approved') {
     const { data: targetBefore } = await admin
       .from('profiles')
@@ -390,6 +405,11 @@ export async function settleOneOffCharge(
       .eq('id', userId);
     if (tierErr) {
       console.error('[mp/webhook] tier update failed', tierErr);
+      // Undo "approved" on our row, so MP's retry is a first approval again.
+      await admin
+        .from('payments')
+        .update({ status: previousStatus ?? 'pending' })
+        .eq('mp_payment_id', mpId);
       return retry({ error: 'db tier update failed' });
     }
     // Auto-provision engine access on VIP upgrades. PRO upgrades wait
