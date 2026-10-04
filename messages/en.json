@@ -1001,6 +1001,7 @@
       "month": "Monthly",
       "year": "Yearly",
       "save": "Save up to {pct}%",
+      "saveShort": "up to −{pct}%",
       "lealtad": "Loyalty",
       "lealtadPill": "Pro only"
     },

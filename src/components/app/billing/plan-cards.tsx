@@ -131,7 +131,13 @@ export function PlanCards(props: Props) {
   return (
     <div className="ch-pc-wrap">
       {options.length > 1 && (
-        <div role="radiogroup" aria-label={t('toggleAria')} className="ch-pc-toggle">
+        <div
+          role="radiogroup"
+          aria-label={t('toggleAria')}
+          // With Lealtad there are three options: they stack label over pill
+          // on phones (mockup 88) and the year pill is the short one.
+          className={`ch-pc-toggle${options.length > 2 ? ' ch-pc-toggle--3' : ''}`}
+        >
           {options.map((i) => (
             <button
               key={i}
@@ -151,7 +157,9 @@ export function PlanCards(props: Props) {
               )}
               {i === 'year' && props.togglePct > 0 && (
                 <span className="ch-pc-toggle__pill">
-                  {t('toggle.save', { pct: props.togglePct })}
+                  {t(options.length > 2 ? 'toggle.saveShort' : 'toggle.save', {
+                    pct: props.togglePct,
+                  })}
                 </span>
               )}
             </button>
