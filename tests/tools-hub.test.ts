@@ -221,12 +221,9 @@ test('Más herramientas matrix (P3-7): one action per state, never a lock', () =
   });
 });
 
-test('tool routes: own screens when the hub runs the tool, launch page otherwise', () => {
-  for (const [slug, route] of Object.entries(TOOL_ROUTES)) {
-    assert.equal(toolHref(slug, true), route);
-    assert.equal(toolHref(slug, false), `/app/engines/${slug}`);
-  }
-  assert.equal(toolHref('unknown', true), '/app/engines/unknown');
+test('tool routes: every tool opens inside the app (TOOLS-SPEC §0.1)', () => {
+  for (const [slug, route] of Object.entries(TOOL_ROUTES)) assert.equal(toolHref(slug), route);
+  assert.equal(toolHref('unknown'), '/app/herramientas', 'never a 404 or the old launch page');
 });
 
 test('Opciones avanzadas: untouched means engine defaults; out-of-range is dropped', () => {

@@ -4,6 +4,7 @@
 import type { Entitlements } from '@/lib/billing/entitlement-core';
 import { paidPlanName } from '@/lib/billing/plan-label';
 import { toolHref } from '@/lib/tools/routes';
+import { toolBySlug } from '@/config/tools';
 
 export type TaskKey = 'clips' | 'senales' | 'envivo' | 'mas';
 
@@ -20,33 +21,31 @@ const HEADLINE: { key: Exclude<TaskKey, 'mas'>; slug: string }[] = [
   { key: 'envivo', slug: 'chalybobs' },
 ];
 
-/** A tool's own screens when the hub runs it; its launch page otherwise. */
-function hrefFor(key: TaskKey, slug: string, hubRuns: (slug: string) => boolean): string {
+/** Every tool opens inside the app (TOOLS-SPEC §0.1). */
+function hrefFor(key: TaskKey, slug: string): string {
   if (key === 'mas') return '/app/herramientas';
-  return toolHref(slug, hubRuns(slug));
+  return toolHref(slug);
 }
 
 /**
  * Cards for every visible headline tool, plus "Más herramientas" only when at
- * least one OTHER tool is visible (BUILD-SPEC §0.3: no dead-end cards).
+ * least one OTHER tool is visible and works (`live` in config/tools.ts;
+ * TOOLS-SPEC §2, F7, Q9). BUILD-SPEC §0.3: no dead-end cards.
  * `visibleSlugs` is the catalog order of the tools in entitlements.tools.
  */
-export function selectTaskCards(
-  visibleSlugs: string[],
-  hubRuns: (slug: string) => boolean,
-): {
+export function selectTaskCards(visibleSlugs: string[]): {
   cards: TaskCardModel[];
   extraSlugs: string[];
 } {
   const visible = new Set(visibleSlugs);
   const cards: TaskCardModel[] = HEADLINE.filter((h) => visible.has(h.slug)).map((h) => ({
     ...h,
-    href: hrefFor(h.key, h.slug, hubRuns),
+    href: hrefFor(h.key, h.slug),
   }));
   const headline = new Set(HEADLINE.map((h) => h.slug));
-  const extraSlugs = visibleSlugs.filter((s) => !headline.has(s));
+  const extraSlugs = visibleSlugs.filter((s) => !headline.has(s) && toolBySlug(s)?.live === true);
   if (extraSlugs.length > 0)
-    cards.push({ key: 'mas', slug: 'more', href: hrefFor('mas', 'more', hubRuns) });
+    cards.push({ key: 'mas', slug: 'more', href: hrefFor('mas', 'more') });
   return { cards, extraSlugs };
 }
 

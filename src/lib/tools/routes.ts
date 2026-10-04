@@ -10,9 +10,10 @@ export const TOOL_ROUTES: Record<string, string> = {
   chalybtrade: '/app/herramientas/inversiones',
 };
 
-/** The tool's own screens when the hub runs it; the launch page otherwise. */
-export function toolHref(slug: string, hubRunsIt: boolean): string {
-  return hubRunsIt && TOOL_ROUTES[slug] ? TOOL_ROUTES[slug]! : `/app/engines/${slug}`;
+/** The tool's own screens: every tool opens inside the app (TOOLS-SPEC
+ *  §0.1). A tool with no screen of its own lands on Tus herramientas. */
+export function toolHref(slug: string): string {
+  return TOOL_ROUTES[slug] ?? '/app/herramientas';
 }
 
 /** Tools that need the risk notice before first use (aceptacion-ux §6). */

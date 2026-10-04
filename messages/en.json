@@ -839,7 +839,8 @@
         "pro": "Pro plan",
         "pro_anual": "Pro annual plan",
         "vip": "VIP plan"
-      }
+      },
+      "yourAccount": "Your account"
     }
   },
   "account": {
@@ -2220,5 +2221,85 @@
       "stay": "Keep editing",
       "go": "Leave without saving"
     }
+  },
+  "toolShell": {
+    "crumb": "Home",
+    "included": "Included in your plan",
+    "inProTry": "Included in Pro · Try it free",
+    "inPro": "Included in Pro",
+    "tabsAria": "{herramienta} sections",
+    "tab": {
+      "chalybclip": {
+        "main": "Make clips",
+        "history": "My clips",
+        "settings": "Settings"
+      },
+      "chalybcrypto": {
+        "main": "Signals",
+        "history": "History",
+        "settings": "Settings"
+      },
+      "chalybobs": {
+        "main": "Go live",
+        "history": "My streams",
+        "settings": "Settings"
+      }
+    },
+    "error": {
+      "title": "{herramienta} didn't open this time",
+      "body": "Something failed on our side, it's not your fault.",
+      "saved": "What you already did is saved.",
+      "retry": "Try again",
+      "retrying": "Trying…",
+      "human": "Talk to a person",
+      "known": "We've been alerted and are fixing it.",
+      "code": "If you write to us, mention this code: <b>{codigo}</b>",
+      "meanwhile": {
+        "chalybclip": "Meanwhile, your earlier clips are still in",
+        "chalybcrypto": "Meanwhile, the latest signals are still in",
+        "chalybobs": "If you were already live, your stream keeps going in OBS."
+      },
+      "meanwhileLink": {
+        "chalybclip": "My results",
+        "chalybcrypto": "History"
+      }
+    },
+    "locked": {
+      "title": "{herramienta} comes with Pro",
+      "bodyTrial": "Try it free for 7 days. Cancel anytime.",
+      "ctaTrial": "Start my 7 free days",
+      "bodyPlans": "It's included in the Pro plan.",
+      "ctaPlans": "See plans"
+    },
+    "advanced": {
+      "title": "Advanced options",
+      "sub": "For professional creators"
+    },
+    "risk": {
+      "sub": "Read it once. It's 3 things.",
+      "b1": {
+        "title": "These are informational ideas, not personal advice.",
+        "body": "It's not financial advice or a recommendation for you."
+      },
+      "b2": {
+        "title": "Signals are the same for everyone on your plan.",
+        "body": "We don't use your balances, your investments or your goals."
+      },
+      "b3": {
+        "title": "You decide and the risk is yours.",
+        "body": "We don't guarantee results. You can lose money."
+      },
+      "legalK": "The notice, word for word",
+      "hint": "Tick the box to continue. We only ask you this once."
+    },
+    "disclaimer": {
+      "text": "<b>This is informational, not financial advice.</b> Signals are the same for everyone and don't use your balances or your investments. You decide.",
+      "read": "Read full notice",
+      "sheetTitle": "Risk notice",
+      "close": "Close"
+    },
+    "autosave": "Changes save on their own.",
+    "saving": "Saving…",
+    "saved": "Saved"
   }
 }

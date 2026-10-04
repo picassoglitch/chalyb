@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import type { Route } from 'next';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { Markup } from '@/components/ui/markup';
 
 export function RiskGate({ slug, toolName }: { slug: string; toolName: string }) {
@@ -45,9 +45,9 @@ export function RiskGate({ slug, toolName }: { slug: string; toolName: string })
         <p>
           <Markup text={t.markup('body', { herramienta: toolName, b: (c) => `<b>${c}</b>` })} />
         </p>
-        <a href="/uso-aceptable#avisos" className="ch-lnk" target="_blank" rel="noopener">
+        <Link href={'/uso-aceptable#avisos' as Route} className="ch-lnk">
           {t('read')}
-        </a>
+        </Link>
         <label className="ch-check">
           <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
           <span>{t('check')}</span>

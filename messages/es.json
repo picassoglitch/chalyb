@@ -839,7 +839,8 @@
         "pro": "Plan Pro",
         "pro_anual": "Plan Pro anual",
         "vip": "Plan VIP"
-      }
+      },
+      "yourAccount": "Tu cuenta"
     }
   },
   "account": {
@@ -2220,5 +2221,85 @@
       "stay": "Seguir editando",
       "go": "Salir sin guardar"
     }
+  },
+  "toolShell": {
+    "crumb": "Inicio",
+    "included": "Incluido en tu plan",
+    "inProTry": "Incluido en Pro · Pruébalo gratis",
+    "inPro": "Incluido en Pro",
+    "tabsAria": "Secciones de {herramienta}",
+    "tab": {
+      "chalybclip": {
+        "main": "Hacer clips",
+        "history": "Mis clips",
+        "settings": "Ajustes"
+      },
+      "chalybcrypto": {
+        "main": "Señales",
+        "history": "Historial",
+        "settings": "Ajustes"
+      },
+      "chalybobs": {
+        "main": "Transmitir",
+        "history": "Mis transmisiones",
+        "settings": "Ajustes"
+      }
+    },
+    "error": {
+      "title": "{herramienta} no abrió esta vez",
+      "body": "Algo falló de nuestro lado, no es tu culpa.",
+      "saved": "Lo que ya hiciste está guardado.",
+      "retry": "Intentar otra vez",
+      "retrying": "Intentando…",
+      "human": "Hablar con una persona",
+      "known": "Ya nos avisaron, lo estamos arreglando.",
+      "code": "Si nos escribes, menciona este código: <b>{codigo}</b>",
+      "meanwhile": {
+        "chalybclip": "Mientras tanto, tus clips anteriores siguen en",
+        "chalybcrypto": "Mientras tanto, las últimas señales siguen en",
+        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue en OBS."
+      },
+      "meanwhileLink": {
+        "chalybclip": "Mis resultados",
+        "chalybcrypto": "Historial"
+      }
+    },
+    "locked": {
+      "title": "{herramienta} viene en Pro",
+      "bodyTrial": "Pruébalo gratis 7 días. Cancela cuando quieras.",
+      "ctaTrial": "Empezar mis 7 días gratis",
+      "bodyPlans": "Está incluido en el plan Pro.",
+      "ctaPlans": "Ver planes"
+    },
+    "advanced": {
+      "title": "Opciones avanzadas",
+      "sub": "Para creadores profesionales"
+    },
+    "risk": {
+      "sub": "Léelo una vez. Son 3 cosas.",
+      "b1": {
+        "title": "Son ideas informativas, no consejos personales.",
+        "body": "No es asesoría financiera ni una recomendación para ti."
+      },
+      "b2": {
+        "title": "Las señales son iguales para todos en tu plan.",
+        "body": "No usamos tus saldos, tus inversiones ni tus metas."
+      },
+      "b3": {
+        "title": "Tú decides y el riesgo es tuyo.",
+        "body": "No garantizamos resultados. Puedes perder dinero."
+      },
+      "legalK": "El aviso, palabra por palabra",
+      "hint": "Marca la casilla para continuar. Solo te lo pedimos esta vez."
+    },
+    "disclaimer": {
+      "text": "<b>Esto es informativo, no es asesoría financiera.</b> Las señales son iguales para todos y no usan tus saldos ni tus inversiones. Tú decides.",
+      "read": "Leer aviso completo",
+      "sheetTitle": "Aviso de riesgo",
+      "close": "Cerrar"
+    },
+    "autosave": "Los cambios se guardan solos.",
+    "saving": "Guardando…",
+    "saved": "Guardado"
   }
 }

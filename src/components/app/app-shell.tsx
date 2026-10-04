@@ -116,11 +116,11 @@ export function AppShell({ userName, planKey, isAdmin, banner, unread = 0, child
             </div>
           )}
         </nav>
-        <Link href={'/app/settings' as Route} className="ch-me">
+        <Link href={(userName ? '/app/settings' : '/app/settings/perfil') as Route} className="ch-me">
           <Avatar name={userName} />
           <span style={{ minWidth: 0 }}>
             <span className="ch-me__n" style={{ display: 'block' }}>
-              {userName}
+              {userName || t('yourAccount')}
             </span>
             <span className="ch-me__p">{t(`plan.${planKey}`)}</span>
           </span>

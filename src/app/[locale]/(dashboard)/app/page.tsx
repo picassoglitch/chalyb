@@ -4,7 +4,6 @@ import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
-import { hubRunsTool } from '@/lib/tools/registry';
 import { collectResults } from '@/lib/results/collect';
 import { ToolIcon } from '@/components/ui/tool-icon';
 import { selectPlanStrip, selectTaskCards } from '@/components/app/home-model';
@@ -39,7 +38,7 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
   ]);
   const visible = engines.filter((e) => entitlements.tools[e.slug]).map((e) => e.slug);
   const names = Object.fromEntries(engines.map((e) => [e.slug, e.name]));
-  const { cards, extraSlugs } = selectTaskCards(visible, hubRunsTool);
+  const { cards, extraSlugs } = selectTaskCards(visible);
   const strip = selectPlanStrip(entitlements, names, {
     proIncludesAllTools: proIncludesAllTools(),
     trialFlow: trialFlowEnabled(),

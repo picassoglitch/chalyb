@@ -29,6 +29,7 @@ export type AuditAction =
   | 'engine.launch' // "Abrir" refused by entitlement (P0-3)
   | 'engine.provision' // account created (or failed) at an engine on launch (P0-2)
   | 'clips.job_failed' // a Clips job ended in failed(reason) (P0-16)
+  | 'tool.error' // a tool screen showed ToolErrorState (WS-11, TOOLS-SPEC §7.1); metadata {tool, reason, supportCode}
   // Owner panel (P5). Engine and settings actions have no subscriber: the
   // admin is both actor and target, like engine.status before them.
   | 'admin.gift_month' // a month of Pro with no charge

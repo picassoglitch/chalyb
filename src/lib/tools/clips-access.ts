@@ -14,7 +14,7 @@ export async function requireClipsAccess(
   if (!session) return redirect({ href: `/sign-in?next=${encodeURIComponent(next)}`, locale });
   const entitlements = await getEntitlements(session);
   if (entitlements.tools.chalybclip?.state !== 'included') {
-    return redirect({ href: '/app/engines/chalybclip', locale });
+    return redirect({ href: '/app/clips', locale });
   }
   return { session, entitlements };
 }

@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Info } from 'lucide-react';
-import { redirect } from '@/i18n/routing';
+import { Link, redirect } from '@/i18n/routing';
 import { requireTool, planKeyFor } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
 import { signalsFor } from '@/lib/guardrails/signals';
@@ -45,9 +45,9 @@ export default async function SenalesListo({ params }: { params: Promise<{ local
           </span>
           <p>
             <Markup text={t.markup('disclaimer', { b: (c) => `<b>${c}</b>` })} />{' '}
-            <a href="/uso-aceptable#avisos" className="ch-lnk" target="_blank" rel="noopener">
+            <Link href={'/uso-aceptable#avisos' as Route} className="ch-lnk">
               {t('readNotice')}
-            </a>
+            </Link>
           </p>
         </div>
         {signals.length === 0 ? (

@@ -39,7 +39,8 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   const fullName =
     (typeof meta.full_name === 'string' && meta.full_name) ||
     (typeof meta.name === 'string' && meta.name) ||
-    session?.user.email?.split('@')[0] ||
+    // F8: never a truncated email. No name yet → the card says "Tu cuenta"
+    // and leads to Mi perfil, where the name is asked once.
     '';
   const role = session?.role ?? 'VIEWER';
   // The user card shows the EFFECTIVE plan: admins read as VIP.

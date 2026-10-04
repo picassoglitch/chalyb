@@ -19,7 +19,7 @@ export async function createClipJob(formData: FormData): Promise<void> {
 
   const entitlements = await getEntitlements(session);
   if (entitlements.tools.chalybclip?.state !== 'included') {
-    return redirect({ href: '/app/engines/chalybclip', locale });
+    return redirect({ href: '/app/clips', locale });
   }
 
   const link = checkSourceUrl(String(formData.get('link') ?? ''));

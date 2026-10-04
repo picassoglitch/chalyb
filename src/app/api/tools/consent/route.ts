@@ -39,6 +39,8 @@ export async function POST(req: Request) {
       buttonLabel: t('risk.cta'),
       details: { tool: slug, version: riskVersion(), tool_name: engineDisplayName(slug) },
       locale,
+      // aceptacion-ux §6, word for word as the sheet showed it (BUILD-SPEC §10.3).
+      disclosureText: t('risk.body', { herramienta: engineDisplayName(slug) }).replace(/<\/?b>/g, ''),
     });
     return NextResponse.json({ ok: true, consentId: event.consent_id });
   }

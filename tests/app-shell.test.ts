@@ -26,7 +26,7 @@ test('exactly three nav items (BUILD-SPEC §5.3)', () => {
 test('paths map to their nav item, with or without /en', () => {
   assert.equal(normalizeAppPath('/en/app/'), '/app');
   assert.equal(activeNavFor('/app'), 'inicio');
-  assert.equal(activeNavFor('/en/app/engines/chalybclip'), 'inicio');
+  assert.equal(activeNavFor('/en/app/clips/ajustes'), 'inicio');
   assert.equal(activeNavFor('/app/history'), 'resultados');
   assert.equal(activeNavFor('/app/herramientas'), 'inicio');
   assert.equal(activeNavFor('/app/senales/avisos'), 'inicio');
@@ -44,8 +44,33 @@ test('paths map to their nav item, with or without /en', () => {
 });
 
 test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => {
-  assert.equal(shellModeFor('/app/clips'), 'wizard');
-  assert.equal(shellModeFor('/en/app/clips/job_1'), 'wizard');
+  // WS-11: a tool's own screens keep the sidebar (ToolShell); its
+  // step-by-step flows stay in the focus layout.
+  for (const p of [
+    '/app/clips',
+    '/en/app/clips/mis-clips',
+    '/app/clips/clip_1',
+    '/app/clips/ajustes',
+    '/app/senales',
+    '/app/senales/historial',
+    '/app/senales/ajustes',
+    '/app/en-vivo',
+    '/app/en-vivo/conectar',
+    '/app/en-vivo/ajustes',
+  ])
+    assert.equal(shellModeFor(p), 'modern', p);
+  for (const p of [
+    '/app/clips/nuevo',
+    '/app/clips/nuevo/formato',
+    '/en/app/clips/trabajo/job_1',
+    '/app/senales/empezar',
+    '/app/senales/empezar/listo',
+    '/app/prueba/pago',
+    '/app/herramientas/asistente',
+    '/en/app/herramientas/inversiones',
+    '/app/billing/cambiar',
+  ])
+    assert.equal(shellModeFor(p), 'wizard', p);
   assert.equal(shellModeFor('/app'), 'modern');
   assert.equal(shellModeFor('/app/settings'), 'modern');
   assert.equal(shellModeFor('/app/settings/perfil'), 'modern', 'FIX-3 C');
@@ -55,18 +80,7 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
   assert.equal(shellModeFor('/en/app/subscription'), 'modern');
   assert.equal(shellModeFor('/app/usage'), 'modern', 'FIX-3 B');
   assert.equal(shellModeFor('/en/app/usage'), 'modern');
-  assert.equal(shellModeFor('/app/prueba/pago'), 'wizard');
-  assert.equal(shellModeFor('/app/engines/chalybclip'), 'modern', 'tool pages');
-  assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Más herramientas since P3');
-  for (const p of [
-    '/app/senales',
-    '/app/senales/listo',
-    '/app/en-vivo',
-    '/app/herramientas/asistente',
-    '/en/app/herramientas/inversiones',
-  ])
-    assert.equal(shellModeFor(p), 'wizard', p);
-  assert.equal(shellModeFor('/app/billing/cambiar'), 'wizard');
+  assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Tus herramientas');
 });
 
 test('plan labels', () => {
@@ -76,32 +90,28 @@ test('plan labels', () => {
   assert.equal(planLabelKey('VIP'), 'vip');
 });
 
-test('task cards: only visible headline tools, and Más only with extra tools', () => {
-  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs'], () => false);
+test('task cards: only visible headline tools, and Más only with extra live tools', () => {
+  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs']);
   assert.deepEqual(
     three.cards.map((c) => [c.key, c.href]),
     [
-      ['clips', '/app/engines/chalybclip'],
-      ['senales', '/app/engines/chalybcrypto'],
-      ['envivo', '/app/engines/chalybobs'],
+      ['clips', '/app/clips'],
+      ['senales', '/app/senales'],
+      ['envivo', '/app/en-vivo'],
     ],
   );
   assert.deepEqual(three.extraSlugs, []);
 
-  const more = selectTaskCards(
-    ['chalybclip', 'chalybcrypto', 'chalybobs', 'chalybbot'],
-    (s) => s !== 'chalybobs',
-  );
+  // F7 / Q9: a visible tool that isn't live yet adds no 4th card.
+  const notLive = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs', 'chalybbot']);
   assert.deepEqual(
-    more.cards.map((c) => c.href),
-    ['/app/clips', '/app/senales', '/app/engines/chalybobs', '/app/herramientas'],
-    'each tool goes in-hub only when the hub runs it',
+    notLive.cards.map((c) => c.key),
+    ['clips', 'senales', 'envivo'],
   );
-  assert.equal(more.cards.at(-1)!.key, 'mas');
-  assert.deepEqual(more.extraSlugs, ['chalybbot']);
+  assert.deepEqual(notLive.extraSlugs, []);
 
   assert.deepEqual(
-    selectTaskCards(['chalybclip'], () => false).cards.map((c) => c.key),
+    selectTaskCards(['chalybclip']).cards.map((c) => c.key),
     ['clips'],
   );
 });

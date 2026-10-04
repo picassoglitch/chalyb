@@ -670,6 +670,15 @@ body {
   background: var(--accent);
   color: #fff;
 }
+/* F9: each tool's own color (config/tools.ts). */
+.chalyb-app .ch-tool-ic--own {
+  background: color-mix(in srgb, var(--tool) 14%, #fff);
+  color: var(--tool);
+}
+.chalyb-app .ch-tool-ic--own.ch-tool-ic--fill {
+  background: var(--tool);
+  color: #fff;
+}
 .chalyb-app .ch-tag-ej {
   display: inline-flex;
   align-items: center;
@@ -1008,6 +1017,12 @@ html body:has(.ch-flow) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
+}
+/* F7: an odd last card (3 tools, no "Más herramientas") takes the full row
+   instead of leaving a hole in a 2×2 grid. */
+.chalyb-app .ch-tasks > .ch-task:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  min-height: 0;
 }
 .chalyb-app .ch-task {
   display: flex;
@@ -2269,4 +2284,309 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-profile__card > *,
 .chalyb-app .ch-profile .ch-input {
   min-width: 0;
+}
+
+/* ---------- Tools inside the app (WS-11, TOOLS-SPEC §3) ---------- */
+.chalyb-app .ch-btn--okline {
+  background: #fff;
+  color: var(--ok-text);
+  box-shadow: inset 0 0 0 2px var(--ok);
+}
+.chalyb-app .ch-toolshell {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-top: -18px;
+}
+.chalyb-app .ch-toolhead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 17px;
+  color: var(--ink2);
+  margin-bottom: 10px;
+}
+.chalyb-app .ch-crumb svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-toolhead__row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.chalyb-app .ch-toolhead .ch-tool-ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+.chalyb-app .ch-toolhead__name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.chalyb-app .ch-toolhead .ch-h1 {
+  font-size: 36px;
+  line-height: 1.1;
+}
+.chalyb-app .ch-tooltabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #ebebf0;
+}
+.chalyb-app .ch-tooltabs a {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 22px;
+  border-radius: 13px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink2);
+  white-space: nowrap;
+}
+.chalyb-app .ch-tooltabs a[aria-selected='true'] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16, 16, 40, 0.12);
+}
+.chalyb-app .ch-tooltabs a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-toolbody {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.chalyb-app .ch-toolerr {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+}
+.chalyb-app .ch-toolerr__card {
+  max-width: 560px;
+  width: 100%;
+}
+.chalyb-app .ch-toolerr__ic {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-toolerr__btns {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+}
+.chalyb-app .ch-toolerr__btns .ch-btn {
+  width: 100%;
+}
+.chalyb-app .ch-toolerr__code,
+.chalyb-app .ch-toolerr__meanwhile {
+  font-size: 15px;
+  text-align: center;
+}
+.chalyb-app .ch-adv {
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #dedee4;
+}
+.chalyb-app .ch-adv__bar {
+  width: 100%;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.chalyb-app .ch-adv__bar > svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--ink2);
+}
+.chalyb-app .ch-adv__t {
+  font-weight: 600;
+  font-size: 18px;
+}
+.chalyb-app .ch-adv__sum {
+  margin-left: auto;
+  color: var(--ink3-text);
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.chalyb-app .ch-adv--open .ch-adv__chev {
+  transform: rotate(180deg);
+}
+.chalyb-app .ch-adv__body {
+  padding: 4px 20px 20px;
+}
+.chalyb-app .ch-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #e4e0ff;
+  font-size: 16px;
+}
+.chalyb-app .ch-disclaimer > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-disclaimer p {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+}
+.chalyb-app .ch-disclaimer .ch-lnk {
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.chalyb-app .ch-risk {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+/* Over the work area only: the sidebar keeps working (§5.1). */
+@media (min-width: 900px) {
+  .chalyb-app .ch-risk {
+    left: 272px;
+  }
+}
+.chalyb-app .ch-risk__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.38);
+}
+.chalyb-app .ch-risk__sheet {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  max-height: 92dvh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(10, 10, 30, 0.3);
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.chalyb-app .ch-risk__x {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+.chalyb-app .ch-risk__head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding-right: 44px;
+}
+.chalyb-app .ch-risk__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.chalyb-app .ch-risk__points li {
+  display: flex;
+  gap: 12px;
+  font-size: 17px;
+}
+.chalyb-app .ch-risk__points li > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chalyb-app .ch-risk__ok {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-risk__ok svg {
+  width: 16px;
+  height: 16px;
+}
+.chalyb-app .ch-risk__legal {
+  background: #f5f5f7;
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.chalyb-app .ch-risk__legal p {
+  margin: 6px 0 0;
+}
+.chalyb-app .ch-risk__hint {
+  text-align: center;
+  font-size: 15px;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-toolshell {
+    margin-top: 0;
+    gap: 18px;
+  }
+  .chalyb-app .ch-toolhead .ch-tool-ic {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+  }
+  .chalyb-app .ch-toolhead .ch-h1 {
+    font-size: 28px;
+  }
+  .chalyb-app .ch-tooltabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .chalyb-app .ch-tooltabs a {
+    flex: 1;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .chalyb-app .ch-risk__sheet {
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+  .chalyb-app .ch-adv__sum {
+    display: none;
+  }
 }

@@ -260,6 +260,8 @@ export async function loadActivity(now = new Date()) {
     const auditEvents: ActivityEvent[] = rows<{ id: string; action: string; actor_email: string | null; target_email: string | null; metadata: Record<string, unknown> | null; created_at: string }>(audit).map((a) =>
       a.action === 'clips.job_failed'
         ? { id: `a:${a.id}`, at: a.created_at, type: 'tool', tool: 'chalybclip', title: 'Clips falló', detail: String(a.metadata?.reason ?? ''), who: a.target_email }
+        : a.action === 'tool.error'
+        ? { id: `a:${a.id}`, at: a.created_at, type: 'tool', tool: typeof a.metadata?.tool === 'string' ? (a.metadata.tool as string) : null, title: 'Una herramienta no abrió', detail: `${String(a.metadata?.reason ?? '')} · ${String(a.metadata?.supportCode ?? '')}`, who: a.target_email }
         : { id: `a:${a.id}`, at: a.created_at, type: 'admin', tool: typeof a.metadata?.slug === 'string' ? (a.metadata.slug as string) : null, title: AUDIT_TITLES[a.action] ?? a.action, detail: a.target_email, who: a.actor_email },
     );
     const payEvents: ActivityEvent[] = rows<PaymentFact>(pays).map((p) => {

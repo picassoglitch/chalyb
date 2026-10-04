@@ -6,7 +6,6 @@ import { getEntitlements } from '@/lib/billing/entitlement';
 import { isCustomerVisible } from '@/lib/billing/entitlement-core';
 import { engineDisplayName } from '@/lib/engines/display-names';
 import { proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
-import { hubRunsTool } from '@/lib/tools/registry';
 import { toolHref } from '@/lib/tools/routes';
 import { toolCardAction } from '@/lib/tools/matrix';
 import { Banner, ButtonLink, Pill } from '@/components/ui/primitives';
@@ -60,7 +59,7 @@ export default async function HerramientasPage({ params }: { params: Promise<{ l
                 {action.pill === 'setup' && <Pill kind="warn">{t('setup')}</Pill>}
               </div>
               {action.pill === 'included' && (
-                <ButtonLink href={toolHref(e.slug, hubRunsTool(e.slug))} size="compact" aria-label={`${t('open')} ${name}`}>
+                <ButtonLink href={toolHref(e.slug)} size="compact" aria-label={`${t('open')} ${name}`}>
                   {t('open')}
                 </ButtonLink>
               )}

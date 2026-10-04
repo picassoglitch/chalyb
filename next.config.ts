@@ -3,6 +3,15 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+/** Old tool URLs → their screens inside the app (most specific first). */
+const TOOL_REDIRECTS: [string, string][] = [
+  ['/app/engines', '/app/herramientas'],
+  ['/app/engines/chalybclip/:rest*', '/app/clips'],
+  ['/app/engines/chalybcrypto/:rest*', '/app/senales'],
+  ['/app/engines/chalybobs/:rest*', '/app/en-vivo'],
+  ['/app/engines/:slug/:rest*', '/app/herramientas'],
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
@@ -13,10 +22,14 @@ const nextConfig: NextConfig = {
   // if we rename the canonical path later.
   async redirects() {
     return [
-      // P3: the tools list is Más herramientas now; tool pages stay put
-      // (/app/engines/[slug] sends included tools to their own screens).
-      { source: '/app/engines', destination: '/app/herramientas', permanent: true },
-      { source: '/:locale(en|es)/app/engines', destination: '/:locale/app/herramientas', permanent: true },
+      // WS-11 (TOOLS-SPEC §2): the tools open inside the app now. The old
+      // /app/engines URLs answer 307 for the first 4 weeks (then 308), keep
+      // the query string (Next appends it) and never 404: an unknown or
+      // retired slug lands on Tus herramientas.
+      ...TOOL_REDIRECTS.flatMap(([from, to]) => [
+        { source: from, destination: to, permanent: false },
+        { source: `/:locale(en|es)${from}`, destination: `/:locale${to}`, permanent: false },
+      ]),
       // Spanish aliases for the customer screens.
       { source: '/app/resultados', destination: '/app/history', permanent: false },
       { source: '/:locale(en|es)/app/resultados', destination: '/:locale/app/history', permanent: false },

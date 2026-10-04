@@ -17,7 +17,7 @@ export async function saveSignalPrefs(formData: FormData): Promise<void> {
   if (!session) return redirect({ href: '/sign-in?next=/app/senales', locale });
   const ent = await getEntitlements(session);
   const adapter = hubRunsTool('chalybcrypto') ? getSenales() : null;
-  if (ent.tools.chalybcrypto?.state !== 'included' || !adapter) return redirect({ href: '/app/engines/chalybcrypto', locale });
+  if (ent.tools.chalybcrypto?.state !== 'included' || !adapter) return redirect({ href: '/app/senales', locale });
   if (!(await hasRiskAck(session.user.id, 'chalybcrypto'))) return redirect({ href: '/app/senales', locale });
 
   const known = new Set((await adapter.coins()).map((c) => c.symbol));

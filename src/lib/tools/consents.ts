@@ -55,6 +55,8 @@ export async function recordToolConsent(
     buttonLabel: string;
     details: Record<string, string>;
     locale: string;
+    /** The notice text the screen showed (stored as its SHA-256). */
+    disclosureText?: string;
   },
 ) {
   const ctx = await requestContext();
@@ -72,7 +74,7 @@ export async function recordToolConsent(
     locale: input.locale === 'es' ? 'es-MX' : 'en',
     surface: input.surface,
     ui_version: UI_VERSION,
-    disclosure_text: null,
+    disclosure_text: input.disclosureText ?? null,
     checkbox_text: input.checkboxText,
     checkbox_checked: true,
     button_label: input.buttonLabel,

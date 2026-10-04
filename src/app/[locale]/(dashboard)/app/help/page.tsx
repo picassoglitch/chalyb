@@ -4,7 +4,6 @@ import { MessageCircle } from 'lucide-react';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { supportSlaConfirmed, supportWhatsappUrl } from '@/lib/config/flags';
-import { hubRunsTool } from '@/lib/tools/registry';
 import { toolHref } from '@/lib/tools/routes';
 import { ButtonLink } from '@/components/ui/primitives';
 
@@ -33,7 +32,7 @@ export default async function AyudaPage({ params }: { params: Promise<{ locale: 
     charge: { href: '/contacto?categoria=cobro', label: t('q.chargeCta') },
   };
   if (ent.tools.chalybclip?.state === 'included')
-    ctas.clips = { href: toolHref('chalybclip', hubRunsTool('chalybclip')), label: t('q.clipsCta') };
+    ctas.clips = { href: toolHref('chalybclip'), label: t('q.clipsCta') };
 
   return (
     <div style={{ display: 'grid', gap: 26, maxWidth: 820 }}>
@@ -52,7 +51,7 @@ export default async function AyudaPage({ params }: { params: Promise<{ locale: 
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {wa && (
-            <a className="ch-btn ch-btn--ok ch-btn--compact" href={wa} target="_blank" rel="noopener">
+            <a className="ch-btn ch-btn--ok ch-btn--compact" href={wa}>
               {t('human.whatsapp')}
             </a>
           )}
