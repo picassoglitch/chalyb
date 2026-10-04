@@ -60,6 +60,10 @@ export function allToolsClaimAllowed(): boolean {
 export type ToolHubMode = 'off' | 'a' | 'b' | 'mock';
 
 export function mockAdaptersAllowed(): boolean {
+  // Never on the production deployment, whatever else is set: a stray
+  // E2E_USE_MOCK_ADAPTERS there would serve fake signals and one shared mock
+  // stream key to everyone.
+  if (process.env.VERCEL_ENV === 'production') return false;
   return process.env.NODE_ENV !== 'production' || readBool('E2E_USE_MOCK_ADAPTERS', false);
 }
 

@@ -313,3 +313,26 @@ test('only engine errors and timeouts count against the breaker in BFF routes', 
   assert.ok(!countsAsOutage('bad_request'));
   assert.ok(!countsAsOutage('circuit_open'), 'a refused call is not a new observation');
 });
+
+// ── Review fix 4: mock adapters never run on the production deployment ──
+import { mockAdaptersAllowed, toolHubMode } from '@/lib/config/flags';
+
+test('mock adapters: refused on VERCEL_ENV=production even with the e2e flag', () => {
+  const keys = ['VERCEL_ENV', 'E2E_USE_MOCK_ADAPTERS', 'TOOL_HUB_MODE_CHALYBCRYPTO'] as const;
+  const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  try {
+    process.env.E2E_USE_MOCK_ADAPTERS = '1';
+    process.env.TOOL_HUB_MODE_CHALYBCRYPTO = 'mock';
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(mockAdaptersAllowed(), false);
+    assert.equal(toolHubMode('chalybcrypto'), 'off');
+    process.env.VERCEL_ENV = 'preview';
+    assert.equal(mockAdaptersAllowed(), true);
+    assert.equal(toolHubMode('chalybcrypto'), 'mock');
+  } finally {
+    for (const k of keys) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  }
+});
