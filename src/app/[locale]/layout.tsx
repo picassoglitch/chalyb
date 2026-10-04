@@ -8,7 +8,9 @@ import { routing } from '@/i18n/routing';
 import { PUBLIC_CLIENT_NAMESPACES, pickNamespaces } from '@/i18n/client-messages';
 import { HREFLANG } from '@/i18n/locales';
 import { canonicalOrigin } from '@/lib/site';
-import './globals.css';
+// Only the html/body base; the legacy globals.css loads in the layouts that
+// still use it ((dashboard), (auth), legal, contacto), not on every page.
+import './base.css';
 
 // Lock the [locale] segment to real locales. Without this, requests for
 // non-locale top-level paths (/favicon.ico, /robots.txt, …) match the dynamic

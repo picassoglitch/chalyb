@@ -9,6 +9,10 @@
 // which showed through on /en/legal/*.
 
 import { useTranslations } from 'next-intl';
+// The legacy stylesheet (Tailwind + the .legal-prose this page uses). Not in the
+// root layout any more: the rebuilt public pages don't use it, and it was
+// their biggest render-blocking CSS (LANDING-SPEC §7).
+import '@/app/[locale]/globals.css';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 

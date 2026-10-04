@@ -1,4 +1,8 @@
 import { useTranslations } from 'next-intl';
+// The legacy stylesheet (Tailwind + the .lp/.auth-* classes this page uses). Not in the
+// root layout any more: the rebuilt public pages don't use it, and it was
+// their biggest render-blocking CSS (LANDING-SPEC §7).
+import '@/app/[locale]/globals.css';
 import { LandingNav } from '@/components/landing/nav';
 import { LandingFooter } from '@/components/landing/footer';
 import { ContactForm } from './contact-form';
