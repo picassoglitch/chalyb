@@ -2,21 +2,28 @@
   "terminos": {
     "version": "1.0",
     "published": false,
-    "placeholders": 25
+    "placeholders": 28,
+    "consistency": []
   },
   "suscripcion": {
     "version": "1.0",
     "published": false,
-    "placeholders": 35
+    "placeholders": 38,
+    "consistency": [
+      "trial-plans:vip_month,vip_year",
+      "trial-grace"
+    ]
   },
   "privacidad": {
     "version": "1.0",
     "published": false,
-    "placeholders": 38
+    "placeholders": 38,
+    "consistency": []
   },
   "uso_aceptable": {
     "version": "1.0",
     "published": false,
-    "placeholders": 15
+    "placeholders": 15,
+    "consistency": []
   }
 }

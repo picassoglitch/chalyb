@@ -538,10 +538,12 @@
       "versionLine": "Version {version} · In force from {fecha}",
       "noDate": "date to be confirmed",
       "draftTitle": "Draft under review.",
-      "draftBody": "This text is not in force yet: it still needs some details and an attorney’s signature. Until then, the current Terms and Privacy Notice apply.",
+      "draftBody": "This document is not in force yet: it still needs some details and an attorney’s signature.",
       "spanishPrevails": "This document is available in Spanish. The Spanish version prevails.",
       "fixedUrl": "Fixed link to this version:",
-      "otherVersions": "Other versions:"
+      "otherVersions": "Other versions:",
+      "reviewLine": "Under review",
+      "currentLead": "Until then, these apply:"
     }
   },
   "workspace": {
@@ -2257,14 +2259,22 @@
     }
   },
   "termsUpdate": {
-    "title": "We updated our Terms",
+    "titles": {
+      "terminos": "We updated our Terms",
+      "suscripcion": "We updated our Subscription Terms",
+      "privacidad": "We updated our Privacy Notice"
+    },
     "lead": "Starting <b>{fecha}</b>, a few things change:",
     "seeAll": "See all changes",
     "disagree": "If you don’t agree, you can cancel your plan at no cost.",
     "accept": "Accept and continue",
     "options": "I don’t accept, see options",
     "error": "We couldn’t save your answer. Please try again.",
-    "bannerText": "We updated the Terms.",
+    "banner": {
+      "terminos": "We updated the Terms.",
+      "suscripcion": "We updated the Subscription Terms.",
+      "privacidad": "We updated the Privacy Notice."
+    },
     "bannerLink": "See changes",
     "optionsPage": {
       "title": "Your options",

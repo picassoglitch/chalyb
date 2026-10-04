@@ -15,9 +15,12 @@ import { spawnSync } from 'node:child_process';
 
 const strict =
   process.argv.includes('--strict') || /^(1|true)$/i.test(process.env.LEGAL_PUBLISH ?? '');
-const PLACEHOLDER = /\[[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9]*(?:[ :/,.\-][^\]]*)?\]/g;
-
-const { LEGAL_DOCS, legalPath, placeholders } = await import('../src/lib/legal/registry.ts');
+const {
+  LEGAL_DOCS,
+  PLACEHOLDER_RE: PLACEHOLDER,
+  legalPath,
+  placeholders,
+} = await import('../src/lib/legal/registry.ts');
 
 async function liveText(path) {
   const res = await fetch(new URL(path, process.env.LEGAL_BASE_URL), { redirect: 'follow' });

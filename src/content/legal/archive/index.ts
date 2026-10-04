@@ -10,6 +10,7 @@ export interface ArchivedVersion {
   sha256: string;
   source: string;
   template: string;
+  rendered: string;
 }
 
 export const ARCHIVE: Record<string, Record<string, ArchivedVersion>> = {

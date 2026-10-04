@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { changePlan } from '@/lib/billing/billing-actions';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
@@ -29,6 +30,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 404 });
   if (isAdminRole(session.role))
     return NextResponse.json({ ok: false, code: 'ADMIN' }, { status: 403 });
+  // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+  if (await termsAcceptancePending(session.user.id))
+    return NextResponse.json({ ok: false, code: 'TERMS_PENDING' }, { status: 409 });
   const planKey = String(body.planKey ?? '');
   if (!planOnSale(planKey, vipYearEnabled(), lealtadEnabled() && lealtadOpenToNewCustomers())) {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });

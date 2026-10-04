@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { getSessionUser } from '@/lib/auth/session';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { isAdminRole } from '@/lib/billing/tiers';
 import {
   paidCheckoutEnabled,
@@ -38,6 +39,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: 'NOT_AVAILABLE' }, { status: 404 });
   if (isAdminRole(session.role))
     return NextResponse.json({ ok: false, code: 'ADMIN' }, { status: 403 });
+  // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+  if (await termsAcceptancePending(session.user.id))
+    return NextResponse.json({ ok: false, code: 'TERMS_PENDING' }, { status: 409 });
   const planKey = String(body.planKey ?? '');
   // Mensual only while the owner offers it (P5-6).
   if ((planKey === 'pro_month' || planKey === 'vip_month') && !(await billingToggleEnabled())) {

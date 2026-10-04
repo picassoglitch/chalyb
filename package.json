@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/legal-publish-gate.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -12,6 +12,7 @@
     "check:copy": "node scripts/check-hardcoded-copy.mjs",
     "legal:hash": "node --experimental-strip-types --no-warnings --import ./tests/ts-resolve.mjs scripts/hash-legal-docs.mjs",
     "test:legal": "node --experimental-strip-types --no-warnings --import ./tests/ts-resolve.mjs scripts/test-legal.mjs",
+    "ci": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:copy && pnpm test:legal && pnpm test:migrations && pnpm build",
     "test:migrations": "node scripts/test-migrations.mjs",
     "e2e": "playwright test",
     "e2e:mock-supabase": "node e2e/mock-supabase/server.mjs",

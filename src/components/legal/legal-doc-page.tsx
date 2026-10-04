@@ -3,15 +3,17 @@
 // version at its versioned URL (/legal/subscription/v1-0), which consent
 // events cite and which never changes once published.
 //
-// Until LEGAL_PUBLISH takes effect (flag on AND no draft/placeholder left,
-// flags.ts legalPublished()) the page says it's a draft that isn't in force
-// yet, and is kept out of search (noindex, not in the sitemap).
+// A version that isn't in force (LEGAL_PUBLISH not in effect, or the version
+// not marked published) shows a short "en revisión" page instead of Law's
+// draft: no owner/attorney notes or unfilled brackets go public, and the
+// footer link still answers 200. It is kept out of search (noindex, not in
+// the sitemap).
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { legalPublished } from '@/lib/config/flags';
+import { legalDraftsAsPublished, legalPublished } from '@/lib/config/flags';
 import {
   archived,
   currentVersion,
@@ -45,6 +47,14 @@ function resolveVersion(doc: LegalDoc, slug?: string): string | null {
   return v && archived(doc, v) ? v : null;
 }
 
+/** Whether a version is the text in force (the local e2e override treats
+ *  drafts as published). */
+function inForce(doc: LegalDoc, version: string): boolean {
+  return (
+    legalPublished() && (Boolean(versionMeta(doc, version)?.published) || legalDraftsAsPublished())
+  );
+}
+
 export async function legalDocMetadata(
   doc: LegalDoc,
   locale: string,
@@ -57,7 +67,7 @@ export async function legalDocMetadata(
     title: t('metaTitle'),
     description: t('metaDescription'),
   });
-  const draft = !legalPublished() || (v !== null && !versionMeta(doc, v)?.published);
+  const draft = v === null || !inForce(doc, v);
   return draft ? { ...meta, robots: { index: false, follow: true } } : meta;
 }
 
@@ -78,7 +88,26 @@ export async function LegalDocPage({
   const t = await getTranslations({ locale, namespace: 'legal' });
   const user = await getCurrentUser();
   const meta = versionMeta(doc, version);
-  const live = legalPublished() && Boolean(meta?.published);
+
+  if (!inForce(doc, version)) {
+    return (
+      <LegalPage
+        title={t(`${MESSAGE_KEY[doc]}.title`)}
+        lastUpdated={t('doc.reviewLine')}
+        isAuthenticated={user !== null}
+      >
+        <p className="legal-callout" role="note">
+          <strong>{t('doc.draftTitle')}</strong> {t('doc.draftBody')}
+        </p>
+        <p>
+          {t('doc.currentLead')}{' '}
+          <a href={localizedPath('/legal/terms', locale)}>{t('terms.title')}</a> ·{' '}
+          <a href={localizedPath('/legal/privacy', locale)}>{t('privacy.title')}</a>
+        </p>
+      </LegalPage>
+    );
+  }
+
   const title = list.find((b) => b.t === 'h' && b.level === 1);
   const effective = meta?.effective ? formatFechaLarga(meta.effective, locale) : t('doc.noDate');
   const others = listVersions(doc).filter((v) => v !== version);
@@ -90,11 +119,6 @@ export async function LegalDocPage({
       lastUpdated={t('doc.versionLine', { version, fecha: effective })}
       isAuthenticated={user !== null}
     >
-      {!live && (
-        <p className="legal-callout" role="note">
-          <strong>{t('doc.draftTitle')}</strong> {t('doc.draftBody')}
-        </p>
-      )}
       {locale !== 'es' && (
         <p className="legal-callout" lang="en">
           {t('doc.spanishPrevails')}

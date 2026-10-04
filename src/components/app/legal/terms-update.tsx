@@ -11,10 +11,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { Info } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/routing';
-import { termsModalExempt } from '@/lib/legal/reaccept';
+import { termsModalExempt, type ReacceptDoc } from '@/lib/legal/reaccept';
 import { Markup } from '@/components/ui/markup';
 
 export interface TermsUpdateView {
+  doc: ReacceptDoc;
   version: string;
   effective: string;
   changes: string[];
@@ -51,7 +52,7 @@ export function TermsReacceptModal({ v }: { v: TermsUpdateView }) {
     <div role="dialog" aria-modal="true" aria-labelledby="terms-title" className="ch-gate">
       <div className="ch-card ch-gate__card">
         <h1 id="terms-title" className="ch-h2">
-          {t('title')}
+          {t(`titles.${v.doc}`)}
         </h1>
         <p>
           <Markup text={t.markup('lead', { fecha: v.effective, b: (c) => `<b>${c}</b>` })} />
@@ -109,7 +110,7 @@ export function TermsNoticeBanner({ v }: { v: TermsUpdateView }) {
       <span className="ch-bnr__ic" aria-hidden="true">
         <Info />
       </span>
-      <span className="ch-bnr__tx">{t('bannerText')}</span>
+      <span className="ch-bnr__tx">{t(`banner.${v.doc}`)}</span>
       <a
         href={v.changesHref}
         className="ch-btn ch-btn--white ch-btn--compact"

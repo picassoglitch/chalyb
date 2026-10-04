@@ -1,5 +1,7 @@
-// Re-acceptance of the Terms (aceptacion-ux §8; old P6-5), the pure part:
-// what a signed-in user sees for the current Términos version.
+// Re-acceptance (aceptacion-ux §8; old P6-5), the pure part: what a
+// signed-in user sees for the current version of each document they accept:
+// Términos, Términos de Suscripción and the Aviso de privacidad
+// (REACCEPT_DOCS).
 //
 // - relevant change (rights, payments or data), once its effective date has
 //   passed → the blocking §8 modal until they accept or choose an option;
@@ -58,15 +60,23 @@ export const TERMS_ACCEPTING_EVENTS = [
   'subscription_started',
 ] as const;
 
-/** Reduces consent rows ({event_type, documents}) to a TermsHistory. */
+/** The documents a change of which asks for re-acceptance (rights, payments
+ *  or data), in the order the modal asks. */
+export const REACCEPT_DOCS = ['terminos', 'suscripcion', 'privacidad'] as const;
+export type ReacceptDoc = (typeof REACCEPT_DOCS)[number];
+
+/** Reduces consent rows ({event_type, documents}) to one document's
+ *  history (default: the Términos). */
 export function termsHistory(
   rows: { event_type: string; documents: { doc: string; version: string }[] | null }[],
+  doc: ReacceptDoc = 'terminos',
 ): TermsHistory {
   let accepted: string | null = null;
   const shown = new Set<string>();
   for (const r of rows) {
-    const terms = (r.documents ?? []).find((d) => d.doc === 'terminos');
-    if (!terms) continue;
+    const terms = (r.documents ?? []).find((d) => d.doc === doc);
+    // Something accepted against a draft never counts for the real version.
+    if (!terms || terms.version.endsWith('-draft')) continue;
     if ((TERMS_ACCEPTING_EVENTS as readonly string[]).includes(r.event_type)) {
       if (!accepted || compareVersions(terms.version, accepted) > 0) accepted = terms.version;
     } else if (r.event_type === 'terms_notice_shown') {
@@ -77,7 +87,8 @@ export function termsHistory(
 }
 
 /** Screens the §8 modal never covers: cancelling, the options it offers,
- *  content download, and asking for help. */
+ *  content download (results and each clip job's page), and asking for
+ *  help. */
 export const TERMS_MODAL_EXEMPT_PATHS = [
   '/app/billing',
   '/app/terminos',
@@ -88,5 +99,8 @@ export const TERMS_MODAL_EXEMPT_PATHS = [
 
 export function termsModalExempt(pathname: string): boolean {
   const p = pathname.replace(/^\/en(?=\/|$)/, '');
+  // A clip job (/app/clips/<id>) is where its clips download; the new-clip
+  // steps (/app/clips, /app/clips/formato) stay covered.
+  if (/^\/app\/clips\/(?!formato(?:\/|$))[^/]+/.test(p)) return true;
   return TERMS_MODAL_EXEMPT_PATHS.some((x) => p === x || p.startsWith(`${x}/`));
 }

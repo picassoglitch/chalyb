@@ -32,6 +32,7 @@ import { getSessionUser, type SubscriptionTier } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_PRICING } from './pricing';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import {
   getMercadoPago,
   isCheckoutReady,
@@ -66,7 +67,8 @@ export interface AuthorizeSubscriptionResult {
     | 'admin_skip'
     | 'bad_token'
     | 'rejected'
-    | 'mp_error';
+    | 'mp_error'
+    | 'terms_pending';
   /** Human-readable message for the form. */
   error?: string;
 }
@@ -101,6 +103,17 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
         ok: false,
         reason: 'admin_skip',
         error: 'Las cuentas admin cambian de plan directo, sin pasar por el cobro.',
+      },
+    };
+  }
+  // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+  if (await termsAcceptancePending(session.user.id)) {
+    return {
+      ok: false,
+      result: {
+        ok: false,
+        reason: 'terms_pending',
+        error: 'Acepta los nuevos Términos (o revisa tus opciones) antes de contratar un plan.',
       },
     };
   }

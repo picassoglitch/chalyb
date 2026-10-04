@@ -10,7 +10,10 @@
 
 import publishState from '../legal/publish-state.json' with { type: 'json' };
 
-type LegalPublishState = Record<string, { version: string; published: boolean; placeholders: number }>;
+type LegalPublishState = Record<
+  string,
+  { version: string; published: boolean; placeholders: number; consistency?: string[] }
+>;
 let legalState: LegalPublishState = publishState;
 
 /** Tests only: pretend the legal texts are (or aren't) ready, to exercise
@@ -115,9 +118,28 @@ export function paidCheckoutBlockers(): string[] {
     'CONSENT_ENCRYPTION_KEY',
     'CRON_SECRET',
   ]) {
-    if (!(process.env[name] ?? '').trim()) blockers.push(name);
+    if (!sellerValueOk(name, process.env[name] ?? '')) blockers.push(name);
   }
   return blockers;
+}
+
+/** Generic RFCs (público en general / extranjeros): never a seller's. */
+const GENERIC_RFC = new Set(['XAXX010101000', 'XEXX010101000']);
+
+/** A required value is set and real: not empty, not a placeholder ([…],
+ *  TBD, TODO, XXX, PENDIENTE); the RFC has the SAT shape (3 letters for a
+ *  company, 4 for a person, the date, 3 characters) and isn't generic; the
+ *  emails look like emails. */
+export function sellerValueOk(name: string, raw: string): boolean {
+  const v = raw.trim();
+  if (!v) return false;
+  if (/[[\]{}<>]/.test(v) || /\b(TBD|TODO|XXX|PENDIENTE|POR DEFINIR)\b/i.test(v)) return false;
+  if (name === 'LEGAL_ENTITY_RFC') {
+    const rfc = v.toUpperCase();
+    return /^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/.test(rfc) && !GENERIC_RFC.has(rfc);
+  }
+  if (name === 'LEGAL_ENTITY_EMAIL') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  return true;
 }
 
 /**
@@ -257,13 +279,25 @@ export function supportSlaConfirmed(): boolean {
 export function legalPublishBlockers(): string[] {
   // Local e2e only (mock adapters allowed): exercise the published flows
   // against Law's drafts. Never honored on a real deployment.
-  if (mockAdaptersAllowed() && readBool('E2E_LEGAL_DRAFTS_AS_PUBLISHED', false)) return [];
+  if (legalDraftsAsPublished()) return [];
   const out: string[] = [];
   for (const [doc, s] of Object.entries(legalState)) {
     if (!s.published) out.push(`${doc}@${s.version}:draft`);
     if (s.placeholders > 0) out.push(`${doc}@${s.version}:${s.placeholders}-placeholders`);
+    for (const issue of s.consistency ?? []) out.push(`${doc}@${s.version}:${issue}`);
   }
   return out;
+}
+
+/** Local e2e only: treat Law's drafts as published so the published flows
+ *  can run. Needs mock adapters allowed AND a non-production Vercel env;
+ *  never honored on a real deployment. */
+export function legalDraftsAsPublished(): boolean {
+  return (
+    readBool('E2E_LEGAL_DRAFTS_AS_PUBLISHED', false) &&
+    mockAdaptersAllowed() &&
+    process.env.VERCEL_ENV !== 'production'
+  );
 }
 
 /** LEGAL_PUBLISH as requested, before the placeholder gate. */

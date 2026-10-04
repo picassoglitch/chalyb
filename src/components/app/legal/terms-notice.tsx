@@ -1,6 +1,6 @@
 // Server side of the Terms update (aceptacion-ux §8): asks the consent log
-// what this user should see for the current Términos version and renders the
-// modal, the banner, or nothing.
+// what this user should see for the current Términos, Suscripción and
+// Privacidad versions and renders the modal, the banner, or nothing.
 
 import { getLocale } from 'next-intl/server';
 import type { SessionUser } from '@/lib/auth/session';
@@ -14,13 +14,11 @@ export async function TermsNotice({ session }: { session: SessionUser }) {
   const v = await termsPromptFor(session.user.id, locale).catch(() => null);
   if (!v || v.prompt === 'none') return null;
   const view = {
+    doc: v.doc,
     version: v.version,
     effective: v.effective,
     changes: v.changes,
-    changesHref: localizedPath(
-      `${legalPath('terminos')}/changes/${versionSlug(v.version)}`,
-      locale,
-    ),
+    changesHref: localizedPath(`${legalPath(v.doc)}/changes/${versionSlug(v.version)}`, locale),
   };
   return v.prompt === 'modal' ? <TermsReacceptModal v={view} /> : <TermsNoticeBanner v={view} />;
 }

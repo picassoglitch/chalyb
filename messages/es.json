@@ -538,10 +538,12 @@
       "versionLine": "Versión {version} · En vigor desde {fecha}",
       "noDate": "fecha por confirmar",
       "draftTitle": "Borrador en revisión.",
-      "draftBody": "Este texto todavía no está vigente: aún le faltan datos y la firma de un abogado. Mientras tanto rigen los Términos y el Aviso de privacidad actuales.",
+      "draftBody": "Este documento todavía no está vigente: le faltan datos y la firma de un abogado.",
       "spanishPrevails": "Este documento está disponible en español. La versión en español prevalece.",
       "fixedUrl": "Enlace fijo de esta versión:",
-      "otherVersions": "Otras versiones:"
+      "otherVersions": "Otras versiones:",
+      "reviewLine": "En revisión",
+      "currentLead": "Mientras tanto rigen:"
     }
   },
   "workspace": {
@@ -2257,14 +2259,22 @@
     }
   },
   "termsUpdate": {
-    "title": "Actualizamos nuestros Términos",
+    "titles": {
+      "terminos": "Actualizamos nuestros Términos",
+      "suscripcion": "Actualizamos nuestros Términos de Suscripción",
+      "privacidad": "Actualizamos nuestro Aviso de privacidad"
+    },
     "lead": "A partir del <b>{fecha}</b> cambian algunos puntos:",
     "seeAll": "Ver todos los cambios",
     "disagree": "Si no estás de acuerdo, puedes cancelar tu plan sin costo.",
     "accept": "Aceptar y continuar",
     "options": "No acepto, ver opciones",
     "error": "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
-    "bannerText": "Actualizamos los Términos.",
+    "banner": {
+      "terminos": "Actualizamos los Términos.",
+      "suscripcion": "Actualizamos los Términos de Suscripción.",
+      "privacidad": "Actualizamos el Aviso de privacidad."
+    },
     "bannerLink": "Ver cambios",
     "optionsPage": {
       "title": "Tus opciones",
