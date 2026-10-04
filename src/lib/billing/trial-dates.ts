@@ -85,10 +85,25 @@ export function trialDaysLeft(trialEndsAt: string | Date, nowMs: number): number
   return Math.max(0, Math.ceil((end - nowMs) / DAY));
 }
 
-/** Add whole calendar periods to a date (renewals). */
-export function addInterval(date: Date, interval: 'month' | 'year', count = 1): Date {
+/**
+ * Add whole calendar periods to a date (renewals). Términos de Suscripción
+ * §3.2: the charge falls on the same day of the month as the period's start,
+ * and on the month's last day when that day doesn't exist (31 → 30 abr,
+ * 28/29 feb). `anchorDay` is that original day: chaining from a clamped date
+ * (28 feb) must come back to 31 mar, not drift to the 28th. Time of day is
+ * kept; UTC.
+ */
+export function addInterval(
+  date: Date,
+  interval: 'month' | 'year',
+  count = 1,
+  anchorDay = date.getUTCDate(),
+): Date {
+  const months = interval === 'year' ? 12 * count : count;
+  const y = date.getUTCFullYear();
+  const m = date.getUTCMonth() + months;
+  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
   const d = new Date(date);
-  if (interval === 'year') d.setUTCFullYear(d.getUTCFullYear() + count);
-  else d.setUTCMonth(d.getUTCMonth() + count);
+  d.setUTCFullYear(y, m, Math.min(anchorDay, lastDay));
   return d;
 }

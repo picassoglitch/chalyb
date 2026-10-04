@@ -166,6 +166,26 @@ test('trial dates: 7 days, charge at the end, the notice the moment it starts', 
   );
 });
 
+test('renewal dates: day 31 charges on the last day of a shorter month (Suscripción §3.2)', () => {
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const jan31 = new Date('2026-01-31T15:00:00Z');
+  assert.equal(iso(addInterval(jan31, 'month')), '2026-02-28');
+  assert.equal(iso(addInterval(jan31, 'month', 2)), '2026-03-31');
+  assert.equal(iso(addInterval(jan31, 'month', 3)), '2026-04-30');
+  assert.equal(iso(addInterval(new Date('2028-01-31T00:00:00Z'), 'month')), '2028-02-29');
+  // Chained from a clamped date, the original day comes back.
+  assert.equal(iso(addInterval(new Date('2026-02-28T15:00:00Z'), 'month', 1, 31)), '2026-03-31');
+  // Years: 29 feb → 28 feb of a common year.
+  assert.equal(iso(addInterval(new Date('2028-02-29T00:00:00Z'), 'year')), '2029-02-28');
+  // Across a year end, and the time of day is kept.
+  assert.equal(
+    addInterval(new Date('2026-12-31T15:00:00Z'), 'month', 2).toISOString(),
+    '2027-02-28T15:00:00.000Z',
+  );
+  // Ordinary days don't move.
+  assert.equal(iso(addInterval(new Date('2026-03-15T00:00:00Z'), 'month')), '2026-04-15');
+});
+
 test('notice windows are never shorter than 5 days', () => {
   assert.doesNotThrow(() => assertReminderWindows());
   assert.throws(() =>
