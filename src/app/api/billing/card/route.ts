@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago, mpGet } from '@/lib/payments/mercadopago';
+import { getMercadoPago } from '@/lib/payments/mercadopago';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     payment_method_id?: string;
   } = {};
   try {
-    card = await mpGet(`/v1/card_tokens/${encodeURIComponent(token)}`);
+    card = await getMercadoPago().cardToken.get({ id: token });
   } catch {
     // details are cosmetic; the update is what matters
   }

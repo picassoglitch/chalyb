@@ -12,7 +12,7 @@
 //   payment      Payments API reads only: the `payment` webhook topic (legacy
 //                one-off purchases made through the discontinued preferences
 //                flow, and subscription charges reported on that topic).
-//   mpGet        Raw GET for resources the SDK has no client for
+//   mpGet        Raw GET for resources the SDK has no client for (/authorized_payments)
 //                (/authorized_payments/{id}).
 // There is no Preference client: nothing creates preferences any more.
 //
@@ -43,7 +43,16 @@
 // throwing is the backstop for a caller that skipped that check.
 
 import 'server-only';
-import { MercadoPagoConfig, Payment, PreApproval, Order, PaymentRefund } from 'mercadopago';
+import {
+  CardToken,
+  MercadoPagoConfig,
+  MerchantOrder,
+  Order,
+  Payment,
+  PaymentRefund,
+  PreApproval,
+  User,
+} from 'mercadopago';
 import { appUrl } from '@/lib/app-url';
 import {
   MP_ACCESS_TOKEN_VAR,
@@ -69,6 +78,12 @@ let cached: {
   /** Orders API (/v1/orders): Checkout Pro via Orders, used for token packs. */
   order: Order;
   refund: PaymentRefund;
+  /** Merchant orders (the merchant_order webhook topic), read-only. */
+  merchantOrder: MerchantOrder;
+  /** Card tokens, read-only: the card details shown after a card update. */
+  cardToken: CardToken;
+  /** The account the access token belongs to (/users/me). */
+  user: User;
 } | null = null;
 
 // Every credential below comes out of mpCredentials() (mp-config.ts), the
@@ -118,7 +133,7 @@ export async function sellerMatches(): Promise<boolean> {
   if (!expected || !token) return true;
   if (sellerCheck?.token === token) return sellerCheck.ok;
   try {
-    const me = await mpGet<{ id?: number | string }>('/users/me');
+    const me = await getMercadoPago().user.get();
     const ok = String(me.id ?? '') === expected;
     if (!ok) console.error('[mp] access token belongs to another seller', { mp_env: getMpEnv() });
     sellerCheck = { token, ok };
@@ -241,6 +256,9 @@ export function getMercadoPago() {
     preapproval: new PreApproval(config),
     order: new Order(config),
     refund: new PaymentRefund(config),
+    merchantOrder: new MerchantOrder(config),
+    cardToken: new CardToken(config),
+    user: new User(config),
   };
   return cached;
 }
@@ -251,7 +269,8 @@ const MP_FETCH_TIMEOUT_MS = 7000;
 /**
  * A GET against the Mercado Pago REST API for the resources the SDK has no
  * client for — today that is /authorized_payments/{id}, the recurring charge
- * of a subscription. Same token, same timeout as the SDK; throws with the
+ * of a subscription. Everything the SDK covers goes through it, so Mercado
+ * Pago sees the SDK on those calls. Same token, same timeout as the SDK; throws with the
  * status code on anything but 2xx so the webhook can decide whether to let
  * Mercado Pago retry.
  */

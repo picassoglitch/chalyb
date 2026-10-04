@@ -33,7 +33,6 @@ import {
   isCheckoutReady,
   logMpCreate,
   mpErrorCodeOf,
-  mpGet,
   mpPayerEmail,
   mpReturnUrl,
   sellerMatches,
@@ -191,7 +190,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // one-trial-per-card rule. Reading the token does not consume it.
   let card: CardToken = {};
   try {
-    card = await mpGet<CardToken>(`/v1/card_tokens/${encodeURIComponent(token)}`);
+    card = (await getMercadoPago().cardToken.get({ id: token })) as CardToken;
   } catch (err) {
     console.warn('[billing/start] card token lookup failed; continuing without card details', err);
   }
