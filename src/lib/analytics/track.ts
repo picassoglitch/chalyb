@@ -16,7 +16,19 @@ export type FunnelEvent =
   | 'cancel'
   | 'conversion'
   | 'payment_failed'
-  | 'landing_pricing_toggle';
+  | 'landing_pricing_toggle'
+  // LANDING-SPEC §5 (client side, consent-gated).
+  | 'landing_view'
+  | 'landing_cta_click'
+  | 'landing_nav_click'
+  | 'landing_signin_click'
+  | 'landing_menu_open'
+  | 'landing_section_view'
+  | 'landing_faq_open'
+  | 'landing_partner_open'
+  | 'landing_partner_submit'
+  | 'landing_footer_click'
+  | 'landing_sticky_shown';
 export type FunnelProps = Record<string, string | number | boolean>;
 
 export async function track(event: FunnelEvent, props: FunnelProps = {}): Promise<void> {

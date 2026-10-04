@@ -1,34 +1,41 @@
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import { formatMXN } from '@/lib/billing/format';
+import { Markup } from '@/components/ui/markup';
 import { toolList, type PublicTool } from '@/lib/tools/public-tools';
 
-// 9 · Final CTA, with the active-tools list.
+// 9 · CTA final (LANDING-SPEC §3.10), with the active tools.
 
 export async function FinalCta({
   tools,
   locale,
   trialHref,
   ctaLabel,
-  ctaSub,
+  trialOffered,
 }: {
   tools: PublicTool[];
   locale: string;
   trialHref: Route;
   ctaLabel: string;
-  ctaSub: string;
+  trialOffered: boolean;
 }) {
-  const t = await getTranslations('landing');
+  const t = await getTranslations('landing.final');
   return (
-    <section className="pub-band" aria-labelledby="final-title">
+    <section className="pub-band pub-band--tight" aria-labelledby="final-title" id="final">
       <div className="pub-wrap">
-        <div className="pub-final">
-          <h2 id="final-title">{t('final.title')}</h2>
-          <p>{t('final.sub', { lista: toolList(tools, locale) })}</p>
-          <Link href={trialHref} className="ch-btn ch-btn--white ch-btn--xl" data-cta="trial-final">
+        <div className="pub-final2">
+          <h2 id="final-title">
+            <Markup text={t.markup('title', { em: (c: string) => `<em>${c}</em>` })} />
+          </h2>
+          <p>
+            <span className="pub-only-desk">{t('sub', { lista: toolList(tools, locale) })}</span>
+            <span className="pub-only-mob">{t('subMobile')}</span>
+          </p>
+          <Link href={trialHref} className="ch-btn ch-btn--white pub-final2__cta" data-cta="final_trial">
             {ctaLabel}
           </Link>
-          <small>{ctaSub}</small>
+          {trialOffered && <small>{t('note', { cero: formatMXN(0) })}</small>}
         </div>
       </div>
     </section>

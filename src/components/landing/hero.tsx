@@ -1,92 +1,87 @@
 import type { Route } from 'next';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
-import { Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { ToolTile } from './tool-tile';
-import { heroRows, type PublicTool } from '@/lib/tools/public-tools';
+import { formatMXN } from '@/lib/billing/format';
+import { Markup } from '@/components/ui/markup';
+import { BrandMark } from './brand-mark';
 
-// 1 · Hero. The "Mientras dormías" panel is an illustration: one example row
-// per active tool (at most 4), an example clip still, and the "Ejemplo" tag
-// (P4-4). No real names or invented numbers. The clip still is a Kick-style
-// stream reaction (neon green), without any platform logo or UI.
+// 1 · Hero (LANDING-SPEC §3.2, mockup 42). The only h1. The visual is the
+// real app: the "Tus clips están listos" screen in a CSS laptop, Inicio in a
+// CSS phone (no person's name on either), and the clips notification. Only
+// the laptop image has priority (LCP).
 
-const OK_PILL = new Set(['chalybclip', 'chalybobs', 'chalybbot', 'chalybtrade']);
-
-export async function Hero({
-  tools,
-  trialHref,
-  ctaLabel,
-  ctaSub,
-}: {
-  tools: PublicTool[];
-  trialHref: Route;
-  /** From trialCtaLabel(): the trial only when the flow can honour it. */
-  ctaLabel: string;
-  ctaSub: string;
-}) {
-  const t = await getTranslations('landing');
-  const rows = heroRows(tools);
-
+export async function Hero({ trialHref, ctaLabel }: { trialHref: Route; ctaLabel: string }) {
+  const t = await getTranslations('landing.hero');
+  const cero = formatMXN(0);
   return (
-    <section id="hero" className="pub-wrap pub-hero" aria-labelledby="hero-title">
-      <div className="pub-hero__copy">
-        <p className="pub-kick">
-          <span>{t('hero.eyebrowTag')}</span>
-          {t('hero.eyebrow')}
-        </p>
-        <h1 id="hero-title">{t.rich('hero.title', { em: (chunks) => <em>{chunks}</em> })}</h1>
-        <p className="pub-hero__sub">
-          <span className="pub-only-desk">{t('hero.sub')}</span>
-          <span className="pub-only-mob">{t('hero.subMobile')}</span>
-        </p>
-        <div className="pub-hero__cta">
-          <Link
-            href={trialHref}
-            className="ch-btn ch-btn--primary ch-btn--xl"
-            data-cta="trial-hero"
-          >
+    <section id="hero" className="pub-hero2" aria-labelledby="hero-title">
+      <div className="pub-hero2__in">
+        <div className="pub-hero2__copy">
+          <p className="pub-kick">
+            <span>{t('eyebrowTag')}</span>
+            <span className="pub-only-desk">{t('eyebrow')}</span>
+            <span className="pub-only-mob pub-kick__mob">{t('eyebrow')}</span>
+          </p>
+          <h1 id="hero-title">
+            <Markup text={t.markup('title', { em: (c: string) => `<em>${c}</em>` })} />
+          </h1>
+          <p className="pub-hero2__sub">{t('sub')}</p>
+          <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
             {ctaLabel}
+            <ArrowRight aria-hidden="true" />
           </Link>
-          <small>{ctaSub}</small>
-        </div>
-        <ul className="pub-trust">
-          {(['seal1', 'seal2', 'seal3'] as const).map((k) => (
-            <li key={k}>
-              <Check aria-hidden="true" />
-              {t(`hero.${k}`)}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="pub-vis" aria-label={t('hero.panel')} role="group">
-        <div className="pub-vis__panel">
-          <div className="pub-vis__head">
-            <h2>{t('hero.panel')}</h2>
-            <span className="ch-tag-ej">{t('hero.example')}</span>
-          </div>
-          <ul>
-            {rows.map((tool) => (
-              <li key={tool.slug} className="pub-vis__it">
-                <ToolTile slug={tool.slug} color={tool.color} />
-                <span className="pub-vis__tx">
-                  <b>{t(`hero.rows.${tool.slug}.label`)}</b>
-                  <small>{t(`hero.rows.${tool.slug}.detail`)}</small>
-                </span>
-                <span
-                  className={`ch-pill ${OK_PILL.has(tool.slug) ? 'ch-pill--ok' : 'ch-pill--acc'}`}
-                >
-                  {t(`hero.rows.${tool.slug}.pill`)}
-                </span>
+          <p className="pub-hero2__note">
+            <b>{t('noteStrong')}</b> {t('noteRest', { cero })}
+          </p>
+          <ul className="pub-trust">
+            {(['seal1', 'seal2', 'seal3'] as const).map((k) => (
+              <li key={k}>
+                <Check aria-hidden="true" />
+                {t(k)}
               </li>
             ))}
           </ul>
         </div>
-        <div
-          className="pub-vis__float pub-thumb pub-thumb--hero"
-          role="img"
-          aria-label={t('hero.frameAlt')}
-        />
+
+        <div className="pub-dev" role="img" aria-label={t('alt')}>
+          <div className="pub-dev__halo" aria-hidden="true" />
+          <div className="pub-laptop" aria-hidden="true">
+            <div className="pub-laptop__screen">
+              <Image
+                src="/landing/hero-laptop.webp"
+                alt=""
+                width={1072}
+                height={670}
+                sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
+                priority
+              />
+            </div>
+            <div className="pub-laptop__base" />
+          </div>
+          <div className="pub-phone" aria-hidden="true">
+            <Image
+              src="/landing/hero-phone.webp"
+              alt=""
+              width={400}
+              height={866}
+              sizes="(max-width: 767px) 108px, (max-width: 1279px) 170px, 200px"
+              loading="eager"
+            />
+          </div>
+          <div className="pub-notif" aria-hidden="true">
+            <BrandMark size={44} />
+            <div>
+              <p className="pub-notif__top">
+                <span>{t('notifApp')}</span>
+                <span>{t('notifWhen')}</span>
+              </p>
+              <b>{t('notifTitle')}</b>
+              <p>{t('notifBody')}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

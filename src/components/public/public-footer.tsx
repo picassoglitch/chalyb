@@ -1,7 +1,7 @@
-// PublicFooter (BUILD-SPEC §8.1 item 10). Tool links come from the active
-// tools; legal links list only documents that exist (the P6 pages join when
-// they are published); the seller block reads LEGAL_ENTITY_* and shows only
-// the values that are set.
+// PublicFooter (LANDING-SPEC §3.11). Columns: brand · Herramientas (active
+// tools) · Chalyb · Legal (only pages that exist, src/lib/legal/public-pages)
+// · Contacto. Column titles are not headings (one h2 per section above). The
+// seller block reads LEGAL_ENTITY_* and shows only the values that are set.
 
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -9,18 +9,12 @@ import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/ui/primitives';
 import { legalEntity } from '@/lib/billing/legal-entity';
 import { listActiveTools } from '@/lib/tools/public-tools-server';
+import { LEGAL_PAGES } from '@/lib/legal/public-pages';
 import { CookieSettingsButton } from './cookie-banner';
 
-/** Legal documents with a page today. TODO(P6): add Términos de Suscripción
- *  and Uso aceptable when their routes ship (they appear only then). */
-const LEGAL_LINKS = [
-  ['terms', '/legal/terms'],
-  ['privacy', '/legal/privacy'],
-] as const;
-
-export async function PublicFooter() {
+export async function PublicFooter({ onLanding = false }: { onLanding?: boolean }) {
   const t = await getTranslations('landing.publicFooter');
-  const tools = await listActiveTools();
+  const tools = (await listActiveTools()).slice(0, 3);
   const entity = legalEntity();
   const seller = [entity.name, entity.address, entity.phone, entity.email].filter(Boolean);
 
@@ -32,31 +26,44 @@ export async function PublicFooter() {
             <Logo href="/" />
             <p className="pub-foot__lead">{t('lead')}</p>
           </div>
-          <nav aria-labelledby="foot-tools">
-            <h2 id="foot-tools">{t('tools')}</h2>
+          <nav aria-label={t('tools')} data-foot="tools">
+            <p className="pub-foot__h">{t('tools')}</p>
             {tools.map((tool) => (
               <Link key={tool.slug} href={'/#herramientas' as Route}>
                 {tool.name}
               </Link>
             ))}
+            <Link href={'/#herramientas' as Route}>{t('toolsAll')}</Link>
           </nav>
-          <nav aria-labelledby="foot-chalyb">
-            <h2 id="foot-chalyb">Chalyb</h2>
-            <Link href="/planes">{t('plans')}</Link>
+          <nav aria-label={t('chalyb')}>
+            <p className="pub-foot__h">{t('chalyb')}</p>
+            <Link href={(onLanding ? '/#precios' : '/planes') as Route}>{t('pricing')}</Link>
             <Link href="/contacto">{t('help')}</Link>
             <Link href={'/#idea' as Route}>{t('idea')}</Link>
-            <Link href="/sign-in">{t('login')}</Link>
+            <Link href="/sign-in" data-signin="footer">
+              {t('login')}
+            </Link>
           </nav>
-          <nav aria-labelledby="foot-legal">
-            <h2 id="foot-legal">{t('legal')}</h2>
-            {LEGAL_LINKS.map(([key, href]) => (
-              <Link key={key} href={href}>
-                {t(`legalDocs.${key}`)}
+          <nav aria-label={t('legal')}>
+            <p className="pub-foot__h">{t('legal')}</p>
+            {LEGAL_PAGES.map((p) => (
+              <Link key={p.key} href={p.href as Route} data-foot-target={p.key}>
+                {t(`legalDocs.${p.key}`)}
               </Link>
             ))}
-            <Link href="/quien-vende">{t('seller')}</Link>
+            <Link href="/quien-vende" data-foot-target="quien_vende">
+              {t('seller')}
+            </Link>
+          </nav>
+          <nav aria-label={t('contact')}>
+            <p className="pub-foot__h">{t('contact')}</p>
+            <Link href="/contacto" data-foot-target="contacto">
+              {t('write')}
+            </Link>
           </nav>
         </div>
+
+        <p className="pub-foot__disc">{t('disclaimer')}</p>
 
         {seller.length > 0 && (
           <address className="pub-foot__seller">
@@ -68,6 +75,9 @@ export async function PublicFooter() {
           <p>{t('copy', { year: new Date().getFullYear() })}</p>
           <p>{t('secure')}</p>
           <CookieSettingsButton className="pub-foot__cookies" />
+          <a href="/en" hrefLang="en" lang="en" className="pub-foot__lang" data-foot-target="en">
+            {t('lang')}
+          </a>
         </div>
       </div>
     </footer>

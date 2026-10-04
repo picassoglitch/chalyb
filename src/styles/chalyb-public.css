@@ -953,3 +953,132 @@ body:has(.pub-consent) {
     display: none;
   }
 }
+
+/* =================== LANDING-SPEC §3.1 / §3.11 (WS-10) ===================
+   Nav: 60 px with logo · Iniciar sesión · hamburger below 1024; 80 px with
+   the links and "Prueba gratis" above. The mobile menu is a sheet that drops
+   from the top. Footer: column titles are not headings, a legal note box and
+   the language link. */
+.chalyb-app .pub-nav {
+  height: 60px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.chalyb-app .pub-nav__in {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 8px;
+  font-size: 17px;
+}
+.chalyb-app .pub-nav__burger {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 0;
+  cursor: pointer;
+}
+.chalyb-app .pub-nav__burger svg {
+  width: 24px;
+  height: 24px;
+}
+.chalyb-app .pub-menu__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(29, 29, 31, 0.35);
+}
+.chalyb-app .pub-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 18px;
+  padding: 72px 20px 24px;
+  background: #fff;
+  border-radius: 0 0 28px 28px;
+  box-shadow: var(--shadow-lg);
+}
+.chalyb-app .pub-menu__x {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.chalyb-app .pub-menu nav {
+  display: grid;
+}
+.chalyb-app .pub-menu nav a {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+.chalyb-app .pub-foot nav p.pub-foot__h {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink3-text);
+  margin-bottom: 6px;
+}
+.chalyb-app .pub-foot__disc {
+  margin-top: 28px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--bg);
+  font-size: 15px;
+  color: var(--ink2);
+  max-width: 820px;
+}
+.chalyb-app .pub-foot__lang {
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+  color: var(--ink2);
+}
+@media (min-width: 1024px) {
+  .chalyb-app .pub-nav {
+    height: 80px;
+  }
+  .chalyb-app .pub-nav__links {
+    display: flex;
+  }
+  .chalyb-app .pub-nav__cta {
+    display: inline-flex;
+    min-height: 50px;
+  }
+  .chalyb-app .pub-nav__burger {
+    display: none;
+  }
+  .chalyb-app .pub-foot__cols {
+    grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr));
+  }
+  .chalyb-app .pub-foot__brand {
+    grid-column: auto;
+  }
+  .chalyb-app .pub-foot__bottom {
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 24px;
+  }
+}
+@media (min-width: 900px) and (max-width: 1023px) {
+  .chalyb-app .pub-nav__links,
+  .chalyb-app .pub-nav__cta {
+    display: none;
+  }
+}
