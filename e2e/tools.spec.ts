@@ -23,6 +23,7 @@ const TOOLS = [
 /** The risk notice (aceptacion-ux §6): blocks until the box is ticked. */
 async function passRiskGate(page: Page) {
   const gate = page.getByRole('dialog', { name: 'Antes de empezar' });
+  await gate.waitFor({ timeout: 5_000 }).catch(() => {});
   if (!(await gate.isVisible().catch(() => false))) return;
   const cta = gate.getByRole('button', { name: 'Entendido, continuar' });
   await expect(cta).toBeDisabled();

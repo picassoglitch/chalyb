@@ -12,6 +12,9 @@ const MOCK = process.env.E2E_TOOLS_MODE === 'mock';
 
 async function acceptRiskSheet(page: Page) {
   const sheet = page.getByRole('dialog', { name: 'Antes de empezar' });
+  // One-time per account (desktop and mobile share it): give it time to
+  // render before deciding it isn't there.
+  await sheet.waitFor({ timeout: 5_000 }).catch(() => {});
   if (!(await sheet.isVisible().catch(() => false))) return;
   // Mockup 53: 3 points, the notice word for word, an unchecked box.
   await expect(sheet.getByText('Léelo una vez. Son 3 cosas.')).toBeVisible();
@@ -28,7 +31,8 @@ async function acceptRiskSheet(page: Page) {
 
 /** First activation, if this account has no coins yet. */
 async function finishSetup(page: Page) {
-  if (!/\/app\/senales\/empezar/.test(page.url())) return;
+  const coinsStep = page.getByRole('heading', { level: 1, name: '¿Qué monedas te interesan?' });
+  if (!(await coinsStep.isVisible().catch(() => false))) return;
   const btc = page.getByRole('button', { name: /BTC/ });
   if ((await btc.getAttribute('aria-pressed')) !== 'true') await btc.click();
   await page.getByRole('link', { name: 'Continuar' }).click();
@@ -62,7 +66,14 @@ test.describe('Señales · as pro (annual)', () => {
       page.getByRole('navigation', { name: 'Navegación principal' }).first(),
     ).toBeAttached();
     await acceptRiskSheet(page);
-    await page.waitForLoadState('networkidle');
+    // A fresh render after the acceptance: Señales home, or the first
+    // activation when the account has no coins yet.
+    await page.goto('/app/senales');
+    // Either the first activation (no coins yet; its redirect can land after
+    // the load) or the home with its signals.
+    const coinsStep = page.getByRole('heading', { level: 1, name: '¿Qué monedas te interesan?' });
+    const verdict = page.getByText(/Momento de compra|Momento de venta|Sin señal clara/).first();
+    await expect(coinsStep.or(verdict).first()).toBeVisible();
     await finishSetup(page);
     await expect(page.getByRole('heading', { level: 1, name: 'Señales' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Señales' })).toHaveAttribute(
@@ -122,13 +133,11 @@ test.describe('Señales · as pro (annual)', () => {
 
   test('a signal that does not exist shows the empty state, not a 404 page', async ({ page }) => {
     await page.goto('/app/senales/no-existe');
-    if (
-      await page
-        .getByRole('dialog', { name: 'Antes de empezar' })
-        .isVisible()
-        .catch(() => false)
-    )
-      return;
+    const sheet = page.getByRole('dialog', { name: 'Antes de empezar' });
+    const empty = page.getByText('No encontramos esta señal');
+    await expect(sheet.or(empty).first()).toBeVisible();
+    // Before the notice is accepted the sheet opens right here, over the tool.
+    if (await sheet.isVisible()) return;
     await expect(page.getByText('No encontramos esta señal')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver señales' })).toBeVisible();
   });
