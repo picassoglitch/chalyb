@@ -1,0 +1,22 @@
+{
+  "terminos": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 25
+  },
+  "suscripcion": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 35
+  },
+  "privacidad": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 38
+  },
+  "uso_aceptable": {
+    "version": "1.0",
+    "published": false,
+    "placeholders": 15
+  }
+}

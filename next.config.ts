@@ -3,6 +3,13 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+const LEGAL_ALIASES = [
+  ['terminos', 'terms'],
+  ['suscripcion', 'subscription'],
+  ['privacidad', 'privacy'],
+  ['uso-aceptable', 'acceptable-use'],
+] as const;
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
@@ -63,22 +70,41 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // Aliases people type (B14). /terminos and /privacidad are temporary:
-      // P6 makes the legal slugs canonical. /planes is a real page since P2.
+      // Aliases people type (B14).
       { source: '/sign-up', destination: '/sign-in?mode=signup', permanent: true },
       {
         source: '/:locale(en|es)/sign-up',
         destination: '/:locale/sign-in?mode=signup',
         permanent: true,
       },
-      { source: '/terminos', destination: '/legal/terms', permanent: false },
-      { source: '/:locale(en|es)/terminos', destination: '/:locale/legal/terms', permanent: false },
-      { source: '/privacidad', destination: '/legal/privacy', permanent: false },
+      // WS-12 · the Spanish legal short paths (and their fixed versioned
+      // URLs, /suscripcion/v1-0) land on the canonical /legal/* pages.
+      // vercel.json carries /suscripcion and /uso-aceptable too.
+      // aceptacion-ux §8's "Ver todos los cambios" link, /terminos/cambios/{version}.
       {
-        source: '/:locale(en|es)/privacidad',
-        destination: '/:locale/legal/privacy',
-        permanent: false,
+        source: '/terminos/cambios/:version',
+        destination: '/legal/terms/changes/:version',
+        permanent: true,
       },
+      {
+        source: '/:locale(en|es)/terminos/cambios/:version',
+        destination: '/:locale/legal/terms/changes/:version',
+        permanent: true,
+      },
+      ...LEGAL_ALIASES.flatMap(([alias, slug]) => [
+        { source: `/${alias}`, destination: `/legal/${slug}`, permanent: true },
+        { source: `/:locale(en|es)/${alias}`, destination: `/:locale/legal/${slug}`, permanent: true },
+        {
+          source: `/${alias}/:version(v\\d+-\\d+)`,
+          destination: `/legal/${slug}/:version`,
+          permanent: true,
+        },
+        {
+          source: `/:locale(en|es)/${alias}/:version(v\\d+-\\d+)`,
+          destination: `/:locale/legal/${slug}/:version`,
+          permanent: true,
+        },
+      ]),
 
       // BUILD-SPEC names Mi cuenta /app/cuenta; the existing route is
       // /app/settings (§0.1 reuse rule), so both work.

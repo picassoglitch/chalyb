@@ -168,7 +168,10 @@ const PHRASES = [
 function* walkSource(path) {
   const abs = join(ROOT, path);
   if (statSync(abs).isFile()) {
-    if (/\.(tsx?|mjs)$/.test(abs) && !/\.test\./.test(abs)) yield abs;
+    // Law's archived documents are the legal text itself (their notes to the
+    // owner talk about the removed courtesy refund); tests/legal.test.ts pins them.
+    if (/\.(tsx?|mjs)$/.test(abs) && !/\.test\./.test(abs) && !abs.includes('/content/legal/archive/'))
+      yield abs;
     return;
   }
   for (const name of readdirSync(abs)) yield* walkSource(join(path, name));

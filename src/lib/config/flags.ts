@@ -5,7 +5,19 @@
 // and falls back to the documented default. Nothing outside this file should
 // read these env vars directly.
 //
-// Pure: no imports, so client components, server code and tests can all use it.
+// Pure: the only import is a small generated JSON (the legal publish state),
+// so client components, server code and tests can all use it.
+
+import publishState from '../legal/publish-state.json' with { type: 'json' };
+
+type LegalPublishState = Record<string, { version: string; published: boolean; placeholders: number }>;
+let legalState: LegalPublishState = publishState;
+
+/** Tests only: pretend the legal texts are (or aren't) ready, to exercise
+ *  what depends on LEGAL_PUBLISH. `null` restores the generated state. */
+export function setLegalPublishStateForTests(state: LegalPublishState | null): void {
+  legalState = state ?? publishState;
+}
 
 function readBool(name: string, fallback: boolean): boolean {
   const raw = process.env[name];
@@ -81,7 +93,7 @@ export function clipsHubMode(): ToolHubMode {
  *  notices). */
 export function paidCheckoutBlockers(): string[] {
   const blockers: string[] = [];
-  if (!readBool('LEGAL_PUBLISH', false)) blockers.push('LEGAL_PUBLISH');
+  if (!legalPublished()) blockers.push('LEGAL_PUBLISH');
   for (const name of [
     'LEGAL_ENTITY_NAME',
     'LEGAL_ENTITY_RFC',
@@ -227,10 +239,35 @@ export function supportSlaConfirmed(): boolean {
   return readBool('SUPPORT_SLA_CONFIRMED', false);
 }
 
-/** Whether the P6 legal texts are published (OPS-10). Until then the footer
- *  links only the documents that exist and no JSON-LD Offer is emitted. */
-export function legalPublished(): boolean {
+/** Why LEGAL_PUBLISH=true can't take effect yet (WS-12, old P6-3): a
+ *  current legal version still a draft, or with Law's bracket placeholders
+ *  (`[RAZÓN SOCIAL]`, `[IVA: CONFIRMAR]`, …) left in its rendered text.
+ *  Read from src/lib/legal/publish-state.json, which `pnpm legal:hash`
+ *  writes and tests/legal.test.ts keeps in step with the registry. */
+export function legalPublishBlockers(): string[] {
+  // Local e2e only (mock adapters allowed): exercise the published flows
+  // against Law's drafts. Never honored on a real deployment.
+  if (mockAdaptersAllowed() && readBool('E2E_LEGAL_DRAFTS_AS_PUBLISHED', false)) return [];
+  const out: string[] = [];
+  for (const [doc, s] of Object.entries(legalState)) {
+    if (!s.published) out.push(`${doc}@${s.version}:draft`);
+    if (s.placeholders > 0) out.push(`${doc}@${s.version}:${s.placeholders}-placeholders`);
+  }
+  return out;
+}
+
+/** LEGAL_PUBLISH as requested, before the placeholder gate. */
+export function legalPublishRequested(): boolean {
   return readBool('LEGAL_PUBLISH', false);
+}
+
+/** Whether the P6 legal texts are published (OPS-10): requested AND no
+ *  blocker left. Until then the legal pages show Law's drafts marked as
+ *  such (noindex, out of the sitemap), consent events cite the current
+ *  Terms, paid checkout and the trial stay off, and no JSON-LD Offer is
+ *  emitted. */
+export function legalPublished(): boolean {
+  return legalPublishRequested() && legalPublishBlockers().length === 0;
 }
 
 function readUrl(name: string): string | null {

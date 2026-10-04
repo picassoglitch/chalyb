@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { safeNextPath } from '@/lib/auth/safe-next';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
-import { paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
+import { legalPublished, paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
 import { signupNext } from '@/lib/billing/plans-cta';
 
 // Plan cards link to /sign-in?mode=signup&(intent=trial|plan=<tier>)&interval=…;
@@ -60,7 +60,7 @@ export default async function SignInPage({
   // No browsewrap (aceptacion-ux §2): the line sits next to "Crear cuenta"
   // and cites only documents that are published — the new set once P6 turns
   // LEGAL_PUBLISH on, the current Terms and Privacy until then.
-  const published = (process.env.LEGAL_PUBLISH ?? '').toLowerCase() === 'true';
+  const published = legalPublished();
   const link = (href: string) =>
     function LegalLink(chunks: React.ReactNode) {
       return (

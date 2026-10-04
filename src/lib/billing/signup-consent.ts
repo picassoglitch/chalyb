@@ -9,6 +9,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { legalDocuments } from '@/lib/legal/documents';
+import { legalPublished } from '@/lib/config/flags';
 import { track } from '@/lib/analytics/track';
 import { recordConsent, requestContext, UI_VERSION } from './consent';
 
@@ -35,7 +36,7 @@ export async function recordSignupConsent(input: {
       .maybeSingle();
     if (existing) return { ok: true };
 
-    const published = (process.env.LEGAL_PUBLISH ?? '').toLowerCase() === 'true';
+    const published = legalPublished();
     const ctx = await requestContext();
     const base = {
       user_id: input.userId,

@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { LegalPage } from '@/components/legal/legal-page';
 import { privacyDocument } from '@/content/legal';
 import { publicPageMetadata } from '@/lib/site';
+import { legalPublished } from '@/lib/config/flags';
+import { LegalDocPage, legalDocMetadata } from '@/components/legal/legal-doc-page';
 
 // The root layout's title template is '%s · Chalyb', so the title here is the
 // bare document name. Both title and description are per-locale, which a
@@ -14,6 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  if (legalPublished()) return legalDocMetadata('privacidad', locale);
   const t = await getTranslations({ locale, namespace: 'legal.privacy' });
   return publicPageMetadata('/legal/privacy', locale, {
     title: t('metaTitle'),
@@ -28,6 +31,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  // WS-12 · Law's new text once LEGAL_PUBLISH takes effect; the current
+  // document (what today's users accepted) until then.
+  if (legalPublished()) return <LegalDocPage doc="privacidad" locale={locale} />;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'legal.privacy' });
   const user = await getCurrentUser();

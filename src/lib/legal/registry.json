@@ -1,0 +1,34 @@
+{
+  "terminos": {
+    "file": "terminos-y-condiciones.md",
+    "path": "/legal/terms",
+    "current": "1.0",
+    "versions": {
+      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+    }
+  },
+  "suscripcion": {
+    "file": "terminos-de-suscripcion.md",
+    "path": "/legal/subscription",
+    "current": "1.0",
+    "versions": {
+      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+    }
+  },
+  "privacidad": {
+    "file": "aviso-de-privacidad.md",
+    "path": "/legal/privacy",
+    "current": "1.0",
+    "versions": {
+      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+    }
+  },
+  "uso_aceptable": {
+    "file": "uso-aceptable-y-contenido.md",
+    "path": "/legal/acceptable-use",
+    "current": "1.0",
+    "versions": {
+      "1.0": { "published": false, "effective": null, "relevance": "relevant", "changes": [] }
+    }
+  }
+}

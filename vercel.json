@@ -4,11 +4,19 @@
     { "source": "/:locale(es|en)/terms", "destination": "/:locale/legal/terms", "permanent": true },
     { "source": "/:locale(es|en)/privacy", "destination": "/:locale/legal/privacy", "permanent": true },
     { "source": "/terms", "destination": "/legal/terms", "permanent": true },
-    { "source": "/privacy", "destination": "/legal/privacy", "permanent": true }
+    { "source": "/privacy", "destination": "/legal/privacy", "permanent": true },
+    { "source": "/:locale(en)/suscripcion", "destination": "/:locale/legal/subscription", "permanent": true },
+    { "source": "/:locale(en)/suscripcion/:version(v\\d+-\\d+)", "destination": "/:locale/legal/subscription/:version", "permanent": true },
+    { "source": "/suscripcion", "destination": "/legal/subscription", "permanent": true },
+    { "source": "/suscripcion/:version(v\\d+-\\d+)", "destination": "/legal/subscription/:version", "permanent": true },
+    { "source": "/:locale(en)/uso-aceptable", "destination": "/:locale/legal/acceptable-use", "permanent": true },
+    { "source": "/:locale(en)/uso-aceptable/:version(v\\d+-\\d+)", "destination": "/:locale/legal/acceptable-use/:version", "permanent": true },
+    { "source": "/uso-aceptable", "destination": "/legal/acceptable-use", "permanent": true },
+    { "source": "/uso-aceptable/:version(v\\d+-\\d+)", "destination": "/legal/acceptable-use/:version", "permanent": true }
   ],
   "headers": [
     {
-      "source": "/:locale(es|en)/legal/(terms|privacy)",
+      "source": "/:locale(es|en)/legal/(terms|privacy|subscription|acceptable-use)/:version*",
       "headers": [
         { "key": "Cache-Control", "value": "private, no-cache, no-store, max-age=0, must-revalidate" }
       ]

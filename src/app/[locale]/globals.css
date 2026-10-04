@@ -1594,6 +1594,43 @@ a {
 .legal-prose .legal-toc a:hover {
   color: var(--path);
 }
+/* Law's tables (plans, Lealtad schedule): scroll inside their own box at
+   360 px instead of widening the page. */
+.legal-prose .legal-table {
+  overflow-x: auto;
+  margin: 0 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.legal-prose .legal-table:focus-visible {
+  outline: 2px solid var(--path);
+  outline-offset: 2px;
+}
+.legal-prose table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.legal-prose th,
+.legal-prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.legal-prose th {
+  color: var(--ink);
+  font-weight: 600;
+}
+.legal-prose tr:last-child td {
+  border-bottom: none;
+}
+.legal-prose hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 28px 0;
+}
 
 .auth-mode-switch {
   font-size: 12.5px;

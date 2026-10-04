@@ -510,6 +510,26 @@
       "metaDescription": "Términos y condiciones para usar Chalyb y sus herramientas.",
       "title": "Términos de servicio",
       "lastUpdated": "17 junio 2026"
+    },
+    "subscription": {
+      "metaTitle": "Términos de suscripción",
+      "metaDescription": "Planes, prueba gratis de 7 días, cobros, cancelación y reembolsos de Chalyb.",
+      "title": "Términos de suscripción"
+    },
+    "acceptableUse": {
+      "metaTitle": "Uso aceptable y contenido",
+      "metaDescription": "Qué puedes subir y publicar con Chalyb, avisos de derechos de autor y avisos sobre herramientas financieras.",
+      "title": "Uso aceptable y contenido"
+    },
+    "doc": {
+      "toc": "Contenido",
+      "versionLine": "Versión {version} · En vigor desde {fecha}",
+      "noDate": "fecha por confirmar",
+      "draftTitle": "Borrador en revisión.",
+      "draftBody": "Este texto todavía no está vigente: aún le faltan datos y la firma de un abogado. Mientras tanto rigen los Términos y el Aviso de privacidad actuales.",
+      "spanishPrevails": "Este documento está disponible en español. La versión en español prevalece.",
+      "fixedUrl": "Enlace fijo de esta versión:",
+      "otherVersions": "Otras versiones:"
     }
   },
   "workspace": {
@@ -2219,6 +2239,48 @@
       "title": "¿Salir sin guardar? Tus cambios se pierden.",
       "stay": "Seguir editando",
       "go": "Salir sin guardar"
+    }
+  },
+  "termsUpdate": {
+    "title": "Actualizamos nuestros Términos",
+    "lead": "A partir del <b>{fecha}</b> cambian algunos puntos:",
+    "seeAll": "Ver todos los cambios",
+    "disagree": "Si no estás de acuerdo, puedes cancelar tu plan sin costo.",
+    "accept": "Aceptar y continuar",
+    "options": "No acepto, ver opciones",
+    "error": "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
+    "bannerText": "Actualizamos los Términos.",
+    "bannerLink": "Ver cambios",
+    "optionsPage": {
+      "title": "Tus opciones",
+      "sub": "Si no aceptas los nuevos Términos, no se te aplican a ningún cobro. Puedes hacer cualquiera de estas cosas cuando quieras:",
+      "cancel": {
+        "title": "Cancelar tu plan sin penalización",
+        "body": "Sigues con acceso hasta el final del periodo que ya pagaste y no se te vuelve a cobrar.",
+        "cta": "Cancelar mi plan"
+      },
+      "refund": {
+        "title": "Pedir un reembolso proporcional",
+        "body": "Si tienes un plan anual y el cambio te perjudica, puedes pedir que te devolvamos la parte que no usarás.",
+        "cta": "Escribirnos"
+      },
+      "download": {
+        "title": "Descargar tu contenido",
+        "body": "Tus clips y resultados siguen disponibles para descargar.",
+        "cta": "Ver mis resultados"
+      },
+      "close": {
+        "title": "Cerrar tu cuenta",
+        "body": "Te ayudamos a cerrarla y a borrar tus datos según el Aviso de privacidad.",
+        "cta": "Pedir ayuda"
+      }
+    },
+    "changesPage": {
+      "title": "Cambios en los Términos",
+      "versionLine": "Versión {version} · En vigor desde {fecha}",
+      "noDate": "fecha por confirmar",
+      "none": "Esta versión no tiene cambios listados.",
+      "fullText": "Leer el texto completo de esta versión"
     }
   }
 }

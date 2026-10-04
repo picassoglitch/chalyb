@@ -510,6 +510,26 @@
       "metaDescription": "Terms and conditions for using Chalyb and its tools.",
       "title": "Terms of service",
       "lastUpdated": "17 June 2026"
+    },
+    "subscription": {
+      "metaTitle": "Subscription terms",
+      "metaDescription": "Chalyb plans, the 7-day free trial, charges, cancellation and refunds.",
+      "title": "Subscription terms"
+    },
+    "acceptableUse": {
+      "metaTitle": "Acceptable use and content",
+      "metaDescription": "What you can upload and publish with Chalyb, copyright notices and notices about financial tools.",
+      "title": "Acceptable use and content"
+    },
+    "doc": {
+      "toc": "Contents",
+      "versionLine": "Version {version} · In force from {fecha}",
+      "noDate": "date to be confirmed",
+      "draftTitle": "Draft under review.",
+      "draftBody": "This text is not in force yet: it still needs some details and an attorney’s signature. Until then, the current Terms and Privacy Notice apply.",
+      "spanishPrevails": "This document is available in Spanish. The Spanish version prevails.",
+      "fixedUrl": "Fixed link to this version:",
+      "otherVersions": "Other versions:"
     }
   },
   "workspace": {
@@ -2219,6 +2239,48 @@
       "title": "Leave without saving? Your changes will be lost.",
       "stay": "Keep editing",
       "go": "Leave without saving"
+    }
+  },
+  "termsUpdate": {
+    "title": "We updated our Terms",
+    "lead": "Starting <b>{fecha}</b>, a few things change:",
+    "seeAll": "See all changes",
+    "disagree": "If you don’t agree, you can cancel your plan at no cost.",
+    "accept": "Accept and continue",
+    "options": "I don’t accept, see options",
+    "error": "We couldn’t save your answer. Please try again.",
+    "bannerText": "We updated the Terms.",
+    "bannerLink": "See changes",
+    "optionsPage": {
+      "title": "Your options",
+      "sub": "If you don’t accept the new Terms, they don’t apply to any charge. You can do any of these at any time:",
+      "cancel": {
+        "title": "Cancel your plan with no penalty",
+        "body": "You keep access until the end of the period you already paid for, and you won’t be charged again.",
+        "cta": "Cancel my plan"
+      },
+      "refund": {
+        "title": "Ask for a proportional refund",
+        "body": "If you have an annual plan and the change hurts you, you can ask us to refund the part you won’t use.",
+        "cta": "Write to us"
+      },
+      "download": {
+        "title": "Download your content",
+        "body": "Your clips and results are still available to download.",
+        "cta": "See my results"
+      },
+      "close": {
+        "title": "Close your account",
+        "body": "We help you close it and delete your data as the Privacy Notice explains.",
+        "cta": "Get help"
+      }
+    },
+    "changesPage": {
+      "title": "Changes to the Terms",
+      "versionLine": "Version {version} · In force from {fecha}",
+      "noDate": "date to be confirmed",
+      "none": "This version has no listed changes.",
+      "fullText": "Read the full text of this version"
     }
   }
 }

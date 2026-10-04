@@ -5,6 +5,7 @@ import { verifyResendSignature } from '@/lib/email/resend-webhook';
 import { statusForStartError } from '@/lib/billing/api';
 import {
   paidCheckoutBlockers,
+  setLegalPublishStateForTests,
   paidCheckoutEnabled,
   trialFlowEnabled,
   vipYearEnabled,
@@ -59,6 +60,9 @@ test('V-1 · paid checkout is refused while anything it depends on is missing; t
     assert.equal(trialFlowEnabled(), false);
     assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
     process.env.LEGAL_PUBLISH = 'true';
+    // WS-12: the flag alone can't publish Law's drafts while brackets remain.
+    assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
+    setLegalPublishStateForTests({ terminos: { version: '1.0', published: true, placeholders: 0 } });
     for (const k of ['NAME', 'RFC', 'ADDRESS', 'PHONE', 'EMAIL', 'HOURS', 'COMPLAINTS'])
       process.env[`LEGAL_ENTITY_${k}`] = 'x';
     process.env.CONSENT_ENCRYPTION_KEY = 'x';
@@ -78,6 +82,7 @@ test('V-1 · paid checkout is refused while anything it depends on is missing; t
     process.env.VIP_YEAR_ENABLED = 'false';
     assert.equal(vipYearEnabled(), false);
   } finally {
+    setLegalPublishStateForTests(null);
     for (const k of Object.keys(process.env)) if (!(k in saved)) delete process.env[k];
     Object.assign(process.env, saved);
   }

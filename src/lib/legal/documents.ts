@@ -1,34 +1,22 @@
 // The legal documents a consent event cites, with version, URL and hash.
-// Hashes come from `pnpm legal:hash` (document-hashes.json); bump the version
-// here whenever a text changes. P6 publishes the pages at these URLs.
+// Versions live in registry.json; hashes come from `pnpm legal:hash`
+// (document-hashes.json). Each URL is the fixed, versioned page
+// (/legal/subscription/v1-0), which never changes once published.
 
 import { canonicalOrigin } from '@/lib/site';
 import hashes from './document-hashes.json' with { type: 'json' };
+import { currentVersion, legalPath, versionSlug, type LegalDoc } from './registry';
 
-export type LegalDoc = 'terminos' | 'suscripcion' | 'privacidad' | 'uso_aceptable';
+export type { LegalDoc };
 
-// TODO(OPS-10): versions become 1.0 when the attorney signs and LEGAL_PUBLISH
-// turns on; until then these are the Law-revised drafts.
-const VERSIONS: Record<LegalDoc, string> = {
-  terminos: '1.0',
-  suscripcion: '1.0',
-  privacidad: '1.0',
-  uso_aceptable: '1.0',
-};
-
-const PATHS: Record<LegalDoc, string> = {
-  terminos: '/terminos',
-  suscripcion: '/suscripcion',
-  privacidad: '/privacidad',
-  uso_aceptable: '/uso-aceptable',
-};
-
+// TODO(OPS-10): versions are published when the attorney signs and the
+// owner's values replace every bracket; until then these are Law's drafts.
 export function legalDocument(doc: LegalDoc) {
-  const version = VERSIONS[doc];
+  const version = currentVersion(doc);
   return {
     doc,
     version,
-    url: `${canonicalOrigin()}${PATHS[doc]}/v${version.replace('.', '-')}`,
+    url: `${canonicalOrigin()}${legalPath(doc)}/${versionSlug(version)}`,
     sha256: (hashes as Record<LegalDoc, string>)[doc],
   };
 }
