@@ -46,36 +46,15 @@ export function ContactForm({ pane = 'client', category, defaultSubject }: Props
 
   if (done) {
     return (
-      <div
-        style={{
-          padding: '28px 22px',
-          border: '1px solid var(--path)',
-          background: 'rgba(198,242,78,0.06)',
-          borderRadius: 12,
-          color: 'var(--ink)',
-          fontSize: 14,
-          lineHeight: 1.55,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: 'var(--path)',
-            marginBottom: 8,
-          }}
-        >
-          {t('successTitle')}
-        </div>
+      <div className="pub-form-done" role="status">
+        <div className="pub-form-done__title">{t('successTitle')}</div>
         {t('successBody')}
       </div>
     );
   }
 
-  // We use the .auth-* classes from globals.css so this form is styled
-  // consistently with sign-in/sign-up (the only other place these inputs
-  // appear). dashboard.css's cc-mod-* classes aren't loaded outside the
-  // /dashboard and /app route groups, so we can't use them here.
+  // The .auth-* field classes are styled for the public pages in
+  // chalyb-legal.css (sign-in/up still style them from globals.css).
   const fieldClass = (key: FieldError) => `auth-field${fieldError === key ? ' err' : ''}`;
   // Problema con un cobro (Términos de Suscripción §7.5): only email, date
   // and amount are required.

@@ -1,91 +1,37 @@
-import { useTranslations } from 'next-intl';
-// The legacy stylesheet (Tailwind + the .lp/.auth-* classes this page uses). Not in the
-// root layout any more: the rebuilt public pages don't use it, and it was
-// their biggest render-blocking CSS (LANDING-SPEC §7).
-import '@/app/[locale]/globals.css';
-import { LandingNav } from '@/components/landing/nav';
-import { LandingFooter } from '@/components/landing/footer';
+import { getTranslations } from 'next-intl/server';
+import { PublicNav } from '@/components/public/public-nav';
+import { PublicFooter } from '@/components/public/public-footer';
 import { ContactForm } from './contact-form';
+import '@/styles/chalyb-tokens.css';
+import '@/styles/chalyb-public.css';
+import '@/styles/chalyb-legal.css';
 
-// Shares the landing's minimal sticky nav + footer so /contacto keeps the
-// same visual identity as the public site.
-export function ContactPage({
+// /contacto in the public site's chrome (PublicNav + PublicFooter), the same
+// as the landing and /planes. The form keeps its .auth-* markup, styled for
+// the light theme in chalyb-legal.css.
+
+export async function ContactPage({
   isAuthenticated,
   category,
 }: {
   isAuthenticated: boolean;
   category?: 'cobro';
 }) {
-  const t = useTranslations('contact');
+  const t = await getTranslations('contact');
 
   return (
-    <div className="lp">
-      <LandingNav isAuthenticated={isAuthenticated} />
-
-      <main
-        style={{
-          minHeight: '100vh',
-          padding: 'clamp(100px, 14vh, 160px) 24px 80px',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 720,
-            margin: '0 auto',
-          }}
-        >
-          <div style={{ marginBottom: 36 }}>
-            <p
-              style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: 11,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: 'var(--path)',
-                marginBottom: 12,
-              }}
-            >
-              · {t('eyebrow')} ·
-            </p>
-            <h1
-              style={{
-                fontFamily: 'var(--font-display), sans-serif',
-                fontSize: 'clamp(36px, 6vw, 64px)',
-                fontWeight: 700,
-                letterSpacing: '-0.025em',
-                lineHeight: 1.05,
-                marginBottom: 16,
-                color: 'var(--ink)',
-              }}
-            >
-              {t('title')}
-            </h1>
-            <p
-              style={{
-                fontSize: 'clamp(15px, 2vw, 17px)',
-                color: 'var(--ink-dim)',
-                lineHeight: 1.55,
-                maxWidth: '56ch',
-              }}
-            >
-              {t('lead')}
-            </p>
-          </div>
-
-          <div
-            style={{
-              padding: 'clamp(20px, 3vw, 32px)',
-              border: '1px solid var(--line-bright)',
-              borderRadius: 16,
-              background: 'rgba(16, 19, 32, 0.55)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          >
+    <div className="chalyb-app pub">
+      <PublicNav signedIn={isAuthenticated} />
+      <main id="main" className="pub-doc">
+        <div className="pub-doc__wrap" style={{ maxWidth: 680 }}>
+          <header className="pub-doc__head">
+            <p className="pub-doc__eyebrow">{t('eyebrow')}</p>
+            <h1 className="ch-h1">{t('title')}</h1>
+            <p className="ch-sub">{t('lead')}</p>
+          </header>
+          <div className="pub-doc__card">
             {category === 'cobro' && (
-              <p style={{ margin: '0 0 18px', fontSize: 15, lineHeight: 1.55, color: 'var(--ink)' }}>
+              <p style={{ margin: '0 0 18px', fontSize: 17, lineHeight: 1.55 }}>
                 {t('cobroIntro')}
               </p>
             )}
@@ -94,26 +40,14 @@ export function ContactPage({
               defaultSubject={category === 'cobro' ? t('cobroSubject') : undefined}
             />
           </div>
-
-          <div
-            style={{
-              marginTop: 28,
-              display: 'flex',
-              gap: 18,
-              flexWrap: 'wrap',
-              fontSize: 12.5,
-              color: 'var(--ink-faint)',
-              fontFamily: 'var(--font-mono), monospace',
-            }}
-          >
-            <span>· {t('assurances.1')}</span>
-            <span>· {t('assurances.2')}</span>
-            <span>· {t('assurances.3')}</span>
-          </div>
+          <p className="pub-doc__notes">
+            <span>{t('assurances.1')}</span>
+            <span>{t('assurances.2')}</span>
+            <span>{t('assurances.3')}</span>
+          </p>
         </div>
       </main>
-
-      <LandingFooter />
+      <PublicFooter />
     </div>
   );
 }
