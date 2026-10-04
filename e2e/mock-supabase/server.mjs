@@ -133,9 +133,11 @@ tables.profiles.push({
   selected_engine_id: null, chalybclip_trial_started_at: null, welcome_gift_claimed_at: null, token_bonus_balance: 0, locale: 'es',
   pro_trial_started_at: null, pro_trial_ends_at: null, created_at: iso(-9 * DAY),
 });
+// Cerrar mi cuenta files an ARCO cancellation request and reads it back.
+tables.arco_requests = [];
 const WRITABLE = new Set([
   'consent_events', 'exchange_connections', 'user_notifications',
-  'audit_events', 'app_settings', 'engines', 'profiles',
+  'audit_events', 'app_settings', 'engines', 'profiles', 'arco_requests',
 ]);
 
 const field = (r, k) => {
