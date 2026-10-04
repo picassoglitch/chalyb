@@ -151,7 +151,13 @@ test('json-ld.tsx still gates the offers on paid checkout and published terms', 
 });
 
 test('FAQPage: the 8 questions, Q1 only with the trial, Q6 only with Señales', () => {
-  const opts = { tools: TOOLS, locale: 'es', trialOffered: true, claimAll: true };
+  const opts = {
+    tools: TOOLS,
+    locale: 'es',
+    trialOffered: true,
+    claimAll: true,
+    intervals: ['month', 'year'] as const,
+  };
   const all = faqItems(faqT, opts);
   assert.deepEqual(
     all.map((i) => i.id),
@@ -189,6 +195,28 @@ test('FAQPage: the 8 questions, Q1 only with the trial, Q6 only with Señales', 
     name: all[0]!.q,
     acceptedAnswer: { '@type': 'Answer', text: all[0]!.a },
   });
+});
+
+test('FAQ q2/a2/a8 name only what is on sale', () => {
+  const base = { tools: TOOLS, locale: 'es', trialOffered: true, claimAll: true };
+  const item = (id: number, o: Partial<Parameters<typeof faqItems>[1]>) =>
+    faqItems(faqT, { ...base, intervals: ['month', 'year'], ...o }).find((i) => i.id === id)!;
+  const mes = formatMXN(planPrice('pro_month').totalCents);
+  const anual = formatMXN(planPrice('pro_year').totalCents);
+
+  assert.equal(item(2, {}).q, es.landing.faq.q2);
+  assert.equal(item(2, { trialOffered: false }).q, es.landing.faq.q2NoTrial);
+  assert.doesNotMatch(item(2, { trialOffered: false }).q, /7 días/);
+
+  const onlyMonth = item(2, { intervals: ['month'] }).a;
+  assert.ok(onlyMonth.includes(mes));
+  assert.ok(!onlyMonth.includes(anual), 'no annual price when annual is not sold');
+  const onlyYear = item(2, { intervals: ['year'] }).a;
+  assert.ok(onlyYear.includes(anual) && !onlyYear.includes(mes));
+
+  assert.match(item(8, {}).a, /mensual a anual/);
+  for (const intervals of [['month'], ['year']] as const)
+    assert.doesNotMatch(item(8, { intervals }).a, /mensual|anual/);
 });
 
 // ---------- C4 / C15 · all-tools claims only with allToolsClaimAllowed ----------

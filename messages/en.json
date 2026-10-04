@@ -166,7 +166,10 @@
       "q1": "Are the first 7 days really free?",
       "a1": "Yes, on any plan, monthly or yearly, the first time. You pay {cero} today and we email you the charge notice today, with the date and the amount. If you don’t want to continue, cancel in 1 click before that date and you’re not charged.",
       "q2": "How much do I pay after the 7 days?",
+      "q2NoTrial": "How much is Pro?",
       "a2": "Pro costs {pro_mes} MXN a month or {pro_anual} MXN a year, VAT included. We email you before every renewal.",
+      "a2Month": "Pro costs {pro_mes} MXN a month, VAT included. We email you before every renewal.",
+      "a2Year": "Pro costs {pro_anual} MXN a year, VAT included. We email you before every renewal.",
       "q3": "How do I cancel?",
       "a3": "Go to My account → My plan → Cancel. It’s 1 click and 1 confirmation, no calls. You keep your plan until the end of the period you paid for.",
       "q4": "Do I need tech skills?",
@@ -179,7 +182,8 @@
       "q7": "How do I pay?",
       "a7": "With a credit or debit card, securely through Mercado Pago. Chalyb doesn’t store your card number.",
       "q8": "Can I change plans?",
-      "a8": "Yes. From My account → My plan you can go from monthly to yearly, move up to VIP or go back to Free anytime."
+      "a8": "Yes. From My account → My plan you can go from monthly to yearly, move up to VIP or go back to Free anytime.",
+      "a8OneInterval": "Yes. From My account → My plan you can move up to VIP or go back to Free anytime."
     },
     "final": {
       "title": "Start today. <em>Tomorrow they work for you.</em>",

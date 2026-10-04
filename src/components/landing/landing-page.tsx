@@ -68,7 +68,13 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
         {tools.some((tool) => tool.slug === 'chalybclip') && <Gallery />}
         <Audience tools={tools} />
         <PlansSummary {...plans} />
-        <Faq tools={tools} locale={locale} trialOffered={trialOffered} claimAll={claimAll} />
+        <Faq
+          tools={tools}
+          locale={locale}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+          intervals={plans.intervals}
+        />
         <Partner />
         <FinalCta
           tools={tools}

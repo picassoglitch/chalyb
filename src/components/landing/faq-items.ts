@@ -5,8 +5,9 @@ import { claimKey } from './claims';
 
 // The 8 FAQ entries (LANDING-SPEC §3.8), shared by the FAQPage JSON-LD so the
 // structured data says exactly what the page says: Q1 only when the trial can
-// be started (K-7), Q6 only when Señales is active. Amounts from config.
-// Mirrors faq.tsx.
+// be started (K-7), Q6 only when Señales is active. Q2, A2 and A8 name only
+// the intervals on sale (offeredIntervals(), as the cards). Amounts from
+// config.
 
 export interface FaqItem {
   id: number;
@@ -18,15 +19,24 @@ type Translate = (key: string, values?: Record<string, string>) => string;
 
 export function faqItems(
   t: Translate,
-  opts: { tools: PublicTool[]; locale: string; trialOffered: boolean; claimAll: boolean },
+  opts: {
+    tools: PublicTool[];
+    locale: string;
+    trialOffered: boolean;
+    claimAll: boolean;
+    intervals: readonly ('month' | 'year')[];
+  },
 ): FaqItem[] {
-  const { tools, locale, trialOffered, claimAll } = opts;
+  const { tools, locale, trialOffered, claimAll, intervals } = opts;
+  const both = intervals.includes('month') && intervals.includes('year');
+  const a2 = both ? 'a2' : intervals.includes('year') ? 'a2Year' : 'a2Month';
   return [
     ...(trialOffered ? [{ id: 1, q: t('q1'), a: t('a1', { cero: formatMXN(0) }) }] : []),
     {
       id: 2,
-      q: t('q2'),
-      a: t('a2', {
+      // "después de los 7 días" only when the trial can be started.
+      q: trialOffered ? t('q2') : t('q2NoTrial'),
+      a: t(a2, {
         pro_mes: formatMXN(planPrice('pro_month').totalCents),
         pro_anual: formatMXN(planPrice('pro_year').totalCents),
       }),
@@ -40,6 +50,7 @@ export function faqItems(
     },
     ...(tools.some((x) => x.slug === 'chalybcrypto') ? [{ id: 6, q: t('q6'), a: t('a6') }] : []),
     { id: 7, q: t('q7'), a: t('a7') },
-    { id: 8, q: t('q8'), a: t('a8') },
+    // "pasar de mensual a anual" only when both are on sale.
+    { id: 8, q: t('q8'), a: both ? t('a8') : t('a8OneInterval') },
   ];
 }
