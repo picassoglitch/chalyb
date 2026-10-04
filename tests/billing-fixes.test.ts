@@ -365,3 +365,28 @@ test('LOW the cron alert no longer assumes an annual trial', async () => {
   assert.match(cron, /'Prueba terminada sin primer cobro'/);
   assert.match(cron, /'Primer cobro sin entrar'/);
 });
+
+// ── LOW · A pack whose webhook grant failed late is granted by the cron ─
+test('LOW the cron grants approved, correctly priced packs with no purchase on file', async () => {
+  const { packsOwed } = await import('@/lib/payments/pack-reconcile');
+  const { PACK_CENTS } = await import('@/config/pricing');
+  const row = (id: string, over: Record<string, unknown> = {}) => ({
+    mp_payment_id: id, user_id: 'u', pack_id: 'tokens_100k', amount_cents: PACK_CENTS.tokens_100k, currency: 'MXN', refunded_cents: 0, ...over,
+  });
+  const owed = packsOwed(
+    [
+      row('ok'),
+      row('granted'),
+      row('refunded', { refunded_cents: 100 }),
+      row('cheap', { amount_cents: 100 }),
+      row('nocur', { currency: null }),
+      row('unknown', { pack_id: 'tokens_9z' }),
+    ],
+    new Set(['granted']),
+  );
+  assert.deepEqual(owed.map((o) => o.row.mp_payment_id), ['ok']);
+  assert.ok(owed[0]!.tokens > 0);
+  const { readFileSync } = await import('node:fs');
+  const cron = readFileSync(new URL('../src/app/api/cron/billing/route.ts', import.meta.url), 'utf8');
+  assert.match(cron, /await reconcilePackGrants\(now\)/);
+});

@@ -14,7 +14,9 @@
 //   3b. ends Pro at the deadline of a charge that never landed: the trial's
 //      annual charge (no grace) or a renewal (PRICING.graceDays);
 //   4. re-reads stale subscriptions from Mercado Pago (the webhook keeps them
-//      current in between).
+//      current in between);
+//   5. decides chargebacks whose 10 business days ran out;
+//   6. grants token packs whose webhook grant failed after the ack.
 // Grace and cancelled periods lapse on their own: the session reads
 // profiles.tier_ends_at.
 
@@ -40,6 +42,7 @@ import {
 } from '@/lib/billing/notices';
 import { reconcileLealtad } from '@/lib/billing/lealtad-server';
 import { sweepChargebacks } from '@/lib/billing/disputes-server';
+import { reconcilePackGrants } from '@/lib/payments/pack-reconcile';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   mpPauseInTrialVerified,
@@ -99,6 +102,7 @@ export async function GET(req: Request) {
     unpaidCharges: 0,
     synced: 0,
     priceChanges: 0,
+    packsGranted: 0,
     errors: 0,
   };
 
@@ -442,6 +446,18 @@ export async function GET(req: Request) {
     stats.errors += 1;
     console.error('[cron/billing] chargeback sweep failed', err);
   });
+
+  // 6. Token packs the webhook didn't grant (a failure after it answered
+  // Mercado Pago gets no retry).
+  await reconcilePackGrants(now)
+    .then((r) => {
+      stats.packsGranted += r.granted;
+      stats.errors += r.failed;
+    })
+    .catch((err) => {
+      stats.errors += 1;
+      console.error('[cron/billing] pack reconcile failed', err);
+    });
 
   console.info('[cron/billing]', stats);
   return NextResponse.json({ ok: true, ...stats });

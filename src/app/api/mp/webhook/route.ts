@@ -39,7 +39,8 @@
 // Mercado Pago wants an answer fast. Processing gets ACK_BUDGET_MS; if it is
 // still running then, the route answers 200 and finishes in after(). Only a
 // failure inside that budget can still ask MP to retry; one after it is
-// logged and the daily billing cron's re-sync catches the subscription.
+// logged; the daily billing cron re-syncs the subscription and grants a
+// pack whose grant failed (pack-reconcile.ts).
 
 import { NextResponse, after } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
