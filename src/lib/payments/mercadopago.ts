@@ -45,6 +45,7 @@
 import 'server-only';
 import {
   CardToken,
+  Chargeback,
   MercadoPagoConfig,
   MerchantOrder,
   Order,
@@ -84,6 +85,8 @@ let cached: {
   cardToken: CardToken;
   /** The account the access token belongs to (/users/me). */
   user: User;
+  /** Chargebacks (the chargebacks webhook topic), read-only. */
+  chargeback: Chargeback;
 } | null = null;
 
 // Every credential below comes out of mpCredentials() (mp-config.ts), the
@@ -259,6 +262,7 @@ export function getMercadoPago() {
     merchantOrder: new MerchantOrder(config),
     cardToken: new CardToken(config),
     user: new User(config),
+    chargeback: new Chargeback(config),
   };
   return cached;
 }

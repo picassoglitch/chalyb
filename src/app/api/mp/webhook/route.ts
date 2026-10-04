@@ -187,7 +187,7 @@ async function handleSubscription(
 async function handleChargeback(chargebackId: string): Promise<NextResponse> {
   let ids: string[];
   try {
-    ids = chargebackPaymentIds(await mpGet(`/v1/chargebacks/${encodeURIComponent(chargebackId)}`));
+    ids = chargebackPaymentIds(await getMercadoPago().chargeback.get({ id: chargebackId }));
   } catch (err) {
     console.error('[mp/webhook] failed to fetch chargeback', chargebackId, err);
     return NextResponse.json({ error: 'mp fetch failed' }, { status: 500 });
