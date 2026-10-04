@@ -142,3 +142,38 @@ test('LOW · storage failures never email "hidden"; an over-long link is its own
     /if \(input\.sourceUrl\.trim\(\)\.length > 2000\) return \{ ok: false, code: 'tooLong' \};/,
   );
 });
+
+test('MED (#53) · a partial failure can’t leave a notice "removed" without its block: effects first, then status, then notified', () => {
+  const s = server();
+  const body = s.slice(
+    s.indexOf('export async function removeTakedown('),
+    s.indexOf("/** Admin: the uploader's counter-notice"),
+  );
+  const iHide = body.indexOf(".from('content_removals')");
+  const iBlock = body.indexOf(".from('blocked_content')");
+  const iStatus = body.indexOf("status: 'removed'");
+  const iNotified = body.indexOf('user_notified_at');
+  assert.ok(
+    iHide > 0 && iHide < iStatus && iBlock < iStatus,
+    'hides and block before the status change',
+  );
+  assert.ok(
+    iNotified > body.indexOf('const mailed = await sendEmail('),
+    'notified only after the email',
+  );
+  assert.match(
+    body,
+    /if \(mailed\.ok\)\s*await db\s*\.from\('takedown_notices'\)\s*\.update\(\{ user_notified_at:/,
+  );
+  assert.match(
+    body,
+    /if \(!pendingNotice \|\| pendingNotice\.status !== 'received'\) return \{ ok: false, code: 'state' \};/,
+  );
+});
+
+test('nit (#53) · a lifted block is audited against the uploader, not the admin', () => {
+  assert.match(
+    server(),
+    /targetUserId: \(notice\?\.target_user_id as string \| null\) \?\? actorId/,
+  );
+});

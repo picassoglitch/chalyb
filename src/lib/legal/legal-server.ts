@@ -175,6 +175,46 @@ export async function submitArco(
 
 /** Admin: record the answer, then deliver it (email + in-app) and keep the
  *  dispatch as evidence (7a review of #49, MEDIUM 7). */
+/** Email one ARCO answer through a claimed dispatch (arco_answer). Used by
+ *  the answer itself and by the cron's retry of failed sends. */
+async function deliverArcoAnswer(
+  db: ReturnType<typeof createAdminClient>,
+  row: {
+    id: string;
+    user_id: string;
+    contact_email: string;
+    right_kind: string;
+    outcome: ArcoOutcome;
+    effective_by: string | null;
+  },
+): Promise<'sent' | 'failed' | 'skipped'> {
+  const claimed = await claimNoticeDispatch(db, {
+    userId: row.user_id,
+    kind: 'arco_answer',
+    periodKey: `arco:${row.id}`,
+    templateId: 'arco_answer',
+    templateVersion: '1',
+  }).catch(() => null);
+  if (!claimed) return 'skipped';
+  const mail = arcoAnswerEmail({
+    folio: row.id.slice(0, 8),
+    right: row.right_kind,
+    outcome: row.outcome,
+    effectiveBy: row.effective_by ? formatFechaLarga(row.effective_by, 'es') : null,
+  });
+  const res = await sendEmail({
+    to: row.contact_email,
+    subject: mail.subject,
+    html: mail.html,
+    text: mail.text,
+    replyTo: privacyInbox(),
+  });
+  return finishNoticeDispatch(db, claimed, res);
+}
+
+/** Admin: record the answer, then deliver it (email + in-app) and keep the
+ *  dispatch as evidence (7a review of #49, MEDIUM 7). A failed email is
+ *  retried by the daily cron (runArcoAnswerRetries). */
 export async function answerArco(
   id: string,
   outcome: ArcoOutcome,
@@ -196,34 +236,18 @@ export async function answerArco(
     .select('user_id, contact_email, right_kind')
     .maybeSingle();
   if (error || !data) return false;
-  const folio = id.slice(0, 8);
-  const mail = arcoAnswerEmail({
-    folio,
-    right: data.right_kind as string,
+  await deliverArcoAnswer(db, {
+    id,
+    user_id: data.user_id as string,
+    contact_email: data.contact_email as string,
+    right_kind: data.right_kind as string,
     outcome,
-    effectiveBy: effectiveBy ? formatFechaLarga(effectiveBy, 'es') : null,
+    effective_by: effectiveBy?.toISOString() ?? null,
   });
-  const claimed = await claimNoticeDispatch(db, {
-    userId: data.user_id as string,
-    kind: 'arco_answer',
-    periodKey: `arco:${id}`,
-    templateId: 'arco_answer',
-    templateVersion: '1',
-  }).catch(() => null);
-  if (claimed) {
-    const res = await sendEmail({
-      to: data.contact_email as string,
-      subject: mail.subject,
-      html: mail.html,
-      text: mail.text,
-      replyTo: privacyInbox(),
-    });
-    await finishNoticeDispatch(db, claimed, res);
-  }
   await addUserNotice({
     userId: data.user_id as string,
     kind: 'arcoAnswered',
-    ...(await noticeText('arcoAnswered', { folio })),
+    ...(await noticeText('arcoAnswered', { folio: id.slice(0, 8) })),
     href: '/app/settings/arco',
     dedupeKey: `arco-answer:${id}`,
   }).catch(() => {});
@@ -234,6 +258,34 @@ export async function answerArco(
     metadata: { id, outcome },
   });
   return true;
+}
+
+/** Cron: resend ARCO answers whose email failed or was interrupted
+ *  (claim_notice_dispatch gives up after 5 attempts / 72 h). */
+export async function runArcoAnswerRetries(): Promise<{ resent: number; failed: number }> {
+  const db = createAdminClient();
+  const stale = new Date(Date.now() - 10 * 60_000).toISOString();
+  const { data } = await db
+    .from('email_dispatches')
+    .select('period_key')
+    .eq('kind', 'arco_answer')
+    .or(`delivery_status.eq.failed,and(delivery_status.eq.pending,sent_at.lt.${stale})`)
+    .limit(100);
+  const out = { resent: 0, failed: 0 };
+  for (const d of (data ?? []) as { period_key: string }[]) {
+    const id = d.period_key.replace(/^arco:/, '');
+    const { data: row } = await db
+      .from('arco_requests')
+      .select('id, user_id, contact_email, right_kind, outcome, effective_by')
+      .eq('id', id)
+      .not('responded_at', 'is', null)
+      .maybeSingle();
+    if (!row) continue;
+    const r = await deliverArcoAnswer(db, row as Parameters<typeof deliverArcoAnswer>[1]);
+    if (r === 'sent') out.resent += 1;
+    else if (r === 'failed') out.failed += 1;
+  }
+  return out;
 }
 
 /** Admin: the one extension Aviso §5.3 allows, only on an open request
@@ -383,24 +435,15 @@ export async function removeTakedown(
     fp,
   );
   const now = new Date().toISOString();
-  const { data: n } = await db
+  // Only a notice still waiting can be removed; read it before writing.
+  const { data: pendingNotice } = await db
     .from('takedown_notices')
-    .update({
-      status: 'removed',
-      target_user_id: target.userId,
-      removed_at: now,
-      removed_by: actor.name,
-      user_notified_at: now,
-      source_url: input.sourceUrl.trim(),
-      source_fingerprint: fp,
-      removed_job_count: plan.hideJobIds.length,
-    })
+    .select('status')
     .eq('id', id)
-    .eq('status', 'received')
-    .select('id, content_identification, right_statement')
     .maybeSingle();
-  // Someone else moved it first (two admins, a double click): stop.
-  if (!n) return { ok: false, code: 'state' };
+  if (!pendingNotice || pendingNotice.status !== 'received') return { ok: false, code: 'state' };
+  // 1. The effects first, idempotent: a failure leaves the notice
+  //    'received', so the admin can simply retry (7a review of #53).
   if (plan.hideJobIds.length) {
     const { error } = await db.from('content_removals').upsert(
       plan.hideJobIds.map((job) => ({
@@ -424,6 +467,25 @@ export async function removeTakedown(
     console.error('[takedown] blocking failed', blockErr.message);
     return { ok: false, code: 'db' };
   }
+  // 2. Then the state change, guarded: only one click wins.
+  const { data: n } = await db
+    .from('takedown_notices')
+    .update({
+      status: 'removed',
+      target_user_id: target.userId,
+      removed_at: now,
+      removed_by: actor.name,
+      source_url: input.sourceUrl.trim(),
+      source_fingerprint: fp,
+      removed_job_count: plan.hideJobIds.length,
+    })
+    .eq('id', id)
+    .eq('status', 'received')
+    .select('id, content_identification, right_statement')
+    .maybeSingle();
+  // Someone else moved it first (two admins, a double click): stop. The
+  // upserts above were the same rows, so nothing is doubled.
+  if (!n) return { ok: false, code: 'state' };
 
   const { data: prof } = await db
     .from('profiles')
@@ -440,7 +502,7 @@ export async function removeTakedown(
     dedupeKey: `takedown:${id}`,
   }).catch(() => {});
   if (prof?.email) {
-    await sendEmail({
+    const mailed = await sendEmail({
       to: prof.email as string,
       subject: 'Retiramos contenido por un aviso de derechos de autor',
       html: wrap({
@@ -456,6 +518,12 @@ export async function removeTakedown(
       }),
       replyTo: copyrightInbox(),
     });
+    // 3. Notified only once the email actually went out.
+    if (mailed.ok)
+      await db
+        .from('takedown_notices')
+        .update({ user_notified_at: new Date().toISOString() })
+        .eq('id', id);
   }
   const { data: history } = await db
     .from('takedown_notices')
@@ -625,7 +693,8 @@ async function restoreTakedown(id: string, targetUserId: string | null): Promise
  *  shown later). The notice and its history stay; the jobs it hid stay
  *  hidden unless the notice is restored. */
 export async function liftBlock(fingerprint: string, actorId: string): Promise<boolean> {
-  const { data } = await createAdminClient()
+  const db = createAdminClient();
+  const { data } = await db
     .from('blocked_content')
     .update({ lifted_at: new Date().toISOString() })
     .eq('fingerprint', fingerprint)
@@ -633,10 +702,18 @@ export async function liftBlock(fingerprint: string, actorId: string): Promise<b
     .select('fingerprint, takedown_id')
     .maybeSingle();
   if (!data) return false;
+  // Audit against the uploader the block was about (the actor if unknown).
+  const { data: notice } = data.takedown_id
+    ? await db
+        .from('takedown_notices')
+        .select('target_user_id')
+        .eq('id', data.takedown_id)
+        .maybeSingle()
+    : { data: null };
   void logAudit({
     action: 'legal.takedown',
     actorId,
-    targetUserId: actorId,
+    targetUserId: (notice?.target_user_id as string | null) ?? actorId,
     metadata: { step: 'block_lifted', fingerprint, takedown_id: data.takedown_id },
   });
   return true;
@@ -697,6 +774,7 @@ export interface LegalCronReport {
     late: boolean;
   }[];
   counterNotices: { restored: number };
+  arcoAnswers: { resent: number; failed: number };
   retention: Record<string, unknown> | null;
 }
 

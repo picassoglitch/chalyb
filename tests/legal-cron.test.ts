@@ -45,3 +45,15 @@ test('MED 10 · retention counts from the chargeback’s opened_at, can dry-run,
   );
   assert.match(read('src/app/api/cron/legal/route.ts'), /searchParams\.get\('dry'\) === '1'/);
 });
+
+test('LOW (#53) · retention can’t abort the run; failed ARCO answer emails are resent', () => {
+  const r = read('src/app/api/cron/legal/route.ts');
+  assert.match(r, /await runRetention\(now, dryRun\)\.catch\(/);
+  assert.match(r, /await runArcoAnswerRetries\(\)\.catch\(/);
+  const s = read('src/lib/legal/legal-server.ts');
+  assert.match(
+    s,
+    /\.eq\('kind', 'arco_answer'\)\s*\.or\(`delivery_status\.eq\.failed,and\(delivery_status\.eq\.pending,sent_at\.lt\.\$\{stale\}\)`\)/,
+  );
+  assert.match(s, /const r = await deliverArcoAnswer\(db, row/);
+});
