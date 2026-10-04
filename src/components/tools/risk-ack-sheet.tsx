@@ -36,11 +36,17 @@ export function RiskAckSheet({
   locale,
   copy,
   backHref = '/app',
+  afterAcceptHref,
 }: {
   slug: string;
   locale: string;
   copy: RiskAckCopy;
   backHref?: string;
+  /** Set when the tool runs in its own app (SSO hand-off). After accepting,
+   *  a full page load goes there: router.refresh() would make the server
+   *  redirect inside an RSC fetch into a route handler that 307s off-site,
+   *  running provisioning and the token mint twice. */
+  afterAcceptHref?: string;
 }) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
@@ -70,7 +76,8 @@ export function RiskAckSheet({
       });
       if (!res.ok) throw new Error(String(res.status));
       setDone(true);
-      router.refresh();
+      if (afterAcceptHref) window.location.assign(afterAcceptHref);
+      else router.refresh();
     } catch {
       setError(true);
       setBusy(false);

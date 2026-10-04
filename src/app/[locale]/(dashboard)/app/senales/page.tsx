@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect, Link } from '@/i18n/routing';
 import { loadTool, planKeyFor } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
+import { hubLaunchHref } from '@/lib/tools/routes';
 import { loadSignalFeed } from '@/lib/tools/signals-feed';
 import { isNewSignal, latestPerCoin } from '@/lib/tools/signals-view';
 import { ToolShell } from '@/components/tools/tool-shell';
@@ -64,7 +65,7 @@ export default async function SenalesHome({
     );
 
   // 'risk': the engine runs in its own app (mode off) and the notice is still
-  // pending; accepting it refreshes this page into the SSO hand-off.
+  // pending; accepting it goes straight to the SSO hand-off (full page load).
   if (gate.kind === 'risk' || gate.riskPending)
     return (
       <ToolShell slug="chalybcrypto" tab="main">
@@ -74,7 +75,13 @@ export default async function SenalesHome({
           ))}
         </div>
         <SignalsDisclaimer />
-        <RiskAck slug="chalybcrypto" locale={locale} />
+        <RiskAck
+          slug="chalybcrypto"
+          locale={locale}
+          afterAcceptHref={
+            gate.kind === 'risk' ? hubLaunchHref('chalybcrypto', locale) : undefined
+          }
+        />
       </ToolShell>
     );
 

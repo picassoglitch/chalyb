@@ -22,6 +22,7 @@ import { getEntitlements, type Entitlements } from '@/lib/billing/entitlement';
 import type { SetupStep } from '@/lib/billing/entitlement-core';
 import { hasRiskAck } from './consents';
 import { hubRunsTool } from './registry';
+import { hubLaunchHref } from './routes';
 import { reportToolError } from './bff';
 import type { ToolError } from './bff-core';
 
@@ -55,10 +56,10 @@ export async function loadTool<A>(
   // Without an in-hub adapter the engine's own app is the only way in. A failed
   // launch with via=hub lands on Tus herramientas, never back here (no loop).
   // The launch refuses a risk tool whose notice isn't accepted, so the sheet
-  // has to open here first; accepting it refreshes this screen into the hand-off.
+  // has to open here first; accepting it navigates (full load) to the hand-off.
   if (!hubRunsTool(slug)) {
     if (!(await hasRiskAck(session.user.id, slug))) return { kind: 'risk', session, entitlements };
-    redirectPath(`/auth/launch/${slug}?via=hub`);
+    redirectPath(hubLaunchHref(slug, locale));
   }
   const a = adapter();
   if (!a)

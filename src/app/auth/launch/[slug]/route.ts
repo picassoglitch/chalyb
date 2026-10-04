@@ -30,7 +30,7 @@ import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 import { reportToolError } from '@/lib/tools/bff';
 import { hasRiskAck } from '@/lib/tools/consents';
-import { RISK_TOOLS, toolHref } from '@/lib/tools/routes';
+import { RISK_TOOLS, localizedPath, toolHref } from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -116,7 +116,8 @@ export async function GET(
   // screen opens the sheet, and accepting it comes back here. Not a failure:
   // no launchFailed, so no "no abrió" banner.
   if (RISK_TOOLS.has(slug) && !(await hasRiskAck(session.user.id, slug))) {
-    return NextResponse.redirect(new URL(toolHref(slug), origin));
+    const lang = request.nextUrl.searchParams.get('lang');
+    return NextResponse.redirect(new URL(localizedPath(toolHref(slug), lang), origin));
   }
 
   const engineId = engine.id as string;
