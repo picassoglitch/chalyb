@@ -61,6 +61,16 @@ export interface TokenPack {
   tagline: string;
 }
 
+/** Whole percent less per credit than the smallest pack, rounded DOWN so a
+ *  tagline never overstates the saving (LFPC art. 32). From the real prices,
+ *  so it stays true when they change. */
+export function packSavingsPercent(id: TokenPack['id']): number {
+  const per = (pid: TokenPack['id'], tokens: number) => packPriceCents(pid) / tokens;
+  const base = per('tokens_100k', 100_000);
+  const tokens = { tokens_100k: 100_000, tokens_500k: 500_000, tokens_2m: 2_000_000 }[id];
+  return Math.max(0, Math.floor((1 - per(id, tokens) / base) * 100));
+}
+
 export const TOKEN_PACKS: TokenPack[] = [
   {
     id: 'tokens_100k',
@@ -74,14 +84,14 @@ export const TOKEN_PACKS: TokenPack[] = [
     tokens: 500_000,
     amountCents: packPriceCents('tokens_500k'),
     label: '+500k tokens',
-    tagline: 'Mejor relación · ~30% descuento por token vs el pack chico',
+    tagline: `${packSavingsPercent('tokens_500k')}% menos por crédito que el paquete chico`,
   },
   {
     id: 'tokens_2m',
     tokens: 2_000_000,
     amountCents: packPriceCents('tokens_2m'),
     label: '+2M tokens',
-    tagline: 'Mejor relación · pensado para usuarios PRO con uso pesado',
+    tagline: `Mejor relación · ${packSavingsPercent('tokens_2m')}% menos por crédito que el paquete chico`,
   },
 ];
 

@@ -67,6 +67,7 @@ const DEFAULT_BALANCE: TokenBalance = {
   unlimited: false,
   monthlyAllocation: 0,
   bonus: 0,
+  held: 0,
   monthlyUsed: 0,
   reserved: 0,
   periodStart: new Date().toISOString(),
@@ -451,6 +452,16 @@ export default async function UsagePage({
                       <Markup text={t.markup('extra', { n: nf(balance.bonus), b })} />
                     </span>
                   </p>
+                  {balance.held > 0 && (
+                    <p className="ch-credits__li">
+                      <span aria-hidden="true">
+                        <Plus />
+                      </span>
+                      <span>
+                        <Markup text={t.markup('held', { n: nf(balance.held), b })} />
+                      </span>
+                    </p>
+                  )}
                 </>
               )}
               <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />

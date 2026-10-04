@@ -299,6 +299,141 @@ try {
   check('unlimited (admin) is never refused', un.allowed === true, JSON.stringify(un));
 }
 
+// ── Credit packs (0061): spend once, oldest first; per-pack refund/hold ───
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const engineId = (await db.query(`select id from public.engines where slug = 'chalybclip'`))
+    .rows[0].id;
+  const u = (
+    await db.query(`insert into auth.users (email) values ('packs@example.com') returning id`)
+  ).rows[0].id;
+  await db.query(`insert into public.profiles (id) values ($1) on conflict do nothing`, [u]);
+  await db.query(
+    `insert into public.app_settings (key, value) values ('usage_margin_percent', '0'::jsonb)
+     on conflict (key) do update set value = excluded.value`,
+  );
+  const q1 = async (sql, params = []) => (await db.query(sql, params)).rows[0];
+  const rpc = async (sql, params) => (await q1(`select ${sql} as r`, params)).r;
+  const packs = async () =>
+    Object.fromEntries(
+      (
+        await db.query(
+          `select coalesce(mp_payment_id, source) k, tokens_remaining::int rem, status from public.token_pack_purchases where user_id = $1`,
+          [u],
+        )
+      ).rows.map((r) => [r.k, `${r.rem}:${r.status}`]),
+    );
+  const mirror = async () =>
+    Number((await q1(`select token_bonus_balance b from public.profiles where id = $1`, [u])).b);
+  let n = 0;
+  const spend = async (...amounts) => {
+    const values = amounts
+      .map((_, i) => `($1,$2,'llm.tokens',$${i + 3},'pk${n}_${i}')`)
+      .join(',');
+    n += 1;
+    await db.query(
+      `insert into public.usage_events (user_id, engine_id, kind, amount, source_id) values ${values}`,
+      [u, engineId, ...amounts],
+    );
+  };
+  const caps = JSON.stringify({
+    allocation: 1000, unlimited: false, jobs_per_month: -1, minutes_per_month: -1,
+    max_concurrent_jobs: -1, active_streams: 0, streams_per_month: 0,
+  });
+  const admit = (job, est) =>
+    rpc(`public.admit_usage($1,$2,$3,'job','x','standard',$4,0,0,0,600,$5::jsonb)`, [
+      u, engineId, job, est, caps,
+    ]);
+
+  await rpc(`public.set_usage_allocation($1, 1000)`, [u]);
+  await rpc(`public.grant_token_pack($1, 500, 'mp_payment', 'pA')`, [u]);
+  await rpc(`public.grant_token_pack($1, 300, 'mp_payment', 'pB')`, [u]);
+  await db.query(
+    `update public.token_pack_purchases set created_at = now() - interval '2 days' where mp_payment_id = 'pA'`,
+  );
+  const dup = await rpc(`public.grant_token_pack($1, 500, 'mp_payment', 'pA')`, [u]);
+  check('a pack is granted once per payment', dup.already_granted === true);
+
+  await spend(800);
+  const p0 = await packs();
+  check('usage inside the plan draws no pack credits', p0.pA === '500:active' && p0.pB === '300:active', JSON.stringify(p0));
+  await spend(400);
+  check('usage above the plan draws the oldest pack', (await packs()).pA === '300:active', JSON.stringify(await packs()));
+  await spend(200, 200);
+  const p1 = await packs();
+  check('one statement, several events: each draws once, oldest first', p1.pA === '0:active' && p1.pB === '200:active', JSON.stringify(p1));
+  check('the profile mirror follows the packs', (await mirror()) === 200);
+  const drawn = Number((await q1(`select sum(tokens) s from public.token_pack_draws where user_id = $1`, [u])).s);
+  check('draws ledger = usage above the allocation', drawn === 600, String(drawn));
+
+  const bal = await rpc(`public.usage_balance($1)`, [u]);
+  check('balance reports unused active pack credits', Number(bal.bonus) === 200 && Number(bal.held) === 0, JSON.stringify(bal));
+  const no = await admit('pk-j1', 250);
+  check('admission: plan spent, only the packs are left', no.allowed === false && no.reason === 'no_tokens' && Number(no.remaining) === 200, JSON.stringify(no));
+  const yes = await admit('pk-j2', 150);
+  check('admission within the pack credits', yes.allowed === true, JSON.stringify(yes));
+  await db.query(`update public.usage_reservations set status = 'cancelled' where id = $1`, [yes.reservation_id]);
+
+  const h = await rpc(`public.hold_token_pack('pB')`);
+  check('a dispute holds that pack', h.status === 'held' && Number(h.tokens_held) === 200, JSON.stringify(h));
+  const bh = await rpc(`public.usage_balance($1)`, [u]);
+  check('held credits are not spendable', Number(bh.bonus) === 0 && Number(bh.held) === 200, JSON.stringify(bh));
+  await spend(100);
+  check('usage never draws a held pack', (await packs()).pB === '200:held');
+  await rpc(`public.release_token_pack('pB')`);
+  check('Chalyb wins: the credits come back', (await packs()).pB === '200:active');
+
+  await rpc(`public.grant_token_pack($1, 1000, 'mp_payment', 'pC')`, [u]);
+  const rA = await rpc(`public.clawback_token_pack('pA', 'refunded')`);
+  check('refunding a spent pack removes nothing', rA.ok && Number(rA.tokens_removed) === 0, JSON.stringify(rA));
+  const rC = await rpc(`public.clawback_token_pack('pC', 'refunded')`);
+  const p2 = await packs();
+  check('a refund removes only that pack', Number(rC.tokens_removed) === 1000 && p2.pB === '200:active' && p2.pC === '0:removed', JSON.stringify({ rC, p2 }));
+  const rC2 = await rpc(`public.clawback_token_pack('pC', 'refunded')`);
+  check('a refund is applied once', rC2.already_clawed_back === true);
+
+  await rpc(`public.hold_token_pack('pB')`);
+  const lost = await rpc(`public.clawback_token_pack('pB', 'charged_back')`);
+  check('a lost dispute removes the held credits', Number(lost.tokens_removed) === 200 && (await packs()).pB === '0:removed' && (await mirror()) === 0, JSON.stringify(lost));
+  const late = await rpc(`public.release_token_pack('pB')`);
+  check('a removed pack cannot be released', late.already === true && (await packs()).pB === '0:removed');
+
+  // Bought before 0061: its credits sit in the legacy row.
+  await db.query(
+    `insert into public.token_pack_purchases (user_id, tokens_granted, source, tokens_remaining, status, created_at)
+     values ($1, 500, 'legacy', 500, 'active', now() - interval '1 year')`,
+    [u],
+  );
+  await db.query(
+    `insert into public.token_pack_purchases (user_id, tokens_granted, source, mp_payment_id, tokens_remaining, status)
+     values ($1, 300, 'mp_payment', 'pM', 0, 'merged')`,
+    [u],
+  );
+  const rM = await rpc(`public.clawback_token_pack('pM', 'refunded')`);
+  const p3 = await packs();
+  check('refunding a pre-0061 pack takes its share from the legacy row', Number(rM.tokens_removed) === 300 && p3.legacy === '200:active' && p3.pM === '0:removed', JSON.stringify({ rM, p3 }));
+
+  const g = await rpc(`public.adjust_token_bonus_balance($1, 100)`, [u]);
+  const r = await rpc(`public.adjust_token_bonus_balance($1, -1000)`, [u]);
+  check('admin grant adds a pack; revoke clamps at what is left', Number(g.effective_delta) === 100 && Number(r.effective_delta) === -300 && (await mirror()) === 0, JSON.stringify({ g, r }));
+
+  const none = (await db.query(`insert into auth.users (email) values ('noalloc@example.com') returning id`)).rows[0].id;
+  await db.query(`insert into public.profiles (id) values ($1) on conflict do nothing`, [none]);
+  await rpc(`public.grant_token_pack($1, 100, 'promo', null)`, [none]);
+  await db.query(
+    `insert into public.usage_events (user_id, engine_id, kind, amount, source_id) values ($1,$2,'llm.tokens',50,'na1')`,
+    [none, engineId],
+  );
+  const kept = Number((await q1(`select token_bonus_balance b from public.profiles where id = $1`, [none])).b);
+  check('no allocation on file: usage draws nothing', kept === 100, String(kept));
+}
+
 // ── Legal P6 (0055): retention purge, ARCO, takedowns ─────────────────────
 {
   const check = (label, cond, extra = '') => {

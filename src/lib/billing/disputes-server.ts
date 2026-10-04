@@ -12,6 +12,8 @@ import { isOrderPaymentId } from '@/lib/payments/order-charge';
 import { chargeWasPriced } from '@/lib/payments/webhook-verify';
 import { getContactInbox } from '@/lib/email/resend';
 import { notify } from '@/lib/notifications/notify';
+import { holdTokenPack, releaseTokenPack } from '@/lib/usage/packs';
+import { clawbackTokenPack } from '@/lib/usage/tokens';
 import {
   chargebackCloseAfterDays,
   chargebackMeasuresEnabled,
@@ -294,7 +296,8 @@ async function triageInputs(cb: { user_id: string; mp_preapproval_id: string | n
 /**
  * Mercado Pago reports a dispute (payment `charged_back` / `in_mediation`,
  * or the `chargebacks` topic). Records it, triages it and tells an admin.
- * Changes NOTHING on the account. Idempotent per payment id.
+ * Changes nothing on the account; for a credit pack, only that pack's unused
+ * credits are set aside until it ends (Paquetes §8.2). Idempotent per payment id.
  */
 export async function onChargebackOpened(input: {
   mpPaymentId: string;
@@ -330,6 +333,13 @@ export async function onChargebackOpened(input: {
       source: 'mp.webhook',
     }).catch(() => {});
     return { ok: true };
+  }
+  // §8.2: the disputed pack's unused credits are set aside; the plan, the
+  // month's credits and other packs stay as they are. Before the case row, so
+  // a failure here is retried with the whole notification.
+  if (found.kind === 'pack') {
+    const held = await holdTokenPack(found.mp_payment_id as string);
+    if (!held.ok) return { ok: false };
   }
   const row = {
     user_id: found.user_id as string,
@@ -408,10 +418,27 @@ export async function markLegalCase(id: string, reason: RefundReason, actor: str
   return true;
 }
 
-/** Admin: Mercado Pago's resolution of the dispute. */
+/** Admin: Mercado Pago's resolution of the dispute. For a credit pack (§8.3):
+ *  won → its set-aside credits are released; lost → its unused credits are
+ *  removed (the buyer has the money back). Nothing else changes. */
 export async function recordResolution(id: string, resolution: 'won' | 'lost', actor: string): Promise<boolean> {
   const cb = await loadChargeback(id);
   if (!cb || cb.resolution) return false;
+  const mpPaymentId = cb.mp_payment_id as string;
+  const { data: pay } = await createAdminClient()
+    .from('payments')
+    .select('kind')
+    .eq('mp_payment_id', mpPaymentId)
+    .maybeSingle();
+  if (pay?.kind === 'pack') {
+    // Before the resolution is written, so a failure can be retried.
+    if (resolution === 'won') {
+      if (!(await releaseTokenPack(mpPaymentId)).ok) return false;
+    } else {
+      const claw = await clawbackTokenPack({ mpPaymentId, reason: 'charged_back' });
+      if (!claw.ok && claw.error !== 'no_purchase') return false;
+    }
+  }
   await createAdminClient()
     .from('chargebacks')
     .update({ resolution, resolved_at: new Date().toISOString() })
