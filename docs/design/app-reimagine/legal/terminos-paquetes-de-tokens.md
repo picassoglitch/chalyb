@@ -1,9 +1,9 @@
 # Términos de los Paquetes de Créditos
 
 **Página pública:** `chalyb.com/paquetes`
-**Versión:** 1.0 · **Vigente desde:** [FECHA DE PUBLICACIÓN]
+**Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
 
-Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · [DOMICILIO FISCAL COMPLETO] · [CORREO DE CONTACTO] · [TELÉFONO] ([HORARIO DE ATENCIÓN]). Más datos en chalyb.com/quien-vende.
+Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · [DOMICILIO FISCAL COMPLETO] · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)). Más datos en chalyb.com/quien-vende.
 
 > **Resumen**
 > - Un paquete de créditos es una **compra única**: pagas una vez y **no se renueva**. No es una suscripción.
@@ -40,7 +40,7 @@ Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con activ
 
 3.1. Los créditos extra se suman a tu saldo en cuanto Mercado Pago confirma el pago (normalmente en segundos o minutos).
 
-3.2. Si pagaste y en **[24] horas** no ves los créditos en **Mi cuenta → Uso**, escríbenos a [CORREO DE CONTACTO]: te los acreditamos o, si lo prefieres, te devolvemos el pago completo (sección 7).
+3.2. Si pagaste y en **[24] horas** no ves los créditos en **Mi cuenta → Uso**, escríbenos a hola@chalyb.com: te los acreditamos o, si lo prefieres, te devolvemos el pago completo (sección 7).
 
 ## 4. Cómo se usan
 
@@ -82,7 +82,7 @@ Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con activ
 
 7.4. **Pedir un reembolso nunca te perjudica.** Aplica la sección 7.3 de los Términos de Suscripción: pedir o recibir un reembolso no da lugar a penalizaciones, cargos, suspensión, bloqueo ni cambio de tu precio o plan.
 
-7.5. Cómo pedirlo: escribe a [CORREO DE CONTACTO] o entra a **Ayuda → Problema con un cobro**. Te respondemos en un máximo de **5 días hábiles** y el reembolso se hace al mismo medio de pago.
+7.5. Cómo pedirlo: escribe a hola@chalyb.com o entra a **Ayuda → Problema con un cobro**. Te respondemos en un máximo de **5 días hábiles** y el reembolso se hace al mismo medio de pago.
 
 ## 8. Contracargos
 
@@ -108,7 +108,7 @@ Botón: **Pagar ${precio_total} MXN**
 
 10.1. Después de cada compra te enviamos por correo un **comprobante** con: paquete, número de créditos, precio total, IVA desglosado, fecha y hora, número de operación de Mercado Pago, la indicación "Cargo único, no se renueva" y un enlace a estos términos.
 
-10.2. Para pedir tu **factura (CFDI)**, emitida por RAAA960329GA2, escribe a [CORREO DE FACTURACIÓN] dentro del plazo que establecen las disposiciones fiscales.
+10.2. Para pedir tu **factura (CFDI)**, emitida por RAAA960329GA2, escribe a hola@chalyb.com dentro del plazo que establecen las disposiciones fiscales.
 
 ## 11. Cambios a estos términos
 

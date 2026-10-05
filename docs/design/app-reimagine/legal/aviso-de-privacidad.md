@@ -1,6 +1,6 @@
 # Aviso de Privacidad Integral de Chalyb
 
-**Versión:** 1.0 · **Última actualización:** [FECHA]
+**Versión:** 1.0 · **Última actualización:** 5 de octubre de 2026
 
 Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesión de los Particulares** publicada en el Diario Oficial de la Federación el 20 de marzo de 2025 (la "**LFPDPPP**") y demás disposiciones aplicables.
 
@@ -12,7 +12,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 > - Si conectas tus redes (TikTok, YouTube, Instagram, etc.), **no vemos tu contraseña**; usamos un permiso que puedes quitar cuando quieras.
 > - Compartimos datos solo con proveedores que nos ayudan a dar el servicio (servidores, pagos, IA, correo) y cuando la ley lo permite o exige. **No vendemos tus datos.**
 > - El envío de **promociones es opcional**: puedes decir que no desde el inicio o en cualquier momento.
-> - Puedes **acceder, corregir, cancelar u oponerte** al uso de tus datos (derechos ARCO) escribiendo a [CORREO DE PRIVACIDAD].
+> - Puedes **acceder, corregir, cancelar u oponerte** al uso de tus datos (derechos ARCO) escribiendo a hola@chalyb.com.
 
 ---
 
@@ -20,7 +20,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb**, con domicilio en **[DOMICILIO FISCAL COMPLETO]** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
 
-**Departamento de datos personales:** [DEPARTAMENTO DE DATOS PERSONALES] · Correo: **[CORREO DE PRIVACIDAD]** · Teléfono: [TELÉFONO].
+**Departamento de datos personales:** Departamento de datos personales de Chalyb (lo atiende directamente el Responsable) · Correo: **hola@chalyb.com** · Teléfono: [TELÉFONO].
 
 ## 2. Datos personales que tratamos
 
@@ -56,7 +56,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 5. Enviarte comunicaciones de servicio (seguridad, cambios a los Términos o al Aviso de Privacidad, confirmaciones de cancelación).
 6. Brindarte soporte y atender quejas, aclaraciones y solicitudes ARCO.
 7. **Conservar la evidencia de tu aceptación** de Términos y de cobros recurrentes, y usarla para atender aclaraciones, contracargos, quejas ante PROFECO o procesos legales.
-8. Prevenir fraude, abuso de pruebas gratis, accesos no autorizados y uso contrario a los Términos; mantener la seguridad del servicio. Para esto usamos reglas automatizadas (por ejemplo, para detectar cuentas o tarjetas repetidas). Si una decisión automatizada te niega la Prueba o limita tu cuenta, puedes pedir que una persona la revise y presentar tus observaciones escribiendo a [CORREO DE PRIVACIDAD].
+8. Prevenir fraude, abuso de pruebas gratis, accesos no autorizados y uso contrario a los Términos; mantener la seguridad del servicio. Para esto usamos reglas automatizadas (por ejemplo, para detectar cuentas o tarjetas repetidas). Si una decisión automatizada te niega la Prueba o limita tu cuenta, puedes pedir que una persona la revise y presentar tus observaciones escribiendo a hola@chalyb.com.
 9. Cumplir obligaciones legales, fiscales y requerimientos de autoridades.
 
 ### 3.2. Finalidades secundarias (opcionales)
@@ -68,12 +68,12 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 **Tu negativa a las finalidades secundarias no afecta tu servicio.** Puedes negarte:
 - **Desde el inicio**, dejando **sin marcar** la casilla "Quiero recibir novedades y promociones" al crear tu cuenta (viene desmarcada).
-- **En cualquier momento**, en **Mi cuenta → Privacidad y notificaciones**, con el enlace "Dejar de recibir" en cada correo promocional, o escribiendo a [CORREO DE PRIVACIDAD].
+- **En cualquier momento**, en **Mi cuenta → Privacidad y notificaciones**, con el enlace "Dejar de recibir" en cada correo promocional, o escribiendo a hola@chalyb.com.
 
 ### 3.3. Inteligencia artificial y tu contenido
 
 - Tu contenido se procesa con modelos de IA (propios o de proveedores) **solo para generar los resultados que nos pides**.
-- **No usamos tu contenido ni tus datos para entrenar modelos de IA** propios o de terceros sin tu consentimiento previo y expreso [CONFIRMAR POLÍTICA]. Exigimos a nuestros proveedores de IA que no usen tus datos para entrenar sus modelos [CONFIRMAR CON CADA PROVEEDOR].
+- **No usamos tu contenido ni tus datos para entrenar modelos de IA** propios o de terceros sin tu consentimiento previo y expreso. Exigimos a nuestros proveedores de IA que no usen tus datos para entrenar sus modelos.
 - Los datos obtenidos mediante las API de Google/YouTube se usan solo para prestarte las funciones que solicitas, de acuerdo con la Política de Datos de Usuario de los Servicios de API de Google, incluidos los requisitos de **Uso Limitado**, y no se usan para entrenar modelos de IA generalizados.
 
 ## 4. Remisiones a encargados y transferencias
@@ -89,7 +89,7 @@ Compartimos datos con proveedores que nos ayudan a prestar el servicio, que est�
 | Modelos de inteligencia artificial | Anthropic y Google (Gemini) | Transcribir, analizar y generar clips, textos y respuestas |
 | Correo electrónico transaccional y de marketing | Resend | Avisos de cobro, recordatorios, soporte y, si aceptas, promociones |
 | Analítica y medición | Vercel Analytics, solo si lo aceptas | Medir uso y errores del servicio |
-| Facturación electrónica | [PROVEEDOR DE FACTURACIÓN / PAC] | Emitir CFDI |
+| Facturación electrónica | Proveedor autorizado de certificación (PAC) del SAT | Emitir CFDI |
 
 ### 4.2. Plataformas que tú conectas
 
@@ -105,7 +105,7 @@ Cuando conectas o publicas en TikTok, YouTube, Instagram, Facebook, Twitch, Kick
 
 Quien reciba tus datos asumirá las mismas obligaciones que Chalyb frente a ti.
 
-**Fusión, venta o reestructura del negocio.** Si Chalyb o su negocio se fusiona, se vende o se reestructura, te avisaremos **antes** de que tus datos pasen a quien adquiera el negocio, quien deberá respetar este Aviso. Si ese cambio implica una transferencia que requiera tu consentimiento conforme a la ley, te lo pediremos y podrás negarte y cerrar tu cuenta. [VALIDAR CON ABOGADO]
+**Fusión, venta o reestructura del negocio.** Si Chalyb o su negocio se fusiona, se vende o se reestructura, te avisaremos **antes** de que tus datos pasen a quien adquiera el negocio, quien deberá respetar este Aviso. Si ese cambio implica una transferencia que requiera tu consentimiento conforme a la ley, te lo pediremos y podrás negarte y cerrar tu cuenta.
 
 **Cláusula de transferencias (art. 35 LFPDPPP).** Hoy **no realizamos transferencias que requieran tu consentimiento**. Si en el futuro quisiéramos hacerlo, te lo pediremos por separado con una opción para aceptar o no aceptar; tu negativa no afectará tu servicio.
 
@@ -113,7 +113,7 @@ Quien reciba tus datos asumirá las mismas obligaciones que Chalyb frente a ti.
 
 5.1. Tienes derecho a **conocer** qué datos tenemos y cómo los usamos (Acceso); **corregirlos** si son inexactos o incompletos (Rectificación); pedir que los **eliminemos** de nuestros registros cuando no se usen conforme a la ley (Cancelación); y **oponerte** a su uso para fines específicos (Oposición), incluido el tratamiento **automatizado** que, sin intervención humana, te produzca efectos jurídicos no deseados o afecte de manera significativa tus intereses.
 
-5.2. **Cómo ejercerlos.** Envía tu solicitud a **[CORREO DE PRIVACIDAD]** desde el correo de tu cuenta, o desde **Mi cuenta → Privacidad y cuenta → Mis datos (derechos ARCO)**, con:
+5.2. **Cómo ejercerlos.** Envía tu solicitud a **hola@chalyb.com** desde el correo de tu cuenta, o desde **Mi cuenta → Privacidad y cuenta → Mis datos (derechos ARCO)**, con:
 1. Tu nombre y el correo o medio para comunicarte la respuesta.
 2. Un documento que acredite tu identidad (y, en su caso, la de tu representante y su poder).
 3. La descripción clara del dato y del derecho que quieres ejercer.
@@ -137,7 +137,7 @@ Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguie
 - Cambia tus preferencias en **Mi cuenta → Privacidad y notificaciones**.
 - Usa el enlace "Dejar de recibir" en nuestros correos promocionales.
 - Inscríbete en el **Registro Público para Evitar Publicidad (REPEP)** de PROFECO.
-- Solicita tu inclusión en nuestro **listado de exclusión** interno escribiendo a [CORREO DE PRIVACIDAD].
+- Solicita tu inclusión en nuestro **listado de exclusión** interno escribiendo a hola@chalyb.com.
 
 ## 8. Cookies y tecnologías similares
 
@@ -156,7 +156,7 @@ Puedes revocar en cualquier momento el consentimiento que nos hayas dado, siguie
 
 ## 9. Conservación y seguridad
 
-9.1. Conservamos tus datos mientras tengas cuenta y, después, solo por el tiempo necesario para las finalidades descritas y para cumplir plazos legales: por ejemplo, el contenido de una cuenta cerrada durante **[PLAZO DE CONSERVACIÓN DE CONTENIDO]**; datos de facturación y fiscales por el plazo que exijan las leyes fiscales; y la evidencia de aceptación y cobros (mensajes de datos que contienen el contrato) durante **al menos 10 años** para defensa de derechos y obligaciones mercantiles, bloqueados y con acceso restringido. Los datos relativos a un **incumplimiento de obligaciones contractuales** (por ejemplo, adeudos, contracargos o abuso de pruebas) se eliminan a más tardar **72 meses** después de la fecha del incumplimiento. Después los eliminamos o anonimizamos.
+9.1. Conservamos tus datos mientras tengas cuenta y, después, solo por el tiempo necesario para las finalidades descritas y para cumplir plazos legales: por ejemplo, el contenido de una cuenta cerrada durante **30 días**; datos de facturación y fiscales por el plazo que exijan las leyes fiscales; y la evidencia de aceptación y cobros (mensajes de datos que contienen el contrato) durante **al menos 10 años** para defensa de derechos y obligaciones mercantiles, bloqueados y con acceso restringido. Los datos relativos a un **incumplimiento de obligaciones contractuales** (por ejemplo, adeudos, contracargos o abuso de pruebas) se eliminan a más tardar **72 meses** después de la fecha del incumplimiento. Después los eliminamos o anonimizamos.
 
 9.2. Aplicamos medidas de seguridad administrativas, técnicas y físicas razonables (cifrado en tránsito, control de accesos, tokens en lugar de contraseñas o tarjetas). Si ocurre una vulneración de seguridad que afecte de forma significativa tus derechos patrimoniales o morales, **te lo informaremos de forma inmediata** para que puedas tomar medidas para proteger tus derechos.
 
@@ -166,22 +166,22 @@ Podemos modificar este Aviso por cambios legales, en nuestros servicios o en nue
 
 ## 11. Usuarios fuera de México
 
-Si usas Chalyb desde otro país, tus datos se tratarán en México y en los países donde se ubican nuestros proveedores. Respetaremos los derechos adicionales que te otorguen las leyes de privacidad aplicables en tu lugar de residencia; escríbenos a [CORREO DE PRIVACIDAD] para ejercerlos.
+Si usas Chalyb desde otro país, tus datos se tratarán en México y en los países donde se ubican nuestros proveedores. Respetaremos los derechos adicionales que te otorguen las leyes de privacidad aplicables en tu lugar de residencia; escríbenos a hola@chalyb.com para ejercerlos.
 
-- **Canadá.** Tratamos tus datos conforme a la ley federal canadiense de privacidad del sector privado (PIPEDA) y, si resides en Quebec, conforme a la Ley sobre la protección de la información personal en el sector privado de Quebec. **Persona responsable de la protección de la información personal:** [NOMBRE / CARGO] · [CORREO DE PRIVACIDAD]. Antes de comunicar tu información fuera de Quebec (por ejemplo, a México o Estados Unidos), evaluamos que reciba una protección adecuada y lo formalizamos por escrito con quien la recibe. No usamos tecnologías de perfilado o localización sin informarte y, cuando corresponda, sin que las actives. Respondemos tus solicitudes dentro de los 30 días que fija la ley de Quebec.
-- **Estados Unidos.** No vendemos tus datos ni los compartimos para publicidad dirigida entre sitios sin tu consentimiento. Si la ley de privacidad de tu estado te otorga derechos adicionales (por ejemplo, acceso, eliminación, corrección o exclusión), puedes ejercerlos escribiendo a [CORREO DE PRIVACIDAD]. [VALIDAR si Chalyb supera los umbrales de leyes estatales como la CCPA/CPRA.]
+- **Canadá.** Tratamos tus datos conforme a la ley federal canadiense de privacidad del sector privado (PIPEDA) y, si resides en Quebec, conforme a la Ley sobre la protección de la información personal en el sector privado de Quebec. **Persona responsable de la protección de la información personal:** [NOMBRE COMPLETO DE LA PERSONA FÍSICA], Responsable · hola@chalyb.com. Antes de comunicar tu información fuera de Quebec (por ejemplo, a México o Estados Unidos), evaluamos que reciba una protección adecuada y lo formalizamos por escrito con quien la recibe. No usamos tecnologías de perfilado o localización sin informarte y, cuando corresponda, sin que las actives. Respondemos tus solicitudes dentro de los 30 días que fija la ley de Quebec.
+- **Estados Unidos.** No vendemos tus datos ni los compartimos para publicidad dirigida entre sitios sin tu consentimiento. Si la ley de privacidad de tu estado te otorga derechos adicionales (por ejemplo, acceso, eliminación, corrección o exclusión), puedes ejercerlos escribiendo a hola@chalyb.com.
 
 ## 12. Consentimiento
 
 Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consientes el tratamiento de tus datos para las finalidades primarias. Para los datos patrimoniales o financieros y para las finalidades secundarias te pediremos tu **consentimiento expreso** por separado.
 
-Última actualización: [FECHA] · Versión 1.0
+Última actualización: 5 de octubre de 2026 · Versión 1.0
 
 ---
 
 # Aviso de Privacidad Simplificado
 
-> **Resumen en palabras simples:** Chalyb usa tus datos para darte el servicio y cobrar tu plan. Las promociones son opcionales. Puedes ver, corregir o borrar tus datos escribiendo a [CORREO DE PRIVACIDAD].
+> **Resumen en palabras simples:** Chalyb usa tus datos para darte el servicio y cobrar tu plan. Las promociones son opcionales. Puedes ver, corregir o borrar tus datos escribiendo a hola@chalyb.com.
 
 **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial (RFC RAAA960329GA2) que opera bajo el nombre comercial Chalyb, con domicilio en [DOMICILIO FISCAL COMPLETO], es responsable del tratamiento de tus datos personales.
 
@@ -193,8 +193,8 @@ Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consi
 
 **Compartimos datos** con proveedores de hospedaje, pagos (Mercado Pago), inteligencia artificial, correo y analítica que trabajan por nuestra cuenta, y con autoridades cuando la ley lo exige. **No vendemos tus datos** ni hacemos transferencias que requieran tu consentimiento.
 
-**Cómo limitar el uso de tus datos:** en **Mi cuenta → Privacidad y notificaciones**, con el enlace "Dejar de recibir" de cada correo promocional, o escribiendo a [CORREO DE PRIVACIDAD].
+**Cómo limitar el uso de tus datos:** en **Mi cuenta → Privacidad y notificaciones**, con el enlace "Dejar de recibir" de cada correo promocional, o escribiendo a hola@chalyb.com.
 
-**Derechos ARCO y revocación:** escribe a [CORREO DE PRIVACIDAD].
+**Derechos ARCO y revocación:** escribe a hola@chalyb.com.
 
 **Aviso de privacidad integral:** chalyb.com/privacidad

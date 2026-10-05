@@ -1,7 +1,7 @@
 # Quién vende
 
 **Página pública:** `chalyb.com/quien-vende`
-**Versión:** 1.0 · **Vigente desde:** [FECHA DE PUBLICACIÓN]
+**Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
 
 > **Resumen**
 > - Chalyb es un **nombre comercial**, no una empresa. Quien te vende, te cobra y te emite la factura es **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**.
@@ -19,16 +19,16 @@
 | **Nombre comercial** | Chalyb |
 | **RFC** | RAAA960329GA2 |
 | **Domicilio** | [DOMICILIO FISCAL COMPLETO] (calle, número exterior e interior, colonia, código postal, municipio o alcaldía, estado, México) |
-| **Correo de atención a clientes** | [CORREO DE CONTACTO] |
+| **Correo de atención a clientes** | hola@chalyb.com |
 | **Teléfono** | [TELÉFONO] |
-| **Horario de atención** | [HORARIO DE ATENCIÓN] (hora del centro de México) |
+| **Horario de atención** | lunes a viernes, de 9:00 a 18:00 (hora del centro de México) |
 | **Sitio** | chalyb.com |
 
 Cuando en nuestros documentos decimos "**Chalyb**", "**nosotros**" o "**el Responsable**", nos referimos a esta persona.
 
 ## 2. Dudas, aclaraciones y reclamaciones
 
-- Escríbenos a **[CORREO DE CONTACTO]**, llámanos al **[TELÉFONO]** o entra a **Ayuda → Problema con un cobro**.
+- Escríbenos a **hola@chalyb.com**, llámanos al **[TELÉFONO]** o entra a **Ayuda → Problema con un cobro**.
 - Te respondemos en un máximo de **5 días hábiles**. Si tu reclamación es por un cobro, te decimos en ese plazo si procede un reembolso y cuándo lo recibes (Términos de Suscripción, sección 7).
 - En el domicilio indicado arriba también recibimos reclamaciones por escrito.
 - Escribirnos primero **no es obligatorio**: puedes acudir directamente a la PROFECO, a tu banco o a Mercado Pago.
@@ -48,11 +48,11 @@ Tienes derecho a presentar una queja ante la Procuraduría Federal del Consumido
 
 ## 5. Facturas (CFDI)
 
-El comprobante fiscal (CFDI) lo emite **RAAA960329GA2**. Puedes pedirlo escribiendo a [CORREO DE FACTURACIÓN] con tus datos fiscales, dentro del plazo que establecen las disposiciones fiscales. Cada pago genera también un comprobante por correo con el concepto, el monto, el IVA desglosado y la fecha.
+El comprobante fiscal (CFDI) lo emite **RAAA960329GA2**. Puedes pedirlo escribiendo a hola@chalyb.com con tus datos fiscales, dentro del plazo que establecen las disposiciones fiscales. Cada pago genera también un comprobante por correo con el concepto, el monto, el IVA desglosado y la fecha.
 
 ## 6. Tus datos personales
 
-El responsable de tus datos personales es [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb), con el domicilio indicado arriba. Para ejercer tus derechos de acceso, rectificación, cancelación u oposición (ARCO) escribe a **[CORREO DE PRIVACIDAD]**. Consulta el **Aviso de Privacidad** en chalyb.com/privacidad.
+El responsable de tus datos personales es [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb), con el domicilio indicado arriba. Para ejercer tus derechos de acceso, rectificación, cancelación u oposición (ARCO) escribe a **hola@chalyb.com**. Consulta el **Aviso de Privacidad** en chalyb.com/privacidad.
 
 No te enviaremos publicidad si no la aceptaste, y puedes dejar de recibirla en cualquier momento desde el enlace al final de cada correo o en **Mi cuenta → Privacidad y notificaciones**.
 
@@ -94,9 +94,9 @@ Las versiones anteriores siguen disponibles en su dirección fija (por ejemplo, 
 **Antes de publicar**
 1. Llenar **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]** tal como aparece en la Constancia de Situación Fiscal de RAAA960329GA2.
 2. **Domicilio:** el art. 76 Bis III pide un domicilio físico donde recibir reclamaciones. En una persona física, el domicilio fiscal suele ser su casa y quedará público. Si el titular prefiere no publicar su casa, puede dar de alta ante el SAT un establecimiento o local (por ejemplo, una oficina o coworking que reciba correspondencia) y usar esa dirección aquí. Confirmar con el abogado que la dirección elegida sirve para recibir notificaciones y quejas.
-3. Llenar [CORREO DE CONTACTO], [TELÉFONO], [HORARIO DE ATENCIÓN], [CORREO DE FACTURACIÓN] y [CORREO DE PRIVACIDAD] (pueden ser el mismo buzón). El teléfono debe contestarse en el horario indicado.
+3. Llenar hola@chalyb.com, [TELÉFONO], lunes a viernes, de 9:00 a 18:00 (hora del centro de México), hola@chalyb.com y hola@chalyb.com (pueden ser el mismo buzón). El teléfono debe contestarse en el horario indicado.
 4. Confirmar la lista de medidas de seguridad de §4 con lo que realmente hace el sistema.
-5. Confirmar que **Mi cuenta → Facturas** existe y emite CFDI; si no, cambiar §5 a "escribe a [CORREO DE FACTURACIÓN]".
+5. Confirmar que **Mi cuenta → Facturas** existe y emite CFDI; si no, cambiar §5 a "escribe a hola@chalyb.com".
 6. Confirmar que la conservación de constancias NOM-151 está contratada (proveedor de constancias de conservación). Si no, quitar la mención de la NOM-151 en §8 y dejar solo la conservación de 10 años.
 7. Enlazar `/quien-vende` en el pie de página de todo el sitio, en el checkout (junto al botón de pago) y en los correos de cobro.
 8. **Fiscal (contador):** confirmar que el régimen de RAAA960329GA2 cubre esta actividad (actividad económica registrada para servicios digitales/software por suscripción), el tratamiento del IVA (16% en México; y si hay clientes en el extranjero, la exportación de servicios), la emisión de CFDI (incluida la factura global a "público en general" para quien no la pide) y si el régimen elegido (por ejemplo, Actividad Empresarial o RESICO) sigue siendo adecuado con el volumen esperado.

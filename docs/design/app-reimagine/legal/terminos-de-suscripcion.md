@@ -1,6 +1,6 @@
 # Términos de Suscripción, Prueba Gratis, Cobros y Reembolsos de Chalyb
 
-**Versión:** 1.0 · **Fecha de entrada en vigor:** [FECHA] · Forman parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.0 · **Fecha de entrada en vigor:** 5 de octubre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
@@ -30,13 +30,13 @@
 
 **Precios en dólares (USD), si se te muestran:** Pro US$50 al mes · Pro anual US$500 al año · VIP US$200 al mes · VIP anual US$2,000 al año, **más los impuestos que apliquen según tu ubicación** (sección 11).
 
-\*Las herramientas, límites de uso y créditos de cada Plan se detallan en **chalyb.com/precios**. Beneficios VIP: [BENEFICIOS VIP].
+\*Las herramientas, límites de uso y créditos de cada Plan se detallan en **chalyb.com/precios**. Beneficios VIP: 4 veces los créditos mensuales de Pro y procesamiento prioritario.
 
 1.2. **Precio total e impuestos.** Los precios en **pesos mexicanos (MXN)** **incluyen el Impuesto al Valor Agregado (IVA)**. Los precios en dólares (USD) no incluyen impuestos; los que correspondan se suman y se muestran antes de pagar (sección 11). Mostramos siempre el **precio total a pagar** de forma visible antes de que confirmes, y en el resumen de pago y en tu comprobante te mostramos el desglose del IVA; no hay cargos adicionales de Chalyb.
 
 1.3. **Moneda y pagos desde fuera de México.** Te cobramos en la moneda que te mostramos antes de pagar (MXN o, si se te muestran precios en dólares, USD). Si tu tarjeta es de otro país o moneda, tu banco puede aplicar tipo de cambio o comisiones por operación internacional, que no controlamos ni recibimos.
 
-1.4. **Facturación (CFDI).** Si necesitas factura electrónica, escribe a [CORREO DE FACTURACIÓN] dentro del plazo que establecen las disposiciones fiscales aplicables.
+1.4. **Facturación (CFDI).** Si necesitas factura electrónica, escribe a hola@chalyb.com dentro del plazo que establecen las disposiciones fiscales aplicables.
 
 ## 2. Prueba gratis de 7 días
 
@@ -144,7 +144,7 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 ## 6. Cancelación
 
-6.1. **Cómo cancelar.** Puedes cancelar tu suscripción o tu Prueba **en cualquier momento y en 1 clic** desde **Mi cuenta → Mi plan → Cancelar**, con una sola pantalla de confirmación. Si en ese momento te mostramos una oferta para quedarte, el botón para **terminar la cancelación** estará visible en esa misma pantalla. También puedes escribirnos a [CORREO DE CONTACTO] desde el correo de tu cuenta y la procesaremos el mismo día hábil.
+6.1. **Cómo cancelar.** Puedes cancelar tu suscripción o tu Prueba **en cualquier momento y en 1 clic** desde **Mi cuenta → Mi plan → Cancelar**, con una sola pantalla de confirmación. Si en ese momento te mostramos una oferta para quedarte, el botón para **terminar la cancelación** estará visible en esa misma pantalla. También puedes escribirnos a hola@chalyb.com desde el correo de tu cuenta y la procesaremos el mismo día hábil.
 
 6.2. **Efecto inmediato.** Tu cancelación **queda registrada de inmediato**: no se harán más cargos. Para que no pierdas lo que ya pagaste, **conservas el acceso hasta el final del periodo pagado o de la Prueba**; después tu cuenta pasa al plan Gratis.
 
@@ -173,7 +173,7 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 7.4. **Fuera de estos casos no hay reembolsos.** No ofrecemos reembolsos discrecionales o de cortesía.
 
-7.5. **Cómo pedir un reembolso.** Escribe a [CORREO DE CONTACTO] o usa **Ayuda → Problema con un cobro**, indicando el correo de tu cuenta, la fecha y el monto. No necesitas ningún otro requisito. Te respondemos por escrito en un máximo de **5 días hábiles**, explicando el motivo si la solicitud no procede. Los reembolsos se hacen al mismo método de pago a través de Mercado Pago (o a otro, si tú lo aceptas); el tiempo en que se reflejan depende de tu banco. Si no estás de acuerdo con nuestra respuesta, puedes acudir a la PROFECO.
+7.5. **Cómo pedir un reembolso.** Escribe a hola@chalyb.com o usa **Ayuda → Problema con un cobro**, indicando el correo de tu cuenta, la fecha y el monto. No necesitas ningún otro requisito. Te respondemos por escrito en un máximo de **5 días hábiles**, explicando el motivo si la solicitud no procede. Los reembolsos se hacen al mismo método de pago a través de Mercado Pago (o a otro, si tú lo aceptas); el tiempo en que se reflejan depende de tu banco. Si no estás de acuerdo con nuestra respuesta, puedes acudir a la PROFECO.
 
 ## 8. Pagos fallidos, periodo de gracia y cambio a plan Gratis
 
@@ -201,7 +201,7 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 ## 10. Contracargos (disputas con tu banco o Mercado Pago)
 
-10.1. **Tu derecho a disputar un cargo.** Puedes disputar cualquier cargo ante tu banco o Mercado Pago. Si prefieres, escríbenos antes a [CORREO DE CONTACTO]: muchas veces lo resolvemos más rápido, pero **no es obligatorio**.
+10.1. **Tu derecho a disputar un cargo.** Puedes disputar cualquier cargo ante tu banco o Mercado Pago. Si prefieres, escríbenos antes a hola@chalyb.com: muchas veces lo resolvemos más rápido, pero **no es obligatorio**.
 
 10.2. **Presentar una disputa no tiene consecuencias por sí solo.** Mientras tu disputa se resuelve, tu cuenta y tu plan siguen funcionando normalmente. (Si disputas la compra de un paquete de créditos, solo los créditos no usados de ese paquete pueden quedar apartados mientras se resuelve; ver Términos de los Paquetes de Créditos, sección 8.) Presentar una disputa **nunca**, por sí solo, da lugar a una suspensión, cierre o bloqueo de tu cuenta, a un cargo adicional ni a un cambio o reinicio de tu precio (incluido tu calendario de Pro Lealtad). Tampoco tiene consecuencias una disputa por un **cargo no autorizado** o por un cobro que, conforme a la sección 7.2, debíamos devolverte: en esos casos te devolvemos el dinero y, si ya lo recuperaste por medio de tu banco, damos el caso por cerrado.
 
@@ -231,7 +231,7 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 11.1. **Precios en MXN:** incluyen el IVA aplicable en México.
 
-11.1 bis. **Precios en USD:** no incluyen impuestos. Si por tu ubicación debemos cobrar un impuesto sobre ventas o al consumo (por ejemplo, *sales tax* en Estados Unidos, o GST/HST y, en Quebec, QST en Canadá), te lo mostraremos desglosado, con el **total a pagar y la moneda (USD)**, antes de que confirmes el pago. [CONFIRMAR con contador en qué estados o provincias Chalyb debe registrarse y cobrar impuestos.]
+11.1 bis. **Precios en USD:** no incluyen impuestos. Si por tu ubicación debemos cobrar un impuesto sobre ventas o al consumo (por ejemplo, *sales tax* en Estados Unidos, o GST/HST y, en Quebec, QST en Canadá), te lo mostraremos desglosado, con el **total a pagar y la moneda (USD)**, antes de que confirmes el pago.
 
 11.2. Cualquier impuesto, comisión o tipo de cambio que te cobre tu banco o tu país por pagos internacionales corre por tu cuenta.
 
@@ -255,7 +255,7 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 ## 15. Contacto
 
-[NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · [DOMICILIO FISCAL COMPLETO] · [CORREO DE CONTACTO] · [TELÉFONO] ([HORARIO DE ATENCIÓN]).
+[NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · [DOMICILIO FISCAL COMPLETO] · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
-Última actualización: [FECHA] · Versión 1.0
+Última actualización: 5 de octubre de 2026 · Versión 1.0

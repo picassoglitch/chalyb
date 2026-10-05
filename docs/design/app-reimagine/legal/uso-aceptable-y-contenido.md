@@ -1,6 +1,6 @@
 # Política de Uso Aceptable, Contenido y Avisos sobre Herramientas Financieras de Chalyb
 
-**Versión:** 1.0 · **Fecha de entrada en vigor:** [FECHA] · Forma parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.0 · **Fecha de entrada en vigor:** 5 de octubre de 2026 · Forma parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
@@ -32,7 +32,7 @@
 
 2.2. Esta licencia incluye el derecho de permitir que nuestros proveedores (hospedaje, modelos de IA) realicen esas acciones por nuestra cuenta, bajo obligaciones de confidencialidad.
 
-2.3. **No usaremos Tu Contenido para publicidad de Chalyb ni para entrenar modelos de IA** sin tu consentimiento previo y expreso [CONFIRMAR POLÍTICA].
+2.3. **No usaremos Tu Contenido para publicidad de Chalyb ni para entrenar modelos de IA** sin tu consentimiento previo y expreso.
 
 2.4. La licencia termina cuando eliminas Tu Contenido o cierras tu cuenta, salvo: copias de respaldo que se eliminan en ciclos normales; contenido ya publicado por ti en otras plataformas (que se rige por las reglas de esas plataformas); y lo que debamos conservar por ley o para defensa de derechos.
 
@@ -71,7 +71,7 @@ Este procedimiento sigue el mecanismo de **aviso, retirada y contra-aviso** prev
 
 ### 5.1. Cómo enviar un aviso
 
-Si eres titular de derechos de autor o derechos conexos (o su representante autorizado) y consideras que contenido alojado o procesado en Chalyb infringe tus derechos, envía un aviso a **[CORREO DE DERECHOS DE AUTOR]** (o mediante el formulario en chalyb.com/derechos-de-autor) con **al menos** lo siguiente:
+Si eres titular de derechos de autor o derechos conexos (o su representante autorizado) y consideras que contenido alojado o procesado en Chalyb infringe tus derechos, envía un aviso a **hola@chalyb.com** (o mediante el formulario en chalyb.com/derechos-de-autor) con **al menos** lo siguiente:
 
 1. **Nombre** del titular o representante legal y un **medio de contacto** para recibir notificaciones.
 2. **Identificación del contenido** que se reclama como infractor.
@@ -89,7 +89,7 @@ Si eres titular de derechos de autor o derechos conexos (o su representante auto
 
 ### 5.3. Contra-aviso
 
-Si eres el usuario y consideras que el retiro fue un error, puedes enviar un **contra-aviso** a [CORREO DE DERECHOS DE AUTOR] en el que **demuestres la titularidad o autorización** que tienes para ese uso específico, o **justifiques el uso** conforme a las limitaciones o excepciones de la Ley Federal del Derecho de Autor.
+Si eres el usuario y consideras que el retiro fue un error, puedes enviar un **contra-aviso** a hola@chalyb.com en el que **demuestres la titularidad o autorización** que tienes para ese uso específico, o **justifiques el uso** conforme a las limitaciones o excepciones de la Ley Federal del Derecho de Autor.
 
 Informaremos del contra-aviso a quien presentó el aviso original y **restableceremos el contenido**, salvo que esa persona acredite haber iniciado un procedimiento judicial o administrativo, una denuncia penal o un mecanismo alterno de solución de controversias **dentro de los 15 días hábiles** siguientes a que le informemos del contra-aviso.
 
@@ -102,7 +102,7 @@ Informaremos del contra-aviso a quien presentó el aviso original y **restablece
 
 ### 5.5. Otros reportes
 
-Para reportar otro tipo de contenido prohibido (imagen, privacidad, fraude, menores), escribe a [CORREO DE CONTACTO] con el enlace y el motivo.
+Para reportar otro tipo de contenido prohibido (imagen, privacidad, fraude, menores), escribe a hola@chalyb.com con el enlace y el motivo.
 
 ## 6. Avisos importantes sobre Señales y, cuando estén disponibles, Pronósticos, Inversiones e Inmuebles
 
@@ -119,7 +119,7 @@ Chalyb ([NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad e
 - **No emite recomendaciones individualizadas.** Las Señales, Pronósticos y análisis son los mismos para todos los usuarios de un mismo plan y **no se generan a partir de tu perfil, tus saldos, tus posiciones, tu situación financiera ni tus objetivos**.
 - **No acepta apuestas** ni actúa como intermediario de ellas, y no organiza quinielas, concursos con premio, rifas ni sorteos.
 - **No promete rendimientos** de ningún tipo.
-- **No recibe pagos** de emisoras, brókers, exchanges ni casas de apuestas por recomendar un activo o un operador. Si en algún momento Chalyb tiene un acuerdo comercial o de afiliación con alguno de ellos, lo indicaremos de forma clara junto al enlace o la mención correspondiente. [CONFIRMAR CON EL DUEÑO]
+- **No recibe pagos** de emisoras, brókers, exchanges ni casas de apuestas por recomendar un activo o un operador. Si en algún momento Chalyb tiene un acuerdo comercial o de afiliación con alguno de ellos, lo indicaremos de forma clara junto al enlace o la mención correspondiente.
 
 **Resultados históricos.** Si mostramos estadísticas de aciertos o rendimientos pasados, indicaremos el periodo, la metodología y que no incluyen comisiones, deslizamientos ni impuestos (si es el caso), y mostraremos también las pérdidas. Nunca mostraremos resultados simulados como si fueran reales.
 
@@ -129,7 +129,7 @@ Las señales son análisis automatizados de mercado generados con base en datos 
 
 ### 6.4. Pronósticos (cuando esté disponible)
 
-Los pronósticos son estimaciones probabilísticas con fines informativos y de entretenimiento. **No garantizan ningún resultado.** Chalyb **no recibe, cruza ni intermedia apuestas**, no administra saldos para apostar y no organiza concursos de pronósticos con premio. Si decides apostar, hazlo solo en casas de apuestas autorizadas en tu país (en México, con permiso vigente de la Secretaría de Gobernación), si eres mayor de edad, y con dinero que puedas perder. Si sientes que pierdes el control al apostar, busca ayuda: [LÍNEA DE AYUDA SOBRE JUEGO RESPONSABLE]. Si Chalyb llegara a mencionar o enlazar a una casa de apuestas, solo lo hará respecto de operadores con permiso vigente de la Secretaría de Gobernación, mostrando la información que exige la normatividad de juegos y sorteos (por ejemplo, el número de permiso y los mensajes de juego responsable y de prohibición a menores).
+Los pronósticos son estimaciones probabilísticas con fines informativos y de entretenimiento. **No garantizan ningún resultado.** Chalyb **no recibe, cruza ni intermedia apuestas**, no administra saldos para apostar y no organiza concursos de pronósticos con premio. Si decides apostar, hazlo solo en casas de apuestas autorizadas en tu país (en México, con permiso vigente de la Secretaría de Gobernación), si eres mayor de edad, y con dinero que puedas perder. Si sientes que pierdes el control al apostar, busca ayuda: Línea de la Vida, 800 911 2000 (gratuita, las 24 horas). Si Chalyb llegara a mencionar o enlazar a una casa de apuestas, solo lo hará respecto de operadores con permiso vigente de la Secretaría de Gobernación, mostrando la información que exige la normatividad de juegos y sorteos (por ejemplo, el número de permiso y los mensajes de juego responsable y de prohibición a menores).
 
 ### 6.5. Inversiones (cuando esté disponible)
 
@@ -158,6 +158,6 @@ La primera vez que actives Señales, Pronósticos o Inversiones te pediremos con
 
 ## 7. Consecuencias del incumplimiento
 
-Si incumples esta Política podemos, según la gravedad: advertirte; retirar o bloquear contenido; desconectar integraciones; suspender funciones; suspender o cancelar tu cuenta conforme a la sección 13 de los Términos; y, cuando corresponda, informar a las autoridades. Cuando sea razonable, te explicaremos el motivo y podrás pedir una revisión escribiendo a [CORREO DE CONTACTO].
+Si incumples esta Política podemos, según la gravedad: advertirte; retirar o bloquear contenido; desconectar integraciones; suspender funciones; suspender o cancelar tu cuenta conforme a la sección 13 de los Términos; y, cuando corresponda, informar a las autoridades. Cuando sea razonable, te explicaremos el motivo y podrás pedir una revisión escribiendo a hola@chalyb.com.
 
-Última actualización: [FECHA] · Versión 1.0
+Última actualización: 5 de octubre de 2026 · Versión 1.0
