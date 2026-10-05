@@ -1,20 +1,17 @@
-// Shared shell for /legal/terms and /legal/privacy. Renders the marketing nav
-// + footer around the document content, so legal pages have the same visual
-// identity as the public landing.
+// Shared shell for the legal documents (/legal/*, their versions) and the
+// copyright notice form (/derechos-de-autor): the public site's chrome
+// (PublicNav + PublicFooter), the same as the landing and /planes.
 //
 // Server pages pass `title`, `lastUpdated`, and the document body as children.
-// The body comes from src/content/legal/<doc>.<locale>.tsx and uses the
-// `.legal-prose` markup defined in globals.css. The chrome around it (eyebrow,
-// "last updated" label) is translated here — it used to be hardcoded Spanish,
-// which showed through on /en/legal/*.
+// The body uses the `.legal-prose` markup, styled in chalyb-legal.css. The
+// chrome around it (eyebrow, "last updated" label) is translated here.
 
-import { useTranslations } from 'next-intl';
-// The legacy stylesheet (Tailwind + the .legal-prose this page uses). Not in the
-// root layout any more: the rebuilt public pages don't use it, and it was
-// their biggest render-blocking CSS (LANDING-SPEC §7).
-import '@/app/[locale]/globals.css';
-import { LandingNav } from '@/components/landing/nav';
-import { LandingFooter } from '@/components/landing/footer';
+import { getTranslations } from 'next-intl/server';
+import { PublicNav } from '@/components/public/public-nav';
+import { PublicFooter } from '@/components/public/public-footer';
+import '@/styles/chalyb-tokens.css';
+import '@/styles/chalyb-public.css';
+import '@/styles/chalyb-legal.css';
 
 interface Props {
   title: string;
@@ -23,72 +20,27 @@ interface Props {
   children: React.ReactNode;
 }
 
-export function LegalPage({ title, lastUpdated, isAuthenticated, children }: Props) {
-  const t = useTranslations('legal');
+export async function LegalPage({ title, lastUpdated, isAuthenticated, children }: Props) {
+  const t = await getTranslations('legal');
 
   return (
-    <div className="lp">
-      <LandingNav isAuthenticated={isAuthenticated} />
-
-      <main
-        style={{
-          minHeight: '100vh',
-          padding: 'clamp(100px, 14vh, 160px) 24px 80px',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 760,
-            margin: '0 auto',
-          }}
-        >
-          <div style={{ marginBottom: 36 }}>
-            <p
-              style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: 11,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: 'var(--path)',
-                marginBottom: 12,
-              }}
-            >
-              · {t('eyebrow')} ·
-            </p>
-            <h1
-              style={{
-                fontFamily: 'var(--font-display), sans-serif',
-                fontSize: 'clamp(32px, 5vw, 52px)',
-                fontWeight: 700,
-                letterSpacing: '-0.025em',
-                lineHeight: 1.05,
-                marginBottom: 16,
-                color: 'var(--ink)',
-              }}
-            >
-              {title}
-            </h1>
-            <p
-              style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: 12,
-                color: 'var(--ink-faint)',
-                letterSpacing: '0.04em',
-              }}
-            >
+    <div className="chalyb-app pub">
+      <PublicNav signedIn={isAuthenticated} />
+      <main id="main" className="pub-doc">
+        <div className="pub-doc__wrap">
+          <header className="pub-doc__head">
+            <p className="pub-doc__eyebrow">{t('eyebrow')}</p>
+            <h1 className="ch-h1">{title}</h1>
+            <p className="pub-doc__meta">
               {t('lastUpdated')} · {lastUpdated}
             </p>
+          </header>
+          <div className="pub-doc__card">
+            <div className="legal-prose">{children}</div>
           </div>
-
-          {/* The `legal-prose` class gives consistent typography for h2, h3,
-              p, ul, code, strong inside legal documents. Defined in globals.css. */}
-          <div className="legal-prose">{children}</div>
         </div>
       </main>
-
-      <LandingFooter />
+      <PublicFooter />
     </div>
   );
 }
