@@ -6,7 +6,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 > **Resumen en palabras simples**
 >
-> - **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial que opera bajo el nombre comercial Chalyb (RFC RAAA960329GA2), es responsable de tus datos personales.
+> - **Myriam Alcantara Moreno**, persona física con actividad empresarial que opera bajo el nombre comercial Chalyb (RFC RAAA960329GA2), es responsable de tus datos personales.
 > - Usamos tus datos principalmente para **darte el servicio**: tu cuenta, tus clips y herramientas, tus cobros y la atención a clientes.
 > - **No guardamos el número de tu tarjeta**: lo guarda Mercado Pago.
 > - Si conectas tus redes (TikTok, YouTube, Instagram, etc.), **no vemos tu contraseña**; usamos un permiso que puedes quitar cuando quieras.
@@ -18,7 +18,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 ## 1. Identidad y domicilio del responsable
 
-**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb**, con domicilio en **[DOMICILIO FISCAL COMPLETO]** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
+**Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb**, con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
 
 **Departamento de datos personales:** Departamento de datos personales de Chalyb (lo atiende directamente el Responsable) · Correo: **hola@chalyb.com** · Teléfono: [TELÉFONO].
 
@@ -168,7 +168,7 @@ Podemos modificar este Aviso por cambios legales, en nuestros servicios o en nue
 
 Si usas Chalyb desde otro país, tus datos se tratarán en México y en los países donde se ubican nuestros proveedores. Respetaremos los derechos adicionales que te otorguen las leyes de privacidad aplicables en tu lugar de residencia; escríbenos a hola@chalyb.com para ejercerlos.
 
-- **Canadá.** Tratamos tus datos conforme a la ley federal canadiense de privacidad del sector privado (PIPEDA) y, si resides en Quebec, conforme a la Ley sobre la protección de la información personal en el sector privado de Quebec. **Persona responsable de la protección de la información personal:** [NOMBRE COMPLETO DE LA PERSONA FÍSICA], Responsable · hola@chalyb.com. Antes de comunicar tu información fuera de Quebec (por ejemplo, a México o Estados Unidos), evaluamos que reciba una protección adecuada y lo formalizamos por escrito con quien la recibe. No usamos tecnologías de perfilado o localización sin informarte y, cuando corresponda, sin que las actives. Respondemos tus solicitudes dentro de los 30 días que fija la ley de Quebec.
+- **Canadá.** Tratamos tus datos conforme a la ley federal canadiense de privacidad del sector privado (PIPEDA) y, si resides en Quebec, conforme a la Ley sobre la protección de la información personal en el sector privado de Quebec. **Persona responsable de la protección de la información personal:** Myriam Alcantara Moreno, Responsable · hola@chalyb.com. Antes de comunicar tu información fuera de Quebec (por ejemplo, a México o Estados Unidos), evaluamos que reciba una protección adecuada y lo formalizamos por escrito con quien la recibe. No usamos tecnologías de perfilado o localización sin informarte y, cuando corresponda, sin que las actives. Respondemos tus solicitudes dentro de los 30 días que fija la ley de Quebec.
 - **Estados Unidos.** No vendemos tus datos ni los compartimos para publicidad dirigida entre sitios sin tu consentimiento. Si la ley de privacidad de tu estado te otorga derechos adicionales (por ejemplo, acceso, eliminación, corrección o exclusión), puedes ejercerlos escribiendo a hola@chalyb.com.
 
 ## 12. Consentimiento
@@ -183,7 +183,7 @@ Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consi
 
 > **Resumen en palabras simples:** Chalyb usa tus datos para darte el servicio y cobrar tu plan. Las promociones son opcionales. Puedes ver, corregir o borrar tus datos escribiendo a hola@chalyb.com.
 
-**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial (RFC RAAA960329GA2) que opera bajo el nombre comercial Chalyb, con domicilio en [DOMICILIO FISCAL COMPLETO], es responsable del tratamiento de tus datos personales.
+**Myriam Alcantara Moreno**, persona física con actividad empresarial (RFC RAAA960329GA2) que opera bajo el nombre comercial Chalyb, con domicilio en Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México, es responsable del tratamiento de tus datos personales.
 
 **Datos que tratamos:** identificación y contacto (nombre, correo, usuario, país); datos de autenticación; facturación y pago (plan, historial de cobros, token y últimos 4 dígitos de tu tarjeta, datos fiscales); el contenido que subes y los resultados generados; datos de las cuentas que conectes; datos de uso y dispositivo (IP, navegador, cookies); comunicaciones con soporte y con el Asistente; evidencia de tu aceptación; y, solo si los proporcionas y con tu consentimiento expreso, datos patrimoniales o financieros (claves de API, saldos, posiciones u operaciones). **No tratamos datos personales sensibles.**
 

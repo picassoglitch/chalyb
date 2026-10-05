@@ -16,7 +16,7 @@
 
 ## 1. Quiénes somos y a qué se aplican estos Términos
 
-1.1. Chalyb es el nombre comercial con el que opera **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **[DOMICILIO FISCAL COMPLETO]**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **hola@chalyb.com** o al **[TELÉFONO]** (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
+1.1. Chalyb es el nombre comercial con el que opera **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **hola@chalyb.com** o al **[TELÉFONO]** (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
 
 1.2. Estos Términos y Condiciones (los "**Términos**") regulan el acceso y uso del sitio chalyb.com, sus aplicaciones, herramientas, API, extensiones y cualquier servicio relacionado (en conjunto, el "**Servicio**").
 
@@ -113,7 +113,7 @@ Al usar Chalyb **no puedes**:
 
 ## 9. Propiedad intelectual
 
-9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb) o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
+9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a Myriam Alcantara Moreno (Chalyb) o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
 
 9.2. **Tu contenido.** Lo que tú subes o enlazas (videos, streams, imágenes, textos) sigue siendo tuyo o de quien corresponda. Nos otorgas únicamente la licencia necesaria para prestarte el Servicio, descrita en la Política de Uso Aceptable y Contenido.
 
@@ -210,9 +210,9 @@ Al usar Chalyb **no puedes**:
 
 ## 18. Contacto
 
-**[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, nombre comercial **Chalyb**
+**Myriam Alcantara Moreno**, persona física con actividad empresarial, nombre comercial **Chalyb**
 RFC: RAAA960329GA2
-Domicilio: [DOMICILIO FISCAL COMPLETO]
+Domicilio: Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México
 Correo: hola@chalyb.com
 Teléfono: [TELÉFONO] · Horario: lunes a viernes, de 9:00 a 18:00 (hora del centro de México)
 

@@ -3,7 +3,7 @@
 **Página pública:** `chalyb.com/paquetes`
 **Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
 
-Vendedor: **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · [DOMICILIO FISCAL COMPLETO] · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)). Más datos en chalyb.com/quien-vende.
+Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)). Más datos en chalyb.com/quien-vende.
 
 > **Resumen**
 > - Un paquete de créditos es una **compra única**: pagas una vez y **no se renueva**. No es una suscripción.

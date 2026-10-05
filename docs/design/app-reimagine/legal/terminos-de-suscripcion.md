@@ -255,7 +255,7 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 ## 15. Contacto
 
-[NOMBRE COMPLETO DE LA PERSONA FÍSICA], persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · [DOMICILIO FISCAL COMPLETO] · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
+Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
 Última actualización: 5 de octubre de 2026 · Versión 1.0

@@ -4,7 +4,7 @@
 **Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
 
 > **Resumen**
-> - Chalyb es un **nombre comercial**, no una empresa. Quien te vende, te cobra y te emite la factura es **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]**, persona física con actividad empresarial, RFC **RAAA960329GA2**.
+> - Chalyb es un **nombre comercial**, no una empresa. Quien te vende, te cobra y te emite la factura es **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**.
 > - Aquí están su domicilio, correo y teléfono para cualquier duda, aclaración o reclamación.
 > - Siempre puedes acudir a la **PROFECO**.
 
@@ -14,11 +14,11 @@
 
 | Dato | |
 |---|---|
-| **Nombre del vendedor** | [NOMBRE COMPLETO DE LA PERSONA FÍSICA] |
+| **Nombre del vendedor** | Myriam Alcantara Moreno |
 | **Tipo de persona** | Persona física con actividad empresarial |
 | **Nombre comercial** | Chalyb |
 | **RFC** | RAAA960329GA2 |
-| **Domicilio** | [DOMICILIO FISCAL COMPLETO] (calle, número exterior e interior, colonia, código postal, municipio o alcaldía, estado, México) |
+| **Domicilio** | Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México |
 | **Correo de atención a clientes** | hola@chalyb.com |
 | **Teléfono** | [TELÉFONO] |
 | **Horario de atención** | lunes a viernes, de 9:00 a 18:00 (hora del centro de México) |
@@ -52,7 +52,7 @@ El comprobante fiscal (CFDI) lo emite **RAAA960329GA2**. Puedes pedirlo escribie
 
 ## 6. Tus datos personales
 
-El responsable de tus datos personales es [NOMBRE COMPLETO DE LA PERSONA FÍSICA] (Chalyb), con el domicilio indicado arriba. Para ejercer tus derechos de acceso, rectificación, cancelación u oposición (ARCO) escribe a **hola@chalyb.com**. Consulta el **Aviso de Privacidad** en chalyb.com/privacidad.
+El responsable de tus datos personales es Myriam Alcantara Moreno (Chalyb), con el domicilio indicado arriba. Para ejercer tus derechos de acceso, rectificación, cancelación u oposición (ARCO) escribe a **hola@chalyb.com**. Consulta el **Aviso de Privacidad** en chalyb.com/privacidad.
 
 No te enviaremos publicidad si no la aceptaste, y puedes dejar de recibirla en cualquier momento desde el enlace al final de cada correo o en **Mi cuenta → Privacidad y notificaciones**.
 
@@ -92,7 +92,7 @@ Las versiones anteriores siguen disponibles en su dirección fija (por ejemplo, 
 | Validez del consentimiento electrónico y conservación | Código de Comercio arts. 49, 89 a 95; NOM-151-SCFI-2016 | §8 |
 
 **Antes de publicar**
-1. Llenar **[NOMBRE COMPLETO DE LA PERSONA FÍSICA]** tal como aparece en la Constancia de Situación Fiscal de RAAA960329GA2.
+1. Llenar **Myriam Alcantara Moreno** tal como aparece en la Constancia de Situación Fiscal de RAAA960329GA2.
 2. **Domicilio:** el art. 76 Bis III pide un domicilio físico donde recibir reclamaciones. En una persona física, el domicilio fiscal suele ser su casa y quedará público. Si el titular prefiere no publicar su casa, puede dar de alta ante el SAT un establecimiento o local (por ejemplo, una oficina o coworking que reciba correspondencia) y usar esa dirección aquí. Confirmar con el abogado que la dirección elegida sirve para recibir notificaciones y quejas.
 3. Llenar hola@chalyb.com, [TELÉFONO], lunes a viernes, de 9:00 a 18:00 (hora del centro de México), hola@chalyb.com y hola@chalyb.com (pueden ser el mismo buzón). El teléfono debe contestarse en el horario indicado.
 4. Confirmar la lista de medidas de seguridad de §4 con lo que realmente hace el sistema.
