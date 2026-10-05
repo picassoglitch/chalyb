@@ -15,8 +15,11 @@
 //   6. (Async) MP webhook, topic `orders`, external_reference
 //      "pack_<userId>_<packId>" → one-off-settlement.ts grants the tokens.
 //
-// Price and currency come from TOKEN_PACKS on the server. The browser only
-// names the pack. The Orders API is what the application in the Mercado Pago
+// Price and currency come from the owner's pack prices on the server
+// (pack-prices.ts). The browser names the pack, says whether the Paquetes
+// box was ticked and which total it showed; the server refuses unless the
+// box is ticked and that total is the one in force (pack-checkout-core.ts),
+// records the consent, and only then creates the order — for that total. The Orders API is what the application in the Mercado Pago
 // panel is registered for ("API de Orders"); the preferences-based Checkout
 // Pro it replaces is being discontinued.
 //
@@ -27,13 +30,14 @@
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
-import { getTokenPack } from './pricing';
+import { gatePackCharge, type PackGateRefusal } from './pack-checkout-core';
+import { loadPricedPacks, packTermsText } from './pack-prices';
+import { recordPackConsent } from './pack-consent';
 import { packReference } from './subscription-reference';
 import { STATEMENT_DESCRIPTOR, orderAdditionalInfo, packItem, payerName } from './order-quality';
 import {
   chargeFromOrder,
   isAllowedCheckoutUrl,
-  orderAmount,
   orderIdempotencyKey,
 } from './order-charge';
 import { settleOneOffCharge } from './one-off-settlement';
@@ -69,11 +73,78 @@ export interface PackCheckoutResult {
     | 'not_configured'
     | 'mp_error'
     | 'terms_pending'
-    | 'sales_closed';
+    | 'sales_closed'
+    | PackGateRefusal
+    | 'consent_failed';
   error?: string;
 }
 
-export async function createTokenPackCheckout(packId: string): Promise<PackCheckoutResult> {
+/** What the checkout page sends with either way of paying. */
+export interface PackConsentInput {
+  packId: string;
+  /** The Paquetes checkbox (Términos de los Paquetes §9.1). */
+  accepted: boolean;
+  /** The total the page showed, in centavos. */
+  shownCents: number;
+  locale: string;
+  clientTimezone?: string | null;
+}
+
+/** Words for the refusals the gate decides (the page maps the reason to
+ *  its own translated message; these are the fallback). */
+const GATE_ERROR: Record<PackGateRefusal | 'consent_failed', string> = {
+  unknown_pack: 'Ese paquete no existe.',
+  consent_required: 'Marca la casilla para aceptar el cargo único. No se hizo ningún cargo.',
+  not_configured: 'Los paquetes no están disponibles por ahora. No se hizo ningún cargo.',
+  price_changed: 'El precio cambió. Recarga la página para ver el actual. No se hizo ningún cargo.',
+  terms_mismatch: 'Los paquetes no están disponibles por ahora. No se hizo ningún cargo.',
+  consent_failed: 'No pudimos guardar tu aceptación. No se hizo ningún cargo; inténtalo de nuevo.',
+};
+
+/** The gate, then the evidence. Either refusal charges nothing. */
+async function acceptPackCharge(
+  input: PackConsentInput,
+  session: { user: { id: string; email?: string | null } },
+  mode: 'card' | 'hosted',
+) {
+  const gate = await gatePackCharge(input, {
+    loadTotals: async () => (await loadPricedPacks())?.totals ?? null,
+    termsText: packTermsText,
+  });
+  if (!gate.ok) {
+    if (gate.reason === 'terms_mismatch') {
+      console.error('[pack-checkout] the Paquetes text in force does not show this price', {
+        packId: input.packId,
+      });
+    }
+    return { ok: false as const, reason: gate.reason, error: GATE_ERROR[gate.reason] };
+  }
+  const priced = await loadPricedPacks();
+  if (!priced) {
+    return { ok: false as const, reason: 'not_configured' as const, error: GATE_ERROR.not_configured };
+  }
+  const accountEmail = session.user.email ?? null;
+  try {
+    await recordPackConsent({
+      userId: session.user.id,
+      email: accountEmail,
+      pack: gate.pack,
+      cents: gate.cents,
+      pricing: priced.pricing,
+      termsText: gate.termsText,
+      locale: input.locale,
+      clientTimezone: typeof input.clientTimezone === 'string' ? input.clientTimezone.slice(0, 64) : null,
+      mode,
+    });
+  } catch (err) {
+    console.error('[pack-checkout] consent not stored — refusing before any charge', err);
+    return { ok: false as const, reason: 'consent_failed' as const, error: GATE_ERROR.consent_failed };
+  }
+  return gate;
+}
+
+export async function createTokenPackCheckout(input: PackConsentInput): Promise<PackCheckoutResult> {
+  const packId = input?.packId;
   // Top-level try wraps EVERYTHING — including the pre-flight checks. The
   // previous version had try/catch only around the MP call, so a thrown
   // exception from getSessionUser / isMercadoPagoConfigured / config
@@ -103,11 +174,6 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
       return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
     }
 
-    const pack = getTokenPack(packId);
-    if (!pack) {
-      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${packId}` };
-    }
-
     // Same rule as the tier checkout: decided before the SDK is touched, so
     // nothing is created on the Mercado Pago side and no charge is attempted.
     if (!isCheckoutReady()) {
@@ -118,10 +184,14 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
       return { ok: false, reason: 'not_configured', error: MP_GENERIC_ERROR };
     }
 
+    // The box, the price in force = the price shown, then the evidence.
+    const accepted = await acceptPackCharge(input, session, 'hosted');
+    if (!accepted.ok) return accepted;
+    const { pack, amount } = accepted;
+
     // B33: the test buyer in `test`, the user (if any) in `prod`.
     const payerEmail = mpPayerEmail(session.user.email);
     const { order } = getMercadoPagoIsolated();
-    const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
 
     // external_reference shape: "pack_<userId>_<packId>" so the webhook can
@@ -160,6 +230,7 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
           userId: session.user.id,
           packId: pack.id,
           mode: 'hosted',
+          amountCents: accepted.cents,
         }),
       },
     });
@@ -221,11 +292,8 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
   }
 }
 
-// Note: TOKEN_PACKS used to be re-exported here for the /app/usage page,
-// but Next.js refuses to compile a "use server" file that exports anything
-// except async functions ("found object" — TOKEN_PACKS is an array). The
-// re-export was redundant anyway since the page can — and does — import
-// TOKEN_PACKS directly from '@/lib/payments/pricing'.
+// Note: a "use server" file may export only async functions (Next.js
+// refuses "found object"); the types above are erased at build.
 
 export interface PackCardPaymentResult {
   ok: boolean;
@@ -240,7 +308,9 @@ export interface PackCardPaymentResult {
     | 'rejected'
     | 'terms_pending'
     | 'mp_error'
-    | 'sales_closed';
+    | 'sales_closed'
+    | PackGateRefusal
+    | 'consent_failed';
   error?: string;
 }
 
@@ -252,11 +322,11 @@ export interface PackCardPaymentResult {
  * the balance before the response. The `orders` notification that follows
  * finds the row already there and changes nothing.
  *
- * The browser sends the token and what the Brick learned about the card;
- * price and currency come from TOKEN_PACKS here. Tokens are never logged.
+ * The browser sends the token, what the Brick learned about the card, the
+ * Paquetes box and the total it showed; price and currency come from the
+ * owner's pack prices here. Tokens are never logged.
  */
-export async function payTokenPackWithCard(input: {
-  packId: string;
+export async function payTokenPackWithCard(input: PackConsentInput & {
   token: string;
   paymentMethodId: string;
   issuerId?: string | null;
@@ -284,10 +354,6 @@ export async function payTokenPackWithCard(input: {
     if (await termsAcceptancePending(session.user.id)) {
       return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
     }
-    const pack = getTokenPack(input.packId);
-    if (!pack) {
-      return { ok: false, reason: 'unknown_pack', error: `Pack desconocido: ${input.packId}` };
-    }
     if (!isCheckoutReady()) {
       console.error('[token-pack-card] refusing to charge:', checkoutNotReadyError());
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
@@ -311,9 +377,13 @@ export async function payTokenPackWithCard(input: {
         ? input.paymentTypeId
         : 'credit_card';
 
+    // The box, the price in force = the price shown, then the evidence.
+    const accepted = await acceptPackCharge(input, session, 'card');
+    if (!accepted.ok) return accepted;
+    const { pack, amount } = accepted;
+
     const payerEmail = mpPayerEmail(session.user.email);
     const { order } = getMercadoPagoIsolated();
-    const amount = orderAmount(pack.amountCents);
     const title = `Chalyb · ${pack.label}`;
     const externalReference = packReference(session.user.id, pack.id);
 
@@ -356,6 +426,7 @@ export async function payTokenPackWithCard(input: {
           userId: session.user.id,
           packId: pack.id,
           mode: 'card',
+          amountCents: accepted.cents,
         }),
       },
     });

@@ -129,7 +129,7 @@ test('a missing amount is refused rather than read as zero-and-fine', () => {
 });
 
 test('token packs price-check the same way', () => {
-  const expected = expectedChargeForPack('tokens_500k');
+  const expected = expectedChargeForPack('tokens_500k', 59_900);
   assert.ok(expected);
   assert.deepEqual(checkCharge(expected, { amountMajor: 599, currency: 'MXN' }), { ok: true });
   assert.equal(checkCharge(expected, { amountMajor: 149, currency: 'MXN' }).ok, false);
@@ -140,5 +140,5 @@ test('tiers with no price cannot be bought at all', () => {
   // makes an approved payment grant them.
   assert.equal(expectedChargeForTier('FREE'), null);
   assert.equal(expectedChargeForTier('PARTNER'), null);
-  assert.equal(expectedChargeForPack('tokens_nope'), null);
+  assert.equal(expectedChargeForPack('tokens_nope', 59_900), null);
 });

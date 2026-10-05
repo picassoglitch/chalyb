@@ -64,7 +64,9 @@ test('B · Mis créditos: no legacy, no technical words on screen, packs from co
   const page = src('src/app/[locale]/(dashboard)/app/usage/page.tsx');
   assert.doesNotMatch(page, LEGACY);
   assert.match(page, /balanceBroken \? \(/, 'a broken balance paints no number (§4.2 B)');
-  assert.match(page, /TOKEN_PACKS\.map/);
+  // The owner's pack prices (Ajustes), never a typed list.
+  assert.match(page, /pricedPacks\.map/);
+  assert.match(page, /await loadPricedPacks\(\)/);
   const sheet = src('src/components/app/credits-sheet.tsx');
   assert.match(sheet, /packs\[Math\.min\(1, packs\.length - 1\)\]/, 'the middle pack is preselected');
   assert.match(sheet, /\/app\/usage\/checkout\?pack=\$\{chosen\.id\}/);

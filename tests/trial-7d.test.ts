@@ -361,12 +361,14 @@ test('no "o paga mes a mes" line inside checkout components (Q5)', () => {
   }
 });
 
-test('11 · UI_VERSION bumped for the new trial wording', () => {
+test('11 · UI_VERSION bumped for the new trial wording, then for the pack checkbox', () => {
   // consent.ts reads request headers, so it is read as text here.
   const src = readFileSync(join(ROOT, 'src/lib/billing/consent.ts'), 'utf8');
   const version = /export const UI_VERSION = '([^']+)'/.exec(src)?.[1];
   assert.notEqual(version, 'rebuild-p2');
-  assert.equal(version, 'rebuild-p5-law-2026-10-03');
+  // The trial wording's version, with the suffix the pack checkout's
+  // checkbox added (2026-10-05).
+  assert.equal(version, 'rebuild-p5-law-2026-10-03-packs');
 });
 
 test('11 · the consent record stores the 7-day trial, its texts, the plan and the amount', () => {

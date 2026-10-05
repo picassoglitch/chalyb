@@ -71,7 +71,7 @@ test('the grant is gated on total_amount (the catalog price), never on total_pai
   });
   assert.equal(c.amountMajor, 599);
   assert.equal(c.paidAmountMajor, 650);
-  const expected = expectedChargeForPack('tokens_500k')!;
+  const expected = expectedChargeForPack('tokens_500k', 59_900)!;
   assert.deepEqual(checkCharge(expected, { amountMajor: c.amountMajor, currency: c.currency }), {
     ok: true,
   });
@@ -86,7 +86,7 @@ test('an order whose total_amount does not match the catalog is refused, whateve
     total_paid_amount: '1999.00', // …even if MP somehow reports the big figure moved
     currency: 'MXN',
   });
-  const expected = expectedChargeForPack('tokens_2m')!;
+  const expected = expectedChargeForPack('tokens_2m', 199_900)!;
   const check = checkCharge(expected, { amountMajor: cheap.amountMajor, currency: cheap.currency });
   assert.equal(check.ok, false);
   assert.equal(check.ok === false && check.reason, 'amount');

@@ -10,9 +10,13 @@ import { HIDDEN_FROM_CUSTOMERS } from '@/lib/engines/display-names';
 import {
   MAX_USAGE_MARGIN_PERCENT,
   SETTING_KEYS,
+  packPricing,
   usageMarginPercent,
   writeSetting,
 } from '@/lib/config/settings';
+import { PACK_IDS, packTotals, parsePackPricing } from '@/config/pack-pricing';
+import { packTermsText } from '@/lib/payments/pack-prices';
+import { termsShowPrice } from '@/lib/payments/pack-checkout-core';
 import { adminName, adminSession } from './guard';
 import { payingUsersOfTool } from './data';
 import { toolBySlug } from '@/config/tools';
@@ -127,4 +131,39 @@ export async function setUsageMargin(percent: number): Promise<{ ok: boolean }> 
     metadata: { admin_name: adminName(actor) },
   });
   return { ok: true };
+}
+
+/**
+ * Credit-pack prices (owner, 2026-10-04/05): what each pack costs and whether
+ * the typed price already includes IVA or IVA is added on top. Applies to
+ * purchases from now on: the store, checkout, Mercado Pago and /legal/packs
+ * all read this one value. An invalid value is refused whole; nothing is
+ * half-saved. `termsStale` = the published Paquetes text shows other prices,
+ * so checkout stays closed until a version with these is published.
+ */
+export async function setPackPrices(
+  input: unknown,
+): Promise<{ ok: true; termsStale: boolean } | { ok: false; code: 'FORBIDDEN' | 'INVALID' | 'ERROR' }> {
+  const actor = await adminSession();
+  if (!actor) return { ok: false, code: 'FORBIDDEN' };
+  const next = parsePackPricing(input);
+  if (!next) return { ok: false, code: 'INVALID' };
+  const before = await packPricing();
+  const ok = await writeSetting(SETTING_KEYS.packPrices, next, actor.user.id);
+  if (!ok) return { ok: false, code: 'ERROR' };
+  const totals = packTotals(next);
+  await logAudit({
+    action: 'settings.pack_prices',
+    actorId: actor.user.id,
+    actorEmail: actor.user.email ?? null,
+    targetUserId: actor.user.id,
+    targetEmail: actor.user.email ?? null,
+    before: before ? { pack_prices: before, totals_cents: packTotals(before) } : null,
+    after: { pack_prices: next, totals_cents: totals },
+    metadata: { admin_name: adminName(actor) },
+  });
+  revalidatePath('/[locale]', 'layout');
+  const terms = packTermsText(totals);
+  const termsStale = !terms || PACK_IDS.some((id) => !termsShowPrice(terms, totals[id]));
+  return { ok: true, termsStale };
 }

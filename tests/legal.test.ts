@@ -188,12 +188,12 @@ test('internal notes: archived and hashed without "Notas internas", source kept 
 test('amounts: an unexplained amount passes only inside an owner note', () => {
   const ok = tokenizeAmounts('Total $1,999,999.00 [NOTA: antes de IVA $149]', {}, false);
   assert.deepEqual(ok.unknown, ['$1,999,999.00']);
-  assert.throws(() => tokenizeAmounts('Paga $149.'), /not in pricing/);
-  assert.equal(tokenizeAmounts('[NOTA: si no, $149]').template, '[NOTA: si no, $149]');
+  assert.throws(() => tokenizeAmounts('Paga $151.'), /not in pricing/);
+  assert.equal(tokenizeAmounts('[NOTA: si no, $151]').template, '[NOTA: si no, $151]');
   // A link's text is not a note.
-  assert.throws(() => tokenizeAmounts('[Paga $149](/paquetes)'), /not in pricing/);
-  // Pack totals bind to pricing.ts.
-  assert.equal(tokenizeAmounts('Chico $172.84').template, 'Chico {{mxn:pack_100k}}');
+  assert.throws(() => tokenizeAmounts('[Paga $151](/paquetes)'), /not in pricing/);
+  // Pack totals bind to pricing.ts (the default pack prices).
+  assert.equal(tokenizeAmounts('Chico $149').template, 'Chico {{mxn:pack_100k}}');
 });
 
 test('amounts: the packs page shows the pack prices in force, never typed ones', () => {

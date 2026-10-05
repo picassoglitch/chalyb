@@ -29,14 +29,17 @@ export const PRICE_CENTS = {
 } as const;
 
 /**
- * Credit packs, as totals. PRICING-CARDS-SPEC doesn't set them, so they stay
- * at what is charged today ($172.84 / $694.84 / $2,318.84) whatever
- * PRICES_INCLUDE_IVA says. TODO(owner O-4): pack prices pending owner.
+ * Credit packs: the DEFAULT totals, IVA included ($149 / $599 / $1,999;
+ * owner, 2026-10-04). The prices in force are a setting the owner edits in
+ * Ajustes (src/config/pack-pricing.ts, app_settings.pack_prices, migration
+ * 0066); these are what that setting starts from and what the legal archive
+ * step binds. Never a fallback for a charge: a missing setting refuses the
+ * checkout.
  */
 export const PACK_CENTS = {
-  tokens_100k: 17_284,
-  tokens_500k: 69_484,
-  tokens_2m: 231_884,
+  tokens_100k: 14_900,
+  tokens_500k: 59_900,
+  tokens_2m: 199_900,
 } as const;
 
 /**
@@ -166,10 +169,6 @@ export function nextChargeCents(sub: {
   return typeof sub.amount_cents === 'number' && sub.amount_cents > 0
     ? sub.amount_cents
     : chargeFor(sub);
-}
-
-export function packPriceCents(id: PackId): number {
-  return PACK_CENTS[id];
 }
 
 export type PctRounding = 'floor' | 'round';

@@ -5,8 +5,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { composeBalance } from '@/lib/usage/tokens';
-import { TOKEN_PACKS, packSavingsPercent } from '@/lib/payments/pricing';
-import { packPriceCents } from '@/config/pricing';
+import { pricedTokenPacks, packSavingsPercent } from '@/lib/payments/pricing';
+import { PACK_CENTS } from '@/config/pricing';
+
+const TOKEN_PACKS = pricedTokenPacks(PACK_CENTS);
 
 const subject = { unlimited: false, monthlyAllocation: 1000 };
 const at = '2026-10-01T00:00:00.000Z';
@@ -49,11 +51,11 @@ test('admins stay unlimited', () => {
 
 test('pack taglines state the real saving, rounded down, and only one is "Mejor relación"', () => {
   const perK = (id: (typeof TOKEN_PACKS)[number]['id'], tokens: number) =>
-    packPriceCents(id) / (tokens / 1000);
+    PACK_CENTS[id] / (tokens / 1000);
   const base = perK('tokens_100k', 100_000);
   for (const p of TOKEN_PACKS) {
     const real = (1 - perK(p.id, p.tokens) / base) * 100;
-    const shown = packSavingsPercent(p.id);
+    const shown = packSavingsPercent(p.id, PACK_CENTS);
     assert.ok(shown <= real && real - shown < 1, `${p.id}: ${shown}% vs ${real.toFixed(2)}%`);
     if (shown > 0) assert.match(p.tagline, new RegExp(`\\b${shown}%`));
   }
