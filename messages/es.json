@@ -254,7 +254,6 @@
       "googleFastNote": "La forma más rápida de empezar",
       "errorGeneric": "Ocurrió un error al iniciar sesión. Inténtalo de nuevo.",
       "errorMissingCode": "Flujo de inicio de sesión incompleto. Inténtalo de nuevo.",
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "newTitle": "¿Primera vez?",
       "newSubtitle": "Crea tu espacio de operador en segundos.",
       "newCta": "Empezar gratis",
@@ -295,10 +294,11 @@
       "marketing": "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera.",
       "legalPublished": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y la <uso>Política de Uso Aceptable</uso>, y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
       "legalCurrent": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
-      "creating": "Creando tu cuenta…"
+      "creating": "Creando tu cuenta…",
+      "metaTitle": "Iniciar sesión",
+      "metaTitleSignup": "Crear cuenta"
     },
     "forgotPassword": {
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "title": "Restablecer contraseña",
       "intro": "Ingresa el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.",
       "emailLabel": "Correo",
@@ -310,7 +310,6 @@
       "errorRateLimit": "Demasiados intentos. Espera un minuto e inténtalo de nuevo."
     },
     "resetPassword": {
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "title": "Crear nueva contraseña",
       "intro": "Elige una nueva contraseña para tu cuenta.",
       "passwordLabel": "Nueva contraseña",
@@ -333,7 +332,8 @@
       "signedInAs": "Sesión iniciada como",
       "signOut": "Cerrar sesión",
       "signingOut": "Cerrando sesión…"
-    }
+    },
+    "backHome": "Volver a Chalyb"
   },
   "tour": {
     "step": "{current} de {total}",

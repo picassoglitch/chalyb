@@ -254,7 +254,6 @@
       "googleFastNote": "Fastest way to start",
       "errorGeneric": "Something went wrong signing you in. Try again.",
       "errorMissingCode": "Sign-in flow incomplete. Try again.",
-      "liveStatus": "Platform live · systems in production",
       "newTitle": "New here?",
       "newSubtitle": "Create your operator workspace in seconds.",
       "newCta": "Start free",
@@ -295,10 +294,11 @@
       "marketing": "I want to get news, tips and offers from Chalyb by email. I can unsubscribe any time.",
       "legalPublished": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and the <uso>Acceptable Use Policy</uso>, and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
       "legalCurrent": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
-      "creating": "Creating your account…"
+      "creating": "Creating your account…",
+      "metaTitle": "Sign in",
+      "metaTitleSignup": "Create account"
     },
     "forgotPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Reset your password",
       "intro": "Enter your account email and we'll send you a link to set a new password.",
       "emailLabel": "Email",
@@ -310,7 +310,6 @@
       "errorRateLimit": "Too many attempts. Wait a minute and try again."
     },
     "resetPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Set a new password",
       "intro": "Choose a new password for your account.",
       "passwordLabel": "New password",
@@ -333,7 +332,8 @@
       "signedInAs": "Signed in as",
       "signOut": "Sign out",
       "signingOut": "Signing out…"
-    }
+    },
+    "backHome": "Back to Chalyb"
   },
   "tour": {
     "step": "{current} of {total}",
