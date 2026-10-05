@@ -231,6 +231,11 @@ test('reservations hold the estimate plus the margin', () => {
   assert.equal(reserveWithMargin(1000, -5), 1000);
 });
 
+test('a store purchase reserves its price, nothing on top', () => {
+  assert.equal(reserveWithMargin(1200, 160, 'store.purchase'), 1200);
+  assert.equal(reserveWithMargin(1200, 160, 'clips.pipeline'), 3120);
+});
+
 test('reconciliation: cents strings → micros, per model and workspace', async () => {
   const { sumCostReport, reconcileByModel, centsToMicros } = await import('@/lib/usage/reconciliation-core');
   assert.equal(centsToMicros('123.45'), 1_234_500); // $1.2345

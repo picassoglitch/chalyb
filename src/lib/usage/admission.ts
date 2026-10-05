@@ -58,7 +58,7 @@ export async function admitUsage(
   if (itemRefusal) return { status: 200, allowed: false, reason: itemRefusal, limits };
 
   const { lane, feeTokens } = resolveLane(req, caps, subject.unlimited);
-  const estTokens = reserveWithMargin(req.estTokens, await usageMarginPercent());
+  const estTokens = reserveWithMargin(req.estTokens, await usageMarginPercent(), req.operation);
 
   const admin = createAdminClient();
   const { data, error } = await admin.rpc('admit_usage', {
