@@ -1,4 +1,4 @@
-// Credit packs, one row each (migration 0061): what is left of each and
+// Credit packs, one row each (migration 0065): what is left of each and
 // whether it is spendable. Términos de los Paquetes de Créditos §4, §5, §8.
 //
 //   available  unused credits in active packs: spent after the plan's monthly
@@ -26,7 +26,7 @@ export interface PackBalance {
 export interface PackSummary {
   available: number;
   held: number;
-  /** Oldest first: the order they are spent in. Merged pre-0061 purchases
+  /** Oldest first: the order they are spent in. Merged pre-0065 purchases
    *  are left out; their credits are in the 'legacy' pack. */
   packs: PackBalance[];
 }

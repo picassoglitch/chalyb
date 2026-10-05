@@ -299,7 +299,7 @@ try {
   check('unlimited (admin) is never refused', un.allowed === true, JSON.stringify(un));
 }
 
-// ── Credit packs (0061): spend once, oldest first; per-pack refund/hold ───
+// ── Credit packs (0065): spend once, oldest first; per-pack refund/hold ───
 {
   const check = (label, cond, extra = '') => {
     if (cond) console.log(`ok: ${label}`);
@@ -404,7 +404,7 @@ try {
   const late = await rpc(`public.release_token_pack('pB')`);
   check('a removed pack cannot be released', late.already === true && (await packs()).pB === '0:removed');
 
-  // Bought before 0061: its credits sit in the legacy row.
+  // Bought before 0065: its credits sit in the legacy row.
   await db.query(
     `insert into public.token_pack_purchases (user_id, tokens_granted, source, tokens_remaining, status, created_at)
      values ($1, 500, 'legacy', 500, 'active', now() - interval '1 year')`,
@@ -417,7 +417,16 @@ try {
   );
   const rM = await rpc(`public.clawback_token_pack('pM', 'refunded')`);
   const p3 = await packs();
-  check('refunding a pre-0061 pack takes its share from the legacy row', Number(rM.tokens_removed) === 300 && p3.legacy === '200:active' && p3.pM === '0:removed', JSON.stringify({ rM, p3 }));
+  check('refunding a pre-0065 pack takes its share from the legacy row', Number(rM.tokens_removed) === 300 && p3.legacy === '200:active' && p3.pM === '0:removed', JSON.stringify({ rM, p3 }));
+
+  const exposed = (await db.query(
+    `select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = any($1)
+       and (has_function_privilege('authenticated', p.oid, 'execute') or has_function_privilege('anon', p.oid, 'execute'))`,
+    [['grant_token_pack', 'clawback_token_pack', 'hold_token_pack', 'release_token_pack', 'adjust_token_bonus_balance',
+      'claim_legacy_credits', 'refresh_token_bonus_balance', 'set_usage_allocation', 'admit_usage', 'usage_balance']],
+  )).rows.map((r) => r.proname);
+  check('no pack/usage function is callable by anon or signed-in clients', exposed.length === 0, exposed.join(', '));
 
   const g = await rpc(`public.adjust_token_bonus_balance($1, 100)`, [u]);
   const r = await rpc(`public.adjust_token_bonus_balance($1, -1000)`, [u]);

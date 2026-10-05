@@ -103,7 +103,7 @@ export async function grantTokensToUser(
   }
 
   // A positive grant is its own pack row (admin_grant), written by the same
-  // function (migration 0061), so it shows in the history and is spent in
+  // function (migration 0065), so it shows in the history and is spent in
   // order like any pack. A revoke takes unused credits oldest pack first.
 
   await logAudit({

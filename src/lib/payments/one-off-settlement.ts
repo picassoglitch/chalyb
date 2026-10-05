@@ -156,7 +156,7 @@ export async function settleOneOffCharge(
 
   // ── Refunds ───────────────────────────────────────────────────────────
   // POLICY. A refunded PACK: only ITS unused credits come off (Paquetes §7.2;
-  // clawback_token_pack, migration 0061). Credits already used are not
+  // clawback_token_pack, migration 0065). Credits already used are not
   // charged back, and the plan and other packs are untouched. Keyed to the
   // payment id so a retry changes nothing. A refund never changes a
   // plan, price or the account (Términos §7.3): a legacy one-off plan stays.

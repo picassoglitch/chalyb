@@ -1,4 +1,4 @@
-// Credit packs (Términos de los Paquetes §4, §8; migration 0061). The draws,
+// Credit packs (Términos de los Paquetes §4, §8; migration 0065). The draws,
 // holds and per-pack refunds run against Postgres in scripts/test-migrations.mjs;
 // this covers the balance the app shows and admits on, and the store taglines.
 

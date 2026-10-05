@@ -8,7 +8,7 @@
 //   bonus:               unused credits in the user's active packs. Usage above
 //                        the month's allocation is drawn from packs, oldest
 //                        first, once, when the event is written (migration
-//                        0061, token_pack_draws), so this already reflects it.
+//                        0065, token_pack_draws), so this already reflects it.
 //   held:                unused credits of a disputed pack (§8.2): not spendable.
 //   monthlyUsed:         sum of usage_events.billable_tokens this calendar
 //                        month (UTC). Set per event when it is written
@@ -256,7 +256,7 @@ export async function recordUsageEvents(
   if (rows.length === 0) return { inserted: 0, skipped: events.length };
 
   // Each event's share above the month's allocation is drawn from packs as it
-  // is written (migration 0061), measured against the allocation on file.
+  // is written (migration 0065), measured against the allocation on file.
   // Record it first; if we can't, don't write usage that would draw against a
   // stale or missing number — the engine retries.
   for (const userId of new Set(rows.map((r) => r.user_id))) {
@@ -323,7 +323,7 @@ export async function grantTokenPack(opts: {
 
 /** Remove the UNUSED credits of the pack a reversed payment bought (refund,
  *  or a dispute the buyer won): Paquetes §7.2, §8.3. Used credits and other
- *  packs are untouched (clawback_token_pack, migration 0061). Idempotent per
+ *  packs are untouched (clawback_token_pack, migration 0065). Idempotent per
  *  mpPaymentId; refuses when no purchase is on file for that payment. */
 export async function clawbackTokenPack(opts: {
   mpPaymentId: string;

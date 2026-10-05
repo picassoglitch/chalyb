@@ -704,3 +704,25 @@ begin
   end loop;
 end $$;
 revoke all on function public.draw_pack_credits_on_usage() from public, anon, authenticated;
+
+-- ── Server-only: no client may call these (same rule as 0064) ─────────
+-- A new function is executable by PUBLIC by default, and a SECURITY DEFINER
+-- one runs as its owner: without this, any signed-in user could grant,
+-- claw back or hold credit packs over PostgREST. Every overload of every
+-- function this file defines, so a changed signature can't slip through.
+do $$
+declare f regprocedure;
+begin
+  for f in
+    select p.oid::regprocedure from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname in (
+      'adjust_token_bonus_balance', 'admit_usage', 'claim_legacy_credits',
+      'clawback_token_pack', 'draw_pack_credits_on_usage', 'grant_token_pack',
+      'hold_token_pack', 'refresh_token_bonus_balance', 'release_token_pack',
+      'set_usage_allocation', 'usage_balance')
+  loop
+    execute format('revoke all on function %s from public, anon, authenticated', f);
+    execute format('grant execute on function %s to service_role', f);
+  end loop;
+end $$;
