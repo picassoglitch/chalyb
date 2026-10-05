@@ -1,11 +1,15 @@
 // Token balance + usage recording.
 //
-// Balance formula:
-//   remaining = monthly_allocation + bonus − monthlyUsed − reserved
+// Balance formula (Términos de los Paquetes §4.2–4.3):
+//   remaining = max(0, monthly_allocation − monthlyUsed) + bonus − reserved
 //
 // Where:
 //   monthly_allocation:  TIER_CAPS[effective_tier].tokensPerMonth
-//   bonus:               profiles.token_bonus_balance (top-up packs, persistent)
+//   bonus:               unused credits in the user's active packs. Usage above
+//                        the month's allocation is drawn from packs, oldest
+//                        first, once, when the event is written (migration
+//                        0061, token_pack_draws), so this already reflects it.
+//   held:                unused credits of a disputed pack (§8.2): not spendable.
 //   monthlyUsed:         sum of usage_events.billable_tokens this calendar
 //                        month (UTC). Set per event when it is written
 //                        (migration 0046): real provider cost plus the
@@ -35,8 +39,10 @@ export interface TokenBalance {
   unlimited: boolean;
   /** Monthly tier allocation (resets 1st of month). MAX_SAFE_INTEGER for admins. */
   monthlyAllocation: number;
-  /** Top-up bonus tokens (don't reset). */
+  /** Unused credits in active packs (never reset, never expire). */
   bonus: number;
+  /** Unused credits of disputed packs, set aside until the dispute ends. */
+  held: number;
   /** Already-spent this calendar month. Tracked for everyone including admins. */
   monthlyUsed: number;
   /** Held by jobs that were admitted and haven't finished. */
@@ -76,7 +82,7 @@ export async function getBalanceSubject(userId: string): Promise<BalanceSubject 
 /** Pure: the balance from the subject and usage_balance()'s sums. */
 export function composeBalance(
   subject: Pick<BalanceSubject, 'unlimited' | 'monthlyAllocation'>,
-  sums: { used: number; reserved: number; bonus: number; periodStart: string },
+  sums: { used: number; reserved: number; bonus: number; held?: number; periodStart: string },
 ): TokenBalance {
   // Admins are exempt from token quotas — they need to run things on behalf
   // of users for support, demos, and engine bring-up. We use MAX_SAFE_INTEGER
@@ -89,16 +95,23 @@ export function composeBalance(
       unlimited: true,
       monthlyAllocation: Number.MAX_SAFE_INTEGER,
       bonus: sums.bonus,
+      held: sums.held ?? 0,
       monthlyUsed: sums.used,
       reserved: sums.reserved,
       periodStart: sums.periodStart,
     };
   }
+  // The plan's credits first; pack credits only once those are gone (usage
+  // above the allocation has already come off `bonus`, so it isn't counted twice).
   return {
-    remaining: Math.max(0, subject.monthlyAllocation + sums.bonus - sums.used - sums.reserved),
+    remaining: Math.max(
+      0,
+      Math.max(0, subject.monthlyAllocation - sums.used) + sums.bonus - sums.reserved,
+    ),
     unlimited: false,
     monthlyAllocation: subject.monthlyAllocation,
     bonus: sums.bonus,
+    held: sums.held ?? 0,
     monthlyUsed: sums.used,
     reserved: sums.reserved,
     periodStart: sums.periodStart,
@@ -116,19 +129,26 @@ export async function getTokenBalance(userId: string): Promise<TokenBalance> {
     console.error('[usage] usage_balance failed', error.message);
     throw new Error(`usage_balance failed: ${error.message}`);
   }
-  const r = (data ?? {}) as { used?: number; reserved?: number; bonus?: number; period_start?: string };
+  const r = (data ?? {}) as {
+    used?: number;
+    reserved?: number;
+    bonus?: number;
+    held?: number;
+    period_start?: string;
+  };
   return composeBalance(
     subject ?? { unlimited: false, monthlyAllocation: TIER_CAPS.FREE.tokensPerMonth },
     {
       used: Number(r.used ?? 0),
       reserved: Number(r.reserved ?? 0),
       bonus: Number(r.bonus ?? 0),
+      held: Number(r.held ?? 0),
       periodStart: r.period_start ? new Date(r.period_start).toISOString() : '',
     },
   );
 }
 
-/** Has this user run out of monthly + bonus tokens? */
+/** Has this user run out of plan + pack credits? */
 export async function isOverQuota(userId: string): Promise<boolean> {
   const b = await getTokenBalance(userId);
   return b.remaining === 0;
@@ -235,6 +255,23 @@ export async function recordUsageEvents(
 
   if (rows.length === 0) return { inserted: 0, skipped: events.length };
 
+  // Each event's share above the month's allocation is drawn from packs as it
+  // is written (migration 0061), measured against the allocation on file.
+  // Record it first; if we can't, don't write usage that would draw against a
+  // stale or missing number — the engine retries.
+  for (const userId of new Set(rows.map((r) => r.user_id))) {
+    const subject = await getBalanceSubject(userId);
+    if (!subject) continue;
+    const { error: allocErr } = await admin.rpc('set_usage_allocation', {
+      p_user_id: userId,
+      p_allocation: subject.monthlyAllocation,
+    });
+    if (allocErr) {
+      console.error('[usage] set_usage_allocation failed', allocErr.message);
+      throw new Error(`usage allocation failed: ${allocErr.message}`);
+    }
+  }
+
   // upsert with ignoreDuplicates so the (engine_id, source_id) UNIQUE
   // catches retries without erroring out the whole batch.
   const { error, count } = await admin.from('usage_events').upsert(rows, {
@@ -251,8 +288,8 @@ export async function recordUsageEvents(
   return { inserted, skipped: rows.length - inserted };
 }
 
-/** Grant top-up tokens. Increments profiles.token_bonus_balance and records
- *  the purchase in token_pack_purchases for audit.
+/** Grant a pack: a new token_pack_purchases row with all its credits unused
+ *  (profiles.token_bonus_balance mirrors active + held packs).
  *
  *  Both writes happen inside the grant_token_pack() SQL function (migration
  *  0033) so they land in one transaction: the previous version read the
@@ -284,11 +321,10 @@ export async function grantTokenPack(opts: {
   return { ok: result.ok !== false, alreadyGranted: result.already_granted ?? false };
 }
 
-/** Take a pack's tokens back after Mercado Pago reversed the payment that
- *  bought it (refund or chargeback). One transaction in clawback_token_pack()
- *  (migration 0038): idempotent per mpPaymentId, balance clamped at zero,
- *  and it refuses when no purchase is on file for that payment — nothing was
- *  granted, so nothing is removed. */
+/** Remove the UNUSED credits of the pack a reversed payment bought (refund,
+ *  or a dispute the buyer won): Paquetes §7.2, §8.3. Used credits and other
+ *  packs are untouched (clawback_token_pack, migration 0061). Idempotent per
+ *  mpPaymentId; refuses when no purchase is on file for that payment. */
 export async function clawbackTokenPack(opts: {
   mpPaymentId: string;
   reason: 'refunded' | 'charged_back';

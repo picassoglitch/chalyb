@@ -155,9 +155,10 @@ export async function settleOneOffCharge(
   }
 
   // ── Refunds ───────────────────────────────────────────────────────────
-  // POLICY. A refunded PACK is a purchase undone: its tokens come off the
-  // balance (clamped at zero — clawback_token_pack, migration 0038), keyed to
-  // the payment id so a retry changes nothing. A refund never changes a
+  // POLICY. A refunded PACK: only ITS unused credits come off (Paquetes §7.2;
+  // clawback_token_pack, migration 0061). Credits already used are not
+  // charged back, and the plan and other packs are untouched. Keyed to the
+  // payment id so a retry changes nothing. A refund never changes a
   // plan, price or the account (Términos §7.3): a legacy one-off plan stays.
   if (status === 'refunded') {
     const reason = 'refunded' as const;
@@ -206,10 +207,11 @@ export async function settleOneOffCharge(
           href: '/dashboard/billing',
           source: 'mp.webhook',
         });
-        if (email) {
+        // Nothing to tell when every credit of the pack was already used.
+        if (email && claw.tokensRemoved > 0) {
           const tmpl = paymentReversedTemplate({
             reason,
-            what: `${claw.tokensGranted.toLocaleString('es-MX')} tokens`,
+            what: `${claw.tokensRemoved.toLocaleString('es-MX')} créditos sin usar del paquete`,
             amountMajor,
             currency,
             paymentId: mpId,
@@ -217,7 +219,7 @@ export async function settleOneOffCharge(
           });
           void sendEmail({
             to: email,
-            subject: 'Pago revertido: retiramos los tokens del pack · Chalyb',
+            subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
             html: tmpl.html,
             text: tmpl.text,
           }).catch((err) => console.error('[mp/webhook] reversal email failed', err));

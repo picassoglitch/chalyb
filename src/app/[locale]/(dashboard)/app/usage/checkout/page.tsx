@@ -74,7 +74,7 @@ export default async function PackCheckoutPage({
             {formatMoney(pack.amountCents, TOKEN_PACK_CURRENCY)}
           </div>
           <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', marginTop: 8, lineHeight: 1.5 }}>
-            {pack.tagline}. Los tokens no caducan y se suman a los de tu plan.
+            {pack.tagline}. Los créditos extra no vencen y se usan después de los de tu plan, una sola vez.
           </p>
         </div>
 

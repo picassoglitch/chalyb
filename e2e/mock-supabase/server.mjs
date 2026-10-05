@@ -222,7 +222,7 @@ http.createServer((req, res) => {
       .filter((e) => e.user_id === uid && e.occurred_at >= period)
       .reduce((a, e) => a + Number(e.billable_tokens ?? e.amount ?? 0), 0);
     const bonus = tables.profiles.find((p) => p.id === uid)?.token_bonus_balance ?? 0;
-    send(200, { used, reserved: 0, bonus, period_start: period });
+    send(200, { used, reserved: 0, bonus, held: 0, period_start: period });
     });
     return;
   }
