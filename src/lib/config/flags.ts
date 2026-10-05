@@ -115,7 +115,8 @@ export function paidCheckoutBlockers(): string[] {
     'LEGAL_ENTITY_NAME',
     'LEGAL_ENTITY_RFC',
     'LEGAL_ENTITY_ADDRESS',
-    'LEGAL_ENTITY_PHONE',
+    // LEGAL_ENTITY_PHONE: optional since 2026-10-05 (owner launches without a
+    // support line; email is the contact channel). Shown when set.
     'LEGAL_ENTITY_EMAIL',
     'LEGAL_ENTITY_HOURS',
     'LEGAL_ENTITY_COMPLAINTS',

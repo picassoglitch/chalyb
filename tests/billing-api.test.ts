@@ -60,8 +60,6 @@ test('V-1 · paid checkout is refused while anything it depends on is missing; t
     assert.equal(trialFlowEnabled(), false);
     assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
     process.env.LEGAL_PUBLISH = 'true';
-    // WS-12: the flag alone can't publish Law's drafts while brackets remain.
-    assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
     setLegalPublishStateForTests({
       terminos: { version: '1.0', published: true, placeholders: 0 },
     });

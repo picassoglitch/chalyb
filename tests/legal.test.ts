@@ -40,6 +40,7 @@ import {
   legalPublishBlockers as flagBlockers,
   paidCheckoutBlockers,
   sellerValueOk,
+  setLegalPublishStateForTests,
 } from '@/lib/config/flags';
 import publishState from '@/lib/legal/publish-state.json' with { type: 'json' };
 import registryJson from '@/lib/legal/registry.json' with { type: 'json' };
@@ -238,7 +239,8 @@ test('amounts: under today’s config the render equals Law’s text, and the ha
 
 test('amounts: a price change re-renders a draft, never the Lealtad month-5 cell', () => {
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
-    const text = renderedSource('suscripcion')!;
+    // How a draft renders: the template with today's prices.
+    const text = bindAmounts(archived('suscripcion')!.template);
     // $997 as a list price + 16% IVA.
     assert.match(text, /\*\*Pro \$1,156\.52 MXN\/mes\*\*/);
     // Lealtad steps don't move with the IVA flag: month 5 stays $997.
@@ -296,10 +298,17 @@ test('placeholders: the owner filled every bracket (2026-10-05)', () => {
 });
 
 test('publish gate: LEGAL_PUBLISH=true cannot take effect while a blocker remains', () => {
+  setLegalPublishStateForTests({ terminos: { version: '1.0', published: false, placeholders: 1 } });
   withEnv({ LEGAL_PUBLISH: 'true' }, () => {
     assert.equal(legalPublished(), false);
     assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
   });
+  withEnv({ LEGAL_PUBLISH: undefined }, () => assert.equal(legalPublished(), false));
+  setLegalPublishStateForTests(null);
+});
+
+test('publish gate: every text published and filled (2026-10-05), so LEGAL_PUBLISH=true takes effect', () => {
+  withEnv({ LEGAL_PUBLISH: 'true' }, () => assert.equal(legalPublished(), true));
   withEnv({ LEGAL_PUBLISH: undefined }, () => assert.equal(legalPublished(), false));
 });
 
@@ -544,6 +553,7 @@ test('re-accept: Law’s §8 copy is verbatim in es.json', () => {
 });
 
 test('publish gate: the e2e override needs mock adapters and a non-production Vercel env', () => {
+  setLegalPublishStateForTests({ terminos: { version: '1.0', published: false, placeholders: 1 } });
   const base = {
     E2E_LEGAL_DRAFTS_AS_PUBLISHED: '1',
     LEGAL_PUBLISH: 'true',
@@ -558,6 +568,7 @@ test('publish gate: the e2e override needs mock adapters and a non-production Ve
   withEnv({ ...base, E2E_USE_MOCK_ADAPTERS: '1', VERCEL_ENV: 'preview' }, () =>
     assert.equal(legalPublished(), true),
   );
+  setLegalPublishStateForTests(null);
 });
 
 test('drafts never render publicly: a version not in force is the review stub', () => {

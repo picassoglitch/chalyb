@@ -18,10 +18,14 @@ import { gatePackCharge, packConsentSentence, termsShowPrice } from '@/lib/payme
 import { pricedTokenPacks, type PackTotals } from '@/lib/payments/pricing';
 import { checkCharge, expectedChargeForPack } from '@/lib/payments/webhook-verify';
 import { orderAmount, orderIdempotencyKey } from '@/lib/payments/order-charge';
-import { renderedSource } from '@/lib/legal/registry';
+import { archived } from '@/lib/legal/registry';
+import { bindAmounts } from '@/lib/legal/amounts';
 import { CONSENT_EVENT_TYPES } from '@/lib/billing/consent-core';
 import { INVOICE_EMAIL } from '@/config/invoicing';
 
+// The Paquetes text as a draft renders it with the given prices. The published
+// 1.0 is frozen at the defaults; a price change needs a new version.
+const draftPaquetes = (totals: PackTotals) => bindAmounts(archived('paquetes')!.template, totals);
 const read = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const es = JSON.parse(read('messages/es.json'));
 const en = JSON.parse(read('messages/en.json'));
@@ -105,7 +109,7 @@ test('the store, the checkout and the legal page read the same totals', () => {
   const totals = packTotals(added(16));
   const packs = pricedTokenPacks(totals);
   for (const p of packs) assert.equal(p.amountCents, totals[p.id]);
-  const legal = renderedSource('paquetes', undefined, totals)!;
+  const legal = draftPaquetes(totals);
   assert.match(legal, /\| Chico \| 100,000 \| \$172\.84 MXN \|/);
   assert.match(legal, /\| Grande \| 2,000,000 \| \$2,318\.84 MXN \|/);
   for (const id of PACK_IDS) assert.ok(termsShowPrice(legal, totals[id]), id);
@@ -125,7 +129,7 @@ test('migration 0066 seeds exactly the code defaults, idempotently', () => {
 // ── Checkout: consent, price shown = price charged ────────────────────────
 
 const LIVE: PackTotals = packTotals(DEFAULT_PACK_PRICING);
-const terms = (totals: PackTotals) => renderedSource('paquetes', undefined, totals);
+const terms = (totals: PackTotals) => draftPaquetes(totals);
 
 function deps(totals: PackTotals | null | 'throw') {
   let loads = 0;
