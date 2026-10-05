@@ -54,6 +54,9 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
             <Link href="/quien-vende" data-foot-target="quien_vende">
               {t('seller')}
             </Link>
+            <Link href="/derechos-de-autor" data-foot-target="derechos_de_autor">
+              {t('copyright')}
+            </Link>
           </nav>
           <nav aria-label={t('contact')}>
             <p className="pub-foot__h">{t('contact')}</p>
