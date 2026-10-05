@@ -2976,5 +2976,13 @@
       "error": "No pudimos empezar la conexión. Intenta de nuevo."
     },
     "close": "Cerrar y volver a Clips"
+  },
+  "notFound": {
+    "metaTitle": "Página no encontrada",
+    "title": "No encontramos esta página",
+    "lead": "Puede que el enlace esté mal escrito o que la página ya no exista.",
+    "home": "Ir al inicio",
+    "app": "Volver a Chalyb",
+    "help": "Pedir ayuda"
   }
 }
