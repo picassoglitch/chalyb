@@ -236,12 +236,16 @@ export function orderIdempotencyKey(input: {
   /** 'card' (Brick, automatic order) or 'hosted' (checkout_url). Different
    *  bodies must not share a key. */
   mode: 'card' | 'hosted';
+  /** The total charged. A price changed inside the window must not hand
+   *  back the order created at the old amount. */
+  amountCents?: number;
   now?: Date;
   bucketMs?: number;
 }): string {
   const bucketMs = input.bucketMs ?? ORDER_IDEMPOTENCY_BUCKET_MS;
   const bucket = Math.floor((input.now ?? new Date()).getTime() / bucketMs);
-  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}`;
+  const amount = input.amountCents === undefined ? '' : `|${input.amountCents}`;
+  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}${amount}`;
   return sha256Hex(logical);
 }
 

@@ -45,6 +45,7 @@ export type AuditAction =
   | 'engine.visibility' // showed or hid a tool for customers
   | 'settings.billing_toggle' // Mensual/Anual offered or not
   | 'settings.usage_margin' // margin charged on top of provider cost
+  | 'settings.pack_prices' // credit-pack prices and how IVA applies
   // Old P6-7/P6-8 (legal): ARCO requests, copyright takedowns, retention.
   | 'legal.arco' // an ARCO request received or answered (Aviso de privacidad §5)
   | 'legal.takedown' // a step of a copyright notice (Uso aceptable §5)

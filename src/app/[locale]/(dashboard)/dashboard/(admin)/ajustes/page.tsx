@@ -1,21 +1,25 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireAdminPage } from '@/lib/admin/guard';
-import { billingToggleEnabled, usageMarginPercent } from '@/lib/config/settings';
+import { billingToggleEnabled, packPricing, usageMarginPercent } from '@/lib/config/settings';
 import { legalEntity } from '@/lib/billing/legal-entity';
 import { legalDocuments } from '@/lib/legal/documents';
 import { planPrice, PRICING, type PlanKey } from '@/config/pricing';
 import { formatMxn, PLATFORM_TIMEZONE } from '@/lib/billing/money';
 import { BillingToggle } from '@/components/dashboard/admin/billing-toggle';
 import { UsageMargin } from '@/components/dashboard/admin/usage-margin';
+import { PackPrices } from '@/components/dashboard/admin/pack-prices';
+import { DEFAULT_PACK_PRICING, PACK_IDS, packTotals } from '@/config/pack-pricing';
+import { packTermsText } from '@/lib/payments/pack-prices';
+import { termsShowPrice } from '@/lib/payments/pack-checkout-core';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('admin.settings');
   return { title: t('metaTitle') };
 }
 
-// Ajustes (P5-6). Read-only except the Mensual/Anual toggle (Q31) and the
-// usage margin.
+// Ajustes (P5-6). Read-only except the Mensual/Anual toggle (Q31), the
+// usage margin and the credit-pack prices.
 
 const PLANS: PlanKey[] = ['pro_month', 'pro_year', 'vip_month', 'vip_year'];
 
@@ -37,6 +41,11 @@ export default async function AjustesPage({ params }: { params: Promise<{ locale
     </div>
   );
   const meta = session.user.user_metadata ?? {};
+  const packs = await packPricing();
+  const packTerms = packs ? packTermsText(packTotals(packs)) : null;
+  const termsStale =
+    packs !== null &&
+    (!packTerms || PACK_IDS.some((id) => !termsShowPrice(packTerms, packTotals(packs)[id])));
 
   return (
     <div style={{ display: 'grid', gap: 26, maxWidth: 860 }}>
@@ -50,6 +59,7 @@ export default async function AjustesPage({ params }: { params: Promise<{ locale
         <div className="ch-group">
           <BillingToggle initial={await billingToggleEnabled()} />
           <UsageMargin initial={await usageMarginPercent()} />
+          <PackPrices initial={packs} fallback={DEFAULT_PACK_PRICING} termsStale={termsStale} />
           {PLANS.map((k) => row(t(`plan.${k}`), `${formatMxn(planPrice(k).totalCents)} ${PRICING.currency}`, t('pricingNote')))}
         </div>
       </section>

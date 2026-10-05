@@ -21,6 +21,7 @@ import {
   listVersions,
   parseVersionSlug,
   renderedBlocks,
+  renderedSource,
   versionMeta,
   versionSlug,
   type LegalDoc,
@@ -29,6 +30,8 @@ import { inlineText } from '@/lib/legal/markdown';
 import { formatFechaLarga } from '@/lib/billing/format';
 import { versionInForceAt } from '@/lib/legal/legal-server';
 import { localizedPath, publicPageMetadata } from '@/lib/site';
+import { loadPricedPacks } from '@/lib/payments/pack-prices';
+import { sha256 } from '@/lib/billing/consent-core';
 import { LegalPage } from './legal-page';
 import { LegalMarkdown } from './legal-markdown';
 
@@ -85,7 +88,10 @@ export async function LegalDocPage({
 }) {
   setRequestLocale(locale);
   const version = resolveVersion(doc, versionSlugParam);
-  const list = version ? renderedBlocks(doc, version) : null;
+  // The packs text names the owner's pack prices in force (Ajustes), the
+  // same totals the checkout charges. A published version keeps its own.
+  const packs = doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
+  const list = version ? renderedBlocks(doc, version, packs) : null;
   if (!version || !list) notFound();
 
   const t = await getTranslations({ locale, namespace: 'legal' });
@@ -115,7 +121,10 @@ export async function LegalDocPage({
   const inForceAt = await versionInForceAt(doc, version);
   const effective = inForceAt ? formatFechaLarga(inForceAt, locale) : t('doc.noDate');
   const others = listVersions(doc).filter((v) => v !== version);
-  const sha = archived(doc, version)?.sha256 ?? '';
+  // The hash of the text on this page (what a pack consent cites); for every
+  // other document and any published version it is the archived hash.
+  const shown = renderedSource(doc, version, packs);
+  const sha = shown === null ? '' : sha256(shown);
 
   return (
     <LegalPage

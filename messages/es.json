@@ -1989,7 +1989,24 @@
       "twofaValue": "No conectado",
       "margin": "Margen sobre el costo de uso",
       "marginHelp": "Se cobra al saldo del usuario el costo real del proveedor más este porcentaje. Aplica al uso nuevo; lo ya registrado no cambia.",
-      "marginSave": "Guardar"
+      "marginSave": "Guardar",
+      "packs": "Precios de los paquetes de créditos",
+      "packsHelp": "Lo que paga el cliente por cada paquete. El mismo precio se usa en la tienda, el pago, Mercado Pago y la página legal de los paquetes. Aplica a compras nuevas.",
+      "packName": {
+        "tokens_100k": "Chico · 100,000 créditos",
+        "tokens_500k": "Mediano · 500,000 créditos",
+        "tokens_2m": "Grande · 2,000,000 créditos"
+      },
+      "ivaLegend": "IVA",
+      "ivaIncluded": "IVA incluido: el precio que escribes es el total",
+      "ivaAdd": "Agregar IVA al precio que escribes",
+      "ivaRate": "Tasa de IVA",
+      "packTotal": "El cliente paga {monto} MXN",
+      "packsSave": "Guardar precios",
+      "packsInvalid": "Revisa los precios: de $1 a $100,000 por paquete, y una tasa de 0% a 50%.",
+      "packsMissing": "No se pudieron leer los precios guardados: la compra de paquetes está cerrada hasta que guardes precios válidos.",
+      "termsStale": "La versión publicada de los Términos de los Paquetes muestra otros precios: la compra de paquetes queda cerrada hasta publicar una versión con estos.",
+      "currencyNote": "Precios en MXN, siempre con IVA para el cliente. Los precios en USD nunca incluyen IVA."
     },
     "example": "Ejemplo",
     "disputes": {
@@ -2257,7 +2274,8 @@
       "noExpiry": "no vencen",
       "card": "En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.",
       "cta": "Continuar al pago · {monto} MXN",
-      "later": "Ahora no"
+      "later": "Ahora no",
+      "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde."
     },
     "pack": {
       "name": "{n} créditos",
@@ -2282,7 +2300,8 @@
       "title": "Tus ganancias como socio",
       "month": "Este mes · se paga al cerrar el mes",
       "paid": "Pagado el {fecha}"
-    }
+    },
+    "invoice": "¿Necesitas factura (CFDI) de un paquete? Escríbenos a <b>{correo}</b> con tu RFC dentro del mismo mes de tu compra."
   },
   "profile": {
     "title": "Mi perfil",
@@ -2988,5 +3007,30 @@
       "error": "No pudimos empezar la conexión. Intenta de nuevo."
     },
     "close": "Cerrar y volver a Clips"
+  },
+  "packCheckout": {
+    "metaTitle": "Comprar créditos",
+    "title": "Comprar {n} créditos extra",
+    "once": "Pago único",
+    "ivaIncluded": "Precio total en MXN, IVA incluido.",
+    "lead": "No vencen mientras tu cuenta exista y se usan después de los créditos de tu plan, una sola vez.",
+    "disclosure": "<b>{n} créditos extra</b> por un <b>cargo único de {monto} MXN</b>, IVA incluido. No es una suscripción y no se renueva.",
+    "consent": "Acepto un <b>cargo único de {monto} MXN (IVA incluido)</b> por <b>{n} créditos extra</b>. No es una suscripción y no se renueva. Los créditos no vencen mientras mi cuenta exista, no son dinero y no se pueden transferir. Acepto los <terms>Términos de los Paquetes de Créditos</terms>.",
+    "consentError": "Marca la casilla para aceptar el cargo único. No se hizo ningún cargo.",
+    "ctaHint": "Marca la casilla para continuar.",
+    "cta": "Pagar {monto} MXN",
+    "hostedHint": "¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Se pagan en la página de Mercado Pago.",
+    "hostedCta": "Pagar {monto} MXN en Mercado Pago",
+    "invoice": "¿Necesitas factura (CFDI)? Escríbenos a <b>{correo}</b> con tu RFC dentro del mismo mes de tu compra.",
+    "secure": "Los datos de tu tarjeta viajan directo a Mercado Pago en campos seguros; Chalyb nunca los ve ni los guarda.",
+    "back": "Volver a Mis créditos",
+    "unavailableTitle": "Pagos aún no disponibles",
+    "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde o escríbenos.",
+    "priceChanged": "El precio cambió. Recarga la página para ver el actual. No se hizo ningún cargo.",
+    "error": "No pudimos procesar el pago. Inténtalo de nuevo en un momento.",
+    "approved": "<b>Pago aprobado.</b> Tus créditos ya están en tu saldo. Te llevamos a Mis créditos…",
+    "approvedToast": "Créditos extra acreditados.",
+    "pending": "<b>Pago en revisión.</b> Mercado Pago todavía no lo aprueba. En cuanto lo confirme, tus créditos aparecen en Mis créditos. Puedes cerrar esta página.",
+    "pendingShort": "Mercado Pago dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe."
   }
 }
