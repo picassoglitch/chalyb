@@ -251,11 +251,11 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 14.1. Si vives en Estados Unidos o Canadá, se aplican además las reglas de renovación automática de tu estado o provincia que no puedan renunciarse. Entre otras cosas: te enviamos la confirmación de tu suscripción (o de tu Prueba) con sus condiciones y la forma de cancelar; puedes cancelar en línea; los avisos de cambio de precio se envían 30 días antes; y te enviamos el recordatorio anual de la sección 3.3.
 
-14.2. **Quebec.** Si resides en Quebec, el aviso previo al fin de la Prueba (sección 2.7) se envía por escrito entre 2 y 10 días antes de que termine, con la fecha de término y el precio que se cobrará; el aviso de cobro que enviamos al activar la Prueba de 7 días (7 días antes de su fin) cumple con ello. [DECISIÓN DEL DUEÑO: ver Términos y Condiciones 16.4 sobre versión en francés.]
+14.2. **Quebec.** Si resides en Quebec, el aviso previo al fin de la Prueba (sección 2.7) se envía por escrito entre 2 y 10 días antes de que termine, con la fecha de término y el precio que se cobrará; el aviso de cobro que enviamos al activar la Prueba de 7 días (7 días antes de su fin) cumple con ello.
 
 ## 15. Contacto
 
-Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
+Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
 Última actualización: 5 de octubre de 2026 · Versión 1.0

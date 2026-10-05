@@ -2,37 +2,37 @@
   "terminos": {
     "version": "1.0",
     "published": false,
-    "placeholders": 22,
+    "placeholders": 0,
     "consistency": []
   },
   "suscripcion": {
     "version": "1.0",
     "published": false,
-    "placeholders": 14,
+    "placeholders": 0,
     "consistency": []
   },
   "privacidad": {
     "version": "1.0",
     "published": false,
-    "placeholders": 28,
+    "placeholders": 0,
     "consistency": []
   },
   "uso_aceptable": {
     "version": "1.0",
     "published": false,
-    "placeholders": 12,
+    "placeholders": 0,
     "consistency": []
   },
   "paquetes": {
     "version": "1.0",
     "published": false,
-    "placeholders": 10,
+    "placeholders": 0,
     "consistency": []
   },
   "quien_vende": {
     "version": "1.0",
     "published": false,
-    "placeholders": 12,
+    "placeholders": 0,
     "consistency": []
   }
 }

@@ -20,7 +20,6 @@
 | **RFC** | RAAA960329GA2 |
 | **Domicilio** | Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México |
 | **Correo de atención a clientes** | hola@chalyb.com |
-| **Teléfono** | [TELÉFONO] |
 | **Horario de atención** | lunes a viernes, de 9:00 a 18:00 (hora del centro de México) |
 | **Sitio** | chalyb.com |
 
@@ -28,7 +27,7 @@ Cuando en nuestros documentos decimos "**Chalyb**", "**nosotros**" o "**el Respo
 
 ## 2. Dudas, aclaraciones y reclamaciones
 
-- Escríbenos a **hola@chalyb.com**, llámanos al **[TELÉFONO]** o entra a **Ayuda → Problema con un cobro**.
+- Escríbenos a **hola@chalyb.com** o entra a **Ayuda → Problema con un cobro**.
 - Te respondemos en un máximo de **5 días hábiles**. Si tu reclamación es por un cobro, te decimos en ese plazo si procede un reembolso y cuándo lo recibes (Términos de Suscripción, sección 7).
 - En el domicilio indicado arriba también recibimos reclamaciones por escrito.
 - Escribirnos primero **no es obligatorio**: puedes acudir directamente a la PROFECO, a tu banco o a Mercado Pago.

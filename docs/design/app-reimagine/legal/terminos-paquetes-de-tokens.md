@@ -3,7 +3,7 @@
 **Página pública:** `chalyb.com/paquetes`
 **Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
 
-Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com · [TELÉFONO] (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)). Más datos en chalyb.com/quien-vende.
+Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México). Más datos en chalyb.com/quien-vende.
 
 > **Resumen**
 > - Un paquete de créditos es una **compra única**: pagas una vez y **no se renueva**. No es una suscripción.
@@ -40,7 +40,7 @@ Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial
 
 3.1. Los créditos extra se suman a tu saldo en cuanto Mercado Pago confirma el pago (normalmente en segundos o minutos).
 
-3.2. Si pagaste y en **[24] horas** no ves los créditos en **Mi cuenta → Uso**, escríbenos a hola@chalyb.com: te los acreditamos o, si lo prefieres, te devolvemos el pago completo (sección 7).
+3.2. Si pagaste y en **24 horas** no ves los créditos en **Mi cuenta → Uso**, escríbenos a hola@chalyb.com: te los acreditamos o, si lo prefieres, te devolvemos el pago completo (sección 7).
 
 ## 4. Cómo se usan
 
@@ -98,7 +98,7 @@ Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial
 
 9.1. Antes de pagar te mostramos el paquete, los créditos, el precio total con IVA, que es un cargo único y estos términos. Para pagar marcas esta casilla (sin marcar por defecto):
 
-> ☐ Acepto un **cargo único de ${precio_total} MXN (IVA incluido)** por **{creditos} créditos extra**. No es una suscripción y no se renueva. Los créditos no vencen mientras mi cuenta exista, no son dinero y no se pueden transferir. Acepto los [Términos de los Paquetes de Créditos](/paquetes).
+> ☐ Acepto un **cargo único de ${precio_total} MXN (IVA incluido)** por **{creditos} créditos extra**. No es una suscripción y no se renueva. Los créditos no vencen mientras mi cuenta exista, no son dinero y no se pueden transferir. Acepto los **Términos de los Paquetes de Créditos**(/paquetes).
 
 Botón: **Pagar ${precio_total} MXN**
 

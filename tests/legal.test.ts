@@ -291,15 +291,8 @@ test('placeholders: the regex catches Law’s owner brackets, not prose', () => 
   assert.deepEqual(hits(blocksText(parseMarkdown('ver [sección 4](#planes)'))), []);
 });
 
-test('placeholders: today’s drafts would fail as "published"', () => {
-  for (const doc of LEGAL_DOCS)
-    assert.ok(placeholders(doc).length > 0, `${doc} still has brackets`);
-  // What only the owner can fill stays in brackets.
-  assert.ok(placeholders('terminos').includes('[NOMBRE COMPLETO DE LA PERSONA FÍSICA]'));
-  assert.ok(placeholders('suscripcion').includes('[BENEFICIOS VIP]'));
-  assert.ok(placeholders('terminos').includes('[15]'));
-  assert.ok(placeholders('paquetes').includes('[24]'));
-  assert.ok(legalPublishBlockers().length > 0);
+test('placeholders: the owner filled every bracket (2026-10-05)', () => {
+  for (const doc of LEGAL_DOCS) assert.deepEqual(placeholders(doc), [], `${doc} still has brackets`);
 });
 
 test('publish gate: LEGAL_PUBLISH=true cannot take effect while a blocker remains', () => {

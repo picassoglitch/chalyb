@@ -20,7 +20,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 
 **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb**, con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México** (el "**Responsable**" o "**Chalyb**"), es responsable del tratamiento de tus datos personales.
 
-**Departamento de datos personales:** Departamento de datos personales de Chalyb (lo atiende directamente el Responsable) · Correo: **hola@chalyb.com** · Teléfono: [TELÉFONO].
+**Departamento de datos personales:** Departamento de datos personales de Chalyb (lo atiende directamente el Responsable) · Correo: **hola@chalyb.com**.
 
 ## 2. Datos personales que tratamos
 

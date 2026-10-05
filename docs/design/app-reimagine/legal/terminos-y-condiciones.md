@@ -16,7 +16,7 @@
 
 ## 1. Quiénes somos y a qué se aplican estos Términos
 
-1.1. Chalyb es el nombre comercial con el que opera **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **hola@chalyb.com** o al **[TELÉFONO]** (lunes a viernes, de 9:00 a 18:00 (hora del centro de México)).
+1.1. Chalyb es el nombre comercial con el que opera **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **hola@chalyb.com** (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 
 1.2. Estos Términos y Condiciones (los "**Términos**") regulan el acceso y uso del sitio chalyb.com, sus aplicaciones, herramientas, API, extensiones y cualquier servicio relacionado (en conjunto, el "**Servicio**").
 
@@ -186,10 +186,10 @@ Al usar Chalyb **no puedes**:
 
 16.2. Para cualquier controversia, las partes se someten a los tribunales competentes de **la Ciudad de México**, **sin perjuicio** de: (a) tu derecho a acudir a PROFECO (vía administrativa y de conciliación); (b) si eres consumidor, tu derecho a demandar ante los tribunales de tu domicilio cuando la ley lo permita; y (c) cualquier fuero que la ley imperativa de protección al consumidor te reconozca y que no pueda renunciarse. Estos Términos **no incluyen arbitraje obligatorio ni renuncia a acciones colectivas**.
 
-16.3. Antes de iniciar cualquier reclamación, te pedimos (sin que sea un requisito obligatorio ni una condición para acudir a PROFECO o a los tribunales) escribirnos a hola@chalyb.com para intentar resolverlo en un plazo de [15] días hábiles.
+16.3. Antes de iniciar cualquier reclamación, te pedimos (sin que sea un requisito obligatorio ni una condición para acudir a PROFECO o a los tribunales) escribirnos a hola@chalyb.com para intentar resolverlo en un plazo de 15 días hábiles.
 
 16.4. **Si vives fuera de México.**
-- **Quebec (Canadá).** Si eres consumidor residente en Quebec, **las siguientes cláusulas no se aplican a ti en la medida en que la Ley de protección del consumidor de Quebec lo prohíba**: la exclusión de responsabilidad por nuestros propios actos (sección 11), la elección de la ley mexicana (16.1) y la sumisión a tribunales de México (16.2). Se aplican la ley de Quebec y los tribunales de Quebec. Te entregaremos estos documentos en francés antes de contratar. [DECISIÓN DEL DUEÑO: mientras no exista versión en francés, no ofrecer planes de pago a residentes de Quebec.]
+- **Quebec (Canadá).** Si eres consumidor residente en Quebec, **las siguientes cláusulas no se aplican a ti en la medida en que la Ley de protección del consumidor de Quebec lo prohíba**: la exclusión de responsabilidad por nuestros propios actos (sección 11), la elección de la ley mexicana (16.1) y la sumisión a tribunales de México (16.2). Se aplican la ley de Quebec y los tribunales de Quebec. Te entregaremos estos documentos en francés antes de contratar.
 - **Resto de Canadá y Estados Unidos.** Si las leyes de protección al consumidor de tu provincia o estado te dan derechos que no pueden renunciarse (por ejemplo, sobre renovaciones automáticas, cancelación, avisos, tribunales o ley aplicable), esos derechos prevalecen sobre estos Términos en lo que se contrapongan.
 
 ## 17. Disposiciones generales
@@ -214,6 +214,6 @@ Al usar Chalyb **no puedes**:
 RFC: RAAA960329GA2
 Domicilio: Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México
 Correo: hola@chalyb.com
-Teléfono: [TELÉFONO] · Horario: lunes a viernes, de 9:00 a 18:00 (hora del centro de México)
+Horario: lunes a viernes, de 9:00 a 18:00 (hora del centro de México)
 
 Última actualización: 5 de octubre de 2026 · Versión 1.0

@@ -136,7 +136,7 @@ Los pronósticos son estimaciones probabilísticas con fines informativos y de e
 Los análisis, alertas, simulaciones o automatizaciones de Inversiones son herramientas de apoyo. Si conectas una cuenta de un bróker o exchange:
 - **Tú autorizas** cada conexión, defines los permisos y **eres el único responsable** de las órdenes enviadas desde tu cuenta.
 - **Las automatizaciones solo ejecutan reglas que tú defines y activas** (activo, condición, monto máximo, horario). Chalyb no selecciona por ti activos, montos ni momentos, y no cambia tus reglas sin tu confirmación. Puedes pausar o eliminar una automatización en cualquier momento.
-- Las Señales de Chalyb **no se ejecutan automáticamente** en tu cuenta. Si decides operar con base en ellas, lo haces tú, orden por orden. [REQUIERE VALIDACIÓN DE PRODUCTO Y ABOGADO: ver REVISION-LEGAL.md]
+- Las Señales de Chalyb **no se ejecutan automáticamente** en tu cuenta. Si decides operar con base en ellas, lo haces tú, orden por orden.
 - Te recomendamos dar a Chalyb **solo permisos de lectura** (y de operación únicamente si usas automatizaciones) y **nunca** permisos de retiro de fondos; Chalyb rechazará claves con permiso de retiro.
 - Chalyb no es responsable de fallas, retrasos, deslizamientos de precio (slippage), errores de datos, caídas o decisiones del bróker o exchange.
 
@@ -150,7 +150,7 @@ En la máxima medida permitida por la ley, Chalyb **no será responsable de pér
 
 ### 6.7 bis. Usuarios fuera de México
 
-Las Señales, Pronósticos e Inversiones se publican de forma general e impersonal, y Chalyb no está registrado como asesor de inversiones, asesor de operaciones de futuros (commodity trading advisor) ni asesor de valores en Estados Unidos, Canadá ni en ningún otro país. Es tu responsabilidad verificar que usar estas herramientas, operar con los activos mencionados o apostar sea legal en tu lugar de residencia. [DECISIÓN DEL DUEÑO: considerar bloquear Pronósticos y la ejecución automática de Inversiones en países o estados donde no se haya validado su legalidad.]
+Las Señales, Pronósticos e Inversiones se publican de forma general e impersonal, y Chalyb no está registrado como asesor de inversiones, asesor de operaciones de futuros (commodity trading advisor) ni asesor de valores en Estados Unidos, Canadá ni en ningún otro país. Es tu responsabilidad verificar que usar estas herramientas, operar con los activos mencionados o apostar sea legal en tu lugar de residencia.
 
 ### 6.8. Reconocimiento al activar estas herramientas
 
