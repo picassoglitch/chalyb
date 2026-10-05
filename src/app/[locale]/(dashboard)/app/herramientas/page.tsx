@@ -14,6 +14,7 @@ import { toolCardAction } from '@/lib/tools/matrix';
 import { planKeyFor } from '@/lib/tools/access';
 import { paidPlanName } from '@/lib/billing/plan-label';
 import { toolStatusLines, type ToolStatusLine } from '@/lib/tools/status-lines';
+import { isSupportCode } from '@/lib/tools/bff-core';
 import { Banner, ButtonLink, Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
 
@@ -31,9 +32,19 @@ export async function generateMetadata(): Promise<Metadata> {
 //   setup_needed → Te falta un paso · Conectar ahora (inside the tool)
 // "También incluido" lists only other `live` tools: none today (Q9), so the
 // section doesn't render.
+//
+// ?no_abrio=<slug>&codigo=<support code>: /auth/launch couldn't open a tool's
+// own app from its hub screen (no in-hub API yet); the banner says so.
 
-export default async function HerramientasPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HerramientasPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ no_abrio?: string; codigo?: string }>;
+}) {
   const { locale } = await params;
+  const { no_abrio: failedSlug, codigo } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('tools');
   const session = await getSessionUser();
@@ -53,6 +64,8 @@ export default async function HerramientasPage({ params }: { params: Promise<{ l
     proIncludesAllTools: proIncludesAllTools(),
   };
   const offer = ctx.plan === 'FREE' && ctx.trialFlow && ctx.proIncludesAllTools;
+  const failedTool = failedSlug ? toolBySlug(failedSlug) : undefined;
+  const te = await getTranslations('toolShell.error');
   const allIncluded = main.length > 0 && main.every((x) => entitlements.tools[x.slug]?.state === 'included');
   const lines = await toolStatusLines(
     session.user.id,
@@ -73,6 +86,18 @@ export default async function HerramientasPage({ params }: { params: Promise<{ l
           <p className="ch-sub">{t('sub', { plan: paidPlanName(entitlements.plan) })}</p>
         )}
       </header>
+      {failedTool && (
+        <Banner
+          kind="warn"
+          action={{
+            href: codigo && isSupportCode(codigo) ? `/app/help?codigo=${codigo}` : '/app/help',
+            label: te('human'),
+          }}
+        >
+          <b>{te('title', { herramienta: failedTool.name })}.</b> {te('body')}
+          {codigo && isSupportCode(codigo) && <> {te.rich('code', { codigo, b: (c) => <b>{c}</b> })}</>}
+        </Banner>
+      )}
       {offer && !entitlements.trialUsed && (
         <Banner kind="trial" action={{ href: '/app/prueba', label: t('try') }}>
           {t('strip')}

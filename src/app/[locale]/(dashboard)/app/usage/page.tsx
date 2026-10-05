@@ -28,6 +28,7 @@ import { Banner, Group, Pill, Row, StateBlock } from '@/components/ui/primitives
 import { ToolIcon } from '@/components/ui/tool-icon';
 import { Markup } from '@/components/ui/markup';
 import { CreditsSheet, RefreshWhilePending } from '@/components/app/credits-sheet';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('credits');
@@ -453,7 +454,12 @@ export default async function UsagePage({
                   </p>
                 </>
               )}
-              <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+              {/* Sales are closed while paid checkout is off. */}
+              {paidCheckoutEnabled() ? (
+                <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+              ) : (
+                <p className="ch-muted">{t('soon')}</p>
+              )}
             </section>
 
             {byTool.size > 0 && (

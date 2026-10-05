@@ -264,3 +264,14 @@ test('Clips adapter contract: capabilities drive every optional row and button',
   assert.equal(caps.fileUpload, false, 'no "Subir un video" without an API');
   assert.equal(caps.bulkUpload, true);
 });
+
+test('SSO hand-off keeps the screen locale; redirects back are localized', async () => {
+  const { hubLaunchHref, localizedPath } = await import('@/lib/tools/routes');
+  assert.equal(hubLaunchHref('chalybcrypto', 'es'), '/auth/launch/chalybcrypto?via=hub');
+  assert.equal(hubLaunchHref('chalybcrypto', 'en'), '/auth/launch/chalybcrypto?via=hub&lang=en');
+  assert.equal(hubLaunchHref('chalybcrypto', 'xx'), '/auth/launch/chalybcrypto?via=hub');
+  assert.equal(localizedPath('/app/senales', 'en'), '/en/app/senales');
+  assert.equal(localizedPath('/app/senales', 'es'), '/app/senales');
+  assert.equal(localizedPath('/app/senales', null), '/app/senales');
+  assert.equal(localizedPath('/app/senales', '//evil.com'), '/app/senales');
+});

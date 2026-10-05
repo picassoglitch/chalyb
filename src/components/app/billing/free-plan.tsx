@@ -37,7 +37,8 @@ export async function FreePlan({
 
   const trial = trialFlowEnabled() && !trialUsed && planHasTrial('pro_month');
   const paid = paidCheckoutEnabled();
-  const ready = isCheckoutReady();
+  // Sales are closed while paid checkout is off: no offer, no plan rows.
+  const ready = paid && isCheckoutReady();
   // §A.5: the trial picker with Pro mensual preselected (never the annual);
   // without the trial, the paid path; without the new flow, the old checkout.
   const proHref = trial
@@ -191,8 +192,9 @@ export async function FreePlan({
           {!ready ? (
             <StateBlock
               icon={<MessageCircle />}
-              title={t('payDown')}
-              action={{ href: '/app/messages', label: t('human') }}
+              title={paid ? t('payDown') : t('salesSoon')}
+              body={paid ? undefined : t('salesSoonBody')}
+              action={paid ? { href: '/app/messages', label: t('human') } : undefined}
               role="status"
             />
           ) : (

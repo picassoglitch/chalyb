@@ -1,5 +1,17 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { AuthHomeLink } from '@/components/auth/auth-home-link';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth.resetPassword' });
+  return { title: t('title') };
+}
 
 export default async function ResetPasswordPage({
   params,
@@ -15,15 +27,12 @@ export default async function ResetPasswordPage({
 
   return (
     <main className="auth-shell">
-      <div className="auth-status">
-        <span className="auth-status-dot" />
-        {t('liveStatus')}
-      </div>
+      <AuthHomeLink />
 
       <div className="auth-card">
-        <h2 className="auth-inbox-title" style={{ marginBottom: 4 }}>
+        <h1 className="auth-inbox-title" style={{ marginBottom: 4 }}>
           {t('title')}
-        </h2>
+        </h1>
         <ResetPasswordForm tokenHash={token_hash} />
       </div>
     </main>

@@ -1,0 +1,253 @@
+/* Legal documents, /contacto and /derechos-de-autor in the public site's
+   light chrome (PublicNav + PublicFooter). Replaces the dark .lp shell and
+   the legacy globals.css these pages used to load. The class names are the
+   ones the legal content and the two forms already emit (.legal-prose,
+   .legal-callout, .legal-toc, .legal-table, .auth-field, .auth-submit,
+   .auth-error), restyled with the chalyb-tokens palette. */
+
+.chalyb-app .pub-doc {
+  padding: 48px 16px 80px;
+}
+.chalyb-app .pub-doc__wrap {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.chalyb-app .pub-doc__head {
+  margin-bottom: 32px;
+  display: grid;
+  gap: 10px;
+}
+.chalyb-app .pub-doc__eyebrow {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.chalyb-app .pub-doc__meta {
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+.chalyb-app .pub-doc__card {
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: clamp(20px, 4vw, 40px);
+}
+
+/* ---------- Prose ---------- */
+.chalyb-app .legal-prose {
+  color: var(--ink2);
+  font-size: 17px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.chalyb-app .legal-prose h2 {
+  color: var(--ink);
+  font-size: clamp(21px, 2.6vw, 25px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 36px 0 14px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.chalyb-app .legal-prose h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.chalyb-app .legal-prose h3 {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 650;
+  margin: 24px 0 10px;
+}
+.chalyb-app .legal-prose p {
+  margin: 0 0 14px;
+}
+.chalyb-app .legal-prose ul,
+.chalyb-app .legal-prose ol {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+.chalyb-app .legal-prose ul {
+  list-style: disc;
+}
+.chalyb-app .legal-prose ol {
+  list-style: decimal;
+}
+.chalyb-app .legal-prose li {
+  margin-bottom: 6px;
+}
+.chalyb-app .legal-prose strong,
+.chalyb-app .legal-prose b {
+  color: var(--ink);
+  font-weight: 650;
+}
+.chalyb-app .legal-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chalyb-app .legal-prose a:hover {
+  color: var(--accent-d);
+}
+.chalyb-app .legal-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.chalyb-app .legal-prose hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 28px 0;
+}
+.chalyb-app .legal-callout {
+  background: var(--tint2);
+  box-shadow: inset 0 0 0 1.5px #e4e0ff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 0 0 20px;
+  color: var(--ink);
+}
+.chalyb-app .legal-prose .legal-toc {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 0 0 28px;
+}
+.chalyb-app .legal-prose .legal-toc ol {
+  margin: 0;
+}
+.chalyb-app .legal-prose .legal-toc a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.chalyb-app .legal-prose .legal-toc a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.chalyb-app .legal-prose .legal-table {
+  overflow-x: auto;
+  margin: 0 0 20px;
+}
+.chalyb-app .legal-prose .legal-table:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .legal-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.chalyb-app .legal-prose th,
+.chalyb-app .legal-prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.chalyb-app .legal-prose th {
+  color: var(--ink);
+  font-weight: 650;
+  background: var(--bg);
+}
+
+/* ---------- Forms (contact, takedown) ---------- */
+.chalyb-app .auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .auth-field label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.chalyb-app .auth-field input,
+.chalyb-app .auth-field textarea,
+.chalyb-app .auth-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  border-radius: 14px;
+  background: #fff;
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px #dcdce3;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: 17px;
+  color: var(--ink);
+}
+.chalyb-app .auth-field textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.55;
+}
+.chalyb-app .auth-field input::placeholder,
+.chalyb-app .auth-field textarea::placeholder {
+  color: var(--ink3-text);
+}
+.chalyb-app .auth-field input:focus,
+.chalyb-app .auth-field textarea:focus,
+.chalyb-app .auth-field select:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 5px rgba(91, 75, 255, 0.12);
+}
+.chalyb-app .auth-field.err input,
+.chalyb-app .auth-field.err textarea {
+  box-shadow: inset 0 0 0 2px var(--bad);
+}
+.chalyb-app .auth-submit {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(91, 75, 255, 0.32);
+  margin-top: 4px;
+}
+.chalyb-app .auth-submit:hover:not(:disabled) {
+  background: var(--accent-d);
+}
+.chalyb-app .auth-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.chalyb-app .auth-error {
+  background: var(--bad-tint);
+  box-shadow: inset 0 0 0 1.5px var(--bad-line);
+  color: var(--bad);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+}
+.chalyb-app .pub-form-done {
+  background: var(--ok-tint);
+  border-radius: 16px;
+  padding: 24px 22px;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.55;
+}
+.chalyb-app .pub-form-done__title {
+  font-weight: 650;
+  color: var(--ok-text);
+  margin-bottom: 6px;
+}
+.chalyb-app .pub-doc__notes {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 15px;
+  color: var(--ink3-text);
+}

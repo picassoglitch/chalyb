@@ -1,4 +1,6 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { AuthHomeLink } from '@/components/auth/auth-home-link';
 import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -11,6 +13,28 @@ import { signupNext } from '@/lib/billing/plans-cta';
 // Plan cards link to /sign-in?mode=signup&(intent=trial|plan=<tier>)&interval=…;
 // signupNext() maps that to where the user continues after auth. An explicit
 // ?next= always wins over the plan-derived default.
+const VISUALLY_HIDDEN: React.CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+};
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ mode?: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const { mode } = await searchParams;
+  const t = await getTranslations({ locale, namespace: 'auth.signIn' });
+  return { title: mode === 'signup' ? t('metaTitleSignup') : t('metaTitle') };
+}
+
 export default async function SignInPage({
   params,
   searchParams,
@@ -83,12 +107,14 @@ export default async function SignInPage({
 
   return (
     <main className="auth-shell">
-      <div className="auth-status">
-        <span className="auth-status-dot" />
-        {t('liveStatus')}
-      </div>
+      <AuthHomeLink />
 
       <div className="auth-card">
+        {/* The tabs say which form this is; the h1 names it for screen
+            readers and the document outline. */}
+        <h1 style={VISUALLY_HIDDEN}>
+          {initialMode === 'signup' ? t('metaTitleSignup') : t('title')}
+        </h1>
         {reset === 'success' && <div className="auth-success">{t('resetSuccess')}</div>}
 
         <EmailAuthForm initialMode={initialMode} next={next} showModeTabs legal={legalLine} />

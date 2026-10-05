@@ -28,6 +28,9 @@ import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
+import { reportToolError } from '@/lib/tools/bff';
+import { hasRiskAck } from '@/lib/tools/consents';
+import { RISK_TOOLS, localizedPath, toolHref } from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -40,6 +43,17 @@ export async function GET(
   const fromHub = request.nextUrl.searchParams.get('via') === 'hub';
   const fallback = (path: string) =>
     NextResponse.redirect(new URL(fromHub ? '/app/herramientas' : path, origin));
+  // The engine could not be opened. From a hub tool screen, Tus herramientas
+  // says so (with a support code logged to Actividad) instead of landing there
+  // silently.
+  const launchFailed = async (path: string, userId: string) => {
+    if (!fromHub) return NextResponse.redirect(new URL(path, origin));
+    const { supportCode } = await reportToolError(slug, userId, 'unavailable', true);
+    const to = new URL('/app/herramientas', origin);
+    to.searchParams.set('no_abrio', slug);
+    to.searchParams.set('codigo', supportCode);
+    return NextResponse.redirect(to);
+  };
 
   const session = await getSessionUser();
   if (!session) {
@@ -93,7 +107,17 @@ export async function GET(
   // the engine's admin_api_base, so skipping it also avoids hanging the
   // request on a dead backend until the socket times out.
   if (engine.status !== 'active') {
-    return fallback(`/app/engines/${slug}`);
+    return launchFailed(`/app/engines/${slug}`, session.user.id);
+  }
+
+  // A risk tool (Señales) needs its notice accepted first (aceptacion-ux §6);
+  // getEngineLaunchUrl would refuse anyway, but only after provisioning, and
+  // via=hub would then strand the person on Tus herramientas. The tool's own
+  // screen opens the sheet, and accepting it comes back here. Not a failure:
+  // no launchFailed, so no "no abrió" banner.
+  if (RISK_TOOLS.has(slug) && !(await hasRiskAck(session.user.id, slug))) {
+    const lang = request.nextUrl.searchParams.get('lang');
+    return NextResponse.redirect(new URL(localizedPath(toolHref(slug), lang), origin));
   }
 
   const engineId = engine.id as string;
@@ -137,5 +161,5 @@ export async function GET(
   }
   // Couldn't build the launch URL (engine not configured / provisioning
   // failed) — drop the user on the engine page where the error surfaces.
-  return fallback(`/app/engines/${slug}`);
+  return launchFailed(`/app/engines/${slug}`, session.user.id);
 }

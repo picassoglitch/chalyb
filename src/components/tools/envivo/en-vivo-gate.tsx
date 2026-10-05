@@ -2,6 +2,7 @@
 // inside ToolShell; otherwise the screen gets the session and the adapter.
 
 import type { ReactNode } from 'react';
+import { redirect } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getEnVivo } from '@/lib/tools/registry';
 import type { EnVivoAdapter } from '@/lib/tools/adapters/tools';
@@ -42,6 +43,8 @@ export async function enVivoGate(
       ),
     };
   if (gate.kind === 'error') return { fallback: <EnVivoError tab={tab} error={gate.error} /> };
+  // En vivo isn't a risk tool, so loadTool never answers 'risk' for it.
+  if (gate.kind === 'risk') return redirect({ href: '/app/herramientas', locale });
   if (gate.kind === 'setup') {
     // OBS missing is En vivo's own first step: the screen shows Conectar (57)
     // when the tool has no paired computer. Any other step is named.

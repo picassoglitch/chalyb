@@ -10,16 +10,16 @@ import type { BillingState } from './billing-state';
 export type Interval = 'month' | 'year';
 
 export interface PlansCta {
-  gratis: { href: string | null; label: 'gratis' | 'current' };
+  gratis: { href: string | null; label: 'gratis' | 'current' | 'manage' };
   pro: {
     hrefYear: string | null;
     hrefMonth: string | null;
-    label: 'trial' | 'paid' | 'current' | 'trialing';
+    label: 'trial' | 'paid' | 'current' | 'trialing' | 'soon';
   };
   vip: {
     hrefYear: string | null;
     hrefMonth: string | null;
-    label: 'trial' | 'choose' | 'up' | 'current';
+    label: 'trial' | 'choose' | 'up' | 'current' | 'soon';
   };
 }
 
@@ -48,60 +48,65 @@ export function plansCta(input: {
 
   // ── Pro ──────────────────────────────────────────────────────────
   const trial = flow && !trialUsed;
+  // Only reached while paid checkout is live (otherwise the card is "soon").
   const proTarget = (interval: Interval): string | null => {
     if (blocked) return null;
-    if (interval === 'year' && !input.annualOffered) return null;
-    const paid = input.annualOffered; // paid checkout live
     if (!signedIn) {
       if (trial) return `${SIGNUP}&intent=trial&interval=${interval}`;
-      return paid ? `${SIGNUP}&plan=pro&interval=${interval}` : `${SIGNUP}&plan=pro`;
+      return `${SIGNUP}&plan=pro&interval=${interval}`;
     }
     // The picker for the trial (it never preselects the annual charge); the
-    // paid consent path without it; the legacy monthly checkout when paid
-    // checkout is off.
+    // paid consent path without it.
     if (trial) return `/app/prueba?interval=${interval}`;
-    if (paid) return `/app/prueba/pago?plan=pro_${interval}`;
-    return interval === 'month' ? '/app/subscription' : null;
+    return `/app/prueba/pago?plan=pro_${interval}`;
   };
+  // Sales are closed while paid checkout is off (annualOffered mirrors it):
+  // the paid cards say "Muy pronto" and lead nowhere, signed in or not.
+  const soon = { hrefYear: null, hrefMonth: null, label: 'soon' } as const;
   const pro: PlansCta['pro'] = input.isAdmin
     ? { hrefYear: null, hrefMonth: null, label: 'current' }
     : state === 'trialing'
       ? { hrefYear: null, hrefMonth: null, label: 'trialing' }
       : paid && !onVip
         ? { hrefYear: null, hrefMonth: null, label: 'current' }
-        : {
-            hrefYear: proTarget('year'),
-            hrefMonth: proTarget('month'),
-            label: trial ? 'trial' : 'paid',
-          };
+        : !input.annualOffered
+          ? soon
+          : {
+              hrefYear: proTarget('year'),
+              hrefMonth: proTarget('month'),
+              label: trial ? 'trial' : 'paid',
+            };
 
   // ── VIP: the trial too, for a first-time customer (owner, 2026-10-03) ──
   const vipTrial = trial && !paid;
   const vipTarget = (interval: Interval): string | null => {
     if (blocked) return null;
-    if (interval === 'year' && !(input.annualOffered && input.vipYearOffered)) return null;
-    const paidCheckout = input.annualOffered;
+    if (interval === 'year' && !input.vipYearOffered) return null;
     if (!signedIn) {
       if (vipTrial) return `${SIGNUP}&intent=trial&plan=vip&interval=${interval}`;
-      return paidCheckout ? `${SIGNUP}&plan=vip&interval=${interval}` : `${SIGNUP}&plan=vip`;
+      return `${SIGNUP}&plan=vip&interval=${interval}`;
     }
     if (vipTrial) return `/app/prueba?plan=vip&interval=${interval}`;
-    if (!paidCheckout) return interval === 'month' ? '/app/subscription' : null;
     return `/app/billing/cambiar?plan=vip_${interval}`;
   };
   const vip: PlansCta['vip'] =
     input.isAdmin || onVip
       ? { hrefYear: null, hrefMonth: null, label: 'current' }
-      : {
-          hrefYear: vipTarget('year'),
-          hrefMonth: vipTarget('month'),
-          label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
-        };
+      : !input.annualOffered
+        ? soon
+        : {
+            hrefYear: vipTarget('year'),
+            hrefMonth: vipTarget('month'),
+            label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
+          };
 
-  const gratis: PlansCta['gratis'] =
-    signedIn && !paid && !input.isAdmin
+  // Signed in, nobody needs "Crear cuenta gratis": Gratis is your plan (an
+  // admin's cards all read that way), or the way to it starts in Mi plan.
+  const gratis: PlansCta['gratis'] = !signedIn
+    ? { href: SIGNUP, label: 'gratis' }
+    : !paid || input.isAdmin
       ? { href: null, label: 'current' }
-      : { href: signedIn ? '/app' : SIGNUP, label: 'gratis' };
+      : { href: '/app/billing', label: 'manage' };
   return { gratis, pro, vip };
 }
 
@@ -129,12 +134,12 @@ export function signupNext(input: {
     return qs ? `/app/prueba?${qs}` : '/app/prueba';
   }
   if (plan === 'free') return '/app';
-  if (plan === 'lealtad') return paid ? '/app/prueba/pago?plan=pro_lealtad' : '/app/billing';
-  if (plan === 'pro') {
-    return paid && interval ? `/app/prueba/pago?plan=pro_${interval}` : '/app/billing';
-  }
+  // Sales closed (paid checkout off): nothing to buy, so the default landing.
+  if (!paid) return null;
+  if (plan === 'lealtad') return '/app/prueba/pago?plan=pro_lealtad';
+  if (plan === 'pro') return interval ? `/app/prueba/pago?plan=pro_${interval}` : '/app/billing';
   if (plan === 'vip') {
-    return paid && interval ? `/app/billing/cambiar?plan=vip_${interval}` : '/app/billing';
+    return interval ? `/app/billing/cambiar?plan=vip_${interval}` : '/app/billing';
   }
   return null;
 }

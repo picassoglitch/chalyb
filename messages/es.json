@@ -124,7 +124,7 @@
       "business": "Negocios",
       "businessP": "Un Asistente que contesta a tus clientes, de día y de noche.",
       "mom": "Tu mamá también",
-      "momP": "Botones grandes y palabras simples. Si sabe mandar un WhatsApp, sabe usar Chalyb.",
+      "momP": "Simple y fácil de usar: todo claro, en pocos pasos y sin nada complicado que aprender.",
       "strip1": "En español, para México y Latinoamérica",
       "strip2": "Pago seguro con Mercado Pago",
       "strip3": "Cancela en 1 clic, sin llamadas"
@@ -211,6 +211,7 @@
         "acceptable": "Uso aceptable"
       },
       "seller": "Quién vende",
+      "copyright": "Derechos de autor",
       "sellerLabel": "Quién vende:",
       "contact": "Contacto",
       "write": "Escríbenos",
@@ -254,7 +255,6 @@
       "googleFastNote": "La forma más rápida de empezar",
       "errorGeneric": "Ocurrió un error al iniciar sesión. Inténtalo de nuevo.",
       "errorMissingCode": "Flujo de inicio de sesión incompleto. Inténtalo de nuevo.",
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "newTitle": "¿Primera vez?",
       "newSubtitle": "Crea tu espacio de operador en segundos.",
       "newCta": "Empezar gratis",
@@ -295,10 +295,11 @@
       "marketing": "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera.",
       "legalPublished": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y la <uso>Política de Uso Aceptable</uso>, y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
       "legalCurrent": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
-      "creating": "Creando tu cuenta…"
+      "creating": "Creando tu cuenta…",
+      "metaTitle": "Iniciar sesión",
+      "metaTitleSignup": "Crear cuenta"
     },
     "forgotPassword": {
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "title": "Restablecer contraseña",
       "intro": "Ingresa el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.",
       "emailLabel": "Correo",
@@ -310,7 +311,6 @@
       "errorRateLimit": "Demasiados intentos. Espera un minuto e inténtalo de nuevo."
     },
     "resetPassword": {
-      "liveStatus": "Plataforma en vivo · sistemas en producción",
       "title": "Crear nueva contraseña",
       "intro": "Elige una nueva contraseña para tu cuenta.",
       "passwordLabel": "Nueva contraseña",
@@ -333,7 +333,8 @@
       "signedInAs": "Sesión iniciada como",
       "signOut": "Cerrar sesión",
       "signingOut": "Cerrando sesión…"
-    }
+    },
+    "backHome": "Volver a Chalyb"
   },
   "tour": {
     "step": "{current} de {total}",
@@ -1019,7 +1020,8 @@
     "gratis": {
       "name": "Gratis",
       "tag": "Para conocer Chalyb",
-      "cta": "Crear cuenta gratis"
+      "cta": "Crear cuenta gratis",
+      "ctaManage": "Ver mi plan"
     },
     "pro": {
       "badge": "Recomendado",
@@ -1049,6 +1051,7 @@
       "ctaTrial": "Empezar mis 7 días gratis"
     },
     "current": "Tu plan actual",
+    "soon": "Muy pronto",
     "trialing": "Ya estás probando Pro",
     "notIncluded": "No incluye",
     "faqTitle": "Preguntas frecuentes",
@@ -2205,7 +2208,9 @@
     "human": "Hablar con una persona",
     "payError": "No pudimos abrir el pago. Intenta otra vez en un momento.",
     "retry": "Intentar otra vez",
-    "activated": "Listo, tu plan ya está activo."
+    "activated": "Listo, tu plan ya está activo.",
+    "salesSoon": "Muy pronto podrás contratar Pro y VIP desde aquí.",
+    "salesSoonBody": "Mientras tanto, sigue usando Chalyb gratis. No te cobramos nada."
   },
   "credits": {
     "title": "Mis créditos",
@@ -2281,7 +2286,8 @@
       "title": "Tus ganancias como socio",
       "month": "Este mes · se paga al cerrar el mes",
       "paid": "Pagado el {fecha}"
-    }
+    },
+    "soon": "Muy pronto podrás conseguir más créditos desde aquí."
   },
   "profile": {
     "title": "Mi perfil",
@@ -2987,5 +2993,13 @@
       "error": "No pudimos empezar la conexión. Intenta de nuevo."
     },
     "close": "Cerrar y volver a Clips"
+  },
+  "notFound": {
+    "metaTitle": "Página no encontrada",
+    "title": "No encontramos esta página",
+    "lead": "Puede que el enlace esté mal escrito o que la página ya no exista.",
+    "home": "Ir al inicio",
+    "app": "Volver a Chalyb",
+    "help": "Pedir ayuda"
   }
 }

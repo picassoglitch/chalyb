@@ -124,7 +124,7 @@
       "business": "Businesses",
       "businessP": "An Assistant that answers your customers, day and night.",
       "mom": "Your mom too",
-      "momP": "Big buttons and simple words. If she can send a WhatsApp, she can use Chalyb.",
+      "momP": "Simple and easy to use: everything clear, in a few steps, with nothing complicated to learn.",
       "strip1": "In Spanish, for Mexico and Latin America",
       "strip2": "Secure payment with Mercado Pago",
       "strip3": "Cancel in 1 click, no calls"
@@ -211,6 +211,7 @@
         "acceptable": "Acceptable use"
       },
       "seller": "Who sells",
+      "copyright": "Copyright",
       "sellerLabel": "Who sells:",
       "contact": "Contact",
       "write": "Write to us",
@@ -254,7 +255,6 @@
       "googleFastNote": "Fastest way to start",
       "errorGeneric": "Something went wrong signing you in. Try again.",
       "errorMissingCode": "Sign-in flow incomplete. Try again.",
-      "liveStatus": "Platform live · systems in production",
       "newTitle": "New here?",
       "newSubtitle": "Create your operator workspace in seconds.",
       "newCta": "Start free",
@@ -295,10 +295,11 @@
       "marketing": "I want to get news, tips and offers from Chalyb by email. I can unsubscribe any time.",
       "legalPublished": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and the <uso>Acceptable Use Policy</uso>, and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
       "legalCurrent": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
-      "creating": "Creating your account…"
+      "creating": "Creating your account…",
+      "metaTitle": "Sign in",
+      "metaTitleSignup": "Create account"
     },
     "forgotPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Reset your password",
       "intro": "Enter your account email and we'll send you a link to set a new password.",
       "emailLabel": "Email",
@@ -310,7 +311,6 @@
       "errorRateLimit": "Too many attempts. Wait a minute and try again."
     },
     "resetPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Set a new password",
       "intro": "Choose a new password for your account.",
       "passwordLabel": "New password",
@@ -333,7 +333,8 @@
       "signedInAs": "Signed in as",
       "signOut": "Sign out",
       "signingOut": "Signing out…"
-    }
+    },
+    "backHome": "Back to Chalyb"
   },
   "tour": {
     "step": "{current} of {total}",
@@ -1019,7 +1020,8 @@
     "gratis": {
       "name": "Free",
       "tag": "See what Chalyb can do",
-      "cta": "Create free account"
+      "cta": "Create free account",
+      "ctaManage": "See my plan"
     },
     "pro": {
       "badge": "Recommended",
@@ -1049,6 +1051,7 @@
       "ctaTrial": "Start my 7-day free trial"
     },
     "current": "Your current plan",
+    "soon": "Available soon",
     "trialing": "You’re on your Pro trial",
     "notIncluded": "Not included",
     "faqTitle": "Frequently asked questions",
@@ -2205,7 +2208,9 @@
     "human": "Talk to a person",
     "payError": "We couldn’t open the payment. Try again in a moment.",
     "retry": "Try again",
-    "activated": "Done, your plan is active."
+    "activated": "Done, your plan is active.",
+    "salesSoon": "Soon you’ll be able to get Pro and VIP right here.",
+    "salesSoonBody": "Meanwhile, keep using Chalyb for free. We won’t charge you anything."
   },
   "credits": {
     "title": "My credits",
@@ -2281,7 +2286,8 @@
       "title": "Your partner earnings",
       "month": "This month · paid when the month closes",
       "paid": "Paid on {fecha}"
-    }
+    },
+    "soon": "Soon you’ll be able to get more credits right here."
   },
   "profile": {
     "title": "My profile",
@@ -2987,5 +2993,13 @@
       "error": "We couldn't start the connection. Try again."
     },
     "close": "Close and go back to Clips"
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "We couldn't find this page",
+    "lead": "The link may be mistyped, or the page may no longer exist.",
+    "home": "Go to the home page",
+    "app": "Back to Chalyb",
+    "help": "Get help"
   }
 }

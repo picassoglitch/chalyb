@@ -13,6 +13,7 @@ import {
   mpPayerEmail,
 } from '@/lib/payments/mercadopago';
 import { isSubscribableTier } from '@/lib/payments/subscription-reference';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 import { SubscriptionCheckout } from '@/components/workspace/subscription-checkout';
 
 export const metadata = { title: 'Activar plan' };
@@ -34,6 +35,9 @@ export default async function SubscriptionCheckoutPage({
 
   const session = await getSessionUser();
   if (!session) redirect(`/sign-in?next=/app/subscription/checkout?tier=${tierParam ?? ''}`);
+
+  // Sales are closed while paid checkout is off; the action refuses too.
+  if (!paidCheckoutEnabled()) redirect('/app/subscription' as Route);
 
   const tier = (tierParam ?? '').toUpperCase() as SubscriptionTier;
   if (!isSubscribableTier(tier) || !TIER_PRICING[tier]) redirect('/app/subscription' as Route);

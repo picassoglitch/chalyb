@@ -112,7 +112,8 @@ test('Planes CTAs per state (K-2, spec §4.3)', () => {
     hrefMonth: '/sign-in?mode=signup&intent=trial&plan=vip&interval=month',
     label: 'trial',
   });
-  // Flow off: monthly only, the legacy checkout, no trial (mockup 85, PC-B1/B4).
+  // Paid checkout off: sales are closed, Pro and VIP say "Muy pronto" and
+  // lead nowhere — signed in or not (owner decision pending, QA sweep).
   const off = plansCta({
     ...base,
     annualOffered: false,
@@ -121,8 +122,43 @@ test('Planes CTAs per state (K-2, spec §4.3)', () => {
     trialUsed: false,
     billing: state({}),
   });
-  assert.deepEqual(off.pro, { hrefYear: null, hrefMonth: '/app/subscription', label: 'paid' });
+  assert.deepEqual(off.pro, { hrefYear: null, hrefMonth: null, label: 'soon' });
+  assert.deepEqual(off.vip, { hrefYear: null, hrefMonth: null, label: 'soon' });
   assert.deepEqual(off.gratis, { href: null, label: 'current' });
+  const offAnon = plansCta({
+    ...base,
+    annualOffered: false,
+    signedIn: false,
+    flow: false,
+    trialUsed: false,
+    billing: null,
+  });
+  assert.equal(offAnon.pro.label, 'soon');
+  assert.equal(offAnon.vip.hrefMonth, null);
+  assert.equal(offAnon.gratis.href, '/sign-in?mode=signup');
+  // A subscriber keeps "Tu plan" on their card while sales are closed.
+  const offPro = plansCta({
+    ...base,
+    annualOffered: false,
+    signedIn: true,
+    flow: false,
+    trialUsed: true,
+    billing: state({ state: 'pro', planKey: 'pro_month' }),
+  });
+  assert.equal(offPro.pro.label, 'current');
+  assert.equal(offPro.vip.label, 'soon');
+  assert.deepEqual(offPro.gratis, { href: '/app/billing', label: 'manage' });
+  // A subscriber's Gratis card leads to Mi plan, never "Crear cuenta gratis".
+  const sub = plansCta({
+    ...base,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({ state: 'pro', planKey: 'pro_month' }),
+  });
+  assert.deepEqual(sub.gratis, { href: '/app/billing', label: 'manage' });
+  const anonG = plansCta({ ...base, signedIn: false, flow: true, trialUsed: false, billing: null });
+  assert.deepEqual(anonG.gratis, { href: '/sign-in?mode=signup', label: 'gratis' });
   // Signed in, trial available: the picker learns the interval (C9).
   const free = plansCta({
     ...base,
@@ -209,7 +245,8 @@ test('sign-up keeps the card’s interval (K-2)', () => {
     signupNext({ plan: 'pro', interval: 'year', flow: true }),
     '/app/prueba/pago?plan=pro_year',
   );
-  assert.equal(signupNext({ plan: 'pro', flow: false }), '/app/billing');
+  assert.equal(signupNext({ plan: 'pro', flow: false }), null);
+  assert.equal(signupNext({ plan: 'vip', interval: 'month', flow: false }), null);
   assert.equal(
     signupNext({ plan: 'vip', interval: 'month', flow: true }),
     '/app/billing/cambiar?plan=vip_month',
