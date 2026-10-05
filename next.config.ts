@@ -8,6 +8,7 @@ const LEGAL_ALIASES = [
   ['suscripcion', 'subscription'],
   ['privacidad', 'privacy'],
   ['uso-aceptable', 'acceptable-use'],
+  ['paquetes', 'packs'],
 ] as const;
 /** Old tool URLs → their screens inside the app (most specific first). */
 const TOOL_REDIRECTS: [string, string][] = [

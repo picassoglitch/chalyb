@@ -4,7 +4,8 @@
 // current version as a module the site renders from:
 //   src/content/legal/archive/<doc>/v<x-y>.ts
 //     source    Law's Markdown, as written
-//     template  the same with every amount swapped for its pricing.ts role
+//     template  the same without its "Notas internas" sections, every amount
+//               swapped for its pricing.ts role
 //               ({{mxn:pro_month}}); an amount no role explains, or one that
 //               two roles explain without registry.json `amountRoles`, fails
 //     rendered  the template filled with today's prices: the text people see
@@ -23,6 +24,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 // Run through tests/ts-resolve.mjs (see package.json) so the amount roles
 // come straight from src/config/pricing.ts.
 import { bindAmounts, tokenizeAmounts } from '../src/lib/legal/amounts.ts';
+import { stripInternalNotes } from '../src/lib/legal/internal-notes.ts';
 
 const root = new URL('../', import.meta.url);
 const DOCS = new URL('docs/design/app-reimagine/legal/', root);
@@ -66,7 +68,9 @@ for (const [doc, entry] of Object.entries(registry)) {
 
   let template;
   try {
-    template = tokenizeAmounts(source, meta.amountRoles ?? {}).template;
+    // `source` stays Law's file as written; what renders (and is hashed)
+    // leaves out the "Notas internas (no publicar)" sections.
+    template = tokenizeAmounts(stripInternalNotes(source), meta.amountRoles ?? {}).template;
   } catch (e) {
     console.error(`✗ ${doc}: ${e.message}`);
     failed = true;

@@ -8,8 +8,9 @@
 //      −7, annual −30)
 //      — email_dispatches' unique key makes a second run send nothing;
 //   2. enforces the bounce rule: no charge until 5 days after an effective
-//      notice (pauses the preapproval and resumes it after; during a trial
-//      only once MP_PAUSE_IN_TRIAL_VERIFIED, else an admin attention item);
+//      notice (pauses the preapproval, confirmed by reading it back, and
+//      resumes it after; a pause MP won't confirm is retried, then the
+//      preapproval is cancelled before the charge — fail closed);
 //   3. moves profiles.tier when a scheduled plan change takes effect;
 //   3b. ends Pro at the deadline of a charge that never landed: the trial's
 //      annual charge (no grace) or a renewal (PRICING.graceDays);
@@ -24,14 +25,20 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
-import { syncSubscription } from '@/lib/payments/subscription-sync';
+import { cancelPreapproval, syncSubscription } from '@/lib/payments/subscription-sync';
 import { notify } from '@/lib/notifications/notify';
 import {
   deriveBillingState,
   unpaidCharge,
   type SubscriptionRow,
 } from '@/lib/billing/billing-state';
-import { dueNotices, holdDecision, noticeEmailKind, type NoticeKind } from '@/lib/billing/reminders';
+import {
+  dueNotices,
+  holdDecision,
+  noticeEmailKind,
+  pauseOutcome,
+  type NoticeKind,
+} from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { inAppBillingNotice } from '@/lib/notifications/core';
 import {
@@ -310,27 +317,47 @@ export async function GET(req: Request) {
         holdUntil: (row.charge_hold_until as string | null) ?? null,
         now,
       });
-      // During a trial, pausing the preapproval is unverified at MP (OPS-14):
-      // it might charge on resume. Until MP_PAUSE_IN_TRIAL_VERIFIED, record
-      // the hold and hand it to a person. Recreating the preapproval with a
-      // later start_date needs a new card token, i.e. the customer (O-16).
-      const touchMp = state.state !== 'trialing' || mpPauseInTrialVerified();
+      // §2.7 bis "no haremos el cargo", fail closed. Pausing can only stop a
+      // charge, so it's automatic in a trial too, and confirmed by reading
+      // the preapproval back. Unconfirmed: retry tomorrow, and on the last
+      // run before the charge cancel the preapproval (the one call that
+      // surely stops it). Recreating it with a later start_date needs a new
+      // card token, i.e. the customer (O-16), so a person follows up.
       if (decision.action === 'hold') {
         if (!row.charge_hold_until) {
-          if (touchMp) {
-            await getMercadoPago().preapproval.update({
-              id: preapprovalId,
-              body: { status: 'paused' },
+          const confirmed = await pausePreapproval(preapprovalId);
+          const outcome = pauseOutcome({ pauseConfirmed: confirmed, nextChargeAt, now });
+          const fecha = formatFechaLarga(decision.until, 'es');
+          if (outcome === 'retry') {
+            await notify({
+              severity: 'critical',
+              title: 'Cobro sin detener: Mercado Pago no confirmó la pausa',
+              body: `Suscripción ${preapprovalId} · el aviso de cobro no consta como entregado y no se puede cobrar antes del ${fecha}. Se reintenta en la próxima corrida; si sigue sin pausa, se cancela antes del cobro.`,
+              href: '/dashboard/dinero',
+              source: 'billing.cron',
             });
+            continue;
+          }
+          if (outcome === 'cancel') {
+            const cancelled = await cancelForHold(preapprovalId, userId, decision.until, now);
+            await notify({
+              severity: 'critical',
+              title: cancelled
+                ? 'Suscripción cancelada para no cobrar sin aviso'
+                : 'URGENTE: no se pudo detener un cobro sin aviso',
+              body: cancelled
+                ? `Suscripción ${preapprovalId} · Mercado Pago no confirmó la pausa y el cobro era inminente. Se canceló; la persona conserva Pro sin costo hasta el ${fecha}. Contáctala para que vuelva a suscribirse (requiere su tarjeta, O-16).`
+                : `Suscripción ${preapprovalId} · ni la pausa ni la cancelación respondieron. Detén el cobro en Mercado Pago a mano; si se cobra, reembólsalo (Términos de Suscripción §7.2(b)).`,
+              href: '/dashboard/dinero',
+              source: 'billing.cron',
+            });
+            stats.holds += 1;
+            continue;
           }
           await notify({
             severity: 'warning',
-            title: touchMp
-              ? 'Cobro detenido: el aviso previo no se entregó'
-              : 'Atención: detener a mano el primer cobro de una prueba (aviso no entregado)',
-            body: touchMp
-              ? `Suscripción ${preapprovalId} · no se cobra hasta el ${formatFechaLarga(decision.until, 'es')}`
-              : `Suscripción ${preapprovalId} · el aviso de cobro no consta como entregado. No debe cobrarse antes del ${formatFechaLarga(decision.until, 'es')}: cancela y vuelve a crear la suscripción con esa fecha, o reembolsa el cobro (Términos de Suscripción §7.2(b)). TODO(owner O-16)`,
+            title: 'Cobro detenido: el aviso previo no se entregó',
+            body: `Suscripción ${preapprovalId} · no se cobra hasta el ${fecha}`,
             href: '/dashboard/dinero',
             source: 'billing.cron',
           });
@@ -341,13 +368,24 @@ export async function GET(req: Request) {
           .update({ charge_hold_until: decision.until.toISOString() })
           .eq('mp_preapproval_id', preapprovalId);
       } else if (decision.action === 'resume') {
-        // TODO(OPS-14): confirm Mercado Pago's behaviour when a preapproval is
-        // resumed after its next_payment_date has passed.
+        // The notice was delivered 5+ days ago, so any charge from here is
+        // allowed (§2.7 bis). TODO(OPS-14): MP's timing after resuming a
+        // paused trial past its start_date is unverified; until
+        // MP_PAUSE_IN_TRIAL_VERIFIED a person checks the first charge lands.
         if (row.status === 'paused') {
           await getMercadoPago().preapproval.update({
             id: preapprovalId,
             body: { status: 'authorized' },
           });
+          if (state.state === 'trialing' && !mpPauseInTrialVerified()) {
+            await notify({
+              severity: 'info',
+              title: 'Prueba reanudada tras retener el cobro: revisa el primer cargo',
+              body: `Suscripción ${preapprovalId} · el aviso se entregó hace 5 días o más; Mercado Pago ya puede cobrar. Confirma que el primer cargo llegue (OPS-14).`,
+              href: '/dashboard/dinero',
+              source: 'billing.cron',
+            });
+          }
         }
         await admin
           .from('subscriptions')
@@ -461,4 +499,46 @@ export async function GET(req: Request) {
 
   console.info('[cron/billing]', stats);
   return NextResponse.json({ ok: true, ...stats });
+}
+
+/** Ask MP to pause, then read it back: only a confirmed pause counts. */
+async function pausePreapproval(preapprovalId: string): Promise<boolean> {
+  const { preapproval } = getMercadoPago();
+  try {
+    await preapproval.update({ id: preapprovalId, body: { status: 'paused' } });
+    const mp = await preapproval.get({ id: preapprovalId });
+    return mp.status === 'paused';
+  } catch (err) {
+    console.error('[cron/billing] pause for a notice hold failed', preapprovalId, err);
+    return false;
+  }
+}
+
+/** Last resort for a hold MP won't pause: cancel the preapproval. The person
+ *  keeps Pro at no cost until the date we could have charged (§2.7 bis). */
+async function cancelForHold(
+  preapprovalId: string,
+  userId: string,
+  until: Date,
+  now: Date,
+): Promise<boolean> {
+  try {
+    await cancelPreapproval(preapprovalId);
+  } catch (err) {
+    console.error('[cron/billing] cancel for a notice hold failed', preapprovalId, err);
+    return false;
+  }
+  const admin = createAdminClient();
+  await admin
+    .from('subscriptions')
+    .update({
+      status: 'cancelled',
+      cancelled_at: now.toISOString(),
+      cancel_at_period_end: true,
+      access_until: until.toISOString(),
+      charge_hold_until: until.toISOString(),
+    })
+    .eq('mp_preapproval_id', preapprovalId);
+  await admin.from('profiles').update({ tier_ends_at: until.toISOString() }).eq('id', userId);
+  return true;
 }

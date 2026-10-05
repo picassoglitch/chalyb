@@ -115,7 +115,8 @@ export function paidCheckoutBlockers(): string[] {
     'LEGAL_ENTITY_NAME',
     'LEGAL_ENTITY_RFC',
     'LEGAL_ENTITY_ADDRESS',
-    'LEGAL_ENTITY_PHONE',
+    // LEGAL_ENTITY_PHONE: optional since 2026-10-05 (owner launches without a
+    // support line; email is the contact channel). Shown when set.
     'LEGAL_ENTITY_EMAIL',
     'LEGAL_ENTITY_HOURS',
     'LEGAL_ENTITY_COMPLAINTS',
@@ -182,10 +183,12 @@ export function trialDay6ReminderEnabled(): boolean {
   return readBool('TRIAL_DAY6_REMINDER', false); // TODO(owner O-11)
 }
 
-/** O-6 / OPS-14 · whether pausing a preapproval during its trial (and
- *  resuming it) is verified in the MP sandbox not to charge on the original
- *  start_date. Until then the hold rule doesn't touch MP: it records the
- *  hold and raises an admin attention item. */
+/** O-6 / OPS-14 · whether resuming a trial preapproval paused for a notice
+ *  hold is verified in the MP sandbox (when the first charge then lands).
+ *  The pause itself no longer waits on this: it can only stop a charge, is
+ *  confirmed by reading the preapproval back, and an unconfirmed pause ends
+ *  in a cancel before the charge (§2.7 bis, fail closed). Until verified, a
+ *  resumed trial raises an info item to check the first charge. */
 export function mpPauseInTrialVerified(): boolean {
   return readBool('MP_PAUSE_IN_TRIAL_VERIFIED', false); // TODO(owner O-6)
 }

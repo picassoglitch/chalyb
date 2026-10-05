@@ -206,6 +206,7 @@
       "legalDocs": {
         "terms": "Términos y Condiciones",
         "subscription": "Términos de Suscripción",
+        "packs": "Paquetes de créditos",
         "privacy": "Aviso de Privacidad",
         "acceptable": "Uso aceptable"
       },
@@ -555,6 +556,16 @@
       "otherVersions": "Otras versiones:",
       "reviewLine": "En revisión",
       "currentLead": "Mientras tanto rigen:"
+    },
+    "packs": {
+      "metaTitle": "Términos de los paquetes de créditos",
+      "metaDescription": "Compra única de créditos extra para Chalyb: precios, uso, vigencia y reembolsos.",
+      "title": "Términos de los paquetes de créditos"
+    },
+    "seller": {
+      "metaTitle": "Quién vende",
+      "metaDescription": "Quién vende Chalyb: datos del vendedor, atención a clientes y PROFECO.",
+      "title": "Quién vende"
     }
   },
   "workspace": {
@@ -898,6 +909,8 @@
       "title": "Privacidad y cuenta",
       "notice": "Privacidad y notificaciones",
       "arco": "Mis datos (derechos ARCO)",
+      "connected": "Cuentas conectadas",
+      "connectedNone": "Ninguna",
       "charge": "Problema con un cobro",
       "close": "Cerrar mi cuenta"
     },
@@ -1343,7 +1356,7 @@
   },
   "seller": {
     "title": "Quién vende",
-    "name": "Razón social",
+    "name": "Nombre",
     "rfc": "RFC",
     "address": "Domicilio",
     "phone": "Teléfono",
@@ -1981,7 +1994,24 @@
       "twofaValue": "No conectado",
       "margin": "Margen sobre el costo de uso",
       "marginHelp": "Se cobra al saldo del usuario el costo real del proveedor más este porcentaje. Aplica al uso nuevo; lo ya registrado no cambia.",
-      "marginSave": "Guardar"
+      "marginSave": "Guardar",
+      "packs": "Precios de los paquetes de créditos",
+      "packsHelp": "Lo que paga el cliente por cada paquete. El mismo precio se usa en la tienda, el pago, Mercado Pago y la página legal de los paquetes. Aplica a compras nuevas.",
+      "packName": {
+        "tokens_100k": "Chico · 100,000 créditos",
+        "tokens_500k": "Mediano · 500,000 créditos",
+        "tokens_2m": "Grande · 2,000,000 créditos"
+      },
+      "ivaLegend": "IVA",
+      "ivaIncluded": "IVA incluido: el precio que escribes es el total",
+      "ivaAdd": "Agregar IVA al precio que escribes",
+      "ivaRate": "Tasa de IVA",
+      "packTotal": "El cliente paga {monto} MXN",
+      "packsSave": "Guardar precios",
+      "packsInvalid": "Revisa los precios: de $1 a $100,000 por paquete, y una tasa de 0% a 50%.",
+      "packsMissing": "No se pudieron leer los precios guardados: la compra de paquetes está cerrada hasta que guardes precios válidos.",
+      "termsStale": "La versión publicada de los Términos de los Paquetes muestra otros precios: la compra de paquetes queda cerrada hasta publicar una versión con estos.",
+      "currencyNote": "Precios en MXN, siempre con IVA para el cliente. Los precios en USD nunca incluyen IVA."
     },
     "example": "Ejemplo",
     "disputes": {
@@ -2209,7 +2239,8 @@
     "used": "Usaste {usados} de {total} este mes",
     "none": "Te quedaste sin créditos este mes. Se renuevan el {fecha}.",
     "renew": "Se renuevan el <b>{fecha}</b>. Vuelves a tener {total}.",
-    "extra": "Créditos extra comprados: <b>{n}</b>. Se usan después de los de tu plan.",
+    "extra": "Créditos extra sin usar: <b>{n}</b>. Se usan después de los de tu plan, una sola vez.",
+    "held": "Créditos extra apartados mientras se resuelve una disputa: <b>{n}</b>. Si se resuelve a favor de Chalyb, vuelven a tu saldo.",
     "unlimited": "Sin límite de créditos",
     "admin": "Eres administrador.",
     "cta": "Conseguir más créditos",
@@ -2250,7 +2281,8 @@
       "noExpiry": "no vencen",
       "card": "En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.",
       "cta": "Continuar al pago · {monto} MXN",
-      "later": "Ahora no"
+      "later": "Ahora no",
+      "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde."
     },
     "pack": {
       "name": "{n} créditos",
@@ -2276,7 +2308,8 @@
       "month": "Este mes · se paga al cerrar el mes",
       "paid": "Pagado el {fecha}"
     },
-    "soon": "Muy pronto podrás conseguir más créditos desde aquí."
+    "soon": "Muy pronto podrás conseguir más créditos desde aquí.",
+    "invoice": "¿Necesitas factura (CFDI) de un paquete? Escríbenos a <b>{correo}</b> con tu RFC dentro del mismo mes de tu compra."
   },
   "profile": {
     "title": "Mi perfil",
@@ -2990,5 +3023,63 @@
     "home": "Ir al inicio",
     "app": "Volver a Chalyb",
     "help": "Pedir ayuda"
+  },
+  "closeAccount": {
+    "metaTitle": "Cerrar mi cuenta",
+    "title": "Cerrar mi cuenta",
+    "sub": "Antes de confirmar, revisa qué pasa con tus créditos y con tu plan.",
+    "credits": {
+      "title": "Créditos extra",
+      "some": "Tienes {n, number} créditos extra sin usar. Se pierden al cerrar tu cuenta.",
+      "none": "No tienes créditos extra sin usar.",
+      "unknown": "No pudimos leer tu saldo de créditos extra. Inténtalo más tarde: necesitamos mostrártelo antes de cerrar tu cuenta."
+    },
+    "plan": {
+      "title": "Tu plan",
+      "charging": "Al confirmar cancelamos tu plan y no habrá más cobros. Mientras cerramos tu cuenta conservas tu acceso actual, como máximo hasta el {fecha}.",
+      "chargingNoDate": "Al confirmar cancelamos tu plan y no habrá más cobros.",
+      "ending": "Tu plan ya está cancelado: no habrá más cobros.",
+      "none": "No tienes un plan de pago."
+    },
+    "after": "Cerrar tu cuenta borra tus datos según el Aviso de privacidad. Te responderemos por correo en un máximo de 20 días con la fecha en que quedará cerrada.",
+    "onlyStopPaying": "¿Solo quieres dejar de pagar? Cancela tu plan en Mi plan y conserva tu cuenta.",
+    "onlyStopPayingCta": "Ir a Mi plan",
+    "check": "Entiendo que al cerrar mi cuenta pierdo mis créditos extra sin usar y que mi plan se cancela.",
+    "cta": "Cerrar mi cuenta",
+    "back": "Volver a Mi cuenta",
+    "open": "Ya pediste cerrar tu cuenta el {recibida}. Te responderemos a más tardar el {fecha}.",
+    "done": "Recibimos tu solicitud para cerrar tu cuenta. Te responderemos a más tardar el {fecha}.",
+    "errors": {
+      "credits_changed": "Tu saldo de créditos cambió. Revisa el número actualizado y confirma de nuevo.",
+      "not_confirmed": "Marca la casilla para continuar.",
+      "mp_error": "Mercado Pago no respondió al cancelar tu plan. No cerramos nada; inténtalo de nuevo en unos minutos.",
+      "rateLimited": "Ya enviaste varias solicitudes hoy. Inténtalo mañana.",
+      "send": "No pudimos enviar tu solicitud. Inténtalo de nuevo."
+    }
+  },
+  "packCheckout": {
+    "metaTitle": "Comprar créditos",
+    "title": "Comprar {n} créditos extra",
+    "once": "Pago único",
+    "ivaIncluded": "Precio total en MXN, IVA incluido.",
+    "lead": "No vencen mientras tu cuenta exista y se usan después de los créditos de tu plan, una sola vez.",
+    "disclosure": "<b>{n} créditos extra</b> por un <b>cargo único de {monto} MXN</b>, IVA incluido. No es una suscripción y no se renueva.",
+    "consent": "Acepto un <b>cargo único de {monto} MXN (IVA incluido)</b> por <b>{n} créditos extra</b>. No es una suscripción y no se renueva. Los créditos no vencen mientras mi cuenta exista, no son dinero y no se pueden transferir. Acepto los <terms>Términos de los Paquetes de Créditos</terms>.",
+    "consentError": "Marca la casilla para aceptar el cargo único. No se hizo ningún cargo.",
+    "ctaHint": "Marca la casilla para continuar.",
+    "cta": "Pagar {monto} MXN",
+    "hostedHint": "¿Prefieres OXXO, SPEI o saldo de Mercado Pago? Se pagan en la página de Mercado Pago.",
+    "hostedCta": "Pagar {monto} MXN en Mercado Pago",
+    "invoice": "¿Necesitas factura (CFDI)? Escríbenos a <b>{correo}</b> con tu RFC dentro del mismo mes de tu compra.",
+    "secure": "Los datos de tu tarjeta viajan directo a Mercado Pago en campos seguros; Chalyb nunca los ve ni los guarda.",
+    "back": "Volver a Mis créditos",
+    "unavailableTitle": "Pagos aún no disponibles",
+    "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde o escríbenos.",
+    "priceChanged": "El precio cambió. Recarga la página para ver el actual. No se hizo ningún cargo.",
+    "error": "No pudimos procesar el pago. Inténtalo de nuevo en un momento.",
+    "approved": "<b>Pago aprobado.</b> Tus créditos ya están en tu saldo. Te llevamos a Mis créditos…",
+    "approvedToast": "Créditos extra acreditados.",
+    "pending": "<b>Pago en revisión.</b> Mercado Pago todavía no lo aprueba. En cuanto lo confirme, tus créditos aparecen en Mis créditos. Puedes cerrar esta página.",
+    "pendingShort": "Mercado Pago dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe."
   }
 }

@@ -1,10 +1,10 @@
 # Términos y Condiciones de Uso de Chalyb
 
-**Versión:** [VERSIÓN] · **Fecha de entrada en vigor:** [FECHA] · **Sitio:** chalyb.com
+**Versión:** 1.0 · **Fecha de entrada en vigor:** 5 de octubre de 2026 · **Sitio:** chalyb.com
 
 > **Resumen en palabras simples**
 >
-> - Chalyb es una plataforma de herramientas con inteligencia artificial (Clips, Señales, En vivo, Asistente, Pronósticos, Inmuebles e Inversiones). Al crear tu cuenta (con el botón o la casilla de aceptación) aceptas estos Términos.
+> - Chalyb es una plataforma de herramientas con inteligencia artificial (Clips, Señales y En vivo; y, cuando estén disponibles, Asistente, Pronósticos, Inmuebles e Inversiones). Al crear tu cuenta (con el botón o la casilla de aceptación) aceptas estos Términos.
 > - Debes tener **18 años o más**. Tu cuenta es personal y tú cuidas tu contraseña.
 > - Te damos permiso (licencia) para usar Chalyb; **no te vendemos el software**. Podemos mejorar, cambiar o retirar funciones.
 > - Lo que genera la IA puede tener errores. **Revísalo antes de usarlo o publicarlo.** Señales, Pronósticos e Inversiones son **información general, no personalizada**: no son asesoría financiera ni de inversión, y Chalyb no recibe apuestas.
@@ -16,7 +16,7 @@
 
 ## 1. Quiénes somos y a qué se aplican estos Términos
 
-1.1. Chalyb es una marca operada por **[RAZÓN SOCIAL]** ("**Chalyb**", "**nosotros**"), con RFC **[RFC]** y domicilio en **[DOMICILIO]**. Puedes contactarnos en **[CORREO DE CONTACTO]** o al **[TELÉFONO]** ([HORARIO DE ATENCIÓN]).
+1.1. Chalyb es el nombre comercial con el que opera **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2** ("**Chalyb**", "**nosotros**"), con domicilio en **Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México**. Los datos completos del vendedor están en **chalyb.com/quien-vende**. Puedes contactarnos en **hola@chalyb.com** (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 
 1.2. Estos Términos y Condiciones (los "**Términos**") regulan el acceso y uso del sitio chalyb.com, sus aplicaciones, herramientas, API, extensiones y cualquier servicio relacionado (en conjunto, el "**Servicio**").
 
@@ -25,6 +25,7 @@
 | Documento | Qué regula | Dónde está |
 |---|---|---|
 | Términos de Suscripción | Planes, precios, prueba gratis, cobros, cancelación y reembolsos | chalyb.com/suscripcion |
+| Términos de los Paquetes de Créditos | Compra única de créditos extra, su uso, vigencia y reembolsos | chalyb.com/paquetes |
 | Aviso de Privacidad | Cómo tratamos tus datos personales | chalyb.com/privacidad |
 | Política de Uso Aceptable y Contenido | Qué contenido puedes subir, derechos de autor, avisos sobre herramientas financieras | chalyb.com/uso-aceptable |
 
@@ -56,7 +57,7 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 4.2. Tu cuenta es **personal e intransferible**. No puedes venderla, rentarla, compartirla ni permitir que otras personas la usen, salvo que tu plan lo permita expresamente.
 
-4.3. Eres responsable de mantener la confidencialidad de tu contraseña y de toda actividad realizada desde tu cuenta. Avísanos de inmediato a **[CORREO DE CONTACTO]** si sospechas un acceso no autorizado.
+4.3. Eres responsable de mantener la confidencialidad de tu contraseña y de toda actividad realizada desde tu cuenta. Avísanos de inmediato a **hola@chalyb.com** si sospechas un acceso no autorizado.
 
 4.4. Podemos pedirte verificar tu identidad o tu método de pago para prevenir fraudes o abusos (por ejemplo, de la prueba gratis).
 
@@ -78,9 +79,9 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 6.4. **Tú decides** si usas, editas, publicas o actúas con base en un Resultado, y eres responsable de revisarlo antes. Esto es especialmente importante en:
 - **Clips:** revisa que el clip no incluya contenido de terceros sin permiso ni información que no quieras publicar.
-- **Señales, Pronósticos e Inversiones:** son **información general y educativa, igual para todos los usuarios de un mismo plan, no personalizada**, y no constituyen asesoría financiera, de inversión, fiscal ni de apuestas. Chalyb **no administra tu dinero, no tiene custodia de tus fondos o activos, no toma decisiones de inversión por ti y no recibe ni intermedia apuestas**. Ver la sección 6 de la Política de Uso Aceptable y Contenido.
-- **Inmuebles:** las estimaciones de precio o descripciones **no son avalúos** ni sustituyen la revisión de un profesional.
-- **Asistente:** sus respuestas no sustituyen la asesoría de un profesional (legal, médico, fiscal, financiero u otro).
+- **Señales y, cuando estén disponibles, Pronósticos e Inversiones:** son **información general y educativa, igual para todos los usuarios de un mismo plan, no personalizada**, y no constituyen asesoría financiera, de inversión, fiscal ni de apuestas. Chalyb **no administra tu dinero, no tiene custodia de tus fondos o activos, no toma decisiones de inversión por ti y no recibe ni intermedia apuestas**. Ver la sección 6 de la Política de Uso Aceptable y Contenido.
+- **Inmuebles (cuando esté disponible):** las estimaciones de precio o descripciones **no son avalúos** ni sustituyen la revisión de un profesional.
+- **Asistente (cuando esté disponible):** sus respuestas no sustituyen la asesoría de un profesional (legal, médico, fiscal, financiero u otro).
 
 6.5. Sujeto a tus derechos sobre tu propio contenido y a los derechos de terceros, puedes usar los Resultados que generes, incluso con fines comerciales, siempre que cumplas estos Términos y la ley.
 
@@ -90,7 +91,7 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 7.2. Varias funciones dependen de **plataformas de terceros** (por ejemplo, TikTok, YouTube, Instagram, Facebook, Twitch, Kick, OBS, Mercado Pago, exchanges o brókers, proveedores de modelos de IA). Si esas plataformas cambian sus reglas, sus API o dejan de dar servicio, alguna función de Chalyb podría limitarse o dejar de funcionar. No somos responsables de los actos de esas plataformas.
 
-7.3. Podemos **agregar, modificar, limitar o retirar** herramientas o funciones, y lanzar funciones de prueba ("beta") que pueden cambiar o desaparecer. Si retiramos de forma permanente una función esencial de tu plan de pago, te avisaremos con anticipación razonable (cuando sea posible, al menos [30] días naturales) y, durante un periodo ya pagado, te ofreceremos una alternativa razonable o el **reembolso proporcional** del periodo no usado, a tu elección. Esto no aplica a cambios impuestos por la ley, por una autoridad o por plataformas de terceros fuera de nuestro control, en cuyo caso te avisaremos tan pronto como sea posible y procederá el reembolso proporcional si la función era esencial.
+7.3. Podemos **agregar, modificar, limitar o retirar** herramientas o funciones, y lanzar funciones de prueba ("beta") que pueden cambiar o desaparecer. Si retiramos de forma permanente una función esencial de tu plan de pago, te avisaremos con anticipación razonable (cuando sea posible, al menos 30 días naturales) y, durante un periodo ya pagado, te ofreceremos una alternativa razonable o el **reembolso proporcional** del periodo no usado, a tu elección. Esto no aplica a cambios impuestos por la ley, por una autoridad o por plataformas de terceros fuera de nuestro control, en cuyo caso te avisaremos tan pronto como sea posible y procederá el reembolso proporcional si la función era esencial.
 
 7.4. Podemos fijar límites razonables de uso (por ejemplo, minutos de video procesados, créditos, número de clips o solicitudes) según tu plan, informados en chalyb.com/precios.
 
@@ -112,7 +113,7 @@ Al usar Chalyb **no puedes**:
 
 ## 9. Propiedad intelectual
 
-9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a [RAZÓN SOCIAL] o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
+9.1. **Nuestro contenido.** El software, diseño, marcas (incluida "Chalyb"), logotipos, textos, modelos, prompts, bases de datos y demás elementos del Servicio pertenecen a Myriam Alcantara Moreno (Chalyb) o a sus licenciantes y están protegidos por la Ley Federal del Derecho de Autor, la Ley Federal de Protección a la Propiedad Industrial y tratados internacionales.
 
 9.2. **Tu contenido.** Lo que tú subes o enlazas (videos, streams, imágenes, textos) sigue siendo tuyo o de quien corresponda. Nos otorgas únicamente la licencia necesaria para prestarte el Servicio, descrita en la Política de Uso Aceptable y Contenido.
 
@@ -135,7 +136,7 @@ Al usar Chalyb **no puedes**:
 - (d) contenido que tú subas, enlaces o publiques, incluida la publicación automática en tus redes que tú hayas configurado;
 - (e) accesos no autorizados a tu cuenta causados por no cuidar tu contraseña.
 
-11.2. **Tope (usuarios empresariales).** Si usas Chalyb como empresa o para fines de tu negocio y no tienes el carácter de consumidor conforme a la ley aplicable, la responsabilidad total de Chalyb frente a ti por cualquier reclamación relacionada con el Servicio no excederá **la cantidad total que nos hayas pagado por el Servicio durante los 12 meses anteriores** al hecho que originó la reclamación (o **$[MONTO MÍNIMO] MXN** si no nos has pagado nada).
+11.2. **Tope (usuarios empresariales).** Si usas Chalyb como empresa o para fines de tu negocio y no tienes el carácter de consumidor conforme a la ley aplicable, la responsabilidad total de Chalyb frente a ti por cualquier reclamación relacionada con el Servicio no excederá **la cantidad total que nos hayas pagado por el Servicio durante los 12 meses anteriores** al hecho que originó la reclamación (o **mil pesos mexicanos** si no nos has pagado nada).
 
 11.3. **Lo que no se limita.** Esta sección **no** limita ni excluye nuestra responsabilidad: (a) por dolo, mala fe o negligencia grave (la renuncia a exigir la responsabilidad por dolo es nula); (b) por incumplimiento de nuestras obligaciones de protección de datos personales; (c) **si eres consumidor**, por nuestros propios incumplimientos, conforme a la Ley Federal de Protección al Consumidor, incluida la bonificación o compensación que proceda (que no podrá ser menor al 20% del precio pagado) y, en su caso, la indemnización de daños y perjuicios; ni (d) cualquier otra responsabilidad que por ley no pueda limitarse o excluirse.
 
@@ -149,13 +150,13 @@ Al usar Chalyb **no puedes**:
 
 ## 13. Suspensión y terminación
 
-13.1. **Por ti.** Puedes dejar de usar Chalyb en cualquier momento y cancelar tu suscripción en 1 clic desde **Mi cuenta → Mi plan**, como se indica en los Términos de Suscripción. Puedes pedir el cierre definitivo de tu cuenta desde Mi cuenta o escribiendo a [CORREO DE CONTACTO].
+13.1. **Por ti.** Puedes dejar de usar Chalyb en cualquier momento y cancelar tu suscripción en 1 clic desde **Mi cuenta → Mi plan**, como se indica en los Términos de Suscripción. Puedes pedir el cierre definitivo de tu cuenta desde Mi cuenta o escribiendo a hola@chalyb.com.
 
 13.2. **Por nosotros, con causa.** Podemos suspender o cancelar tu cuenta, total o parcialmente, si: (a) incumples estos Términos o la Política de Uso Aceptable; (b) lo exige la ley o una autoridad; (c) detectamos fraude, abuso de pruebas gratis, un **contracargo de mala fe** (definido en la sección 10.4 de los Términos de Suscripción, y solo con el aviso y el plazo de 10 días hábiles de su sección 10.5) o riesgo de seguridad; o (d) tu contenido infringe derechos de terceros. Cuando sea razonable y legalmente posible, te avisaremos y te daremos oportunidad de corregir la falta. En casos graves (fraude, contenido ilegal, riesgo para otros usuarios) podemos actuar de inmediato. En caso de terminación por tu incumplimiento, **no procede reembolso** del periodo pagado, salvo que la ley disponga otra cosa.
 
-13.3. **Por nosotros, sin causa.** Podemos dejar de ofrecer el Servicio o cerrar tu cuenta con **al menos [30] días naturales** de aviso por escrito (correo electrónico); si resides en Quebec, Canadá, el aviso será de **al menos 60 días**. En ese caso te reembolsaremos la parte proporcional no usada de cualquier periodo que hayas pagado por adelantado y no haremos nuevos cobros.
+13.3. **Por nosotros, sin causa.** Podemos dejar de ofrecer el Servicio o cerrar tu cuenta con **al menos 30 días naturales** de aviso por escrito (correo electrónico); si resides en Quebec, Canadá, el aviso será de **al menos 60 días**. En ese caso te reembolsaremos la parte proporcional no usada de cualquier periodo que hayas pagado por adelantado y no haremos nuevos cobros.
 
-13.4. **Efectos.** Al terminar, la licencia termina. Podrás descargar tu contenido durante **[PLAZO DE CONSERVACIÓN DE CONTENIDO]** después del cierre, salvo en casos de contenido ilegal o cuando la ley lo impida; después podremos eliminarlo conforme al Aviso de Privacidad. Las secciones que por su naturaleza deban sobrevivir (propiedad intelectual, limitación de responsabilidad, indemnización, ley aplicable) seguirán vigentes.
+13.4. **Efectos.** Al terminar, la licencia termina. Podrás descargar tu contenido durante **30 días** después del cierre, salvo en casos de contenido ilegal o cuando la ley lo impida; después podremos eliminarlo conforme al Aviso de Privacidad. Las secciones que por su naturaleza deban sobrevivir (propiedad intelectual, limitación de responsabilidad, indemnización, ley aplicable) seguirán vigentes.
 
 ## 14. Cambios a estos Términos
 
@@ -183,12 +184,12 @@ Al usar Chalyb **no puedes**:
 
 16.1. Estos Términos se rigen por las **leyes federales de los Estados Unidos Mexicanos**.
 
-16.2. Para cualquier controversia, las partes se someten a los tribunales competentes de **[CIUDAD], México**, **sin perjuicio** de: (a) tu derecho a acudir a PROFECO (vía administrativa y de conciliación); (b) si eres consumidor, tu derecho a demandar ante los tribunales de tu domicilio cuando la ley lo permita [VALIDAR CON ABOGADO]; y (c) cualquier fuero que la ley imperativa de protección al consumidor te reconozca y que no pueda renunciarse. Estos Términos **no incluyen arbitraje obligatorio ni renuncia a acciones colectivas**.
+16.2. Para cualquier controversia, las partes se someten a los tribunales competentes de **la Ciudad de México**, **sin perjuicio** de: (a) tu derecho a acudir a PROFECO (vía administrativa y de conciliación); (b) si eres consumidor, tu derecho a demandar ante los tribunales de tu domicilio cuando la ley lo permita; y (c) cualquier fuero que la ley imperativa de protección al consumidor te reconozca y que no pueda renunciarse. Estos Términos **no incluyen arbitraje obligatorio ni renuncia a acciones colectivas**.
 
-16.3. Antes de iniciar cualquier reclamación, te pedimos (sin que sea un requisito obligatorio ni una condición para acudir a PROFECO o a los tribunales) escribirnos a [CORREO DE CONTACTO] para intentar resolverlo en un plazo de [15] días hábiles.
+16.3. Antes de iniciar cualquier reclamación, te pedimos (sin que sea un requisito obligatorio ni una condición para acudir a PROFECO o a los tribunales) escribirnos a hola@chalyb.com para intentar resolverlo en un plazo de 15 días hábiles.
 
 16.4. **Si vives fuera de México.**
-- **Quebec (Canadá).** Si eres consumidor residente en Quebec, **las siguientes cláusulas no se aplican a ti en la medida en que la Ley de protección del consumidor de Quebec lo prohíba**: la exclusión de responsabilidad por nuestros propios actos (sección 11), la elección de la ley mexicana (16.1) y la sumisión a tribunales de México (16.2). Se aplican la ley de Quebec y los tribunales de Quebec. Te entregaremos estos documentos en francés antes de contratar. [DECISIÓN DEL DUEÑO: mientras no exista versión en francés, no ofrecer planes de pago a residentes de Quebec.]
+- **Quebec (Canadá).** Si eres consumidor residente en Quebec, **las siguientes cláusulas no se aplican a ti en la medida en que la Ley de protección del consumidor de Quebec lo prohíba**: la exclusión de responsabilidad por nuestros propios actos (sección 11), la elección de la ley mexicana (16.1) y la sumisión a tribunales de México (16.2). Se aplican la ley de Quebec y los tribunales de Quebec. Te entregaremos estos documentos en francés antes de contratar.
 - **Resto de Canadá y Estados Unidos.** Si las leyes de protección al consumidor de tu provincia o estado te dan derechos que no pueden renunciarse (por ejemplo, sobre renovaciones automáticas, cancelación, avisos, tribunales o ley aplicable), esos derechos prevalecen sobre estos Términos en lo que se contrapongan.
 
 ## 17. Disposiciones generales
@@ -197,7 +198,7 @@ Al usar Chalyb **no puedes**:
 
 17.2. **Fuerza mayor.** No seremos responsables por incumplimientos causados por hechos fuera de nuestro control razonable (fallas generales de internet o energía, desastres, actos de autoridad, caídas de proveedores críticos, ataques informáticos a gran escala).
 
-17.3. **Cesión.** Podemos ceder estos Términos a una empresa de nuestro grupo o a quien adquiera el negocio, avisándote previamente; tus derechos y condiciones se mantendrán y podrás cancelar sin penalización si no estás de acuerdo. El tratamiento de tus datos en ese caso se rige por el Aviso de Privacidad. Tú no puedes cederlos sin nuestro consentimiento.
+17.3. **Cesión.** Podemos ceder estos Términos a una sociedad que constituya o controle el titular de Chalyb, o a quien adquiera el negocio, avisándote previamente; tus derechos y condiciones se mantendrán y podrás cancelar sin penalización si no estás de acuerdo. El tratamiento de tus datos en ese caso se rige por el Aviso de Privacidad. Tú no puedes cederlos sin nuestro consentimiento.
 
 17.4. **Divisibilidad.** Si alguna cláusula es inválida, las demás siguen vigentes.
 
@@ -209,10 +210,10 @@ Al usar Chalyb **no puedes**:
 
 ## 18. Contacto
 
-**[RAZÓN SOCIAL]** (Chalyb)
-RFC: [RFC]
-Domicilio: [DOMICILIO]
-Correo: [CORREO DE CONTACTO]
-Teléfono: [TELÉFONO] · Horario: [HORARIO DE ATENCIÓN]
+**Myriam Alcantara Moreno**, persona física con actividad empresarial, nombre comercial **Chalyb**
+RFC: RAAA960329GA2
+Domicilio: Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México
+Correo: hola@chalyb.com
+Horario: lunes a viernes, de 9:00 a 18:00 (hora del centro de México)
 
-Última actualización: [FECHA] · Versión [VERSIÓN]
+Última actualización: 5 de octubre de 2026 · Versión 1.0

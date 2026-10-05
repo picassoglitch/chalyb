@@ -206,6 +206,7 @@
       "legalDocs": {
         "terms": "Terms and Conditions",
         "subscription": "Subscription Terms",
+        "packs": "Credit packs",
         "privacy": "Privacy Notice",
         "acceptable": "Acceptable use"
       },
@@ -555,6 +556,16 @@
       "otherVersions": "Other versions:",
       "reviewLine": "Under review",
       "currentLead": "Until then, these apply:"
+    },
+    "packs": {
+      "metaTitle": "Credit pack terms",
+      "metaDescription": "One-time purchase of extra Chalyb credits: prices, use, validity and refunds.",
+      "title": "Credit pack terms"
+    },
+    "seller": {
+      "metaTitle": "Who sells",
+      "metaDescription": "Who sells Chalyb: seller details, customer service and PROFECO.",
+      "title": "Who sells"
     }
   },
   "workspace": {
@@ -898,6 +909,8 @@
       "title": "Privacy and account",
       "notice": "Privacy and notifications",
       "arco": "My data (ARCO rights)",
+      "connected": "Connected accounts",
+      "connectedNone": "None",
       "charge": "Problem with a charge",
       "close": "Close my account"
     },
@@ -1343,7 +1356,7 @@
   },
   "seller": {
     "title": "Who sells",
-    "name": "Legal name",
+    "name": "Name",
     "rfc": "Tax ID (RFC)",
     "address": "Address",
     "phone": "Phone",
@@ -1981,7 +1994,24 @@
       "twofaValue": "Not connected",
       "margin": "Margin on usage cost",
       "marginHelp": "Users' balances are charged the real provider cost plus this percentage. Applies to new usage; what's already recorded doesn't change.",
-      "marginSave": "Save"
+      "marginSave": "Save",
+      "packs": "Credit pack prices",
+      "packsHelp": "What the customer pays for each pack. The same price is used in the store, the payment, Mercado Pago and the packs legal page. Applies to new purchases.",
+      "packName": {
+        "tokens_100k": "Small · 100,000 credits",
+        "tokens_500k": "Medium · 500,000 credits",
+        "tokens_2m": "Large · 2,000,000 credits"
+      },
+      "ivaLegend": "VAT (IVA)",
+      "ivaIncluded": "VAT included: the price you type is the total",
+      "ivaAdd": "Add VAT to the price you type",
+      "ivaRate": "VAT rate",
+      "packTotal": "The customer pays {monto} MXN",
+      "packsSave": "Save prices",
+      "packsInvalid": "Check the prices: $1 to $100,000 per pack, and a rate from 0% to 50%.",
+      "packsMissing": "The saved prices couldn’t be read: pack purchases are closed until you save valid prices.",
+      "termsStale": "The published version of the Credit Pack Terms shows other prices: pack purchases stay closed until a version with these is published.",
+      "currencyNote": "Prices in MXN, always VAT-inclusive for the customer. USD prices never include VAT."
     },
     "example": "Example",
     "disputes": {
@@ -2209,7 +2239,8 @@
     "used": "You used {usados} of {total} this month",
     "none": "You’re out of credits this month. They renew on {fecha}.",
     "renew": "They renew on <b>{fecha}</b>. You get {total} again.",
-    "extra": "Extra credits bought: <b>{n}</b>. Used after your plan’s.",
+    "extra": "Unused extra credits: <b>{n}</b>. Used once, after your plan’s.",
+    "held": "Extra credits set aside while a dispute is resolved: <b>{n}</b>. If it is resolved in Chalyb’s favor, they return to your balance.",
     "unlimited": "No credit limit",
     "admin": "You’re an admin.",
     "cta": "Get more credits",
@@ -2250,7 +2281,8 @@
       "noExpiry": "don’t expire",
       "card": "You enter your card in the next step. Secure payment with Mercado Pago.",
       "cta": "Continue to payment · {monto} MXN",
-      "later": "Not now"
+      "later": "Not now",
+      "unavailable": "Credit packs aren’t available right now. Try again later."
     },
     "pack": {
       "name": "{n} credits",
@@ -2276,7 +2308,8 @@
       "month": "This month · paid when the month closes",
       "paid": "Paid on {fecha}"
     },
-    "soon": "Soon you’ll be able to get more credits right here."
+    "soon": "Soon you’ll be able to get more credits right here.",
+    "invoice": "Need an invoice (CFDI) for a pack? Email <b>{correo}</b> with your RFC within the same month as your purchase."
   },
   "profile": {
     "title": "My profile",
@@ -2990,5 +3023,63 @@
     "home": "Go to the home page",
     "app": "Back to Chalyb",
     "help": "Get help"
+  },
+  "closeAccount": {
+    "metaTitle": "Close my account",
+    "title": "Close my account",
+    "sub": "Before you confirm, check what happens to your credits and your plan.",
+    "credits": {
+      "title": "Extra credits",
+      "some": "You have {n, number} unused extra credits. They are lost when you close your account.",
+      "none": "You have no unused extra credits.",
+      "unknown": "We couldn't read your extra credit balance. Try again later: we need to show it to you before closing your account."
+    },
+    "plan": {
+      "title": "Your plan",
+      "charging": "When you confirm, we cancel your plan and there are no more charges. While we close your account you keep your current access, until {fecha} at the latest.",
+      "chargingNoDate": "When you confirm, we cancel your plan and there are no more charges.",
+      "ending": "Your plan is already cancelled: there are no more charges.",
+      "none": "You don't have a paid plan."
+    },
+    "after": "Closing your account deletes your data as described in the Privacy Notice. We'll answer by email within 20 days with the date it will be closed.",
+    "onlyStopPaying": "Just want to stop paying? Cancel your plan in My plan and keep your account.",
+    "onlyStopPayingCta": "Go to My plan",
+    "check": "I understand that closing my account loses my unused extra credits and cancels my plan.",
+    "cta": "Close my account",
+    "back": "Back to My account",
+    "open": "You asked to close your account on {recibida}. We'll answer by {fecha} at the latest.",
+    "done": "We received your request to close your account. We'll answer by {fecha} at the latest.",
+    "errors": {
+      "credits_changed": "Your credit balance changed. Check the updated number and confirm again.",
+      "not_confirmed": "Tick the box to continue.",
+      "mp_error": "Mercado Pago didn't answer when cancelling your plan. Nothing was closed; try again in a few minutes.",
+      "rateLimited": "You've sent several requests today. Try again tomorrow.",
+      "send": "We couldn't send your request. Try again."
+    }
+  },
+  "packCheckout": {
+    "metaTitle": "Buy credits",
+    "title": "Buy {n} extra credits",
+    "once": "One-time payment",
+    "ivaIncluded": "Total price in MXN, VAT (IVA) included.",
+    "lead": "They don’t expire while your account exists and are used after your plan’s credits, once.",
+    "disclosure": "<b>{n} extra credits</b> for a <b>one-time charge of {monto} MXN</b>, VAT (IVA) included. It isn’t a subscription and doesn’t renew.",
+    "consent": "I accept a <b>one-time charge of {monto} MXN (VAT/IVA included)</b> for <b>{n} extra credits</b>. It isn’t a subscription and doesn’t renew. The credits don’t expire while my account exists, aren’t money and can’t be transferred. I accept the <terms>Credit Pack Terms</terms>.",
+    "consentError": "Tick the box to accept the one-time charge. Nothing was charged.",
+    "ctaHint": "Tick the box to continue.",
+    "cta": "Pay {monto} MXN",
+    "hostedHint": "Prefer OXXO, SPEI or Mercado Pago balance? Those are paid on Mercado Pago’s page.",
+    "hostedCta": "Pay {monto} MXN on Mercado Pago",
+    "invoice": "Need an invoice (CFDI)? Email <b>{correo}</b> with your RFC within the same month as your purchase.",
+    "secure": "Your card details go straight to Mercado Pago in secure fields; Chalyb never sees or stores them.",
+    "back": "Back to My credits",
+    "unavailableTitle": "Payments not available yet",
+    "unavailable": "Credit packs aren’t available right now. Try again later or write to us.",
+    "priceChanged": "The price changed. Reload the page to see the current one. Nothing was charged.",
+    "error": "We couldn’t process the payment. Try again in a moment.",
+    "approved": "<b>Payment approved.</b> Your credits are already in your balance. Taking you to My credits…",
+    "approvedToast": "Extra credits added.",
+    "pending": "<b>Payment under review.</b> Mercado Pago hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
+    "pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved."
   }
 }

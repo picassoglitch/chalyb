@@ -16,7 +16,8 @@ import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth
 import { effectiveTier, isAdminRole, TIER_CAPS } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
 import { createClient } from '@/lib/supabase/server';
-import { TOKEN_PACKS } from '@/lib/payments/pricing';
+import { loadPricedPacks } from '@/lib/payments/pack-prices';
+import { INVOICE_EMAIL } from '@/config/invoicing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import {
   getCurrentAccrualsForPartner,
@@ -68,6 +69,7 @@ const DEFAULT_BALANCE: TokenBalance = {
   unlimited: false,
   monthlyAllocation: 0,
   bonus: 0,
+  held: 0,
   monthlyUsed: 0,
   reserved: 0,
   periodStart: new Date().toISOString(),
@@ -306,7 +308,11 @@ export default async function UsagePage({
   const start = new Date(balance.periodStart);
   const renew = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1, 12)).toISOString();
   const low = !balance.unlimited && total > 0 && usedPct >= 80;
-  const packs = TOKEN_PACKS.map((p) => ({ id: p.id, tokens: p.tokens, amount: formatMXN(p.amountCents) }));
+  // The owner's pack prices (Ajustes): the same totals the checkout charges.
+  // Unreadable → no packs offered rather than a guessed price.
+  const priced = await loadPricedPacks().catch(() => null);
+  const pricedPacks = priced?.packs ?? [];
+  const packs = pricedPacks.map((p) => ({ id: p.id, tokens: p.tokens, amount: formatMXN(p.amountCents) }));
   const toolName = (engineId: string) => data.engineMap.get(engineId)?.name ?? t('tool');
   const toolSlug = (engineId: string) => data.engineMap.get(engineId)?.slug ?? 'more';
 
@@ -452,11 +458,26 @@ export default async function UsagePage({
                       <Markup text={t.markup('extra', { n: nf(balance.bonus), b })} />
                     </span>
                   </p>
+                  {balance.held > 0 && (
+                    <p className="ch-credits__li">
+                      <span aria-hidden="true">
+                        <Plus />
+                      </span>
+                      <span>
+                        <Markup text={t.markup('held', { n: nf(balance.held), b })} />
+                      </span>
+                    </p>
+                  )}
                 </>
               )}
               {/* Sales are closed while paid checkout is off. */}
               {paidCheckoutEnabled() ? (
-                <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+                <>
+                  <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+                  <p className="ch-muted" style={{ margin: 0 }}>
+                    <Markup text={t.markup('invoice', { correo: INVOICE_EMAIL, b })} />
+                  </p>
+                </>
               ) : (
                 <p className="ch-muted">{t('soon')}</p>
               )}
@@ -531,7 +552,7 @@ export default async function UsagePage({
                 <h3 className="ch-adv__h">{t('adv.tech')}</h3>
                 <ul className="ch-adv__list">
                   {!balance.unlimited && total > 0 && <li>{t('adv.pct', { pct: usedPct })}</li>}
-                  {TOKEN_PACKS.map((p) => (
+                  {pricedPacks.map((p) => (
                     <li key={p.id}>
                       {t('adv.perThousand', {
                         n: nf(p.tokens),

@@ -21,6 +21,7 @@ import {
   listVersions,
   parseVersionSlug,
   renderedBlocks,
+  renderedSource,
   versionMeta,
   versionSlug,
   type LegalDoc,
@@ -29,6 +30,8 @@ import { inlineText } from '@/lib/legal/markdown';
 import { formatFechaLarga } from '@/lib/billing/format';
 import { versionInForceAt } from '@/lib/legal/legal-server';
 import { localizedPath, publicPageMetadata } from '@/lib/site';
+import { loadPricedPacks } from '@/lib/payments/pack-prices';
+import { sha256 } from '@/lib/billing/consent-core';
 import { LegalPage } from './legal-page';
 import { LegalMarkdown } from './legal-markdown';
 
@@ -38,6 +41,8 @@ const MESSAGE_KEY: Record<LegalDoc, string> = {
   suscripcion: 'subscription',
   privacidad: 'privacy',
   uso_aceptable: 'acceptableUse',
+  paquetes: 'packs',
+  quien_vende: 'seller',
 };
 
 /** A version page is live when that version is published; the draft of the
@@ -50,7 +55,7 @@ function resolveVersion(doc: LegalDoc, slug?: string): string | null {
 
 /** Whether a version is the text in force (the local e2e override treats
  *  drafts as published). */
-function inForce(doc: LegalDoc, version: string): boolean {
+export function inForce(doc: LegalDoc, version = currentVersion(doc)): boolean {
   return (
     legalPublished() && (Boolean(versionMeta(doc, version)?.published) || legalDraftsAsPublished())
   );
@@ -83,7 +88,10 @@ export async function LegalDocPage({
 }) {
   setRequestLocale(locale);
   const version = resolveVersion(doc, versionSlugParam);
-  const list = version ? renderedBlocks(doc, version) : null;
+  // The packs text names the owner's pack prices in force (Ajustes), the
+  // same totals the checkout charges. A published version keeps its own.
+  const packs = doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
+  const list = version ? renderedBlocks(doc, version, packs) : null;
   if (!version || !list) notFound();
 
   const t = await getTranslations({ locale, namespace: 'legal' });
@@ -113,7 +121,10 @@ export async function LegalDocPage({
   const inForceAt = await versionInForceAt(doc, version);
   const effective = inForceAt ? formatFechaLarga(inForceAt, locale) : t('doc.noDate');
   const others = listVersions(doc).filter((v) => v !== version);
-  const sha = archived(doc, version)?.sha256 ?? '';
+  // The hash of the text on this page (what a pack consent cites); for every
+  // other document and any published version it is the archived hash.
+  const shown = renderedSource(doc, version, packs);
+  const sha = shown === null ? '' : sha256(shown);
 
   return (
     <LegalPage

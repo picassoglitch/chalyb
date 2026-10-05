@@ -5,11 +5,13 @@ import 'server-only';
 import { cache } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { resolveBillingToggle } from '@/config/pricing';
+import { PACK_PRICES_SETTING, parsePackPricing, type PackPricing } from '@/config/pack-pricing';
 import { trialPlanChoiceEnabled } from './flags';
 
 export const SETTING_KEYS = {
   billingToggle: 'billing_toggle_enabled',
   usageMargin: 'usage_margin_percent',
+  packPrices: PACK_PRICES_SETTING,
 } as const;
 
 /** Margin on top of real provider cost when usage is charged to a balance.
@@ -44,6 +46,15 @@ export async function usageMarginPercent(): Promise<number> {
   return typeof v === 'number' && Number.isFinite(v)
     ? Math.min(MAX_USAGE_MARGIN_PERCENT, Math.max(0, v))
     : DEFAULT_USAGE_MARGIN_PERCENT;
+}
+
+/** The credit-pack prices in force, or null when the row is missing,
+ *  unreadable or malformed. Null is never replaced by a default: whoever
+ *  charges refuses, whoever displays says the store is unavailable. */
+export async function packPricing(): Promise<PackPricing | null> {
+  const parsed = parsePackPricing(await readSetting(SETTING_KEYS.packPrices));
+  if (!parsed) console.error('[settings] pack_prices missing or invalid: pack checkout is closed');
+  return parsed;
 }
 
 export async function writeSetting(key: string, value: unknown, actorId: string): Promise<boolean> {

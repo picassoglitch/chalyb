@@ -9,6 +9,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { blocksText, parseMarkdown } from '@/lib/legal/markdown';
 import { AMOUNT_RE, bindAmounts, tokenizeAmounts } from '@/lib/legal/amounts';
+import { stripInternalNotes } from '@/lib/legal/internal-notes';
 import {
   LEGAL_DOCS,
   PLACEHOLDER_RE,
@@ -39,6 +40,7 @@ import {
   legalPublishBlockers as flagBlockers,
   paidCheckoutBlockers,
   sellerValueOk,
+  setLegalPublishStateForTests,
 } from '@/lib/config/flags';
 import publishState from '@/lib/legal/publish-state.json' with { type: 'json' };
 import registryJson from '@/lib/legal/registry.json' with { type: 'json' };
@@ -48,6 +50,10 @@ const ROOT = new URL('../', import.meta.url).pathname;
 const LAW = join(ROOT, 'docs/design/app-reimagine/legal');
 const lawSource = (doc: string) =>
   readFileSync(join(LAW, (registryJson as Record<string, { file: string }>)[doc]!.file), 'utf8');
+/** What renders: Law's file without its "Notas internas (no publicar)". */
+const lawPublished = (doc: string) => stripInternalNotes(lawSource(doc));
+/** Law's notes to the owner ([…], not a link's text) may quote amounts. */
+const withoutOwnerNotes = (s: string) => s.replace(/\[[^[\]]*\](?!\()/g, '');
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
 function withEnv(env: Record<string, string | undefined>, fn: () => void) {
@@ -99,7 +105,7 @@ test('archive: each current version is Law’s file byte for byte, with its sha2
     assert.ok(a, `${doc} archived — run pnpm legal:hash`);
     const src = lawSource(doc);
     assert.equal(a.source, src, `${doc}: docs changed since the archive — run pnpm legal:hash`);
-    assert.equal(a.sha256, sha(src), doc);
+    assert.equal(a.sha256, sha(bindAmounts(lawPublished(doc))), doc);
     assert.equal((hashes as Record<string, string>)[doc], a.sha256, `${doc} document-hashes.json`);
   }
 });
@@ -109,7 +115,16 @@ test('archive: every version listed in the registry has its module', () => {
     assert.ok(listVersions(doc).includes(currentVersion(doc)), doc);
     for (const v of listVersions(doc)) {
       const a = archived(doc, v)!;
-      assert.equal(a.sha256, sha(a.source), `${doc}@${v} archive is self-consistent`);
+      assert.equal(a.sha256, sha(a.rendered), `${doc}@${v} archive is self-consistent`);
+      assert.equal(
+        a.template.replace(/\{\{[^}]+\}\}/g, ''),
+        stripInternalNotes(a.source)
+          .replace(/\{\{[^}]+\}\}/g, '')
+          .replace(AMOUNT_RE, (m, _us, at: number, all: string) =>
+            /\[[^[\]]*$/.test(all.slice(0, at)) ? m : '',
+          ),
+        `${doc}@${v} template is Law's text without its notes`,
+      );
     }
   }
 });
@@ -144,18 +159,52 @@ const amountRoles = (doc: string) =>
 test('amounts: every amount Law wrote is one config role, none typed', () => {
   for (const doc of LEGAL_DOCS) {
     const { template, unknown, ambiguous, invalid } = tokenizeAmounts(
-      lawSource(doc),
+      lawPublished(doc),
       amountRoles(doc),
       false,
     );
     assert.deepEqual([unknown, ambiguous, invalid], [[], [], []], doc);
     assert.equal(
-      [...template.matchAll(AMOUNT_RE)].length,
+      [...withoutOwnerNotes(template).matchAll(AMOUNT_RE)].length,
       0,
       `${doc} template has no literal amount`,
     );
     assert.equal(template, archived(doc)!.template, `${doc} archived template current`);
   }
+});
+
+test('internal notes: archived and hashed without "Notas internas", source kept as written', () => {
+  const law = '# Doc\n\nTexto.\n\n---\n\n## Notas internas (no publicar esta sección)\n\nNo va.\n\n### Sub\n\nTampoco.\n';
+  assert.equal(stripInternalNotes(law), '# Doc\n\nTexto.\n');
+  assert.equal(
+    stripInternalNotes('# A\n\n## Notas internas\n\nx\n\n## Sigue\n\ny\n'),
+    '# A\n## Sigue\n\ny\n',
+  );
+  for (const doc of ['paquetes', 'quien_vende'] as const) {
+    assert.match(archived(doc)!.source, /Notas internas/, `${doc} source is Law's file`);
+    assert.doesNotMatch(archived(doc)!.rendered, /Notas internas|chalyb-src/, `${doc} renders without`);
+  }
+});
+
+test('amounts: an unexplained amount passes only inside an owner note', () => {
+  const ok = tokenizeAmounts('Total $1,999,999.00 [NOTA: antes de IVA $149]', {}, false);
+  assert.deepEqual(ok.unknown, ['$1,999,999.00']);
+  assert.throws(() => tokenizeAmounts('Paga $151.'), /not in pricing/);
+  assert.equal(tokenizeAmounts('[NOTA: si no, $151]').template, '[NOTA: si no, $151]');
+  // A link's text is not a note.
+  assert.throws(() => tokenizeAmounts('[Paga $151](/paquetes)'), /not in pricing/);
+  // Pack totals bind to pricing.ts (the default pack prices).
+  assert.equal(tokenizeAmounts('Chico $149').template, 'Chico {{mxn:pack_100k}}');
+});
+
+test('amounts: the packs page shows the pack prices in force, never typed ones', () => {
+  // Law's text names the roles; a role that doesn't exist is refused.
+  assert.throws(() => tokenizeAmounts('{{mxn:pack_1m}}'), /no such role/);
+  const packs = { tokens_100k: 14_900, tokens_500k: 59_900, tokens_2m: 199_900 };
+  const live = renderedSource('paquetes', undefined, packs)!;
+  assert.match(live, /\| Chico \| 100,000 \| \$149 MXN \| \$1\.49 \|/);
+  assert.match(live, /\| Mediano \| 500,000 \| \$599 MXN \| \$1\.20 \|/);
+  assert.doesNotMatch(live, /\{\{|\[PRECIO/);
 });
 
 test('amounts: an amount two roles share is never guessed', () => {
@@ -177,15 +226,21 @@ test('amounts: an amount two roles share is never guessed', () => {
 
 test('amounts: under today’s config the render equals Law’s text, and the hash is of that render', () => {
   for (const doc of LEGAL_DOCS) {
-    assert.equal(renderedSource(doc), lawSource(doc), doc);
-    assert.equal(archived(doc)!.rendered, lawSource(doc), `${doc} archived render current`);
+    // Law's text binds the roles it names ({{mxn:pack_100k}}) to config.
+    assert.equal(renderedSource(doc), bindAmounts(lawPublished(doc)), doc);
+    assert.equal(
+      archived(doc)!.rendered,
+      bindAmounts(lawPublished(doc)),
+      `${doc} archived render current`,
+    );
     assert.equal(archived(doc)!.sha256, sha(archived(doc)!.rendered), doc);
   }
 });
 
 test('amounts: a price change re-renders a draft, never the Lealtad month-5 cell', () => {
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
-    const text = renderedSource('suscripcion')!;
+    // How a draft renders: the template with today's prices.
+    const text = bindAmounts(archived('suscripcion')!.template);
     // $997 as a list price + 16% IVA.
     assert.match(text, /\*\*Pro \$1,156\.52 MXN\/mes\*\*/);
     // Lealtad steps don't move with the IVA flag: month 5 stays $997.
@@ -200,7 +255,7 @@ test('amounts: a published version is frozen: today’s prices never change it',
   const frozen = { ...a, rendered: a.rendered };
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
     // What renderedSource does for a published version: the archived render.
-    assert.equal(frozen.rendered, lawSource('suscripcion'));
+    assert.equal(frozen.rendered, bindAmounts(lawPublished('suscripcion')));
     assert.notEqual(
       bindAmounts(a.template),
       frozen.rendered,
@@ -210,7 +265,7 @@ test('amounts: a published version is frozen: today’s prices never change it',
   const reg = readFileSync(join(ROOT, 'src/lib/legal/registry.ts'), 'utf8');
   assert.match(
     reg,
-    /versionMeta\(doc, version\)\?\.published \? a\.rendered : bindAmounts\(a\.template\)/,
+    /versionMeta\(doc, version\)\?\.published \? a\.rendered : bindAmounts\(a\.template, packs\)/,
   );
   const script = readFileSync(join(ROOT, 'scripts/hash-legal-docs.mjs'), 'utf8');
   assert.match(script, /today's prices render it differently/);
@@ -238,22 +293,22 @@ test('placeholders: the regex catches Law’s owner brackets, not prose', () => 
   assert.deepEqual(hits(blocksText(parseMarkdown('ver [sección 4](#planes)'))), []);
 });
 
-test('placeholders: today’s drafts would fail as "published"', () => {
-  for (const doc of LEGAL_DOCS)
-    assert.ok(placeholders(doc).length > 0, `${doc} still has brackets`);
-  assert.ok(placeholders('terminos').includes('[RAZÓN SOCIAL]'));
-  assert.ok(placeholders('suscripcion').includes('[IVA: CONFIRMAR]'));
-  assert.ok(placeholders('suscripcion').includes('[conservarás / tendrás limitado]'));
-  assert.ok(placeholders('terminos').includes('[30]'));
-  assert.ok(placeholders('terminos').includes('[15]'));
-  assert.ok(legalPublishBlockers().length > 0);
+test('placeholders: the owner filled every bracket (2026-10-05)', () => {
+  for (const doc of LEGAL_DOCS) assert.deepEqual(placeholders(doc), [], `${doc} still has brackets`);
 });
 
 test('publish gate: LEGAL_PUBLISH=true cannot take effect while a blocker remains', () => {
+  setLegalPublishStateForTests({ terminos: { version: '1.0', published: false, placeholders: 1 } });
   withEnv({ LEGAL_PUBLISH: 'true' }, () => {
     assert.equal(legalPublished(), false);
     assert.ok(paidCheckoutBlockers().includes('LEGAL_PUBLISH'));
   });
+  withEnv({ LEGAL_PUBLISH: undefined }, () => assert.equal(legalPublished(), false));
+  setLegalPublishStateForTests(null);
+});
+
+test('publish gate: every text published and filled (2026-10-05), so LEGAL_PUBLISH=true takes effect', () => {
+  withEnv({ LEGAL_PUBLISH: 'true' }, () => assert.equal(legalPublished(), true));
   withEnv({ LEGAL_PUBLISH: undefined }, () => assert.equal(legalPublished(), false));
 });
 
@@ -296,7 +351,13 @@ test('routes: each document has its current page and its versioned page', () => 
 test('routes: every footer legal link has a page (no 404)', () => {
   assert.deepEqual(
     LEGAL_PAGES.map((p) => p.href),
-    ['/legal/terms', '/legal/subscription', '/legal/privacy', '/legal/acceptable-use'],
+    [
+      '/legal/terms',
+      '/legal/subscription',
+      '/legal/packs',
+      '/legal/privacy',
+      '/legal/acceptable-use',
+    ],
   );
   for (const p of LEGAL_PAGES) assert.ok(pageAt(p.href), p.href);
 });
@@ -492,6 +553,7 @@ test('re-accept: Law’s §8 copy is verbatim in es.json', () => {
 });
 
 test('publish gate: the e2e override needs mock adapters and a non-production Vercel env', () => {
+  setLegalPublishStateForTests({ terminos: { version: '1.0', published: false, placeholders: 1 } });
   const base = {
     E2E_LEGAL_DRAFTS_AS_PUBLISHED: '1',
     LEGAL_PUBLISH: 'true',
@@ -506,6 +568,7 @@ test('publish gate: the e2e override needs mock adapters and a non-production Ve
   withEnv({ ...base, E2E_USE_MOCK_ADAPTERS: '1', VERCEL_ENV: 'preview' }, () =>
     assert.equal(legalPublished(), true),
   );
+  setLegalPublishStateForTests(null);
 });
 
 test('drafts never render publicly: a version not in force is the review stub', () => {
@@ -514,14 +577,10 @@ test('drafts never render publicly: a version not in force is the review stub', 
 });
 
 test('consistency: Suscripción must match the trial plans and grace in config before publish', () => {
-  const issues = subscriptionConsistency(lawSource('suscripcion'));
-  // Owner put the trial on every plan; §2.1 still says Pro only (Law item).
-  assert.ok(issues.includes('trial-plans:vip_month,vip_year'), issues.join());
-  // No grace after the trial (firstChargeGraceDays 0); §8 doesn't say so.
-  assert.ok(issues.includes('trial-grace'), issues.join());
-  // "VIP anual no incluye Prueba gratis" (§4) contradicts the config too.
-  assert.ok(issues.includes('trial-excluded:vip_year'), issues.join());
-  assert.ok(legalPublishBlockers().includes('suscripcion@1.0:trial-plans:vip_month,vip_year'));
+  // §2.1 offers the trial on every plan in config, nothing excludes one, and
+  // §8.2 bis says the grace period doesn't apply to the charge that ends it.
+  assert.deepEqual(subscriptionConsistency(lawSource('suscripcion')), []);
+  assert.ok(!legalPublishBlockers().some((b) => /trial|grace/.test(b)));
   const cfg = {
     trialPlans: ['pro_month', 'pro_year'] as const,
     graceDays: 7,

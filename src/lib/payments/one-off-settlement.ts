@@ -16,6 +16,8 @@ import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from './pricing';
+import { acceptedPackCents, loadPricedPacks } from './pack-prices';
+import type { PackId } from '@/config/pricing';
 import { getAppUrl } from './mercadopago';
 import {
   autoRefundMismatch,
@@ -155,9 +157,10 @@ export async function settleOneOffCharge(
   }
 
   // ── Refunds ───────────────────────────────────────────────────────────
-  // POLICY. A refunded PACK is a purchase undone: its tokens come off the
-  // balance (clamped at zero — clawback_token_pack, migration 0038), keyed to
-  // the payment id so a retry changes nothing. A refund never changes a
+  // POLICY. A refunded PACK: only ITS unused credits come off (Paquetes §7.2;
+  // clawback_token_pack, migration 0065). Credits already used are not
+  // charged back, and the plan and other packs are untouched. Keyed to the
+  // payment id so a retry changes nothing. A refund never changes a
   // plan, price or the account (Términos §7.3): a legacy one-off plan stays.
   if (status === 'refunded') {
     const reason = 'refunded' as const;
@@ -206,10 +209,11 @@ export async function settleOneOffCharge(
           href: '/dashboard/billing',
           source: 'mp.webhook',
         });
-        if (email) {
+        // Nothing to tell when every credit of the pack was already used.
+        if (email && claw.tokensRemoved > 0) {
           const tmpl = paymentReversedTemplate({
             reason,
-            what: `${claw.tokensGranted.toLocaleString('es-MX')} tokens`,
+            what: `${claw.tokensRemoved.toLocaleString('es-MX')} créditos sin usar del paquete`,
             amountMajor,
             currency,
             paymentId: mpId,
@@ -217,7 +221,7 @@ export async function settleOneOffCharge(
           });
           void sendEmail({
             to: email,
-            subject: 'Pago revertido: retiramos los tokens del pack · Chalyb',
+            subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
             html: tmpl.html,
             text: tmpl.text,
           }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
@@ -249,9 +253,28 @@ export async function settleOneOffCharge(
   // A mismatch returns 200: MP retrying the same charge can never make the
   // amount right, and we do not want a retry storm on a payment we refuse.
   if (status === 'approved') {
-    const expected: ExpectedCharge | null = isPackPurchase
-      ? expectedChargeForPack(packIdRaw!)
-      : expectedChargeForTier(tier!);
+    let expected: ExpectedCharge | null;
+    // A pack refusal decided without the buyer's accepted amounts could
+    // refund a price they did accept: retry instead.
+    let packGateUncertain = false;
+    if (isPackPurchase) {
+      // The pack price is the owner's setting; the buyer's own accepted
+      // amounts cover a price changed while they were paying. Neither
+      // readable → retry later rather than refuse (and refund) on a guess.
+      const [priced, accepted] = await Promise.all([
+        loadPricedPacks().catch(() => null),
+        acceptedPackCents(userId, packIdRaw!).catch((e: unknown) => {
+          console.error('[mp/webhook] pack consent read failed', e);
+          return null;
+        }),
+      ]);
+      const current = priced?.totals[packIdRaw as PackId] ?? accepted?.[0];
+      if (current === undefined) return retry({ error: 'pack prices unavailable' });
+      packGateUncertain = accepted === null;
+      expected = expectedChargeForPack(packIdRaw!, current, accepted ?? []);
+    } else {
+      expected = expectedChargeForTier(tier!);
+    }
 
     if (!expected) {
       // FREE and PARTNER have no price (TIER_PRICING null): no payment can
@@ -274,6 +297,9 @@ export async function settleOneOffCharge(
       amountMajor: charge.amountMajor,
       currency: charge.currency,
     });
+    if (!check.ok && packGateUncertain) {
+      return retry({ error: 'pack consent log unavailable' });
+    }
     if (!check.ok) {
       console.error('[mp/webhook] REFUSING grant — payment does not match the price', {
         reason: check.reason,

@@ -9,7 +9,8 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { notify } from '@/lib/notifications/notify';
 import { grantTokenPack } from '@/lib/usage/tokens';
-import { getTokenPack } from './pricing';
+import { getTokenPack, type PackTotals } from './pricing';
+import { acceptedPackCents, loadPricedPacks } from './pack-prices';
 import { checkCharge, expectedChargeForPack } from './webhook-verify';
 
 const MINUTE = 60 * 1000;
@@ -27,19 +28,28 @@ export interface PackChargeRow {
 /**
  * Which approved pack charges are owed their tokens: no purchase on file,
  * nothing refunded, a known pack, and the amount and currency its price
- * (the webhook's gate: a refused charge is never granted here). Pure.
+ * (the webhook's gate: a refused charge is never granted here). `totals`
+ * are the pack prices in force; `accepted` the amounts each buyer accepted
+ * per pack ("<userId>|<packId>"). Pure.
  */
 export function packsOwed(
   rows: readonly PackChargeRow[],
   purchased: ReadonlySet<string>,
+  totals: PackTotals,
+  accepted: ReadonlyMap<string, readonly number[]> = new Map(),
 ): { row: PackChargeRow; tokens: number }[] {
   const out: { row: PackChargeRow; tokens: number }[] = [];
   for (const row of rows) {
     if (purchased.has(row.mp_payment_id)) continue;
     if ((row.refunded_cents ?? 0) > 0) continue;
     const pack = row.pack_id ? getTokenPack(row.pack_id) : undefined;
-    const expected = row.pack_id ? expectedChargeForPack(row.pack_id) : null;
-    if (!pack || !expected) continue;
+    if (!pack) continue;
+    const expected = expectedChargeForPack(
+      pack.id,
+      totals[pack.id],
+      accepted.get(`${row.user_id}|${pack.id}`) ?? [],
+    );
+    if (!expected) continue;
     const check = checkCharge(expected, {
       amountMajor: row.amount_cents === null ? null : row.amount_cents / 100,
       currency: row.currency,
@@ -74,9 +84,18 @@ export async function reconcilePackGrants(now: Date): Promise<{ granted: number;
     );
   if (pErr) throw new Error(pErr.message);
   const purchased = new Set((purchases ?? []).map((p) => p.mp_payment_id as string));
+  // No prices in force → grant nothing today; the next run tries again.
+  const priced = await loadPricedPacks();
+  if (!priced) throw new Error('pack prices unavailable');
+  const accepted = new Map<string, number[]>();
+  for (const r of list) {
+    const key = `${r.user_id}|${r.pack_id}`;
+    if (!r.pack_id || accepted.has(key) || purchased.has(r.mp_payment_id)) continue;
+    accepted.set(key, await acceptedPackCents(r.user_id, r.pack_id, now, 14));
+  }
   let granted = 0;
   let failed = 0;
-  for (const { row, tokens } of packsOwed(list, purchased)) {
+  for (const { row, tokens } of packsOwed(list, purchased, priced.totals, accepted)) {
     const r = await grantTokenPack({
       userId: row.user_id,
       tokens,

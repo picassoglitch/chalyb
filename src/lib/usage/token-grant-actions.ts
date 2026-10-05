@@ -2,9 +2,9 @@
 
 // Admin-only: manually grant or revoke bonus tokens for a user.
 //
-// Grants land in profiles.token_bonus_balance (the same column MP
-// top-up purchases write to). Bonus tokens never reset — they
-// accumulate alongside the monthly tier allocation.
+// A grant lands as its own pack in token_pack_purchases, like an MP top-up
+// (profiles.token_bonus_balance mirrors the packs). Pack credits never reset;
+// they are spent after the monthly plan allocation, once, oldest first.
 //
 // USAGE PATTERNS:
 //   - Customer-support credit: refund + 100k tokens after a failed batch
@@ -102,24 +102,9 @@ export async function grantTokensToUser(
     };
   }
 
-  // For positive grants we ALSO write a token_pack_purchases row so the
-  // user's /app/usage history shows where the bonus came from. We skip
-  // this on revokes because the table is purchase-shaped (negative
-  // 'tokens_granted' would be misleading). Revokes are admin-only and
-  // tracked via the audit log instead.
-  if (effectiveDelta > 0) {
-    const { error: insertErr } = await admin.from('token_pack_purchases').insert({
-      user_id: targetUserId,
-      tokens_granted: effectiveDelta,
-      source: 'admin_grant',
-      mp_payment_id: null,
-    });
-    if (insertErr) {
-      // Non-fatal — the balance bump already happened. Log so the admin
-      // sees it in the response but don't roll back.
-      console.warn('[tokens.grant] purchase row insert failed:', insertErr.message);
-    }
-  }
+  // A positive grant is its own pack row (admin_grant), written by the same
+  // function (migration 0065), so it shows in the history and is spent in
+  // order like any pack. A revoke takes unused credits oldest pack first.
 
   await logAudit({
     action: effectiveDelta > 0 ? 'tokens.grant' : 'tokens.revoke',

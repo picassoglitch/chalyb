@@ -141,13 +141,20 @@ export function expectedChargeForTier(tier: SubscriptionTier): ExpectedCharge | 
   };
 }
 
-/** What a token pack must cost. null = unknown pack id. */
-export function expectedChargeForPack(packId: string): ExpectedCharge | null {
+/** What a credit pack must cost: the total in force (the owner's setting,
+ *  passed in by the caller that read it), the amounts this buyer accepted
+ *  at checkout (a price changed mid-payment), and the old pack amounts.
+ *  null = unknown pack id. */
+export function expectedChargeForPack(
+  packId: string,
+  currentCents: number,
+  acceptedCents: readonly number[] = [],
+): ExpectedCharge | null {
   const pack = getTokenPack(packId);
   if (!pack) return null;
   return {
-    amountCents: pack.amountCents,
-    alsoAcceptCents: GRANDFATHERED_CENTS.packs[pack.id],
+    amountCents: currentCents,
+    alsoAcceptCents: [...GRANDFATHERED_CENTS.packs[pack.id], ...acceptedCents],
     currency: TOKEN_PACK_CURRENCY,
     label: `pack ${pack.id}`,
   };

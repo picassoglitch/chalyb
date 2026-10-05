@@ -4,7 +4,7 @@
 // payments when they are present. Pure; token-checkout-actions.ts is the
 // only caller.
 
-import type { TokenPack } from './pricing';
+import type { TokenPackDef } from './pricing';
 
 /** On the buyer's card statement. Mercado Pago allows about 10 characters. */
 export const STATEMENT_DESCRIPTOR = 'CHALYB';
@@ -38,7 +38,7 @@ export function orderAdditionalInfo(user: OrderUser): Record<string, string> {
 }
 
 /** The one line item of a pack order. */
-export function packItem(pack: TokenPack, unitPrice: string) {
+export function packItem(pack: TokenPackDef, unitPrice: string) {
   return {
     title: `Chalyb · ${pack.label}`,
     description: `${pack.tokens.toLocaleString('es-MX')} tokens de uso para las herramientas de Chalyb`,

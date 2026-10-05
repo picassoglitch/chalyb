@@ -52,6 +52,8 @@ export const CONSENT_EVENT_TYPES = [
   'voice_likeness_consent',
   // aceptacion-ux §7 · connecting a social account (WS-11, TOOLS-SPEC §8)
   'social_connect',
+  // Términos de los Paquetes §9 · ticking the box before paying for a pack
+  'pack_purchase_accepted',
 ] as const;
 
 export type ConsentEventType = (typeof CONSENT_EVENT_TYPES)[number];

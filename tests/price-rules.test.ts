@@ -12,7 +12,6 @@ import {
   grandfatheredFor,
   ivaPortion,
   PACK_CENTS,
-  packPriceCents,
   pct,
   planPrice,
   pricesIncludeIva,
@@ -25,7 +24,8 @@ import {
   withIva,
 } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
-import { TIER_PRICING, TOKEN_PACKS } from '@/lib/payments/pricing';
+import { TIER_PRICING, pricedTokenPacks } from '@/lib/payments/pricing';
+import { DEFAULT_PACK_PRICING, packTotals } from '@/config/pack-pricing';
 import {
   checkCharge,
   expectedChargeForPack,
@@ -56,18 +56,19 @@ test('PRICES_INCLUDE_IVA=false treats the amounts as list prices (what-if only)'
   }
 });
 
-test('packs stay at today’s totals whatever the IVA flag says (O-4)', () => {
+test('pack defaults are the owner’s totals, IVA included, whatever the plan IVA flag says', () => {
   for (const flag of [undefined, 'true', 'false']) {
     if (flag === undefined) delete process.env.PRICES_INCLUDE_IVA;
     else process.env.PRICES_INCLUDE_IVA = flag;
-    assert.deepEqual(
-      (['tokens_100k', 'tokens_500k', 'tokens_2m'] as const).map(packPriceCents),
-      [17_284, 69_484, 231_884],
-    );
+    assert.deepEqual(packTotals(DEFAULT_PACK_PRICING), {
+      tokens_100k: 14_900,
+      tokens_500k: 59_900,
+      tokens_2m: 199_900,
+    });
   }
   delete process.env.PRICES_INCLUDE_IVA;
-  assert.deepEqual(PACK_CENTS, { tokens_100k: 17_284, tokens_500k: 69_484, tokens_2m: 231_884 });
-  assert.equal(formatMXN(PACK_CENTS.tokens_100k), '$172.84');
+  assert.deepEqual(PACK_CENTS, { tokens_100k: 14_900, tokens_500k: 59_900, tokens_2m: 199_900 });
+  assert.equal(formatMXN(PACK_CENTS.tokens_100k), '$149');
 });
 
 test('annual math, savings and percentages (floor)', () => {
@@ -100,7 +101,8 @@ test('IVA portion of a total, for receipts', () => {
 test('Mercado Pago charges the same totals the cards show', () => {
   assert.equal(TIER_PRICING.PRO!.amountCents, planPrice('pro_month').totalCents);
   assert.equal(TIER_PRICING.VIP!.amountCents, planPrice('vip_month').totalCents);
-  for (const pack of TOKEN_PACKS) assert.equal(pack.amountCents, packPriceCents(pack.id));
+  const totals = packTotals(DEFAULT_PACK_PRICING);
+  for (const pack of pricedTokenPacks(totals)) assert.equal(pack.amountCents, totals[pack.id]);
 });
 
 test('grandfathered amounts are hard-coded, not derived from the prices', () => {
@@ -131,7 +133,7 @@ test('the price gate: today’s totals, existing renewals, nothing else', () => 
   assert.ok(checkCharge(yearly, { amountMajor: 9970, currency: 'MXN' }).ok);
   assert.equal(checkCharge(yearly, { amountMajor: 749, currency: 'MXN' }).ok, false);
   assert.equal(checkCharge(yearly, { amountMajor: 8688.4, currency: 'MXN' }).ok, false);
-  const pack = expectedChargeForPack('tokens_100k')!;
+  const pack = expectedChargeForPack('tokens_100k', PACK_CENTS.tokens_100k)!;
   assert.ok(checkCharge(pack, { amountMajor: 172.84, currency: 'MXN' }).ok);
   assert.ok(checkCharge(pack, { amountMajor: 149, currency: 'MXN' }).ok);
   assert.equal(checkCharge(pack, { amountMajor: 599, currency: 'MXN' }).ok, false);

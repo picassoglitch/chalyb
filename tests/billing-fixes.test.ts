@@ -287,7 +287,7 @@ test('#10 Orders payments refund through their order; disputes find them by refe
 
 test('#10 a refused charge is auto-refunded only when MP said what was paid and in what currency', async () => {
   const { autoRefundMismatch, checkCharge, expectedChargeForPack } = await import('@/lib/payments/webhook-verify');
-  const expected = expectedChargeForPack('tokens_100k')!;
+  const expected = expectedChargeForPack('tokens_100k', 14_900)!;
   const paid = (amountMajor: number | null, currency: string | null) => ({ amountMajor, currency });
   const refuse = (p: ReturnType<typeof paid>) => autoRefundMismatch(checkCharge(expected, p), p);
   assert.equal(refuse(paid(1, 'MXN')), true); // wrong amount: refunded
@@ -383,6 +383,7 @@ test('LOW the cron grants approved, correctly priced packs with no purchase on f
       row('unknown', { pack_id: 'tokens_9z' }),
     ],
     new Set(['granted']),
+    PACK_CENTS,
   );
   assert.deepEqual(owed.map((o) => o.row.mp_payment_id), ['ok']);
   assert.ok(owed[0]!.tokens > 0);

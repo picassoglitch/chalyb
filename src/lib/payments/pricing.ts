@@ -5,7 +5,7 @@
 // source — and includes IVA (Q1: list prices exclude it, so 16% is added).
 
 import type { SubscriptionTier } from '@/lib/auth/session';
-import { CURRENCY, packPriceCents, planPrice } from '@/config/pricing';
+import { CURRENCY, planPrice, type PackId } from '@/config/pricing';
 
 export interface TierPrice {
   /** Amount in minor units (cents). Avoids float rounding bugs. */
@@ -43,52 +43,60 @@ export function formatMoney(amountCents: number, currency: string): string {
   return `$${major} ${currency}`;
 }
 
-// ── Token top-up packs ────────────────────────────────────────────────────
-// Sold via MP checkout. Tokens never expire and stack on top of the user's
-// monthly tier allocation. Priced so the per-token rate gets cheaper at
-// higher pack sizes — encourages buying once vs many micro-packs.
+// ── Credit packs ────────────────────────────────────────────────────────
+// Sold via MP checkout. Credits never expire and are spent after the plan's
+// monthly ones. What each pack IS (id, credits) is fixed here; what it COSTS
+// is the owner's setting (src/config/pack-pricing.ts), read per request on
+// the server and passed in. Nothing here holds a price.
 
-export interface TokenPack {
-  /** Stable slug used as the MP preference's external_reference. */
-  id: 'tokens_100k' | 'tokens_500k' | 'tokens_2m';
-  /** Tokens granted. Combined input+output, same units as TIER_CAPS. */
+export interface TokenPackDef {
+  /** Stable slug used in the order's external_reference. */
+  id: PackId;
+  /** Credits granted. Combined input+output, same units as TIER_CAPS. */
   tokens: number;
-  /** Price in MXN minor units (centavos). */
-  amountCents: number;
-  /** Display label for the buy button. */
+  /** Mercado Pago item label. */
   label: string;
+}
+
+export interface TokenPack extends TokenPackDef {
+  /** Total in MXN centavos, IVA included: the owner's setting. */
+  amountCents: number;
   /** Marketing tagline. */
   tagline: string;
 }
 
-export const TOKEN_PACKS: TokenPack[] = [
-  {
-    id: 'tokens_100k',
-    tokens: 100_000,
-    amountCents: packPriceCents('tokens_100k'),
-    label: '+100k tokens',
-    tagline: 'Top-up rápido · alcanza para varios trabajos pequeños',
-  },
-  {
-    id: 'tokens_500k',
-    tokens: 500_000,
-    amountCents: packPriceCents('tokens_500k'),
-    label: '+500k tokens',
-    tagline: 'Mejor relación · ~30% descuento por token vs el pack chico',
-  },
-  {
-    id: 'tokens_2m',
-    tokens: 2_000_000,
-    amountCents: packPriceCents('tokens_2m'),
-    label: '+2M tokens',
-    tagline: 'Mejor relación · pensado para usuarios PRO con uso pesado',
-  },
+export type PackTotals = Readonly<Record<PackId, number>>;
+
+export const TOKEN_PACK_DEFS: readonly TokenPackDef[] = [
+  { id: 'tokens_100k', tokens: 100_000, label: '+100k tokens' },
+  { id: 'tokens_500k', tokens: 500_000, label: '+500k tokens' },
+  { id: 'tokens_2m', tokens: 2_000_000, label: '+2M tokens' },
 ];
 
+/** Whole percent less per credit than the smallest pack, rounded DOWN so a
+ *  tagline never overstates the saving (LFPC art. 32). From the prices in
+ *  force, so it stays true when they change. */
+export function packSavingsPercent(id: PackId, totals: PackTotals): number {
+  const def = (pid: PackId) => TOKEN_PACK_DEFS.find((d) => d.id === pid)!;
+  const per = (pid: PackId) => totals[pid] / def(pid).tokens;
+  return Math.max(0, Math.floor((1 - per(id) / per('tokens_100k')) * 100));
+}
+
+/** The packs with the prices in force. */
+export function pricedTokenPacks(totals: PackTotals): TokenPack[] {
+  const tag: Record<PackId, string> = {
+    tokens_100k: 'Top-up rápido · alcanza para varios trabajos pequeños',
+    tokens_500k: `${packSavingsPercent('tokens_500k', totals)}% menos por crédito que el paquete chico`,
+    tokens_2m: `Mejor relación · ${packSavingsPercent('tokens_2m', totals)}% menos por crédito que el paquete chico`,
+  };
+  return TOKEN_PACK_DEFS.map((d) => ({ ...d, amountCents: totals[d.id], tagline: tag[d.id] }));
+}
+
 /** Packs are priced in MXN like the tiers. One constant so the checkout
- *  preference and the webhook's amount check can't drift apart. */
+ *  order and the webhook's amount check can't drift apart. */
 export const TOKEN_PACK_CURRENCY = CURRENCY;
 
-export function getTokenPack(id: string): TokenPack | undefined {
-  return TOKEN_PACKS.find((p) => p.id === id);
+/** What a pack is (no price). */
+export function getTokenPack(id: string): TokenPackDef | undefined {
+  return TOKEN_PACK_DEFS.find((p) => p.id === id);
 }

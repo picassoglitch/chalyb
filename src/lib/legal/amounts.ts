@@ -14,12 +14,31 @@
 
 import {
   LEALTAD,
+  PACK_CENTS,
   USD_CENTS,
   annualMath,
   lealtadSchedule,
   planPrice,
+  type PackId,
   type PlanKey,
 } from '@/config/pricing';
+
+/** What each credit pack charges, in centavos with IVA. Pack prices are a
+ *  setting the owner edits (read per request on the server), so the caller
+ *  that has them passes them in; the default is the config's. */
+export type PackTotalsCents = Readonly<Record<PackId, number>>;
+
+/** Credits in each pack, for the price-per-1,000 cells. */
+const PACK_CREDITS: Readonly<Record<PackId, number>> = {
+  tokens_100k: 100_000,
+  tokens_500k: 500_000,
+  tokens_2m: 2_000_000,
+};
+const PACK_ROLE: Readonly<Record<PackId, string>> = {
+  tokens_100k: 'pack_100k',
+  tokens_500k: 'pack_500k',
+  tokens_2m: 'pack_2m',
+};
 import { formatMXN } from '@/lib/billing/format';
 
 export interface AmountRole {
@@ -28,7 +47,7 @@ export interface AmountRole {
 }
 
 /** Every amount the legal texts may print, by role. */
-export function legalAmountRoles(): Record<string, AmountRole> {
+export function legalAmountRoles(packs: PackTotalsCents = PACK_CENTS): Record<string, AmountRole> {
   const mxn = (cents: number): AmountRole => ({ currency: 'MXN', cents });
   const usd = (cents: number): AmountRole => ({ currency: 'USD', cents });
   const roles: Record<string, AmountRole> = {};
@@ -43,12 +62,22 @@ export function legalAmountRoles(): Record<string, AmountRole> {
   for (const s of lealtadSchedule()) roles[`mxn:lealtad_${s.step}`] = mxn(s.cents);
   roles['mxn:lealtad_step'] = mxn((LEALTAD.baseCents * LEALTAD.stepPct) / 100);
   roles['mxn:zero'] = mxn(0);
+  // Packs: the total charged and its price per 1,000 credits (to the
+  // centavo). Law's packs text names these roles ({{mxn:pack_100k}}) instead
+  // of amounts, so the page always shows what checkout charges.
+  for (const id of Object.keys(PACK_ROLE) as PackId[]) {
+    roles[`mxn:${PACK_ROLE[id]}`] = mxn(packs[id]);
+    roles[`mxn:${PACK_ROLE[id]}_per1k`] = mxn(Math.round((packs[id] * 1000) / PACK_CREDITS[id]));
+  }
   for (const tier of ['pro', 'vip'] as const) {
     roles[`usd:${tier}_month`] = usd(USD_CENTS[tier].month);
     roles[`usd:${tier}_year`] = usd(USD_CENTS[tier].year);
   }
   return roles;
 }
+
+/** A bracket that isn't a Markdown link's text: an owner/attorney note. */
+const OWNER_NOTE_RE = /\[[^[\]]*\](?!\()/g;
 
 /** "$9,970", "$166.20", "US$500". */
 export const AMOUNT_RE = /(US)?\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?(?![\d,])/g;
@@ -84,14 +113,20 @@ export function tokenizeAmounts(
   const invalid: string[] = [];
   const seen = new Map<string, number>();
   const counts = new Map<string, number>();
+  // An amount no role explains is allowed only inside an unfinished bracket
+  // ("[NOTA PARA EL DUEÑO: … si son antes de IVA, $149 …]"): that is Law
+  // talking to the owner, not a price the text promises, and the publish gate
+  // refuses the text while the bracket is there. It stays a literal.
+  const notes = [...source.matchAll(OWNER_NOTE_RE)].map((m) => [m.index, m.index + m[0].length]);
+  const inNote = (at: number) => notes.some(([a, b]) => at > a! && at < b!);
   for (const m of source.matchAll(AMOUNT_RE)) counts.set(m[0], (counts.get(m[0]) ?? 0) + 1);
-  const template = source.replace(AMOUNT_RE, (literal) => {
+  const template = source.replace(AMOUNT_RE, (literal, ...rest) => {
     const want = parseLiteral(literal);
     const hits = roles.filter(([, r]) => r.currency === want.currency && r.cents === want.cents);
     const i = seen.get(literal) ?? 0;
     seen.set(literal, i + 1);
     if (!hits.length) {
-      unknown.push(literal);
+      if (!inNote(rest[rest.length - 2] as number)) unknown.push(literal);
       return literal;
     }
     const list = explicit[literal];
@@ -116,6 +151,10 @@ export function tokenizeAmounts(
     }
     return `{{${hits[0]![0]}}}`;
   });
+  // A role Law's text names directly ({{mxn:pack_100k}}) must exist.
+  const known = new Set(roles.map(([k]) => k));
+  for (const m of source.matchAll(ROLE_TOKEN_RE))
+    if (!known.has(m[1]!)) invalid.push(`${m[0]} (no such role)`);
   if (strict && (unknown.length || ambiguous.length || invalid.length)) {
     const parts = [
       unknown.length ? `not in pricing.ts: ${unknown.join(', ')}` : '',
@@ -129,10 +168,13 @@ export function tokenizeAmounts(
   return { template, unknown, ambiguous, invalid };
 }
 
-/** Template → text with today's config amounts. */
-export function bindAmounts(template: string): string {
-  const roles = legalAmountRoles();
-  return template.replace(/\{\{((?:mxn|usd):[a-z0-9_]+)\}\}/g, (token, name: string) => {
+const ROLE_TOKEN_RE = /\{\{((?:mxn|usd):[a-z0-9_]+)\}\}/g;
+
+/** Template → text with today's config amounts (and, when given, the pack
+ *  prices in force). */
+export function bindAmounts(template: string, packs?: PackTotalsCents): string {
+  const roles = legalAmountRoles(packs);
+  return template.replace(ROLE_TOKEN_RE, (token, name: string) => {
     const role = roles[name];
     return role ? formatRole(role) : token;
   });

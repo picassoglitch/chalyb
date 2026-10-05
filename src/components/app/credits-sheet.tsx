@@ -4,7 +4,8 @@
 // options as radios (the middle one preselected), the button carries the
 // chosen amount, and it goes to the existing pack checkout. Esc, ✕ and
 // "Ahora no" close and give focus back to the trigger. Amounts come from
-// config (packPriceCents via TOKEN_PACKS); nothing written by hand.
+// the owner's pack prices (pack-prices.ts), formatted on the server; nothing
+// written by hand. No packs (prices unreadable) → the sheet says so.
 
 import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -87,6 +88,9 @@ export function CreditsSheet({
               })}
             />
           </p>
+          {packs.length === 0 && (
+            <p role="status">{t('sheet.unavailable')}</p>
+          )}
           <p className="ch-muted">{t('sheet.card')}</p>
           {chosen && (
             <ButtonLink href={`/app/usage/checkout?pack=${chosen.id}`} variant="primary" size="xl">
