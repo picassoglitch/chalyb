@@ -190,6 +190,6 @@ export function reserveWithMargin(
 
 /** Operations whose estimate is already the price in billable tokens
  *  (Chalito's store: the event is `store.purchase`, billed with no margin —
- *  migration 0052). Reserving the price plus the margin would refuse a
+ *  migration 0062). Reserving the price plus the margin would refuse a
  *  purchase the balance covers. */
 export const PRICED_OPERATIONS: ReadonlySet<string> = new Set(['store.purchase']);
