@@ -14,6 +14,7 @@ import {
   User,
   UserX,
   Database,
+  Link2,
   ReceiptText,
 } from 'lucide-react';
 import { getSessionUser } from '@/lib/auth/session';
@@ -25,6 +26,8 @@ import { countUnreadForUser } from '@/lib/messages/messages-data';
 import { paidCheckoutEnabled, supportSlaConfirmed, trialFlowEnabled } from '@/lib/config/flags';
 import { Avatar, ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { SignOutRow } from '@/components/app/sign-out-row';
+import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { PLATFORM_NAMES } from '@/components/tools/clips/accounts-list';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('account');
@@ -51,10 +54,19 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
     '';
   const email = session.user.email ?? '';
 
-  const [entitlements, unread] = await Promise.all([
+  // Cuentas conectadas (Aviso de privacidad §6): the Clips connections,
+  // managed in Ajustes de Clips. Unknown (no in-hub adapter, engine error)
+  // shows no value rather than a wrong "Ninguna".
+  const clips = getClipsAdapter();
+  const [entitlements, unread, accounts] = await Promise.all([
     getEntitlements(session),
     countUnreadForUser(session.user.id).catch(() => 0),
+    clips ? clips.accounts(session.user.id).catch(() => null) : Promise.resolve(null),
   ]);
+  const connectedNames = accounts
+    ?.filter((a) => a.connected)
+    .map((a) => PLATFORM_NAMES[a.platform]);
+  const listFmt = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
   const tools = Object.values(entitlements.tools);
   const allIncluded = tools.length > 0 && tools.every((a) => a.state === 'included');
   const planKey = planLabelKey(entitlements.plan) as 'gratis' | 'pro' | 'vip';
@@ -144,9 +156,6 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
         </div>
 
         <div className="ch-acct__col">
-          {/* "Mis redes conectadas" stays hidden: the hub has no account-linking
-              API yet (Q4), and a row that can't connect anything is a dead end. */}
-
           <Group title={t('prefs.title')}>
             <Row
               icon={<Globe />}
@@ -222,12 +231,30 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
               href="/app/settings/arco"
             />
             <Row
+              icon={<Link2 />}
+              iconColor="#5E5E66"
+              title={t('privacy.connected')}
+              value={
+                connectedNames === undefined
+                  ? undefined
+                  : connectedNames.length > 0
+                    ? listFmt.format(connectedNames)
+                    : t('privacy.connectedNone')
+              }
+              href="/app/clips/ajustes#set-accts"
+            />
+            <Row
               icon={<ReceiptText />}
               iconColor="#5E5E66"
               title={t('privacy.charge')}
               href="/app/messages"
             />
-            <Row icon={<UserX />} iconColor="#5E5E66" title={t('privacy.close')} href="/app/help" />
+            <Row
+              icon={<UserX />}
+              iconColor="#5E5E66"
+              title={t('privacy.close')}
+              href="/app/settings/cerrar-cuenta"
+            />
             <SignOutRow />
           </Group>
         </div>

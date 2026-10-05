@@ -186,3 +186,27 @@ export function holdDecision(input: {
   const from = Number.isNaN(delivered) ? now : delivered;
   return { action: 'hold', until: new Date(from + 5 * DAY) };
 }
+
+/** After asking Mercado Pago to pause a preapproval for a notice hold: */
+export type PauseOutcome =
+  /** MP confirms it's paused: the hold stands. */
+  | 'held'
+  /** Not confirmed, and another daily run still comes before the charge. */
+  | 'retry'
+  /** Not confirmed and this is the last run before the charge: cancel the
+   *  preapproval, the one call that surely stops it (§2.7 bis "no haremos
+   *  el cargo"; fail closed). */
+  | 'cancel';
+
+/** The billing cron runs once a day; a charge due before the next run (with
+ *  an hour of slack for a late start) has no later chance to be stopped. */
+export function pauseOutcome(input: {
+  pauseConfirmed: boolean;
+  nextChargeAt: string | null;
+  now: Date;
+}): PauseOutcome {
+  if (input.pauseConfirmed) return 'held';
+  const charge = input.nextChargeAt ? Date.parse(input.nextChargeAt) : NaN;
+  if (Number.isNaN(charge) || charge <= input.now.getTime() + DAY + 60 * 60 * 1000) return 'cancel';
+  return 'retry';
+}

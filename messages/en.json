@@ -909,6 +909,8 @@
       "title": "Privacy and account",
       "notice": "Privacy and notifications",
       "arco": "My data (ARCO rights)",
+      "connected": "Connected accounts",
+      "connectedNone": "None",
       "charge": "Problem with a charge",
       "close": "Close my account"
     },
@@ -3001,5 +3003,38 @@
     "home": "Go to the home page",
     "app": "Back to Chalyb",
     "help": "Get help"
+  },
+  "closeAccount": {
+    "metaTitle": "Close my account",
+    "title": "Close my account",
+    "sub": "Before you confirm, check what happens to your credits and your plan.",
+    "credits": {
+      "title": "Extra credits",
+      "some": "You have {n, number} unused extra credits. They are lost when you close your account.",
+      "none": "You have no unused extra credits.",
+      "unknown": "We couldn't read your extra credit balance. Try again later: we need to show it to you before closing your account."
+    },
+    "plan": {
+      "title": "Your plan",
+      "charging": "When you confirm, we cancel your plan and there are no more charges. While we close your account you keep your current access, until {fecha} at the latest.",
+      "chargingNoDate": "When you confirm, we cancel your plan and there are no more charges.",
+      "ending": "Your plan is already cancelled: there are no more charges.",
+      "none": "You don't have a paid plan."
+    },
+    "after": "Closing your account deletes your data as described in the Privacy Notice. We'll answer by email within 20 days with the date it will be closed.",
+    "onlyStopPaying": "Just want to stop paying? Cancel your plan in My plan and keep your account.",
+    "onlyStopPayingCta": "Go to My plan",
+    "check": "I understand that closing my account loses my unused extra credits and cancels my plan.",
+    "cta": "Close my account",
+    "back": "Back to My account",
+    "open": "You asked to close your account on {recibida}. We'll answer by {fecha} at the latest.",
+    "done": "We received your request to close your account. We'll answer by {fecha} at the latest.",
+    "errors": {
+      "credits_changed": "Your credit balance changed. Check the updated number and confirm again.",
+      "not_confirmed": "Tick the box to continue.",
+      "mp_error": "Mercado Pago didn't answer when cancelling your plan. Nothing was closed; try again in a few minutes.",
+      "rateLimited": "You've sent several requests today. Try again tomorrow.",
+      "send": "We couldn't send your request. Try again."
+    }
   }
 }
