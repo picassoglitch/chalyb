@@ -187,6 +187,10 @@ export function checkoutNotReadyError(): string {
 export const MP_GENERIC_ERROR =
   'No pudimos iniciar el pago en este momento. No se hizo ningún cargo; inténtalo de nuevo más tarde.';
 
+/** What a purchase answers while sales are closed (paid checkout off). */
+export const SALES_CLOSED_ERROR =
+  'Todavía no abrimos las compras. Muy pronto podrás contratar desde aquí; no se hizo ningún cargo.';
+
 /** The payer email for a create call (test buyer in `test`, the user in
  *  `prod`). null = refuse to create anything. */
 export function mpPayerEmail(userEmail: string | null | undefined): string | null {

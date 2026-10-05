@@ -33,6 +33,7 @@ import { isAdminRole } from '@/lib/billing/tiers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_PRICING } from './pricing';
 import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 import {
   getMercadoPago,
   isCheckoutReady,
@@ -42,6 +43,7 @@ import {
   mpPayerEmail,
   mpReturnUrl,
   MP_GENERIC_ERROR,
+  SALES_CLOSED_ERROR,
   sellerMatches,
 } from './mercadopago';
 import { isCardErrorCode } from './mp-config';
@@ -68,7 +70,8 @@ export interface AuthorizeSubscriptionResult {
     | 'bad_token'
     | 'rejected'
     | 'mp_error'
-    | 'terms_pending';
+    | 'terms_pending'
+    | 'sales_closed';
   /** Human-readable message for the form. */
   error?: string;
 }
@@ -104,6 +107,15 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
         reason: 'admin_skip',
         error: 'Las cuentas admin cambian de plan directo, sin pasar por el cobro.',
       },
+    };
+  }
+  // Sales stay closed until the new paid checkout is live (legal texts
+  // published, seller data set): this legacy monthly path sells nothing
+  // either. Fail closed, before anything is created at Mercado Pago.
+  if (!paidCheckoutEnabled()) {
+    return {
+      ok: false,
+      result: { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR },
     };
   }
   // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.

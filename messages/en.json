@@ -1039,6 +1039,7 @@
       "ctaTrial": "Start my 7-day free trial"
     },
     "current": "Your current plan",
+    "soon": "Available soon",
     "trialing": "You’re on your Pro trial",
     "notIncluded": "Not included",
     "faqTitle": "Frequently asked questions",
@@ -2195,7 +2196,9 @@
     "human": "Talk to a person",
     "payError": "We couldn’t open the payment. Try again in a moment.",
     "retry": "Try again",
-    "activated": "Done, your plan is active."
+    "activated": "Done, your plan is active.",
+    "salesSoon": "Soon you’ll be able to get Pro and VIP right here.",
+    "salesSoonBody": "Meanwhile, keep using Chalyb for free. We won’t charge you anything."
   },
   "credits": {
     "title": "My credits",
@@ -2271,7 +2274,8 @@
       "title": "Your partner earnings",
       "month": "This month · paid when the month closes",
       "paid": "Paid on {fecha}"
-    }
+    },
+    "soon": "Soon you’ll be able to get more credits right here."
   },
   "profile": {
     "title": "My profile",

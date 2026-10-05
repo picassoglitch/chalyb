@@ -32,7 +32,7 @@ export interface ProCard {
   /** Monthly: "Cambia a Anual y ahorra …" (only if annual is offered). */
   switchYear: boolean;
   href: string | null;
-  ctaKey: 'current' | 'trialing' | 'pro.cta' | 'pro.ctaYear' | 'pro.ctaMonth';
+  ctaKey: 'current' | 'trialing' | 'soon' | 'pro.cta' | 'pro.ctaYear' | 'pro.ctaMonth';
   noteKey: 'pro.note' | 'pro.noteMonth' | 'notePaid' | null;
 }
 
@@ -64,11 +64,13 @@ export function proCard(input: CardInput, interval: Interval): ProCard {
         ? 'current'
         : label === 'trialing'
           ? 'trialing'
-          : label === 'trial'
-            ? 'pro.cta'
-            : yearly
-              ? 'pro.ctaYear'
-              : 'pro.ctaMonth',
+          : label === 'soon'
+            ? 'soon'
+            : label === 'trial'
+              ? 'pro.cta'
+              : yearly
+                ? 'pro.ctaYear'
+                : 'pro.ctaMonth',
     noteKey:
       label === 'trial'
         ? yearly
@@ -93,7 +95,14 @@ export interface VipCard {
   savePct: number;
   switchYear: boolean;
   href: string | null;
-  ctaKey: 'current' | 'vip.ctaUp' | 'vip.ctaTrial' | 'vip.cta' | 'vip.ctaYear' | 'vip.ctaMonth';
+  ctaKey:
+    | 'current'
+    | 'soon'
+    | 'vip.ctaUp'
+    | 'vip.ctaTrial'
+    | 'vip.cta'
+    | 'vip.ctaYear'
+    | 'vip.ctaMonth';
   notePaid: boolean;
   /** The trial's dated note (pro.note / pro.noteMonth, with VIP's amount). */
   noteKey: 'pro.note' | 'pro.noteMonth' | null;
@@ -122,15 +131,17 @@ export function vipCard(input: CardInput, interval: Interval): VipCard {
     ctaKey:
       label === 'current'
         ? 'current'
-        : label === 'up'
-          ? 'vip.ctaUp'
-          : trial
-            ? 'vip.ctaTrial'
-            : !input.vipYearOffered
-              ? 'vip.cta'
-              : yearly
-                ? 'vip.ctaYear'
-                : 'vip.ctaMonth',
+        : label === 'soon'
+          ? 'soon'
+          : label === 'up'
+            ? 'vip.ctaUp'
+            : trial
+              ? 'vip.ctaTrial'
+              : !input.vipYearOffered
+                ? 'vip.cta'
+                : yearly
+                  ? 'vip.ctaYear'
+                  : 'vip.ctaMonth',
     notePaid: !trial && label !== 'current' && !!href,
     noteKey: trial ? (yearly ? 'pro.note' : 'pro.noteMonth') : null,
   };

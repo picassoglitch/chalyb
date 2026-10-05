@@ -13,6 +13,7 @@ import {
   mpPayerEmail,
 } from '@/lib/payments/mercadopago';
 import { PackCheckout } from '@/components/workspace/pack-checkout';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 
 export const metadata = { title: 'Comprar tokens' };
 
@@ -33,6 +34,9 @@ export default async function PackCheckoutPage({
   const session = await getSessionUser();
   if (!session) redirect(`/sign-in?next=/app/usage/checkout?pack=${packParam ?? ''}`);
   if (isAdminRole(session.role)) redirect('/app/usage' as Route);
+
+  // Sales are closed while paid checkout is off; the actions refuse too.
+  if (!paidCheckoutEnabled()) redirect('/app/usage' as Route);
 
   const pack = getTokenPack(packParam ?? '');
   if (!pack) redirect('/app/usage' as Route);

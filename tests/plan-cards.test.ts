@@ -91,16 +91,18 @@ test('monthly mode: no reference line to another plan, the reference/launch line
   assert.equal(c.switchYear, true);
 });
 
-test('flow off (mockup 85): monthly only, "Elegir Pro mensual", charged today, no trial', () => {
+test('paid checkout off: sales closed, "Muy pronto", no link, no charge note, no trial', () => {
   const i = input({ flow: false, signedIn: true });
   assert.deepEqual(i.intervals, ['month']);
   const c = proCard(i, 'month');
   assert.equal(c.chip, false);
-  assert.equal(c.ctaKey, 'pro.ctaMonth');
-  assert.equal(c.noteKey, 'notePaid');
-  assert.equal(c.href, '/app/subscription');
+  assert.equal(c.ctaKey, 'soon');
+  assert.equal(c.noteKey, null);
+  assert.equal(c.href, null);
   assert.equal(c.switchYear, false, 'no "al año" anywhere');
-  assert.equal(es.plans.notePaid, 'Se cobra hoy. Cancela en 1 clic, sin llamadas.');
+  assert.equal(vipCard(i, 'month').ctaKey, 'soon');
+  assert.equal(vipCard(i, 'month').notePaid, false);
+  assert.equal(es.plans.soon, 'Muy pronto');
 });
 
 test('trial used: "Elegir Pro anual|mensual" straight to the paid checkout (PC-B5)', () => {

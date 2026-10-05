@@ -46,8 +46,10 @@ import {
   mpPayerEmail,
   mpReturnUrl,
   MP_GENERIC_ERROR,
+  SALES_CLOSED_ERROR,
   sellerMatches,
 } from './mercadopago';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 import { isCardErrorCode } from './mp-config';
 
 /** Same rule and words as the plan checkout (subscription-actions.ts). */
@@ -66,7 +68,8 @@ export interface PackCheckoutResult {
     | 'unknown_pack'
     | 'not_configured'
     | 'mp_error'
-    | 'terms_pending';
+    | 'terms_pending'
+    | 'sales_closed';
   error?: string;
 }
 
@@ -90,6 +93,10 @@ export async function createTokenPackCheckout(packId: string): Promise<PackCheck
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
+    }
+    // Sales stay closed until the new paid checkout is live; packs too.
+    if (!paidCheckoutEnabled()) {
+      return { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR };
     }
     // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
     if (await termsAcceptancePending(session.user.id)) {
@@ -232,7 +239,8 @@ export interface PackCardPaymentResult {
     | 'bad_token'
     | 'rejected'
     | 'terms_pending'
-    | 'mp_error';
+    | 'mp_error'
+    | 'sales_closed';
   error?: string;
 }
 
@@ -267,6 +275,10 @@ export async function payTokenPackWithCard(input: {
         reason: 'admin_skip',
         error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
       };
+    }
+    // Sales stay closed until the new paid checkout is live; packs too.
+    if (!paidCheckoutEnabled()) {
+      return { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR };
     }
     // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
     if (await termsAcceptancePending(session.user.id)) {
