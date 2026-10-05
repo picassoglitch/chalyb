@@ -6,7 +6,16 @@ import { getTranslations } from 'next-intl/server';
 import { toolBySlug } from '@/config/tools';
 import { RiskAckSheet } from './risk-ack-sheet';
 
-export async function RiskAck({ slug, locale }: { slug: string; locale: string }) {
+export async function RiskAck({
+  slug,
+  locale,
+  afterAcceptHref,
+}: {
+  slug: string;
+  locale: string;
+  /** Hand-off mode: where to go, as a full page load, once accepted. */
+  afterAcceptHref?: string;
+}) {
   const name = toolBySlug(slug)?.name ?? slug;
   const t = await getTranslations('toolShell.risk');
   const tc = await getTranslations('consents.risk');
@@ -14,6 +23,7 @@ export async function RiskAck({ slug, locale }: { slug: string; locale: string }
     <RiskAckSheet
       slug={slug}
       locale={locale}
+      afterAcceptHref={afterAcceptHref}
       copy={{
         title: tc('title'),
         sub: t('sub'),
