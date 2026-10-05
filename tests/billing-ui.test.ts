@@ -147,6 +147,18 @@ test('Planes CTAs per state (K-2, spec §4.3)', () => {
   });
   assert.equal(offPro.pro.label, 'current');
   assert.equal(offPro.vip.label, 'soon');
+  assert.deepEqual(offPro.gratis, { href: '/app/billing', label: 'manage' });
+  // A subscriber's Gratis card leads to Mi plan, never "Crear cuenta gratis".
+  const sub = plansCta({
+    ...base,
+    signedIn: true,
+    flow: true,
+    trialUsed: true,
+    billing: state({ state: 'pro', planKey: 'pro_month' }),
+  });
+  assert.deepEqual(sub.gratis, { href: '/app/billing', label: 'manage' });
+  const anonG = plansCta({ ...base, signedIn: false, flow: true, trialUsed: false, billing: null });
+  assert.deepEqual(anonG.gratis, { href: '/sign-in?mode=signup', label: 'gratis' });
   // Signed in, trial available: the picker learns the interval (C9).
   const free = plansCta({
     ...base,

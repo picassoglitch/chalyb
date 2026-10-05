@@ -206,7 +206,11 @@ export function PlanCards(props: Props) {
             <div className="ch-pc__ct">
               {button(
                 props.cta.gratis.href,
-                props.cta.gratis.label === 'current' ? t('current') : t('gratis.cta'),
+                props.cta.gratis.label === 'current'
+                  ? t('current')
+                  : props.cta.gratis.label === 'manage'
+                    ? t('gratis.ctaManage')
+                    : t('gratis.cta'),
                 false,
                 'gratis',
               )}

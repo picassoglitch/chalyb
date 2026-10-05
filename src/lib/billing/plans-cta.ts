@@ -10,7 +10,7 @@ import type { BillingState } from './billing-state';
 export type Interval = 'month' | 'year';
 
 export interface PlansCta {
-  gratis: { href: string | null; label: 'gratis' | 'current' };
+  gratis: { href: string | null; label: 'gratis' | 'current' | 'manage' };
   pro: {
     hrefYear: string | null;
     hrefMonth: string | null;
@@ -100,10 +100,13 @@ export function plansCta(input: {
             label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
           };
 
-  const gratis: PlansCta['gratis'] =
-    signedIn && !paid && !input.isAdmin
+  // Signed in, nobody needs "Crear cuenta gratis": Gratis is your plan (an
+  // admin's cards all read that way), or the way to it starts in Mi plan.
+  const gratis: PlansCta['gratis'] = !signedIn
+    ? { href: SIGNUP, label: 'gratis' }
+    : !paid || input.isAdmin
       ? { href: null, label: 'current' }
-      : { href: signedIn ? '/app' : SIGNUP, label: 'gratis' };
+      : { href: '/app/billing', label: 'manage' };
   return { gratis, pro, vip };
 }
 
