@@ -40,11 +40,19 @@ export const HubBridge = ({ children }: { children: ReactNode }) => {
 
   if (failed)
     return (
-      <p role="alert" data-testid="chalito-sso-failed">
+      <p
+        role="alert"
+        data-testid="chalito-sso-failed"
+        className="ch-card ch-chl-card ch-chl-card--bad"
+      >
         {t(failed === 'rate_limited' ? 'rateLimited' : 'failed')}
       </p>
     );
   if (status === 'loading' || status === 'signed_out')
-    return <p aria-busy="true">{t('working')}</p>;
+    return (
+      <p aria-busy="true" className="ch-muted">
+        {t('working')}
+      </p>
+    );
   return <>{children}</>;
 };

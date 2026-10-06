@@ -28,9 +28,19 @@
     "title": "Hola, soy {name}",
     "subtitle": "Te ayudo a dirigir a tu equipo de IA desde cualquier lugar.",
     "startOnboarding": "Empezar",
+    "talk": "Hablar con {name}",
     "signedOut": "Entra desde tu cuenta de Chalyb para continuar.",
     "signIn": "Entrar con Chalyb",
-    "companion": "Tu compañero: {name}"
+    "companion": "Tu compañero: {name}",
+    "sections": {
+      "sectionsTitle": "Tu equipo",
+      "inbox": "Lo que tus agentes esperan que apruebes",
+      "devices": "Las computadoras y teléfonos conectados",
+      "rooms": "Espacios compartidos con otras personas",
+      "mesas": "Piensa algo con tu compañero y los cerebros que elijas",
+      "store": "Ropa y efectos para tu compañero",
+      "moreTitle": "Más"
+    }
   },
   "landing": {
     "download": "Descargar",
@@ -357,7 +367,8 @@
         "button": "Disolver sala",
         "confirm": "¿Disolver la sala? Se borran sus mensajes, miembros e invitaciones para todos. No se puede deshacer.",
         "yes": "Sí, disolver"
-      }
+      },
+      "noneBody": "Crea una abajo o entra con la invitación de alguien."
     },
     "mesa": {
       "list": "Tus Mesas",
@@ -599,7 +610,8 @@
       "ack": "Entendido",
       "pending": "Por aprobar ({count})",
       "empty": "Nada pendiente.",
-      "history": "Historial"
+      "history": "Historial",
+      "emptyBody": "Cuando un agente necesite tu permiso, aparecerá aquí."
     },
     "sessions": {
       "title": "Sesiones",
@@ -614,7 +626,8 @@
         "failed": "Falló",
         "interrupted": "Interrumpida"
       },
-      "new": "Nueva sesión"
+      "new": "Nueva sesión",
+      "emptyBody": "Pídele algo a tu equipo de IA y aquí verás cómo avanza."
     },
     "session": {
       "notFound": "No encontramos esa sesión.",
@@ -1002,7 +1015,21 @@
       "no_companion": "Primero elige a tu compañero.",
       "failed": "No se pudo cambiar. Vuelve a intentarlo."
     },
-    "lookOnly": "Los accesorios no cambian lo que tu compañero puede hacer ni sus límites."
+    "lookOnly": "Los accesorios no cambian lo que tu compañero puede hacer ni sus límites.",
+    "confirm": {
+      "title": "¿Comprar {name}?",
+      "price": "Precio",
+      "now": "Tu saldo ahora",
+      "after": "Te quedan después",
+      "tokens": "{tokens} tokens",
+      "loading": "Revisando tu saldo…",
+      "noBalance": "No pudimos ver tu saldo ahora. Si no te alcanza, la compra no se hace y no se cobra nada.",
+      "unlimited": "Tu plan no tiene límite de tokens.",
+      "short": "Parece que no te alcanza.",
+      "recharge": "Recargar",
+      "cancel": "Cancelar",
+      "buy": "Comprar por {tokens} tokens"
+    }
   },
   "legal": {
     "privacy": "Aviso de privacidad",

@@ -11,17 +11,17 @@ export const PasskeyEnroll = () => {
   const t = useTranslations("chalito.live.passkey");
   const { passkey } = useChalito();
   const [state, setState] = useState<"idle" | "busy" | "done" | "cancelled" | "replace_refused" | "error">("idle");
-  if (!passkey.available) return <p className="text-sm text-neutral-600">{t("afterPairing")}</p>;
+  if (!passkey.available) return <p className="ch-muted">{t("afterPairing")}</p>;
   if (passkey.enrolled)
     return (
-      <div className="grid gap-2">
-        <p data-testid="passkey-enrolled" className="text-emerald-800">
+      <div className="ch-chl ch-chl--tight">
+        <p data-testid="passkey-enrolled" className="ch-chl-ok">
           {state === "done" ? t("replaced") : t("enrolled")}
         </p>
         {/* R-M11: changing it asks for the current passkey first. */}
         <button
           data-testid="passkey-replace"
-          className="w-fit rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50"
+          className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit"
           disabled={state === "busy"}
           onClick={() => {
             setState("busy");
@@ -31,7 +31,7 @@ export const PasskeyEnroll = () => {
           {t("replace")}
         </button>
         {state === "cancelled" || state === "replace_refused" || state === "error" ? (
-          <p role="alert" data-testid="passkey-replace-error" className="text-sm text-red-800">
+          <p role="alert" data-testid="passkey-replace-error" className="ch-err">
             {t(state === "replace_refused" ? "replaceRefused" : state)}
           </p>
         ) : null}
@@ -41,12 +41,12 @@ export const PasskeyEnroll = () => {
     <section
       id="passkey"
       data-testid="passkey-enroll"
-      className="grid gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-4"
+      className="ch-card ch-chl-card ch-chl-card--ok"
     >
-      <h2 className="font-semibold">{t("title")}</h2>
-      <p className="text-sm">{t("body")}</p>
+      <h3 className="ch-chl-h3">{t("title")}</h3>
+      <p>{t("body")}</p>
       <button
-        className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-chl-fit"
         disabled={state === "busy"}
         onClick={() => {
           setState("busy");
@@ -56,7 +56,7 @@ export const PasskeyEnroll = () => {
         {t("create")}
       </button>
       {state === "cancelled" || state === "error" ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="ch-err">
           {t(state)}
         </p>
       ) : null}

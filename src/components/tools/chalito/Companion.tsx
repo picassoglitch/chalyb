@@ -47,11 +47,13 @@ const useCard = (id: string): CardJson | null => {
 const reducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export const Companion = () => {
+// `hero`: the big one on Chalito's Inicio once onboarding is done (owner decision 2026-10-06);
+// the floating one steps aside there so there's only one.
+export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const t = useTranslations('chalito.companion');
   const locale = useLocale() as AppLocale;
   const path = usePathname();
-  const { values } = useSettings();
+  const { values, onboarded } = useSettings();
   const pick = useCompanionPick((s) => s.pick);
   const step = useCompanionStep((s) => s.step);
 
@@ -60,6 +62,7 @@ export const Companion = () => {
   const activity: Activity = step ?? activityFor(path);
   const drawing = EMOTION_DRAWING[activity.emotion];
   const card = useCard(id);
+  const hidden = !hero && onboarded && activity.key === 'home';
 
   const body = useRef<HTMLDivElement>(null);
   const driver = useMemo(() => new AvatarDriver({ seed: 7 }), []);
@@ -73,7 +76,7 @@ export const Companion = () => {
   // Bob, squash and lean from the driver; turn toward the pointer.
   useEffect(() => {
     const el = body.current;
-    if (!el || reducedMotion()) return;
+    if (hidden || !el || reducedMotion()) return;
     type V3 = [number, number, number];
     const tf: { s: V3; p: V3; r: V3 } = { s: [1, 1, 1], p: [0, 0, 0], r: [0, 0, 0] };
     const vec = (k: keyof typeof tf) => ({ set: (x: number, y: number, z: number) => void (tf[k] = [x, y, z]) });
@@ -101,7 +104,7 @@ export const Companion = () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('pointermove', onMove);
     };
-  }, [driver]);
+  }, [driver, hidden]);
 
   const cosmetic = activity.cosmetic && card ? COSMETIC_PLACEMENT[activity.cosmetic] : null;
   const placed =
@@ -109,9 +112,10 @@ export const Companion = () => {
       ? placeOnCard(card.anchors[cosmetic.slot]!, cosmetic, cosmetic.aspect, card.height / card.width)
       : null;
   const aspect = card ? `${card.width} / ${card.height}` : '3 / 4';
+  if (hidden) return null;
 
   return (
-    <aside className="chc" aria-label={t('aria', { name: entry.name[locale] })} data-companion={id} data-activity={activity.key}>
+    <aside className={hero ? 'chc chc--hero' : 'chc'} aria-label={t('aria', { name: entry.name[locale] })} data-companion={id} data-activity={activity.key}>
       <p className="chc__bubble" aria-live="polite" key={`${id}-${activity.key}`}>
         {t(`do.${activity.key}`, { name: entry.name[locale] })}
       </p>

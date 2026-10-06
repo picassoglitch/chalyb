@@ -47,26 +47,26 @@ export const StepUpHost = () => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="stepup-title"
-      className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
+      className="ch-chl-scrim"
     >
-      <div className="grid max-w-sm gap-3 rounded-xl bg-white p-5 shadow-xl">
-        <h2 id="stepup-title" className="text-lg font-semibold">
+      <div className="ch-card ch-chl-card ch-chl-modal">
+        <h2 id="stepup-title" className="ch-chl-h3">
           {cc ? t("computer.title") : t("title")}
         </h2>
         {cc ? (
-          <div className="grid gap-2" data-testid="stepup-computer">
+          <div className="ch-chl ch-chl--tight" data-testid="stepup-computer">
             <p>{t("computer.body", { computer: p.computer ?? "" })}</p>
             <p>{t("computer.stop")}</p>
-            <p className="text-sm text-neutral-700">{t("computer.passkey")}</p>
+            <p className="ch-chl-small">{t("computer.passkey")}</p>
           </div>
         ) : (
           <p>{t("body", { risk: p.risk })}</p>
         )}
-        <div className="flex justify-end gap-2">
-          <button className="rounded-lg border px-4 py-2" onClick={() => p.resolve(false)}>
+        <div className="ch-chl-row ch-chl-row--end">
+          <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => p.resolve(false)}>
             {t("cancel")}
           </button>
-          <button className="rounded-lg bg-emerald-700 px-4 py-2 text-white" onClick={() => p.resolve(true)}>
+          <button className="ch-btn ch-btn--primary ch-btn--compact" onClick={() => p.resolve(true)}>
             {cc ? t("computer.confirm") : t("confirm")}
           </button>
         </div>

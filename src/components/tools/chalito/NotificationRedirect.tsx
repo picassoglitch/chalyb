@@ -60,5 +60,13 @@ export const NotificationRedirect = ({ nid }: { nid: string }) => {
     }
   }, [status, client, live, session.status, nid, locale]);
 
-  return failed ? <p role="alert">{t("notFound")}</p> : <p aria-live="polite">{t("opening")}</p>;
+  return failed ? (
+    <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
+      {t("notFound")}
+    </p>
+  ) : (
+    <p aria-live="polite" className="ch-muted">
+      {t("opening")}
+    </p>
+  );
 };

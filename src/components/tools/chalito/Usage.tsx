@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Usage as UsageData, UsageDay } from "@/lib/chalito/web/usage";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 const RANGES = [7, 30] as const;
 type Range = (typeof RANGES)[number];
@@ -27,7 +28,7 @@ const Bars = ({
     <svg
       viewBox={`0 0 100 ${H}`}
       preserveAspectRatio="none"
-      className="h-32 w-full"
+      className="ch-chl-chart"
       role="img"
       aria-label={label}
       data-testid={testId}
@@ -59,7 +60,7 @@ const ShareChart = ({ days, target, label }: { days: UsageDay[]; target: number;
     <svg
       viewBox={`0 0 100 ${H}`}
       preserveAspectRatio="none"
-      className="h-24 w-full"
+      className="ch-chl-chart ch-chl-chart--short"
       role="img"
       aria-label={label}
       data-testid="usage-share-chart"
@@ -72,7 +73,7 @@ const ShareChart = ({ days, target, label }: { days: UsageDay[]; target: number;
             y={y(d.commsShare)}
             width={w * 0.7}
             height={H - y(d.commsShare)}
-            className={d.commsShare > target ? "fill-amber-500" : "fill-sky-500"}
+            className={d.commsShare > target ? "ch-chl-fill--over" : "ch-chl-fill--comms"}
           />
         ),
       )}
@@ -81,7 +82,7 @@ const ShareChart = ({ days, target, label }: { days: UsageDay[]; target: number;
         x2={100}
         y1={y(target)}
         y2={y(target)}
-        className="stroke-neutral-800"
+        className="ch-chl-stroke--target"
         strokeWidth={0.6}
         strokeDasharray="2 1.5"
         vectorEffect="non-scaling-stroke"
@@ -122,15 +123,15 @@ export const Usage = () => {
     new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(d));
 
   const head = (
-    <div className="flex flex-wrap items-center gap-2">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <div className="ml-auto flex gap-1" role="group" aria-label={t("range")}>
+    <div className="ch-chl-row ch-chl-row--between">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <div className="ch-chl-row" role="group" aria-label={t("range")}>
         {RANGES.map((r) => (
           <button
             key={r}
             aria-pressed={range === r}
             data-testid={`usage-range-${r}`}
-            className={`rounded-lg border px-3 py-1 text-sm ${range === r ? "bg-neutral-900 text-white" : ""}`}
+            className={`ch-chip ch-chip--sm${range === r ? " ch-chip--on" : ""}`}
             onClick={() => setRange(r)}
           >
             {t("days", { n: r })}
@@ -142,18 +143,18 @@ export const Usage = () => {
 
   if (data === null)
     return (
-      <div className="grid gap-4">
+      <div className="ch-chl">
         {head}
-        <p aria-live="polite">{t("loading")}</p>
+        <Loading label={t("loading")} rows={2} />
       </div>
     );
   if (data === "error")
     return (
-      <div className="grid gap-4">
+      <div className="ch-chl">
         {head}
-        <div role="alert" data-testid="usage-error" className="grid gap-2 rounded-lg bg-red-50 p-4 text-red-900">
+        <div role="alert" data-testid="usage-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-bad">
           <p>{t("error")}</p>
-          <button className="w-fit rounded-lg border border-red-800 px-3 py-1" onClick={() => load()}>
+          <button className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit" onClick={() => load()}>
             {t("retry")}
           </button>
         </div>
@@ -167,29 +168,29 @@ export const Usage = () => {
   const empty = data.totals.managedTokens === 0 && data.totals.byoTokens === 0;
 
   return (
-    <div className="grid gap-6" data-testid="usage">
+    <div className="ch-chl" data-testid="usage">
       {head}
-      <p className="text-sm text-neutral-600">{t("intro")}</p>
+      <p className="ch-sub">{t("intro")}</p>
       {empty ? (
-        <p data-testid="usage-empty" className="rounded-lg border p-4">
+        <p data-testid="usage-empty" className="ch-card ch-chl-card">
           {t("empty")}
         </p>
       ) : null}
 
-      <section className="grid gap-3 rounded-xl border bg-white p-4" aria-labelledby="usage-chalito">
-        <h2 id="usage-chalito" className="font-semibold">
+      <section className="ch-card ch-chl-card" aria-labelledby="usage-chalito">
+        <h3 id="usage-chalito" className="ch-ghead">
           {t("chalito.title")}
-        </h2>
-        <p className="text-3xl font-bold" data-testid="usage-managed-total">
+        </h3>
+        <p className="ch-kpi__v" data-testid="usage-managed-total">
           {t("tokens", { n: n.format(data.totals.managedTokens) })}
         </p>
-        <ul className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="inline-block h-3 w-3 rounded-sm bg-emerald-600" />
+        <ul className="ch-chl-row ch-chl-small">
+          <li className="ch-chl-row">
+            <span aria-hidden className="ch-chl-swatch ch-chl-swatch--work" />
             {t("chalito.work")}: <span data-testid="usage-work">{n.format(work)}</span>
           </li>
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="inline-block h-3 w-3 rounded-sm bg-sky-500" />
+          <li className="ch-chl-row">
+            <span aria-hidden className="ch-chl-swatch ch-chl-swatch--comms" />
             {t("chalito.comms")}: <span data-testid="usage-comms">{n.format(comms)}</span>
           </li>
         </ul>
@@ -198,29 +199,29 @@ export const Usage = () => {
           testId="usage-managed-chart"
           label={t("chalito.chartLabel", { days: data.days.length })}
           parts={[
-            { value: (d) => d.managed.work.tokens, className: "fill-emerald-600" },
-            { value: (d) => d.managed.comms.tokens, className: "fill-sky-500" },
+            { value: (d) => d.managed.work.tokens, className: "ch-chl-fill--work" },
+            { value: (d) => d.managed.comms.tokens, className: "ch-chl-fill--comms" },
           ]}
         />
-        <div className="flex justify-between text-xs text-neutral-500" aria-hidden>
+        <div className="ch-chl-row ch-chl-row--between ch-chl-small" aria-hidden>
           <span>{data.days[0] ? dayLabel(data.days[0].day) : ""}</span>
           <span>{data.days.at(-1) ? dayLabel(data.days.at(-1)!.day) : ""}</span>
         </div>
       </section>
 
-      <section className="grid gap-3 rounded-xl border bg-white p-4" aria-labelledby="usage-share">
-        <h2 id="usage-share" className="font-semibold">
+      <section className="ch-card ch-chl-card" aria-labelledby="usage-share">
+        <h3 id="usage-share" className="ch-ghead">
           {t("share.title")}
-        </h2>
+        </h3>
         {ratio === null ? (
-          <p className="text-sm text-neutral-600">{t("share.none")}</p>
+          <p className="ch-muted">{t("share.none")}</p>
         ) : (
           <>
             <p data-testid="usage-share" data-over={over}>
               {t("share.value", { share: pct.format(ratio), target: pct.format(data.target) })}
             </p>
             <div
-              className="relative h-3 rounded-full bg-neutral-100"
+              className="ch-chl-meter"
               role="meter"
               aria-valuemin={0}
               aria-valuemax={100}
@@ -228,13 +229,13 @@ export const Usage = () => {
               aria-label={t("share.title")}
             >
               <div
-                className={`h-3 rounded-full ${over ? "bg-amber-500" : "bg-sky-500"}`}
+                className={`ch-chl-meter__bar${over ? " ch-chl-meter__bar--over" : ""}`}
                 style={{ width: `${Math.min(100, (ratio / (data.target * 2)) * 100)}%` }}
               />
               {/* The target sits at the middle: the meter's scale is twice the target. */}
-              <div aria-hidden className="absolute inset-y-[-4px] left-1/2 w-0.5 bg-neutral-800" />
+              <div aria-hidden className="ch-chl-meter__target" />
             </div>
-            <p className={`text-sm ${over ? "text-amber-900" : "text-neutral-600"}`} role={over ? "note" : undefined}>
+            <p className={`ch-chl-small${over ? " ch-chl-warn" : ""}`} role={over ? "note" : undefined}>
               {over ? t("share.over") : t("share.under")}
             </p>
             <ShareChart
@@ -246,12 +247,12 @@ export const Usage = () => {
         )}
       </section>
 
-      <section className="grid gap-3 rounded-xl border bg-white p-4" aria-labelledby="usage-byo">
-        <h2 id="usage-byo" className="font-semibold">
+      <section className="ch-card ch-chl-card" aria-labelledby="usage-byo">
+        <h3 id="usage-byo" className="ch-ghead">
           {t("byo.title")}
-        </h2>
-        <p className="text-sm text-neutral-600">{t("byo.body")}</p>
-        <p className="text-xl font-bold" data-testid="usage-byo-total">
+        </h3>
+        <p className="ch-muted">{t("byo.body")}</p>
+        <p className="ch-kpi__v" data-testid="usage-byo-total">
           {t("tokens", { n: n.format(data.totals.byoTokens) })}
         </p>
         {data.totals.byoTokens > 0 ? (
@@ -259,33 +260,37 @@ export const Usage = () => {
             days={data.days}
             testId="usage-byo-chart"
             label={t("byo.chartLabel", { days: data.days.length })}
-            parts={[{ value: (d) => d.byo.tokens, className: "fill-neutral-500" }]}
+            parts={[{ value: (d) => d.byo.tokens, className: "ch-chl-fill--byo" }]}
           />
         ) : null}
       </section>
 
-      <details className="rounded-xl border bg-white p-4">
-        <summary className="cursor-pointer font-medium">{t("table.title")}</summary>
-        <table className="mt-3 w-full text-sm" data-testid="usage-table">
-          <thead>
-            <tr className="text-left text-neutral-600">
-              <th className="py-1 font-medium">{t("table.day")}</th>
-              <th className="py-1 text-right font-medium">{t("chalito.work")}</th>
-              <th className="py-1 text-right font-medium">{t("chalito.comms")}</th>
-              <th className="py-1 text-right font-medium">{t("byo.title")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...data.days].reverse().map((d) => (
-              <tr key={d.day} className="border-t">
-                <td className="py-1">{dayLabel(d.day)}</td>
-                <td className="py-1 text-right tabular-nums">{compact.format(d.managed.work.tokens)}</td>
-                <td className="py-1 text-right tabular-nums">{compact.format(d.managed.comms.tokens)}</td>
-                <td className="py-1 text-right tabular-nums">{compact.format(d.byo.tokens)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <details className="ch-card ch-adv">
+        <summary>{t("table.title")}</summary>
+        <div className="ch-adv__body">
+          <div className="ch-table-wrap">
+            <table className="ch-table" data-testid="usage-table">
+              <thead>
+                <tr>
+                  <th>{t("table.day")}</th>
+                  <th className="num">{t("chalito.work")}</th>
+                  <th className="num">{t("chalito.comms")}</th>
+                  <th className="num">{t("byo.title")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...data.days].reverse().map((d) => (
+                  <tr key={d.day}>
+                    <td>{dayLabel(d.day)}</td>
+                    <td className="num">{compact.format(d.managed.work.tokens)}</td>
+                    <td className="num">{compact.format(d.managed.comms.tokens)}</td>
+                    <td className="num">{compact.format(d.byo.tokens)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </details>
     </div>
   );

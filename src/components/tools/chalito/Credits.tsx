@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import type { Balance } from "@/lib/chalito/web/balance";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /** The Chalyb tiers this page can name (packages/config plans.yaml hubTiers). */
 const HUB_TIERS = new Set(["free", "pro", "vip"]);
@@ -32,39 +33,39 @@ const BalanceCard = () => {
   if (!balance) return null;
   const n = (v: number) => format.number(v);
   return (
-    <section className="grid gap-2 rounded-xl border bg-white p-4" data-testid="credits-balance">
-      <h2 className="font-semibold">{t("title")}</h2>
+    <section className="ch-card ch-chl-card" data-testid="credits-balance">
+      <h3 className="ch-ghead">{t("title")}</h3>
       {b === "loading" ? (
-        <p aria-live="polite">{t("loading")}</p>
+        <Loading label={t("loading")} rows={1} height={48} />
       ) : b === "unavailable" || b === "error" ? (
         <p role="alert" data-testid="balance-error">
           {t(b)}
         </p>
       ) : b.unlimited ? (
-        <p data-testid="balance-remaining" className="text-xl font-semibold">
+        <p data-testid="balance-remaining" className="ch-kpi__v">
           {t("unlimited")}
         </p>
       ) : (
         <>
-          <p data-testid="balance-remaining" className="text-xl font-semibold">
+          <p data-testid="balance-remaining" className="ch-kpi__v">
             {t("remaining", { tokens: n(b.remaining) })}
           </p>
-          <dl className="grid grid-cols-2 gap-1 text-sm">
-            <dt className="text-neutral-600">{t("monthly")}</dt>
+          <dl className="ch-chl-dl">
+            <dt className="ch-muted">{t("monthly")}</dt>
             <dd data-testid="balance-monthly">{t("tokens", { tokens: n(b.monthlyAllocation) })}</dd>
             {b.bonus > 0 ? (
               <>
-                <dt className="text-neutral-600">{t("bonus")}</dt>
+                <dt className="ch-muted">{t("bonus")}</dt>
                 <dd data-testid="balance-bonus">{t("tokens", { tokens: n(b.bonus) })}</dd>
               </>
             ) : null}
-            <dt className="text-neutral-600">
+            <dt className="ch-muted">
               {t("used", { date: format.dateTime(b.periodStart, { dateStyle: "medium" }) })}
             </dt>
             <dd data-testid="balance-used">{t("tokens", { tokens: n(b.monthlyUsed) })}</dd>
             {b.reserved > 0 ? (
               <>
-                <dt className="text-neutral-600">{t("reserved")}</dt>
+                <dt className="ch-muted">{t("reserved")}</dt>
                 <dd data-testid="balance-reserved">{t("tokens", { tokens: n(b.reserved) })}</dd>
               </>
             ) : null}
@@ -95,10 +96,10 @@ export const Credits = () => {
   }, [settings, status]);
 
   return (
-    <div className="grid max-w-2xl gap-5">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <section className="grid gap-2 rounded-xl border bg-white p-4" data-testid="credits-plan">
-        <h2 className="font-semibold">{t("plan.title")}</h2>
+    <div className="ch-chl ch-chl--narrow">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <section className="ch-card ch-chl-card" data-testid="credits-plan">
+        <h3 className="ch-ghead">{t("plan.title")}</h3>
         {tier === "loading" ? (
           <p aria-live="polite">{t("plan.loading")}</p>
         ) : tier && HUB_TIERS.has(tier) ? (
@@ -106,23 +107,23 @@ export const Credits = () => {
         ) : (
           <p data-testid="credits-tier">{status === "signed_out" ? t("plan.signedOut") : t("plan.unknown")}</p>
         )}
-        <p className="text-sm text-neutral-600">{t("plan.fromHub")}</p>
+        <p className="ch-chl-small">{t("plan.fromHub")}</p>
       </section>
       <BalanceCard />
-      <section className="grid gap-2" data-testid="credits-explain">
-        <h2 className="font-semibold">{t("how.title")}</h2>
-        <ul className="list-disc space-y-1 pl-5">
+      <section className="ch-chl ch-chl--tight" data-testid="credits-explain">
+        <h3 className="ch-ghead">{t("how.title")}</h3>
+        <ul className="ch-chl-bullets">
           <li>{t("how.tokens")}</li>
           <li>{t("how.byo")}</li>
           <li>{t("how.basics")}</li>
           <li>{t("how.recharge")}</li>
         </ul>
       </section>
-      <div className="flex flex-wrap items-center gap-4">
-        <Link href={RECHARGE_PATH} data-testid="credits-recharge" className="rounded-lg bg-emerald-700 px-4 py-2 text-white">
+      <div className="ch-chl-row">
+        <Link href={RECHARGE_PATH} data-testid="credits-recharge" className="ch-btn ch-btn--primary">
           {t("recharge")}
         </Link>
-        <Link href="/uso" className="text-emerald-700 underline">
+        <Link href="/uso" className="ch-lnk">
           {t("usage")}
         </Link>
       </div>

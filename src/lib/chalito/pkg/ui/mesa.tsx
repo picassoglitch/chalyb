@@ -45,23 +45,23 @@ export const MesaList = ({
 }) => {
   const { t, locale } = useUiText();
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
-  if (!mesas.length) return <p className="text-sm text-neutral-600">{t("mesa.listEmpty")}</p>;
+  if (!mesas.length) return <p className="ch-chl-small">{t("mesa.listEmpty")}</p>;
   return (
-    <ul className="grid gap-2" aria-label={t("mesa.list")}>
+    <ul className="ch-chl-list" aria-label={t("mesa.list")}>
       {mesas.map((m) => (
         <li key={m.mid}>
           <Link
             href={hrefOf(m.mid)}
             data-testid="mesa-link"
-            className="grid gap-1 rounded-lg border bg-white p-3 hover:border-emerald-600"
+            className="ch-card ch-chl-card ch-chl-item ch-chl-cardlink"
           >
-            <span className="font-medium">
+            <span className="ch-chl-strong">
               {m.participants
                 .filter((p) => p.kind !== "human")
                 .map((p) => p.name)
                 .join(" · ")}
             </span>
-            <span className="flex gap-2 text-xs text-neutral-600">
+            <span className="ch-chl-row ch-chl-small">
               <time dateTime={new Date(m.createdAt).toISOString()}>{date.format(m.createdAt)}</time>
               {m.status !== "open" ? <span data-testid="mesa-status">{t(`mesa.status.${m.status}`)}</span> : null}
             </span>
@@ -118,22 +118,22 @@ export const NewMesaForm = ({
     onCreate({ companion, brains, sessions: picked, goal: goal.trim() });
   };
   return (
-    <form onSubmit={submit} className="grid gap-4 rounded-xl border bg-white p-4" data-testid="new-mesa">
-      <h2 className="font-semibold">{t("mesa.new.title")}</h2>
-      <fieldset className="grid gap-2">
-        <legend className="text-sm font-medium">{t("mesa.new.who")}</legend>
+    <form onSubmit={submit} className="ch-card ch-chl-card" data-testid="new-mesa">
+      <h2 className="ch-chl-h3">{t("mesa.new.title")}</h2>
+      <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+        <legend className="ch-chl-strong">{t("mesa.new.who")}</legend>
         {companionName !== null ? (
-          <label className="flex items-center gap-2">
+          <label className="ch-chl-check">
             <input type="checkbox" checked={companion} onChange={(e) => setCompanion(e.target.checked)} />
             {t("mesa.new.companion", { name: companionName })}
           </label>
         ) : (
-          <p className="text-sm text-neutral-600">{t("mesa.new.noCompanion")}</p>
+          <p className="ch-chl-small">{t("mesa.new.noCompanion")}</p>
         )}
         {MESA_BRAINS.map((p) => {
           const on = brains.includes(p);
           return (
-            <label key={p} className="flex items-center gap-2">
+            <label key={p} className="ch-chl-check">
               <input
                 type="checkbox"
                 data-testid={`mesa-brain-${p}`}
@@ -145,7 +145,7 @@ export const NewMesaForm = ({
             </label>
           );
         })}
-        <p className="text-xs text-neutral-600" data-testid="mesa-brain-limit">
+        <p className="ch-chl-small" data-testid="mesa-brain-limit">
           {brainLimit === null
             ? t("mesa.new.limitUnknown")
             : brainLimit === 0
@@ -154,12 +154,12 @@ export const NewMesaForm = ({
         </p>
       </fieldset>
       {sessions.length ? (
-        <fieldset className="grid gap-2">
-          <legend className="text-sm font-medium">{t("mesa.new.sessions", { n: MESA_MAX_SESSIONS })}</legend>
+        <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+          <legend className="ch-chl-strong">{t("mesa.new.sessions", { n: MESA_MAX_SESSIONS })}</legend>
           {sessions.map((s) => {
             const on = picked.includes(s.sid);
             return (
-              <label key={s.sid} className="flex items-center gap-2">
+              <label key={s.sid} className="ch-chl-check">
                 <input
                   type="checkbox"
                   checked={on}
@@ -170,14 +170,14 @@ export const NewMesaForm = ({
               </label>
             );
           })}
-          <p className="text-xs text-neutral-600">{t("mesa.new.sessionsNote")}</p>
+          <p className="ch-chl-small">{t("mesa.new.sessionsNote")}</p>
         </fieldset>
       ) : null}
-      <label className="grid gap-1" htmlFor={`${id}-goal`}>
-        <span className="text-sm font-medium">{t("mesa.goal")}</span>
+      <label className="ch-chl ch-chl--tight" htmlFor={`${id}-goal`}>
+        <span className="ch-chl-strong">{t("mesa.goal")}</span>
         <input
           id={`${id}-goal`}
-          className="rounded-md border px-3 py-2"
+          className="ch-input"
           maxLength={240}
           value={goal}
           placeholder={t("mesa.goalPlaceholder")}
@@ -185,14 +185,14 @@ export const NewMesaForm = ({
         />
       </label>
       {error ? (
-        <p role="alert" data-testid="mesa-error" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p role="alert" data-testid="mesa-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-item">
           {error}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={busy || nobody}
-        className="w-fit rounded-md bg-emerald-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-chl-fit"
       >
         {t("mesa.new.create")}
       </button>
@@ -237,9 +237,9 @@ export const MesaFeed = ({
 }) => {
   const { t, locale } = useUiText();
   const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" });
-  if (!turns.length) return <p className="text-sm text-neutral-600">{t("mesa.empty")}</p>;
+  if (!turns.length) return <p className="ch-chl-small">{t("mesa.empty")}</p>;
   return (
-    <ol className="grid gap-2" aria-label={t("mesa.feed")} aria-live="polite">
+    <ol className="ch-chl-list" aria-label={t("mesa.feed")} aria-live="polite">
       {turns.map((x) => {
         const mine = x.speaker?.kind === "human";
         const aid = decisions[x.tid];
@@ -248,40 +248,40 @@ export const MesaFeed = ({
             key={x.tid}
             data-testid="mesa-turn"
             data-tid={x.tid}
-            className={`grid gap-1 rounded-lg border p-3 ${mine ? "bg-emerald-50" : "bg-white"}`}
+            className={`ch-card ch-chl-card ch-chl-item${mine ? " ch-chl-item--mine" : ""}`}
           >
-            <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium" data-testid="mesa-speaker">
+            <div className="ch-chl-row ch-chl-small">
+              <span className="ch-chl-strong" data-testid="mesa-speaker">
                 {mine ? t("mesa.you") : (x.speaker?.name ?? t("mesa.unknownSpeaker"))}
               </span>
               {x.source && x.source !== "owner" ? <span>{sourceLabel(x.source)}</span> : null}
               {!mine && EMOTIONS.has(x.emotion.tag) ? (
-                <span data-testid="mesa-emotion" className="rounded-full bg-neutral-100 px-2 py-0.5">
+                <span data-testid="mesa-emotion" className="ch-pill ch-pill--gray">
                   {t(`mesa.emotion.${x.emotion.tag}`)}
                 </span>
               ) : null}
               {x.billing === "byo" ? <span data-testid="mesa-byo">{t("mesa.byo")}</span> : null}
-              <time className="ml-auto" dateTime={new Date(x.t).toISOString()}>
+              <time className="ch-chl-push" dateTime={new Date(x.t).toISOString()}>
                 {time.format(x.t)}
               </time>
             </div>
             {x.text === null ? (
-              <p className="text-sm italic text-neutral-500">{t("mesa.sealed")}</p>
+              <p className="ch-chl-small">{t("mesa.sealed")}</p>
             ) : (
               // Quoted data: rendered as text (React escapes it), whitespace kept, never HTML.
-              <blockquote data-testid="mesa-turn-text" className="whitespace-pre-wrap break-words">
+              <blockquote data-testid="mesa-turn-text" className="ch-chl-quote ch-chl-quote--plain">
                 {x.text}
               </blockquote>
             )}
             {x.proposals.length ? (
-              <ul className="list-disc pl-5 text-sm" aria-label={t("mesa.proposals")}>
+              <ul className="ch-chl-bullets" aria-label={t("mesa.proposals")}>
                 {x.proposals.map((p, i) => (
                   <li key={i}>{p}</li>
                 ))}
               </ul>
             ) : null}
             {x.objections.length ? (
-              <ul className="list-disc pl-5 text-sm text-amber-900" aria-label={t("mesa.objections")}>
+              <ul className="ch-chl-bullets ch-chl-warn" aria-label={t("mesa.objections")}>
                 {x.objections.map((p, i) => (
                   <li key={i}>{p}</li>
                 ))}
@@ -291,25 +291,25 @@ export const MesaFeed = ({
               <Link
                 href={x.energy.chip.href}
                 data-testid="mesa-recharge"
-                className="w-fit rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-900"
+                className="ch-pill ch-pill--warn ch-chl-fit"
               >
                 {x.energy.chip.label || t("mesa.recharge")}
               </Link>
             ) : null}
             {x.decision ? (
-              <div className="grid gap-1 rounded-md bg-neutral-50 p-2 text-sm" data-testid="mesa-decision">
-                <p className="font-medium">{x.decision.question}</p>
-                <p className="text-neutral-700">{x.decision.options.join(" · ")}</p>
+              <div className="ch-chl-inset" data-testid="mesa-decision">
+                <p className="ch-chl-strong">{x.decision.question}</p>
+                <p className="ch-muted">{x.decision.options.join(" · ")}</p>
                 {aid ? (
                   <Link
                     href={approvalHref(aid)}
                     data-testid="mesa-decision-link"
-                    className="w-fit text-emerald-700 underline"
+                    className="ch-lnk ch-chl-fit"
                   >
                     {t("mesa.decide")}
                   </Link>
                 ) : (
-                  <p className="text-xs text-neutral-600">{t("mesa.decisionForwarded")}</p>
+                  <p className="ch-chl-small">{t("mesa.decisionForwarded")}</p>
                 )}
               </div>
             ) : null}
@@ -353,14 +353,14 @@ export const MesaComposer = ({
     if (await onSend(v)) setText("");
   };
   return (
-    <form onSubmit={submit} className="grid gap-2">
-      <label htmlFor={`${id}-text`} className="text-sm font-medium">
+    <form onSubmit={submit} className="ch-chl ch-chl--tight">
+      <label htmlFor={`${id}-text`} className="ch-chl-strong">
         {t("mesa.composer")}
       </label>
       <textarea
         id={`${id}-text`}
         data-testid="mesa-composer"
-        className="min-h-20 rounded-md border px-3 py-2"
+        className="ch-input ch-textarea"
         maxLength={4000}
         value={text}
         disabled={disabled}
@@ -368,13 +368,13 @@ export const MesaComposer = ({
         onChange={(e) => setText(e.target.value)}
       />
       {suggestions.length ? (
-        <ul className="flex flex-wrap gap-2" aria-label={t("mesa.mentions")}>
+        <ul className="ch-chl-row" aria-label={t("mesa.mentions")}>
           {suggestions.map((n) => (
             <li key={n}>
               <button
                 type="button"
                 data-testid="mesa-mention"
-                className="rounded-full border px-3 py-1 text-sm"
+                className="ch-chip ch-chip--sm"
                 onClick={() => pick(n)}
               >
                 @{n}
@@ -386,7 +386,7 @@ export const MesaComposer = ({
       <button
         type="submit"
         disabled={disabled || busy || !text.trim()}
-        className="w-fit rounded-md bg-emerald-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-chl-fit"
       >
         {busy ? t("mesa.thinking") : t("mesa.send")}
       </button>
@@ -410,18 +410,18 @@ export const MesaInbox = ({
   const { t } = useUiText();
   if (!items.length) return null;
   return (
-    <details className="rounded-lg border bg-white p-3" data-testid="mesa-inbox">
-      <summary className="cursor-pointer font-medium">{t("mesa.inbox.title", { n: items.length })}</summary>
-      <p className="mt-1 text-xs text-neutral-600">{t("mesa.inbox.note")}</p>
-      <ul className="mt-2 grid gap-2">
+    <details className="ch-card ch-chl-card ch-chl-item" data-testid="mesa-inbox">
+      <summary className="ch-chl-strong">{t("mesa.inbox.title", { n: items.length })}</summary>
+      <p className="ch-chl-small">{t("mesa.inbox.note")}</p>
+      <ul className="ch-chl-list ch-chl-divided">
         {items.map((i) => (
-          <li key={i.tid} className="grid gap-1 border-t pt-2" data-testid="mesa-inbox-item">
-            <span className="text-xs text-neutral-600">{originLabel(i.origin)}</span>
-            <blockquote className="whitespace-pre-wrap break-words border-l-2 pl-2 text-sm">{i.text}</blockquote>
+          <li key={i.tid} className="ch-chl ch-chl--tight" data-testid="mesa-inbox-item">
+            <span className="ch-chl-small">{originLabel(i.origin)}</span>
+            <blockquote className="ch-chl-quote">{i.text}</blockquote>
             <button
               type="button"
               disabled={disabled}
-              className="w-fit text-sm text-emerald-700 underline disabled:opacity-50"
+              className="ch-lnk ch-chl-fit"
               onClick={() => onBring(i.tid)}
             >
               {t("mesa.inbox.bring")}
@@ -465,26 +465,26 @@ export const BrainKeysPanel = ({
     }
   };
   return (
-    <section className="grid gap-3" aria-labelledby={`${id}-h`} data-testid="brain-keys">
-      <h2 id={`${id}-h`} className="text-lg font-semibold">
+    <section className="ch-chl ch-chl--tight" aria-labelledby={`${id}-h`} data-testid="brain-keys">
+      <h2 id={`${id}-h`} className="ch-chl-h3">
         {t("mesa.keys.title")}
       </h2>
-      <p className="text-sm text-neutral-700">{t("mesa.keys.intro")}</p>
+      <p className="ch-muted">{t("mesa.keys.intro")}</p>
       {rows === null ? (
-        <p className="text-sm text-neutral-600">{t("mesa.keys.loading")}</p>
+        <p className="ch-chl-small">{t("mesa.keys.loading")}</p>
       ) : rows.length ? (
-        <ul className="grid gap-2">
+        <ul className="ch-chl-list">
           {rows.map((r) => (
-            <li key={r.provider} className="flex flex-wrap items-center gap-2" data-testid="brain-key">
-              <span className="font-medium">{providerLabel(r.provider)}</span>
-              {r.hint ? <code className="text-xs">…{r.hint}</code> : null}
-              <span className="text-xs text-neutral-600">
+            <li key={r.provider} className="ch-chl-row" data-testid="brain-key">
+              <span className="ch-chl-strong">{providerLabel(r.provider)}</span>
+              {r.hint ? <code className="ch-chl-mono">…{r.hint}</code> : null}
+              <span className="ch-chl-small">
                 {r.cloud ? t("mesa.keys.cloudOn") : t("mesa.keys.cloudOff")}
               </span>
               <button
                 type="button"
                 disabled={busy}
-                className="ml-auto text-sm text-red-800 underline"
+                className="ch-lnk ch-chl-bad ch-chl-push"
                 onClick={() => onDelete(r.provider)}
               >
                 {t("mesa.keys.remove")}
@@ -493,14 +493,14 @@ export const BrainKeysPanel = ({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-neutral-600">{t("mesa.keys.none")}</p>
+        <p className="ch-chl-small">{t("mesa.keys.none")}</p>
       )}
-      <form onSubmit={submit} className="grid gap-2 rounded-xl border bg-white p-4">
-        <label className="grid gap-1" htmlFor={`${id}-p`}>
-          <span className="text-sm font-medium">{t("mesa.keys.provider")}</span>
+      <form onSubmit={submit} className="ch-card ch-chl-card">
+        <label className="ch-chl ch-chl--tight" htmlFor={`${id}-p`}>
+          <span className="ch-chl-strong">{t("mesa.keys.provider")}</span>
           <select
             id={`${id}-p`}
-            className="rounded-md border px-3 py-2"
+            className="ch-select"
             value={provider}
             onChange={(e) => setProvider(e.target.value as BrainProvider)}
           >
@@ -511,50 +511,50 @@ export const BrainKeysPanel = ({
             ))}
           </select>
         </label>
-        <label className="grid gap-1" htmlFor={`${id}-k`}>
-          <span className="text-sm font-medium">{t("mesa.keys.key")}</span>
+        <label className="ch-chl ch-chl--tight" htmlFor={`${id}-k`}>
+          <span className="ch-chl-strong">{t("mesa.keys.key")}</span>
           <input
             id={`${id}-k`}
             data-testid="brain-key-input"
             type="password"
             autoComplete="off"
-            className="rounded-md border px-3 py-2"
+            className="ch-input"
             minLength={8}
             maxLength={512}
             value={key}
             onChange={(e) => setKey(e.target.value)}
           />
         </label>
-        <label className="flex items-start gap-2">
+        <label className="ch-chl-check">
           <input
             type="checkbox"
             data-testid="brain-key-cloud"
             checked={cloud}
             onChange={(e) => setCloud(e.target.checked)}
           />
-          <span className="text-sm">{t("mesa.keys.cloud")}</span>
+          <span>{t("mesa.keys.cloud")}</span>
         </label>
         {cloud ? (
           <p
             role="note"
             data-testid="brain-key-warning"
-            className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            className="ch-card ch-chl-card ch-chl-card--warn ch-chl-item"
           >
             {t("mesa.keys.cloudWarning")}
           </p>
         ) : (
-          <p className="text-xs text-neutral-600">{t("mesa.keys.localOnly")}</p>
+          <p className="ch-chl-small">{t("mesa.keys.localOnly")}</p>
         )}
         <button
           type="submit"
           disabled={busy || key.trim().length < 8}
-          className="w-fit rounded-md bg-emerald-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary ch-chl-fit"
         >
           {t("mesa.keys.save")}
         </button>
       </form>
       {note ? (
-        <p role="status" data-testid="brain-key-note" className="text-sm">
+        <p role="status" data-testid="brain-key-note" className="ch-muted">
           {note}
         </p>
       ) : null}
@@ -584,10 +584,10 @@ export const MesaDecisionCard = ({
 }) => {
   const { t } = useUiText();
   return (
-    <div className="grid gap-3 rounded-xl border bg-white p-4" data-testid="mesa-decision-card">
-      <p className="text-xs text-neutral-600">{t("mesa.decision.from", { name: from || t("mesa.unknownSpeaker") })}</p>
+    <div className="ch-card ch-chl-card" data-testid="mesa-decision-card">
+      <p className="ch-chl-small">{t("mesa.decision.from", { name: from || t("mesa.unknownSpeaker") })}</p>
       {/* Quoted data from a participant: text only. */}
-      <p className="whitespace-pre-wrap break-words font-medium" data-testid="mesa-decision-question">
+      <p className="ch-chl-quote ch-chl-quote--plain ch-chl-strong" data-testid="mesa-decision-question">
         {question}
       </p>
       {done ? (
@@ -596,14 +596,14 @@ export const MesaDecisionCard = ({
         </p>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
+          <div className="ch-chl-row">
             {options.map((o, i) => (
               <button
                 key={i}
                 type="button"
                 data-testid="mesa-decision-option"
                 disabled={busy}
-                className="rounded-md border border-emerald-700 px-3 py-2 text-emerald-800 disabled:opacity-50"
+                className="ch-btn ch-btn--secondary ch-btn--compact"
                 onClick={() => onPick(i)}
               >
                 {o}
@@ -613,12 +613,12 @@ export const MesaDecisionCard = ({
           <button
             type="button"
             disabled={busy}
-            className="w-fit text-sm text-neutral-700 underline"
+            className="ch-lnk ch-chl-fit"
             onClick={onDismiss}
           >
             {t("mesa.decision.none")}
           </button>
-          <p className="text-xs text-neutral-600">{t("mesa.decision.note")}</p>
+          <p className="ch-chl-small">{t("mesa.decision.note")}</p>
         </>
       )}
     </div>

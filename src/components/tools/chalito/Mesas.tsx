@@ -106,9 +106,11 @@ export const Mesas = () => {
   };
 
   return (
-    <div className="grid gap-5" data-testid="mesas">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p className="text-sm text-neutral-600">{t("intro")}</p>
+    <div className="ch-chl" data-testid="mesas">
+      <header className="ch-chl-head">
+        <h2 className="ch-h2">{t("title")}</h2>
+        <p className="ch-sub">{t("intro")}</p>
+      </header>
       <NewMesaForm
         companionName={companion?.name ?? null}
         sessions={sessions}
@@ -118,8 +120,8 @@ export const Mesas = () => {
         error={error}
         onCreate={(i) => void create(i)}
       />
-      <section className="grid gap-2">
-        <h2 className="font-semibold">{t("list")}</h2>
+      <section className="ch-chl ch-chl--tight">
+        <h3 className="ch-ghead">{t("list")}</h3>
         {loadError ? (
           <p role="alert">{t("errors.load")}</p>
         ) : list === null ? (

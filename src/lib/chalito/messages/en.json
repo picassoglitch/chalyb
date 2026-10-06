@@ -28,9 +28,19 @@
     "title": "Hi, I'm {name}",
     "subtitle": "I help you run your AI team from anywhere.",
     "startOnboarding": "Get started",
+    "talk": "Talk to {name}",
     "signedOut": "Sign in from your Chalyb account to continue.",
     "signIn": "Sign in with Chalyb",
-    "companion": "Your companion: {name}"
+    "companion": "Your companion: {name}",
+    "sections": {
+      "sectionsTitle": "Your team",
+      "inbox": "What your agents are waiting for you to approve",
+      "devices": "The computers and phones you've connected",
+      "rooms": "Spaces shared with other people",
+      "mesas": "Think something through with your companion and the brains you pick",
+      "store": "Clothes and effects for your companion",
+      "moreTitle": "More"
+    }
   },
   "landing": {
     "download": "Download",
@@ -357,7 +367,8 @@
         "button": "Dissolve room",
         "confirm": "Dissolve the room? Its messages, members and invites are deleted for everyone. This can't be undone.",
         "yes": "Yes, dissolve"
-      }
+      },
+      "noneBody": "Create one below or join with someone's invite."
     },
     "mesa": {
       "list": "Your Mesas",
@@ -599,7 +610,8 @@
       "ack": "Got it",
       "pending": "To approve ({count})",
       "empty": "Nothing pending.",
-      "history": "History"
+      "history": "History",
+      "emptyBody": "When an agent needs your permission, it shows up here."
     },
     "sessions": {
       "title": "Sessions",
@@ -614,7 +626,8 @@
         "failed": "Failed",
         "interrupted": "Interrupted"
       },
-      "new": "New session"
+      "new": "New session",
+      "emptyBody": "Ask your AI team for something and you will see it progress here."
     },
     "session": {
       "notFound": "We couldn't find that session.",
@@ -1002,7 +1015,21 @@
       "no_companion": "Choose your companion first.",
       "failed": "Couldn't change it. Try again."
     },
-    "lookOnly": "Accessories don't change what your companion can do or its limits."
+    "lookOnly": "Accessories don't change what your companion can do or its limits.",
+    "confirm": {
+      "title": "Buy {name}?",
+      "price": "Price",
+      "now": "Your balance now",
+      "after": "Left after",
+      "tokens": "{tokens} tokens",
+      "loading": "Checking your balance…",
+      "noBalance": "We couldn't check your balance right now. If it isn't enough, the purchase won't go through and nothing is charged.",
+      "unlimited": "Your plan has no token limit.",
+      "short": "It looks like you don't have enough.",
+      "recharge": "Recharge",
+      "cancel": "Cancel",
+      "buy": "Buy for {tokens} tokens"
+    }
   },
   "legal": {
     "privacy": "Privacy notice",

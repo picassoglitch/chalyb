@@ -6,6 +6,7 @@ import { safeOAuthRedirect, type ConsentRequest } from "@/lib/chalito/web/mcp";
 import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { useSession } from "@/lib/chalito/web/session";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /**
  * /oauth/consent?request=<id>: a connected app (Claude, ChatGPT) asks for access to the MCP gateway.
@@ -80,32 +81,31 @@ export const OAuthConsent = () => {
 
   if (state === "missing" || state === "gone" || state === "error")
     return (
-      <p role="alert" className="rounded-lg bg-red-50 p-4 text-red-900">
+      <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
         {t(state)}
       </p>
     );
-  if (!req) return <p aria-live="polite">{t("loading")}</p>;
+  if (!req) return <Loading label={t("loading")} />;
   const selected = Object.values(checked).some(Boolean);
   const canApprove = status === "ready" && passkey.enrolled;
   return (
-    <div className="grid gap-5" data-testid="consent">
-      <header className="grid gap-1">
-        <h1 className="text-2xl font-bold">{t("title", { client: req.client.name })}</h1>
-        <p className="text-lg">
+    <div className="ch-chl" data-testid="consent">
+      <header className="ch-chl-head">
+        <h2 className="ch-h2">{t("title", { client: req.client.name })}</h2>
+        <p className="ch-sub">
           {t("redirect")} <strong data-testid="redirect-host">{req.client.redirectHost}</strong>
         </p>
       </header>
-      <fieldset className="grid gap-3 rounded-xl border bg-white p-4">
-        <legend className="font-semibold">{t("scopes")}</legend>
+      <fieldset className="ch-card ch-chl-card ch-chl-fieldset">
+        <legend className="ch-chl-strong">{t("scopes")}</legend>
         {req.scopes.map((s) => (
           <label
             key={s.scope}
             data-scope={s.scope}
-            className={`flex items-start gap-2 ${s.scope === "session:prompt" ? "rounded-lg bg-amber-50 p-2" : ""}`}
+            className={`ch-chl-check${s.scope === "session:prompt" ? " ch-chl-check--warn" : ""}`}
           >
             <input
               type="checkbox"
-              className="mt-1"
               checked={!!checked[s.scope]}
               onChange={(e) => setChecked({ ...checked, [s.scope]: e.target.checked })}
             />
@@ -113,25 +113,25 @@ export const OAuthConsent = () => {
           </label>
         ))}
       </fieldset>
-      {status !== "ready" ? <p className="text-sm text-amber-900">{t("needsDevice")}</p> : null}
+      {status !== "ready" ? <p className="ch-chl-warn">{t("needsDevice")}</p> : null}
       {status === "ready" && !passkey.enrolled ? (
-        <p data-testid="consent-needs-passkey" className="text-sm text-amber-900">
+        <p data-testid="consent-needs-passkey" className="ch-chl-warn">
           {t("needsPasskey")}{" "}
-          <Link href="/dispositivos" className="underline">
+          <Link href="/dispositivos" className="ch-lnk">
             {t("enrolPasskey")}
           </Link>
         </p>
       ) : null}
-      <div className="flex gap-2">
+      <div className="ch-chl-row">
         <button
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary"
           disabled={state === "busy" || !selected || !canApprove}
           onClick={() => void approve()}
         >
           {t("approve")}
         </button>
         <button
-          className="rounded-lg border px-4 py-2 disabled:opacity-50"
+          className="ch-btn ch-btn--secondary"
           disabled={state === "busy"}
           onClick={() => void deny()}
         >
@@ -139,7 +139,7 @@ export const OAuthConsent = () => {
         </button>
       </div>
       {note ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="ch-err">
           {note}
         </p>
       ) : null}
