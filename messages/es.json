@@ -69,7 +69,8 @@
         "chalybbot": "Un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
         "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
         "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
-        "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
+        "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero.",
+        "chalito": "Tus agentes de código te piden permiso y tú apruebas desde el teléfono."
       },
       "allTitle": "Fuiste por una cosa y te llevaste todo.",
       "allBody": "Entras por los clips y te quedas con las señales, tu transmisión, tu Asistente y más. Todo en el mismo plan, sin pagar extra.",
@@ -1467,7 +1468,8 @@
       "chalybbot": "Un bot que contesta a tus clientes y seguidores, de día y de noche.",
       "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
       "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
-      "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero."
+      "chalybtrade": "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero.",
+      "chalito": "Aprueba desde tu teléfono lo que tus agentes de código quieren hacer."
     },
     "crumb": "Inicio",
     "sub": "Todas están incluidas en tu plan {plan} y se abren aquí mismo.",
@@ -2545,6 +2547,11 @@
         "main": "Transmitir",
         "history": "Mis transmisiones",
         "settings": "Ajustes"
+      },
+      "chalito": {
+        "main": "Inicio",
+        "history": "Sesiones",
+        "settings": "Ajustes"
       }
     },
     "error": {
@@ -2559,7 +2566,8 @@
       "meanwhile": {
         "chalybclip": "Mientras tanto, tus clips anteriores siguen en",
         "chalybcrypto": "Mientras tanto, las últimas señales siguen en",
-        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue en OBS."
+        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue en OBS.",
+        "chalito": "Mientras tanto, tus agentes no hacen nada que necesite tu aprobación."
       },
       "meanwhileLink": {
         "chalybclip": "Mis resultados",
