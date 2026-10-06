@@ -30,6 +30,7 @@ test('paths map to their nav item, with or without /en', () => {
   assert.equal(activeNavFor('/app/history'), 'resultados');
   assert.equal(activeNavFor('/app/herramientas'), 'inicio');
   assert.equal(activeNavFor('/app/senales/avisos'), 'inicio');
+  assert.equal(activeNavFor('/app/chalito/bandeja'), 'inicio');
   for (const p of [
     '/app/settings',
     '/app/settings/perfil',
@@ -57,6 +58,8 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
     '/app/en-vivo',
     '/app/en-vivo/conectar',
     '/app/en-vivo/ajustes',
+    '/app/chalito',
+    '/en/app/chalito/sesiones',
   ])
     assert.equal(shellModeFor(p), 'modern', p);
   for (const p of [

@@ -37,7 +37,7 @@ const WIZARD =
   /^\/app\/(clips\/nuevo|clips\/trabajo|senales\/empezar|prueba|herramientas\/[^/]+)(\/|$)/;
 
 /** Inside a tool (TOOLS-SPEC §3 ToolShell): the sidebar stays. */
-const TOOL = /^\/app\/(clips|senales|en-vivo)(\/|$)/;
+const TOOL = /^\/app\/(clips|senales|en-vivo|chalito)(\/|$)/;
 
 /** Strip a leading /en (the default locale is unprefixed) and trailing slash. */
 export function normalizeAppPath(pathname: string): string {
@@ -60,7 +60,7 @@ export function activeNavFor(pathname: string): NavKey | null {
   if (p === '/app/history' || p.startsWith('/app/history/')) return 'resultados';
   if (/^\/app\/(settings|subscription|usage|billing|messages|help|planes)(\/|$)/.test(p))
     return 'cuenta';
-  if (p === '/app' || /^\/app\/(engines|clips|herramientas|senales|en-vivo)(\/|$)/.test(p)) return 'inicio';
+  if (p === '/app' || /^\/app\/(engines|clips|herramientas|senales|en-vivo|chalito)(\/|$)/.test(p)) return 'inicio';
   return null;
 }
 
