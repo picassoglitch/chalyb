@@ -5,6 +5,7 @@ import {
   EpochMs,
   Id,
   Origin,
+  Provider,
   RemoteCodexSandbox,
   RemotePermissionMode,
   ReplayNonce,
@@ -60,7 +61,25 @@ export const CommandPayload = z.discriminatedUnion("type", [
   z.object({ type: z.literal("devmode.off") }),
   z.object({ type: z.literal("devmode.toggleOff"), toggle: DevModeToggle }),
   z.object({ type: z.literal("device.revokeClient"), clientDeviceId: DeviceId }),
+  /**
+   * Connect a provider on the device: an API key (sealed to the device, never plaintext on the
+   * wire; stored in the OS keychain) or the provider's own sign-in in its official tool, which
+   * opens on that computer. `keyCt` is required for `api_key` and absent for `signin`.
+   */
+  z.object({
+    type: z.literal("provider.connect"),
+    provider: Provider,
+    method: z.enum(["api_key", "signin"]),
+    keyCt: SealedEnvelope.optional(),
+  }),
+  /** Deletes the key / signs out the CLI profile Chalito uses. */
+  z.object({ type: z.literal("provider.disconnect"), provider: Provider }),
+  /** Official install only; the device shows a local confirm. */
+  z.object({ type: z.literal("provider.install"), provider: Provider }),
+  /** Asks for a fresh status report (chalito.connections). */
+  z.object({ type: z.literal("provider.status") }),
 ]);
+// There is no command that enables computer control: it can only be turned on locally.
 export type CommandPayload = z.infer<typeof CommandPayload>;
 
 /** Commands live at most 10 minutes, so the nonce window the agent must remember is bounded. */
@@ -87,6 +106,11 @@ export const CommandBody = z
   .refine((b) => b.expiresAt - b.issuedAt <= COMMAND_TTL_MS, {
     message: "commands expire within 10 minutes of being issued",
   })
+  // provider.connect: keyCt iff method = api_key.
+  .refine(
+    (b) => b.payload.type !== "provider.connect" || (b.payload.method === "api_key") === (b.payload.keyCt !== undefined),
+    { message: "provider.connect carries keyCt exactly when method is api_key" },
+  )
   // ADR 0020: a bundle step-up (revoke-all) authorizes revokes only.
   .refine((b) => b.stepUp?.bundle === undefined || b.payload.type === "device.revokeClient", {
     message: "a bundle step-up only covers device.revokeClient",

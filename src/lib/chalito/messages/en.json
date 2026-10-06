@@ -112,7 +112,7 @@
       "guided": "Guided",
       "expert": "Expert",
       "expertBody": "Paste your API keys in the desktop app or with \"chalito keys set\". We never send them to the cloud.",
-      "later": "You can connect them later in Settings → Connections."
+      "later": "You can connect them later in Settings → Connect your AIs."
     },
     "billing": {
       "title": "How you pay",
@@ -479,23 +479,24 @@
     "anthropic": {
       "name": "Claude",
       "agent": "Claude Code",
-      "howTo": "Claude Code connects only with your Anthropic API key. Anthropic's rules don't let us use your Claude subscription."
+      "howTo": "Connect Claude Code with your Anthropic API key: we send it encrypted to your computer. Under Anthropic's rules, signing in with your Claude plan is for the Chalito team only for now.",
+      "ownerOnly": "Claude plan: Chalito team only for now"
     },
     "openai": {
       "name": "ChatGPT",
       "agent": "Codex",
-      "howTo": "Codex works with your OpenAI API key or your ChatGPT plan (Sign in with ChatGPT). The ChatGPT plan is available only to the Chalito team for now.",
+      "howTo": "Connect Codex with your OpenAI API key or by signing in with ChatGPT on your computer. The ChatGPT plan is for the Chalito team only for now.",
       "ownerOnly": "ChatGPT plan: Chalito team only for now"
     },
     "xai": {
       "name": "Grok",
       "agent": "Grok Build",
-      "howTo": "Grok Build works with your xAI API key or your Grok login."
+      "howTo": "Connect Grok Build with your xAI API key or by signing in with Grok on your computer."
     },
     "google": {
       "name": "Gemini",
-      "agent": "Gemini",
-      "howTo": "Use your Google AI Studio API key."
+      "agent": "Gemini CLI",
+      "howTo": "Connect Gemini CLI with your Google AI Studio API key or by signing in with your Google account on your computer."
     },
     "iHave": "I have {name}"
   },
@@ -1049,5 +1050,53 @@
       "approval": "This needs your OK.",
       "notice": "Look at this!"
     }
+  },
+  "connect": {
+    "title": "Connect your AIs",
+    "body": "Choose how each AI runs on your computer: with your API key or by signing in with your plan. It all happens on your computer; your keys aren't stored in the cloud.",
+    "loading": "Checking your connections…",
+    "loadError": "We couldn't read the status of your connections.",
+    "retry": "Try again",
+    "refresh": "Refresh status",
+    "noComputer": "To connect your AIs you need Chalito on your computer. Install it, pair it and come back here.",
+    "noBrowser": "This browser isn't paired with your computer yet. Install Chalito on your computer and pair it; then you can connect your AIs from here.",
+    "download": "Download Chalito",
+    "untrusted": "This browser can't send commands to this computer yet. Approve it from that computer in Devices.",
+    "offline": "Your computer seems to be off or offline. What you ask for will apply if it comes back within 5 minutes.",
+    "computer": "On {name}",
+    "state": {
+      "unknown": "No report yet",
+      "not_installed": "Not installed",
+      "installing": "Installing…",
+      "needs_auth": "Installed, not connected yet",
+      "signing_in": "Finish signing in on your computer",
+      "connected": "Connected",
+      "error": "Something went wrong",
+      "blocked_by_policy": "Signing in with your plan isn't available for your account"
+    },
+    "via": {
+      "api_key": "with your API key",
+      "signin": "with your plan"
+    },
+    "version": "Version {version}",
+    "actions": {
+      "install": "Install",
+      "api_key": "Connect with API key",
+      "signin": "Sign in with your plan",
+      "disconnect": "Disconnect"
+    },
+    "installNote": "It installs with the official installer. Your computer will ask you to confirm.",
+    "signinNote": "The official sign-in opens in that computer's browser; finish it there.",
+    "keyLabel": "{name} API key",
+    "keyPlaceholder": "Paste your API key",
+    "keyNote": "It's encrypted for your computer and kept in its keychain. Chalito can't read it.",
+    "keyInvalid": "That doesn't look like an API key. Check that it's complete and has no spaces.",
+    "send": "Send to my computer",
+    "cancel": "Cancel",
+    "waiting": "Waiting for your computer…",
+    "timeout": "Your computer didn't answer. Check that it's on with Chalito open, and try again.",
+    "sendError": "We couldn't send the command to your computer. Try again.",
+    "errorDetail": "Details: {error}",
+    "blocked": "For now, signing in with your {name} plan isn't available for your account. Connect it with your API key."
   }
 }

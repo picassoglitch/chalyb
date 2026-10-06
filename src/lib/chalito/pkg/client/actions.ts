@@ -7,6 +7,7 @@ import {
   type Channel,
   type CommandPayload,
   type DevModeToggle,
+  type Provider,
   type RemoteCodexSandbox,
   type RemotePermissionMode,
 } from "@chalito/protocol";
@@ -52,6 +53,10 @@ const CLIENT_COMMANDS = new Set<CommandPayload["type"]>([
   "devmode.off",
   "devmode.toggleOff",
   "device.revokeClient",
+  "provider.connect",
+  "provider.disconnect",
+  "provider.install",
+  "provider.status",
 ]);
 
 const b64Nonce = (): string => {
@@ -223,6 +228,42 @@ export class ClientActions {
       questionId,
       answerCt: await this.#sealFor(agent, answers, cid),
     }));
+  }
+
+  // ---- AI providers on a computer ---------------------------------------------------
+
+  /**
+   * "Conectar con API key": the key is sealed to that computer's LOCALLY trusted box key only
+   * (AAD `command:<cid>`; not to this device: nothing here needs to read it back) and kept in its
+   * OS keychain. "Iniciar sesión con tu plan" (`signin`) carries nothing: the provider's own
+   * sign-in opens on that computer.
+   */
+  async connectProvider(
+    agentDeviceId: string,
+    provider: Provider,
+    auth: { method: "api_key"; key: string } | { method: "signin" },
+  ): Promise<string> {
+    return this.#command(agentDeviceId, async (cid) => {
+      if (auth.method === "signin") return { type: "provider.connect", provider, method: "signin" };
+      const agentKey = this.keys.trustedAgentBoxKey(agentDeviceId);
+      if (!agentKey) throw new ActionError("untrusted_agent");
+      const keyCt = await this.keys.seal(auth.key, { [agentDeviceId]: agentKey }, `command:${cid}`);
+      return { type: "provider.connect", provider, method: "api_key", keyCt };
+    });
+  }
+
+  async disconnectProvider(agentDeviceId: string, provider: Provider): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "provider.disconnect", provider }));
+  }
+
+  /** Official installer only; the computer asks for a local confirm. */
+  async installProvider(agentDeviceId: string, provider: Provider): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "provider.install", provider }));
+  }
+
+  /** Asks the computer for a fresh report into chalito.connections. */
+  async providerStatus(agentDeviceId: string): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "provider.status" }));
   }
 
   // ---- device safety (off only) -----------------------------------------------------

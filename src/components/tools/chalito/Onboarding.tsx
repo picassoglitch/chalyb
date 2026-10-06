@@ -11,6 +11,7 @@ import { DEV_BACKEND } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
 import { onboardingActivity, useCompanionPick, useCompanionStep } from "@/lib/chalito/companion";
 import { PasskeyEnroll } from "./PasskeyEnroll";
+import { ConnectProviders } from "./ConnectProviders";
 import { useSettings } from "@/lib/chalito/useSettings";
 import type { AgentOption } from "@/lib/chalito/web/providers";
 
@@ -33,7 +34,6 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const [i, setI] = useState(0);
   const [billing, setBilling] = useState<BillingMode>("byo");
   const [path, setPath] = useState<"guided" | "expert">("guided");
-  const [open, setOpen] = useState<string | null>(null);
   // The companion on screen follows the pick right away and does something for each step.
   const setPick = useCompanionPick((s) => s.setPick);
   const setCompanionStep = useCompanionStep((s) => s.setStep);
@@ -125,23 +125,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
             ))}
           </div>
           {path === "guided" ? (
-            <ul className="grid gap-2">
-              {agents.map((a) => (
-                <li key={a.agent} className="rounded-lg border p-3">
-                  <button className="font-medium" aria-expanded={open === a.agent} onClick={() => setOpen(a.agent)}>
-                    {ti("iHave", { name: ti(`${a.provider}.name`) })}
-                  </button>
-                  {open === a.agent ? (
-                    <div className="mt-2 grid gap-1 text-sm">
-                      <p data-testid={`howto-${a.agent}`}>{ti(`${a.provider}.howTo`)}</p>
-                      {a.subscription === "owner_only" ? (
-                        <p className="text-amber-800">{ti(`${a.provider}.ownerOnly`)}</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <ConnectProviders agents={agents} />
           ) : (
             <p>{t("connect.expertBody")}</p>
           )}

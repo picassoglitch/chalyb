@@ -2,6 +2,7 @@ export * from "./common";
 export * from "./crypto";
 export * from "./approval";
 export * from "./command";
+export * from "./connection";
 export * from "./agentEvent";
 export * from "./sessionCard";
 export * from "./mesa";
