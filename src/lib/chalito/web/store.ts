@@ -30,6 +30,10 @@ export interface AccessoryItem extends ItemBase {
 export interface SkinItem extends ItemBase {
   slot: "skin";
   skin: SkinEffect;
+  /** Included at no cost for VIP (catalog `includedIn`); everyone else buys it. */
+  vip?: true;
+  /** This person is on VIP: worn for free while they stay on it (not bought). */
+  includedInPlan?: true;
 }
 
 export type StoreItem = AccessoryItem | SkinItem;
@@ -87,7 +91,14 @@ export const parseCatalog = (body: unknown): StoreItem[] | null => {
     if (x.slot === "skin") {
       // A newer api may sell effects this build can't draw yet: skip those, keep the rest.
       if (!SKIN_EFFECTS.includes(x.skin as SkinEffect)) continue;
-      out.push({ ...base, slot: "skin", skin: x.skin as SkinEffect });
+      const vip = Array.isArray(x.includedIn) && x.includedIn.includes("vip");
+      out.push({
+        ...base,
+        slot: "skin",
+        skin: x.skin as SkinEffect,
+        ...(vip ? { vip: true as const } : {}),
+        ...(x.includedInPlan === true ? { includedInPlan: true as const } : {}),
+      });
       continue;
     }
     // Neck items are sized by the neck (`neckWidth`), the rest by the card (`width`); a back item may

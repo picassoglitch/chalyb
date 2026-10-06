@@ -986,6 +986,8 @@
     },
     "free": "Free",
     "owned": "Yours",
+    "includedVip": "Included with VIP",
+    "freeWithVip": "Free with VIP",
     "price": "{tokens} tokens",
     "buy": "Buy",
     "equip": "Wear",

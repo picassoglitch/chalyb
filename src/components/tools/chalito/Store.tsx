@@ -389,8 +389,19 @@ export const Store = () => {
         <p className="ch-chl-strong">{item.name[locale]}</p>
         <p className="ch-chl-small">{t(`slot.${item.slot}`)}</p>
         <p data-testid="store-price">
-          {item.free ? t("free") : item.owned ? t("owned") : t("price", { tokens: tokens.format(item.priceTokens!) })}
+          {item.free
+            ? t("free")
+            : isSkin(item) && item.includedInPlan
+              ? t("includedVip")
+              : item.owned
+                ? t("owned")
+                : t("price", { tokens: tokens.format(item.priceTokens!) })}
         </p>
+        {isSkin(item) && item.vip && !item.owned ? (
+          <p className="ch-chl-small" data-testid="store-vip">
+            {t("freeWithVip")}
+          </p>
+        ) : null}
         {!item.owned ? (
           <button
             data-testid="store-buy"
