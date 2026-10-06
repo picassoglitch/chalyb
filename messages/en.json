@@ -69,7 +69,8 @@
         "chalybbot": "An Assistant that answers your customers and followers, day and night.",
         "chalybpicks": "Today’s sports picks, explained simply.",
         "chalybrealtor": "List your properties and handle leads without wasting time.",
-        "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+        "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money.",
+        "chalito": "Your coding agents ask first, and you approve from your phone."
       },
       "allTitle": "You came for one thing and got it all.",
       "allBody": "You come for the clips and stay for the signals, your stream, your Assistant and more. All in the same plan, nothing extra to pay.",
@@ -1467,7 +1468,8 @@
       "chalybbot": "A bot that answers your customers and followers, day and night.",
       "chalybpicks": "Today’s sports forecasts, explained simply.",
       "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
-      "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money."
+      "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money.",
+      "chalito": "Approve from your phone what your coding agents want to do."
     },
     "crumb": "Home",
     "sub": "They're all included in your {plan} plan and open right here.",
@@ -2545,6 +2547,11 @@
         "main": "Go live",
         "history": "My streams",
         "settings": "Settings"
+      },
+      "chalito": {
+        "main": "Home",
+        "history": "Sessions",
+        "settings": "Settings"
       }
     },
     "error": {
@@ -2559,7 +2566,8 @@
       "meanwhile": {
         "chalybclip": "Meanwhile, your earlier clips are still in",
         "chalybcrypto": "Meanwhile, the latest signals are still in",
-        "chalybobs": "If you were already live, your stream keeps going in OBS."
+        "chalybobs": "If you were already live, your stream keeps going in OBS.",
+        "chalito": "Meanwhile, your agents won't do anything that needs your approval."
       },
       "meanwhileLink": {
         "chalybclip": "My results",

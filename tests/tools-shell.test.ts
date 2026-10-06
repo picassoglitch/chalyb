@@ -434,3 +434,27 @@ test('every route passes the timeout signal to the adapter', () => {
     }
   }
 });
+
+test('registry: every live tool has its copy in both languages (tabs, tagline, error line)', async () => {
+  for (const locale of ['es', 'en'] as const) {
+    const m = (await import(`../messages/${locale}.json`, { with: { type: 'json' } })).default as {
+      toolShell: {
+        tab: Record<string, Record<string, string>>;
+        error: { meanwhile: Record<string, string> };
+      };
+      tools: { tagline: Record<string, string> };
+    };
+    for (const tool of TOOLS) {
+      for (const tab of tool.tabs)
+        assert.ok(
+          m.toolShell.tab[tool.slug]?.[tab.key],
+          `${locale} toolShell.tab.${tool.slug}.${tab.key}`,
+        );
+      assert.ok(m.tools.tagline[tool.slug], `${locale} tools.tagline.${tool.slug}`);
+      assert.ok(
+        m.toolShell.error.meanwhile[tool.slug],
+        `${locale} toolShell.error.meanwhile.${tool.slug}`,
+      );
+    }
+  }
+});
