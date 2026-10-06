@@ -275,9 +275,10 @@ variable "engines" {
     }
 
     # Chalito's api (picassoglitch/chalito apps/api) reads its own prefixed
-    # pair. Its web app is on Vercel at chalito.chalyb.com, so this service is
-    # api.chalito.chalyb.com: leave enable_domain_mappings off and map that
-    # host by hand. Buckets, the scheduler signer and the api's other secrets
+    # pair. Its screens live inside the hub (/app/chalito on www.chalyb.com),
+    # so the web origin and the WebAuthn RP are the hub's, and the browser calls
+    # this service on its Cloud Run URL (no subdomain; engines.tf skips the
+    # domain mapping for chalito). Buckets, the scheduler signer and the api's other secrets
     # come from Chalito's own Terraform, which runs after this one; they go in
     # engine_extra_env / engine_extra_secret_env on a second apply.
     chalito = {
@@ -288,13 +289,17 @@ variable "engines" {
         database_url = "DATABASE_URL"
       }
       env = {
-        SUPABASE_URL           = "https://uqcbziwdgbnzehipzjxp.supabase.co"
-        API_PUBLIC_URL         = "https://api.chalito.chalyb.com"
-        CHALITO_API_ISSUER     = "https://api.chalito.chalyb.com"
-        CHALITO_WEB_ORIGIN     = "https://chalito.chalyb.com"
-        CHALITO_MCP_RESOURCE   = "https://mcp.chalito.chalyb.com/mcp"
-        CHALITO_WEBAUTHN_RP_ID = "chalito.chalyb.com"
-        TRUSTED_PROXIES        = "0"
+        SUPABASE_URL             = "https://uqcbziwdgbnzehipzjxp.supabase.co"
+        API_PUBLIC_URL           = "https://chalito-znilbomw3q-uc.a.run.app"
+        CHALITO_API_ISSUER       = "https://chalito-znilbomw3q-uc.a.run.app"
+        CHALITO_WEB_ORIGIN       = "https://www.chalyb.com"
+        CHALITO_MCP_RESOURCE     = "https://chalito-mcp-gateway-znilbomw3q-uc.a.run.app/mcp"
+        CHALITO_WEBAUTHN_RP_ID   = "chalyb.com"
+        CHALITO_WEBAUTHN_ORIGINS = "https://www.chalyb.com"
+        CHALITO_DATA_BACKEND     = "supabase"
+        DATABASE_ROLE            = "chalito_server"
+        AUDIT_TOPIC              = "audit"
+        TRUSTED_PROXIES          = "0"
       }
       shared_secrets = {
         SUPABASE_SECRET_KEY = "supabase-secret-key"
