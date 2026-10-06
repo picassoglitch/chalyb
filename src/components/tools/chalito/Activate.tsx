@@ -6,6 +6,7 @@ import type { ActivateError } from "@/lib/chalito/web/activate";
 import { browserName } from "@/lib/chalito/web/endorse";
 import { useChalito } from "@/lib/chalito/provider";
 import { PasskeyEnroll } from "./PasskeyEnroll";
+import { Recover } from "./Recover";
 
 const stack = { display: "grid", gap: 12 } as const;
 
@@ -28,6 +29,8 @@ export const Activate = () => {
     setState(r.ok ? "idle" : { error: r.reason });
   };
 
+  // A paired computer counts as a device: this browser comes in with the recovery code.
+  if (typeof state === "object" && state.error === "has_agents") return <Recover />;
   if (typeof state === "object" && state.error === "has_clients")
     return (
       <div className="ch-card" style={stack} data-testid="activate-has-clients">

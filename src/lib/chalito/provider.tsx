@@ -37,7 +37,14 @@ import {
   type Waiting,
 } from "@/lib/chalito/web/endorse";
 import { markEndorsed, passkeyRef } from "@/lib/chalito/web/keys";
-import { activateFirstClient, canActivate, type ActivateError } from "@/lib/chalito/web/activate";
+import {
+  activateFirstClient,
+  canActivate,
+  needsRecovery,
+  recoverWithCode,
+  type ActivateError,
+  type RecoverResult,
+} from "@/lib/chalito/web/activate";
 import type { McpApi } from "@/lib/chalito/web/mcp";
 import type { AccountApi } from "@/lib/chalito/web/account";
 import type { BalanceApi } from "@/lib/chalito/web/balance";
@@ -80,8 +87,15 @@ interface Ctx {
    * while the account has none (the api enforces it). Null when not unpaired on the person's session.
    */
   activate: ((name: string) => Promise<{ ok: true } | { ok: false; reason: ActivateError }>) | null;
-  /** The account has no active client (a hint from the directory), so "Activar" applies. */
+  /** The account has no active device (a hint from the directory), so "Activar" applies. */
   canActivate: boolean;
+  /**
+   * "Usa tu código de recuperación": the recovery code, the api's cool-down, then this browser is
+   * enrolled like "Activar" (with a new code, shown once). Null when not unpaired on the person's session.
+   */
+  recover: ((code: string, name: string) => Promise<{ ok: true } | Exclude<RecoverResult, { ok: true }>>) | null;
+  /** No active client but a paired computer (a hint from the directory): recovery, not "Activar". */
+  needsRecovery: boolean;
   /** Just activated: the recovery code to show once, and whether the passkey got created. */
   activation: Activation | null;
   /** The person saved the recovery code: forget it. */
@@ -203,6 +217,8 @@ const INITIAL: Ctx = {
   newDevice: null,
   activate: null,
   canActivate: false,
+  recover: null,
+  needsRecovery: false,
   activation: null,
   finishActivation: () => undefined,
   addDevice: null,
@@ -349,22 +365,21 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
   const finishActivation = useCallback(() => setActivation(null), []);
 
   /**
-   * "Activar" (/v1/devices/first). It holds the connection effect while it switches this browser
-   * to its own device session and registers the passkey as that device (the webauthn routes are
-   * `client`), then reconnects once. The recovery code is kept to show whenever enrolment
-   * succeeded, even if the passkey or the session step didn't.
+   * "Activar" (/v1/devices/first) and recovery (/v1/recovery/complete). Each holds the connection
+   * effect while it switches this browser to its own device session and registers the passkey as
+   * that device (the webauthn routes are `client`), then reconnects once. The recovery code is kept
+   * to show whenever enrolment succeeded, even if the passkey or the session step didn't.
    */
-  const activateWith =
-    (p: Platform, owner: string, token: () => Promise<string | null>) =>
-    async (name: string): Promise<{ ok: true } | { ok: false; reason: ActivateError }> => {
+  const enrolWith =
+    <R extends { ok: false }>(
+      p: Platform,
+      token: () => Promise<string | null>,
+      run: () => Promise<{ ok: true; deviceId: string; customToken: string; recoveryCode: string } | R>,
+    ) =>
+    async (): Promise<{ ok: true } | R> => {
       deviceMode.current = true;
       try {
-        const r = await activateFirstClient({
-          api: p.api(token),
-          save: (k) => p.saveDeviceKeys(k),
-          owner,
-          name,
-        });
+        const r = await run();
         if (!r.ok) return r;
         markEndorsed(r.deviceId);
         let passkey: Activation["passkey"] = "error";
@@ -389,6 +404,19 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
         setEpoch((e) => e + 1);
       }
     };
+
+  const enrolDeps = (p: Platform, owner: string, token: () => Promise<string | null>, name: string) => ({
+    api: p.api(token),
+    save: (k: Parameters<Platform["saveDeviceKeys"]>[0]) => p.saveDeviceKeys(k),
+    owner,
+    name,
+  });
+
+  const activateWith = (p: Platform, owner: string, token: () => Promise<string | null>) => (name: string) =>
+    enrolWith(p, token, () => activateFirstClient(enrolDeps(p, owner, token, name)))();
+
+  const recoverWith = (p: Platform, owner: string, token: () => Promise<string | null>) => (code: string, name: string) =>
+    enrolWith(p, token, () => recoverWithCode(enrolDeps(p, owner, token, name), code))();
 
   useEffect(() => {
     let alive = true;
@@ -450,14 +478,16 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
       const keys = await platform.loadDeviceKeys();
       if (!keys) {
         const person = isPersonSession(session.session);
-        const first = person && canActivate(await readDirectory(platform.db, owner).catch(() => null));
+        const dir = person ? await readDirectory(platform.db, owner).catch(() => null) : null;
         return done({
           ...INITIAL,
           ...base,
           status: "unpaired",
           newDevice: person ? newDevice(platform, owner, token) : null,
           activate: person ? activateWith(platform, owner, token) : null,
-          canActivate: first,
+          canActivate: person && canActivate(dir),
+          recover: person ? recoverWith(platform, owner, token) : null,
+          needsRecovery: person && needsRecovery(dir),
         });
       }
       keysRef.current = keys;
