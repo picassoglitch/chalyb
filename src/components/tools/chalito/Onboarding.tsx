@@ -12,11 +12,15 @@ import { useChalito } from "@/lib/chalito/provider";
 import { onboardingActivity, useCompanionPick, useCompanionStep } from "@/lib/chalito/companion";
 import { PasskeyEnroll } from "./PasskeyEnroll";
 import { ConnectProviders } from "./ConnectProviders";
+import { CATALOG } from "@/lib/chalito/web/apps-catalog";
 import { useSettings } from "@/lib/chalito/useSettings";
 import type { AgentOption } from "@/lib/chalito/web/providers";
 
 // One entry per coding agent in providers.yaml (AgentOption lives with agentOptions() in providers.ts).
 export type { AgentOption };
+
+/** Experto: just the agents that take a pasted API key. */
+const KEY_APPS = CATALOG.filter((a) => a.group === "agent" && a.apiKey);
 
 const STEPS = ["signIn", "companion", "name", "connect", "billing", "phone", "pair", "passkey"] as const;
 type Step = (typeof STEPS)[number];
@@ -127,7 +131,10 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           {path === "guided" ? (
             <ConnectProviders compact />
           ) : (
-            <p>{t("connect.expertBody")}</p>
+            <div className="ch-col">
+              <p>{t("connect.expertBody")}</p>
+              <ConnectProviders apps={KEY_APPS} />
+            </div>
           )}
           <p className="text-sm text-neutral-600">{t("connect.later")}</p>
         </div>

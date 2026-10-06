@@ -111,7 +111,7 @@
       "body": "We only use each provider's official options. Your keys stay on your computer.",
       "guided": "Guided",
       "expert": "Expert",
-      "expertBody": "Paste your API keys in the desktop app or with \"chalito keys set\". We never send them to the cloud.",
+      "expertBody": "Paste each AI's API key here: it's encrypted in this browser for your computer and Chalito can't read it. You can also use \"chalito keys set\" on your computer.",
       "later": "You can connect them later in Settings → Connect your AIs."
     },
     "billing": {
@@ -1078,9 +1078,9 @@
     "loadError": "We couldn't read the status of your connections.",
     "retry": "Try again",
     "refresh": "Refresh status",
-    "noComputer": "To connect your AIs you need Chalito on your computer. Install it, pair it and come back here.",
+    "noComputer": "To paste your keys or sign in to your AIs you need the Chalito desktop app. Download it, pair it and come back here.",
     "noBrowser": "This browser isn't paired with your computer yet. Install Chalito on your computer and pair it; then you can connect your AIs from here.",
-    "download": "Download Chalito",
+    "download": "Download the desktop app",
     "untrusted": "This browser can't send commands to this computer yet. Approve it from that computer in Devices.",
     "offline": "Your computer seems to be off or offline. What you ask for will apply if it comes back within 5 minutes.",
     "computer": "On {name}",
@@ -1102,7 +1102,7 @@
     "version": "Version {version}",
     "actions": {
       "install": "Install",
-      "api_key": "Connect with API key",
+      "api_key": "Paste your key",
       "signin": "Sign in with your plan",
       "disconnect": "Disconnect",
       "launch": "Open on your computer"
@@ -1148,6 +1148,7 @@
       "web": "It opens on that computer, in a browser profile just for this AI."
     },
     "ownerOnly": "Sign in with your plan: Chalito team only for now.",
-    "keyWhere": "Get your {label} at {url}"
+    "keyWhere": "Get your {label} at {url}",
+    "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full."
   }
 }

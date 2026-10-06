@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DeviceView } from "@chalito/client";
 import { Link } from "@/lib/chalito/navigation";
@@ -10,7 +10,6 @@ import {
   POLL_FAST_MS,
   POLL_SLOW_MS,
   actionsFor,
-  cleanApiKey,
   indexConnections,
   latestAt,
   pendingOutcome,
@@ -21,6 +20,7 @@ import {
   type ProviderStatus,
   type StatusIndex,
 } from "@/lib/chalito/web/connect";
+import { PasteKeyForm } from "./PasteKeyForm";
 
 type Load = "loading" | "ok" | "error";
 /** Pending commands by `<deviceId>:<appId>`, or `<deviceId>:*` for a status request. */
@@ -317,13 +317,6 @@ const ComputerRow = ({
   const gate = signinGate(app.planSignin);
   const legacy = LEGACY_COPY[app.id];
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const key = cleanApiKey(form?.text ?? "");
-    if (!key) return onForm({ text: form?.text ?? "", invalid: true });
-    onForm(null);
-    onAction("api_key", key);
-  };
 
   const label = !loaded ? t("loading") : status ? t(`state.${status.state}`) : t("state.unknown");
 
@@ -357,31 +350,14 @@ const ComputerRow = ({
           {t("waiting")}
         </p>
       ) : form ? (
-        <form className="grid gap-2" onSubmit={submit}>
-          <label className="grid gap-1">
-            <span>{t("keyLabel", { name: app.apiKey?.label ?? name })}</span>
-            <input
-              type="password"
-              autoComplete="off"
-              spellCheck={false}
-              className="rounded-lg border px-3 py-2"
-              placeholder={t("keyPlaceholder")}
-              value={form.text}
-              onChange={(e) => onForm({ text: e.target.value, invalid: false })}
-              aria-invalid={form.invalid}
-            />
-          </label>
-          {form.invalid ? <p className="text-red-800">{t("keyInvalid")}</p> : null}
-          <p className="text-neutral-600">{t("keyNote")}</p>
-          <div className="flex gap-2">
-            <button type="submit" className="rounded-lg bg-emerald-700 px-3 py-1 text-white">
-              {t("send")}
-            </button>
-            <button type="button" className="rounded-lg border px-3 py-1" onClick={() => onForm(null)}>
-              {t("cancel")}
-            </button>
-          </div>
-        </form>
+        <PasteKeyForm
+          app={app}
+          onSend={(key) => {
+            onForm(null);
+            onAction("api_key", key);
+          }}
+          onCancel={() => onForm(null)}
+        />
       ) : (
         <>
           {pending?.failed ? (

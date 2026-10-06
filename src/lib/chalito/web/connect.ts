@@ -190,6 +190,30 @@ export const cleanApiKey = (raw: string): string | null => {
   return k;
 };
 
+/**
+ * How the four providers' keys start (the agent's KEY_SHAPE, apps/agent/src/apps/manager.ts).
+ * Other apps' keys have no fixed shape and only pass cleanApiKey.
+ */
+export const KEY_PREFIX: Record<string, string> = {
+  "claude-code": "sk-ant-",
+  codex: "sk-",
+  grok: "xai-",
+  gemini: "AIza",
+};
+
+export type KeyCheck = { ok: true; key: string } | { ok: false; error: "invalid" | "shape"; prefix?: string };
+
+/** A pasted key for one app, checked before it is sealed: sane, and the provider's usual prefix. */
+export const checkApiKey = (appId: string, raw: string): KeyCheck => {
+  const key = cleanApiKey(raw);
+  if (!key) return { ok: false, error: "invalid" };
+  const prefix = KEY_PREFIX[appId];
+  if (prefix && !key.startsWith(prefix)) return { ok: false, error: "shape", prefix };
+  // An Anthropic key starts with "sk-" too: catch it pasted into Codex.
+  if (appId === "codex" && key.startsWith(KEY_PREFIX["claude-code"]!)) return { ok: false, error: "shape", prefix };
+  return { ok: true, key };
+};
+
 /** Rejects after `ms` (no endless spinners when the Data API doesn't answer). */
 export const withTimeout = <T>(p: PromiseLike<T>, ms: number): Promise<T> =>
   new Promise<T>((resolve, reject) => {
