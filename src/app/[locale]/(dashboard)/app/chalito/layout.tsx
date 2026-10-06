@@ -23,8 +23,9 @@ export default async function ChalitoLayout({ children }: { children: ReactNode 
         <ChalitoProvider hubUserId={user?.id}>
           <TestModeBanner />
           <DevModeBanner />
+          {/* The nav needs no session: it shows while HubBridge signs in. */}
+          <ChalitoNav />
           <HubBridge>
-            <ChalitoNav />
             {children}
           </HubBridge>
           <StepUpHost />

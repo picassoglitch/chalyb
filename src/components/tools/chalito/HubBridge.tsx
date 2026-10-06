@@ -33,8 +33,9 @@ export const HubBridge = ({ children }: { children: ReactNode }) => {
         { token: body.token, next: null },
         { apiBase: env.apiBase, fetch: window.fetch.bind(window), auth: supabase().auth },
       );
-      if (done.ok) window.location.reload();
-      else setFailed(done.reason === 'rate_limited' ? 'rate_limited' : 'failed');
+      // No reload: the provider listens to this same Supabase client, so the new session
+      // connects in place (a reload cost a whole second page load on the first visit).
+      if (!done.ok) setFailed(done.reason === 'rate_limited' ? 'rate_limited' : 'failed');
     })();
   }, [status]);
 
