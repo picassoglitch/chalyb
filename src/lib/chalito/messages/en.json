@@ -536,7 +536,14 @@
       "title": "Confirm it's you",
       "body": "This is a {risk}-risk action. Confirm with your fingerprint, face or security key.",
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "computer": {
+        "title": "Let the AI use your computer?",
+        "body": "The AI will be able to see the screen and use the mouse and keyboard of {computer} for this session.",
+        "stop": "You can stop it anytime with the on-screen button or with Ctrl+Alt+Esc.",
+        "passkey": "Next, confirm with your fingerprint, face or security key.",
+        "confirm": "Yes, continue"
+      }
     },
     "approval": {
       "unknownTool": "Action",
@@ -573,7 +580,17 @@
       "fullInput": "See exactly what will run",
       "mustExpand": "The summary is cut: open the full content before approving.",
       "unverified": "Unverified",
-      "unverifiedNote": "Your computer didn't sign this request, or it doesn't match what it signed. It can't be approved; you can deny it."
+      "unverifiedNote": "Your computer didn't sign this request, or it doesn't match what it signed. It can't be approved; you can deny it.",
+      "computer": {
+        "title": "Control of your computer",
+        "thisComputer": "your computer",
+        "body": "This session asks to see the screen and use the mouse and keyboard of {computer}. If you approve, the AI can do so for this session.",
+        "session": "Session: {session} · Agent: {agent}",
+        "stop": "You can stop it anytime with the on-screen button or with Ctrl+Alt+Esc on that computer.",
+        "once": "Asked once per session, always with your passkey. It's never approved automatically.",
+        "invalid": "This control request doesn't ask for your passkey as it should. It can't be approved; you can deny it.",
+        "approve": "Approve control"
+      }
     },
     "inbox": {
       "title": "Inbox",
@@ -761,7 +778,10 @@
       "untrusted": "This computer isn't paired with this device.",
       "failed": "We couldn't send it.",
       "noComputers": "You don't have a linked computer yet.",
-      "download": "Download Chalito for your computer"
+      "download": "Download Chalito for your computer",
+      "connect": "Connect",
+      "connectAdapter": "Connect {name}",
+      "adapterHint": "To use Grok Build or Gemini CLI, connect them on this computer first, in Settings."
     },
     "account": {
       "title": "Delete my Chalito account",
