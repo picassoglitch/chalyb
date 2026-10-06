@@ -1,0 +1,311 @@
+"use client";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { ActionError, type ApprovalView, type MesaDecisionView } from "@chalito/client";
+import { MesaDecisionCard } from "@chalito/ui";
+import { Link } from "@/lib/chalito/navigation";
+import { approvalText } from "@/lib/chalito/web/approval-text";
+import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
+
+const RISK_STYLE: Record<ApprovalView["risk"], string> = {
+  LOW: "bg-neutral-100 text-neutral-800",
+  MED: "bg-sky-100 text-sky-900",
+  HIGH: "bg-amber-100 text-amber-900",
+  CRITICAL: "bg-red-100 text-red-900",
+};
+
+export const RiskBadge = ({ risk }: { risk: ApprovalView["risk"] }) => {
+  const t = useTranslations("chalito.live.risk");
+  return (
+    <span
+      data-testid="risk-badge"
+      data-risk={risk}
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${RISK_STYLE[risk]}`}
+    >
+      {t(risk)}
+    </span>
+  );
+};
+
+const mmss = (ms: number) => {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
+/**
+ * A Mesa decision (raised by the orchestrator, not an agent): the question and options as text; a
+ * pick is a signed Decision (body.choice, target "orchestrator", MED: no passkey), then the
+ * orchestrator is poked to verify it. Never shown as an unverified tool approval.
+ */
+const MesaApprovalCard = ({ a, m }: { a: ApprovalView; m: MesaDecisionView }) => {
+  const t = useTranslations("chalito.settings.mesa.decision");
+  const { client, mesa } = useChalito();
+  const now = useNow(1000);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const expired = a.status === "expired" || (a.status === "pending" && a.expiresAt <= now);
+  const answer = async (choice: number | null) => {
+    if (!client) return;
+    setBusy(true);
+    try {
+      await client.actions.decide(a.aid, choice !== null, choice !== null ? { choice } : {});
+      const status = (await mesa?.api.checkDecision(a.aid)) ?? "pending";
+      setNote(
+        status === "pending" || status === "error"
+          ? t("pending")
+          : choice !== null
+            ? t("sent", { option: m.options[choice]! })
+            : t("dismissed"),
+      );
+    } catch {
+      setNote(t("error"));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const resolved = a.status !== "pending" || expired ? t("resolved") : null;
+  return (
+    <article data-testid="approval" data-aid={a.aid} data-status={expired ? "expired" : a.status} data-kind="mesa">
+      <h2 className="mb-2 font-semibold">{t("title")}</h2>
+      <MesaDecisionCard
+        from={m.from}
+        question={m.question}
+        options={m.options}
+        busy={busy || !client}
+        done={note ?? resolved}
+        onPick={(i) => void answer(i)}
+        onDismiss={() => void answer(null)}
+      />
+    </article>
+  );
+};
+
+/** One approval: risk, countdown, opened details, approve/deny (HIGH asks for step-up). */
+export const ApprovalCard = ({ a }: { a: ApprovalView }) =>
+  a.mesa ? <MesaApprovalCard a={a} m={a.mesa} /> : <ToolApprovalCard a={a} />;
+
+const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
+  const t = useTranslations("chalito.live.approval");
+  const { client, passkey } = useChalito();
+  const now = useNow(1000);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const expired = a.status === "expired" || (a.status === "pending" && a.expiresAt <= now);
+  const pending = a.status === "pending" && !expired;
+  // HIGH/CRITICAL approvals need this device's passkey; without one, say so instead of failing.
+  const needsPasskey = (a.stepUpRequired || a.risk === "HIGH" || a.risk === "CRITICAL") && !passkey.enrolled;
+  const details = a.details as {
+    toolName?: string;
+    summary?: string;
+    reasons?: string[];
+    input?: unknown;
+    summaryTruncated?: boolean;
+  } | null;
+  const text = details ? approvalText(details) : null;
+  // R-M10: a cut summary can't be approved until the person has seen the whole input.
+  const [expanded, setExpanded] = useState(false);
+  const mustExpand = !!text?.truncated && !expanded;
+  // ADR 0019 (R-H1): only a request the agent signed can be allowed; denying always works.
+  const unverified = !a.verified;
+
+  const decide = async (allow: boolean) => {
+    if (!client) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      await client.actions.decide(a.aid, allow);
+      setNote(t(allow ? "sentAllow" : "sentDeny"));
+    } catch (err) {
+      const code = err instanceof ActionError ? err.code : "error";
+      setNote(
+        t(
+          `error.${
+            code === "step_up_cancelled" ||
+            code === "expired" ||
+            code === "not_pending" ||
+            code === "unverified_request"
+              ? code
+              : "other"
+          }`,
+        ),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <article
+      data-testid="approval"
+      data-aid={a.aid}
+      data-status={expired ? "expired" : a.status}
+      className="grid gap-2 rounded-xl border bg-white p-4"
+    >
+      <header className="flex items-center gap-2">
+        <RiskBadge risk={a.risk} />
+        <span className="font-medium">{details?.toolName ?? t("unknownTool")}</span>
+        {unverified ? (
+          <span
+            data-testid="unverified"
+            className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900"
+          >
+            {t("unverified")}
+          </span>
+        ) : null}
+        {pending ? (
+          <span data-testid="countdown" className="ml-auto font-mono text-sm tabular-nums" aria-label={t("expiresIn")}>
+            {mmss(a.expiresAt - now)}
+          </span>
+        ) : null}
+      </header>
+      {details ? (
+        <div className="grid gap-1 text-sm">
+          <p className="break-words font-mono" data-testid="approval-summary">
+            {text!.summary.text}
+            {text!.truncated ? (
+              <span data-testid="approval-truncated" className="ml-1 rounded bg-amber-100 px-1 text-amber-900">
+                {text!.hiddenChars !== null ? t("truncatedN", { n: text!.hiddenChars }) : t("truncated")}
+              </span>
+            ) : null}
+          </p>
+          {text!.summary.hidden || text!.full?.hidden ? (
+            <p role="note" data-testid="approval-hidden-chars" className="text-amber-900">
+              {t("hiddenChars")}
+            </p>
+          ) : null}
+          {text!.full ? (
+            <details
+              className="rounded-lg bg-neutral-50 p-2"
+              onToggle={(e) => e.currentTarget.open && setExpanded(true)}
+            >
+              <summary className="cursor-pointer" data-testid="approval-expand">
+                {t("fullInput")}
+              </summary>
+              <pre data-testid="approval-full" className="mt-2 whitespace-pre-wrap break-words font-mono text-xs">
+                {text!.full.text}
+              </pre>
+            </details>
+          ) : null}
+          {details.reasons?.length ? <p className="text-neutral-600">{details.reasons.join(" · ")}</p> : null}
+        </div>
+      ) : (
+        <p className="text-sm text-neutral-600">{t("sealed")}</p>
+      )}
+      {a.stepUpRequired && pending ? <p className="text-sm text-amber-900">{t("stepUpNeeded")}</p> : null}
+      <p data-testid="approval-status" className="text-sm font-medium">
+        {expired ? t("expired") : a.status === "pending" ? t("pending") : t(`status.${a.status}`)}
+      </p>
+      {pending ? (
+        <div className="grid gap-2">
+          {needsPasskey ? (
+            <p data-testid="needs-passkey" className="text-sm text-amber-900">
+              {t("needsPasskey")}{" "}
+              <Link href="/dispositivos" className="underline">
+                {t("enrolPasskey")}
+              </Link>
+            </p>
+          ) : null}
+          {unverified ? (
+            <p data-testid="unverified-note" className="text-sm text-red-900">
+              {t("unverifiedNote")}
+            </p>
+          ) : null}
+          {mustExpand ? (
+            <p data-testid="must-expand" className="text-sm text-amber-900">
+              {t("mustExpand")}
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            <button
+              className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+              disabled={busy || needsPasskey || mustExpand || unverified}
+              data-testid="approve"
+              onClick={() => void decide(true)}
+            >
+              {t("approve")}
+            </button>
+            <button
+              className="rounded-lg border px-4 py-2 disabled:opacity-50"
+              disabled={busy}
+              onClick={() => void decide(false)}
+            >
+              {t("deny")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {note ? (
+        <p role="status" className="text-sm">
+          {note}
+        </p>
+      ) : null}
+      <Link
+        href={`/sesiones/${encodeURIComponent(a.sid)}`}
+        className="text-sm text-emerald-700 underline"
+      >
+        {t("openSession")}
+      </Link>
+    </article>
+  );
+};
+
+export const Inbox = () => {
+  const t = useTranslations("chalito.live.inbox");
+  const { approvals, notifications } = useLive();
+  const { client } = useChalito();
+  const pending = approvals.filter((a) => a.status === "pending");
+  const done = approvals.filter((a) => a.status !== "pending");
+  const open = notifications.filter((n) => n.state === "pending");
+  return (
+    <div className="grid gap-6">
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      {open.length ? (
+        <section className="grid gap-2" aria-labelledby="notif-h">
+          <h2 id="notif-h" className="font-semibold">
+            {t("notifications")}
+          </h2>
+          {open.map((n) => (
+            <div
+              key={n.nid}
+              data-testid="notification"
+              className="flex items-center gap-3 rounded-lg border bg-white p-3 text-sm"
+            >
+              <span>{t("notification", { count: Object.values(n.counts).reduce((x, y) => x + y, 0) })}</span>
+              <button
+                className="ml-auto rounded border px-2 py-1"
+                onClick={() => void client?.actions.ackNotification(n.nid)}
+              >
+                {t("ack")}
+              </button>
+            </div>
+          ))}
+        </section>
+      ) : null}
+      <section className="grid gap-3" aria-labelledby="pending-h">
+        <h2 id="pending-h" className="font-semibold">
+          {t("pending", { count: pending.length })}
+        </h2>
+        {pending.length ? pending.map((a) => <ApprovalCard key={a.aid} a={a} />) : <p>{t("empty")}</p>}
+      </section>
+      {done.length ? (
+        <section className="grid gap-3" aria-labelledby="done-h">
+          <h2 id="done-h" className="font-semibold">
+            {t("history")}
+          </h2>
+          {done.map((a) => (
+            <ApprovalCard key={a.aid} a={a} />
+          ))}
+        </section>
+      ) : null}
+    </div>
+  );
+};
+
+/** /a/[id]: one approval, wherever it came from (push, WhatsApp, a call). */
+export const ApprovalDeepLink = ({ aid }: { aid: string }) => {
+  const t = useTranslations("chalito.live.approval");
+  const { approvals, status } = useLive();
+  const a = approvals.find((x) => x.aid === aid);
+  if (a) return <ApprovalCard a={a} />;
+  return <p>{status === "live" ? t("notFound") : t("loading")}</p>;
+};

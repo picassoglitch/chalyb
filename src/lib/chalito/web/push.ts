@@ -2,7 +2,7 @@
  * Web Push on this browser (D-050): the permission prompt, the PushManager subscription with the
  * notifier's VAPID public key, and its row in chalito.push_subscriptions. The paired device writes
  * the row itself under RLS (insert/delete only for its own device_id; the notifier reads it). The
- * payloads that arrive are metadata only; public/sw.js turns them into a notification.
+ * payloads that arrive are metadata only; public/chalito-sw.js turns them into a notification.
  */
 
 export type PushState =
@@ -77,9 +77,12 @@ const supported = (vapidKey: string) =>
   "Notification" in window &&
   validVapidKey(vapidKey);
 
-/** This browser's current subscription, if the service worker is up. */
+/**
+ * This browser's current subscription, if the service worker is up. Inside the hub the worker is
+ * scoped to /app/chalito, so look it up for this page rather than for the site root.
+ */
 const current = async (): Promise<PushSubscription | null> => {
-  const reg = await navigator.serviceWorker.getRegistration("/");
+  const reg = await navigator.serviceWorker.getRegistration();
   return (await reg?.pushManager.getSubscription()) ?? null;
 };
 
