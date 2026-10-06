@@ -35,6 +35,12 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Chalito's browser code, copied unchanged from picassoglitch/chalito (reviewed there); its
+    // effects predate these two React Compiler rules. Don't widen this to hub code.
+    files: ['src/lib/chalito/**/*.{ts,tsx}'],
+    rules: { 'react-hooks/set-state-in-effect': 'off', 'react-hooks/refs': 'off' },
+  },
   globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.claude/**']),
 ]);
 

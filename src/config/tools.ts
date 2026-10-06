@@ -64,6 +64,19 @@ export const TOOLS: readonly ToolDef[] = [
       { key: 'settings', href: '/app/en-vivo/ajustes' },
     ],
   },
+  {
+    slug: 'chalito',
+    route: '/app/chalito',
+    name: 'Chalito',
+    color: '#30D158',
+    live: true,
+    supportPrefix: 'CHL',
+    tabs: [
+      { key: 'main', href: '/app/chalito' },
+      { key: 'history', href: '/app/chalito/sesiones' },
+      { key: 'settings', href: '/app/chalito/ajustes' },
+    ],
+  },
 ] as const;
 
 export const MAIN_TOOL_SLUGS = TOOLS.map((t) => t.slug);
