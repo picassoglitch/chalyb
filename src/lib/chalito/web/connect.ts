@@ -1,10 +1,18 @@
-import { ProviderState, ProviderStatusDoc, type Provider } from "@chalito/protocol";
-import type { AgentOption } from "./providers";
+import {
+  AppConnectionDoc,
+  AppId,
+  PROVIDER_APP,
+  ProviderConnectionDoc,
+  type AppState,
+  type RecipeKind,
+} from "@chalito/protocol";
+import type { CatalogApp } from "./apps-catalog";
 
 /**
  * "Conecta tus IA" (onboarding's connect step and Ajustes): what each computer reported for each
- * provider (chalito.connections, one row per owner + device + provider, written by the agent) and
- * what the person can ask that computer to do about it. Pure: the screen is ConnectProviders.tsx.
+ * app of the catalog (chalito.connections, one row per owner + device + app id, written by the
+ * agent; the column is still called `provider`) and what the person can ask that computer to do
+ * about it. Pure: the screen is ConnectProviders.tsx.
  */
 
 /** A chalito.connections row as RLS returns it. `doc` is agent-written: parsed before use. */
@@ -15,9 +23,10 @@ export interface ConnectionRow {
 }
 
 export interface ProviderStatus {
-  provider: Provider;
+  /** The app id (recipe id); rows from before the engine (anthropic, openai…) are mapped. */
+  appId: string;
   deviceId: string;
-  state: ProviderState;
+  state: AppState;
   mode: "api_key" | "signin" | null;
   connected: boolean;
   cli: { installed: boolean; version: string | null } | null;
@@ -25,10 +34,18 @@ export interface ProviderStatus {
   error: string | null;
   /** The agent's clock when it reported (0 for a pre-contract row). Only compared with itself. */
   at: number;
+  /** Custom ("Personalizada") recipes carry their own name; curated ones are in the catalog. */
+  custom?: boolean;
+  name?: string;
+  kind?: RecipeKind;
 }
 
-const PROVIDERS: readonly Provider[] = ["anthropic", "openai", "xai", "google"];
-const isProvider = (p: string): p is Provider => (PROVIDERS as readonly string[]).includes(p);
+/** A pre-engine provider name → its app id; anything else must already be an app id. */
+const appIdOf = (raw: string): string | null => {
+  const legacy = (PROVIDER_APP as Record<string, string>)[raw];
+  if (legacy) return legacy;
+  return AppId.safeParse(raw).success ? raw : null;
+};
 
 /** Rows written before the status report existed: `{ mode: byo_*, connected }` only. */
 const LEGACY_MODE: Record<string, ProviderStatus["mode"]> = {
@@ -38,9 +55,12 @@ const LEGACY_MODE: Record<string, ProviderStatus["mode"]> = {
 
 /** One row → a status, or null when it isn't one we can trust to show. */
 export const parseConnection = (row: ConnectionRow): ProviderStatus | null => {
-  if (!isProvider(row.provider) || typeof row.device_id !== "string" || !row.device_id) return null;
-  const base = { provider: row.provider, deviceId: row.device_id };
-  const full = ProviderStatusDoc.safeParse(row.doc);
+  const appId = typeof row.provider === "string" ? appIdOf(row.provider) : null;
+  if (!appId || typeof row.device_id !== "string" || !row.device_id) return null;
+  const base = { appId, deviceId: row.device_id };
+  const app = AppConnectionDoc.safeParse(row.doc);
+  if (app.success) return { ...base, ...app.data };
+  const full = ProviderConnectionDoc.safeParse(row.doc);
   if (full.success) return { ...base, ...full.data };
   const d = row.doc as { mode?: unknown; connected?: unknown } | null;
   if (d && typeof d === "object" && typeof d.connected === "boolean") {
@@ -65,22 +85,22 @@ export const toSettingsConnection = (row: ConnectionRow) => {
   const p = parseConnection(row);
   if (!p) return null;
   return {
-    provider: p.provider,
+    provider: p.appId,
     deviceId: p.deviceId,
     mode: SETTINGS_MODE[p.mode ?? "api_key"],
     connected: p.connected,
   };
 };
 
-/** By device, then provider. */
-export type StatusIndex = Record<string, Partial<Record<Provider, ProviderStatus>>>;
+/** By device, then app id. */
+export type StatusIndex = Record<string, Record<string, ProviderStatus>>;
 
 export const indexConnections = (rows: readonly ConnectionRow[]): StatusIndex => {
   const out: StatusIndex = {};
   for (const r of rows) {
     const s = parseConnection(r);
     if (!s) continue;
-    (out[s.deviceId] ??= {})[s.provider] = s;
+    (out[s.deviceId] ??= {})[s.appId] = s;
   }
   return out;
 };
@@ -90,36 +110,45 @@ export type SigninGate = "on" | "owner_only" | "off";
 export const signinGate = (subscription: string): SigninGate =>
   subscription === "on" || subscription === "approved" ? "on" : subscription === "owner_only" ? "owner_only" : "off";
 
-export type ConnectAction = "install" | "api_key" | "signin" | "disconnect";
+export type ConnectAction = "install" | "api_key" | "signin" | "disconnect" | "launch";
 
 /**
- * The buttons for one provider on one computer. No report yet (`null`): the connect options, and
- * the computer answers with not_installed if its tool is missing. A plan sign-in that's `off` in
- * providers.yaml is never offered; `owner_only` is offered and the computer decides
- * (blocked_by_policy).
+ * The buttons for one app on one computer. Agents: connect with an API key (when the app takes
+ * one) or its own plan sign-in (not offered when `off`; `owner_only` is offered and the computer
+ * decides: blocked_by_policy), install when missing, disconnect when connected. Desktop apps and
+ * websites sign in inside themselves, so the action is opening them on that computer. No report
+ * yet (`null`): the connect options, and the computer answers with what it found.
  */
 export const actionsFor = (
   status: ProviderStatus | null,
-  option: Pick<AgentOption, "subscription">,
+  app: Pick<CatalogApp, "group" | "planSignin" | "installable" | "apiKey">,
 ): ConnectAction[] => {
-  const signin: ConnectAction[] = signinGate(option.subscription) === "off" ? [] : ["signin"];
-  if (!status) return ["api_key", ...signin];
+  if (app.group !== "agent") {
+    if (status?.state === "not_installed") return app.installable ? ["install"] : [];
+    if (status?.state === "installing") return [];
+    if (status?.state === "error" && status.cli && !status.cli.installed) return app.installable ? ["install"] : [];
+    return ["launch"];
+  }
+  const key: ConnectAction[] = app.apiKey ? ["api_key"] : [];
+  const signin: ConnectAction[] = signinGate(app.planSignin) === "off" ? [] : ["signin"];
+  if (!status) return [...key, ...signin];
   switch (status.state) {
     case "not_installed":
-      return ["install"];
+      return app.installable ? ["install"] : [];
     case "installing":
     case "signing_in":
       return [];
     case "connected":
+    case "available":
       return ["disconnect"];
     case "error":
-      if (status.cli && !status.cli.installed) return ["install"];
-      return ["api_key", ...signin];
+      if (status.cli && !status.cli.installed) return app.installable ? ["install"] : [];
+      return [...key, ...signin];
     case "needs_auth":
-      return ["api_key", ...signin];
+      return [...key, ...signin];
     case "blocked_by_policy":
-      // The plan sign-in was just refused for this person: offer the key.
-      return ["api_key"];
+      // The plan sign-in was just refused for this person: offer the key when there is one.
+      return key;
   }
 };
 

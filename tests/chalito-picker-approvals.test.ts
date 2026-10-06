@@ -30,7 +30,7 @@ const doc = (state: ProviderStatus['state']) => ({
 
 test('protocol: grok/gemini adapters, computer_control approvals and computer.changed, as in chalito #29/#31', () => {
   assert.deepEqual(AdapterKind.options, ['claude-code', 'codex', 'acp', 'grok', 'gemini']);
-  assert.deepEqual(ApprovalKind.options, ['tool', 'decision', 'computer_control']);
+  for (const k of ['tool', 'decision', 'computer_control', 'terminal', 'remote_view', 'remote_control', 'app_control']) assert.ok(ApprovalKind.options.includes(k as never), k);
   const body = {
     v: 1,
     aid: 'a1',
@@ -60,13 +60,25 @@ test('new session: Grok and Gemini only once that computer reports them connecte
     { provider: 'google', device_id: 'pc2', doc: doc('connected') },
   ]);
   const on = (dev: string) =>
-    Object.fromEntries(adaptersFor(idx, dev).map((o) => [o.adapter.kind, o.availability]));
+    Object.fromEntries(
+      adaptersFor(idx, dev)
+        .filter((o) => ['claude-code', 'codex', 'grok', 'gemini'].includes(o.adapter.appId))
+        .map((o) => [o.adapter.kind, o.availability]),
+    );
   assert.deepEqual(on('pc1'), { 'claude-code': 'ready', codex: 'ready', grok: 'ready', gemini: 'connect' });
   assert.deepEqual(on('pc2'), { 'claude-code': 'ready', codex: 'ready', grok: 'connect', gemini: 'ready' });
+  // Every other session app (goose, opencode, qwen-code…) is offered too, by app id on the ACP adapter.
+  const all = adaptersFor(idx, 'pc1');
+  for (const id of ['goose', 'opencode', 'qwen-code', 'copilot-cli', 'cursor-cli', 'mistral-vibe']) {
+    const o = all.find((x) => x.adapter.appId === id);
+    assert.ok(o, id);
+    assert.equal(o.adapter.kind, 'acp');
+    assert.equal(o.availability, 'connect', `${id} needs a connected report first`);
+  }
   // No report (or the read failed): disabled with the link to connect, never offered blind.
   assert.deepEqual(on('pc3'), { 'claude-code': 'ready', codex: 'ready', grok: 'connect', gemini: 'connect' });
   for (const state of ['installing', 'signing_in', 'error', 'blocked_by_policy', 'not_installed'] as const) {
-    const grok = START_ADAPTERS.find((a) => a.kind === 'grok')!;
+    const grok = START_ADAPTERS.find((a) => a.appId === 'grok')!;
     assert.equal(adapterAvailability(grok, indexConnections([{ provider: 'xai', device_id: 'd', doc: doc(state) }]).d), 'connect');
   }
   // Switching computers drops a choice that isn't usable there.
@@ -82,7 +94,7 @@ test('adapter names come from integrations.* (both languages)', () => {
   assert.equal(adapterNameKey('acp'), null);
   assert.equal(adapterNameKey(undefined), null);
   for (const m of [es, en]) {
-    for (const a of START_ADAPTERS) {
+    for (const a of START_ADAPTERS.filter((x) => x.kind !== 'acp')) {
       const [p, k] = adapterNameKey(a.kind)!.split('.') as [string, string];
       assert.ok((m.integrations as unknown as Record<string, Record<string, string>>)[p]![k]);
     }

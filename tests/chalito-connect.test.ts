@@ -4,7 +4,8 @@ import {
   CommandBody,
   CommandPayload,
   Provider,
-  ProviderStatusDoc,
+  ProviderConnectionDoc as ProviderStatusDoc,
+  AppConnectionDoc,
   AdapterKind,
 } from '@chalito/protocol';
 import {
@@ -97,7 +98,7 @@ test('protocol: the four providers and the provider.* commands, as in the connec
 });
 
 const status = (over: Partial<ProviderStatus> = {}): ProviderStatus => ({
-  provider: 'xai',
+  appId: 'grok',
   deviceId: 'd1',
   state: 'needs_auth',
   mode: null,
@@ -117,11 +118,17 @@ test('connections: status reports, pre-contract rows and junk', () => {
     error: null,
     at: 42,
   };
+  // Pre-engine provider names map to their app ids.
   assert.deepEqual(parseConnection({ provider: 'google', device_id: 'd1', doc }), {
-    provider: 'google',
+    appId: 'gemini',
     deviceId: 'd1',
     ...doc,
   });
+  // Engine rows: any app id, with kind/custom/name.
+  const appDoc = { ...doc, state: 'available', connected: false, mode: null, kind: 'web-app', custom: false };
+  assert.ok(AppConnectionDoc.safeParse(appDoc).success);
+  assert.equal(parseConnection({ provider: 'perplexity', device_id: 'd1', doc: appDoc })?.state, 'available');
+  assert.equal(parseConnection({ provider: 'claude-code', device_id: 'd1', doc })?.appId, 'claude-code');
   const legacy = parseConnection({
     provider: 'openai',
     device_id: 'd1',
@@ -129,17 +136,17 @@ test('connections: status reports, pre-contract rows and junk', () => {
   });
   assert.equal(legacy?.state, 'connected');
   assert.equal(legacy?.mode, 'signin');
-  assert.equal(parseConnection({ provider: 'mistral', device_id: 'd1', doc }), null);
+  assert.equal(parseConnection({ provider: 'Not An Id!', device_id: 'd1', doc }), null);
   assert.equal(parseConnection({ provider: 'xai', device_id: 'd1', doc: { nope: 1 } }), null);
   const idx = indexConnections([
     { provider: 'xai', device_id: 'd1', doc },
     { provider: 'google', device_id: 'd2', doc },
-    { provider: 'bad', device_id: 'd3', doc },
+    { provider: 'BAD id', device_id: 'd3', doc },
   ]);
   assert.deepEqual(Object.keys(idx).sort(), ['d1', 'd2']);
   // Settings' read-only view keeps working with the new doc shape.
   assert.deepEqual(toSettingsConnection({ provider: 'google', device_id: 'd1', doc }), {
-    provider: 'google',
+    provider: 'gemini',
     deviceId: 'd1',
     mode: 'byo_api_key',
     connected: true,
@@ -147,9 +154,10 @@ test('connections: status reports, pre-contract rows and junk', () => {
 });
 
 test('actions per state, with the plan sign-in gated by subscriptionLocal', () => {
-  const on = { subscription: 'on' };
-  const off = { subscription: 'off' };
-  const owner = { subscription: 'owner_only' };
+  const agent = { group: 'agent', installable: true, apiKey: { label: 'API key', docsUrl: 'https://x' } } as const;
+  const on = { ...agent, planSignin: 'on' } as const;
+  const off = { ...agent, planSignin: 'off' } as const;
+  const owner = { ...agent, planSignin: 'owner_only' } as const;
   assert.deepEqual(actionsFor(null, on), ['api_key', 'signin']);
   assert.deepEqual(actionsFor(null, off), ['api_key']);
   assert.deepEqual(actionsFor(null, owner), ['api_key', 'signin']);
@@ -164,6 +172,15 @@ test('actions per state, with the plan sign-in gated by subscriptionLocal', () =
     actionsFor(status({ state: 'error', cli: { installed: false, version: null } }), on),
     ['install'],
   );
+  // An agent with no API key (goose, opencode): only its own sign-in.
+  assert.deepEqual(actionsFor(null, { ...on, apiKey: undefined }), ['signin']);
+  // Desktop apps and websites: open them on that computer; install a missing desktop app.
+  const web = { group: 'web', planSignin: 'on', installable: false } as const;
+  const desktop = { group: 'desktop', planSignin: 'on', installable: true } as const;
+  assert.deepEqual(actionsFor(null, web), ['launch']);
+  assert.deepEqual(actionsFor(status({ state: 'available' }), web), ['launch']);
+  assert.deepEqual(actionsFor(status({ state: 'not_installed' }), desktop), ['install']);
+  assert.deepEqual(actionsFor(status({ state: 'not_installed' }), { ...desktop, installable: false }), []);
   assert.equal(signinGate('approved'), 'on');
   assert.equal(signinGate('nonsense'), 'off');
 });
@@ -220,5 +237,27 @@ test('connect copy exists in es and en for every state, action and provider', ()
       if (o.subscription === 'owner_only') assert.ok(p.ownerOnly, `${o.provider}.ownerOnly`);
     }
     assert.ok(typeof m.integrations.iHave === 'string', 'old keys keep working');
+  }
+});
+
+test('every catalog app, group, state and action has its copy in es and en', async () => {
+  const { CATALOG } = await import('@/lib/chalito/web/apps-catalog');
+  assert.ok(CATALOG.length >= 25);
+  assert.equal(new Set(CATALOG.map((a) => a.id)).size, CATALOG.length, 'unique ids');
+  const states = ['not_installed', 'installing', 'needs_auth', 'signing_in', 'connected', 'error', 'blocked_by_policy', 'available'];
+  const actions = ['api_key', 'signin', 'install', 'disconnect', 'launch'];
+  for (const m of [es, en] as unknown as { connect: Record<string, Record<string, string>> }[]) {
+    for (const g of ['agent', 'desktop', 'web']) {
+      assert.ok(m.connect.groups![g], `groups.${g}`);
+      assert.ok(m.connect.howTo![g], `howTo.${g}`);
+    }
+    for (const g of ['desktop', 'web']) assert.ok(m.connect.launchNote![g], `launchNote.${g}`);
+    for (const st of states) assert.ok(m.connect.state![st], `state.${st}`);
+    for (const a of actions) assert.ok(m.connect.actions![a], `actions.${a}`);
+  }
+  // Every app sorts into a group and agents that take a key name it.
+  for (const a of CATALOG) {
+    assert.ok(['agent', 'desktop', 'web'].includes(a.group), a.id);
+    if (a.apiKey) assert.ok(a.apiKey.label && a.apiKey.docsUrl.startsWith('https://'), a.id);
   }
 });

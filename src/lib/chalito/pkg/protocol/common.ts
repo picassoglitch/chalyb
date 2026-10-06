@@ -85,7 +85,7 @@ export const DeviceKind = z.enum(["desktop", "laptop", "phone", "web"]);
 export const AdapterKind = z.enum(["claude-code", "codex", "acp", "grok", "gemini"]);
 export type AdapterKind = z.infer<typeof AdapterKind>;
 
-/** AI providers a device can connect (providers.yaml; chalito.connections.provider). */
+/** The AI providers a person can connect on a device (Claude Code, Codex, Grok Build, Gemini CLI). */
 export const Provider = z.enum(["anthropic", "openai", "xai", "google"]);
 export type Provider = z.infer<typeof Provider>;
 

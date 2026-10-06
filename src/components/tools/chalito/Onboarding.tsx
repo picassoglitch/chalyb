@@ -125,7 +125,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
             ))}
           </div>
           {path === "guided" ? (
-            <ConnectProviders agents={agents} />
+            <ConnectProviders compact />
           ) : (
             <p>{t("connect.expertBody")}</p>
           )}
