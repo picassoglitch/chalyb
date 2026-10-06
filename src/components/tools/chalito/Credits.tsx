@@ -4,9 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import type { Balance } from "@/lib/chalito/web/balance";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito } from "@/lib/chalito/provider";
-
-/** The Chalyb tiers this page can name (packages/config plans.yaml hubTiers). */
-const HUB_TIERS = new Set(["free", "pro", "vip"]);
+import { HUB_PLAN_LIMITS, hubPlanOf } from "@/lib/chalito/pkg/ui/settings/plan-limits";
 
 /** Where credits are bought: the hub's own usage page (token packs). Prices only ever live there. */
 export const RECHARGE_PATH = "/app/usage";
@@ -93,6 +91,7 @@ export const Credits = () => {
       alive = false;
     };
   }, [settings, status]);
+  const plan = tier === "loading" ? null : hubPlanOf(tier);
 
   return (
     <div className="grid max-w-2xl gap-5">
@@ -101,8 +100,11 @@ export const Credits = () => {
         <h2 className="font-semibold">{t("plan.title")}</h2>
         {tier === "loading" ? (
           <p aria-live="polite">{t("plan.loading")}</p>
-        ) : tier && HUB_TIERS.has(tier) ? (
-          <p data-testid="credits-tier">{t("plan.yours", { plan: tp(tier) })}</p>
+        ) : plan ? (
+          <>
+            <p data-testid="credits-tier">{t("plan.yours", { plan: tp(plan) })}</p>
+            <p data-testid="credits-limits">{t("plan.limits", HUB_PLAN_LIMITS[plan])}</p>
+          </>
         ) : (
           <p data-testid="credits-tier">{status === "signed_out" ? t("plan.signedOut") : t("plan.unknown")}</p>
         )}

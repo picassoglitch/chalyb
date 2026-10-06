@@ -11,6 +11,7 @@ import {
   Toggle,
 } from "./fields";
 import { canOptIn, chargesApply, type PhoneVerifier, type SettingsValues } from "./values";
+import { HUB_PLAN_LIMITS, hubPlanOf } from "./plan-limits";
 
 /** Where a settings panel is rendered. Every setting renders in both (brief M5 settings parity). */
 export const SHELLS = ["web", "desktop"] as const;
@@ -51,9 +52,11 @@ const Labelled = ({ k, children }: { k: string; children: ReactNode }) => {
 const PlanCredits = ({ ctx }: { ctx: SettingContext }) => {
   const { t } = useUiText();
   const { tier, trialEndsAt } = ctx.values.planCredits;
+  const plan = hubPlanOf(tier);
   return (
     <Labelled k="planCredits">
-      <p>{tier ? t("planCredits.tier", { tier }) : t("planCredits.unknown")}</p>
+      <p>{tier ? t("planCredits.tier", { tier: plan ? t(`planCredits.names.${plan}`) : tier }) : t("planCredits.unknown")}</p>
+      {plan ? <p data-testid="plan-limits">{t("planCredits.limits", HUB_PLAN_LIMITS[plan])}</p> : null}
       {trialEndsAt ? <p className="text-sm text-neutral-600">{t("planCredits.trial", { date: trialEndsAt })}</p> : null}
       {ctx.usageHref ? (
         <a className="text-emerald-700 underline" href={ctx.usageHref} data-testid="usage-link">
