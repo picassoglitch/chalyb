@@ -3,11 +3,14 @@ import { safeNextPath } from "@chalito/ui";
 /** Where a notification may send someone: an approval, a mesa, a room, or credits. Nothing else. */
 const TARGET = /^\/(a|m|r)\/[A-Za-z0-9_-]{1,128}$|^\/creditos$/;
 
-/** The notification's deepLink, localized, or null when it isn't one of ours. */
+/**
+ * The notification's deepLink, localized and under the hub's /app/chalito, or null when it isn't
+ * one of ours. Deep links stay Chalito paths ("/a/<id>"); the prefix is added here.
+ */
 export const notificationTarget = (deepLink: string, locale: "es" | "en"): string | null => {
   const p = safeNextPath(deepLink);
   if (!TARGET.test(p)) return null;
-  return locale === "en" ? `/en${p}` : p;
+  return `${locale === "en" ? "/en" : ""}/app/chalito${p}`;
 };
 
 /**

@@ -1,12 +1,13 @@
 "use client";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { hubLaunchUrl } from "@/lib/chalito/web/hub";
-import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
 
-/** Live screens need a signed-in, paired, connected device; otherwise say what's missing. */
+/**
+ * Live screens need a signed-in, paired, connected device; otherwise say what's missing. Inside
+ * the hub the sign-in itself is HubBridge's (the layout), so there is no sign-in button here.
+ */
 export const LiveGate = ({ children }: { children: ReactNode }) => {
   const t = useTranslations("chalito.live.gate");
   const { status, newDevice } = useChalito();
@@ -31,18 +32,6 @@ export const LiveGate = ({ children }: { children: ReactNode }) => {
         <Link href="/vincular" data-testid="gate-link" className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white">
           {t("link")}
         </Link>
-      ) : null}
-      {status === "signed_out" && hubLaunchUrl() ? (
-        <a
-          className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white"
-          href={hubLaunchUrl()!}
-          onClick={(e) => {
-            e.preventDefault();
-            signInAndReturn(window.location.pathname + window.location.search);
-          }}
-        >
-          {t("signIn")}
-        </a>
       ) : null}
     </div>
   );
