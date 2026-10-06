@@ -185,7 +185,7 @@ export const Room = ({ roomId }: { roomId: string }) => {
     return (
       <p data-testid="room-no-companion">
         {t("noCompanion")}{" "}
-        <Link href="/bienvenida" className="underline">
+        <Link href="/bienvenida" className="ch-lnk">
           →
         </Link>
       </p>
@@ -231,22 +231,22 @@ export const Room = ({ roomId }: { roomId: string }) => {
   };
 
   return (
-    <div className="grid gap-4" data-testid="room" data-room={roomId} data-status={snap.status}>
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold">{snap.room?.name ?? ""}</h1>
+    <div className="ch-chl" data-testid="room" data-room={roomId} data-status={snap.status}>
+      <div className="ch-chl-row ch-chl-row--between">
+        <h2 className="ch-h2">{snap.room?.name ?? ""}</h2>
         {!ended ? (
           confirmLeave ? (
-            <span className="ml-auto flex items-center gap-2 text-sm">
+            <span className="ch-chl-row">
               {t("leaveConfirm")}
-              <button className="rounded bg-red-700 px-2 py-1 text-white" onClick={() => void leave()}>
+              <button className="ch-btn ch-btn--danger ch-btn--compact" onClick={() => void leave()}>
                 {t("leaveYes")}
               </button>
-              <button className="rounded border px-2 py-1" onClick={() => setConfirmLeave(false)}>
+              <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirmLeave(false)}>
                 {t("cancel")}
               </button>
             </span>
           ) : (
-            <button className="ml-auto rounded border px-3 py-1 text-sm" onClick={() => setConfirmLeave(true)}>
+            <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirmLeave(true)}>
               {t("leave")}
             </button>
           )
@@ -257,13 +257,13 @@ export const Room = ({ roomId }: { roomId: string }) => {
         <RoomReportDialog target={report} label={report.label} onSubmit={sendReport} onCancel={() => setReport(null)} />
       ) : null}
       {note ? (
-        <p role="status" data-testid="room-note" className="text-sm">
+        <p role="status" data-testid="room-note" className="ch-muted">
           {note}
         </p>
       ) : null}
       {!ended && snap.room?.needsRotation ? <RoomRotation onRotate={async () => errOf(await ctl.rotateKey())} /> : null}
       {!ended ? <RoomStage roomId={roomId} label={t("stage")} members={stageMembers} events={stageEvents} /> : null}
-      <section className="grid gap-2">
+      <section className="ch-chl ch-chl--tight">
         <RoomEventList
           events={snap.events}
           me={me ?? ""}
@@ -278,10 +278,10 @@ export const Room = ({ roomId }: { roomId: string }) => {
         />
         {!ended ? <RoomComposer onSend={send} /> : null}
       </section>
-      <section className="grid gap-2" aria-labelledby="room-members">
-        <h2 id="room-members" className="font-semibold">
+      <section className="ch-chl ch-chl--tight" aria-labelledby="room-members">
+        <h3 id="room-members" className="ch-ghead">
           {t("members")}
-        </h2>
+        </h3>
         <RoomMembers
           members={snap.members}
           onReport={

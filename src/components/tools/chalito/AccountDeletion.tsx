@@ -91,18 +91,18 @@ export const AccountDeletion = () => {
     <section
       data-testid="account-deletion"
       data-state={state === "error" ? "error" : state.status}
-      className="grid gap-3 rounded-lg border border-red-200 p-4"
+      className="ch-card ch-chl-card"
     >
-      <h2 className="font-semibold">{t("title")}</h2>
-      {state === "error" ? <p role="alert">{t("loadFailed")}</p> : null}
+      <h3 className="ch-chl-h3">{t("title")}</h3>
+      {state === "error" ? <p role="alert" className="ch-chl-bad">{t("loadFailed")}</p> : null}
       {scheduled && left ? (
-        <div className="grid gap-2 rounded-md bg-red-50 p-3 text-red-900">
+        <div className="ch-card ch-chl-card ch-chl-card--bad">
           <p data-testid="deletion-due">
             {t("scheduled", { date: format.dateTime(scheduled.dueAt, { dateStyle: "long", timeStyle: "short" }) })}
           </p>
           <p data-testid="deletion-countdown">{t("countdown", { days: left.days, hours: left.hours })}</p>
           <button
-            className="w-fit rounded-lg bg-white px-4 py-2 text-red-900 ring-1 ring-red-800 disabled:opacity-50"
+            className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit"
             disabled={busy}
             onClick={() => void cancel()}
           >
@@ -111,10 +111,10 @@ export const AccountDeletion = () => {
         </div>
       ) : state !== "error" ? (
         <>
-          <p className="text-sm text-neutral-700">{t("explain")}</p>
+          <p className="ch-muted">{t("explain")}</p>
           {!confirming ? (
             <button
-              className="w-fit rounded-lg border border-red-800 px-4 py-2 text-red-900"
+              className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit"
               onClick={() => setConfirming(true)}
             >
               {t("start")}
@@ -124,31 +124,31 @@ export const AccountDeletion = () => {
           ) : !passkey.enrolled ? (
             <p role="note">
               {t("needsPasskey")}{" "}
-              <Link href="/dispositivos" className="text-emerald-700 underline">
+              <Link href="/dispositivos" className="ch-lnk">
                 {t("setUpPasskey")}
               </Link>
             </p>
           ) : (
-            <div className="grid gap-2 rounded-md bg-red-50 p-3 text-red-900">
-              <ul className="list-disc pl-5 text-sm">
+            <div className="ch-card ch-chl-card ch-chl-card--bad">
+              <ul className="ch-chl-bullets">
                 <li>{t("what.data")}</li>
                 <li>{t("what.grace")}</li>
                 <li>{t("what.export")}</li>
                 <li>{t("what.hub")}</li>
               </ul>
-              <label className="flex items-center gap-2">
+              <label className="ch-chl-check">
                 <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
                 {t("ack")}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="ch-chl-row">
                 <button
-                  className="rounded-lg bg-red-800 px-4 py-2 text-white disabled:opacity-50"
+                  className="ch-btn ch-btn--danger ch-btn--compact"
                   disabled={!ack || busy}
                   onClick={() => void request()}
                 >
                   {t("confirm")}
                 </button>
-                <button className="rounded-lg border px-4 py-2" onClick={() => setConfirming(false)}>
+                <button className="ch-btn ch-btn--gray ch-btn--compact" onClick={() => setConfirming(false)}>
                   {t("back")}
                 </button>
               </div>
@@ -157,7 +157,7 @@ export const AccountDeletion = () => {
         </>
       ) : null}
       {hasExport ? (
-        <button className="w-fit text-emerald-700 underline" onClick={() => void download()}>
+        <button className="ch-lnk ch-chl-fit" onClick={() => void download()}>
           {t("download")}
         </button>
       ) : null}

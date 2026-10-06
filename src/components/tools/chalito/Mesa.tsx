@@ -84,11 +84,11 @@ export const Mesa = ({ mid }: { mid: string }) => {
   if (info === "error") return <p role="alert">{t("errors.load")}</p>;
   if (info === null)
     return (
-      <div className="grid gap-2">
+      <div className="ch-chl ch-chl--tight">
         <p role="alert" data-testid="mesa-missing">
           {t("errors.notFound")}
         </p>
-        <Link href="/m" className="text-emerald-700 underline">
+        <Link href="/m" className="ch-lnk ch-chl-fit">
           {t("back")}
         </Link>
       </div>
@@ -139,36 +139,36 @@ export const Mesa = ({ mid }: { mid: string }) => {
   };
 
   return (
-    <div className="grid gap-4" data-testid="mesa">
-      <Link href="/m" className="w-fit text-sm text-emerald-700 underline">
+    <div className="ch-chl" data-testid="mesa">
+      <Link href="/m" className="ch-lnk ch-chl-fit">
         {t("back")}
       </Link>
-      <h1 className="text-2xl font-bold">
+      <h2 className="ch-h2">
         {info.participants
           .filter((p) => p.kind !== "human")
           .map((p) => p.name)
           .join(" · ")}
-      </h1>
+      </h2>
       {goal ? (
         <p data-testid="mesa-goal">
-          <span className="font-medium">{t("goal")}: </span>
+          <span className="ch-chl-strong">{t("goal")}: </span>
           {goal}
         </p>
       ) : (
-        <form onSubmit={saveGoal} className="grid gap-1">
-          <label className="text-sm text-neutral-700" htmlFor="mesa-goal">
+        <form onSubmit={saveGoal} className="ch-field">
+          <label htmlFor="mesa-goal">
             {t("goalMissing")}
           </label>
-          <div className="flex gap-2">
+          <div className="ch-paste">
             <input
               id="mesa-goal"
-              className="flex-1 rounded-md border px-3 py-2"
+              className="ch-input"
               maxLength={240}
               value={goalDraft}
               placeholder={t("goalPlaceholder")}
               onChange={(e) => setGoalDraft(e.target.value)}
             />
-            <button type="submit" className="rounded-md border px-3 py-2">
+            <button type="submit" className="ch-btn ch-btn--secondary">
               {t("goalSave")}
             </button>
           </div>
@@ -182,12 +182,12 @@ export const Mesa = ({ mid }: { mid: string }) => {
         Link={NextLinkLike}
       />
       {stopped ? (
-        <p role="status" data-testid="mesa-stopped" className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <p role="status" data-testid="mesa-stopped" className="ch-card ch-chl-card ch-chl-card--warn ch-chl-warn">
           {t(`errors.${info.status}`)}
         </p>
       ) : null}
       {error ? (
-        <p role="alert" data-testid="mesa-error" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p role="alert" data-testid="mesa-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-bad">
           {error}
         </p>
       ) : null}

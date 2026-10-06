@@ -53,7 +53,7 @@ export const RoomStage = ({
       data-testid="room-stage"
       role="img"
       aria-label={label}
-      className="aspect-[16/9] w-full rounded-xl bg-gradient-to-b from-sky-50 to-emerald-50"
+      className="ch-chl-stage"
     />
   );
 };

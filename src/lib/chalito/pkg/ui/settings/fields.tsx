@@ -20,7 +20,7 @@ export const ChargesNotice = () => {
     <p
       role="note"
       data-testid="charges-notice"
-      className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900"
+      className="ch-card ch-chl-card ch-chl-card--warn ch-chl-item"
     >
       {t("charges")}
     </p>
@@ -44,17 +44,16 @@ export const Toggle = ({
 }) => {
   const id = useId();
   return (
-    <div>
-      <div className="flex items-start justify-between gap-4">
-        <label htmlFor={id} className="font-medium">
+    <div className="ch-chl ch-chl--tight">
+      <div className="ch-chl-toggle">
+        <label htmlFor={id} className="ch-chl-strong">
           {label}
-          {hint ? <span className="block text-sm font-normal text-neutral-600">{hint}</span> : null}
+          {hint ? <span className="ch-chl-toggle__hint">{hint}</span> : null}
         </label>
         <input
           id={id}
           type="checkbox"
           role="switch"
-          className="mt-1 h-5 w-5"
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange(e.target.checked)}
@@ -143,11 +142,11 @@ export const PhoneField = ({
   const verifiedNumber = value.verified ? value.e164 : stage === "done" ? pending : null;
   if (stage === "done" && verifiedNumber)
     return (
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="ch-chl-row">
         <span data-testid="phone-verified">{t("phone.verified", { number: verifiedNumber })}</span>
         <button
           type="button"
-          className="rounded-md border px-3 py-1 text-sm"
+          className="ch-btn ch-btn--secondary ch-btn--compact"
           onClick={() => {
             setStage("edit");
             setError(null);
@@ -160,32 +159,34 @@ export const PhoneField = ({
 
   if (stage === "code")
     return (
-      <div className="grid gap-2">
+      <div className="ch-chl ch-chl--tight">
         <p>{t("phone.codeSent", { number: pending ?? "" })}</p>
-        <label htmlFor={codeId}>{t("phone.code")}</label>
+        <label htmlFor={codeId} className="ch-chl-strong">
+          {t("phone.code")}
+        </label>
         <input
           id={codeId}
           inputMode="numeric"
           autoComplete="one-time-code"
-          className="w-40 rounded-md border px-3 py-2 tracking-widest"
+          className="ch-input ch-chl-shrink ch-chl-codeinput"
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
         />
-        <div className="flex gap-2">
+        <div className="ch-chl-row">
           <button
             type="button"
-            className="rounded-md bg-emerald-700 px-3 py-1 text-white disabled:opacity-50"
+            className="ch-btn ch-btn--primary ch-btn--compact"
             disabled={busy || code.length < 4}
             onClick={() => void check()}
           >
             {t("phone.verify")}
           </button>
-          <button type="button" className="rounded-md border px-3 py-1" onClick={() => setStage("edit")}>
+          <button type="button" className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setStage("edit")}>
             {t("phone.change")}
           </button>
         </div>
         {error ? (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="ch-err">
             {error}
           </p>
         ) : null}
@@ -193,13 +194,13 @@ export const PhoneField = ({
     );
 
   return (
-    <div className="grid gap-2 sm:grid-cols-[minmax(0,14rem)_1fr]">
-      <label htmlFor={countryId} className="sr-only">
+    <div className="ch-chl-phone">
+      <label htmlFor={countryId} className="ch-sr">
         {t("phone.country")}
       </label>
       <select
         id={countryId}
-        className="rounded-md border px-2 py-2"
+        className="ch-select"
         value={country}
         onChange={(e) => setCountry(e.target.value as CountryCode)}
       >
@@ -209,7 +210,7 @@ export const PhoneField = ({
           </option>
         ))}
       </select>
-      <label htmlFor={numberId} className="sr-only">
+      <label htmlFor={numberId} className="ch-sr">
         {t("phone.number")}
       </label>
       <input
@@ -217,27 +218,27 @@ export const PhoneField = ({
         type="tel"
         inputMode="tel"
         autoComplete="tel-national"
-        className="rounded-md border px-3 py-2"
+        className="ch-input"
         placeholder={t("phone.placeholder")}
         value={national}
         aria-invalid={!!error}
         onChange={(e) => setNational(e.target.value)}
       />
-      <div className="grid gap-2 sm:col-span-2">
-        <fieldset className="flex flex-wrap gap-4 text-sm">
-          <legend className="sr-only">{t("phone.channel")}</legend>
+      <div className="ch-chl ch-chl--tight ch-chl-span">
+        <fieldset className="ch-chl-fieldset ch-chl-row">
+          <legend className="ch-sr">{t("phone.channel")}</legend>
           {(["sms", "call"] as const).map((c) => (
-            <label key={c} className="flex items-center gap-1">
+            <label key={c} className="ch-chl-check">
               <input type="radio" name="otp-channel" checked={channel === c} onChange={() => setChannel(c)} />
               {t(`phone.by.${c}`)}
             </label>
           ))}
         </fieldset>
-        <p className="text-sm text-neutral-600">{t(channel === "sms" ? "phone.willSend" : "phone.willCall")}</p>
-        {!chargesAck ? <p className="text-sm text-amber-900">{t("needsAck")}</p> : null}
+        <p className="ch-chl-small">{t(channel === "sms" ? "phone.willSend" : "phone.willCall")}</p>
+        {!chargesAck ? <p className="ch-chl-small ch-chl-warn">{t("needsAck")}</p> : null}
         <button
           type="button"
-          className="w-fit rounded-md bg-emerald-700 px-3 py-1 text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary ch-btn--compact ch-chl-fit"
           disabled={busy || !national.trim() || !chargesAck}
           onClick={() => void send()}
         >
@@ -245,7 +246,7 @@ export const PhoneField = ({
         </button>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-red-700 sm:col-span-2">
+        <p role="alert" className="ch-err ch-chl-span">
           {error}
         </p>
       ) : null}
@@ -257,16 +258,16 @@ export const CompanionPicker = ({ value, onChange }: { value: CompanionId; onCha
   const { t, locale } = useUiText();
   const asset = useRosterAsset();
   return (
-    <div role="radiogroup" aria-label={t("avatar.label")} className="grid grid-cols-3 gap-3">
+    <div role="radiogroup" aria-label={t("avatar.label")} className="ch-chl-pick">
       {COMPANIONS.map((c) => (
         <label
           key={c}
-          className={`cursor-pointer rounded-xl border p-3 text-center ${value === c ? "border-emerald-600 ring-2 ring-emerald-600" : ""}`}
+          className={`ch-card ch-chl-pick__opt${value === c ? " ch-chl-pick__opt--on" : ""}`}
         >
           <input
             type="radio"
             name="companion"
-            className="sr-only"
+            className="ch-sr"
             value={c}
             checked={value === c}
             onChange={() => onChange(c)}
@@ -279,12 +280,12 @@ export const CompanionPicker = ({ value, onChange }: { value: CompanionId; onCha
               height={64}
               loading="lazy"
               decoding="async"
-              className="mx-auto mb-2 block h-16 w-16 rounded-full bg-emerald-50 object-cover object-top"
+              className="ch-chl-pick__img"
             />
           ) : (
-            <span aria-hidden className="mx-auto mb-2 block h-12 w-12 rounded-full bg-emerald-100" />
+            <span aria-hidden className="ch-chl-pick__ph" />
           )}
-          <span className="text-sm font-medium">{companionName(c, locale)}</span>
+          <span className="ch-chl-pick__name">{companionName(c, locale)}</span>
         </label>
       ))}
     </div>
@@ -303,23 +304,23 @@ export const CompanionNameField = ({
   const id = useId();
   const title = formatCompanionTitle(value.name, value.isRenamed, locale);
   return (
-    <div className="grid gap-2">
-      <label htmlFor={id} className="font-medium">
+    <div className="ch-chl ch-chl--tight">
+      <label htmlFor={id} className="ch-chl-strong">
         {t("companionName.label")}
       </label>
       <input
         id={id}
-        className="rounded-md border px-3 py-2"
+        className="ch-input"
         maxLength={80}
         placeholder={t("companionName.placeholder")}
         value={value.name}
         onChange={(e) => onChange({ name: e.target.value, isRenamed: e.target.value.trim().length > 0 })}
       />
-      <p data-testid="companion-title" className="text-lg font-semibold">
+      <p data-testid="companion-title" className="ch-chl-h3">
         {title.title}
       </p>
       {title.credit ? (
-        <p data-testid="credit-line" className="text-sm text-neutral-600">
+        <p data-testid="credit-line" className="ch-chl-small">
           {title.credit}
         </p>
       ) : null}
@@ -332,11 +333,11 @@ export const QuietHoursField = ({ value, onChange }: { value: QuietHours; onChan
   const startId = useId();
   const endId = useId();
   return (
-    <fieldset className="grid gap-2">
-      <legend className="font-medium">{t("quietHours.label")}</legend>
-      <p className="text-sm text-neutral-600">{t("quietHours.hint")}</p>
+    <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+      <legend className="ch-chl-strong">{t("quietHours.label")}</legend>
+      <p className="ch-chl-small">{t("quietHours.hint")}</p>
       {(["default", "custom", "off"] as const).map((m) => (
-        <label key={m} className="flex items-center gap-2">
+        <label key={m} className="ch-chl-check">
           <input
             type="radio"
             name="quiet-hours"
@@ -347,12 +348,12 @@ export const QuietHoursField = ({ value, onChange }: { value: QuietHours; onChan
         </label>
       ))}
       {value.mode === "custom" ? (
-        <div className="flex items-center gap-2">
+        <div className="ch-chl-row">
           <label htmlFor={startId}>{t("quietHours.from")}</label>
           <input
             id={startId}
             type="time"
-            className="rounded-md border px-2 py-1"
+            className="ch-input ch-chl-shrink"
             value={value.start}
             onChange={(e) => onChange({ ...value, start: e.target.value })}
           />
@@ -360,7 +361,7 @@ export const QuietHoursField = ({ value, onChange }: { value: QuietHours; onChan
           <input
             id={endId}
             type="time"
-            className="rounded-md border px-2 py-1"
+            className="ch-input ch-chl-shrink"
             value={value.end}
             onChange={(e) => onChange({ ...value, end: e.target.value })}
           />
@@ -380,13 +381,13 @@ export const RenderQualityField = ({
   const { t } = useUiText();
   const id = useId();
   return (
-    <div className="flex items-center justify-between gap-4">
-      <label htmlFor={id} className="font-medium">
+    <div className="ch-chl-row ch-chl-row--between">
+      <label htmlFor={id} className="ch-chl-strong">
         {t("renderQuality.label")}
       </label>
       <select
         id={id}
-        className="rounded-md border px-2 py-2"
+        className="ch-select"
         value={value}
         onChange={(e) => onChange(e.target.value as RenderQuality)}
       >
@@ -409,13 +410,13 @@ export const ConnectionsField = ({
   providerLabel: (provider: string) => string;
 }) => {
   const { t } = useUiText();
-  if (value.length === 0) return <p className="text-sm text-neutral-600">{t("connections.none")}</p>;
+  if (value.length === 0) return <p className="ch-chl-small">{t("connections.none")}</p>;
   return (
-    <ul className="divide-y rounded-md border">
+    <ul className="ch-group ch-chl-rows">
       {value.map((c) => (
-        <li key={c.provider} className="flex items-center justify-between px-3 py-2">
-          <span>{providerLabel(c.provider)}</span>
-          <span className="text-sm text-neutral-600">
+        <li key={c.provider} className="ch-row">
+          <span className="ch-row__tx">{providerLabel(c.provider)}</span>
+          <span className="ch-row__val">
             {c.connected ? t(`connections.mode.${c.mode}`) : t("connections.notConnected")}
           </span>
         </li>

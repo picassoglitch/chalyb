@@ -187,54 +187,54 @@ export const ConnectProviders = ({
     (g) => g.apps.length > 0,
   );
   const sections = (body: (a: CatalogApp) => ReactNode) => (
-    <div className="grid gap-3">
+    <div className="ch-chl">
       {apps.length > SEARCH_FROM ? (
         <input
           type="search"
-          className="rounded-lg border px-3 py-2 text-sm"
+          className="ch-input"
           placeholder={t("search")}
           aria-label={t("search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       ) : null}
-      {grouped.length === 0 ? <p className="text-sm text-neutral-600">{t("noMatch")}</p> : null}
+      {grouped.length === 0 ? <p className="ch-muted">{t("noMatch")}</p> : null}
       {grouped.map(({ group, apps: list }) => (
         <details
           key={group}
           open={!compact || group === "agent" || !!q}
-          className="rounded-lg border p-3"
+          className="ch-chl-details"
           data-group={group}
         >
-          <summary className="cursor-pointer font-medium">
+          <summary className="ch-chl-strong">
             {t(`groups.${group}`)} ({list.length})
           </summary>
-          <ul className="mt-3 grid gap-3">{list.map(body)}</ul>
+          <ul className="ch-chl-list">{list.map(body)}</ul>
         </details>
       ))}
     </div>
   );
 
   const howTo = sections((a) => (
-    <li key={a.id} className="rounded-lg border p-3" data-app={a.id}>
-      <p className="font-medium">{a.name}</p>
-      <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.id}`}>
+    <li key={a.id} className="ch-card ch-chl-card ch-chl-card--sub" data-app={a.id}>
+      <p className="ch-chl-strong">{a.name}</p>
+      <p className="ch-chl-small" data-testid={`howto-${a.id}`}>
         {appLine(a)}
       </p>
     </li>
   ));
 
-  if (status === "loading") return <p className="text-sm text-neutral-600">{t("loading")}</p>;
+  if (status === "loading") return <p className="ch-muted">{t("loading")}</p>;
 
   // Not paired here, or no computer yet: the way to get one, not dead buttons.
   const noClient = !client;
   const devicesLoading = !!client && computers.length === 0 && !devicesWaited && live.status !== "live";
-  if (devicesLoading) return <p className="text-sm text-neutral-600">{t("loading")}</p>;
+  if (devicesLoading) return <p className="ch-muted">{t("loading")}</p>;
   if (noClient || computers.length === 0)
     return (
-      <div className="grid gap-3" data-testid="connect-no-computer">
+      <div className="ch-chl" data-testid="connect-no-computer">
         <p>{noClient ? t("noBrowser") : t("noComputer")}</p>
-        <Link href="/descargar" className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white">
+        <Link href="/descargar" className="ch-btn ch-btn--primary ch-chl-fit">
           {t("download")}
         </Link>
         {howTo}
@@ -242,23 +242,23 @@ export const ConnectProviders = ({
     );
 
   return (
-    <div className="grid gap-4" data-testid="connect-providers">
+    <div className="ch-chl" data-testid="connect-providers">
       {load === "error" ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center gap-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-900"
+          className="ch-card ch-chl-card ch-chl-card--bad ch-chl-row"
         >
           <span>{t("loadError")}</span>
-          <button className="rounded-lg border border-red-900 px-3 py-1" onClick={() => void reload()}>
+          <button className="ch-btn ch-btn--danger ch-btn--compact" onClick={() => void reload()}>
             {t("retry")}
           </button>
         </div>
       ) : null}
       {sections((a) => (
-        <li key={a.id} className="grid gap-3 rounded-lg border p-3" data-app={a.id}>
+        <li key={a.id} className="ch-card ch-chl-card ch-chl-card--sub ch-chl-divided" data-app={a.id}>
           <div>
-            <p className="font-medium">{a.name}</p>
-            <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.id}`}>
+            <p className="ch-chl-strong">{a.name}</p>
+            <p className="ch-chl-small" data-testid={`howto-${a.id}`}>
               {appLine(a)}
             </p>
           </div>
@@ -279,7 +279,7 @@ export const ConnectProviders = ({
           ))}
         </li>
       ))}
-      <button className="w-fit rounded-lg border px-3 py-1 text-sm" onClick={refresh}>
+      <button className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit" onClick={refresh}>
         {t("refresh")}
       </button>
     </div>
@@ -329,55 +329,55 @@ const ComputerRow = ({
 
   return (
     <div
-      className="grid gap-2 border-t pt-2 text-sm"
+      className="ch-chl ch-chl--tight"
       data-device={computer.deviceId}
       data-state={status?.state ?? "unknown"}
     >
       <p>
-        {showName ? <span className="font-medium">{t("computer", { name: computer.name })}: </span> : null}
+        {showName ? <span className="ch-chl-strong">{t("computer", { name: computer.name })}: </span> : null}
         <span data-testid="connect-state">{label}</span>
         {status?.state === "connected" && status.mode ? <span> ({t(`via.${status.mode}`)})</span> : null}
         {status?.cli?.version ? (
-          <span className="text-neutral-600"> · {t("version", { version: status.cli.version })}</span>
+          <span className="ch-muted"> · {t("version", { version: status.cli.version })}</span>
         ) : null}
       </p>
       {status?.state === "error" && status.error ? (
-        <p className="text-neutral-600">
+        <p className="ch-muted">
           {t.has(`errors.${status.error}`) ? t(`errors.${status.error}`) : t("errorDetail", { error: status.error })}
         </p>
       ) : null}
-      {status?.state === "blocked_by_policy" ? <p className="text-amber-800">{t("blocked", { name })}</p> : null}
-      {status?.state === "signing_in" ? <p className="text-neutral-600">{t("signinNote")}</p> : null}
-      {!computer.online ? <p className="text-neutral-600">{t("offline")}</p> : null}
+      {status?.state === "blocked_by_policy" ? <p className="ch-chl-warn">{t("blocked", { name })}</p> : null}
+      {status?.state === "signing_in" ? <p className="ch-muted">{t("signinNote")}</p> : null}
+      {!computer.online ? <p className="ch-muted">{t("offline")}</p> : null}
 
       {!trusted ? (
-        <p className="text-amber-800">{t("untrusted")}</p>
+        <p className="ch-chl-warn">{t("untrusted")}</p>
       ) : busy ? (
-        <p role="status" className="text-neutral-600">
+        <p role="status" className="ch-muted">
           {t("waiting")}
         </p>
       ) : form ? (
-        <form className="grid gap-2" onSubmit={submit}>
-          <label className="grid gap-1">
+        <form className="ch-chl ch-chl--tight" onSubmit={submit}>
+          <label className="ch-field">
             <span>{t("keyLabel", { name: app.apiKey?.label ?? name })}</span>
             <input
               type="password"
               autoComplete="off"
               spellCheck={false}
-              className="rounded-lg border px-3 py-2"
+              className="ch-input"
               placeholder={t("keyPlaceholder")}
               value={form.text}
               onChange={(e) => onForm({ text: e.target.value, invalid: false })}
               aria-invalid={form.invalid}
             />
           </label>
-          {form.invalid ? <p className="text-red-800">{t("keyInvalid")}</p> : null}
-          <p className="text-neutral-600">{t("keyNote")}</p>
-          <div className="flex gap-2">
-            <button type="submit" className="rounded-lg bg-emerald-700 px-3 py-1 text-white">
+          {form.invalid ? <p className="ch-err">{t("keyInvalid")}</p> : null}
+          <p className="ch-muted">{t("keyNote")}</p>
+          <div className="ch-chl-row">
+            <button type="submit" className="ch-btn ch-btn--primary ch-btn--compact">
               {t("send")}
             </button>
-            <button type="button" className="rounded-lg border px-3 py-1" onClick={() => onForm(null)}>
+            <button type="button" className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => onForm(null)}>
               {t("cancel")}
             </button>
           </div>
@@ -385,16 +385,16 @@ const ComputerRow = ({
       ) : (
         <>
           {pending?.failed ? (
-            <p role="alert" className="text-red-800">
+            <p role="alert" className="ch-err">
               {pending.failed === "timeout" ? t("timeout") : t("sendError")}
             </p>
           ) : null}
           {actions.length ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="ch-chl-row">
               {actions.map((a) => (
                 <button
                   key={a}
-                  className={`rounded-lg px-3 py-1 ${a === "disconnect" ? "border" : "bg-emerald-700 text-white"}`}
+                  className={`ch-btn ch-btn--compact ${a === "disconnect" ? "ch-btn--secondary" : "ch-btn--primary"}`}
                   data-action={a}
                   onClick={() => (a === "api_key" ? onForm({ text: "", invalid: false }) : onAction(a))}
                 >
@@ -403,15 +403,15 @@ const ComputerRow = ({
               ))}
             </div>
           ) : null}
-          {actions.includes("signin") ? <p className="text-neutral-600">{t("signinNote")}</p> : null}
+          {actions.includes("signin") ? <p className="ch-muted">{t("signinNote")}</p> : null}
           {actions.includes("signin") && gate === "owner_only" ? (
-            <p className="text-amber-800">{legacy && ti.has(`${legacy}.ownerOnly`) ? ti(`${legacy}.ownerOnly`) : t("ownerOnly")}</p>
+            <p className="ch-chl-warn">{legacy && ti.has(`${legacy}.ownerOnly`) ? ti(`${legacy}.ownerOnly`) : t("ownerOnly")}</p>
           ) : null}
-          {actions.includes("launch") ? <p className="text-neutral-600">{t(`launchNote.${app.group}`)}</p> : null}
+          {actions.includes("launch") ? <p className="ch-muted">{t(`launchNote.${app.group}`)}</p> : null}
           {app.apiKey && actions.includes("api_key") ? (
-            <p className="text-neutral-600">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p>
+            <p className="ch-muted">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p>
           ) : null}
-          {actions.includes("install") ? <p className="text-neutral-600">{t("installNote")}</p> : null}
+          {actions.includes("install") ? <p className="ch-muted">{t("installNote")}</p> : null}
         </>
       )}
     </div>

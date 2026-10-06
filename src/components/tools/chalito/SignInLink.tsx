@@ -10,7 +10,7 @@ import { signInAndReturn } from '@/lib/chalito/web/next-cookie';
 export const SignInLink = ({
   children,
   returnTo,
-  className = 'w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white',
+  className = 'ch-btn ch-btn--primary ch-chl-fit',
 }: {
   children: ReactNode;
   /** Where to land after signing in; the current page by default. */

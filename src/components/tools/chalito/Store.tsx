@@ -42,12 +42,12 @@ const Preview = ({ look, items, label }: { look: CompanionLook; items: StoreItem
   }, [entry]);
   if (!entry) return null;
   const worn = items.filter((i) => look.equipped[i.slot] === i.id);
-  if (!card) return <div aria-hidden className="mx-auto mt-12 aspect-[3/4] w-48 sm:w-56" />;
+  if (!card) return <div aria-hidden className="ch-chl-preview ch-chl-preview--empty" />;
   const cardAspect = card.height / card.width;
   return (
     // Headroom above the card: hats and auras reach past its top edge.
     <figure
-      className="relative mx-auto mt-12 w-48 sm:w-56"
+      className="ch-chl-preview"
       style={{ aspectRatio: `${card.width} / ${card.height}` }}
       role="img"
       aria-label={label}
@@ -57,7 +57,7 @@ const Preview = ({ look, items, label }: { look: CompanionLook; items: StoreItem
       <img
         src={asset(entry.drawings.neutral)}
         alt=""
-        className="absolute inset-0 h-full w-full object-contain"
+        className="ch-chl-preview__body"
         style={{ zIndex: 0 }}
         decoding="async"
       />
@@ -77,7 +77,7 @@ const Preview = ({ look, items, label }: { look: CompanionLook; items: StoreItem
               const img = e.currentTarget;
               if (img.naturalWidth > 0) setAspects((a) => ({ ...a, [i.id]: img.naturalHeight / img.naturalWidth }));
             }}
-            className="absolute"
+            className="ch-chl-preview__item"
             style={
               p
                 ? {
@@ -164,12 +164,12 @@ export const Store = () => {
   if (status === "loading") return <p aria-live="polite">{t("loading")}</p>;
   if (status === "signed_out" || !store)
     return (
-      <div className="grid gap-3" data-testid="store-signin">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="ch-chl ch-chl--tight" data-testid="store-signin">
+        <h2 className="ch-h2">{t("title")}</h2>
         <p>{t("signIn")}</p>
         {hubLaunchUrl() ? (
           <a
-            className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white"
+            className="ch-btn ch-btn--primary ch-chl-fit"
             href={hubLaunchUrl()!}
             onClick={(e) => {
               e.preventDefault();
@@ -184,10 +184,10 @@ export const Store = () => {
 
   const tokens = new Intl.NumberFormat(locale);
   return (
-    <div className="grid gap-6" data-testid="store">
-      <div className="grid gap-1">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="text-sm text-neutral-600">{t("intro")}</p>
+    <div className="ch-chl" data-testid="store">
+      <div className="ch-chl-head">
+        <h2 className="ch-h2">{t("title")}</h2>
+        <p className="ch-sub">{t("intro")}</p>
       </div>
 
       {look && look !== "error" ? (
@@ -197,9 +197,9 @@ export const Store = () => {
           label={t("previewLabel", { name: companionName(look.avatar, locale) })}
         />
       ) : look === null ? (
-        <p data-testid="store-no-companion" className="rounded-lg border p-4">
+        <p data-testid="store-no-companion" className="ch-card ch-chl-card ch-chl-card--inline">
           {t("noCompanion")}{" "}
-          <Link href="/bienvenida" className="text-emerald-700 underline">
+          <Link href="/bienvenida" className="ch-lnk">
             {t("chooseCompanion")}
           </Link>
         </p>
@@ -207,16 +207,16 @@ export const Store = () => {
 
       {items === null ? <p aria-live="polite">{t("loading")}</p> : null}
       {items === "error" ? (
-        <div role="alert" data-testid="store-error" className="grid gap-2 rounded-lg bg-red-50 p-4 text-red-900">
+        <div role="alert" data-testid="store-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-bad">
           <p>{t("error")}</p>
-          <button className="w-fit rounded-lg border border-red-800 px-3 py-1" onClick={() => void load()}>
+          <button className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit" onClick={() => void load()}>
             {t("retry")}
           </button>
         </div>
       ) : null}
 
       {Array.isArray(items) ? (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <ul className="ch-chl-grid ch-chl-grid--store">
           {items.map((item) => {
             const worn = !!look && look !== "error" && look.equipped[item.slot] === item.id;
             const n = notes[item.id];
@@ -227,7 +227,7 @@ export const Store = () => {
                 data-item={item.id}
                 data-owned={item.owned}
                 data-worn={worn}
-                className="grid content-start gap-2 rounded-xl border bg-white p-3"
+                className="ch-card ch-chl-card ch-chl-item"
               >
                 <img
                   src={asset(item.art)}
@@ -236,11 +236,11 @@ export const Store = () => {
                   height={160}
                   loading="lazy"
                   decoding="async"
-                  className="aspect-square w-full rounded-lg bg-neutral-50 object-contain"
+                  className="ch-chl-item__art"
                 />
-                <p className="font-medium">{item.name[locale]}</p>
-                <p className="text-xs text-neutral-600">{t(`slot.${item.slot}`)}</p>
-                <p className="text-sm" data-testid="store-price">
+                <p className="ch-chl-strong">{item.name[locale]}</p>
+                <p className="ch-chl-small">{t(`slot.${item.slot}`)}</p>
+                <p data-testid="store-price">
                   {item.free
                     ? t("free")
                     : item.owned
@@ -250,7 +250,7 @@ export const Store = () => {
                 {!item.owned ? (
                   <button
                     data-testid="store-buy"
-                    className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+                    className="ch-btn ch-btn--primary ch-btn--compact"
                     disabled={busy !== null}
                     onClick={() => void buy(item)}
                   >
@@ -259,7 +259,7 @@ export const Store = () => {
                 ) : look && look !== "error" ? (
                   <button
                     data-testid={worn ? "store-unequip" : "store-equip"}
-                    className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50"
+                    className="ch-btn ch-btn--secondary ch-btn--compact"
                     disabled={busy !== null}
                     aria-pressed={worn}
                     onClick={() => void equip(item, !worn)}
@@ -268,30 +268,24 @@ export const Store = () => {
                   </button>
                 ) : null}
                 {n?.kind === "no_tokens" ? (
-                  <p role="status" data-testid="store-no-tokens" className="text-sm">
+                  <p role="status" data-testid="store-no-tokens" className="ch-chl-small">
                     {t("noTokens")}{" "}
                     {n.chipHref === "/creditos" ? (
-                      <Link
-                        href="/creditos"
-                        className="inline-block rounded-full border px-2 py-0.5 text-xs text-emerald-800"
-                      >
+                      <Link href="/creditos" className="ch-pill ch-pill--acc">
                         {t("whyChip")}
                       </Link>
                     ) : (
-                      <a
-                        href={n.chipHref}
-                        className="inline-block rounded-full border px-2 py-0.5 text-xs text-emerald-800"
-                      >
+                      <a href={n.chipHref} className="ch-pill ch-pill--acc">
                         {t("whyChip")}
                       </a>
                     )}
                   </p>
                 ) : null}
                 {n?.kind === "retry" ? (
-                  <p role="alert" data-testid="store-retry" className="grid gap-1 text-sm text-red-800">
+                  <p role="alert" data-testid="store-retry" className="ch-chl ch-chl--tight ch-err">
                     {t("retryBuy")}
                     <button
-                      className="w-fit rounded border border-red-800 px-2 py-0.5"
+                      className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit"
                       disabled={busy !== null}
                       onClick={() => void buy(item, true)}
                     >
@@ -300,12 +294,12 @@ export const Store = () => {
                   </p>
                 ) : null}
                 {n?.kind === "failed" ? (
-                  <p role="alert" className="text-sm text-red-800">
+                  <p role="alert" className="ch-err">
                     {t("failed")}
                   </p>
                 ) : null}
                 {n?.kind === "equip_failed" ? (
-                  <p role="alert" data-testid="store-equip-error" className="text-sm text-red-800">
+                  <p role="alert" data-testid="store-equip-error" className="ch-err">
                     {t(`equipError.${n.reason}`)}
                   </p>
                 ) : null}
@@ -314,7 +308,7 @@ export const Store = () => {
           })}
         </ul>
       ) : null}
-      <p className="text-xs text-neutral-500">{t("lookOnly")}</p>
+      <p className="ch-chl-small">{t("lookOnly")}</p>
     </div>
   );
 };

@@ -16,20 +16,25 @@ export const LiveGate = ({ children }: { children: ReactNode }) => {
   // The provider has already forgotten the agents this browser trusted.
   if (status === "revoked" || (status === "ready" && live.status === "revoked"))
     return (
-      <div role="alert" data-testid="gate-revoked" className="grid gap-3 rounded-lg bg-red-50 p-4 text-red-900">
+      <div role="alert" data-testid="gate-revoked" className="ch-card ch-chl-card ch-chl-card--bad">
         <p>{t("revoked")}</p>
-        <Link href="/vincular" className="w-fit rounded-lg border border-red-800 px-4 py-2">
+        <Link href="/vincular" className="ch-btn ch-btn--danger ch-chl-fit">
           {t("repair")}
         </Link>
       </div>
     );
   if (status === "ready") return <>{children}</>;
-  if (status === "loading") return <p aria-live="polite">{t("loading")}</p>;
+  if (status === "loading")
+    return (
+      <p aria-live="polite" className="ch-muted">
+        {t("loading")}
+      </p>
+    );
   return (
-    <div className="grid gap-3 rounded-lg border p-4" data-testid={`gate-${status}`}>
+    <div className="ch-card ch-chl-card" data-testid={`gate-${status}`}>
       <p>{t(status)}</p>
       {status === "unpaired" && newDevice ? (
-        <Link href="/vincular" data-testid="gate-link" className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white">
+        <Link href="/vincular" data-testid="gate-link" className="ch-btn ch-btn--primary ch-chl-fit">
           {t("link")}
         </Link>
       ) : null}

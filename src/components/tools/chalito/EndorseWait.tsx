@@ -49,8 +49,8 @@ export const EndorseWait = () => {
 
   if (step.s === "done" || status === "ready")
     return (
-      <div className="grid gap-3" data-testid="endorse-done">
-        <h1 className="text-2xl font-bold">{t("doneTitle")}</h1>
+      <div className="ch-chl ch-chl--tight" data-testid="endorse-done">
+        <h2 className="ch-h2">{t("doneTitle")}</h2>
         {step.s === "done" && step.introduced?.trusted.length ? (
           <p data-testid="endorse-introduced">
             {t("doneIntroduced", { computers: step.introduced.trusted.map((a) => a.name).join(", ") })}
@@ -59,7 +59,7 @@ export const EndorseWait = () => {
           <p>{t("doneBody")}</p>
         )}
         {step.s === "done" && step.introduced?.dropped.length ? (
-          <ul className="grid gap-1 text-sm text-amber-900" data-testid="endorse-dropped">
+          <ul className="ch-chl ch-chl--tight ch-chl-small ch-chl-warn" data-testid="endorse-dropped">
             {step.introduced.dropped.map((a) => (
               <li key={a.deviceId} data-reason={a.reason}>
                 {t("doneDropped", { computer: a.name })}
@@ -67,7 +67,7 @@ export const EndorseWait = () => {
             ))}
           </ul>
         ) : null}
-        <Link href="/bandeja" className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white">
+        <Link href="/bandeja" className="ch-btn ch-btn--primary ch-chl-fit">
           {t("doneCta")}
         </Link>
       </div>
@@ -75,12 +75,12 @@ export const EndorseWait = () => {
   if (status === "loading") return <p aria-live="polite">{t("loading")}</p>;
   if (status === "signed_out" || ((status === "unpaired" || status === "revoked") && !newDevice))
     return (
-      <div className="grid gap-3" data-testid="endorse-signin">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="ch-chl ch-chl--tight" data-testid="endorse-signin">
+        <h2 className="ch-h2">{t("title")}</h2>
         <p>{t("signInFirst")}</p>
         {hubLaunchUrl() ? (
           <a
-            className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white"
+            className="ch-btn ch-btn--primary ch-chl-fit"
             href={hubLaunchUrl()!}
             onClick={(e) => {
               e.preventDefault();
@@ -94,7 +94,7 @@ export const EndorseWait = () => {
     );
   if (!newDevice)
     return (
-      <p role="alert" data-testid="endorse-unavailable">
+      <p role="alert" data-testid="endorse-unavailable" className="ch-err">
         {t("unavailable")}
       </p>
     );
@@ -103,27 +103,27 @@ export const EndorseWait = () => {
     const { display, fingerprint } = step.w;
     const left = Math.max(0, Math.ceil((display.expiresAt - now) / 1000));
     return (
-      <div className="grid gap-4" data-testid="endorse-waiting">
-        <h1 className="text-2xl font-bold">{t("waitingTitle")}</h1>
-        <p>{t("waitingBody")}</p>
-        <div className="grid justify-items-center gap-3 rounded-xl border bg-white p-4">
+      <div className="ch-chl" data-testid="endorse-waiting">
+        <h2 className="ch-h2">{t("waitingTitle")}</h2>
+        <p className="ch-sub">{t("waitingBody")}</p>
+        <div className="ch-card ch-chl-card ch-chl-center">
           {display.glyph ? <GlyphCanvas glyph={display.glyph as GlyphPayload} label={t("glyphLabel")} /> : null}
-          <p className="text-sm text-neutral-600">{t("orType")}</p>
-          <p data-testid="endorse-code" className="font-mono text-3xl font-bold tracking-widest">
+          <p className="ch-chl-small">{t("orType")}</p>
+          <p data-testid="endorse-code" className="ch-chl-code ch-chl-code--xl">
             {display.shortCode}
           </p>
-          <p className="text-sm">
+          <p>
             {t("fingerprint")}{" "}
-            <span data-testid="endorse-own-fingerprint" className="font-mono">
+            <span data-testid="endorse-own-fingerprint" className="ch-chl-mono">
               {fingerprint}
             </span>
           </p>
-          <p aria-live="off" className="text-sm text-neutral-600">
+          <p aria-live="off" className="ch-chl-small">
             {t("expiresIn", { minutes: Math.floor(left / 60), seconds: String(left % 60).padStart(2, "0") })}
           </p>
         </div>
-        <p className="text-sm text-neutral-600">{t("whereToApprove")}</p>
-        <button className="w-fit rounded-lg border px-4 py-2" onClick={() => step.w.cancel()}>
+        <p className="ch-muted">{t("whereToApprove")}</p>
+        <button className="ch-btn ch-btn--secondary ch-chl-fit" onClick={() => step.w.cancel()}>
           {t("cancel")}
         </button>
       </div>
@@ -131,29 +131,30 @@ export const EndorseWait = () => {
   }
 
   return (
-    <div className="grid gap-4" data-testid="endorse-start">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p>{t("body")}</p>
-      <label className="grid gap-1">
-        <span className="text-sm font-medium">{t("nameLabel")}</span>
+    <div className="ch-chl" data-testid="endorse-start">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <p className="ch-sub">{t("body")}</p>
+      <div className="ch-field ch-chl--narrow">
+        <label htmlFor="endorse-name">{t("nameLabel")}</label>
         <input
+          id="endorse-name"
           data-testid="endorse-name"
-          className="rounded-lg border px-3 py-2"
+          className="ch-input"
           maxLength={40}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-      </label>
+      </div>
       <button
         data-testid="endorse-start-button"
-        className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-chl-fit"
         disabled={step.s === "opening"}
         onClick={() => void start()}
       >
         {t("start")}
       </button>
       {step.s === "failed" ? (
-        <p role="alert" data-testid="endorse-error" data-reason={step.reason} className="text-red-800">
+        <p role="alert" data-testid="endorse-error" data-reason={step.reason} className="ch-err">
           {t(`error.${step.reason}`)}
         </p>
       ) : null}
