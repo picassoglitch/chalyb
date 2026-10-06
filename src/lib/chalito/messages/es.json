@@ -813,6 +813,28 @@
         "cancelled": "Listo: tu cuenta ya no se eliminará.",
         "export_failed": "No pudimos descargar tus datos. Inténtalo de nuevo."
       }
+    },
+    "activate": {
+      "title": "Activa Chalito en este navegador",
+      "body": "Es tu primer dispositivo: con un toque creas tu passkey y este navegador queda como de confianza. No necesitas la app de escritorio.",
+      "cta": "Activar",
+      "busy": "Activando…",
+      "hasClients": "Tu cuenta ya tiene un dispositivo de confianza. Aprueba este navegador desde él.",
+      "hasClientsCta": "Usar este navegador",
+      "error": {
+        "device_exists": "Este navegador ya estaba registrado. Recarga la página e inténtalo de nuevo.",
+        "rejected": "No pudimos activar este navegador. Vuelve a intentarlo.",
+        "failed": "Algo falló al activar. Vuelve a intentarlo en un momento."
+      },
+      "doneTitle": "Listo, este navegador ya es de confianza",
+      "recoveryTitle": "Guarda tu código de recuperación",
+      "recoveryBody": "Es la única forma de recuperar tu cuenta si pierdes este navegador. Guárdalo en un lugar seguro: no lo volveremos a mostrar.",
+      "recoveryLabel": "Código de recuperación",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "passkeyMissing": "No se creó tu passkey. Créala ahora para proteger tus aprobaciones.",
+      "saved": "Ya lo guardé",
+      "continue": "Ir al chat"
     }
   },
   "mcp": {

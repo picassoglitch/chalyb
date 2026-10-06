@@ -813,6 +813,28 @@
         "cancelled": "Done: your account won't be deleted.",
         "export_failed": "We couldn't download your data. Try again."
       }
+    },
+    "activate": {
+      "title": "Activate Chalito in this browser",
+      "body": "This is your first device: one tap creates your passkey and makes this browser trusted. You don't need the desktop app.",
+      "cta": "Activate",
+      "busy": "Activating…",
+      "hasClients": "Your account already has a trusted device. Approve this browser from it.",
+      "hasClientsCta": "Use this browser",
+      "error": {
+        "device_exists": "This browser was already registered. Reload the page and try again.",
+        "rejected": "We couldn't activate this browser. Try again.",
+        "failed": "Something went wrong while activating. Try again in a moment."
+      },
+      "doneTitle": "Done, this browser is now trusted",
+      "recoveryTitle": "Save your recovery code",
+      "recoveryBody": "It's the only way to recover your account if you lose this browser. Keep it somewhere safe: we won't show it again.",
+      "recoveryLabel": "Recovery code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "passkeyMissing": "Your passkey wasn't created. Create it now to protect your approvals.",
+      "saved": "I saved it",
+      "continue": "Go to chat"
     }
   },
   "mcp": {

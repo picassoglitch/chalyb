@@ -1,5 +1,15 @@
 "use client";
-import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   DeviceRevokedError,
   connect,
@@ -27,6 +37,7 @@ import {
   type Waiting,
 } from "@/lib/chalito/web/endorse";
 import { markEndorsed, passkeyRef } from "@/lib/chalito/web/keys";
+import { activateFirstClient, canActivate, type ActivateError } from "@/lib/chalito/web/activate";
 import type { McpApi } from "@/lib/chalito/web/mcp";
 import type { AccountApi } from "@/lib/chalito/web/account";
 import type { BalanceApi } from "@/lib/chalito/web/balance";
@@ -64,6 +75,17 @@ interface Ctx {
    * code for a trusted device to approve; on success this browser signs in as itself. Null otherwise.
    */
   newDevice: ((name: string) => Promise<Waiting | { error: WaitError }>) | null;
+  /**
+   * "Activar": this browser becomes the account's FIRST trusted client (passkey right after), only
+   * while the account has none (the api enforces it). Null when not unpaired on the person's session.
+   */
+  activate: ((name: string) => Promise<{ ok: true } | { ok: false; reason: ActivateError }>) | null;
+  /** The account has no active client (a hint from the directory), so "Activar" applies. */
+  canActivate: boolean;
+  /** Just activated: the recovery code to show once, and whether the passkey got created. */
+  activation: Activation | null;
+  /** The person saved the recovery code: forget it. */
+  finishActivation: () => void;
   /** "Añadir un dispositivo": a trusted (ready) browser endorses another one. Null otherwise. */
   addDevice: AddDevice | null;
   /** Token usage (/uso), read as this device; null until paired. */
@@ -99,6 +121,11 @@ interface Ctx {
   balance: BalanceApi | null;
   /** Web Push on this browser (its own push_subscriptions row, written as this device). Null until paired. */
   push: { enable: () => Promise<PushResult>; disable: () => Promise<PushResult> } | null;
+}
+
+export interface Activation {
+  recoveryCode: string;
+  passkey: "ok" | "cancelled" | "error";
 }
 
 export interface MesaCtx {
@@ -174,6 +201,10 @@ const INITIAL: Ctx = {
   assertPasskey: null,
   readSharing: null,
   newDevice: null,
+  activate: null,
+  canActivate: false,
+  activation: null,
+  finishActivation: () => undefined,
   addDevice: null,
   usage: null,
   store: null,
@@ -312,6 +343,52 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
   const deviceMode = useRef(false);
   const clientRef = useRef<ChalitoClient | null>(null);
   const keysRef = useRef<DeviceKeys | null>(null);
+  /** Bumped to rerun the connection once a flow that held it (activation) is done. */
+  const [epoch, setEpoch] = useState(0);
+  const [activation, setActivation] = useState<Activation | null>(null);
+  const finishActivation = useCallback(() => setActivation(null), []);
+
+  /**
+   * "Activar" (/v1/devices/first). It holds the connection effect while it switches this browser
+   * to its own device session and registers the passkey as that device (the webauthn routes are
+   * `client`), then reconnects once. The recovery code is kept to show whenever enrolment
+   * succeeded, even if the passkey or the session step didn't.
+   */
+  const activateWith =
+    (p: Platform, owner: string, token: () => Promise<string | null>) =>
+    async (name: string): Promise<{ ok: true } | { ok: false; reason: ActivateError }> => {
+      deviceMode.current = true;
+      try {
+        const r = await activateFirstClient({
+          api: p.api(token),
+          save: (k) => p.saveDeviceKeys(k),
+          owner,
+          name,
+        });
+        if (!r.ok) return r;
+        markEndorsed(r.deviceId);
+        let passkey: Activation["passkey"] = "error";
+        try {
+          await ensureSession(p.db.auth as never, {
+            kind: "device",
+            deviceId: r.deviceId,
+            login: async () => r.customToken,
+          });
+          const keys = await p.loadDeviceKeys();
+          if (keys) {
+            await p.enrollPasskey(keys.keys, token);
+            passkey = "ok";
+          }
+        } catch (err) {
+          passkey = (err as { name?: string } | null)?.name === "NotAllowedError" ? "cancelled" : "error";
+        }
+        setActivation({ recoveryCode: r.recoveryCode, passkey });
+        return { ok: true };
+      } finally {
+        deviceMode.current = false;
+        setEpoch((e) => e + 1);
+      }
+    };
 
   useEffect(() => {
     let alive = true;
@@ -371,13 +448,18 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
         readCompanion: () => readCompanion(platform.db, owner),
       };
       const keys = await platform.loadDeviceKeys();
-      if (!keys)
+      if (!keys) {
+        const person = isPersonSession(session.session);
+        const first = person && canActivate(await readDirectory(platform.db, owner).catch(() => null));
         return done({
           ...INITIAL,
           ...base,
           status: "unpaired",
-          newDevice: isPersonSession(session.session) ? newDevice(platform, owner, token) : null,
+          newDevice: person ? newDevice(platform, owner, token) : null,
+          activate: person ? activateWith(platform, owner, token) : null,
+          canActivate: first,
         });
+      }
       keysRef.current = keys;
       deviceMode.current = true;
       try {
@@ -392,6 +474,7 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
         });
         clientRef.current = client;
         done({
+          ...INITIAL,
           ...base,
           status: "ready",
           client,
@@ -481,7 +564,7 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       alive = false;
     };
-  }, [platform, session]);
+  }, [platform, session, epoch]);
 
   // Revoked while connected (the live store saw this device's row revoked): forget its trust too.
   useEffect(() => {
@@ -492,7 +575,8 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [ctx.client]);
 
-  return <Chalito.Provider value={ctx}>{children}</Chalito.Provider>;
+  const value = useMemo(() => ({ ...ctx, activation, finishActivation }), [ctx, activation, finishActivation]);
+  return <Chalito.Provider value={value}>{children}</Chalito.Provider>;
 };
 
 export const useChalito = () => useContext(Chalito);
