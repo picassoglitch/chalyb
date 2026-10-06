@@ -30,7 +30,15 @@
     "startOnboarding": "Get started",
     "signedOut": "Sign in from your Chalyb account to continue.",
     "signIn": "Sign in with Chalyb",
-    "companion": "Your companion: {name}"
+    "companion": "Your companion: {name}",
+    "sections": {
+      "sectionsTitle": "Your team",
+      "inbox": "What your agents are waiting for you to approve",
+      "devices": "The computers and phones you've connected",
+      "rooms": "Spaces shared with other people",
+      "mesas": "Think something through with your companion and the brains you pick",
+      "store": "Clothes and effects for your companion"
+    }
   },
   "landing": {
     "download": "Download",

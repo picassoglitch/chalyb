@@ -66,25 +66,25 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   };
 
   return (
-    <div className="grid gap-6" data-step={step}>
-      <p className="text-sm text-neutral-600">{t("progress", { step: i + 1, total: STEPS.length })}</p>
-      <h1 className="text-2xl font-bold">{t(`${step}.title`)}</h1>
+    <div className="ch-chl" data-step={step}>
+      <p className="ch-chl-small">{t("progress", { step: i + 1, total: STEPS.length })}</p>
+      <h2 className="ch-h2">{t(`${step}.title`)}</h2>
 
       {step === "signIn" ? (
         signedIn ? (
           <p data-testid="signed-in">{t("signIn.signedIn")}</p>
         ) : (
-          <div className="grid gap-3">
+          <div className="ch-chl ch-chl--tight">
             <p>{t("signIn.body")}</p>
-            <p className="text-sm text-neutral-600" data-testid="legal-consent">
+            <p className="ch-chl-small" data-testid="legal-consent">
               {tl.rich("onboarding", {
                 terms: (chunks) => (
-                  <HubLink href="/legal/terms" className="underline">
+                  <HubLink href="/legal/terms" className="ch-lnk">
                     {chunks}
                   </HubLink>
                 ),
                 privacy: (chunks) => (
-                  <HubLink href="/legal/privacy" className="underline">
+                  <HubLink href="/legal/privacy" className="ch-lnk">
                     {chunks}
                   </HubLink>
                 ),
@@ -95,29 +95,29 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
       ) : null}
 
       {step === "companion" ? (
-        <div className="grid gap-3">
+        <div className="ch-chl ch-chl--tight">
           <p>{t("companion.body")}</p>
           <CompanionPicker value={values.avatar} onChange={(c) => set("avatar", c)} />
         </div>
       ) : null}
 
       {step === "name" ? (
-        <div className="grid gap-3">
+        <div className="ch-chl ch-chl--tight">
           <p>{t("name.body")}</p>
           <CompanionNameField value={values.companionName} onChange={(v) => set("companionName", v)} />
         </div>
       ) : null}
 
       {step === "connect" ? (
-        <div className="grid gap-4">
+        <div className="ch-chl">
           <p>{t("connect.body")}</p>
-          <div role="tablist" className="flex gap-2">
+          <div role="tablist" className="ch-chl-row">
             {(["guided", "expert"] as const).map((p) => (
               <button
                 key={p}
                 role="tab"
                 aria-selected={path === p}
-                className={`rounded-lg border px-3 py-1 ${path === p ? "bg-neutral-900 text-white" : ""}`}
+                className={`ch-chip ch-chip--sm${path === p ? " ch-chip--on" : ""}`}
                 onClick={() => setPath(p)}
               >
                 {t(`connect.${p}`)}
@@ -125,17 +125,17 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
             ))}
           </div>
           {path === "guided" ? (
-            <ul className="grid gap-2">
+            <ul className="ch-chl-list">
               {agents.map((a) => (
-                <li key={a.agent} className="rounded-lg border p-3">
-                  <button className="font-medium" aria-expanded={open === a.agent} onClick={() => setOpen(a.agent)}>
+                <li key={a.agent} className="ch-card ch-chl-card">
+                  <button className="ch-chl-strong ch-chl-fit" aria-expanded={open === a.agent} onClick={() => setOpen(a.agent)}>
                     {ti("iHave", { name: ti(`${a.provider}.name`) })}
                   </button>
                   {open === a.agent ? (
-                    <div className="mt-2 grid gap-1 text-sm">
+                    <div className="ch-chl ch-chl--tight ch-chl-small">
                       <p data-testid={`howto-${a.agent}`}>{ti(`${a.provider}.howTo`)}</p>
                       {a.subscription === "owner_only" ? (
-                        <p className="text-amber-800">{ti(`${a.provider}.ownerOnly`)}</p>
+                        <p className="ch-chl-warn">{ti(`${a.provider}.ownerOnly`)}</p>
                       ) : null}
                     </div>
                   ) : null}
@@ -145,24 +145,24 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           ) : (
             <p>{t("connect.expertBody")}</p>
           )}
-          <p className="text-sm text-neutral-600">{t("connect.later")}</p>
+          <p className="ch-chl-small">{t("connect.later")}</p>
         </div>
       ) : null}
 
       {step === "billing" ? (
-        <div className="grid gap-3">
+        <div className="ch-chl ch-chl--tight">
           <p>{t("billing.body")}</p>
           <p>{tier ? t("billing.tier", { tier }) : t("billing.tierUnknown")}</p>
-          <fieldset className="grid gap-2">
+          <fieldset className="ch-chl ch-chl--tight ch-chl-fieldset">
             {(["byo", "energy", "both"] as const).map((m) => (
-              <label key={m} className="flex items-start gap-2">
+              <label key={m} className="ch-card ch-opt">
                 <input type="radio" name="billing" checked={billing === m} onChange={() => setBilling(m)} />
                 <span>{t(`billing.${m}`)}</span>
               </label>
             ))}
           </fieldset>
           {env.hubUrl ? (
-            <a className="text-emerald-700 underline" href={env.hubUrl} rel="noopener">
+            <a className="ch-lnk ch-chl-fit" href={env.hubUrl} rel="noopener">
               {t("billing.manage")}
             </a>
           ) : null}
@@ -170,7 +170,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
       ) : null}
 
       {step === "phone" ? (
-        <div className="grid gap-4">
+        <div className="ch-chl">
           <p>{t("phone.body")}</p>
           {/* The same registry entries as Ajustes, charges notice included. */}
           {SETTINGS.filter((s) => ["phone", "chargesAck", "whatsapp", "calls"].includes(s.key)).map((s) => (
@@ -182,31 +182,31 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
       ) : null}
 
       {step === "passkey" ? (
-        <div className="grid gap-3">
+        <div className="ch-chl ch-chl--tight">
           <p>{t("passkey.body")}</p>
           <PasskeyEnroll />
         </div>
       ) : null}
 
       {step === "pair" ? (
-        <div className="grid gap-3">
+        <div className="ch-chl ch-chl--tight">
           <p>{t("pair.body")}</p>
-          <Link href="/descargar" className="w-fit rounded-lg border px-4 py-2">
+          <Link href="/descargar" className="ch-btn ch-btn--secondary ch-chl-fit">
             {t("pair.download")}
           </Link>
-          <p className="text-sm text-neutral-600">{t("pair.later")}</p>
+          <p className="ch-chl-small">{t("pair.later")}</p>
         </div>
       ) : null}
 
-      <div className="flex gap-3">
+      <div className="ch-chl-row">
         {i > 0 ? (
-          <button className="rounded-lg border px-4 py-2" onClick={() => setI(i - 1)}>
+          <button className="ch-btn ch-btn--secondary" onClick={() => setI(i - 1)}>
             {tc("back")}
           </button>
         ) : null}
         {step === "companion" ? (
           <button
-            className="rounded-lg border px-4 py-2"
+            className="ch-btn ch-btn--secondary"
             onClick={() => {
               set("avatar", DEFAULT_COMPANION);
               setI(i + 1);
@@ -216,7 +216,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           </button>
         ) : null}
         <button
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary"
           disabled={step === "signIn" && !signedIn}
           onClick={() => void next()}
         >

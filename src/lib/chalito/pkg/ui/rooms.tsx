@@ -48,28 +48,28 @@ export const RoomEventList = ({
 }) => {
   const { t, locale } = useUiText();
   const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" });
-  if (!events.length) return <p className="text-sm text-neutral-600">{t("rooms.empty")}</p>;
+  if (!events.length) return <p className="ch-chl-small">{t("rooms.empty")}</p>;
   return (
-    <ol className="grid gap-2" aria-label={t("rooms.feed")}>
+    <ol className="ch-chl-list" aria-label={t("rooms.feed")}>
       {events.map((e) => (
-        <li key={e.eid} data-testid="room-event" data-eid={e.eid} className="grid gap-1 rounded-lg border bg-white p-3">
-          <div className="flex items-center gap-2 text-xs text-neutral-600">
-            <span className="font-medium">{memberLabel(e.from, e.from === me, t)}</span>
+        <li key={e.eid} data-testid="room-event" data-eid={e.eid} className="ch-card ch-chl-card ch-chl-item">
+          <div className="ch-chl-row ch-chl-small">
+            <span className="ch-chl-strong">{memberLabel(e.from, e.from === me, t)}</span>
             <span>{t(`rooms.kind.${e.kind}`)}</span>
-            <time className="ml-auto" dateTime={new Date(e.t).toISOString()}>
+            <time className="ch-chl-push" dateTime={new Date(e.t).toISOString()}>
               {time.format(e.t)}
             </time>
           </div>
           {e.text === null ? (
-            <p className="text-sm italic text-neutral-500">{t("rooms.sealed")}</p>
+            <p className="ch-chl-small">{t("rooms.sealed")}</p>
           ) : e.text ? (
             // Quoted data: rendered as text (React escapes it), whitespace kept, never HTML.
-            <blockquote data-testid="room-event-text" className="whitespace-pre-wrap break-words border-l-2 pl-2">
+            <blockquote data-testid="room-event-text" className="ch-chl-quote">
               {e.text}
             </blockquote>
           ) : null}
           {onReport && e.from !== me ? (
-            <button type="button" className="w-fit text-xs text-red-800 underline" onClick={() => onReport(e.eid)}>
+            <button type="button" className="ch-lnk ch-chl-bad ch-chl-small ch-chl-fit" onClick={() => onReport(e.eid)}>
               {t("rooms.report")}
             </button>
           ) : null}
@@ -102,38 +102,38 @@ export const RoomMembers = ({
     if (!err) setAsking(null);
   };
   return (
-    <div className="grid gap-1">
-      <ul className="grid gap-1" aria-label={t("rooms.members")}>
+    <div className="ch-chl ch-chl--tight">
+      <ul className="ch-chl-list" aria-label={t("rooms.members")}>
         {members.map((m) => (
           <li
             key={m.companionId}
             data-testid="room-member"
             data-companion={m.companionId}
-            className="flex flex-wrap items-center gap-2 text-sm"
+            className="ch-chl-row"
           >
             <span>{memberLabel(m.companionId, m.me, t)}</span>
-            {m.role === "owner" ? <span className="text-xs text-neutral-600">{t("rooms.owner")}</span> : null}
-            <span className="ml-auto flex items-center gap-3">
+            {m.role === "owner" ? <span className="ch-pill ch-pill--gray">{t("rooms.owner")}</span> : null}
+            <span className="ch-chl-row ch-chl-push">
               {onRemove && !m.me && m.role !== "owner" ? (
                 asking === m.companionId ? (
-                  <span className="flex items-center gap-2 text-xs">
+                  <span className="ch-chl-row ch-chl-small">
                     {t("rooms.removeConfirm", { member: memberLabel(m.companionId, false, t) })}
                     <button
                       type="button"
-                      className="rounded bg-red-700 px-2 py-0.5 text-white disabled:opacity-50"
+                      className="ch-btn ch-btn--danger ch-btn--compact"
                       disabled={busy}
                       onClick={() => void remove(m.companionId)}
                     >
                       {t("rooms.removeYes")}
                     </button>
-                    <button type="button" className="rounded border px-2 py-0.5" onClick={() => setAsking(null)}>
+                    <button type="button" className="ch-btn ch-btn--gray ch-btn--compact" onClick={() => setAsking(null)}>
                       {t("rooms.cancel")}
                     </button>
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className="text-xs text-red-800 underline"
+                    className="ch-lnk ch-chl-bad ch-chl-small"
                     onClick={() => (setError(null), setAsking(m.companionId))}
                   >
                     {t("rooms.remove")}
@@ -143,7 +143,7 @@ export const RoomMembers = ({
               {onReport && !m.me ? (
                 <button
                   type="button"
-                  className="text-xs text-red-800 underline"
+                  className="ch-lnk ch-chl-bad ch-chl-small"
                   onClick={() => onReport(m.companionId)}
                 >
                   {t("rooms.report")}
@@ -154,7 +154,7 @@ export const RoomMembers = ({
         ))}
       </ul>
       {error ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="ch-err">
           {t(`rooms.error.${error}`)}
         </p>
       ) : null}
@@ -184,7 +184,7 @@ export const NewRoomForm = ({
   return (
     <form
       data-testid="room-new"
-      className="grid gap-2"
+      className="ch-chl ch-chl--tight"
       onSubmit={(e) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -196,23 +196,23 @@ export const NewRoomForm = ({
         });
       }}
     >
-      <div className="flex flex-wrap items-end gap-2">
-        <label htmlFor={nameId} className="grid gap-1">
-          <span className="text-sm font-medium">{t("rooms.create.name")}</span>
+      <div className="ch-chl-row ch-chl-row--bottom">
+        <label htmlFor={nameId} className="ch-chl ch-chl--tight ch-chl-grow">
+          <span className="ch-chl-strong">{t("rooms.create.name")}</span>
           <input
             id={nameId}
-            className="rounded-lg border px-3 py-2"
+            className="ch-input"
             maxLength={60}
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label htmlFor={typeId} className="grid gap-1">
-          <span className="text-sm font-medium">{t("rooms.create.type")}</span>
+        <label htmlFor={typeId} className="ch-chl ch-chl--tight">
+          <span className="ch-chl-strong">{t("rooms.create.type")}</span>
           <select
             id={typeId}
-            className="rounded-lg border px-3 py-2"
+            className="ch-select"
             value={type}
             onChange={(e) => setType(e.target.value as RoomTypeId)}
           >
@@ -223,15 +223,13 @@ export const NewRoomForm = ({
             ))}
           </select>
         </label>
-        <button
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
-          disabled={busy || !name.trim()}
+        <button className="ch-btn ch-btn--primary ch-btn--compact" disabled={busy || !name.trim()}
         >
           {t("rooms.create.submit")}
         </button>
       </div>
       {error ? (
-        <p role="alert" data-testid="room-new-error" className="text-sm text-red-800">
+        <p role="alert" data-testid="room-new-error" className="ch-err">
           {t(`rooms.create.error.${error}`)}
         </p>
       ) : null}
@@ -254,10 +252,10 @@ export const RoomInvitePanel = ({
   const [error, setError] = useState<RoomError | null>(null);
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
   return (
-    <div className="grid gap-2" data-testid="room-invite">
+    <div className="ch-chl ch-chl--tight" data-testid="room-invite">
       <button
         type="button"
-        className="w-fit rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50"
+        className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit"
         disabled={busy}
         onClick={() => {
           setBusy(true);
@@ -272,19 +270,19 @@ export const RoomInvitePanel = ({
         {invite ? t("rooms.invite.again") : t("rooms.invite.create")}
       </button>
       {invite ? (
-        <div className="grid gap-2 rounded-lg border bg-white p-3">
-          <p className="text-sm">{t("rooms.invite.how")}</p>
+        <div className="ch-card ch-chl-card">
+          <p className="ch-muted">{t("rooms.invite.how")}</p>
           {renderGlyph(invite.glyph)}
-          <p className="font-mono text-2xl tracking-widest" data-testid="room-invite-code">
+          <p className="ch-chl-code ch-chl-code--xl" data-testid="room-invite-code">
             {invite.shortCode}
           </p>
-          <p className="text-xs text-neutral-600">
+          <p className="ch-chl-small">
             {t("rooms.invite.expires", { date: date.format(invite.expiresAt) })}
           </p>
         </div>
       ) : null}
       {error ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="ch-err">
           {t(`rooms.error.${error}`)}
         </p>
       ) : null}
@@ -298,11 +296,11 @@ export const RoomRotation = ({ onRotate }: { onRotate: () => Promise<RoomError |
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<RoomError | null>(null);
   return (
-    <div role="status" data-testid="room-rotation" className="grid gap-2 rounded-lg bg-amber-50 p-3 text-amber-900">
+    <div role="status" data-testid="room-rotation" className="ch-card ch-chl-card ch-chl-card--warn">
       <p>{t("rooms.rotation.why")}</p>
       <button
         type="button"
-        className="w-fit rounded-lg bg-amber-800 px-3 py-1.5 text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-btn--compact ch-chl-fit"
         disabled={busy}
         onClick={() => {
           setBusy(true);
@@ -314,7 +312,11 @@ export const RoomRotation = ({ onRotate }: { onRotate: () => Promise<RoomError |
       >
         {t("rooms.rotation.rotate")}
       </button>
-      {error ? <p role="alert">{t(`rooms.error.${error}`)}</p> : null}
+      {error ? (
+        <p role="alert" className="ch-err">
+          {t(`rooms.error.${error}`)}
+        </p>
+      ) : null}
     </div>
   );
 };
@@ -348,13 +350,13 @@ export const RoomOwnerSettings = ({
   };
   const changed = ttl !== retention.ephemeralTtl || keep !== retention.keepPromoted;
   return (
-    <section className="grid gap-3 rounded-lg border p-3" data-testid="room-owner">
-      <h2 className="font-semibold">{t("rooms.ownerTitle")}</h2>
-      <label htmlFor={ttlId} className="grid gap-1 text-sm">
-        <span className="font-medium">{t("rooms.retention.ttl")}</span>
+    <section className="ch-card ch-chl-card" data-testid="room-owner">
+      <h2 className="ch-chl-h3">{t("rooms.ownerTitle")}</h2>
+      <label htmlFor={ttlId} className="ch-chl ch-chl--tight">
+        <span className="ch-chl-strong">{t("rooms.retention.ttl")}</span>
         <select
           id={ttlId}
-          className="w-fit rounded-lg border px-3 py-2"
+          className="ch-select ch-chl-fit"
           value={ttl}
           onChange={(e) => setTtl(e.target.value)}
         >
@@ -365,14 +367,14 @@ export const RoomOwnerSettings = ({
           ))}
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm">
+      <label className="ch-chl-check">
         <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} />
         {t("rooms.retention.keepPromoted")}
       </label>
-      <div className="flex items-center gap-3">
+      <div className="ch-chl-row">
         <button
           type="button"
-          className="w-fit rounded-lg bg-emerald-700 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary ch-btn--compact"
           disabled={busy || !changed}
           onClick={() =>
             void run(
@@ -384,24 +386,24 @@ export const RoomOwnerSettings = ({
           {t("rooms.retention.save")}
         </button>
         {saved ? (
-          <span role="status" data-testid="room-retention-saved" className="text-sm text-emerald-800">
+          <span role="status" data-testid="room-retention-saved" className="ch-chl-ok">
             {t("rooms.retention.saved")}
           </span>
         ) : null}
       </div>
       {confirm ? (
-        <div className="grid gap-2 rounded-md bg-red-50 p-3 text-sm text-red-900">
+        <div className="ch-card ch-chl-card ch-chl-card--bad">
           <p>{t("rooms.dissolve.confirm")}</p>
-          <div className="flex gap-2">
+          <div className="ch-chl-row">
             <button
               type="button"
-              className="rounded bg-red-700 px-3 py-1 text-white disabled:opacity-50"
+              className="ch-btn ch-btn--danger ch-btn--compact"
               disabled={busy}
               onClick={() => void run(onDissolve, () => setConfirm(false))}
             >
               {t("rooms.dissolve.yes")}
             </button>
-            <button type="button" className="rounded border px-3 py-1" onClick={() => setConfirm(false)}>
+            <button type="button" className="ch-btn ch-btn--gray ch-btn--compact" onClick={() => setConfirm(false)}>
               {t("rooms.cancel")}
             </button>
           </div>
@@ -409,14 +411,14 @@ export const RoomOwnerSettings = ({
       ) : (
         <button
           type="button"
-          className="w-fit rounded-lg border border-red-800 px-3 py-1.5 text-sm text-red-900"
+          className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit"
           onClick={() => setConfirm(true)}
         >
           {t("rooms.dissolve.button")}
         </button>
       )}
       {error ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="ch-err">
           {t(`rooms.error.${error}`)}
         </p>
       ) : null}
@@ -449,30 +451,28 @@ export const RoomComposer = ({
     setBusy(false);
   };
   return (
-    <form className="grid gap-1" onSubmit={(e) => void submit(e)}>
-      <div className="flex gap-2">
-        <label htmlFor={id} className="sr-only">
+    <form className="ch-chl ch-chl--tight" onSubmit={(e) => void submit(e)}>
+      <div className="ch-chl-row">
+        <label htmlFor={id} className="ch-sr">
           {t("rooms.composer")}
         </label>
         <input
           id={id}
           data-testid="room-composer"
-          className="min-w-0 flex-1 rounded-lg border px-3 py-2"
+          className="ch-input ch-chl-grow"
           maxLength={500}
           placeholder={t("rooms.composer")}
           value={text}
           disabled={disabled || busy}
           onChange={(e) => setText(e.target.value)}
         />
-        <button
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
-          disabled={disabled || busy || !text.trim()}
+        <button className="ch-btn ch-btn--primary" disabled={disabled || busy || !text.trim()}
         >
           {t("rooms.send")}
         </button>
       </div>
       {error ? (
-        <p role="alert" data-testid="room-composer-error" className="text-sm text-red-800">
+        <p role="alert" data-testid="room-composer-error" className="ch-err">
           {t(`rooms.error.${error}`)}
         </p>
       ) : null}
@@ -507,7 +507,7 @@ export const RoomReportDialog = ({
       role="dialog"
       aria-label={t("rooms.reportTitle")}
       data-testid="room-report"
-      className="grid gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
+      className="ch-card ch-chl-card ch-chl-card--bad"
       onSubmit={(e) => {
         e.preventDefault();
         setBusy(true);
@@ -520,28 +520,28 @@ export const RoomReportDialog = ({
         }).finally(() => setBusy(false));
       }}
     >
-      <p className="font-semibold">{t("rooms.reportTitle")}</p>
-      {label ? <p className="text-sm">{label}</p> : null}
-      <fieldset className="grid gap-1">
-        <legend className="text-sm font-medium">{t("rooms.reason")}</legend>
+      <p className="ch-chl-h3">{t("rooms.reportTitle")}</p>
+      {label ? <p className="ch-muted">{label}</p> : null}
+      <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+        <legend className="ch-chl-strong">{t("rooms.reason")}</legend>
         {(["spam", "abuse", "impersonation", "other"] as const).map((r) => (
-          <label key={r} className="flex items-center gap-2 text-sm">
+          <label key={r} className="ch-chl-check">
             <input type="radio" name="reason" value={r} checked={reason === r} onChange={() => setReason(r)} />
             {t(`rooms.reasons.${r}`)}
           </label>
         ))}
       </fieldset>
-      <label className="grid gap-1 text-sm">
-        <span className="font-medium">{t("rooms.note")}</span>
+      <label className="ch-chl ch-chl--tight">
+        <span className="ch-chl-strong">{t("rooms.note")}</span>
         <textarea
-          className="rounded-lg border px-3 py-2"
+          className="ch-input ch-textarea"
           maxLength={500}
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
       </label>
       {canAttach ? (
-        <label className="flex items-start gap-2 text-sm">
+        <label className="ch-chl-check">
           <input
             type="checkbox"
             data-testid="room-report-attach"
@@ -551,11 +551,11 @@ export const RoomReportDialog = ({
           <span>{t("rooms.attach")}</span>
         </label>
       ) : null}
-      <div className="flex gap-2">
-        <button className="rounded-lg bg-red-700 px-4 py-2 text-white disabled:opacity-50" disabled={busy}>
+      <div className="ch-chl-row">
+        <button className="ch-btn ch-btn--danger ch-btn--compact" disabled={busy}>
           {t("rooms.reportSend")}
         </button>
-        <button type="button" className="rounded-lg border px-4 py-2" onClick={onCancel}>
+        <button type="button" className="ch-btn ch-btn--gray ch-btn--compact" onClick={onCancel}>
           {t("rooms.cancel")}
         </button>
       </div>
@@ -567,7 +567,7 @@ export const RoomReportDialog = ({
 export const RoomEnded = ({ status }: { status: RoomEndReason }) => {
   const { t } = useUiText();
   return (
-    <p role="alert" data-testid="room-ended" data-reason={status} className="rounded-lg bg-neutral-100 p-4">
+    <p role="alert" data-testid="room-ended" data-reason={status} className="ch-card ch-chl-card">
       {t(`rooms.ended.${status}`)}
     </p>
   );
@@ -581,19 +581,19 @@ export const JoinRoomForm = ({ onJoin }: { onJoin: (code: string) => Promise<voi
   const [busy, setBusy] = useState(false);
   return (
     <form
-      className="flex flex-wrap items-end gap-2"
+      className="ch-chl-row ch-chl-row--bottom"
       onSubmit={(e) => {
         e.preventDefault();
         setBusy(true);
         void onJoin(code.trim()).finally(() => setBusy(false));
       }}
     >
-      <label htmlFor={id} className="grid gap-1">
-        <span className="text-sm font-medium">{t("rooms.joinLabel")}</span>
+      <label htmlFor={id} className="ch-chl ch-chl--tight">
+        <span className="ch-chl-strong">{t("rooms.joinLabel")}</span>
         <input
           id={id}
           data-testid="room-join-code"
-          className="rounded-lg border px-3 py-2 font-mono uppercase tracking-widest"
+          className="ch-input ch-chl-codeinput"
           autoComplete="off"
           maxLength={12}
           placeholder="XXXX-XXXX"
@@ -601,9 +601,7 @@ export const JoinRoomForm = ({ onJoin }: { onJoin: (code: string) => Promise<voi
           onChange={(e) => setCode(e.target.value)}
         />
       </label>
-      <button
-        className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
-        disabled={busy || code.trim().length < 8}
+      <button className="ch-btn ch-btn--primary" disabled={busy || code.trim().length < 8}
       >
         {t("rooms.join")}
       </button>

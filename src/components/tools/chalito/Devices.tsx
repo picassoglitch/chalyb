@@ -60,13 +60,13 @@ export const Devices = () => {
   };
 
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+    <div className="ch-chl">
+      <div className="ch-chl-row ch-chl-row--between">
+        <h2 className="ch-h2">{t("title")}</h2>
         <Link
           href="/dispositivos/nuevo"
           data-testid="add-device-link"
-          className="ml-auto rounded-lg bg-emerald-700 px-3 py-1.5 text-sm text-white"
+          className="ch-btn ch-btn--primary ch-btn--compact"
         >
           {t("add")}
         </Link>
@@ -75,12 +75,12 @@ export const Devices = () => {
       {refusals.length ? (
         <section
           aria-labelledby="sec-notices"
-          className="grid gap-1 rounded-xl border border-amber-300 bg-amber-50 p-4"
+          className="ch-card ch-chl-card ch-chl-card--warn"
         >
-          <h2 id="sec-notices" className="font-semibold">
+          <h2 id="sec-notices" className="ch-chl-strong">
             {t("notices.title")}
           </h2>
-          <ul className="grid gap-1 text-sm">
+          <ul className="ch-chl ch-chl--tight ch-chl-warn">
             {refusals.map(({ agent, event }) => (
               <li
                 key={`${agent.deviceId}:${event.clientDeviceId}`}
@@ -96,32 +96,34 @@ export const Devices = () => {
           </ul>
         </section>
       ) : null}
-      <ul className="grid gap-3">
+      <ul className="ch-chl-list">
         {devices.map((d) => (
           <li
             key={d.deviceId}
             data-testid="device"
             data-device={d.deviceId}
-            className="grid gap-2 rounded-xl border bg-white p-4"
+            className="ch-card ch-chl-card"
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">{d.name}</span>
-              <span className="text-sm text-neutral-600">{t(`role.${d.role}`)}</span>
+            <div className="ch-chl-row">
+              <span className="ch-chl-strong">{d.name}</span>
+              <span className="ch-chl-small">{t(`role.${d.role}`)}</span>
               <span
                 data-testid="presence"
-                className={`ml-auto rounded-full px-2 py-0.5 text-xs ${d.revoked ? "bg-neutral-200" : d.online ? "bg-emerald-100 text-emerald-900" : "bg-neutral-100"}`}
+                className={`ch-pill ch-chl-push ${d.revoked ? "ch-pill--dark" : d.online ? "ch-pill--ok" : "ch-pill--gray"}`}
               >
                 {d.revoked ? t("revoked") : d.online ? t("online") : t("offline")}
               </span>
             </div>
             {d.role === "agent" && !d.revoked ? <SharingToggle scope="device" target={d.deviceId} /> : null}
             {d.devMode.on ? (
-              <div data-testid="devmode-controls" className="grid gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-900">
-                <p className="font-semibold">{t("devModeOn", { toggles: d.devMode.toggles.join(", ") })}</p>
-                <div className="flex flex-wrap gap-2">
+              <div data-testid="devmode-controls" className="ch-card ch-chl-card ch-chl-card--bad">
+                <p className="ch-chl-strong ch-chl-bad">
+                  {t("devModeOn", { toggles: d.devMode.toggles.join(", ") })}
+                </p>
+                <div className="ch-chl-row">
                   <button
                     data-testid="devmode-off"
-                    className="rounded border border-red-700 px-2 py-1"
+                    className="ch-btn ch-btn--danger ch-btn--compact"
                     onClick={() => client && void send(() => client.actions.devmodeOff(d.deviceId), "devModeOffSent")}
                   >
                     {t("devModeOff")}
@@ -130,7 +132,7 @@ export const Devices = () => {
                     <button
                       key={tg}
                       data-testid="devmode-toggle-off"
-                      className="rounded border px-2 py-1"
+                      className="ch-btn ch-btn--secondary ch-btn--compact"
                       onClick={() =>
                         client &&
                         void send(() => client.actions.devmodeToggleOff(d.deviceId, tg as never), "devModeOffSent")
@@ -144,17 +146,20 @@ export const Devices = () => {
             ) : null}
             {d.role === "client" && !d.revoked && d.deviceId !== me ? (
               confirming === d.deviceId ? (
-                <div className="flex flex-wrap items-center gap-2 text-sm">
+                <div className="ch-chl-row">
                   <span>{t("revokeConfirm", { name: d.name })}</span>
-                  <button className="rounded bg-red-700 px-2 py-1 text-white" onClick={() => void revoke(d)}>
+                  <button className="ch-btn ch-btn--danger ch-btn--compact" onClick={() => void revoke(d)}>
                     {t("revokeYes")}
                   </button>
-                  <button className="rounded border px-2 py-1" onClick={() => setConfirming(null)}>
+                  <button className="ch-btn ch-btn--gray ch-btn--compact" onClick={() => setConfirming(null)}>
                     {t("cancel")}
                   </button>
                 </div>
               ) : (
-                <button className="w-fit rounded border px-2 py-1 text-sm" onClick={() => setConfirming(d.deviceId)}>
+                <button
+                  className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit"
+                  onClick={() => setConfirming(d.deviceId)}
+                >
                   {t("revoke")}
                 </button>
               )
@@ -163,9 +168,9 @@ export const Devices = () => {
         ))}
       </ul>
       {revoked ? (
-        <div role="status" data-testid="revoke-result" className="grid gap-1 rounded-lg bg-neutral-100 p-3 text-sm">
-          <p className="font-medium">{t("revokedServer", { name: revoked.name })}</p>
-          <ul className="grid gap-0.5">
+        <div role="status" data-testid="revoke-result" className="ch-card ch-chl-card">
+          <p className="ch-chl-strong">{t("revokedServer", { name: revoked.name })}</p>
+          <ul className="ch-chl ch-chl--tight ch-chl-small">
             {revoked.agents.map((a) => (
               <li key={a.name} data-testid="revoke-agent" data-online={a.online}>
                 {a.online && a.sent
@@ -204,34 +209,34 @@ const SignOutEverywhere = () => {
     setConfirming(false);
   };
   return (
-    <section className="grid gap-2 rounded-xl border border-red-200 p-4" aria-labelledby="everywhere">
-      <h2 id="everywhere" className="font-semibold">
+    <section className="ch-card ch-chl-card" aria-labelledby="everywhere">
+      <h2 id="everywhere" className="ch-chl-strong">
         {t("title")}
       </h2>
-      <p className="text-sm text-neutral-700">{t("body")}</p>
+      <p className="ch-muted">{t("body")}</p>
       {!passkey.enrolled ? (
-        <p data-testid="everywhere-needs-passkey" className="text-sm text-amber-900">
+        <p data-testid="everywhere-needs-passkey" className="ch-chl-small ch-chl-warn">
           {t("needsPasskey")}
         </p>
       ) : confirming ? (
-        <div className="flex flex-wrap items-center gap-2 text-sm">
+        <div className="ch-chl-row">
           <span>{t("confirm")}</span>
           <button
             data-testid="everywhere-yes"
-            className="rounded bg-red-700 px-2 py-1 text-white disabled:opacity-50"
+            className="ch-btn ch-btn--danger ch-btn--compact"
             disabled={busy}
             onClick={() => void run()}
           >
             {t("yes")}
           </button>
-          <button className="rounded border px-2 py-1" disabled={busy} onClick={() => setConfirming(false)}>
+          <button className="ch-btn ch-btn--gray ch-btn--compact" disabled={busy} onClick={() => setConfirming(false)}>
             {t("cancel")}
           </button>
         </div>
       ) : (
         <button
           data-testid="everywhere"
-          className="w-fit rounded-lg border border-red-700 px-3 py-1.5 text-sm text-red-800"
+          className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit"
           onClick={() => {
             setResult(null);
             setConfirming(true);
@@ -241,13 +246,13 @@ const SignOutEverywhere = () => {
         </button>
       )}
       {result === "cancelled" || result === "no_passkey" || result === "failed" ? (
-        <p role="alert" data-testid="everywhere-error" className="text-sm text-red-800">
+        <p role="alert" data-testid="everywhere-error" className="ch-err">
           {t(`error.${result}`)}
         </p>
       ) : result ? (
-        <div role="status" data-testid="everywhere-result" className="grid gap-1 rounded-lg bg-neutral-100 p-3 text-sm">
-          <p className="font-medium">{t("done", { n: result.revoked.length })}</p>
-          <ul className="grid gap-0.5">
+        <div role="status" data-testid="everywhere-result" className="ch-card ch-chl-card">
+          <p className="ch-chl-strong">{t("done", { n: result.revoked.length })}</p>
+          <ul className="ch-chl ch-chl--tight ch-chl-small">
             {result.notified.map((id) => (
               <li key={id} data-testid="everywhere-agent" data-online={online(id)}>
                 {online(id) ? t("agentOnline", { agent: name(id) }) : t("agentOffline", { agent: name(id) })}
@@ -259,7 +264,7 @@ const SignOutEverywhere = () => {
               </li>
             ))}
           </ul>
-          {result.banFailed.length ? <p className="text-amber-900">{t("banFailed")}</p> : null}
+          {result.banFailed.length ? <p className="ch-chl-warn">{t("banFailed")}</p> : null}
         </div>
       ) : null}
     </section>

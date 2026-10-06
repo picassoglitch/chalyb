@@ -1,0 +1,498 @@
+/* Chalito inside the app (owner decision 2026-10-05). Scoped to the app;
+   shared tool chrome lives in chalyb-tokens.css. Only layout glue that the
+   design system's ch- classes don't cover lives here. */
+
+/* ---------- Page stacks ---------- */
+.chalyb-app .ch-chl {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.chalyb-app .ch-chl--tight {
+  gap: 12px;
+}
+.chalyb-app .ch-chl-head {
+  display: grid;
+  gap: 6px;
+}
+
+/* A card with content inside (ch-card has no padding of its own). */
+.chalyb-app .ch-chl-card {
+  display: grid;
+  gap: 12px;
+  padding: 22px 24px;
+  min-width: 0;
+}
+.chalyb-app .ch-chl-card--bad {
+  background: var(--bad-tint);
+  box-shadow: inset 0 0 0 1.5px var(--bad-line);
+}
+.chalyb-app .ch-chl-card--warn {
+  background: var(--warn-tint);
+  box-shadow: inset 0 0 0 1.5px var(--warn-line);
+}
+.chalyb-app .ch-chl-card--ok {
+  background: var(--ok-tint);
+}
+
+/* A wrapping row of buttons, chips or a label + value. */
+.chalyb-app .ch-chl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.chalyb-app .ch-chl-row--between {
+  justify-content: space-between;
+}
+.chalyb-app .ch-chl-fit {
+  justify-self: start;
+  width: fit-content;
+}
+
+/* Small print: timestamps, ids, captions. */
+.chalyb-app .ch-chl-small {
+  font-size: 15px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-chl-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.chalyb-app .ch-chl-bad {
+  color: var(--bad);
+}
+.chalyb-app .ch-chl-ok {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-chl-warn {
+  color: var(--warn);
+}
+
+/* Lists of cards (sessions, devices, approvals, rooms). */
+.chalyb-app .ch-chl-list {
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-chl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+/* Plain checkbox / radio rows inside forms. */
+.chalyb-app .ch-chl-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+}
+.chalyb-app .ch-chl-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+/* Native dialogs (step-up confirm, deletion). */
+.chalyb-app .ch-chl-dialog,
+.ch-chl-dialog {
+  border: 0;
+  border-radius: var(--r, 22px);
+  padding: 26px 28px;
+  max-width: min(520px, calc(100vw - 32px));
+  box-shadow: 0 2px 4px rgba(16, 16, 40, 0.04), 0 18px 48px rgba(16, 16, 40, 0.1);
+}
+.ch-chl-dialog::backdrop {
+  background: rgba(16, 16, 40, 0.35);
+}
+
+/* ---------- Onboarding & settings ---------- */
+/* Sub-heading inside a card (push, passkey, deletion, step-up). */
+.chalyb-app .ch-chl-h3 {
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+.chalyb-app .ch-chl-strong {
+  font-weight: 600;
+}
+.chalyb-app .ch-chl-bullets {
+  display: grid;
+  gap: 6px;
+  padding-left: 22px;
+  list-style: disc;
+}
+/* Fieldsets without the browser frame; the legend flows like a heading. */
+.chalyb-app .ch-chl-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.chalyb-app .ch-chl-fieldset.ch-chl-card {
+  padding: 22px 24px;
+}
+.chalyb-app .ch-chl-fieldset > legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+}
+.chalyb-app .ch-chl-check--warn {
+  background: var(--warn-tint);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+/* A card nested inside another card (sharing toggle in a session or device). */
+.chalyb-app .ch-chl-card--sub {
+  padding: 14px 16px;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.chalyb-app .ch-chl-row--end {
+  justify-content: flex-end;
+}
+/* Step-up confirm overlay (a div dialog, not a native <dialog>). */
+.chalyb-app .ch-chl-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 16, 40, 0.35);
+}
+.chalyb-app .ch-chl-modal {
+  max-width: min(420px, 100%);
+  box-shadow: 0 2px 4px rgba(16, 16, 40, 0.04), 0 18px 48px rgba(16, 16, 40, 0.1);
+}
+/* Pairing glyph ring and the camera viewfinder that scans it. */
+.chalyb-app .ch-chl-glyph {
+  border-radius: 50%;
+}
+.chalyb-app .ch-chl-scan {
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 320px;
+  border-radius: var(--r);
+  background: #000;
+  object-fit: cover;
+}
+
+/* ---------- Rooms, Mesas & store ---------- */
+.chalyb-app .ch-chl-push {
+  margin-left: auto;
+}
+.chalyb-app .ch-chl--narrow {
+  max-width: 672px;
+}
+/* A card holding a sentence with an inline link (not a stack). */
+.chalyb-app .ch-chl-card--inline {
+  display: block;
+}
+.chalyb-app .ch-chl-card > .ch-ghead {
+  padding: 0;
+}
+.chalyb-app .ch-chl > .ch-field {
+  margin-top: 0;
+}
+.chalyb-app .ch-chl-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 18px;
+  font-size: 16px;
+}
+/* Room 3D stage (canvas). */
+.chalyb-app .ch-chl-stage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r);
+  background: linear-gradient(to bottom, var(--tint2), var(--ok-tint));
+}
+/* Store: companion preview card and item tiles. */
+.chalyb-app .ch-chl-preview {
+  position: relative;
+  width: 192px;
+  margin: 48px auto 0;
+}
+.chalyb-app .ch-chl-preview--empty {
+  aspect-ratio: 3 / 4;
+}
+.chalyb-app .ch-chl-preview__body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.chalyb-app .ch-chl-preview__item {
+  position: absolute;
+}
+@media (min-width: 640px) {
+  .chalyb-app .ch-chl-preview {
+    width: 224px;
+  }
+}
+.chalyb-app .ch-chl-grid--store {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+}
+.chalyb-app .ch-chl-item {
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+.chalyb-app .ch-chl-item__art {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 14px;
+  background: var(--bg);
+}
+/* Usage: SVG charts, legend swatches and the comms-share meter. */
+.chalyb-app .ch-chl-chart {
+  display: block;
+  width: 100%;
+  height: 128px;
+}
+.chalyb-app .ch-chl-chart--short {
+  height: 96px;
+}
+.chalyb-app .ch-chl-fill--work {
+  fill: var(--ok);
+}
+.chalyb-app .ch-chl-fill--comms {
+  fill: var(--accent);
+}
+.chalyb-app .ch-chl-fill--over {
+  fill: var(--warn);
+}
+.chalyb-app .ch-chl-fill--byo {
+  fill: var(--ink3);
+}
+.chalyb-app .ch-chl-stroke--target {
+  stroke: var(--ink);
+}
+.chalyb-app .ch-chl-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.chalyb-app .ch-chl-swatch--work {
+  background: var(--ok);
+}
+.chalyb-app .ch-chl-swatch--comms {
+  background: var(--accent);
+}
+.chalyb-app .ch-chl-meter {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #eeeef2;
+}
+.chalyb-app .ch-chl-meter__bar {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.chalyb-app .ch-chl-meter__bar--over {
+  background: var(--warn);
+}
+.chalyb-app .ch-chl-meter__target {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 50%;
+  width: 2px;
+  background: var(--ink);
+}
+
+/* ---------- Sessions & devices ---------- */
+/* Session list rows (ch-row inside list items): restore the hairline between them. */
+.chalyb-app .ch-toolshell[data-tool="chalito"] .ch-group > li + li {
+  border-top: 1px solid var(--line);
+}
+/* Timeline events: a tighter card. */
+.chalyb-app .ch-chl-event {
+  gap: 4px;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+.chalyb-app .ch-chl-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Form rows whose fields and button line up at the bottom (add-device code). */
+.chalyb-app .ch-chl-row--bottom {
+  align-items: flex-end;
+}
+.chalyb-app .ch-chl-row > .ch-field {
+  margin-top: 0;
+}
+/* Pill sitting inside a line of text (truncated summary). */
+.chalyb-app .ch-chl-inline {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+/* "Ver la entrada completa" disclosure in an approval. */
+.chalyb-app .ch-chl-details {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.chalyb-app .ch-chl-details > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.chalyb-app .ch-chl-details > pre {
+  margin-top: 8px;
+}
+/* Short codes and fingerprints to compare by eye. */
+.chalyb-app .ch-chl-code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+.chalyb-app .ch-chl-code--xl {
+  font-size: 32px;
+  letter-spacing: 0.12em;
+}
+.chalyb-app .ch-chl-codeinput {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+/* Centered card (pairing glyph + code). */
+.chalyb-app .ch-chl-center {
+  justify-items: center;
+  text-align: center;
+}
+
+/* ---------- Shared Chalito UI package ---------- */
+/* Feed cards: your own turns tinted; Mesa list entries are links. */
+.chalyb-app .ch-chl-item--mine {
+  background: var(--tint2);
+}
+.chalyb-app a.ch-chl-cardlink:hover {
+  box-shadow: inset 0 0 0 1.5px var(--accent), var(--shadow);
+}
+/* Quoted room/Mesa text: kept as typed, never markup. */
+.chalyb-app .ch-chl-quote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chalyb-app .ch-chl-quote--plain {
+  padding-left: 0;
+  border-left: 0;
+}
+/* A decision inside a Mesa turn. */
+.chalyb-app .ch-chl-inset {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg);
+}
+/* Stacked items separated by hairlines (MCP inbox). */
+.chalyb-app .ch-chl-divided > * + * {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+/* Inputs that share a row with a button, or keep their natural width. */
+.chalyb-app .ch-chl-grow {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.chalyb-app .ch-input.ch-chl-shrink {
+  width: auto;
+  max-width: 100%;
+}
+/* Settings: label + hint with a switch on the right. */
+.chalyb-app .ch-chl-toggle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.chalyb-app .ch-chl-toggle__hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink2);
+}
+.chalyb-app .ch-chl-toggle input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+/* Phone: country + number side by side on wider screens. */
+.chalyb-app .ch-chl-phone {
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-chl-phone .ch-select {
+  min-height: 62px;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .chalyb-app .ch-chl-phone {
+    grid-template-columns: minmax(0, 14rem) 1fr;
+  }
+}
+.chalyb-app .ch-chl-span {
+  grid-column: 1 / -1;
+}
+/* Connections list: rows have no icon, so the hairline starts at the edge padding. */
+.chalyb-app .ch-chl-rows .ch-row + .ch-row::before {
+  left: 20px;
+}
+/* Companion picker tiles. */
+.chalyb-app .ch-chl-pick {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.chalyb-app .ch-chl-pick__opt {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+}
+.chalyb-app .ch-chl-pick__opt--on {
+  box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg);
+}
+.chalyb-app .ch-chl-pick__opt:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.chalyb-app .ch-chl-pick__img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tint);
+  object-fit: cover;
+  object-position: top;
+}
+.chalyb-app .ch-chl-pick__ph {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+.chalyb-app .ch-chl-pick__name {
+  font-size: 16px;
+  font-weight: 600;
+}

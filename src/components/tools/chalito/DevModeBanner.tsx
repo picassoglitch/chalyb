@@ -12,12 +12,14 @@ export const DevModeBanner = () => {
     <div
       role="status"
       data-testid="devmode-banner"
-      className="bg-red-700 px-4 py-2 text-center text-sm font-semibold text-white"
+      className="ch-bnr ch-bnr--bad"
     >
-      {t("banner")}{" "}
-      <Link href="/dispositivos" className="underline">
-        {t("manage")}
-      </Link>
+      <span className="ch-bnr__tx">
+        {t("banner")}{" "}
+        <Link href="/dispositivos" className="ch-lnk">
+          {t("manage")}
+        </Link>
+      </span>
     </div>
   );
 };

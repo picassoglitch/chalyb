@@ -54,17 +54,17 @@ export const AddDevice = () => {
   };
 
   const errorLine = error ? (
-    <p role="alert" data-testid="add-error" data-reason={error} className="text-red-800">
+    <p role="alert" data-testid="add-error" data-reason={error} className="ch-err">
       {t(`error.${error}`)}
     </p>
   ) : null;
 
   if (step.s === "done")
     return (
-      <div className="grid gap-3" data-testid="add-done">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="ch-chl ch-chl--tight" data-testid="add-done">
+        <h2 className="ch-h2">{t("title")}</h2>
         <p role="status">{t("done", { name: step.name })}</p>
-        <Link href="/dispositivos" className="w-fit rounded-lg border px-4 py-2">
+        <Link href="/dispositivos" className="ch-btn ch-btn--secondary ch-chl-fit">
           {t("back")}
         </Link>
       </div>
@@ -74,33 +74,33 @@ export const AddDevice = () => {
     const d = step.target.display;
     const left = Math.max(0, Math.ceil((d.expiresInMs - (now - step.at)) / 1000));
     return (
-      <div className="grid gap-4" data-testid="add-confirm">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <div className="grid gap-2 rounded-xl border bg-white p-4">
-          <p className="font-medium" data-testid="add-name">
+      <div className="ch-chl" data-testid="add-confirm">
+        <h2 className="ch-h2">{t("title")}</h2>
+        <div className="ch-card ch-chl-card">
+          <p className="ch-chl-strong" data-testid="add-name">
             {d.name}
           </p>
-          <p className="text-sm text-neutral-600">{t(`kind.${d.kind === "phone" ? "phone" : "web"}`)}</p>
-          <p className="text-sm">{t("compare")}</p>
-          <p data-testid="add-fingerprint" className="font-mono text-xl font-bold tracking-wide">
+          <p className="ch-chl-small">{t(`kind.${d.kind === "phone" ? "phone" : "web"}`)}</p>
+          <p>{t("compare")}</p>
+          <p data-testid="add-fingerprint" className="ch-chl-code">
             {d.fingerprint}
           </p>
-          <p className="text-sm text-neutral-600">
+          <p className="ch-chl-small">
             {t("expiresIn", { minutes: Math.floor(left / 60), seconds: String(left % 60).padStart(2, "0") })}
           </p>
         </div>
-        <p className="text-sm">{passkey.enrolled ? t("withPasskey") : t("withoutPasskey")}</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="ch-muted">{passkey.enrolled ? t("withPasskey") : t("withoutPasskey")}</p>
+        <div className="ch-chl-row">
           <button
             data-testid="add-approve"
-            className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+            className="ch-btn ch-btn--primary"
             disabled={step.s === "approving" || left === 0}
             onClick={() => void approve(step.target, step.at)}
           >
             {t("approve")}
           </button>
           <button
-            className="rounded-lg border px-4 py-2"
+            className="ch-btn ch-btn--secondary"
             disabled={step.s === "approving"}
             onClick={() => {
               setError(null);
@@ -116,21 +116,22 @@ export const AddDevice = () => {
   }
 
   return (
-    <div className="grid gap-4" data-testid="add-input">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p>{t("body")}</p>
+    <div className="ch-chl" data-testid="add-input">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <p className="ch-sub">{t("body")}</p>
       <form
-        className="flex flex-wrap items-end gap-2"
+        className="ch-chl-row ch-chl-row--bottom"
         onSubmit={(e) => {
           e.preventDefault();
           void resolve({ shortCode: code });
         }}
       >
-        <label className="grid gap-1">
-          <span className="text-sm font-medium">{t("codeLabel")}</span>
+        <div className="ch-field">
+          <label htmlFor="add-code">{t("codeLabel")}</label>
           <input
+            id="add-code"
             data-testid="add-code"
-            className="rounded-lg border px-3 py-2 font-mono uppercase tracking-widest"
+            className="ch-input ch-chl-codeinput"
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
@@ -139,10 +140,10 @@ export const AddDevice = () => {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
-        </label>
+        </div>
         <button
           data-testid="add-find"
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary"
           disabled={step.s === "busy" || code.trim().length < 8}
         >
           {t("find")}
@@ -161,7 +162,7 @@ export const AddDevice = () => {
       ) : (
         <button
           data-testid="add-scan"
-          className="w-fit rounded-lg border px-4 py-2"
+          className="ch-btn ch-btn--secondary ch-chl-fit"
           disabled={step.s === "busy"}
           onClick={() => setStep({ s: "scanning" })}
         >

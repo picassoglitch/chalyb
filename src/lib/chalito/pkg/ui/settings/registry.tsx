@@ -41,8 +41,8 @@ export interface SettingDef {
 const Labelled = ({ k, children }: { k: string; children: ReactNode }) => {
   const { t } = useUiText();
   return (
-    <div className="grid gap-2">
-      <span className="font-medium">{t(`${k}.label`)}</span>
+    <div className="ch-chl ch-chl--tight">
+      <span className="ch-chl-strong">{t(`${k}.label`)}</span>
       {children}
     </div>
   );
@@ -54,13 +54,13 @@ const PlanCredits = ({ ctx }: { ctx: SettingContext }) => {
   return (
     <Labelled k="planCredits">
       <p>{tier ? t("planCredits.tier", { tier }) : t("planCredits.unknown")}</p>
-      {trialEndsAt ? <p className="text-sm text-neutral-600">{t("planCredits.trial", { date: trialEndsAt })}</p> : null}
+      {trialEndsAt ? <p className="ch-chl-small">{t("planCredits.trial", { date: trialEndsAt })}</p> : null}
       {ctx.usageHref ? (
-        <a className="text-emerald-700 underline" href={ctx.usageHref} data-testid="usage-link">
+        <a className="ch-lnk ch-chl-fit" href={ctx.usageHref} data-testid="usage-link">
           {t("planCredits.usage")}
         </a>
       ) : null}
-      <a className="text-emerald-700 underline" href={ctx.hubPlansUrl} rel="noopener">
+      <a className="ch-lnk ch-chl-fit" href={ctx.hubPlansUrl} rel="noopener">
         {t("planCredits.manage")}
       </a>
     </Labelled>
@@ -87,9 +87,9 @@ const PhoneToggle = ({ ctx, k }: { ctx: SettingContext; k: "whatsapp" | "calls" 
 const ChargesAck = ({ ctx }: { ctx: SettingContext }) => {
   const { t } = useUiText();
   return (
-    <div>
+    <div className="ch-chl ch-chl--tight">
       <ChargesNotice />
-      <label className="mt-2 flex items-center gap-2">
+      <label className="ch-chl-check">
         <input
           type="checkbox"
           checked={ctx.values.chargesAck}
@@ -113,7 +113,7 @@ const PlainToggle = ({ ctx, k }: { ctx: SettingContext; k: "callBriefing" | "pri
   return (
     <Toggle label={t(`${k}.label`)} hint={t(`${k}.hint`)} checked={ctx.values[k]} onChange={(on) => ctx.set(k, on)}>
       {k === "callBriefing" && ctx.values.callBriefing ? (
-        <p role="note" className="mt-2 text-sm text-amber-900">
+        <p role="note" className="ch-chl-small ch-chl-warn">
           {t("callBriefing.plaintext")}
         </p>
       ) : null}
@@ -192,10 +192,10 @@ export const SettingsPanel = (props: Omit<SettingContext, "set"> & { onChange: S
   const { t } = useUiText();
   const ctx: SettingContext = { ...props, set: props.onChange };
   return (
-    <div data-shell={props.shell} className="grid gap-8">
+    <div data-shell={props.shell} className="ch-chl">
       {SECTIONS.map((section) => (
-        <section key={section} aria-labelledby={`settings-${section}`} className="grid gap-5">
-          <h2 id={`settings-${section}`} className="text-lg font-semibold">
+        <section key={section} aria-labelledby={`settings-${section}`} className="ch-card ch-chl-card">
+          <h2 id={`settings-${section}`} className="ch-chl-h3">
             {t(`sections.${section}`)}
           </h2>
           {SETTINGS.filter((s) => s.section === section).map((s) => (

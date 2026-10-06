@@ -10,6 +10,7 @@ import { Link } from '@/i18n/routing';
 import { toolBySlug, type ToolTabKey } from '@/config/tools';
 import { Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
+import { ToolTabsAuto } from './tool-tabs';
 
 export async function ToolShell({
   slug,
@@ -18,8 +19,9 @@ export async function ToolShell({
   children,
 }: {
   slug: string;
-  /** The selected tab; null on screens outside the tabs (none today). */
-  tab: ToolTabKey | null;
+  /** The selected tab; null on screens outside the tabs (none today);
+   *  'auto' picks it from the path (a layout wrapping every screen). */
+  tab: ToolTabKey | null | 'auto';
   /** included → "Incluido en tu plan"; offer → "Incluido en Pro · Pruébalo
    *  gratis" (only while the trial can be honoured); pro → "Incluido en Pro". */
   plan?: 'included' | 'offer' | 'pro';
@@ -49,7 +51,18 @@ export async function ToolShell({
             </div>
           </div>
         </div>
-        {plan === 'included' && (
+        {plan === 'included' && tab === 'auto' && (
+          <ToolTabsAuto
+            slug={slug}
+            ariaLabel={t('tabsAria', { herramienta: tool.name })}
+            labels={{
+              main: t(`tab.${slug}.main`),
+              history: t(`tab.${slug}.history`),
+              settings: t(`tab.${slug}.settings`),
+            }}
+          />
+        )}
+        {plan === 'included' && tab !== 'auto' && (
           <nav
             className="ch-tooltabs"
             role="tablist"

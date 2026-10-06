@@ -25,18 +25,18 @@ export const Settings = () => {
   useEffect(() => setPick(pickNow), [setPick, pickNow]);
   if (!values) return null;
   return (
-    <div className="grid gap-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p data-testid="persisted" data-where={persisted} className="text-sm text-neutral-600">
+    <div className="ch-chl">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <p data-testid="persisted" data-where={persisted} className="ch-chl-small">
         {tw(persisted)}
       </p>
       {error ? (
-        <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
           {tw(`error.${error}`)}
         </p>
       ) : null}
       <PushOptIn />
-      <Link href="/conexiones" className="w-fit text-emerald-700 underline">
+      <Link href="/conexiones" className="ch-lnk ch-chl-fit">
         {tw("connectedApps")}
       </Link>
       <SettingsPanel

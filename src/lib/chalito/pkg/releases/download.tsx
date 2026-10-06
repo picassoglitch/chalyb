@@ -50,43 +50,54 @@ export const DownloadPanel = ({
   const files = manifest.downloads?.[os] ?? [];
 
   return (
-    <section data-download-os={os} className="grid gap-4">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      {desktop && <p>{t("detected", { os: t(`os.${desktop}`) })}</p>}
-      {(detected === "ios" || detected === "android") && <p role="note">{t("mobile")}</p>}
-      <div role="radiogroup" aria-label={t("choose")} className="flex gap-2">
+    <section data-download-os={os} className="ch-chl">
+      <h2 className="ch-h2">{t("title")}</h2>
+      {desktop && <p className="ch-sub">{t("detected", { os: t(`os.${desktop}`) })}</p>}
+      {(detected === "ios" || detected === "android") && (
+        <p role="note" className="ch-card ch-chl-card ch-chl-card--warn">
+          {t("mobile")}
+        </p>
+      )}
+      <div role="radiogroup" aria-label={t("choose")} className="ch-chl-row">
         {DOWNLOAD_OSES.map((o) => (
-          <button key={o} type="button" role="radio" aria-checked={o === os} onClick={() => setChosen(o)}>
+          <button
+            key={o}
+            type="button"
+            role="radio"
+            aria-checked={o === os}
+            className={`ch-chip ch-chip--sm${o === os ? " ch-chip--on" : ""}`}
+            onClick={() => setChosen(o)}
+          >
             {t(`os.${o}`)}
           </button>
         ))}
       </div>
-      <p className="text-sm">{t("version", { version: manifest.version })}</p>
+      <p className="ch-chl-small">{t("version", { version: manifest.version })}</p>
       {manifest.unsigned?.[os] && (
-        <p role="note" data-unsigned>
+        <p role="note" data-unsigned className="ch-card ch-chl-card ch-chl-card--warn">
           {t("unsigned")}
         </p>
       )}
       {files.length === 0 ? (
         <p role="status">{t("unavailable")}</p>
       ) : (
-        <ul className="grid gap-3">
+        <ul className="ch-chl-list">
           {files.map((f) => (
-            <li key={f.name} data-kind={f.kind} className="grid gap-1">
-              <a href={f.url} download={f.name} rel="noopener">
+            <li key={f.name} data-kind={f.kind} className="ch-card ch-chl-card">
+              <a href={f.url} download={f.name} rel="noopener" className="ch-btn ch-btn--primary ch-chl-fit">
                 {t(`kinds.${f.kind}`)}
               </a>
-              <span className="text-xs">
+              <span className="ch-chl-small">
                 {f.name} · {t("size", { mb: (f.size / 1_048_576).toFixed(1) })}
               </span>
-              <code className="text-xs break-all" title={t("checksum")}>
+              <code className="ch-chl-mono ch-chl-small" title={t("checksum")}>
                 {f.sha256}
               </code>
             </li>
           ))}
         </ul>
       )}
-      {os === "windows" && <p className="text-sm">{t("smartscreen")}</p>}
+      {os === "windows" && <p className="ch-chl-small">{t("smartscreen")}</p>}
     </section>
   );
 };

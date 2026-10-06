@@ -23,46 +23,46 @@ export const Connectors = () => {
   if (status === "signed_out") return <p>{t("signedOut")}</p>;
   if (failed)
     return (
-      <p role="alert" className="text-red-900">
+      <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
         {t("failed")}
       </p>
     );
   if (!list) return <p aria-live="polite">{t("loading")}</p>;
   const active = list.filter((c) => !c.revokedAt);
   return (
-    <div className="grid gap-4">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+    <div className="ch-chl">
+      <h2 className="ch-h2">{t("title")}</h2>
       {active.length === 0 ? <p>{t("empty")}</p> : null}
-      <ul className="grid gap-3">
+      <ul className="ch-chl-list">
         {active.map((c) => (
           <li
             key={c.cid}
             data-testid="connector"
             data-cid={c.cid}
-            className="grid gap-2 rounded-xl border bg-white p-4"
+            className="ch-card ch-chl-card"
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">{c.clientName}</span>
-              <span className="text-sm text-neutral-600">{c.scopes.join(" · ")}</span>
+            <div className="ch-chl-row">
+              <span className="ch-chl-strong">{c.clientName}</span>
+              <span className="ch-chl-small">{c.scopes.join(" · ")}</span>
             </div>
-            <p className="text-sm text-neutral-600">
+            <p className="ch-chl-small">
               {c.lastUsedAt ? t("lastUsed", { when: format.relativeTime(c.lastUsedAt) }) : t("neverUsed")}
             </p>
             {confirming === c.cid ? (
-              <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="ch-chl-row">
                 <span>{t("revokeConfirm", { name: c.clientName })}</span>
                 <button
-                  className="rounded bg-red-700 px-2 py-1 text-white"
+                  className="ch-btn ch-btn--danger ch-btn--compact"
                   onClick={() => void mcp?.revoke(c.cid).then(() => (setConfirming(null), load()))}
                 >
                   {t("revokeYes")}
                 </button>
-                <button className="rounded border px-2 py-1" onClick={() => setConfirming(null)}>
+                <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirming(null)}>
                   {t("cancel")}
                 </button>
               </div>
             ) : (
-              <button className="w-fit rounded border px-2 py-1 text-sm" onClick={() => setConfirming(c.cid)}>
+              <button className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit" onClick={() => setConfirming(c.cid)}>
                 {t("revoke")}
               </button>
             )}

@@ -47,9 +47,9 @@ export const PushOptIn = () => {
   };
 
   return (
-    <section data-testid="push-optin" data-state={state} className="grid gap-2 rounded-lg border p-4">
-      <h2 className="font-semibold">{t("title")}</h2>
-      <p className="text-sm text-neutral-600">{t("hint")}</p>
+    <section data-testid="push-optin" data-state={state} className="ch-card ch-chl-card">
+      <h3 className="ch-chl-h3">{t("title")}</h3>
+      <p className="ch-muted">{t("hint")}</p>
       {state === "loading" ? null : state === "unsupported" ? (
         <p role="note">{t("unsupported")}</p>
       ) : state === "denied" ? (
@@ -57,22 +57,22 @@ export const PushOptIn = () => {
       ) : !push ? (
         <p role="note">{status === "loading" ? t("loading") : t("needsPairing")}</p>
       ) : state === "on" ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <p data-testid="push-on">{t("on")}</p>
-          <button className="rounded border px-3 py-1" disabled={busy} onClick={() => void run(push.disable)}>
+        <div className="ch-chl-row">
+          <p data-testid="push-on" className="ch-chl-ok">{t("on")}</p>
+          <button className="ch-btn ch-btn--secondary ch-btn--compact" disabled={busy} onClick={() => void run(push.disable)}>
             {t("disable")}
           </button>
         </div>
       ) : (
         <button
-          className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+          className="ch-btn ch-btn--primary ch-chl-fit"
           disabled={busy}
           onClick={() => void run(push.enable)}
         >
           {t("enable")}
         </button>
       )}
-      {failed ? <p role="alert">{t("failed")}</p> : null}
+      {failed ? <p role="alert" className="ch-err">{t("failed")}</p> : null}
     </section>
   );
 };

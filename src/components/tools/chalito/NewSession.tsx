@@ -70,10 +70,10 @@ export const NewSession = () => {
 
   if (computers.length === 0)
     return (
-      <div className="grid gap-3">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="ch-chl ch-chl--tight">
+        <h2 className="ch-h2">{t("title")}</h2>
         <p data-testid="no-computers">{t("noComputers")}</p>
-        <Link href="/descargar" className="w-fit text-emerald-700 underline">
+        <Link href="/descargar" className="ch-lnk ch-chl-fit">
           {t("download")}
         </Link>
       </div>
@@ -105,12 +105,13 @@ export const NewSession = () => {
   const selected = computers.find((c) => c.deviceId === target);
   const waiting = phase.kind === "waiting";
   return (
-    <form onSubmit={(e) => void submit(e)} className="grid max-w-xl gap-4" data-testid="new-session">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <label className="grid gap-1">
-        <span className="font-medium">{t("computer")}</span>
+    <form onSubmit={(e) => void submit(e)} className="ch-chl ch-chl--narrow" data-testid="new-session">
+      <h2 className="ch-h2">{t("title")}</h2>
+      <div className="ch-field">
+        <label htmlFor="ns-computer">{t("computer")}</label>
         <select
-          className="rounded-lg border px-3 py-2"
+          id="ns-computer"
+          className="ch-input"
           value={target}
           onChange={(e) => setAgent(e.target.value)}
           disabled={waiting}
@@ -121,17 +122,17 @@ export const NewSession = () => {
             </option>
           ))}
         </select>
-      </label>
+      </div>
       {selected && !selected.online ? (
-        <p role="note" className="text-sm text-amber-900">
+        <p role="note" className="ch-chl-small ch-chl-warn">
           {t("offlineNote")}
         </p>
       ) : null}
-      <fieldset className="grid gap-1">
-        <legend className="font-medium">{t("adapter")}</legend>
-        <div className="flex gap-4">
+      <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+        <legend className="ch-chl-strong">{t("adapter")}</legend>
+        <div className="ch-chl-row">
           {START_ADAPTERS.map((a) => (
-            <label key={a.kind} className="flex items-center gap-2">
+            <label key={a.kind} className="ch-chl-check">
               <input
                 type="radio"
                 name="adapter"
@@ -144,10 +145,11 @@ export const NewSession = () => {
           ))}
         </div>
       </fieldset>
-      <label className="grid gap-1">
-        <span className="font-medium">{t("workspace")}</span>
+      <div className="ch-field">
+        <label htmlFor="ns-workspace">{t("workspace")}</label>
         <input
-          className="rounded-lg border px-3 py-2"
+          id="ns-workspace"
+          className="ch-input"
           list="workspace-labels"
           maxLength={80}
           required
@@ -160,15 +162,15 @@ export const NewSession = () => {
             <option key={l} value={l} />
           ))}
         </datalist>
-        <span className="text-sm text-neutral-600">{t("workspaceHint")}</span>
-      </label>
+        <p className="ch-field__hint ch-muted">{t("workspaceHint")}</p>
+      </div>
       {labels.length ? (
-        <div className="flex flex-wrap gap-2" aria-label={t("recent")}>
+        <div className="ch-chl-row" aria-label={t("recent")}>
           {labels.map((l) => (
             <button
               key={l}
               type="button"
-              className="rounded-full border px-3 py-1 text-sm"
+              className="ch-chip ch-chip--sm"
               onClick={() => setWorkspace(l)}
               disabled={waiting}
             >
@@ -177,10 +179,11 @@ export const NewSession = () => {
           ))}
         </div>
       ) : null}
-      <label className="grid gap-1">
-        <span className="font-medium">{t("mode")}</span>
+      <div className="ch-field">
+        <label htmlFor="ns-mode">{t("mode")}</label>
         <select
-          className="rounded-lg border px-3 py-2"
+          id="ns-mode"
+          className="ch-input"
           value={mode}
           onChange={(e) => setMode(e.target.value as RemotePermissionMode)}
           disabled={waiting}
@@ -191,20 +194,21 @@ export const NewSession = () => {
             </option>
           ))}
         </select>
-      </label>
-      <label className="grid gap-1">
-        <span className="font-medium">{t("prompt")}</span>
+      </div>
+      <div className="ch-field">
+        <label htmlFor="ns-prompt">{t("prompt")}</label>
         <textarea
-          className="min-h-28 rounded-lg border px-3 py-2"
+          id="ns-prompt"
+          className="ch-input ch-textarea"
           required
           placeholder={t("promptPlaceholder")}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           disabled={waiting}
         />
-      </label>
+      </div>
       <button
-        className="w-fit rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+        className="ch-btn ch-btn--primary ch-chl-fit"
         disabled={waiting || !prompt.trim() || !workspace.trim()}
       >
         {t("start")}
@@ -215,11 +219,15 @@ export const NewSession = () => {
         </p>
       ) : null}
       {phase.kind === "timeout" ? (
-        <p role="alert" data-testid="start-timeout">
+        <p role="alert" data-testid="start-timeout" className="ch-err">
           {t("timeout")}
         </p>
       ) : null}
-      {phase.kind === "error" ? <p role="alert">{phase.msg}</p> : null}
+      {phase.kind === "error" ? (
+        <p role="alert" className="ch-err">
+          {phase.msg}
+        </p>
+      ) : null}
     </form>
   );
 };

@@ -33,31 +33,33 @@ export const Rooms = () => {
 
   if (!rooms || me === undefined) return <p aria-live="polite">…</p>;
   return (
-    <div className="grid gap-4" data-testid="rooms">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p className="text-sm text-neutral-600">{t("intro")}</p>
+    <div className="ch-chl" data-testid="rooms">
+      <header className="ch-chl-head">
+        <h2 className="ch-h2">{t("title")}</h2>
+        <p className="ch-sub">{t("intro")}</p>
+      </header>
       {me === null ? (
         <p data-testid="room-no-companion">{t("noCompanion")}</p>
       ) : (
         <>
           {list && list.length ? (
-            <ul className="grid gap-2">
+            <ul className="ch-chl-list">
               {list.map((r) => (
                 <li key={r.roomId}>
                   <Link
                     href={{ pathname: "/r/[id]", params: { id: r.roomId } }}
-                    className="block rounded-xl border bg-white p-3 font-medium"
+                    className="ch-card ch-chl-card ch-chl-strong"
                     data-testid="room-link"
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="ch-chl-row">
                       {r.name}
-                      <span className="text-xs font-normal text-neutral-600">
+                      <span className="ch-chl-small">
                         {t("memberCount", { n: r.memberCount })}
                       </span>
                       {r.unread ? (
                         <span
                           data-testid="room-unread"
-                          className="ml-auto rounded-full bg-emerald-700 px-2 text-xs text-white"
+                          className="ch-pill ch-pill--acc ch-chl-push"
                         >
                           {t("unread")}
                         </span>
@@ -68,10 +70,10 @@ export const Rooms = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-neutral-600">{t("none")}</p>
+            <p className="ch-muted">{t("none")}</p>
           )}
-          <section className="grid gap-2">
-            <h2 className="font-semibold">{t("create.title")}</h2>
+          <section className="ch-chl ch-chl--tight">
+            <h3 className="ch-ghead">{t("create.title")}</h3>
             <NewRoomForm
               onCreate={async (name, type) => {
                 const r = await createRoom(rooms.api, {
@@ -87,8 +89,8 @@ export const Rooms = () => {
               }}
             />
           </section>
-          <section className="grid gap-2">
-            <h2 className="font-semibold">{t("joinTitle")}</h2>
+          <section className="ch-chl ch-chl--tight">
+            <h3 className="ch-ghead">{t("joinTitle")}</h3>
             <JoinRoomForm
               onJoin={async (code) => {
                 setError(null);
@@ -98,7 +100,7 @@ export const Rooms = () => {
               }}
             />
             {error ? (
-              <p role="alert" data-testid="room-join-error" className="text-sm text-red-800">
+              <p role="alert" data-testid="room-join-error" className="ch-err">
                 {error}
               </p>
             ) : null}

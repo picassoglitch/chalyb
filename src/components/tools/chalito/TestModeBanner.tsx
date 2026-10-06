@@ -7,8 +7,8 @@ export const TestModeBanner = () => {
   const t = useTranslations("chalito.live");
   if (!DEV_BACKEND) return null;
   return (
-    <div data-testid="test-mode" className="bg-neutral-900 px-4 py-1 text-center text-xs text-white">
-      {t("testMode")}
+    <div data-testid="test-mode" className="ch-bnr ch-bnr--gray">
+      <span className="ch-bnr__tx">{t("testMode")}</span>
     </div>
   );
 };

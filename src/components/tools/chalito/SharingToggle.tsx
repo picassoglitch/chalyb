@@ -34,9 +34,9 @@ export const SharingToggle = ({ scope, target }: { scope: "session" | "device"; 
     } else setFailed(true);
   };
   return (
-    <div data-testid={`sharing-${scope}`} className="grid gap-2 rounded-lg border p-3 text-sm">
-      <label className="flex items-center justify-between gap-3">
-        <span className="font-medium">{t("label")}</span>
+    <div data-testid={`sharing-${scope}`} className="ch-card ch-chl-card ch-chl-card--sub">
+      <label className="ch-chl-check ch-chl-row--between">
+        <span className="ch-chl-strong">{t("label")}</span>
         <input
           type="checkbox"
           role="switch"
@@ -45,27 +45,27 @@ export const SharingToggle = ({ scope, target }: { scope: "session" | "device"; 
         />
       </label>
       {asking && !on ? (
-        <div className="grid gap-2 rounded-md bg-amber-50 p-2 text-amber-900">
+        <div className="ch-card ch-chl-card ch-chl-card--warn">
           <p role="note">{t("warning")}</p>
-          <label className="flex items-center gap-2">
+          <label className="ch-chl-check">
             <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
             {t("ack")}
           </label>
-          <div className="flex gap-2">
+          <div className="ch-chl-row">
             <button
-              className="rounded bg-amber-700 px-2 py-1 text-white disabled:opacity-50"
+              className="ch-btn ch-btn--primary ch-btn--compact"
               disabled={!ack}
               onClick={() => void send(true)}
             >
               {t("confirm")}
             </button>
-            <button className="rounded border px-2 py-1" onClick={() => setAsking(false)}>
+            <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setAsking(false)}>
               {t("cancel")}
             </button>
           </div>
         </div>
       ) : null}
-      {failed ? <p role="alert">{t("failed")}</p> : null}
+      {failed ? <p role="alert" className="ch-err">{t("failed")}</p> : null}
     </div>
   );
 };

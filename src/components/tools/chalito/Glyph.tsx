@@ -35,7 +35,7 @@ export const GlyphCanvas = ({ glyph, size = 240, label }: { glyph: GlyphPayload;
       role="img"
       aria-label={label}
       data-testid="endorse-glyph"
-      className="rounded-full"
+      className="ch-chl-glyph"
     />
   );
 };
@@ -101,9 +101,9 @@ export const GlyphScanner = ({
   }, []);
 
   return (
-    <div className="grid gap-2">
-      <video ref={video} muted playsInline className="aspect-square w-full max-w-xs rounded-xl bg-black object-cover" />
-      <p aria-live="polite" className="text-sm text-neutral-600">
+    <div className="ch-chl ch-chl--tight">
+      <video ref={video} muted playsInline className="ch-chl-scan" />
+      <p aria-live="polite" className="ch-chl-small">
         {labels[state]}
       </p>
     </div>

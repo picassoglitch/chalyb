@@ -8,10 +8,10 @@ import { approvalText } from "@/lib/chalito/web/approval-text";
 import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
 
 const RISK_STYLE: Record<ApprovalView["risk"], string> = {
-  LOW: "bg-neutral-100 text-neutral-800",
-  MED: "bg-sky-100 text-sky-900",
-  HIGH: "bg-amber-100 text-amber-900",
-  CRITICAL: "bg-red-100 text-red-900",
+  LOW: "ch-pill--gray",
+  MED: "ch-pill--acc",
+  HIGH: "ch-pill--warn",
+  CRITICAL: "ch-pill--bad",
 };
 
 export const RiskBadge = ({ risk }: { risk: ApprovalView["risk"] }) => {
@@ -20,7 +20,7 @@ export const RiskBadge = ({ risk }: { risk: ApprovalView["risk"] }) => {
     <span
       data-testid="risk-badge"
       data-risk={risk}
-      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${RISK_STYLE[risk]}`}
+      className={`ch-pill ${RISK_STYLE[risk]}`}
     >
       {t(risk)}
     </span>
@@ -66,7 +66,7 @@ const MesaApprovalCard = ({ a, m }: { a: ApprovalView; m: MesaDecisionView }) =>
   const resolved = a.status !== "pending" || expired ? t("resolved") : null;
   return (
     <article data-testid="approval" data-aid={a.aid} data-status={expired ? "expired" : a.status} data-kind="mesa">
-      <h2 className="mb-2 font-semibold">{t("title")}</h2>
+      <h2 className="ch-ghead">{t("title")}</h2>
       <MesaDecisionCard
         from={m.from}
         question={m.question}
@@ -139,85 +139,85 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
       data-testid="approval"
       data-aid={a.aid}
       data-status={expired ? "expired" : a.status}
-      className="grid gap-2 rounded-xl border bg-white p-4"
+      className="ch-card ch-chl-card"
     >
-      <header className="flex items-center gap-2">
+      <header className="ch-chl-row">
         <RiskBadge risk={a.risk} />
-        <span className="font-medium">{details?.toolName ?? t("unknownTool")}</span>
+        <span className="ch-chl-strong">{details?.toolName ?? t("unknownTool")}</span>
         {unverified ? (
           <span
             data-testid="unverified"
-            className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900"
+            className="ch-pill ch-pill--bad"
           >
             {t("unverified")}
           </span>
         ) : null}
         {pending ? (
-          <span data-testid="countdown" className="ml-auto font-mono text-sm tabular-nums" aria-label={t("expiresIn")}>
+          <span data-testid="countdown" className="ch-chl-mono ch-chl-push" aria-label={t("expiresIn")}>
             {mmss(a.expiresAt - now)}
           </span>
         ) : null}
       </header>
       {details ? (
-        <div className="grid gap-1 text-sm">
-          <p className="break-words font-mono" data-testid="approval-summary">
+        <div className="ch-chl ch-chl--tight">
+          <p className="ch-chl-mono" data-testid="approval-summary">
             {text!.summary.text}
             {text!.truncated ? (
-              <span data-testid="approval-truncated" className="ml-1 rounded bg-amber-100 px-1 text-amber-900">
+              <span data-testid="approval-truncated" className="ch-pill ch-pill--warn ch-chl-inline">
                 {text!.hiddenChars !== null ? t("truncatedN", { n: text!.hiddenChars }) : t("truncated")}
               </span>
             ) : null}
           </p>
           {text!.summary.hidden || text!.full?.hidden ? (
-            <p role="note" data-testid="approval-hidden-chars" className="text-amber-900">
+            <p role="note" data-testid="approval-hidden-chars" className="ch-chl-warn">
               {t("hiddenChars")}
             </p>
           ) : null}
           {text!.full ? (
             <details
-              className="rounded-lg bg-neutral-50 p-2"
+              className="ch-chl-details"
               onToggle={(e) => e.currentTarget.open && setExpanded(true)}
             >
-              <summary className="cursor-pointer" data-testid="approval-expand">
+              <summary data-testid="approval-expand">
                 {t("fullInput")}
               </summary>
-              <pre data-testid="approval-full" className="mt-2 whitespace-pre-wrap break-words font-mono text-xs">
+              <pre data-testid="approval-full" className="ch-chl-mono ch-chl-pre">
                 {text!.full.text}
               </pre>
             </details>
           ) : null}
-          {details.reasons?.length ? <p className="text-neutral-600">{details.reasons.join(" · ")}</p> : null}
+          {details.reasons?.length ? <p className="ch-muted">{details.reasons.join(" · ")}</p> : null}
         </div>
       ) : (
-        <p className="text-sm text-neutral-600">{t("sealed")}</p>
+        <p className="ch-chl-small">{t("sealed")}</p>
       )}
-      {a.stepUpRequired && pending ? <p className="text-sm text-amber-900">{t("stepUpNeeded")}</p> : null}
-      <p data-testid="approval-status" className="text-sm font-medium">
+      {a.stepUpRequired && pending ? <p className="ch-chl-small ch-chl-warn">{t("stepUpNeeded")}</p> : null}
+      <p data-testid="approval-status" className="ch-chl-strong">
         {expired ? t("expired") : a.status === "pending" ? t("pending") : t(`status.${a.status}`)}
       </p>
       {pending ? (
-        <div className="grid gap-2">
+        <div className="ch-chl ch-chl--tight">
           {needsPasskey ? (
-            <p data-testid="needs-passkey" className="text-sm text-amber-900">
+            <p data-testid="needs-passkey" className="ch-chl-small ch-chl-warn">
               {t("needsPasskey")}{" "}
-              <Link href="/dispositivos" className="underline">
+              <Link href="/dispositivos" className="ch-lnk">
                 {t("enrolPasskey")}
               </Link>
             </p>
           ) : null}
           {unverified ? (
-            <p data-testid="unverified-note" className="text-sm text-red-900">
+            <p data-testid="unverified-note" className="ch-chl-small ch-chl-bad">
               {t("unverifiedNote")}
             </p>
           ) : null}
           {mustExpand ? (
-            <p data-testid="must-expand" className="text-sm text-amber-900">
+            <p data-testid="must-expand" className="ch-chl-small ch-chl-warn">
               {t("mustExpand")}
             </p>
           ) : null}
-          <div className="flex gap-2">
+          <div className="ch-chl-row">
             <button
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-white disabled:opacity-50"
+              className="ch-btn ch-btn--primary"
               disabled={busy || needsPasskey || mustExpand || unverified}
               data-testid="approve"
               onClick={() => void decide(true)}
@@ -225,7 +225,7 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
               {t("approve")}
             </button>
             <button
-              className="rounded-lg border px-4 py-2 disabled:opacity-50"
+              className="ch-btn ch-btn--secondary"
               disabled={busy}
               onClick={() => void decide(false)}
             >
@@ -235,13 +235,13 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
         </div>
       ) : null}
       {note ? (
-        <p role="status" className="text-sm">
+        <p role="status" className="ch-chl-small">
           {note}
         </p>
       ) : null}
       <Link
         href={`/sesiones/${encodeURIComponent(a.sid)}`}
-        className="text-sm text-emerald-700 underline"
+        className="ch-lnk ch-chl-fit"
       >
         {t("openSession")}
       </Link>
@@ -257,22 +257,22 @@ export const Inbox = () => {
   const done = approvals.filter((a) => a.status !== "pending");
   const open = notifications.filter((n) => n.state === "pending");
   return (
-    <div className="grid gap-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+    <div className="ch-chl">
+      <h2 className="ch-h2">{t("title")}</h2>
       {open.length ? (
-        <section className="grid gap-2" aria-labelledby="notif-h">
-          <h2 id="notif-h" className="font-semibold">
+        <section className="ch-chl ch-chl--tight" aria-labelledby="notif-h">
+          <h2 id="notif-h" className="ch-ghead">
             {t("notifications")}
           </h2>
           {open.map((n) => (
             <div
               key={n.nid}
               data-testid="notification"
-              className="flex items-center gap-3 rounded-lg border bg-white p-3 text-sm"
+              className="ch-card ch-chl-card ch-chl-row"
             >
               <span>{t("notification", { count: Object.values(n.counts).reduce((x, y) => x + y, 0) })}</span>
               <button
-                className="ml-auto rounded border px-2 py-1"
+                className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-push"
                 onClick={() => void client?.actions.ackNotification(n.nid)}
               >
                 {t("ack")}
@@ -281,15 +281,15 @@ export const Inbox = () => {
           ))}
         </section>
       ) : null}
-      <section className="grid gap-3" aria-labelledby="pending-h">
-        <h2 id="pending-h" className="font-semibold">
+      <section className="ch-chl-list" aria-labelledby="pending-h">
+        <h2 id="pending-h" className="ch-ghead">
           {t("pending", { count: pending.length })}
         </h2>
-        {pending.length ? pending.map((a) => <ApprovalCard key={a.aid} a={a} />) : <p>{t("empty")}</p>}
+        {pending.length ? pending.map((a) => <ApprovalCard key={a.aid} a={a} />) : <p className="ch-muted">{t("empty")}</p>}
       </section>
       {done.length ? (
-        <section className="grid gap-3" aria-labelledby="done-h">
-          <h2 id="done-h" className="font-semibold">
+        <section className="ch-chl-list" aria-labelledby="done-h">
+          <h2 id="done-h" className="ch-ghead">
             {t("history")}
           </h2>
           {done.map((a) => (
