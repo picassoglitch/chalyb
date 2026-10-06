@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CompanionNameField, CompanionPicker, DEFAULT_COMPANION, SETTINGS, type SettingContext } from "@chalito/ui";
 import { Link, useRouter } from "@/lib/chalito/navigation";
@@ -9,6 +9,7 @@ import { env } from "@/lib/chalito/web/env";
 import { sessionTier, useSession } from "@/lib/chalito/web/session";
 import { DEV_BACKEND } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
+import { onboardingActivity, useCompanionPick, useCompanionStep } from "@/lib/chalito/companion";
 import { PasskeyEnroll } from "./PasskeyEnroll";
 import { useSettings } from "@/lib/chalito/useSettings";
 import type { AgentOption } from "@/lib/chalito/web/providers";
@@ -33,6 +34,17 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const [billing, setBilling] = useState<BillingMode>("byo");
   const [path, setPath] = useState<"guided" | "expert">("guided");
   const [open, setOpen] = useState<string | null>(null);
+  // The companion on screen follows the pick right away and does something for each step.
+  const setPick = useCompanionPick((s) => s.setPick);
+  const setCompanionStep = useCompanionStep((s) => s.setStep);
+  const pickNow = values?.avatar;
+  const onStep = STEPS[i]!;
+  const signedInNow = session.status === "signed_in" || (DEV_BACKEND && status === "ready");
+  useEffect(() => setPick(pickNow), [setPick, pickNow]);
+  useEffect(() => {
+    setCompanionStep(onboardingActivity(onStep, signedInNow));
+    return () => setCompanionStep(null);
+  }, [setCompanionStep, onStep, signedInNow]);
   if (!values) return <p>{tc("loading")}</p>;
 
   const step: Step = STEPS[i]!;

@@ -1022,5 +1022,32 @@
       "unavailable": "Chalyb no respondió. Vuelve a intentarlo en un momento.",
       "error": "No pudimos ver tu saldo."
     }
+  },
+  "companion": {
+    "aria": "Tu compañero, {name}",
+    "do": {
+      "home": "¡Hola! Aquí estoy.",
+      "idle": "Aquí ando, por si me necesitas.",
+      "signIn": "¡Hola! Entra y empezamos.",
+      "signedIn": "¡Ya entraste! Vamos a crearme.",
+      "pick": "¿Qué tal me veo?",
+      "name": "¿Cómo me vas a llamar?",
+      "passkey": "Guardando tu llave…",
+      "onboarding": "Vamos paso a paso.",
+      "inbox": "Revisando tu bandeja…",
+      "newSession": "¡A trabajar!",
+      "sessions": "Cuidando tus sesiones.",
+      "devices": "Buscando tus dispositivos…",
+      "rooms": "¿Abrimos una sala?",
+      "mesas": "Aquí en la mesa.",
+      "store": "¿Me queda el casco?",
+      "credits": "¡Con energía!",
+      "usage": "Sacando cuentas…",
+      "connections": "Conectando cables…",
+      "settings": "Poniéndome guapo.",
+      "download": "¡Llévame contigo!",
+      "approval": "Esto necesita tu visto bueno.",
+      "notice": "¡Mira esto!"
+    }
   }
 }

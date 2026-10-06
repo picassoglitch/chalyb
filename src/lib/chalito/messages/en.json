@@ -1022,5 +1022,32 @@
       "unavailable": "Chalyb didn't answer. Try again in a moment.",
       "error": "We couldn't see your balance."
     }
+  },
+  "companion": {
+    "aria": "Your companion, {name}",
+    "do": {
+      "home": "Hi! I'm here.",
+      "idle": "Right here if you need me.",
+      "signIn": "Hi! Sign in and let's start.",
+      "signedIn": "You're in! Let's create me.",
+      "pick": "How do I look?",
+      "name": "What will you call me?",
+      "passkey": "Saving your key…",
+      "onboarding": "One step at a time.",
+      "inbox": "Checking your inbox…",
+      "newSession": "Let's get to work!",
+      "sessions": "Keeping an eye on your sessions.",
+      "devices": "Looking for your devices…",
+      "rooms": "Shall we open a room?",
+      "mesas": "Here at the table.",
+      "store": "Does the helmet suit me?",
+      "credits": "Fully charged!",
+      "usage": "Doing the math…",
+      "connections": "Plugging things in…",
+      "settings": "Getting dressed up.",
+      "download": "Take me with you!",
+      "approval": "This needs your OK.",
+      "notice": "Look at this!"
+    }
   }
 }

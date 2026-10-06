@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { SettingsPanel } from "@chalito/ui";
 import { env } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
@@ -6,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, chalitoPath } from "@/lib/chalito/navigation";
 import { getPathname } from "@/i18n/routing";
 import { useSettings } from "@/lib/chalito/useSettings";
+import { useCompanionPick } from "@/lib/chalito/companion";
 import { PushOptIn } from "./PushOptIn";
 import { AccountDeletion } from "./AccountDeletion";
 import { BrainKeys } from "./BrainKeys";
@@ -17,6 +19,10 @@ export const Settings = () => {
   const { phoneVerifier } = useChalito();
   const { values, set, error, persisted } = useSettings();
   const locale = useLocale();
+  // A new pick shows on the companion right away.
+  const setPick = useCompanionPick((p) => p.setPick);
+  const pickNow = values?.avatar;
+  useEffect(() => setPick(pickNow), [setPick, pickNow]);
   if (!values) return null;
   return (
     <div className="grid gap-6">
