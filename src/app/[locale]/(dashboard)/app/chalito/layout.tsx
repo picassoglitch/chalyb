@@ -8,16 +8,19 @@ import { TestModeBanner } from '@/components/tools/chalito/TestModeBanner';
 import { DevModeBanner } from '@/components/tools/chalito/DevModeBanner';
 import { StepUpHost } from '@/components/tools/chalito/StepUpHost';
 import { Companion } from '@/components/tools/chalito/Companion';
+import { getCurrentUser } from '@/lib/auth/session';
 
 // Chalito inside the app (owner decision 2026-10-05): the hub's tool shell, Chalito's provider
 // (this browser's device keys and session), and the hub→Chalito sign-in bridge. UiBridge hands
 // next-intl to @chalito/ui; StepUpHost is the HIGH/CRITICAL approval confirm dialog. Companion is
 // the picked character on every screen, outside HubBridge so it's there while signing in too.
-export default function ChalitoLayout({ children }: { children: ReactNode }) {
+// hubUserId: Chalito's own browser session must belong to the person signed in to the hub.
+export default async function ChalitoLayout({ children }: { children: ReactNode }) {
+  const user = await getCurrentUser();
   return (
     <ToolShell slug="chalito" tab={null}>
       <UiBridge>
-        <ChalitoProvider>
+        <ChalitoProvider hubUserId={user?.id}>
           <TestModeBanner />
           <DevModeBanner />
           <HubBridge>
