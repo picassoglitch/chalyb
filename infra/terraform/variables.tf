@@ -301,9 +301,10 @@ variable "engines" {
         AUDIT_TOPIC              = "audit"
         TRUSTED_PROXIES          = "0"
       }
-      shared_secrets = {
-        SUPABASE_SECRET_KEY = "supabase-secret-key"
-      }
+      # SUPABASE_SECRET_KEY comes from Chalito's own chalito-supabase-secret-key (engine_extra_secret_env):
+      # the shared supabase-secret-key holds a publishable key, which the admin API
+      # (auth.admin.getUserById at /sso/exchange) rejects.
+      shared_secrets = {}
     }
   }
 }
