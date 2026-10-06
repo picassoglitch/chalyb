@@ -12,7 +12,7 @@ export const Home = () => {
   const t = useTranslations('chalito.home');
   const locale = useLocale() as AppLocale;
   const session = useSession();
-  const { values: settings } = useSettings();
+  const { values: settings, onboarded } = useSettings();
   const title = settings
     ? formatCompanionTitle(settings.companionName.name, settings.companionName.isRenamed, locale)
     : null;
@@ -32,9 +32,12 @@ export const Home = () => {
           <SignInLink>{t('signIn')}</SignInLink>
         </div>
       ) : null}
-      <Link href="/bienvenida" className="w-fit rounded-lg border px-4 py-2">
-        {t('startOnboarding')}
-      </Link>
+      {/* Only until onboarding is done: after that it would start the steps over. */}
+      {settings && !onboarded ? (
+        <Link href="/bienvenida" className="w-fit rounded-lg border px-4 py-2">
+          {t('startOnboarding')}
+        </Link>
+      ) : null}
     </div>
   );
 };
