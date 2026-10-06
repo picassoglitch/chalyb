@@ -5,6 +5,13 @@ import { ActionError, type ApprovalView, type MesaDecisionView } from "@chalito/
 import { MesaDecisionCard } from "@chalito/ui";
 import { Link } from "@/lib/chalito/navigation";
 import { approvalText } from "@/lib/chalito/web/approval-text";
+import {
+  computerControlInfo,
+  isComputerControl,
+  malformedComputerControl,
+  needsStepUp,
+} from "@/lib/chalito/web/computer-control";
+import { confirmStepUp } from "./StepUpHost";
 import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
 
 const RISK_STYLE: Record<ApprovalView["risk"], string> = {
@@ -86,14 +93,20 @@ export const ApprovalCard = ({ a }: { a: ApprovalView }) =>
 
 const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
   const t = useTranslations("chalito.live.approval");
+  const tc = useTranslations("chalito.live.approval.computer");
+  const ti = useTranslations("chalito.integrations");
   const { client, passkey } = useChalito();
+  const { devices } = useLive();
   const now = useNow(1000);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const expired = a.status === "expired" || (a.status === "pending" && a.expiresAt <= now);
   const pending = a.status === "pending" && !expired;
-  // HIGH/CRITICAL approvals need this device's passkey; without one, say so instead of failing.
-  const needsPasskey = (a.stepUpRequired || a.risk === "HIGH" || a.risk === "CRITICAL") && !passkey.enrolled;
+  // HIGH/CRITICAL (and every computer_control) need this device's passkey; without one, say so.
+  const needsPasskey = needsStepUp(a) && !passkey.enrolled;
+  // Computer control: its own copy and confirm; never approvable without HIGH + step-up.
+  const cc = isComputerControl(a);
+  const ccBad = malformedComputerControl(a);
   const details = a.details as {
     toolName?: string;
     summary?: string;
@@ -102,6 +115,8 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
     summaryTruncated?: boolean;
   } | null;
   const text = details ? approvalText(details) : null;
+  const ccInfo = cc ? computerControlInfo(a, details?.input, devices) : null;
+  const computer = ccInfo?.computer ?? tc("thisComputer");
   // R-M10: a cut summary can't be approved until the person has seen the whole input.
   const [expanded, setExpanded] = useState(false);
   const mustExpand = !!text?.truncated && !expanded;
@@ -110,6 +125,11 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
 
   const decide = async (allow: boolean) => {
     if (!client) return;
+    // The person reads what computer control means before the passkey; cancel sends nothing.
+    if (allow && cc && !(await confirmStepUp(a.risk, { kind: "computer_control", computer }))) {
+      setNote(t("error.step_up_cancelled"));
+      return;
+    }
     setBusy(true);
     setNote(null);
     try {
@@ -139,11 +159,12 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
       data-testid="approval"
       data-aid={a.aid}
       data-status={expired ? "expired" : a.status}
-      className="ch-card ch-chl-card"
+      data-kind={a.kind}
+      className={`ch-card ch-chl-card${cc ? " ch-chl-card--warn" : ""}`}
     >
       <header className="ch-chl-row">
         <RiskBadge risk={a.risk} />
-        <span className="ch-chl-strong">{details?.toolName ?? t("unknownTool")}</span>
+        <span className="ch-chl-strong">{cc ? tc("title") : (details?.toolName ?? t("unknownTool"))}</span>
         {unverified ? (
           <span
             data-testid="unverified"
@@ -158,6 +179,21 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
           </span>
         ) : null}
       </header>
+      {cc ? (
+        <div className="ch-chl ch-chl--tight" data-testid="computer-control">
+          <p className="ch-chl-strong">{tc("body", { computer })}</p>
+          {ccInfo?.session || ccInfo?.adapterKey ? (
+            <p className="ch-muted" data-testid="computer-control-session">
+              {tc("session", {
+                session: ccInfo.session ?? "—",
+                agent: ccInfo.adapterKey ? ti(ccInfo.adapterKey) : "—",
+              })}
+            </p>
+          ) : null}
+          <p>{tc("stop")}</p>
+          <p className="ch-muted">{tc("once")}</p>
+        </div>
+      ) : null}
       {details ? (
         <div className="ch-chl ch-chl--tight">
           <p className="ch-chl-mono" data-testid="approval-summary">
@@ -210,6 +246,11 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
               {t("unverifiedNote")}
             </p>
           ) : null}
+          {ccBad ? (
+            <p data-testid="computer-control-invalid" className="ch-chl-small ch-chl-bad">
+              {tc("invalid")}
+            </p>
+          ) : null}
           {mustExpand ? (
             <p data-testid="must-expand" className="ch-chl-small ch-chl-warn">
               {t("mustExpand")}
@@ -218,11 +259,11 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
           <div className="ch-chl-row">
             <button
               className="ch-btn ch-btn--primary"
-              disabled={busy || needsPasskey || mustExpand || unverified}
+              disabled={busy || needsPasskey || mustExpand || unverified || ccBad}
               data-testid="approve"
               onClick={() => void decide(true)}
             >
-              {t("approve")}
+              {cc ? tc("approve") : t("approve")}
             </button>
             <button
               className="ch-btn ch-btn--secondary"

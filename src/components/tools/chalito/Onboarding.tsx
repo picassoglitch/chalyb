@@ -12,6 +12,7 @@ import { useChalito } from "@/lib/chalito/provider";
 import { onboardingActivity, useCompanionPick, useCompanionStep } from "@/lib/chalito/companion";
 import { PasskeyEnroll } from "./PasskeyEnroll";
 import { CreateCharacter } from "./CreateCharacter";
+import { ConnectProviders } from "./ConnectProviders";
 import { useSettings } from "@/lib/chalito/useSettings";
 import type { AgentOption } from "@/lib/chalito/web/providers";
 
@@ -36,7 +37,6 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const [i, setI] = useState(0);
   const [billing, setBilling] = useState<BillingMode>("byo");
   const [path, setPath] = useState<"guided" | "expert">("guided");
-  const [open, setOpen] = useState<string | null>(null);
   // The companion on screen follows the pick right away and does something for each step.
   const setPick = useCompanionPick((s) => s.setPick);
   const setCompanionStep = useCompanionStep((s) => s.setStep);
@@ -131,23 +131,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
             ))}
           </div>
           {path === "guided" ? (
-            <ul className="ch-chl-list">
-              {agents.map((a) => (
-                <li key={a.agent} className="ch-card ch-chl-card">
-                  <button className="ch-chl-strong ch-chl-fit" aria-expanded={open === a.agent} onClick={() => setOpen(a.agent)}>
-                    {ti("iHave", { name: ti(`${a.provider}.name`) })}
-                  </button>
-                  {open === a.agent ? (
-                    <div className="ch-chl ch-chl--tight ch-chl-small">
-                      <p data-testid={`howto-${a.agent}`}>{ti(`${a.provider}.howTo`)}</p>
-                      {a.subscription === "owner_only" ? (
-                        <p className="ch-chl-warn">{ti(`${a.provider}.ownerOnly`)}</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <ConnectProviders agents={agents} />
           ) : (
             <p>{t("connect.expertBody")}</p>
           )}

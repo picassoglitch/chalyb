@@ -13,11 +13,13 @@ import { AccountDeletion } from "./AccountDeletion";
 import { BrainKeys } from "./BrainKeys";
 import { CreateCharacter } from "./CreateCharacter";
 import { useRosterPickWithCustom } from "@/lib/chalito/useMyCard";
+import { ConnectProviders } from "./ConnectProviders";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
   const tw = useTranslations("chalito.live.settings");
   const ti = useTranslations("chalito.integrations");
+  const tc = useTranslations("chalito.connect");
   const { phoneVerifier } = useChalito();
   const { values, set: setValue, error, persisted } = useSettings();
   // "Crea tu personaje": picking a roster companion while wearing one's own character goes back to it.
@@ -39,12 +41,21 @@ export const Settings = () => {
           {tw(`error.${error}`)}
         </p>
       ) : null}
+      <section aria-labelledby="settings-connect" className="ch-card ch-chl-card" data-testid="settings-connect">
+        <h2 id="settings-connect" className="ch-chl-h3">
+          {tc("title")}
+        </h2>
+        <p className="ch-muted">{tc("body")}</p>
+        <ConnectProviders />
+      </section>
       <PushOptIn />
       <Link href="/conexiones" className="ch-lnk ch-chl-fit">
         {tw("connectedApps")}
       </Link>
       <SettingsPanel
         shell="web"
+        // "Conecta tus IA" above shows (and acts on) the connections.
+        omit={["connections"]}
         values={values}
         onChange={set}
         providerLabel={(p) => ti(`${p}.name`)}

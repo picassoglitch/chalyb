@@ -5,14 +5,11 @@ import { ActionError } from "@chalito/client";
 import type { AdapterKind, RemotePermissionMode } from "@chalito/protocol";
 import { Link, useRouter } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
+import { adapterNameKey, adaptersFor, keepAdapter } from "@/lib/chalito/web/adapters";
+import { LOAD_TIMEOUT_MS, indexConnections, withTimeout, type StatusIndex } from "@/lib/chalito/web/connect";
 import { REMOTE_MODES } from "./Sessions";
 
-/** The adapters a remote surface starts (the computer's policy still decides which are on), and
- * where their names live (integrations.*, the only place provider names may appear). */
-export const START_ADAPTERS: readonly { kind: AdapterKind; name: string }[] = [
-  { kind: "claude-code", name: "anthropic.agent" },
-  { kind: "codex", name: "openai.agent" },
-];
+export { START_ADAPTERS } from "@/lib/chalito/web/adapters";
 /** The computer may refuse silently (unknown workspace, adapter off): stop waiting after this. */
 export const START_WAIT_MS = 30_000;
 
@@ -29,7 +26,7 @@ export const NewSession = () => {
   const t = useTranslations("chalito.live.newSession");
   const tm = useTranslations("chalito.live.session.modes");
   const ti = useTranslations("chalito.integrations");
-  const { client } = useChalito();
+  const { client, settings } = useChalito();
   const live = useLive();
   const router = useRouter();
   const computers = live.devices.filter((d) => d.role === "agent" && !d.revoked);
@@ -41,8 +38,25 @@ export const NewSession = () => {
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   /** Sessions that existed when the command went out; the new one is whatever appears next. */
   const before = useRef<Set<string>>(new Set());
+  /** What each computer reported per provider (chalito.connections): Grok and Gemini need "connected". */
+  const [connections, setConnections] = useState<StatusIndex>({});
 
   const target = agent || computers[0]?.deviceId || "";
+  const options = useMemo(() => adaptersFor(connections, target), [connections, target]);
+  const chosen = keepAdapter(adapter, options);
+
+  // Read once on open; unreadable means Grok and Gemini stay disabled with the link to connect them.
+  useEffect(() => {
+    if (!settings) return;
+    let alive = true;
+    withTimeout(settings.connections(), LOAD_TIMEOUT_MS).then(
+      (rows) => alive && setConnections(indexConnections(rows)),
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [settings]);
   const labels = useMemo(
     () =>
       [
@@ -89,7 +103,7 @@ export const NewSession = () => {
     try {
       await client.actions.startSession({
         agentDeviceId: target,
-        adapter,
+        adapter: chosen,
         workspaceLabel: label,
         prompt: text,
         permissionMode: mode,
@@ -131,19 +145,38 @@ export const NewSession = () => {
       <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
         <legend className="ch-chl-strong">{t("adapter")}</legend>
         <div className="ch-chl-row">
-          {START_ADAPTERS.map((a) => (
-            <label key={a.kind} className="ch-chl-check">
-              <input
-                type="radio"
-                name="adapter"
-                checked={adapter === a.kind}
-                onChange={() => setAdapter(a.kind)}
-                disabled={waiting}
-              />
-              {ti(a.name)}
-            </label>
-          ))}
+          {options.map(({ adapter: a, availability }) => {
+            const off = availability !== "ready";
+            const name = ti(adapterNameKey(a.kind)!);
+            return (
+              <span key={a.kind} className="ch-chl-row" data-testid="adapter-option" data-kind={a.kind}>
+                <label className={`ch-chl-check${off ? " ch-chl-check--off" : ""}`}>
+                  <input
+                    type="radio"
+                    name="adapter"
+                    checked={chosen === a.kind}
+                    onChange={() => setAdapter(a.kind)}
+                    disabled={waiting || off}
+                  />
+                  {name}
+                </label>
+                {off ? (
+                  <Link
+                    href="/ajustes"
+                    className="ch-lnk ch-chl-small"
+                    aria-label={t("connectAdapter", { name })}
+                    data-testid="adapter-connect"
+                  >
+                    {t("connect")}
+                  </Link>
+                ) : null}
+              </span>
+            );
+          })}
         </div>
+        {options.some((o) => o.availability !== "ready") ? (
+          <span className="ch-chl-small">{t("adapterHint")}</span>
+        ) : null}
       </fieldset>
       <div className="ch-field">
         <label htmlFor="ns-workspace">{t("workspace")}</label>

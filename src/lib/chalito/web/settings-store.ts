@@ -1,4 +1,5 @@
 import type { ChannelSetter } from "./phone";
+import { toSettingsConnection, type ConnectionRow } from "./connect";
 import { COMPANIONS, DEFAULT_COMPANION, DEFAULT_SETTINGS, type CompanionId, type SettingsValues } from "@chalito/ui";
 
 /**
@@ -72,11 +73,6 @@ interface Companion {
   is_renamed: boolean;
   avatar: string | null;
 }
-interface ConnectionRow {
-  provider: string;
-  device_id: string;
-  doc: { mode: SettingsValues["connections"][number]["mode"]; connected: boolean };
-}
 
 /** Server rows → the shared SettingsValues the UI edits. */
 export const fromServer = (
@@ -104,12 +100,7 @@ export const fromServer = (
       isRenamed: !!extra.companion?.is_renamed,
     },
     privacyMode: s.privacy_mode === "private",
-    connections: extra.connections.map((c) => ({
-      provider: c.provider,
-      deviceId: c.device_id,
-      mode: c.doc.mode,
-      connected: c.doc.connected,
-    })),
+    connections: extra.connections.flatMap((c) => toSettingsConnection(c) ?? []),
     planCredits: { tier: extra.tier, trialEndsAt: null },
     renderQuality: s.render_quality,
   };
@@ -167,6 +158,13 @@ export class SettingsStore {
       values: fromServer(s, { companion, connections: connections ?? [], tier: user?.tier ?? null }),
       onboarded: typeof s.prefs?.onboarded_at === "string",
     };
+  }
+
+  /** chalito.connections (RLS: the owner's rows), for "Conecta tus IA". Throws on any error. */
+  async connections(): Promise<ConnectionRow[]> {
+    return (await must<ConnectionRow[] | null>(
+      this.db.from("connections").select("provider,device_id,doc").eq("owner", this.owner),
+    )) ?? [];
   }
 
   /** Saves one setting; returns the server's view afterwards (e.g. a refused opt-in stays off). */

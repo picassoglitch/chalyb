@@ -2,7 +2,14 @@
 import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 
-type Pending = { risk: string; resolve: (ok: boolean) => void } | null;
+/** What the step-up is for: `computer_control` gets its own copy (the AI takes over a computer). */
+export interface StepUpContext {
+  kind?: "tool" | "computer_control";
+  /** The computer's name, for computer_control. */
+  computer?: string;
+}
+
+type Pending = ({ risk: string; resolve: (ok: boolean) => void } & StepUpContext) | null;
 let pending: Pending = null;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
@@ -11,11 +18,12 @@ const emit = () => listeners.forEach((l) => l());
  * Asks the person to confirm a HIGH/CRITICAL approval with their device's step-up. Resolves
  * true on confirm (the caller then runs WebAuthn or the platform biometric), false on cancel.
  */
-export const confirmStepUp = (risk: string): Promise<boolean> =>
+export const confirmStepUp = (risk: string, ctx: StepUpContext = {}): Promise<boolean> =>
   new Promise((resolve) => {
     pending?.resolve(false);
     pending = {
       risk,
+      ...ctx,
       resolve: (ok) => {
         pending = null;
         emit();
@@ -33,6 +41,7 @@ export const StepUpHost = () => {
     () => null,
   );
   if (!p) return null;
+  const cc = p.kind === "computer_control";
   return (
     <div
       role="dialog"
@@ -42,15 +51,23 @@ export const StepUpHost = () => {
     >
       <div className="ch-card ch-chl-card ch-chl-modal">
         <h2 id="stepup-title" className="ch-chl-h3">
-          {t("title")}
+          {cc ? t("computer.title") : t("title")}
         </h2>
-        <p>{t("body", { risk: p.risk })}</p>
+        {cc ? (
+          <div className="ch-chl ch-chl--tight" data-testid="stepup-computer">
+            <p>{t("computer.body", { computer: p.computer ?? "" })}</p>
+            <p>{t("computer.stop")}</p>
+            <p className="ch-chl-small">{t("computer.passkey")}</p>
+          </div>
+        ) : (
+          <p>{t("body", { risk: p.risk })}</p>
+        )}
         <div className="ch-chl-row ch-chl-row--end">
           <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => p.resolve(false)}>
             {t("cancel")}
           </button>
           <button className="ch-btn ch-btn--primary ch-btn--compact" onClick={() => p.resolve(true)}>
-            {t("confirm")}
+            {cc ? t("computer.confirm") : t("confirm")}
           </button>
         </div>
       </div>

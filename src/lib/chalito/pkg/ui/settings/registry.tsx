@@ -197,7 +197,14 @@ export const SETTINGS: readonly SettingDef[] = [
 export const SECTIONS = ["contact", "companion", "privacy", "account", "display"] as const;
 
 /** Renders every registered setting, grouped by section. */
-export const SettingsPanel = (props: Omit<SettingContext, "set"> & { onChange: SettingContext["set"] }) => {
+export const SettingsPanel = ({
+  omit = [],
+  ...props
+}: Omit<SettingContext, "set"> & {
+  onChange: SettingContext["set"];
+  /** Settings the shell renders itself (e.g. the web's interactive "Conecta tus IA" for `connections`). */
+  omit?: readonly string[];
+}) => {
   const { t } = useUiText();
   const ctx: SettingContext = { ...props, set: props.onChange };
   return (
@@ -207,7 +214,7 @@ export const SettingsPanel = (props: Omit<SettingContext, "set"> & { onChange: S
           <h2 id={`settings-${section}`} className="ch-chl-h3">
             {t(`sections.${section}`)}
           </h2>
-          {SETTINGS.filter((s) => s.section === section).map((s) => (
+          {SETTINGS.filter((s) => s.section === section && !omit.includes(s.key)).map((s) => (
             <div key={s.key} data-setting-key={s.key}>
               {s.render(ctx)}
             </div>

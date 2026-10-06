@@ -122,7 +122,7 @@
       "guided": "Guiado",
       "expert": "Experto",
       "expertBody": "Pega tus API keys en la app de escritorio o con «chalito keys set». Nunca las enviamos a la nube.",
-      "later": "Puedes conectarlas después en Ajustes → Conexiones."
+      "later": "Puedes conectarlas después en Ajustes → Conecta tus IA."
     },
     "billing": {
       "title": "Cómo pagas",
@@ -496,23 +496,24 @@
     "anthropic": {
       "name": "Claude",
       "agent": "Claude Code",
-      "howTo": "Claude Code se conecta solo con tu API key de Anthropic. Por las reglas de Anthropic no podemos usar tu suscripción de Claude."
+      "howTo": "Conecta Claude Code con tu API key de Anthropic: la enviamos cifrada a tu computadora. Por las reglas de Anthropic, iniciar sesión con tu plan de Claude es solo para el equipo de Chalito por ahora.",
+      "ownerOnly": "Plan de Claude: solo equipo de Chalito por ahora"
     },
     "openai": {
       "name": "ChatGPT",
       "agent": "Codex",
-      "howTo": "Codex funciona con tu API key de OpenAI o con tu plan de ChatGPT (Iniciar sesión con ChatGPT). El plan de ChatGPT está disponible por ahora solo para el equipo de Chalito.",
+      "howTo": "Conecta Codex con tu API key de OpenAI o iniciando sesión con ChatGPT en tu computadora. El plan de ChatGPT es solo para el equipo de Chalito por ahora.",
       "ownerOnly": "Plan de ChatGPT: solo equipo de Chalito por ahora"
     },
     "xai": {
       "name": "Grok",
       "agent": "Grok Build",
-      "howTo": "Grok Build funciona con tu API key de xAI o con tu inicio de sesión de Grok."
+      "howTo": "Conecta Grok Build con tu API key de xAI o iniciando sesión con Grok en tu computadora."
     },
     "google": {
       "name": "Gemini",
-      "agent": "Gemini",
-      "howTo": "Usa tu API key de Google AI Studio."
+      "agent": "Gemini CLI",
+      "howTo": "Conecta Gemini CLI con tu API key de Google AI Studio o iniciando sesión con tu cuenta de Google en tu computadora."
     },
     "iHave": "Tengo {name}"
   },
@@ -552,7 +553,14 @@
       "title": "Confirma que eres tú",
       "body": "Esta acción es de riesgo {risk}. Confírmala con tu huella, rostro o llave de seguridad.",
       "confirm": "Confirmar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "computer": {
+        "title": "¿Dejas que la IA use tu computadora?",
+        "body": "La IA podrá ver la pantalla y usar el mouse y el teclado de {computer} durante esta sesión.",
+        "stop": "Puedes detenerla cuando quieras con el botón en pantalla o con Ctrl+Alt+Esc.",
+        "passkey": "Después confirma con tu huella, rostro o llave de seguridad.",
+        "confirm": "Sí, continuar"
+      }
     },
     "approval": {
       "unknownTool": "Acción",
@@ -589,7 +597,17 @@
       "fullInput": "Ver lo que se va a ejecutar, completo",
       "mustExpand": "El resumen está cortado: abre el contenido completo antes de aprobar.",
       "unverified": "Sin verificar",
-      "unverifiedNote": "Tu computadora no firmó esta solicitud, o no coincide con lo que firmó. No se puede aprobar; puedes denegarla."
+      "unverifiedNote": "Tu computadora no firmó esta solicitud, o no coincide con lo que firmó. No se puede aprobar; puedes denegarla.",
+      "computer": {
+        "title": "Control de tu computadora",
+        "thisComputer": "tu computadora",
+        "body": "Esta sesión pide ver la pantalla y usar el mouse y el teclado de {computer}. Si apruebas, la IA podrá hacerlo durante esta sesión.",
+        "session": "Sesión: {session} · Agente: {agent}",
+        "stop": "Puedes detenerla cuando quieras con el botón en pantalla o con Ctrl+Alt+Esc en esa computadora.",
+        "once": "Se pide una vez por sesión, siempre con tu passkey. Nunca se aprueba sola.",
+        "invalid": "Esta solicitud de control no pide tu passkey como debe. No se puede aprobar; puedes denegarla.",
+        "approve": "Aprobar control"
+      }
     },
     "inbox": {
       "title": "Bandeja",
@@ -777,7 +795,10 @@
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
       "failed": "No pudimos enviarlo.",
       "noComputers": "Aún no tienes una computadora vinculada.",
-      "download": "Descargar Chalito para tu computadora"
+      "download": "Descargar Chalito para tu computadora",
+      "connect": "Conectar",
+      "connectAdapter": "Conectar {name}",
+      "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes."
     },
     "account": {
       "title": "Eliminar mi cuenta de Chalito",
@@ -1170,5 +1191,64 @@
     "loading": "Cargando…",
     "unavailable": "No pudimos cargar esta sección. Vuelve a intentarlo en un momento.",
     "reload": "Reintentar"
+  },
+  "connect": {
+    "title": "Conecta tus IA",
+    "body": "Elige cómo usa cada IA tu computadora: con tu API key o iniciando sesión con tu plan. Todo pasa en tu computadora; tus claves no se guardan en la nube.",
+    "loading": "Revisando tus conexiones…",
+    "loadError": "No pudimos leer el estado de tus conexiones.",
+    "retry": "Reintentar",
+    "refresh": "Actualizar estado",
+    "noComputer": "Para conectar tus IA necesitas Chalito en tu computadora. Instálalo, emparéjalo y vuelve aquí.",
+    "noBrowser": "Este navegador todavía no está emparejado con tu computadora. Instala Chalito en tu computadora y emparéjalo; después podrás conectar tus IA desde aquí.",
+    "download": "Descargar Chalito",
+    "untrusted": "Este navegador aún no puede enviar órdenes a esta computadora. Apruébalo desde ella en Dispositivos.",
+    "offline": "Tu computadora parece apagada o sin conexión. Lo que pidas se aplicará si vuelve en los próximos 5 minutos.",
+    "computer": "En {name}",
+    "state": {
+      "unknown": "Sin reporte todavía",
+      "not_installed": "No instalado",
+      "installing": "Instalando…",
+      "needs_auth": "Instalado, falta conectar",
+      "signing_in": "Termina de iniciar sesión en tu computadora",
+      "connected": "Conectado",
+      "error": "Algo falló",
+      "blocked_by_policy": "Iniciar sesión con tu plan no está disponible para tu cuenta"
+    },
+    "via": {
+      "api_key": "con tu API key",
+      "signin": "con tu plan"
+    },
+    "version": "Versión {version}",
+    "actions": {
+      "install": "Instalar",
+      "api_key": "Conectar con API key",
+      "signin": "Iniciar sesión con tu plan",
+      "disconnect": "Desconectar"
+    },
+    "installNote": "Se instala con el instalador oficial. Tu computadora te pedirá confirmar.",
+    "signinNote": "El inicio de sesión oficial se abre en el navegador de esa computadora; termínalo ahí.",
+    "keyLabel": "API key de {name}",
+    "keyPlaceholder": "Pega tu API key",
+    "keyNote": "Se cifra para tu computadora y se guarda en su llavero. Chalito no puede leerla.",
+    "keyInvalid": "Eso no parece una API key. Revisa que esté completa y sin espacios.",
+    "send": "Enviar a mi computadora",
+    "cancel": "Cancelar",
+    "waiting": "Esperando a tu computadora…",
+    "timeout": "Tu computadora no respondió. Revisa que esté encendida y con Chalito abierto, y vuelve a intentar.",
+    "sendError": "No pudimos enviar la orden a tu computadora. Vuelve a intentar.",
+    "errorDetail": "Detalle: {error}",
+    "blocked": "Por ahora, iniciar sesión con tu plan de {name} no está disponible para tu cuenta. Conéctalo con tu API key.",
+    "errors": {
+      "install_failed": "No se pudo instalar. Revisa tu conexión a internet e inténtalo de nuevo.",
+      "install_unconfirmed": "La instalación no se confirmó en esa computadora.",
+      "npm_missing": "Esa computadora necesita Node.js para instalarlo. Instálalo desde nodejs.org y vuelve a intentarlo.",
+      "pin_failed": "Se instaló, pero no pudimos verificarlo. Vuelve a intentarlo.",
+      "signin_failed": "El inicio de sesión no se completó.",
+      "signin_timeout": "El inicio de sesión tardó demasiado. Vuelve a intentarlo desde esa computadora.",
+      "key_invalid": "Esa API key no funcionó. Revisa que esté completa y vigente.",
+      "keychain_failed": "No pudimos guardar la llave en esa computadora.",
+      "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo."
+    }
   }
 }

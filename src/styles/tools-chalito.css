@@ -644,3 +644,18 @@
   aspect-ratio: 3 / 4;
   object-fit: contain;
 }
+
+/* ---------- Conecta tus IA & the session picker (PRs #84/#85) ---------- */
+/* One computer's state for a provider, under the provider's name. */
+.chalyb-app .ch-chl-computer {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  font-size: 15px;
+}
+/* An agent that can't start yet (Grok/Gemini not connected): greyed, with "Conectar" next to it. */
+.chalyb-app .ch-chl-check--off {
+  color: var(--ink3-text);
+}
