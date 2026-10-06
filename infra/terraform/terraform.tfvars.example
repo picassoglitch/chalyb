@@ -71,6 +71,7 @@ enable_domain_mappings = false
 # }
 # engine_extra_secret_env = {
 #   chalito = {
+#     SUPABASE_SECRET_KEY       = "chalito-supabase-secret-key"
 #     CHALITO_GATEWAY_TOKEN     = "chalito-gateway-token"
 #     OPENAI_API_KEY            = "chalito-openai-api-key"
 #     VOICE_TOKEN_SECRET        = "chalito-voice-token-secret"
