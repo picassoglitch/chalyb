@@ -1,11 +1,10 @@
 "use client";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DeviceView } from "@chalito/client";
-import type { Provider } from "@chalito/protocol";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
-import { agentOptions, type AgentOption } from "@/lib/chalito/web/providers";
+import { CATALOG, type CatalogApp } from "@/lib/chalito/web/apps-catalog";
 import {
   LOAD_TIMEOUT_MS,
   POLL_FAST_MS,
@@ -24,19 +23,38 @@ import {
 } from "@/lib/chalito/web/connect";
 
 type Load = "loading" | "ok" | "error";
-/** Pending commands by `<deviceId>:<provider>`, or `<deviceId>:*` for a status request. */
+/** Pending commands by `<deviceId>:<appId>`, or `<deviceId>:*` for a status request. */
 type PendingMap = Record<string, Pending & { failed?: "timeout" | "send" }>;
 
-const keyOf = (deviceId: string, provider: Provider | "*") => `${deviceId}:${provider}`;
+const keyOf = (deviceId: string, appId: string) => `${deviceId}:${appId}`;
+
+/** The four apps the integrations copy has a hand-written line for (their old provider names). */
+const LEGACY_COPY: Record<string, string> = {
+  "claude-code": "anthropic",
+  codex: "openai",
+  grok: "xai",
+  gemini: "google",
+};
+const GROUPS = ["agent", "desktop", "web"] as const;
+/** Onboarding shows the agents first; the rest stays a click away. */
+const SEARCH_FROM = 6;
 
 /**
- * "Conecta tus IA": each provider's state on each paired computer (chalito.connections, written by
- * the computer) and signed commands to that computer (provider.connect / install / disconnect /
- * status, @chalito/client ClientActions). An API key is sealed to the computer, never sent in
+ * "Conecta tus IA": every app of the catalog (coding agents, desktop apps, AI websites) with its
+ * state on each paired computer (chalito.connections, written by the computer) and signed
+ * commands to that computer (app.connect / install / launch / disconnect / status, @chalito/client
+ * ClientActions). An API key is sealed to the computer, never sent in
  * plaintext. Used by onboarding's connect step and by Ajustes. Without a paired computer (or
  * before this browser is paired) it offers the download instead of buttons that can't work.
  */
-export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOption[] }) => {
+export const ConnectProviders = ({
+  apps = CATALOG,
+  compact = false,
+}: {
+  apps?: readonly CatalogApp[];
+  /** Onboarding: agents open, desktop apps and websites folded. */
+  compact?: boolean;
+}) => {
   const t = useTranslations("chalito.connect");
   const ti = useTranslations("chalito.integrations");
   const { client, settings, mesa, status } = useChalito();
@@ -49,6 +67,7 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
   const [now, setNow] = useState(() => Date.now());
   const [form, setForm] = useState<{ key: string; text: string; invalid: boolean } | null>(null);
   const [devicesWaited, setDevicesWaited] = useState(false);
+  const [query, setQuery] = useState("");
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
 
@@ -102,9 +121,9 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
           next[k] = p;
           continue;
         }
-        const [deviceId, provider] = k.split(":") as [string, Provider | "*"];
-        const byProvider = rows[deviceId] ?? {};
-        const at = provider === "*" ? latestAt(Object.values(byProvider)) : latestAt([byProvider[provider]]);
+        const [deviceId, appId] = k.split(":") as [string, string];
+        const byApp = rows[deviceId] ?? {};
+        const at = appId === "*" ? latestAt(Object.values(byApp)) : latestAt([byApp[appId]]);
         const o = pendingOutcome(p, at, now);
         if (o === "answered") changed = true;
         else if (o === "timeout") {
@@ -119,20 +138,21 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
   const trusted = useCallback((deviceId: string) => !!mesa?.keys.trustedAgentBoxKey(deviceId), [mesa]);
 
   const send = useCallback(
-    async (deviceId: string, provider: Provider | "*", action: ConnectAction | "status", key?: string) => {
+    async (deviceId: string, appId: string, action: ConnectAction | "status", key?: string) => {
       if (!client) return;
-      const byProvider = rowsRef.current[deviceId] ?? {};
-      const prevAt = provider === "*" ? latestAt(Object.values(byProvider)) : latestAt([byProvider[provider]]);
-      const k = keyOf(deviceId, provider);
+      const byApp = rowsRef.current[deviceId] ?? {};
+      const prevAt = appId === "*" ? latestAt(Object.values(byApp)) : latestAt([byApp[appId]]);
+      const k = keyOf(deviceId, appId);
       setPending((cur) => ({ ...cur, [k]: { action, sentAt: Date.now(), prevAt } }));
       setNow(Date.now());
       try {
         const a = client.actions;
-        if (provider === "*" || action === "status") await a.providerStatus(deviceId);
-        else if (action === "install") await a.installProvider(deviceId, provider);
-        else if (action === "disconnect") await a.disconnectProvider(deviceId, provider);
-        else if (action === "signin") await a.connectProvider(deviceId, provider, { method: "signin" });
-        else if (key) await a.connectProvider(deviceId, provider, { method: "api_key", key });
+        if (appId === "*" || action === "status") await a.appStatus(deviceId);
+        else if (action === "install") await a.installApp(deviceId, appId);
+        else if (action === "launch") await a.launchApp(deviceId, appId);
+        else if (action === "disconnect") await a.disconnectApp(deviceId, appId);
+        else if (action === "signin") await a.connectApp(deviceId, appId, { method: "signin" });
+        else if (key) await a.connectApp(deviceId, appId, { method: "api_key", key });
       } catch {
         setPending((cur) => ({ ...cur, [k]: { action, sentAt: Date.now(), prevAt, failed: "send" } }));
       }
@@ -157,20 +177,52 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
     for (const c of computers) if (trusted(c.deviceId)) void send(c.deviceId, "*", "status");
   };
 
-  const howTo = (
-    <ul className="grid gap-2">
-      {agents.map((a) => (
-        <li key={a.agent} className="rounded-lg border p-3">
-          <p className="font-medium">
-            {ti(`${a.provider}.name`)} · {ti(`${a.provider}.agent`)}
-          </p>
-          <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.agent}`}>
-            {ti(`${a.provider}.howTo`)}
-          </p>
-        </li>
-      ))}
-    </ul>
+  const appLine = (a: CatalogApp) =>
+    LEGACY_COPY[a.id]
+      ? ti(`${LEGACY_COPY[a.id]}.howTo`)
+      : t(`howTo.${a.group}`, { name: a.name, key: a.apiKey?.label ?? "" });
+  const q = query.trim().toLowerCase();
+  const shown = q ? apps.filter((a) => `${a.name} ${a.vendor} ${a.id}`.toLowerCase().includes(q)) : apps;
+  const grouped = GROUPS.map((g) => ({ group: g, apps: shown.filter((a) => a.group === g) })).filter(
+    (g) => g.apps.length > 0,
   );
+  const sections = (body: (a: CatalogApp) => ReactNode) => (
+    <div className="grid gap-3">
+      {apps.length > SEARCH_FROM ? (
+        <input
+          type="search"
+          className="rounded-lg border px-3 py-2 text-sm"
+          placeholder={t("search")}
+          aria-label={t("search")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      ) : null}
+      {grouped.length === 0 ? <p className="text-sm text-neutral-600">{t("noMatch")}</p> : null}
+      {grouped.map(({ group, apps: list }) => (
+        <details
+          key={group}
+          open={!compact || group === "agent" || !!q}
+          className="rounded-lg border p-3"
+          data-group={group}
+        >
+          <summary className="cursor-pointer font-medium">
+            {t(`groups.${group}`)} ({list.length})
+          </summary>
+          <ul className="mt-3 grid gap-3">{list.map(body)}</ul>
+        </details>
+      ))}
+    </div>
+  );
+
+  const howTo = sections((a) => (
+    <li key={a.id} className="rounded-lg border p-3" data-app={a.id}>
+      <p className="font-medium">{a.name}</p>
+      <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.id}`}>
+        {appLine(a)}
+      </p>
+    </li>
+  ));
 
   if (status === "loading") return <p className="text-sm text-neutral-600">{t("loading")}</p>;
 
@@ -202,35 +254,31 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
           </button>
         </div>
       ) : null}
-      <ul className="grid gap-3">
-        {agents.map((a) => (
-          <li key={a.agent} className="grid gap-3 rounded-lg border p-3" data-provider={a.provider}>
-            <div>
-              <p className="font-medium">
-                {ti(`${a.provider}.name`)} · {ti(`${a.provider}.agent`)}
-              </p>
-              <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.agent}`}>
-                {ti(`${a.provider}.howTo`)}
-              </p>
-            </div>
-            {computers.map((c) => (
-              <ComputerRow
-                key={c.deviceId}
-                computer={c}
-                showName={computers.length > 1}
-                option={a}
-                status={rows[c.deviceId]?.[a.provider] ?? null}
-                loaded={load !== "loading" || !!rows[c.deviceId]}
-                trusted={trusted(c.deviceId)}
-                pending={pending[keyOf(c.deviceId, a.provider)] ?? pending[keyOf(c.deviceId, "*")] ?? null}
-                form={form?.key === keyOf(c.deviceId, a.provider) ? form : null}
-                onForm={(f) => setForm(f ? { key: keyOf(c.deviceId, a.provider), ...f } : null)}
-                onAction={(action, key) => void send(c.deviceId, a.provider, action, key)}
-              />
-            ))}
-          </li>
-        ))}
-      </ul>
+      {sections((a) => (
+        <li key={a.id} className="grid gap-3 rounded-lg border p-3" data-app={a.id}>
+          <div>
+            <p className="font-medium">{a.name}</p>
+            <p className="mt-1 text-sm text-neutral-600" data-testid={`howto-${a.id}`}>
+              {appLine(a)}
+            </p>
+          </div>
+          {computers.map((c) => (
+            <ComputerRow
+              key={c.deviceId}
+              computer={c}
+              showName={computers.length > 1}
+              app={a}
+              status={rows[c.deviceId]?.[a.id] ?? null}
+              loaded={load !== "loading" || !!rows[c.deviceId]}
+              trusted={trusted(c.deviceId)}
+              pending={pending[keyOf(c.deviceId, a.id)] ?? pending[keyOf(c.deviceId, "*")] ?? null}
+              form={form?.key === keyOf(c.deviceId, a.id) ? form : null}
+              onForm={(f) => setForm(f ? { key: keyOf(c.deviceId, a.id), ...f } : null)}
+              onAction={(action, key) => void send(c.deviceId, a.id, action, key)}
+            />
+          ))}
+        </li>
+      ))}
       <button className="w-fit rounded-lg border px-3 py-1 text-sm" onClick={refresh}>
         {t("refresh")}
       </button>
@@ -241,7 +289,7 @@ export const ConnectProviders = ({ agents = agentOptions() }: { agents?: AgentOp
 const ComputerRow = ({
   computer,
   showName,
-  option,
+  app,
   status,
   loaded,
   trusted,
@@ -252,7 +300,7 @@ const ComputerRow = ({
 }: {
   computer: DeviceView;
   showName: boolean;
-  option: AgentOption;
+  app: CatalogApp;
   status: ProviderStatus | null;
   loaded: boolean;
   trusted: boolean;
@@ -263,10 +311,11 @@ const ComputerRow = ({
 }) => {
   const t = useTranslations("chalito.connect");
   const ti = useTranslations("chalito.integrations");
-  const name = ti(`${option.provider}.name`);
+  const name = app.name;
   const busy = !!pending && !pending.failed;
-  const actions = actionsFor(status, option);
-  const gate = signinGate(option.subscription);
+  const actions = actionsFor(status, app);
+  const gate = signinGate(app.planSignin);
+  const legacy = LEGACY_COPY[app.id];
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -310,7 +359,7 @@ const ComputerRow = ({
       ) : form ? (
         <form className="grid gap-2" onSubmit={submit}>
           <label className="grid gap-1">
-            <span>{t("keyLabel", { name })}</span>
+            <span>{t("keyLabel", { name: app.apiKey?.label ?? name })}</span>
             <input
               type="password"
               autoComplete="off"
@@ -356,7 +405,11 @@ const ComputerRow = ({
           ) : null}
           {actions.includes("signin") ? <p className="text-neutral-600">{t("signinNote")}</p> : null}
           {actions.includes("signin") && gate === "owner_only" ? (
-            <p className="text-amber-800">{ti(`${option.provider}.ownerOnly`)}</p>
+            <p className="text-amber-800">{legacy && ti.has(`${legacy}.ownerOnly`) ? ti(`${legacy}.ownerOnly`) : t("ownerOnly")}</p>
+          ) : null}
+          {actions.includes("launch") ? <p className="text-neutral-600">{t(`launchNote.${app.group}`)}</p> : null}
+          {app.apiKey && actions.includes("api_key") ? (
+            <p className="text-neutral-600">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p>
           ) : null}
           {actions.includes("install") ? <p className="text-neutral-600">{t("installNote")}</p> : null}
         </>

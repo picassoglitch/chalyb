@@ -1092,7 +1092,8 @@
       "signing_in": "Termina de iniciar sesión en tu computadora",
       "connected": "Conectado",
       "error": "Algo falló",
-      "blocked_by_policy": "Iniciar sesión con tu plan no está disponible para tu cuenta"
+      "blocked_by_policy": "Iniciar sesión con tu plan no está disponible para tu cuenta",
+      "available": "Lista para abrir"
     },
     "via": {
       "api_key": "con tu API key",
@@ -1103,7 +1104,8 @@
       "install": "Instalar",
       "api_key": "Conectar con API key",
       "signin": "Iniciar sesión con tu plan",
-      "disconnect": "Desconectar"
+      "disconnect": "Desconectar",
+      "launch": "Abrir en tu computadora"
     },
     "installNote": "Se instala con el instalador oficial. Tu computadora te pedirá confirmar.",
     "signinNote": "El inicio de sesión oficial se abre en el navegador de esa computadora; termínalo ahí.",
@@ -1128,6 +1130,24 @@
       "key_invalid": "Esa API key no funcionó. Revisa que esté completa y vigente.",
       "keychain_failed": "No pudimos guardar la llave en esa computadora.",
       "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo."
-    }
+    },
+    "search": "Buscar una IA",
+    "noMatch": "Ninguna IA coincide con tu búsqueda.",
+    "groups": {
+      "agent": "Agentes de programación",
+      "desktop": "Apps de escritorio",
+      "web": "Sitios web de IA"
+    },
+    "howTo": {
+      "agent": "Conecta {name} con tu API key ({key}) o con su propio inicio de sesión en tu computadora.",
+      "desktop": "Chalito abre {name} en tu computadora. Inicias sesión dentro de la app, como siempre.",
+      "web": "Chalito abre {name} en su propio perfil del navegador en tu computadora. Inicias sesión en el sitio real; tu sesión se queda en esa computadora."
+    },
+    "launchNote": {
+      "desktop": "Se abre en esa computadora.",
+      "web": "Se abre en esa computadora, en un perfil de navegador solo para esta IA."
+    },
+    "ownerOnly": "Iniciar sesión con tu plan: solo equipo de Chalito por ahora.",
+    "keyWhere": "Tu {label} se consigue en {url}"
   }
 }

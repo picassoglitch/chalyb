@@ -4,6 +4,7 @@ import {
   CommandBody,
   DecisionBody,
   type AdapterKind,
+  type AppId,
   type Channel,
   type CommandPayload,
   type DevModeToggle,
@@ -57,6 +58,11 @@ const CLIENT_COMMANDS = new Set<CommandPayload["type"]>([
   "provider.disconnect",
   "provider.install",
   "provider.status",
+  "app.connect",
+  "app.disconnect",
+  "app.install",
+  "app.status",
+  "app.launch",
 ]);
 
 const b64Nonce = (): string => {
@@ -173,7 +179,9 @@ export class ClientActions {
 
   async startSession(input: {
     agentDeviceId: string;
-    adapter: AdapterKind;
+    /** The four original agents by adapter; any other catalog app by appId (generic ACP). */
+    adapter?: AdapterKind;
+    appId?: AppId;
     workspaceLabel: string;
     prompt: string;
     permissionMode?: RemotePermissionMode;
@@ -181,7 +189,8 @@ export class ClientActions {
   }): Promise<string> {
     return this.#command(input.agentDeviceId, async (cid) => ({
       type: "session.start",
-      adapter: input.adapter,
+      ...(input.adapter ? { adapter: input.adapter } : {}),
+      ...(input.appId ? { appId: input.appId } : {}),
       workspaceLabel: input.workspaceLabel,
       promptCt: await this.#sealFor(input.agentDeviceId, input.prompt, cid),
       permissionMode: input.permissionMode ?? "default",
@@ -264,6 +273,42 @@ export class ClientActions {
   /** Asks the computer for a fresh report into chalito.connections. */
   async providerStatus(agentDeviceId: string): Promise<string> {
     return this.#command(agentDeviceId, async () => ({ type: "provider.status" }));
+  }
+
+  // ---- any app from the catalog (engine contract v2) --------------------------------
+
+  /** Like connectProvider, for any recipe id; the key is sealed to that computer only. */
+  async connectApp(
+    agentDeviceId: string,
+    appId: AppId,
+    auth: { method: "api_key"; key: string } | { method: "signin" },
+  ): Promise<string> {
+    return this.#command(agentDeviceId, async (cid) => {
+      if (auth.method === "signin") return { type: "app.connect", appId, method: "signin" };
+      const agentKey = this.keys.trustedAgentBoxKey(agentDeviceId);
+      if (!agentKey) throw new ActionError("untrusted_agent");
+      const keyCt = await this.keys.seal(auth.key, { [agentDeviceId]: agentKey }, `command:${cid}`);
+      return { type: "app.connect", appId, method: "api_key", keyCt };
+    });
+  }
+
+  async disconnectApp(agentDeviceId: string, appId: AppId): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "app.disconnect", appId }));
+  }
+
+  /** Official installer only; the computer asks for a local confirm. */
+  async installApp(agentDeviceId: string, appId: AppId): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "app.install", appId }));
+  }
+
+  /** Opens a desktop or web app on that computer (its window, or its own browser profile). */
+  async launchApp(agentDeviceId: string, appId: AppId): Promise<string> {
+    return this.#command(agentDeviceId, async () => ({ type: "app.launch", appId }));
+  }
+
+  /** A fresh report for one app, or all of them. */
+  async appStatus(agentDeviceId: string, appId?: AppId): Promise<string> {
+    return this.#command(agentDeviceId, async () => (appId ? { type: "app.status", appId } : { type: "app.status" }));
   }
 
   // ---- device safety (off only) -----------------------------------------------------

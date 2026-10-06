@@ -1092,7 +1092,8 @@
       "signing_in": "Finish signing in on your computer",
       "connected": "Connected",
       "error": "Something went wrong",
-      "blocked_by_policy": "Signing in with your plan isn't available for your account"
+      "blocked_by_policy": "Signing in with your plan isn't available for your account",
+      "available": "Ready to open"
     },
     "via": {
       "api_key": "with your API key",
@@ -1103,7 +1104,8 @@
       "install": "Install",
       "api_key": "Connect with API key",
       "signin": "Sign in with your plan",
-      "disconnect": "Disconnect"
+      "disconnect": "Disconnect",
+      "launch": "Open on your computer"
     },
     "installNote": "It installs with the official installer. Your computer will ask you to confirm.",
     "signinNote": "The official sign-in opens in that computer's browser; finish it there.",
@@ -1128,6 +1130,24 @@
       "key_invalid": "That API key didn't work. Check it's complete and still valid.",
       "keychain_failed": "We couldn't save the key on that computer.",
       "status_failed": "We couldn't check the status. Try again."
-    }
+    },
+    "search": "Search for an AI",
+    "noMatch": "No AI matches your search.",
+    "groups": {
+      "agent": "Coding agents",
+      "desktop": "Desktop apps",
+      "web": "AI websites"
+    },
+    "howTo": {
+      "agent": "Connect {name} with your API key ({key}) or its own sign-in on your computer.",
+      "desktop": "Chalito opens {name} on your computer. You sign in inside the app, as usual.",
+      "web": "Chalito opens {name} in its own browser profile on your computer. You sign in on the real site; your session stays on that computer."
+    },
+    "launchNote": {
+      "desktop": "It opens on that computer.",
+      "web": "It opens on that computer, in a browser profile just for this AI."
+    },
+    "ownerOnly": "Sign in with your plan: Chalito team only for now.",
+    "keyWhere": "Get your {label} at {url}"
   }
 }

@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ActionError } from "@chalito/client";
-import type { AdapterKind, RemotePermissionMode } from "@chalito/protocol";
+import type { RemotePermissionMode } from "@chalito/protocol";
 import { Link, useRouter } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
-import { adapterNameKey, adaptersFor, keepAdapter } from "@/lib/chalito/web/adapters";
+import { adapterNameKey, adaptersFor, keepAdapter, startTarget } from "@/lib/chalito/web/adapters";
 import { LOAD_TIMEOUT_MS, indexConnections, withTimeout, type StatusIndex } from "@/lib/chalito/web/connect";
 import { REMOTE_MODES } from "./Sessions";
 
@@ -31,7 +31,7 @@ export const NewSession = () => {
   const router = useRouter();
   const computers = live.devices.filter((d) => d.role === "agent" && !d.revoked);
   const [agent, setAgent] = useState("");
-  const [adapter, setAdapter] = useState<AdapterKind>("claude-code");
+  const [adapter, setAdapter] = useState("claude-code");
   const [workspace, setWorkspace] = useState("");
   const [mode, setMode] = useState<RemotePermissionMode>("default");
   const [prompt, setPrompt] = useState("");
@@ -44,6 +44,7 @@ export const NewSession = () => {
   const target = agent || computers[0]?.deviceId || "";
   const options = useMemo(() => adaptersFor(connections, target), [connections, target]);
   const chosen = keepAdapter(adapter, options);
+  const chosenAdapter = options.find((o) => o.adapter.appId === chosen)?.adapter;
 
   // Read once on open; unreadable means Grok and Gemini stay disabled with the link to connect them.
   useEffect(() => {
@@ -97,13 +98,13 @@ export const NewSession = () => {
     e.preventDefault();
     const text = prompt.trim();
     const label = workspace.trim();
-    if (!client || !target || !text || !label) return;
+    if (!client || !target || !text || !label || !chosenAdapter) return;
     before.current = new Set(live.sessions.map((s) => s.sid));
     setPhase({ kind: "waiting", since: Date.now() });
     try {
       await client.actions.startSession({
         agentDeviceId: target,
-        adapter: chosen,
+        ...startTarget(chosenAdapter),
         workspaceLabel: label,
         prompt: text,
         permissionMode: mode,
@@ -146,15 +147,22 @@ export const NewSession = () => {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {options.map(({ adapter: a, availability }) => {
             const off = availability !== "ready";
-            const name = ti(adapterNameKey(a.kind)!);
+            const key = adapterNameKey(a.kind);
+            const name = key ? ti(key) : a.name;
             return (
-              <span key={a.kind} className="flex items-center gap-2" data-testid="adapter-option" data-kind={a.kind}>
+              <span
+                key={a.appId}
+                className="flex items-center gap-2"
+                data-testid="adapter-option"
+                data-kind={a.kind}
+                data-app={a.appId}
+              >
                 <label className={`flex items-center gap-2 ${off ? "text-neutral-500" : ""}`}>
                   <input
                     type="radio"
                     name="adapter"
-                    checked={chosen === a.kind}
-                    onChange={() => setAdapter(a.kind)}
+                    checked={chosen === a.appId}
+                    onChange={() => setAdapter(a.appId)}
                     disabled={waiting || off}
                   />
                   {name}
