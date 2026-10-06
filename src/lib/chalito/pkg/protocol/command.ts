@@ -30,8 +30,11 @@ export const PolicyPreset = z.enum(["estricto", "estandar", "relajado"]);
 
 /**
  * Commands a remote surface can send to a device agent. There is no command that
- * enables Developer mode, enables a toggle, loosens policy, adds a trusted client,
- * or sets a permission mode above `acceptEdits` — those shapes are unrepresentable.
+ * enables Developer mode, enables a toggle, enables computer control, loosens policy, adds a
+ * trusted client, or sets a permission mode above `acceptEdits` — those shapes are
+ * unrepresentable. (Computer control is turned on only on the device, `chalito computer enable`
+ * or the desktop panel; a remote surface can turn it off through `policy.tighten` and approve or
+ * deny a session's `computer_control` approval.)
  */
 export const CommandPayload = z.discriminatedUnion("type", [
   z.object({
