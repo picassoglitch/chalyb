@@ -9,6 +9,7 @@ import {
   usePathname as hubUsePathname,
   useRouter as hubUseRouter,
   redirect as hubRedirect,
+  getPathname as hubGetPathname,
 } from '@/i18n/routing';
 
 export const CHALITO_BASE = '/app/chalito';
@@ -25,8 +26,20 @@ export const chalitoPath = (href: string): string => {
 
 type Href =
   string | { pathname: string; query?: Record<string, string>; params?: Record<string, unknown> };
-const prefixHref = (href: Href): Href =>
-  typeof href === 'string' ? chalitoPath(href) : { ...href, pathname: chalitoPath(href.pathname) };
+/**
+ * Chalito's routing had typed `pathnames` ("/r/[id]" + params); the hub's has none, so the
+ * placeholders are filled in here and the result is a plain prefixed path (query kept).
+ */
+const resolveHref = (href: Href): string | { pathname: string; query?: Record<string, string> } => {
+  if (typeof href === 'string') return chalitoPath(href);
+  const pathname = chalitoPath(
+    href.pathname.replace(/\[([^\]]+)\]/g, (_, k: string) =>
+      encodeURIComponent(String(href.params?.[k] ?? '')),
+    ),
+  );
+  return href.query ? { pathname, query: href.query } : pathname;
+};
+const prefixHref = resolveHref;
 
 type HubLinkProps = ComponentProps<typeof HubLink>;
 export const Link = ({ href, ...rest }: Omit<HubLinkProps, 'href'> & { href: Href }) => (
@@ -47,9 +60,10 @@ export const useRouter = () => {
   const r = hubUseRouter();
   return {
     ...r,
-    push: (href: string, o?: Parameters<typeof r.push>[1]) => r.push(chalitoPath(href) as Route, o),
-    replace: (href: string, o?: Parameters<typeof r.replace>[1]) =>
-      r.replace(chalitoPath(href) as Route, o),
+    push: (href: Href, o?: Parameters<typeof r.push>[1]) =>
+      r.push(resolveHref(href) as Parameters<typeof r.push>[0], o),
+    replace: (href: Href, o?: Parameters<typeof r.replace>[1]) =>
+      r.replace(resolveHref(href) as Parameters<typeof r.replace>[0], o),
     prefetch: (href: string) => r.prefetch(chalitoPath(href) as Route),
   };
 };
@@ -57,4 +71,10 @@ export const useRouter = () => {
 export const redirect = (args: { href: string; locale: string }) =>
   hubRedirect({ href: chalitoPath(args.href) as Route, locale: args.locale } as Parameters<
     typeof hubRedirect
+  >[0]);
+
+/** The locale-aware URL of a Chalito path (for hrefs handed to the shared UI package). */
+export const getPathname = (args: { href: Href; locale: string }): string =>
+  hubGetPathname({ href: resolveHref(args.href), locale: args.locale } as Parameters<
+    typeof hubGetPathname
   >[0]);
