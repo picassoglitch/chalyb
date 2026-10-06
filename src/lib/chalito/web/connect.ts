@@ -201,16 +201,17 @@ export const KEY_PREFIX: Record<string, string> = {
   gemini: "AIza",
 };
 
-export type KeyCheck = { ok: true; key: string } | { ok: false; error: "invalid" | "shape"; prefix?: string };
+/** `warn` = the key lacks the provider's usual prefix. It's a warning only, since providers change key formats. */
+export type KeyCheck = { ok: true; key: string; warn?: string } | { ok: false; error: "invalid" };
 
-/** A pasted key for one app, checked before it is sealed: sane, and the provider's usual prefix. */
+/** A pasted key for one app, checked before it is sealed: sane (hard), and the provider's usual prefix (warning). */
 export const checkApiKey = (appId: string, raw: string): KeyCheck => {
   const key = cleanApiKey(raw);
   if (!key) return { ok: false, error: "invalid" };
   const prefix = KEY_PREFIX[appId];
-  if (prefix && !key.startsWith(prefix)) return { ok: false, error: "shape", prefix };
+  if (prefix && !key.startsWith(prefix)) return { ok: true, key, warn: prefix };
   // An Anthropic key starts with "sk-" too: catch it pasted into Codex.
-  if (appId === "codex" && key.startsWith(KEY_PREFIX["claude-code"]!)) return { ok: false, error: "shape", prefix };
+  if (appId === "codex" && key.startsWith(KEY_PREFIX["claude-code"]!)) return { ok: true, key, warn: prefix };
   return { ok: true, key };
 };
 

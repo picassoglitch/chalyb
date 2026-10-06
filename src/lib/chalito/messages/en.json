@@ -1149,6 +1149,7 @@
     },
     "ownerOnly": "Sign in with your plan: Chalito team only for now.",
     "keyWhere": "Get your {label} at {url}",
-    "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full."
+    "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
+    "keySendAnyway": "Send anyway"
   }
 }

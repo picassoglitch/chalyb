@@ -1149,6 +1149,7 @@
     },
     "ownerOnly": "Iniciar sesión con tu plan: solo equipo de Chalito por ahora.",
     "keyWhere": "Tu {label} se consigue en {url}",
-    "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa."
+    "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa.",
+    "keySendAnyway": "Enviar de todos modos"
   }
 }

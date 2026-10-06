@@ -205,12 +205,12 @@ test('API keys are checked before they leave the browser', () => {
 
 test('a pasted key must look like its provider\'s before it is sealed', () => {
   assert.deepEqual(checkApiKey('claude-code', ' sk-ant-api03-abcdef '), { ok: true, key: 'sk-ant-api03-abcdef' });
-  assert.deepEqual(checkApiKey('claude-code', 'sk-proj-abcdef12'), { ok: false, error: 'shape', prefix: 'sk-ant-' });
+  assert.deepEqual(checkApiKey('claude-code', 'sk-proj-abcdef12'), { ok: true, key: 'sk-proj-abcdef12', warn: 'sk-ant-' });
   assert.deepEqual(checkApiKey('codex', 'sk-proj-abcdef12'), { ok: true, key: 'sk-proj-abcdef12' });
   // An Anthropic key in the Codex field is the usual mix-up.
-  assert.equal(checkApiKey('codex', 'sk-ant-api03-abcdef').ok, false);
+  assert.deepEqual(checkApiKey('codex', 'sk-ant-api03-abcdef'), { ok: true, key: 'sk-ant-api03-abcdef', warn: 'sk-' });
   assert.equal(checkApiKey('grok', 'xai-abcdef1234').ok, true);
-  assert.equal(checkApiKey('gemini', 'xai-abcdef1234').ok, false);
+  assert.deepEqual(checkApiKey('gemini', 'xai-abcdef1234'), { ok: true, key: 'xai-abcdef1234', warn: 'AIza' });
   assert.equal(checkApiKey('gemini', 'AIzaSyAbcdef123').ok, true);
   // No fixed shape for other apps: only the basic checks.
   assert.equal(checkApiKey('aider', 'anything-12345').ok, true);
