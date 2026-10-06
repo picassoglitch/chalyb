@@ -9,6 +9,7 @@ import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { newPurchaseId, type CompanionLook, type Slot, type StoreItem } from "@/lib/chalito/web/store";
 import { useChalito } from "@/lib/chalito/provider";
 import type { Balance, BalanceApi } from "@/lib/chalito/web/balance";
+import { Loading } from "./Loading";
 
 const ROSTER = "/roster";
 const asset = (path: string) => `${ROSTER}/${path}`;
@@ -169,7 +170,7 @@ export const Store = () => {
     });
   };
 
-  if (status === "loading") return <p aria-live="polite">{t("loading")}</p>;
+  if (status === "loading") return <Loading label={t("loading")} rows={2} height={200} />;
   if (status === "signed_out" || !store)
     return (
       <div className="ch-chl ch-chl--tight" data-testid="store-signin">
@@ -213,7 +214,7 @@ export const Store = () => {
         </p>
       ) : null}
 
-      {items === null ? <p aria-live="polite">{t("loading")}</p> : null}
+      {items === null ? <Loading label={t("loading")} rows={2} height={200} /> : null}
       {items === "error" ? (
         <div role="alert" data-testid="store-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-bad">
           <p>{t("error")}</p>

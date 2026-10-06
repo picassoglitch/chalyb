@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Usage as UsageData, UsageDay } from "@/lib/chalito/web/usage";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 const RANGES = [7, 30] as const;
 type Range = (typeof RANGES)[number];
@@ -144,7 +145,7 @@ export const Usage = () => {
     return (
       <div className="ch-chl">
         {head}
-        <p aria-live="polite">{t("loading")}</p>
+        <Loading label={t("loading")} rows={2} />
       </div>
     );
   if (data === "error")

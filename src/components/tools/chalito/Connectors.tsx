@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Connector } from "@/lib/chalito/web/mcp";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /** "Apps conectadas": the person's MCP grants, each revocable at once (the gateway checks every call). */
 export const Connectors = () => {
@@ -27,7 +28,7 @@ export const Connectors = () => {
         {t("failed")}
       </p>
     );
-  if (!list) return <p aria-live="polite">{t("loading")}</p>;
+  if (!list) return <Loading label={t("loading")} />;
   const active = list.filter((c) => !c.revokedAt);
   return (
     <div className="ch-chl">

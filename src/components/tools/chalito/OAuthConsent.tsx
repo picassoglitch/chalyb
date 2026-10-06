@@ -6,6 +6,7 @@ import { safeOAuthRedirect, type ConsentRequest } from "@/lib/chalito/web/mcp";
 import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { useSession } from "@/lib/chalito/web/session";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /**
  * /oauth/consent?request=<id>: a connected app (Claude, ChatGPT) asks for access to the MCP gateway.
@@ -84,7 +85,7 @@ export const OAuthConsent = () => {
         {t(state)}
       </p>
     );
-  if (!req) return <p aria-live="polite">{t("loading")}</p>;
+  if (!req) return <Loading label={t("loading")} />;
   const selected = Object.values(checked).some(Boolean);
   const canApprove = status === "ready" && passkey.enrolled;
   return (

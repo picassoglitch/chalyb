@@ -21,6 +21,7 @@ import {
   type ProviderStatus,
   type StatusIndex,
 } from "@/lib/chalito/web/connect";
+import { Loading } from "./Loading";
 
 type Load = "loading" | "ok" | "error";
 /** Pending commands by `<deviceId>:<appId>`, or `<deviceId>:*` for a status request. */
@@ -224,12 +225,12 @@ export const ConnectProviders = ({
     </li>
   ));
 
-  if (status === "loading") return <p className="ch-muted">{t("loading")}</p>;
+  if (status === "loading") return <Loading label={t("loading")} rows={2} />;
 
   // Not paired here, or no computer yet: the way to get one, not dead buttons.
   const noClient = !client;
   const devicesLoading = !!client && computers.length === 0 && !devicesWaited && live.status !== "live";
-  if (devicesLoading) return <p className="ch-muted">{t("loading")}</p>;
+  if (devicesLoading) return <Loading label={t("loading")} rows={2} />;
   if (noClient || computers.length === 0)
     return (
       <div className="ch-chl" data-testid="connect-no-computer">

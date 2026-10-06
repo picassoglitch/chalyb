@@ -367,7 +367,8 @@
         "button": "Dissolve room",
         "confirm": "Dissolve the room? Its messages, members and invites are deleted for everyone. This can't be undone.",
         "yes": "Yes, dissolve"
-      }
+      },
+      "noneBody": "Create one below or join with someone's invite."
     },
     "mesa": {
       "list": "Your Mesas",
@@ -609,7 +610,8 @@
       "ack": "Got it",
       "pending": "To approve ({count})",
       "empty": "Nothing pending.",
-      "history": "History"
+      "history": "History",
+      "emptyBody": "When an agent needs your permission, it shows up here."
     },
     "sessions": {
       "title": "Sessions",
@@ -624,7 +626,8 @@
         "failed": "Failed",
         "interrupted": "Interrupted"
       },
-      "new": "New session"
+      "new": "New session",
+      "emptyBody": "Ask your AI team for something and you will see it progress here."
     },
     "session": {
       "notFound": "We couldn't find that session.",

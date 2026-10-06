@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /**
  * Live screens need a signed-in, paired, connected device; otherwise say what's missing. Inside
@@ -26,9 +27,7 @@ export const LiveGate = ({ children }: { children: ReactNode }) => {
   if (status === "ready") return <>{children}</>;
   if (status === "loading")
     return (
-      <p aria-live="polite" className="ch-muted">
-        {t("loading")}
-      </p>
+      <Loading label={t("loading")} />
     );
   return (
     <div className="ch-card ch-chl-card" data-testid={`gate-${status}`}>

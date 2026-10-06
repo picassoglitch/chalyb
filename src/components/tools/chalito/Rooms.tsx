@@ -6,6 +6,8 @@ import { Link, useRouter } from "@/lib/chalito/navigation";
 import { createRoom, joinRoom, roomList, type RoomListItem, type RoomsDb } from "@chalito/rooms";
 import { seenRev } from "@/lib/chalito/web/room-seen";
 import { useChalito } from "@/lib/chalito/provider";
+import { Users } from "lucide-react";
+import { Empty } from "./Empty";
 
 /** /salas: the rooms this companion is in, "Nueva sala" and "Unirse con código". */
 export const Rooms = () => {
@@ -70,7 +72,7 @@ export const Rooms = () => {
               ))}
             </ul>
           ) : (
-            <p className="ch-muted">{t("none")}</p>
+            <Empty icon={<Users />} title={t("none")} body={t("noneBody")} />
           )}
           <section className="ch-chl ch-chl--tight">
             <h3 className="ch-ghead">{t("create.title")}</h3>

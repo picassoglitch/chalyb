@@ -502,3 +502,32 @@
   min-height: 56px;
   font-size: 20px;
 }
+/* The pairing code as big boxes, one per character. */
+.chalyb-app .ch-chl-codeboxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.chalyb-app .ch-chl-codebox {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 60px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 2px solid var(--line);
+  font-size: 30px;
+}
+.chalyb-app .ch-chl-codesep {
+  font-size: 30px;
+  color: var(--ink2);
+}
+@media (max-width: 420px) {
+  .chalyb-app .ch-chl-codebox {
+    width: 38px;
+    height: 50px;
+    font-size: 24px;
+  }
+}

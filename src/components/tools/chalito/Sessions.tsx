@@ -7,6 +7,9 @@ import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
 import { adapterNameKey } from "@/lib/chalito/web/adapters";
 import { SharingToggle } from "./SharingToggle";
+import { Loading } from "./Loading";
+import { MessageCircle } from "lucide-react";
+import { Empty } from "./Empty";
 
 /** The session's coding agent by name (integrations.*), or nothing when unknown. */
 const AgentName = ({ adapter }: { adapter: string | undefined }) => {
@@ -34,7 +37,14 @@ export const SessionsList = () => {
           {t("new")}
         </Link>
       </div>
-      {sessions.length === 0 ? <p className="ch-muted">{t("empty")}</p> : null}
+      {sessions.length === 0 ? (
+        <Empty
+          icon={<MessageCircle />}
+          title={t("empty")}
+          body={t("emptyBody")}
+          action={{ href: "/sesiones/nueva", label: t("new") }}
+        />
+      ) : null}
       <ul className="ch-group">
         {sessions.map((s) => (
           <li key={s.sid} data-testid="session-row">
@@ -156,7 +166,12 @@ export const SessionDetail = ({ sid }: { sid: string }) => {
   const [note, setNote] = useState<string | null>(null);
   const s: SessionView | undefined = live.sessions.find((x) => x.sid === sid);
   const events = live.events[sid] ?? [];
-  if (!s) return <p>{live.status === "live" ? t("notFound") : t("loading")}</p>;
+  if (!s)
+    return live.status === "live" ? (
+      <p className="ch-card ch-chl-card">{t("notFound")}</p>
+    ) : (
+      <Loading label={t("loading")} />
+    );
   const card = s.card;
   const run = async (f: () => Promise<unknown>, ok: string) => {
     setNote(null);

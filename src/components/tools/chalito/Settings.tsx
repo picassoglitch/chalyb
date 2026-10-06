@@ -12,12 +12,14 @@ import { PushOptIn } from "./PushOptIn";
 import { AccountDeletion } from "./AccountDeletion";
 import { BrainKeys } from "./BrainKeys";
 import { ConnectProviders } from "./ConnectProviders";
+import { Loading } from "./Loading";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
   const tw = useTranslations("chalito.live.settings");
   const ti = useTranslations("chalito.integrations");
   const tc = useTranslations("chalito.connect");
+  const tl = useTranslations("chalito.common");
   const { phoneVerifier } = useChalito();
   const { values, set, error, persisted } = useSettings();
   const locale = useLocale();
@@ -25,7 +27,7 @@ export const Settings = () => {
   const setPick = useCompanionPick((p) => p.setPick);
   const pickNow = values?.avatar;
   useEffect(() => setPick(pickNow), [setPick, pickNow]);
-  if (!values) return null;
+  if (!values) return <Loading label={tl("loading")} rows={4} />;
   return (
     <div className="ch-chl">
       <h2 className="ch-h2">{t("title")}</h2>

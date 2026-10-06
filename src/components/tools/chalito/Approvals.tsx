@@ -13,6 +13,9 @@ import {
 } from "@/lib/chalito/web/computer-control";
 import { confirmStepUp } from "./StepUpHost";
 import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
+import { Inbox as InboxIcon } from "lucide-react";
+import { Empty } from "./Empty";
 
 const RISK_STYLE: Record<ApprovalView["risk"], string> = {
   LOW: "ch-pill--gray",
@@ -326,7 +329,11 @@ export const Inbox = () => {
         <h2 id="pending-h" className="ch-ghead">
           {t("pending", { count: pending.length })}
         </h2>
-        {pending.length ? pending.map((a) => <ApprovalCard key={a.aid} a={a} />) : <p className="ch-muted">{t("empty")}</p>}
+        {pending.length ? (
+          pending.map((a) => <ApprovalCard key={a.aid} a={a} />)
+        ) : (
+          <Empty icon={<InboxIcon />} title={t("empty")} body={t("emptyBody")} />
+        )}
       </section>
       {done.length ? (
         <section className="ch-chl-list" aria-labelledby="done-h">
@@ -348,5 +355,9 @@ export const ApprovalDeepLink = ({ aid }: { aid: string }) => {
   const { approvals, status } = useLive();
   const a = approvals.find((x) => x.aid === aid);
   if (a) return <ApprovalCard a={a} />;
-  return <p>{status === "live" ? t("notFound") : t("loading")}</p>;
+  return status === "live" ? (
+    <p className="ch-card ch-chl-card">{t("notFound")}</p>
+  ) : (
+    <Loading label={t("loading")} rows={1} height={160} />
+  );
 };

@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import type { Balance } from "@/lib/chalito/web/balance";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito } from "@/lib/chalito/provider";
+import { Loading } from "./Loading";
 
 /** The Chalyb tiers this page can name (packages/config plans.yaml hubTiers). */
 const HUB_TIERS = new Set(["free", "pro", "vip"]);
@@ -35,7 +36,7 @@ const BalanceCard = () => {
     <section className="ch-card ch-chl-card" data-testid="credits-balance">
       <h3 className="ch-ghead">{t("title")}</h3>
       {b === "loading" ? (
-        <p aria-live="polite">{t("loading")}</p>
+        <Loading label={t("loading")} rows={1} height={48} />
       ) : b === "unavailable" || b === "error" ? (
         <p role="alert" data-testid="balance-error">
           {t(b)}
