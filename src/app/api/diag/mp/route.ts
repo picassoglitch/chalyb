@@ -26,8 +26,12 @@ import {
   isMercadoPagoConfigured,
   checkoutConfigWarnings,
   getAppUrl,
+  getExpectedSellerId,
+  getMpEnv,
   getPublicKey,
+  getRawAccessTokenForDiag,
   getWebhookSecret,
+  mpExpectedWebhookUrl,
 } from '@/lib/payments/mercadopago';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +40,12 @@ export const runtime = 'nodejs';
 interface DiagResult {
   ok: boolean;
   error?: string;
+  /** MP_ENV as resolved: which credential pair every call uses. */
+  mpEnv?: 'test' | 'prod';
+  /** The URL the Mercado Pago dashboard must notify, in both modes (OPS-4). */
+  expectedWebhookUrl?: string;
+  /** null = MP_EXPECTED_SELLER_ID not set. */
+  sellerMatchesExpected?: boolean | null;
   /** TEST | APP_USR | unknown */
   tokenKind?: string;
   /** First 8 chars of the token so operator can confirm the right key
@@ -73,7 +83,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
     });
   }
 
-  const token = process.env.MERCADOPAGO_ACCESS_TOKEN ?? process.env.MP_ACCESS_TOKEN ?? '';
+  const token = getRawAccessTokenForDiag();
   const tokenKind = token.startsWith('TEST-')
     ? 'TEST (sandbox)'
     : token.startsWith('APP_USR-')
@@ -93,6 +103,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   let mpReachable = false;
   let mpResponseStatus: number | null = null;
   let mpResponseExcerpt: string | null = null;
+  let sellerMatchesExpected: boolean | null = null;
   const probe = 'users_me' as const;
 
   try {
@@ -107,6 +118,8 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
       mpReachable = true;
       try {
         const me = JSON.parse(text) as { id?: number; nickname?: string; site_id?: string };
+        const expectedSeller = getExpectedSellerId();
+        if (expectedSeller) sellerMatchesExpected = String(me.id ?? '') === expectedSeller;
         mpResponseExcerpt = `token válido · cuenta ${me.nickname ?? me.id ?? '?'} · site ${me.site_id ?? '?'}`;
       } catch {
         mpResponseExcerpt = 'token válido';
@@ -166,6 +179,9 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
 
   return NextResponse.json({
     ok: mpReachable,
+    mpEnv: getMpEnv(),
+    expectedWebhookUrl: mpExpectedWebhookUrl(),
+    sellerMatchesExpected,
     tokenKind,
     tokenPrefix,
     webhookSecretConfigured: Boolean(getWebhookSecret()),

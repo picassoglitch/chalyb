@@ -54,3 +54,30 @@ enable_domain_mappings = false
 #   chalybobs    = { display_name = "ChalyOBS",    secret_env_names = { admin_token = "CHALYBOBS_ADMIN_TOKEN", sso_secret = "CHALYBOBS_SSO_SECRET" } }
 #   chalybcrypto = { display_name = "ChalyCrypto", secret_env_names = { admin_token = "CHALYB_ADMIN_TOKEN",    sso_secret = "CHALYB_SSO_SECRET" } }
 # }
+
+# Chalito, second apply: once Chalito's own Terraform (picassoglitch/chalito
+# infra/terraform/envs/dev) has created its buckets and secrets and granted the
+# `chalito` service account access. Values are that apply's outputs.
+#
+# engine_extra_env = {
+#   chalito = {
+#     ACCOUNT_EXPORT_BUCKET   = "<project>-chalito-records"
+#     AVATAR_BUCKET           = "<project>-chalito-assets"
+#     RECORDS_BUCKET          = "<project>-chalito-records"
+#     CHALITO_RELEASES_BUCKET = "<project>-chalito-releases"
+#     CHALITO_RELEASES_SIGNER = "chalito-release-signer@<project>.iam.gserviceaccount.com"
+#     SCHEDULER_SA_EMAIL      = "chalito-pubsub-push@<project>.iam.gserviceaccount.com"
+#   }
+# }
+# engine_extra_secret_env = {
+#   chalito = {
+#     SUPABASE_SECRET_KEY       = "chalito-supabase-secret-key"
+#     CHALITO_GATEWAY_TOKEN     = "chalito-gateway-token"
+#     OPENAI_API_KEY            = "chalito-openai-api-key"
+#     VOICE_TOKEN_SECRET        = "chalito-voice-token-secret"
+#     TWILIO_ACCOUNT_SID        = "chalito-twilio-account-sid"
+#     TWILIO_AUTH_TOKEN         = "chalito-twilio-auth-token"
+#     TWILIO_VERIFY_SERVICE_SID = "chalito-twilio-verify-service"
+#     OWNER_UIDS                = "chalito-owner-uids"
+#   }
+# }

@@ -7,6 +7,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: {
+      ...(await import(`../../messages/${locale}.json`)).default,
+      // Chalito's screens (/app/chalito): its own catalog, under `chalito`.
+      chalito: (await import(`../lib/chalito/messages/${locale}.json`)).default,
+    },
   };
 });

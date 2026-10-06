@@ -1,0 +1,51 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Mi cuenta</title>
+<link rel="stylesheet" href="style.css"><style>
+.main{padding-top:48px}
+.wrap{max-width:1080px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px;align-items:start}
+.colx > * + *{margin-top:24px}
+.plan{padding:26px;background:linear-gradient(135deg,#6B5CFF 0%,#5B4BFF 50%,#4632E6 100%);color:#fff;border-radius:24px;box-shadow:0 12px 32px rgba(91,75,255,.30);position:relative;overflow:hidden}
+.plan::after{content:"";position:absolute;right:-60px;top:-80px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.10)}
+.plan .k{font-size:15px;font-weight:600;opacity:.85;letter-spacing:.04em;text-transform:uppercase}
+.plan h2{font-size:28px;margin-top:6px;color:#fff}
+.plan p{font-size:17px;opacity:.9;margin-top:6px}
+.plan .pb{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.plan .btn{height:52px;background:#fff;color:var(--accent);font-size:18px;box-shadow:none;position:relative;z-index:1}
+.plan .inc{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;opacity:.95}
+.plan .inc svg{width:18px;height:18px;stroke-width:3}
+.cred{padding:14px 20px 18px}
+.cred .top{display:flex;align-items:center;gap:16px}
+.cred .num{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.meter{height:10px;border-radius:5px;background:#ECEBF3;margin:12px 0 0 54px;overflow:hidden}
+.meter i{display:block;height:100%;width:60%;border-radius:5px;background:linear-gradient(90deg,#8A7DFF,#5B4BFF)}
+.cred .mt{display:flex;justify-content:space-between;font-size:15px;color:var(--ink3);margin:8px 0 0 54px}
+.ok2{color:var(--ok);font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px}
+.ok2 svg{width:18px;height:18px;stroke-width:3}
+.conn{font-size:17px;color:var(--accent);font-weight:600}
+.row .brand{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#F2F2F6}
+.human{display:flex;align-items:center;gap:16px;padding:20px;border-radius:20px;background:#fff;box-shadow:0 0 0 2px var(--ok),var(--shadow)}
+.human .hi{width:52px;height:52px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;flex:none}
+.human .hi svg{width:26px;height:26px}
+.human b{font-size:20px;display:block}
+.human small{font-size:16px;color:var(--ink2)}
+.human .btn{margin-left:auto;height:50px;background:var(--ok);color:#fff;font-size:17px;padding:0 20px}
+.prof{display:flex;align-items:center;gap:16px}
+.prof .avatar{width:64px;height:64px;font-size:24px}
+.prof .em{font-size:18px;color:var(--ink2)}
+</style></head><body><div class="app"><aside class="side"><div class="logo"><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div>
+<nav class="nav"><a class=""><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg><span>Inicio</span></a><a class=""><svg class="i" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="2.5"/><path d="M3 7.5V18a3 3 0 0 0 3 3h10.5"/><path d="m12.5 7.6 4 2.4-4 2.4z" fill="currentColor"/></svg><span>Mis resultados</span></a><a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Mi cuenta</span></a></nav>
+<div class="me"><div class="avatar">ML</div><div><div class="n">María López</div><div class="p">Plan Pro</div></div></div></aside><main class="main"><div class="wrap">
+<div class="prof"><div class="avatar">ML</div><div><h1>Mi cuenta</h1><div class="em">María López · maria.lopez@correo.mx</div></div></div>
+<div class="cols"><div class="colx"><div class="plan"><div class="k">Tu plan</div><h2>Plan Pro — todo incluido</h2>
+<p>Se renueva el 15 de octubre de 2026 · $997 MXN al mes</p><div class="pb"><span class="inc"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Todas las herramientas</span><button class="btn">Ver mi plan</button></div></div><div><div class="ghead">Mi plan y pagos</div><div class="group">
+<div class="row cred" style="display:block"><div class="top"><div class="ic" style="background:#FF9F0A"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/></svg></div><div class="tx"><b>Créditos disponibles</b></div><span class="num">1,200</span></div>
+<div class="meter"><i></i></div><div class="mt"><span>Usaste 800 de 2,000 este mes</span><span>Se renuevan el 15 oct.</span></div></div>
+<div class="row"><div class="ic" style="background:#34C759"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div><div class="tx"><b>Método de pago</b></div><span class="val">Visa •• 4821</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row"><div class="ic" style="background:#8E8E93"><svg class="i" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h8M8 17h5"/></svg></div><div class="tx"><b>Facturas</b></div><span class="val">CFDI listo</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div></div>
+<div class="colx"><div><div class="ghead">Mis redes conectadas</div><div class="group">
+<div class="row"><div class="brand"><svg viewBox="0 0 28 20" width="34" height="24"><rect width="28" height="20" rx="6" fill="#FF0033"/><path d="M11.2 5.6v8.8l7.6-4.4z" fill="#fff"/></svg></div><div class="tx"><b>YouTube</b><small>@MariaEnVivo</small></div><span class="ok2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Conectado</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row"><div class="brand"><svg viewBox="0 0 24 26" width="26" height="28"><path d="M3.5 1 1.8 5.4v16h5.4v3h3l3-3h4.4l5.6-5.6V1z" fill="#9146FF"/><path d="M5.5 3h15v11.8l-3.4 3.4h-5.4l-3 3v-3H5.5z" fill="#fff"/><path d="M11 6.6h2v5.6h-2zM16.2 6.6h2v5.6h-2z" fill="#9146FF"/></svg></div><div class="tx"><b>Twitch</b></div><span class="conn">Conectar</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row"><div class="brand"><svg viewBox="0 0 24 24" width="26" height="26"><rect width="24" height="24" rx="6" fill="#111"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#25F4EE" transform="translate(-.5 -.4)"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#FE2C55" transform="translate(.5 .4)"/><path d="M13.2 5h2.4c.2 1.7 1.3 2.9 3 3.1v2.4a5.6 5.6 0 0 1-3-1v4.9a4.4 4.4 0 1 1-4.4-4.4c.25 0 .5 0 .74.06v2.5a2 2 0 1 0 1.26 1.86z" fill="#fff"/></svg></div><div class="tx"><b>TikTok</b></div><span class="conn">Conectar</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div><div><div class="ghead">Preferencias</div><div class="group">
+<div class="row"><div class="ic" style="background:#0A84FF"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div><div class="tx"><b>Idioma</b></div><span class="val">Español</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="row"><div class="ic" style="background:#FF375F"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="tx"><b>Notificaciones</b></div><span class="val">Correo y celular</span><svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></div></div><div><div class="ghead">Ayuda</div>
+<div class="human"><div class="hi"><svg class="i" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></div><div><b>Hablar con una persona</b><small>Te respondemos en minutos, en español.</small></div><button class="btn">Escribir</button></div></div></div></div></div></main></div></body></html>

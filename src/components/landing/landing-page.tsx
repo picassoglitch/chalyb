@@ -1,38 +1,98 @@
-import { LandingNav } from './nav';
-import { Hero } from './hero';
-import { ProofBar } from './proof-bar';
-import { Pillars } from './pillars';
-import { HowItWorks } from './how-it-works';
-import { Pricing } from './pricing';
-import { FinalCta } from './final-cta';
-import { LandingFooter } from './footer';
+// Landing `/` (LANDING-SPEC, mockups 40–44). Sections in the spec's order:
+// nav · hero · herramientas · 3 pasos · galería · para quién · precios ·
+// preguntas · socios · CTA final · footer. Everything that names, counts or
+// illustrates a tool derives from the ACTIVE tools; every amount comes from
+// config/pricing.ts; tool claims follow allToolsClaimAllowed() (C4/C15).
 
-/**
- * Single-page conversion narrative. Every CTA on this page routes into the
- * auth flow (see ./links.ts); there are no section anchors in the header, no
- * inline forms, and no client-side state — the whole tree renders on the
- * server.
- *
- *   1. Hero            — outcome headline + primary CTA + product preview
- *   2. Proof bar       — metrics + stack
- *   3. Value pillars   — exactly three, alternating two-column
- *   4. How it works    — three steps
- *   5. Pricing         — three tiers, each CTA → /sign-in?mode=signup&plan=…
- *   6. Final CTA + footer
- */
-export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
+import { getLocale, getTranslations } from 'next-intl/server';
+import { PublicNav } from '@/components/public/public-nav';
+import { PublicFooter } from '@/components/public/public-footer';
+import { allToolsClaimAllowed, trialFlowEnabled } from '@/lib/config/flags';
+import { listActiveTools } from '@/lib/tools/public-tools-server';
+import { loadPlansProps } from '@/lib/billing/plans-props';
+import { formatMXN } from '@/lib/billing/format';
+import { landingTrialHref, trialCtaLabel } from './links';
+import { Hero } from './hero';
+import { ToolsSection } from './tools';
+import { HowItWorks } from './how-it-works';
+import { Gallery } from './gallery';
+import { Audience } from './audience';
+import { PlansSummary } from './plans-summary';
+import { Partner } from './partner';
+import { Faq } from './faq';
+import { FinalCta } from './final-cta';
+import { StickyCta } from './sticky-cta';
+import { LandingClient } from './landing-client';
+import { JsonLd } from './json-ld';
+import '@/styles/chalyb-tokens.css';
+import '@/styles/chalyb-public.css';
+import '@/styles/chalyb-landing.css';
+
+export async function LandingPage({ signedIn }: { signedIn: boolean }) {
+  const [tools, locale, t] = await Promise.all([
+    listActiveTools(),
+    getLocale(),
+    getTranslations('landing'),
+  ]);
+  const flow = trialFlowEnabled();
+  const claimAll = allToolsClaimAllowed();
+  const href = (from: Parameters<typeof landingTrialHref>[0]['from']) =>
+    landingTrialHref({ from, trialFlowEnabled: flow, signedIn });
+  // Signed in: "Ver planes" → /planes, never the trial promise; the trial
+  // notes (hero.noteRest, sticky.note, final.note) only for a visitor who
+  // can still start it (K-7).
+  const ctaLabel = t(trialCtaLabel({ trialFlowEnabled: flow, signedIn }));
+  const trialOffered = flow && !signedIn;
+  const plans = await loadPlansProps(locale);
+
   return (
-    <div className="lp">
-      <LandingNav isAuthenticated={isAuthenticated} />
-      <main>
-        <Hero />
-        <ProofBar />
-        <Pillars />
+    <div className="chalyb-app pub pub-landing">
+      <a href="#main" className="ch-skip">
+        {t('publicNav.skip')}
+      </a>
+      <PublicNav signedIn={signedIn} />
+      <main id="main">
+        <Hero
+          trialHref={href('hero_trial')}
+          ctaLabel={ctaLabel}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+        />
+        <ToolsSection
+          tools={tools}
+          claimAll={claimAll}
+          trialHref={href('tools_trial')}
+          ctaLabel={ctaLabel}
+        />
         <HowItWorks />
-        <Pricing />
-        <FinalCta />
+        {tools.some((tool) => tool.slug === 'chalybclip') && <Gallery />}
+        <Audience tools={tools} />
+        <PlansSummary {...plans} />
+        <Faq
+          tools={tools}
+          locale={locale}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+          intervals={plans.intervals}
+        />
+        <Partner />
+        <FinalCta
+          tools={tools}
+          locale={locale}
+          trialHref={href('final_trial')}
+          ctaLabel={ctaLabel}
+          trialOffered={trialOffered}
+          claimAll={claimAll}
+        />
       </main>
-      <LandingFooter />
+      <PublicFooter onLanding />
+      <StickyCta
+        href={href('sticky_trial')}
+        label={ctaLabel}
+        note={trialOffered ? t('sticky.note', { cero: formatMXN(0) }) : null}
+      />
+      <LandingClient signedIn={signedIn} />
+      <JsonLd />
     </div>
   );
 }

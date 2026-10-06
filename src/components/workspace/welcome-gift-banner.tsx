@@ -130,9 +130,9 @@ export function WelcomeGiftBanner({
           Tu regalo de bienvenida está listo
         </div>
         <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '60ch' }}>
-          <b style={{ color: 'var(--cc-green)' }}>50,000 tokens IA</b> para usar en cualquier engine
-          este mes, más <b style={{ color: 'var(--cc-cyan)' }}>ChalyClip Pro gratis por 7 días</b> —
-          corriendo en vivo, sin tarjeta. Acepta para activarlo.
+          <b style={{ color: 'var(--cc-green)' }}>50,000 créditos</b> para usar en tus herramientas
+          este mes, más <b style={{ color: 'var(--cc-cyan)' }}>Clips Pro gratis por 7 días</b>, sin
+          tarjeta. Acepta para activarlo.
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

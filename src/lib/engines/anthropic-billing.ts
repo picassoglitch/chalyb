@@ -25,16 +25,6 @@
 
 import 'server-only';
 
-interface AnthropicCostReportRow {
-  /** ISO date like '2026-05-19'. */
-  date: string;
-  /** Cost in micro-cents USD (Anthropic's normalized unit per docs). */
-  micro_cents?: number;
-  /** Alternate field name some Anthropic responses use; we coerce both. */
-  cost_cents?: number;
-  workspace_id?: string;
-}
-
 interface AnthropicUsageReportRow {
   date: string;
   uncached_input_tokens?: number;
@@ -138,13 +128,18 @@ export async function computeAnthropicBlendedRate(
   const endsAt = isoDaysAgo(0);
   // Two parallel reports. Anthropic returns daily aggregates; we sum.
   const [costRes, usageRes] = await Promise.all([
+    // The API takes RFC 3339 starting_at/ending_at (it rejected the old
+    // starts_at/ends_at date strings) and returns daily buckets.
     callAnthropic('/v1/organizations/cost_report', {
-      starts_at: startsAt,
-      ends_at: endsAt,
+      starting_at: `${startsAt}T00:00:00Z`,
+      ending_at: `${endsAt}T00:00:00Z`,
+      limit: '31',
     }),
     callAnthropic('/v1/organizations/usage_report/messages', {
-      starts_at: startsAt,
-      ends_at: endsAt,
+      starting_at: `${startsAt}T00:00:00Z`,
+      ending_at: `${endsAt}T00:00:00Z`,
+      bucket_width: '1d',
+      limit: '31',
     }),
   ]);
 
@@ -154,15 +149,18 @@ export async function computeAnthropicBlendedRate(
   // Anthropic's shape varies slightly between docs versions; we accept
   // both { data: [...] } and { results: [...] }. Defensive parsing here
   // because the API has been moving as the admin product matures.
-  const costRows = extractRows<AnthropicCostReportRow>(costRes.body);
-  const usageRows = extractRows<AnthropicUsageReportRow>(usageRes.body);
+  // Both reports are { data: [{ starting_at, ending_at, results: [...] }] }.
+  // Cost results carry `amount`: a decimal string in USD cents.
+  const costRows = extractRows<{ results?: Array<{ amount?: string }> }>(costRes.body)
+    .flatMap((b) => b.results ?? []);
+  const usageRows = extractRows<{ results?: AnthropicUsageReportRow[] }>(usageRes.body)
+    .flatMap((b) => b.results ?? []);
 
-  let totalUsdMicroCents = 0;
+  let totalUsdCents = 0;
   for (const r of costRows) {
-    if (typeof r.micro_cents === 'number') totalUsdMicroCents += r.micro_cents;
-    else if (typeof r.cost_cents === 'number') totalUsdMicroCents += r.cost_cents * 10_000;
+    const n = Number(r.amount);
+    if (Number.isFinite(n)) totalUsdCents += n;
   }
-  const totalUsdCents = totalUsdMicroCents / 10_000; // micro-cents → cents
 
   let totalTokens = 0;
   for (const r of usageRows) {

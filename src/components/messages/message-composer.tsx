@@ -31,7 +31,7 @@ export function MessageComposer({
   const [isPending, startTransition] = useTransition();
   const taRef = useRef<HTMLTextAreaElement>(null);
   // useWorkspace's toast is shared across the dashboard. Both routes mount
-  // workspace-shell or dashboard-shell which render the toast container.
+  // app-shell or dashboard-shell which render the toast container.
   const showToast = useWorkspace((s) => s.showToast);
 
   function submit() {

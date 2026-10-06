@@ -23,6 +23,10 @@
 //   Returns: { ok: true, inserted, skipped, balance: { remaining,
 //             monthlyAllocation, bonus, monthlyUsed, periodStart } }
 //
+//   Limits (docs/engines/consumption-contract.md): ≤100 events, integer
+//   amount/cost within bounds, occurred_at within the last 7 days. A 4xx
+//   is permanent — engines dead-letter it instead of retrying.
+//
 //   NOTE on validation: `kind` is free-text (loose regex check below) —
 //   the platform deliberately does NOT whitelist values. Engines can add
 //   new meters (transcription.seconds, vision.frames, embedding.tokens,
@@ -40,34 +44,16 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { checkEngineBearer } from '@/lib/engines/bearer';
 import { getTokenBalance, recordUsageEvents } from '@/lib/usage/tokens';
+import { validateUsageEvents } from '@/lib/usage/event-validation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 interface PostBody {
   external_user_id?: string;
-  events?: Array<{
-    kind?: string;
-    amount?: number;
-    source_id?: string;
-    occurred_at?: string;
-    /** Optional engine-supplied operation tag for /app/usage grouping. */
-    operation?: string;
-    /** Optional engine context bag (stream_id, clip_id, est_tokens, etc). */
-    metadata?: Record<string, unknown>;
-    /** T4 contract: underlying provider that incurred the cost. */
-    provider?: string;
-    /** T4 contract: real provider cost in USD micros. $0.111 → 111000. */
-    cost_usd_micros?: number;
-  }>;
+  /** Validated by validateUsageEvents — see the contract for the shape. */
+  events?: unknown;
 }
-
-// Loose format check for kind + provider. Lowercase letters, digits, dots
-// and underscores; must start with a letter; capped length so callers can't
-// stuff arbitrary blobs into the column. Whitelisting values would mean
-// every new meter requires a Chalyb deploy — see migration 0020.
-const KIND_RE = /^[a-z][a-z0-9_.]{0,63}$/;
-const PROVIDER_RE = /^[a-z][a-z0-9_.-]{0,63}$/;
 
 export async function POST(
   req: Request,
@@ -104,62 +90,20 @@ export async function POST(
     return NextResponse.json({ error: 'unknown user_id' }, { status: 404 });
   }
 
-  const events = Array.isArray(body.events) ? body.events : [];
-  if (events.length === 0) {
-    // No events to record — just return the current balance. Useful as a
-    // GET-equivalent for engines that want to check spend without writing.
+  const checked = validateUsageEvents(body.events, Date.now());
+  if (!checked.ok) {
+    return NextResponse.json(
+      { error: checked.error, index: checked.index },
+      { status: checked.status },
+    );
+  }
+  if (checked.events.length === 0) {
+    // No events to record — just return the current balance.
     const balance = await getTokenBalance(userId);
     return NextResponse.json({ ok: true, inserted: 0, balance });
   }
 
-  // Validate each event and build the recorder input.
-  const normalized: Parameters<typeof recordUsageEvents>[0] = [];
-  for (const e of events) {
-    if (
-      !e.kind ||
-      typeof e.kind !== 'string' ||
-      !KIND_RE.test(e.kind) ||
-      typeof e.amount !== 'number' ||
-      !Number.isFinite(e.amount) ||
-      e.amount < 0 ||
-      !e.source_id
-    ) {
-      return NextResponse.json({ error: 'invalid event shape', event: e }, { status: 400 });
-    }
-    // Optional T4 fields — present means they must parse cleanly, but
-    // missing is fine (legacy engines, or kinds without a provider cost).
-    if (
-      e.provider !== undefined &&
-      (typeof e.provider !== 'string' || !PROVIDER_RE.test(e.provider))
-    ) {
-      return NextResponse.json({ error: 'invalid provider', event: e }, { status: 400 });
-    }
-    if (
-      e.cost_usd_micros !== undefined &&
-      (typeof e.cost_usd_micros !== 'number' ||
-        !Number.isFinite(e.cost_usd_micros) ||
-        !Number.isInteger(e.cost_usd_micros) ||
-        e.cost_usd_micros < 0)
-    ) {
-      return NextResponse.json({ error: 'invalid cost_usd_micros', event: e }, { status: 400 });
-    }
-    normalized.push({
-      engineSlug: slug,
-      userId,
-      kind: e.kind,
-      amount: e.amount,
-      sourceId: e.source_id,
-      occurredAt: e.occurred_at,
-      operation: typeof e.operation === 'string' ? e.operation : undefined,
-      metadata:
-        e.metadata && typeof e.metadata === 'object' && !Array.isArray(e.metadata)
-          ? (e.metadata as Record<string, unknown>)
-          : undefined,
-      provider: typeof e.provider === 'string' ? e.provider : undefined,
-      costUsdMicros: typeof e.cost_usd_micros === 'number' ? e.cost_usd_micros : undefined,
-    });
-  }
-
+  const normalized = checked.events.map((e) => ({ ...e, engineSlug: slug, userId }));
   const result = await recordUsageEvents(normalized);
   const balance = await getTokenBalance(userId);
   return NextResponse.json({ ok: true, ...result, balance });

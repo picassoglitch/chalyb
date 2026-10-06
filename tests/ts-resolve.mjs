@@ -10,7 +10,7 @@
 // 22.6+). Nothing here type-checks: `pnpm build` does that.
 
 import { registerHooks } from 'node:module';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const SRC = new URL('../src/', import.meta.url);
@@ -18,7 +18,7 @@ const EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '/index.ts', '/index.tsx'];
 
 /** Try each extension against the filesystem; return the first that exists. */
 function resolveWithExtension(url) {
-  if (existsSync(fileURLToPath(url))) return url;
+  if (existsSync(fileURLToPath(url)) && statSync(fileURLToPath(url)).isFile()) return url;
   for (const ext of EXTENSIONS) {
     const candidate = new URL(url.href + ext);
     if (existsSync(fileURLToPath(candidate))) return candidate;
@@ -29,10 +29,15 @@ function resolveWithExtension(url) {
 registerHooks({
   resolve(specifier, context, nextResolve) {
     const isAlias = specifier.startsWith('@/');
+    const isChalito = specifier.startsWith('@chalito/');
     const isRelative = specifier.startsWith('./') || specifier.startsWith('../');
 
-    if (isAlias || isRelative) {
-      const base = isAlias ? new URL(specifier.slice(2), SRC) : new URL(specifier, context.parentURL);
+    if (isAlias || isChalito || isRelative) {
+      const base = isAlias
+        ? new URL(specifier.slice(2), SRC)
+        : isChalito
+          ? new URL(`lib/chalito/pkg/${specifier.slice(9)}`, SRC)
+          : new URL(specifier, context.parentURL);
       const resolved = resolveWithExtension(base);
       if (resolved) return { url: resolved.href, shortCircuit: true };
     }

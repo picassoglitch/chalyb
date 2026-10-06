@@ -22,7 +22,8 @@ export function BrandMark({ size = 26 }: { size?: number }) {
       aria-hidden
       width={size}
       height={size}
-      priority
+      // No priority: only the hero laptop has it (LANDING-SPEC §7). Small and
+      // sized, so lazy-loading it shifts nothing.
     />
   );
 }

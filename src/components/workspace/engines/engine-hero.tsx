@@ -59,12 +59,6 @@ export function EngineHero({
           >
             {continueEngine ? t('hero.ctaContinue') : t('hero.ctaOpen')}
           </Link>
-          <Link
-            href={'/app/engines/chalybclip' as Route}
-            className="text-[13.5px] font-medium text-[var(--cc-txt-2)] underline-offset-4 transition-colors hover:text-[var(--cc-txt)] hover:underline"
-          >
-            {t('hero.ctaDemo')}
-          </Link>
         </div>
       </div>
     </section>

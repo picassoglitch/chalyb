@@ -26,6 +26,18 @@ variable "domain" {
   default     = "chalyb.com"
 }
 
+variable "hub_url" {
+  description = <<-EOT
+    The hub's public origin. Every engine gets it as CHALYB_BASE_URL, where it
+    admits jobs and reports usage (docs/engines/consumption-contract.md).
+    Empty means https://www.<domain> (the apex 308s there, and a redirect
+    drops the bearer header). Engines treat an unset CHALYB_BASE_URL as
+    local dev and skip metering, so this must never be left out in prod.
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "billing_account" {
   description = <<-EOT
     Billing account id for the budget alert. Leave empty to skip creating the
@@ -120,6 +132,17 @@ variable "engines" {
       allow_unauthenticated = optional(bool, false)
     }))
 
+    # One-shot big machine per paid job; see modules/engine/variables.tf.
+    boost = optional(object({
+      command      = list(string)
+      args         = optional(list(string), [])
+      cpu          = optional(string, "8")
+      memory       = optional(string, "32Gi")
+      timeout      = optional(string, "3600s")
+      env          = optional(map(string), {})
+      name_env_var = string
+    }))
+
     jobs = optional(map(object({
       command  = optional(list(string))
       args     = optional(list(string), [])
@@ -188,6 +211,15 @@ variable "engines" {
         token_env_var = "CHALYBCLIP_MODAL_TOKEN"
       }
 
+      # Boost lane: VIP jobs, and jobs other tiers pay for, run here — one
+      # execution per job, 8 vCPU / 32 GiB, nothing left running afterwards.
+      boost = {
+        command      = ["python"]
+        args         = ["-m", "chalybclip.workers.boost_job"]
+        env          = { CHALYBCLIP_ROLE = "worker", CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
+        name_env_var = "CHALYBCLIP_BOOST_JOB_NAME"
+      }
+
       jobs = {
         # `drive poll` is a Typer command, not an HTTP route. `command` is the
         # image's console-script name (pyproject [project.scripts] in the
@@ -227,6 +259,7 @@ variable "engines" {
       shared_secrets = {
         CHALYBOBS_SUPABASE_SECRET_KEY = "supabase-secret-key"
         CHALYBOBS_SESSION_SECRET      = "chalybobs-session-secret"
+        CHALYBOBS_RELAY_SECRET        = "chalybobs-relay-secret"
       }
     }
 
@@ -240,7 +273,63 @@ variable "engines" {
         database_url = "DATABASE_URL"
       }
     }
+
+    # Chalito's api (picassoglitch/chalito apps/api) reads its own prefixed
+    # pair. Its screens live inside the hub (/app/chalito on www.chalyb.com),
+    # so the web origin and the WebAuthn RP are the hub's, and the browser calls
+    # this service on its Cloud Run URL (no subdomain; engines.tf skips the
+    # domain mapping for chalito). Buckets, the scheduler signer and the api's other secrets
+    # come from Chalito's own Terraform, which runs after this one; they go in
+    # engine_extra_env / engine_extra_secret_env on a second apply.
+    chalito = {
+      display_name = "Chalito"
+      secret_env_names = {
+        admin_token  = "CHALITO_ADMIN_TOKEN"
+        sso_secret   = "CHALITO_SSO_SECRET"
+        database_url = "DATABASE_URL"
+      }
+      env = {
+        SUPABASE_URL             = "https://uqcbziwdgbnzehipzjxp.supabase.co"
+        API_PUBLIC_URL           = "https://chalito-znilbomw3q-uc.a.run.app"
+        CHALITO_API_ISSUER       = "https://chalito-znilbomw3q-uc.a.run.app"
+        CHALITO_WEB_ORIGIN       = "https://www.chalyb.com"
+        CHALITO_MCP_RESOURCE     = "https://chalito-mcp-gateway-znilbomw3q-uc.a.run.app/mcp"
+        CHALITO_WEBAUTHN_RP_ID   = "chalyb.com"
+        CHALITO_WEBAUTHN_ORIGINS = "https://www.chalyb.com"
+        CHALITO_DATA_BACKEND     = "supabase"
+        DATABASE_ROLE            = "chalito_server"
+        AUDIT_TOPIC              = "audit"
+        TRUSTED_PROXIES          = "0"
+      }
+      # SUPABASE_SECRET_KEY comes from Chalito's own chalito-supabase-secret-key (engine_extra_secret_env):
+      # the shared supabase-secret-key holds a publishable key, which the admin API
+      # (auth.admin.getUserById at /sso/exchange) rejects.
+      shared_secrets = {}
+    }
   }
+}
+
+variable "engine_extra_env" {
+  description = <<-EOT
+    Extra plain env for an engine's API, by slug: { <slug> = { VAR = "value" } }.
+    For values another apply produces (an engine's own buckets, say), so they
+    can be added without restating the whole `engines` map, whose default
+    describes every live engine.
+  EOT
+  type        = map(map(string))
+  default     = {}
+}
+
+variable "engine_extra_secret_env" {
+  description = <<-EOT
+    Secrets an engine manages itself, in this project, injected into its API,
+    by slug: { <slug> = { VAR = "secret-id" } }. Each secret must exist with a
+    version, and the engine's own Terraform must grant this engine's service
+    account access, before the apply that adds it: Cloud Run refuses a
+    revision it can't read. Nothing here creates or grants.
+  EOT
+  type        = map(map(string))
+  default     = {}
 }
 
 variable "enable_domain_mappings" {

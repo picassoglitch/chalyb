@@ -1,0 +1,317 @@
+"use client";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
+import { RoomController, type ReportInput, type RoomError, type RoomSnapshot, type RoomsDb } from "@chalito/rooms";
+import type { GlyphPayload } from "@chalito/protocol";
+import {
+  RoomComposer,
+  RoomEnded,
+  RoomEventList,
+  RoomInvitePanel,
+  RoomMembers,
+  RoomOwnerSettings,
+  RoomReportDialog,
+  RoomRotation,
+  memberLabel,
+  type ReportTarget,
+  type RoomEndReason,
+} from "@chalito/ui";
+import type { RoomEventKind } from "@chalito/protocol";
+import { DEFAULT_COMPANION, rosterEntry } from "@chalito/roster";
+import { Link } from "@/lib/chalito/navigation";
+import { markSeen } from "@/lib/chalito/web/room-seen";
+import type { StoreItem } from "@/lib/chalito/web/store";
+import { useChalito, useLive } from "@/lib/chalito/provider";
+import { RoomStage } from "./RoomStage";
+import { GlyphCanvas } from "./Glyph";
+
+type Report = ReportTarget & { label: string };
+
+type DirDb = {
+  from(t: string): {
+    select(c: string): PromiseLike<{
+      data: { companion_id?: unknown; avatar_thumb?: unknown; equipped?: unknown }[] | null;
+      error: unknown;
+    }>;
+  };
+};
+type Card = { avatar: string; equipped: string[] };
+/**
+ * Co-members' public companion cards (chalito.companion_directory, server-written; RLS shows only
+ * co-members): roster avatar and equipped cosmetic ids.
+ */
+const readDirectory = async (db: unknown): Promise<Record<string, Card>> => {
+  const { data, error } = await (db as DirDb)
+    .from("companion_directory")
+    .select("companion_id, avatar_thumb, equipped");
+  if (error || !data) return {};
+  const out: Record<string, Card> = {};
+  for (const r of data)
+    if (typeof r.companion_id === "string")
+      out[r.companion_id] = {
+        avatar: typeof r.avatar_thumb === "string" ? r.avatar_thumb : "",
+        equipped: Array.isArray(r.equipped) ? r.equipped.filter((x): x is string => typeof x === "string") : [],
+      };
+  return out;
+};
+
+const LOADING: RoomSnapshot = { status: "loading", room: null, members: [], events: [] };
+const noop = () => () => undefined;
+
+/**
+ * /r/[id]: one room, driven by @chalito/rooms' RoomController (feed on pointers, this device's room
+ * key, events opened and shown as TEXT). It stops and says why when this companion leaves or is
+ * removed, the room is dissolved, or this device is revoked (review R-L14).
+ */
+export const Room = ({ roomId }: { roomId: string }) => {
+  const t = useTranslations("chalito.settings.rooms");
+  const { rooms, readCompanion, deviceId, store } = useChalito();
+  const live = useLive();
+  const [me, setMe] = useState<string | null | undefined>(undefined);
+  const [leftByMe, setLeftByMe] = useState(false);
+  const [report, setReport] = useState<Report | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const [confirmLeave, setConfirmLeave] = useState(false);
+
+  useEffect(() => {
+    if (!readCompanion) return;
+    let alive = true;
+    void readCompanion().then((c) => alive && setMe(c && c !== "error" ? c.companionId : null));
+    return () => {
+      alive = false;
+    };
+  }, [readCompanion]);
+
+  const ctl = useMemo(
+    () =>
+      rooms && deviceId && me
+        ? new RoomController({
+            db: rooms.db as RoomsDb,
+            api: rooms.api,
+            keyring: rooms.keyring,
+            deviceId,
+            companionId: me,
+            roomId,
+            // Unread markers on /salas: the newest event this view has shown.
+            onSeen: (rev) => markSeen(roomId, rev),
+            // Invites are glyphs signed by this device's key, inside the key loader.
+            signGlyph: rooms.signGlyph,
+            identity: rooms.identity,
+          })
+        : null,
+    [rooms, deviceId, me, roomId],
+  );
+  useEffect(() => {
+    if (!ctl) return;
+    void ctl.start();
+    // Expired events disappear even without new traffic.
+    const timer = setInterval(() => ctl.prune(), 30_000);
+    // The room row (a pending rotation, retention) doesn't broadcast: re-read it now and then, and
+    // when the person comes back to the tab.
+    const reread = setInterval(() => void ctl.refresh(), 20_000);
+    const onFocus = () => void ctl.refresh();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(timer);
+      clearInterval(reread);
+      window.removeEventListener("focus", onFocus);
+      void ctl.stop();
+    };
+  }, [ctl]);
+  // This device was revoked while connected: the controller drops keys, members and events.
+  useEffect(() => {
+    if (ctl && live.status === "revoked") void ctl.revoke();
+  }, [ctl, live.status]);
+
+  const snap = useSyncExternalStore(ctl?.subscribe ?? noop, ctl?.getSnapshot ?? (() => LOADING), () => LOADING);
+
+  // The stage needs each companion's roster card: ours from the companion row, co-members' from the
+  // companion directory (RLS: co-members only); without one, the default companion stands in.
+  const [cards, setCards] = useState<Record<string, Card>>({});
+  const [catalog, setCatalog] = useState<StoreItem[]>([]);
+  const memberKey = snap.members.map((m) => m.companionId).join(",");
+  useEffect(() => {
+    if (!rooms || !me || !readCompanion) return;
+    let alive = true;
+    void (async () => {
+      // Re-read on membership changes: the directory itself doesn't broadcast.
+      const [mine, dir, items] = await Promise.all([
+        readCompanion(),
+        readDirectory(rooms.db).catch(() => ({}) as Record<string, Card>),
+        store ? store.catalog() : Promise.resolve("error" as const),
+      ]);
+      if (!alive) return;
+      if (Array.isArray(items)) setCatalog(items);
+      setCards({
+        ...dir,
+        ...(mine && mine !== "error"
+          ? { [mine.companionId]: { avatar: mine.avatar, equipped: Object.values(mine.equipped) } }
+          : {}),
+      });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [rooms, me, readCompanion, store, roomId, memberKey]);
+  const stageMembers = useMemo(
+    () =>
+      snap.members.map((m) => {
+        const c = cards[m.companionId];
+        return {
+          companionId: m.companionId,
+          avatar: c && rosterEntry(c.avatar) ? c.avatar : DEFAULT_COMPANION,
+          // Equipped cosmetics as the store sells them (slot, art, card placement).
+          cosmetics: (c?.equipped ?? []).flatMap((id) => {
+            const item = catalog.find((i) => i.id === id);
+            return item ? [{ slot: item.slot, art: item.art, card: item.card }] : [];
+          }),
+        };
+      }),
+    [snap.members, cards, catalog],
+  );
+  const stageEvents = useMemo(
+    () =>
+      snap.events.map((e) => ({
+        eid: e.eid,
+        fromCompanionId: e.from,
+        to: e.to,
+        kind: e.kind as RoomEventKind,
+        t: e.t,
+      })),
+    [snap.events],
+  );
+
+  if (me === null)
+    return (
+      <p data-testid="room-no-companion">
+        {t("noCompanion")}{" "}
+        <Link href="/bienvenida" className="ch-lnk">
+          →
+        </Link>
+      </p>
+    );
+  if (!ctl || snap.status === "loading") return <p aria-live="polite">…</p>;
+  if (snap.status === "not_member" || (snap.status === "error" && !snap.room))
+    return (
+      <p role="alert" data-testid="room-not-found">
+        {t("notFound")}
+      </p>
+    );
+
+  const ended: RoomEndReason | null =
+    snap.status === "kicked"
+      ? leftByMe
+        ? "left"
+        : "kicked"
+      : snap.status === "dissolved" || snap.status === "revoked"
+        ? snap.status
+        : null;
+  const label = (id: string) => memberLabel(id, id === me, (k, v) => t(k.replace(/^rooms\./, ""), v));
+
+  const send = async (text: string) => {
+    setNote(null);
+    const r = await ctl.postNotice(text);
+    return r.ok ? null : r.reason;
+  };
+  const leave = async () => {
+    setConfirmLeave(false);
+    setLeftByMe(true);
+    const r = await ctl.leave();
+    if (!r.ok) {
+      setLeftByMe(false);
+      setNote(t(`error.${r.reason}`));
+    }
+  };
+  const owner = snap.members.some((m) => m.me && m.role === "owner");
+  const errOf = (r: { ok: true } | { ok: false; reason: RoomError }): RoomError | null => (r.ok ? null : r.reason);
+  const sendReport = async (input: ReportInput) => {
+    const r = await ctl.report(input);
+    setReport(null);
+    setNote(r.ok ? t(r.duplicate ? "reportedDup" : "reported") : t(`error.${r.reason}`));
+  };
+
+  return (
+    <div className="ch-chl" data-testid="room" data-room={roomId} data-status={snap.status}>
+      <div className="ch-chl-row ch-chl-row--between">
+        <h2 className="ch-h2">{snap.room?.name ?? ""}</h2>
+        {!ended ? (
+          confirmLeave ? (
+            <span className="ch-chl-row">
+              {t("leaveConfirm")}
+              <button className="ch-btn ch-btn--danger ch-btn--compact" onClick={() => void leave()}>
+                {t("leaveYes")}
+              </button>
+              <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirmLeave(false)}>
+                {t("cancel")}
+              </button>
+            </span>
+          ) : (
+            <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirmLeave(true)}>
+              {t("leave")}
+            </button>
+          )
+        ) : null}
+      </div>
+      {ended ? <RoomEnded status={ended} /> : null}
+      {report ? (
+        <RoomReportDialog target={report} label={report.label} onSubmit={sendReport} onCancel={() => setReport(null)} />
+      ) : null}
+      {note ? (
+        <p role="status" data-testid="room-note" className="ch-muted">
+          {note}
+        </p>
+      ) : null}
+      {!ended && snap.room?.needsRotation ? <RoomRotation onRotate={async () => errOf(await ctl.rotateKey())} /> : null}
+      {!ended ? <RoomStage roomId={roomId} label={t("stage")} members={stageMembers} events={stageEvents} /> : null}
+      <section className="ch-chl ch-chl--tight">
+        <RoomEventList
+          events={snap.events}
+          me={me ?? ""}
+          onReport={
+            snap.status === "revoked"
+              ? undefined
+              : (eid) => {
+                  const e = snap.events.find((x) => x.eid === eid);
+                  if (e) setReport({ eventId: eid, text: e.text, label: `${t(`kind.${e.kind}`)} · ${label(e.from)}` });
+                }
+          }
+        />
+        {!ended ? <RoomComposer onSend={send} /> : null}
+      </section>
+      <section className="ch-chl ch-chl--tight" aria-labelledby="room-members">
+        <h3 id="room-members" className="ch-ghead">
+          {t("members")}
+        </h3>
+        <RoomMembers
+          members={snap.members}
+          onReport={
+            snap.status === "revoked" ? undefined : (id) => setReport({ memberCompanionId: id, label: label(id) })
+          }
+          onRemove={
+            owner && !ended
+              ? async (id) => {
+                  const r = await ctl.removeMember(id);
+                  // The room now needs a new key before anyone posts: show the rotation right away.
+                  if (r.ok) await ctl.refresh();
+                  return errOf(r);
+                }
+              : undefined
+          }
+        />
+        {!ended ? (
+          <RoomInvitePanel
+            onInvite={() => ctl.invite()}
+            renderGlyph={(g) => <GlyphCanvas glyph={g as GlyphPayload} label={t("invite.create")} size={200} />}
+          />
+        ) : null}
+      </section>
+      {owner && !ended && snap.room ? (
+        <RoomOwnerSettings
+          retention={snap.room.retention}
+          onRetention={async (r) => errOf(await ctl.setRetention(r))}
+          onDissolve={async () => errOf(await ctl.dissolve())}
+        />
+      ) : null}
+    </div>
+  );
+};

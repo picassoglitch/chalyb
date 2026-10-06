@@ -115,8 +115,8 @@ Application → **Webhooks** → **Configurar notificaciones**:
 
 | Field             | Value                                                                                                                                           |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| URL de producción | `https://chalyb.com/api/mp/webhook`                                                                                                             |
-| URL de prueba     | your tunnel or preview URL + `/api/mp/webhook` (see §5)                                                                                         |
+| URL de producción | `https://www.chalyb.com/api/mp/webhook` (the www host: non-www 308s and Mercado Pago does not follow redirects)                                  |
+| URL de prueba     | `https://www.chalyb.com/api/mp/webhook` too, or a preview/tunnel URL + `/api/mp/webhook` (see §5)                                               |
 | Eventos           | **Orders** (token packs), **Suscripciones** (plans) and **Pagos** (legacy one-off purchases and subscription charges). Nothing else is handled. |
 
 Then **Clave secreta** on the same page → `MERCADOPAGO_WEBHOOK_SECRET`. The
@@ -124,9 +124,19 @@ receiver rejects every notification until this is set, on purpose: without
 it anyone could POST a payment id and be granted a plan. There is one
 secret per application, shared by the test and production URLs.
 
-The receiver validates `x-signature` (HMAC-SHA256 over
-`id:<data.id>;request-id:<x-request-id>;ts:<ts>;`), then fetches the resource
-from Mercado Pago's API and never trusts the notification body. Topics:
+The preapproval and Orders APIs take no per-object `notification_url`, so the
+dashboard URL above is the only one Mercado Pago uses. `/api/diag/mp` (admin)
+prints the URL this deployment expects (`expectedWebhookUrl`).
+
+The receiver accepts both formats: **Webhooks** (JSON `{ type, action,
+data: { id } }`, or `?data.id=&type=`) and the legacy **IPN** (`?id=&topic=`
+with an empty or form body). It validates `x-signature` when present
+(HMAC-SHA256 over `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`, a part
+left out when absent, `data.id` lowercased). A Webhooks call without a
+signature is refused; an unsigned IPN call is accepted because the receiver
+only acts on what it fetches from Mercado Pago with its own token, never on
+the notification body. It answers within ~1.5 s and finishes longer work after
+the response. Topics:
 
 | Topic                             | Fetches                         | Effect                                                                          |
 | --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------- |
@@ -134,6 +144,7 @@ from Mercado Pago's API and never trusts the notification body. Topics:
 | `subscription_authorized_payment` | `GET /authorized_payments/{id}` | monthly charge → row in `payments`, then re-sync                                |
 | `orders`                          | `GET /v1/orders/{id}`           | token pack → tokens once the order is `processed`                               |
 | `payment`                         | `GET /v1/payments/{id}`         | legacy one-off tier → tier; a subscription charge → ledger                      |
+| `merchant_order` (IPN)            | `GET /merchant_orders/{id}`     | each payment in the order goes through `payment`                                |
 
 Retries: the receiver answers `500` only when _our_ side failed (database,
 Mercado Pago unreachable) so Mercado Pago retries; anything that cannot be
@@ -145,14 +156,26 @@ reason in the body and a row in the command-center notifications.
 `.env.local` and Vercel → Project → Settings → Environment Variables:
 
 ```
-MERCADOPAGO_ACCESS_TOKEN=APP_USR-…      # or TEST-… while testing
-MERCADOPAGO_PUBLIC_KEY=…
+MP_ENV=prod                             # prod on Vercel Production (default there), test elsewhere
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-…      # the pair for THIS environment
+MERCADOPAGO_PUBLIC_KEY=APP_USR-…
 MERCADOPAGO_WEBHOOK_SECRET=…
-NEXT_PUBLIC_APP_URL=https://chalyb.com  # must be HTTPS for subscriptions
+MP_TEST_PAYER_EMAIL=test_user_…@testuser.com   # required when MP_ENV=test
+MP_EXPECTED_SELLER_ID=…                 # optional: the token must belong to this seller
+NEXT_PUBLIC_APP_URL=https://www.chalyb.com
 ```
 
-`NEXT_PUBLIC_APP_URL` is the origin used for the preapproval's `back_url`
-and the order's return URLs on the hosted fallback.
+`MP_ENV` decides which credential pair every call uses (`src/lib/payments/
+mp-config.ts` is the only reader of these variables). In `prod` both the
+token and the public key must be `APP_USR-` and `payer_email` is the user's
+own address; in `test` the token and key must match each other, and
+`payer_email` is always `MP_TEST_PAYER_EMAIL`. Any mismatch, a missing test
+buyer, or a token from another seller fails closed: the customer sees the
+generic payment error, the log says why, nothing is created.
+
+Return URLs (`back_url`, the hosted order's URLs) are always
+`https://www.chalyb.com/…` in `prod`; a `test` deployment uses its own origin
+(`NEXT_PUBLIC_APP_URL` / the Vercel URL) so the buyer comes back to it.
 
 Apply the migration that backs subscriptions:
 
@@ -172,12 +195,19 @@ API with **test users** whose money is not real.
    window, open its own application's credentials, and use _that_ access
    token as `MERCADOPAGO_ACCESS_TOKEN` (the test seller is who collects).
    With the official plugin: `/mp-integrate test-setup` does steps 1–2.
-3. Sign in to the hub with a Supabase account whose email is the **test
-   comprador's** email. A preapproval carries `payer_email`, and with test
-   credentials the payer must be a test user, or Mercado Pago answers
-   "Both payer and collector must be real or test users". (Confirm that
-   account from Supabase → Authentication → Users; the buyer's mailbox is
-   fictional.)
+3. Set `MP_ENV=test` and `MP_TEST_PAYER_EMAIL` = the **test comprador's**
+   email on the preview (or `.env.local`). Every preapproval and order then
+   carries the test buyer as payer, whatever account you sign in with, so
+   Mercado Pago never sees a real payer next to test credentials ("Una de
+   las partes con la que intentas hacer el pago es de prueba"). Pay at
+   Mercado Pago as that test buyer, in a private window: a browser signed
+   in to your real Mercado Pago account pays as you, and the checkout fails.
+   `MERCADOPAGO_WEBHOOK_SECRET` in test is **the test vendedor's application
+   secret** (sign in to Developers as the test vendedor → its application →
+   Webhooks → Clave secreta), not the one in your own application's panel.
+   Real test-mode notifications are signed with it; only the panel's
+   "Simular notificación" uses the shown secret. With the wrong one every
+   real notification is a 401 "signature rejected".
 4. Expose the dev server over HTTPS and point `NEXT_PUBLIC_APP_URL` and the
    test webhook URL at it:
    ```sh

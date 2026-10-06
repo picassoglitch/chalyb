@@ -19,7 +19,9 @@ const TS = '1733520000';
 
 function signedHeader(opts: { secret?: string; paymentId?: string; requestId?: string } = {}) {
   const manifest = `id:${opts.paymentId ?? PAYMENT_ID};request-id:${opts.requestId ?? REQUEST_ID};ts:${TS};`;
-  const v1 = createHmac('sha256', opts.secret ?? SECRET).update(manifest).digest('hex');
+  const v1 = createHmac('sha256', opts.secret ?? SECRET)
+    .update(manifest)
+    .digest('hex');
   return `ts=${TS},v1=${v1}`;
 }
 
@@ -76,9 +78,11 @@ test('a signature for a different payment id is rejected', () => {
 
 test('missing or junk headers are rejected, never thrown on', () => {
   const base = { secret: SECRET, paymentId: PAYMENT_ID };
+  // No x-request-id: the manifest drops that part (MP docs), so a signature
+  // made over a manifest WITH it no longer matches.
   assert.deepEqual(
     checkMpSignature({ ...base, requestId: null, signatureHeader: signedHeader() }),
-    { ok: false, reason: 'missing_headers' },
+    { ok: false, reason: 'mismatch' },
   );
   assert.deepEqual(checkMpSignature({ ...base, requestId: REQUEST_ID, signatureHeader: null }), {
     ok: false,
@@ -125,7 +129,7 @@ test('a missing amount is refused rather than read as zero-and-fine', () => {
 });
 
 test('token packs price-check the same way', () => {
-  const expected = expectedChargeForPack('tokens_500k');
+  const expected = expectedChargeForPack('tokens_500k', 59_900);
   assert.ok(expected);
   assert.deepEqual(checkCharge(expected, { amountMajor: 599, currency: 'MXN' }), { ok: true });
   assert.equal(checkCharge(expected, { amountMajor: 149, currency: 'MXN' }).ok, false);
@@ -136,5 +140,5 @@ test('tiers with no price cannot be bought at all', () => {
   // makes an approved payment grant them.
   assert.equal(expectedChargeForTier('FREE'), null);
   assert.equal(expectedChargeForTier('PARTNER'), null);
-  assert.equal(expectedChargeForPack('tokens_nope'), null);
+  assert.equal(expectedChargeForPack('tokens_nope', 59_900), null);
 });

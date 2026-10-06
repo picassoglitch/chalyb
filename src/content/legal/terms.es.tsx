@@ -1,5 +1,16 @@
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
+import { planPrice } from '@/config/pricing';
+import { formatMXN } from '@/lib/billing/format';
+// D7: the Pro line says what the server grants (one source: the flag the
+// entitlement reads), so the terms and the product can't disagree.
+import { proIncludesAllTools } from '@/lib/config/flags';
+
+// Amounts come from the one pricing source, IVA included (Q1); never typed here.
+const PRO = formatMXN(planPrice('pro_month').totalCents);
+const VIP = formatMXN(planPrice('vip_month').totalCents);
+const PRO_YEAR = formatMXN(planPrice('pro_year').totalCents);
+const VIP_YEAR = formatMXN(planPrice('vip_year').totalCents);
 
 /**
  * Spanish terms of service. See the note in privacy.es.tsx on why legal
@@ -137,12 +148,15 @@ export function TermsDocumentEs() {
           ejecución en vivo. Cuotas reducidas.
         </li>
         <li>
-          <strong>Pro</strong>: $749 MXN / mes. Ejecución en vivo de UN Engine a tu elección, cuotas
-          extendidas, soporte por correo.
+          <strong>Pro</strong>: {PRO} MXN / mes o {PRO_YEAR} MXN / año, IVA incluido.{' '}
+          {proIncludesAllTools()
+            ? 'Ejecución en vivo de todos los Engines activos'
+            : 'Ejecución en vivo de UN Engine a tu elección'}
+          , cuotas extendidas, soporte por correo.
         </li>
         <li>
-          <strong>VIP</strong>: $2,499 MXN / mes. Ejecución en vivo de todos los Engines activos,
-          cuotas máximas, soporte prioritario.
+          <strong>VIP</strong>: {VIP} MXN / mes o {VIP_YEAR} MXN / año, IVA incluido. Ejecución en
+          vivo de todos los Engines activos, cuotas máximas, soporte prioritario.
         </li>
       </ul>
       <p>

@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getSessionUser } from './session';
-import { TIER_CAPS } from '@/lib/billing/tiers';
+import { liveToolSlots } from '@/lib/billing/tiers';
+import { proIncludesAllTools } from '@/lib/config/flags';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
 import { pauseOtherActiveEngines } from '@/lib/engines/mutual-exclusion';
 
@@ -16,14 +17,18 @@ export async function setSelectedLiveEngine(
   // FREE has no live engines; VIP doesn't need a selection.
   // We block the action for those tiers so callers can't accidentally write a
   // selection that does nothing — keeps profiles.selected_engine_id meaningful.
-  const caps = TIER_CAPS[session.tier];
-  if (caps.liveEnginesCount === 0) {
-    return { ok: false, error: 'Tu plan todavía no corre engines En vivo. Cámbiate a Pro o VIP para activarlos.' };
-  }
-  if (caps.liveEnginesCount === Infinity) {
+  // D7: Pro with every tool has nothing to pick either (liveToolSlots).
+  const slots = liveToolSlots(session.tier, proIncludesAllTools());
+  if (slots === 0) {
     return {
       ok: false,
-      error: 'Con VIP todos tus engines ya están En vivo, así que no hay nada que elegir.',
+      error: 'Tu plan todavía no corre engines En vivo. Cámbiate a Pro o VIP para activarlos.',
+    };
+  }
+  if (slots === Infinity) {
+    return {
+      ok: false,
+      error: 'Con tu plan todos tus engines ya están En vivo, así que no hay nada que elegir.',
     };
   }
 

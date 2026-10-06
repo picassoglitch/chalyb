@@ -32,19 +32,31 @@ import { getSessionUser, type SubscriptionTier } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_PRICING } from './pricing';
+import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
+import { paidCheckoutEnabled } from '@/lib/config/flags';
 import {
   getMercadoPago,
-  getAppUrl,
   isCheckoutReady,
   checkoutNotReadyError,
-  describeMpError,
+  logMpCreate,
+  mpErrorCodeOf,
+  mpPayerEmail,
+  mpReturnUrl,
+  MP_GENERIC_ERROR,
+  SALES_CLOSED_ERROR,
+  sellerMatches,
 } from './mercadopago';
+import { isCardErrorCode } from './mp-config';
 import {
   isSubscribableTier,
   normalizePreapprovalStatus,
   subscriptionReference,
 } from './subscription-reference';
 import { cancelPreapproval, syncSubscription } from './subscription-sync';
+
+/** What a customer reads when the card itself was the problem. */
+const CARD_ERROR =
+  'No pudimos validar tu tarjeta. Revisa los datos o prueba con otra; no se hizo ningún cargo.';
 
 export interface AuthorizeSubscriptionResult {
   ok: boolean;
@@ -57,7 +69,9 @@ export interface AuthorizeSubscriptionResult {
     | 'admin_skip'
     | 'bad_token'
     | 'rejected'
-    | 'mp_error';
+    | 'mp_error'
+    | 'terms_pending'
+    | 'sales_closed';
   /** Human-readable message for the form. */
   error?: string;
 }
@@ -95,6 +109,26 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
       },
     };
   }
+  // Sales stay closed until the new paid checkout is live (legal texts
+  // published, seller data set): this legacy monthly path sells nothing
+  // either. Fail closed, before anything is created at Mercado Pago.
+  if (!paidCheckoutEnabled()) {
+    return {
+      ok: false,
+      result: { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR },
+    };
+  }
+  // aceptacion-ux §8: no new charge under Terms the person hasn't accepted.
+  if (await termsAcceptancePending(session.user.id)) {
+    return {
+      ok: false,
+      result: {
+        ok: false,
+        reason: 'terms_pending',
+        error: 'Acepta los nuevos Términos (o revisa tus opciones) antes de contratar un plan.',
+      },
+    };
+  }
   if (!isSubscribableTier(targetTier)) {
     return {
       ok: false,
@@ -122,8 +156,7 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
       result: { ok: false, reason: 'not_configured', error: checkoutNotReadyError() },
     };
   }
-  const payerEmail = session.user.email;
-  if (!payerEmail) {
+  if (!session.user.email) {
     // Mercado Pago requires payer_email on a preapproval.
     return {
       ok: false,
@@ -133,6 +166,13 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
         error: 'Tu cuenta no tiene correo; agrega uno en /app/settings antes de suscribirte.',
       },
     };
+  }
+
+  // B33: the test buyer in `test`, the user in `prod`; never mixed.
+  const payerEmail = mpPayerEmail(session.user.email);
+  if (!payerEmail || !(await sellerMatches())) {
+    console.error('[mp/subscription] no payer email for this Mercado Pago environment');
+    return { ok: false, result: { ok: false, reason: 'not_configured', error: MP_GENERIC_ERROR } };
   }
 
   // ── One live preapproval per user ─────────────────────────────────
@@ -237,10 +277,11 @@ export async function authorizeTierSubscription(input: {
           transaction_amount: pricing.amountCents / 100, // Mercado Pago wants major units
           currency_id: pricing.currency,
         },
-        back_url: `${getAppUrl()}/app/subscription`,
+        back_url: mpReturnUrl('/app/subscription'),
         status: 'authorized',
       },
     });
+    logMpCreate('preapproval', { id: result.id, externalReference });
 
     if (!result.id) {
       console.error('[mp/subscription] preapproval returned no id', {
@@ -296,23 +337,13 @@ export async function authorizeTierSubscription(input: {
       error: 'Mercado Pago no autorizó la tarjeta para el cobro mensual. Prueba con otra tarjeta.',
     };
   } catch (err) {
-    console.error('[mp/subscription] preapproval.create failed', err);
-    const detail = describeMpError(err);
-    const isCurrencyError = /currency|currency_id|moneda/i.test(detail);
-    const isPayerError = /payer|collector|test user|usuario de prueba/i.test(detail);
-    const isCardError = /card|token|tarjeta/i.test(detail);
-    const hint = isCurrencyError
-      ? ' — tu cuenta de Mercado Pago seguramente solo acepta moneda local. Revisa `currency` en src/lib/payments/pricing.ts.'
-      : isPayerError
-        ? ' — con credenciales de prueba, el correo del usuario debe ser el de un usuario de prueba de Mercado Pago (ver docs/payments/mercadopago.md).'
-        : isCardError
-          ? ' — revisa los datos de la tarjeta o prueba con otra.'
-          : '';
-    return {
-      ok: false,
-      reason: 'mp_error',
-      error: `Mercado Pago no pudo activar la suscripción: ${detail}${hint}`,
-    };
+    // B36: the code (CC_VAL_433, cc_rejected_*, …) and MP's own words go to
+    // the log; the customer gets plain copy, never the raw error.
+    const code = mpErrorCodeOf(err);
+    console.error('[mp/subscription] preapproval.create failed', { mp_code: code }, err);
+    return isCardErrorCode(code)
+      ? { ok: false, reason: 'rejected', error: CARD_ERROR }
+      : { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
 }
 
@@ -340,13 +371,6 @@ export async function startHostedTierSubscription(input: {
     }
     const { session, pricing, payerEmail, admin, externalReference } = prep.prepared;
 
-    const appUrl = getAppUrl();
-    if (!appUrl.startsWith('https://')) {
-      console.error(
-        '[mp/subscription] NEXT_PUBLIC_APP_URL is HTTP — Mercado Pago rejects a non-HTTPS back_url.',
-      );
-    }
-
     const { preapproval } = getMercadoPago();
     const result = await preapproval.create({
       body: {
@@ -359,10 +383,11 @@ export async function startHostedTierSubscription(input: {
           transaction_amount: pricing.amountCents / 100,
           currency_id: pricing.currency,
         },
-        back_url: `${appUrl}/app/subscription?status=success`,
+        back_url: mpReturnUrl('/app/subscription?status=success'),
         status: 'pending',
       },
     });
+    logMpCreate('preapproval', { id: result.id, externalReference });
 
     const url = result.init_point;
     if (!result.id || !url) {
@@ -396,11 +421,11 @@ export async function startHostedTierSubscription(input: {
 
     return { ok: true, url };
   } catch (err) {
-    console.error('[mp/subscription] hosted preapproval.create failed', err);
-    return {
-      ok: false,
-      reason: 'mp_error',
-      error: `Mercado Pago no pudo abrir la página de pago: ${describeMpError(err)}`,
-    };
+    console.error(
+      '[mp/subscription] hosted preapproval.create failed',
+      { mp_code: mpErrorCodeOf(err) },
+      err,
+    );
+    return { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
 }

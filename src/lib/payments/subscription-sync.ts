@@ -17,20 +17,34 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
-import { paymentReversedTemplate, subscriptionActiveTemplate } from '@/lib/email/templates';
+import { subscriptionActiveTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
 import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
-import { checkCharge, expectedChargeForTier } from './webhook-verify';
+import { gatePreapproval } from './webhook-verify';
+import {
+  PRICING,
+  ivaPortion,
+  planPrice,
+  type PlanKey,
+} from '@/config/pricing';
+import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
+import { dispatchBillingEmail } from '@/lib/billing/notices';
+import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { unpaidCharge } from '@/lib/billing/billing-state';
+import { track } from '@/lib/analytics/track';
 import {
   entitlementFor,
   isLiveStatus,
   normalizePreapprovalStatus,
   parseSubscriptionReference,
   type PreapprovalStatus,
-  type SubscribableTier,
 } from './subscription-reference';
+import { PLAN_NAMES } from '@/lib/billing/plan-names';
+import { onLealtadCharge } from '@/lib/billing/lealtad-server';
+import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
+import { lealtadFailedVars } from '@/lib/billing/notices';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -83,10 +97,45 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // What we last knew, to tell a transition from a repeat.
   const { data: before } = await admin
     .from('subscriptions')
-    .select('status')
+    .select(
+      'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at, first_charge_at',
+    )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
+  const planKey = (before?.plan_key as PlanKey | null) ?? null;
+  const trialEndsAt = (before?.trial_ends_at as string | null) ?? null;
+  const inTrial = !!trialEndsAt && Date.now() < Date.parse(trialEndsAt);
   const previousStatus = before ? normalizePreapprovalStatus(before.status as string) : null;
+  // Mercado Pago's own record of the last charge that went through: one
+  // whose authorized_payment notification never reached us still counts, so
+  // the unpaid-charge deadline below can't take Pro from someone who paid.
+  const chargedByMp =
+    (mp.summarized?.charged_quantity ?? 0) > 0 ? (mp.summarized?.last_charged_date ?? null) : null;
+  const knownChargeAt = (before?.last_charge_at as string | null) ?? null;
+  const newerCharge =
+    !!chargedByMp &&
+    (!knownChargeAt || Date.parse(chargedByMp) > Date.parse(knownChargeAt));
+  const lastChargeAt = newerCharge ? chargedByMp : knownChargeAt;
+  const unpaid = unpaidCharge({
+    tier,
+    plan_key: planKey,
+    trial_ends_at: trialEndsAt,
+    last_charge_at: lastChargeAt,
+    charge_hold_until: (before?.charge_hold_until as string | null) ?? null,
+    reminder_delivered_at: (before?.reminder_delivered_at as string | null) ?? null,
+    first_charge_at: (before?.first_charge_at as string | null) ?? null,
+  });
+  // The trial's annual charge, or a renewal, is due and hasn't landed (yet).
+  const overdue = !!unpaid && !inTrial && Date.now() >= Date.parse(unpaid.dueAt);
+
+  // ── Price gate ──────────────────────────────────────────────────────
+  // The reference names the tier; the preapproval carries what is actually
+  // being charged each month. They were both set by us, so any difference
+  // means the preapproval was made elsewhere. Same rule as the one-off
+  // webhook: a mismatch grants nothing and does not retry. Decided BEFORE
+  // our copy is written: an 'authorized' row grants its tier by itself
+  // (deriveBillingState), so a refused one is stored as amount_mismatch.
+  const gate = gatePreapproval({ status, planKey, tier, amountMajor, currency });
 
   // Our copy of the preapproval — written whatever the status, so a paused or
   // cancelled one is visible in /dashboard/billing even when nothing is
@@ -97,10 +146,15 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
       tier,
       mp_preapproval_id: preapprovalId,
       external_reference: mp.external_reference,
-      status,
+      status: gate.storedStatus,
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',
       next_payment_date: nextPaymentDate,
+      // A charge we missed: it settles any grace a failure had opened.
+      ...(newerCharge ? { last_charge_at: chargedByMp, grace_ends_at: null } : {}),
+      ...(before?.charge_hold_until
+        ? {}
+        : { next_charge_at: nextPaymentDate ?? before?.next_charge_at ?? null }),
       ended_at: isLiveStatus(status) ? null : new Date().toISOString(),
       raw: mp as unknown as Record<string, unknown>,
     },
@@ -111,48 +165,45 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
     return { ok: false, reason: 'db', retry: true };
   }
 
-  // ── Price gate ──────────────────────────────────────────────────────
-  // The reference names the tier; the preapproval carries what is actually
-  // being charged each month. They were both set by us, so any difference
-  // means the preapproval was made elsewhere. Same rule as the one-off
-  // webhook: a mismatch grants nothing and does not retry.
-  if (status === 'authorized') {
-    const expected = expectedChargeForTier(tier);
-    const charge = expected ? checkCharge(expected, { amountMajor, currency }) : null;
-    if (!expected || !charge?.ok) {
-      console.error('[mp/subscription] REFUSING grant — charge does not match the price', {
-        preapprovalId,
-        userId,
-        tier,
-        expected: expected ? `${expected.amountCents} ${expected.currency}` : null,
-        charged: `${Math.round((amountMajor ?? 0) * 100)} ${currency ?? '?'}`,
-      });
-      await logAudit({
-        action: 'tier.payment',
-        actorId: null,
-        actorEmail: null,
-        targetUserId: userId,
-        metadata: {
-          mp_preapproval_id: preapprovalId,
-          kind: 'subscription.amount_mismatch',
-          rejected: true,
-          expected_amount_cents: expected?.amountCents ?? null,
-          expected_currency: expected?.currency ?? null,
-          charged_amount_cents: Math.round((amountMajor ?? 0) * 100),
-          charged_currency: currency ?? null,
-        },
-      });
-      await notify({
-        severity: 'critical',
-        title: 'Suscripción con monto que no corresponde — no se otorgó nada',
-        body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
-        href: '/dashboard/billing',
-        source: 'mp.webhook',
-      });
-      return { ok: false, reason: 'amount_mismatch', retry: false };
-    }
+  if (gate.refused) {
+    const expected = gate.expected;
+    console.error('[mp/subscription] REFUSING grant — charge does not match the price', {
+      preapprovalId,
+      userId,
+      tier,
+      expected: expected ? `${expected.amountCents} ${expected.currency}` : null,
+      charged: `${Math.round((amountMajor ?? 0) * 100)} ${currency ?? '?'}`,
+    });
+    await logAudit({
+      action: 'tier.payment',
+      actorId: null,
+      actorEmail: null,
+      targetUserId: userId,
+      metadata: {
+        mp_preapproval_id: preapprovalId,
+        kind: 'subscription.amount_mismatch',
+        rejected: true,
+        expected_amount_cents: expected?.amountCents ?? null,
+        expected_currency: expected?.currency ?? null,
+        charged_amount_cents: Math.round((amountMajor ?? 0) * 100),
+        charged_currency: currency ?? null,
+      },
+    });
+    await notify({
+      severity: 'critical',
+      title: 'Suscripción con monto que no corresponde — no se otorgó nada',
+      body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
+      href: '/dashboard/dinero',
+      source: 'mp.webhook',
+    });
+    return { ok: false, reason: 'amount_mismatch', retry: false };
   }
 
+  // A bounce hold pauses the preapproval on purpose (no charge until an
+  // effective notice + 5 days); it must not end the plan.
+  if (status === 'paused' && before?.charge_hold_until) {
+    return { ok: true, status, applied: 'none' };
+  }
   const entitlement = entitlementFor({ status, tier, nextPaymentDate });
 
   const { data: profile } = await admin
@@ -164,15 +215,46 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   const tierBefore = (profile?.tier as string | null) ?? null;
 
   if (entitlement.kind === 'activate') {
-    // The tier is theirs with no scheduled end: an authorised subscription
-    // also withdraws a pending cancellation (they subscribed again).
-    const { error: tierErr } = await admin
-      .from('profiles')
-      .update({ tier, tier_ends_at: null })
-      .eq('id', userId);
-    if (tierErr) {
-      console.error('[mp/subscription] tier update failed', tierErr);
-      return { ok: false, reason: 'db', retry: true };
+    // A scheduled downgrade (VIP → Pro at the period end) is authorised now
+    // but must not take VIP away early: the replaced subscription keeps
+    // granting it until its access_until (entitlements read both), and the
+    // billing cron moves profiles.tier when the date comes.
+    const RANK: Record<string, number> = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 };
+    const neverCharged = !lastChargeAt;
+    const startsLater =
+      !inTrial && !!nextPaymentDate && Date.parse(nextPaymentDate) > Date.now() && neverCharged;
+    const deferred = startsLater && RANK[tier]! < RANK[tierBefore ?? 'FREE']!;
+    if (overdue) {
+      // The charge is due and hasn't landed: Pro runs to the deadline and
+      // no further (the session lapses it then). The charge landing is what
+      // clears the end — the next sync sees a new last_charge_at.
+      const deadline = unpaid!.deadline;
+      const { error: tierErr } =
+        Date.now() < Date.parse(deadline)
+          ? await admin
+              .from('profiles')
+              .update({ tier, tier_ends_at: deadline })
+              .eq('id', userId)
+          : await admin
+              .from('profiles')
+              .update({ tier_ends_at: deadline })
+              .eq('id', userId)
+              .eq('tier', tier);
+      if (tierErr) {
+        console.error('[mp/subscription] unpaid-charge tier_ends_at update failed', tierErr);
+        return { ok: false, reason: 'db', retry: true };
+      }
+    } else if (!deferred) {
+      // The tier is theirs with no scheduled end: an authorised subscription
+      // also withdraws a pending cancellation (they subscribed again).
+      const { error: tierErr } = await admin
+        .from('profiles')
+        .update({ tier, tier_ends_at: null })
+        .eq('id', userId);
+      if (tierErr) {
+        console.error('[mp/subscription] tier update failed', tierErr);
+        return { ok: false, reason: 'db', retry: true };
+      }
     }
     if (tier === 'VIP') await provisionAllAccessEngines(userId, 'mp_payment');
 
@@ -202,10 +284,12 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
         severity: 'info',
         title: `Suscripción ${tier} activa — $${(amountMajor ?? 0).toFixed(2)} ${currency ?? ''}/mes`,
         body: `${email ?? userId} · MP suscripción ${preapprovalId}`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
-      if (email) {
+      // A trial's welcome (Email 1, with the evidence) is sent by the trial
+      // start itself; this generic one is for paid starts only.
+      if (email && !trialEndsAt) {
         const tmpl = subscriptionActiveTemplate({
           tier: TIER_CAPS[tier].label,
           amountMajor: (amountMajor ?? 0).toFixed(2),
@@ -265,7 +349,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
           severity: status === 'paused' ? 'warning' : 'info',
           title: `Suscripción ${tier} ${why}`,
           body: `${email ?? userId} · acceso hasta ${formatDateEs(endsAtIso)} · MP ${preapprovalId}`,
-          href: '/dashboard/billing',
+          href: '/dashboard/dinero',
           source: 'mp.webhook',
         });
       }
@@ -319,6 +403,7 @@ export async function recordAuthorizedPayment(
         mp_payment_id: String(paymentId),
         mp_preapproval_id: preapprovalId,
         amount_cents: Math.round((ap.transaction_amount ?? 0) * 100),
+        iva_cents: ivaPortion(Math.round((ap.transaction_amount ?? 0) * 100)),
         currency: ap.currency_id ?? 'MXN',
         status: paymentStatus,
         raw: ap as unknown as Record<string, unknown>,
@@ -329,26 +414,84 @@ export async function recordAuthorizedPayment(
       console.error('[mp/subscription] payments upsert failed', error);
       return { ok: false, retry: true };
     }
+    const { data: subRow } = await admin
+      .from('subscriptions')
+      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
+      .eq('mp_preapproval_id', preapprovalId)
+      .maybeSingle();
     if (paymentStatus === 'approved') {
       await admin
         .from('subscriptions')
-        .update({ last_charge_at: ap.debit_date ?? ap.date_created ?? new Date().toISOString() })
+        .update({
+          last_charge_at: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+          grace_ends_at: null,
+          // The next charge needs its own notice.
+          reminder_delivered_at: null,
+          charge_hold_until: null,
+        })
         .eq('mp_preapproval_id', preapprovalId);
-    } else if (paymentStatus === 'refunded' || paymentStatus === 'charged_back') {
-      const revoked = await revokeSubscriptionForReversal({
-        preapprovalId,
+      await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
+      if (subRow?.plan_key === 'pro_lealtad') {
+        await onLealtadCharge({
+          userId: ref.userId,
+          preapprovalId,
+          paymentId: String(paymentId),
+          chargedCents: Math.round((ap.transaction_amount ?? 0) * 100),
+        }).catch((err) => console.error('[mp/subscription] Pro Lealtad step not recorded', err));
+      }
+      if (!subRow?.last_charge_at && subRow?.trial_ends_at) {
+        void track('conversion', {
+          // From the plan, not the amount: VIP mensual costs more than any
+          // threshold that once told the two Pro intervals apart.
+          plan:
+            subRow.plan_key && planPrice(subRow.plan_key as PlanKey).interval === 'year'
+              ? 'anual'
+              : 'mensual',
+        });
+      }
+    } else if (paymentStatus === 'rejected') {
+      // Pago pendiente: full access until the grace window ends (Q12), and
+      // never past the charge's own deadline (none at all for the trial's).
+      const graceMs = Date.now() + PRICING.graceDays * 24 * 60 * 60 * 1000;
+      const unpaid = subRow ? unpaidCharge(subRow as Parameters<typeof unpaidCharge>[0]) : null;
+      const graceEnds = new Date(
+        unpaid ? Math.min(graceMs, Date.parse(unpaid.deadline)) : graceMs,
+      ).toISOString();
+      await admin
+        .from('subscriptions')
+        .update({ grace_ends_at: graceEnds })
+        .eq('mp_preapproval_id', preapprovalId)
+        .is('grace_ends_at', null);
+      // Access lapses when grace does (the session reads tier_ends_at).
+      await admin
+        .from('profiles')
+        .update({ tier_ends_at: graceEnds })
+        .eq('id', ref.userId)
+        .is('tier_ends_at', null);
+      await chargeEmail('charge_failed', ref.userId, preapprovalId, String(paymentId), ap);
+      void track('payment_failed', {});
+    }
+    if (paymentStatus === 'charged_back' || paymentStatus === 'in_mediation') {
+      // A dispute changes nothing on the account (Términos §10.2, WS-8):
+      // recorded, triaged and handed to an admin.
+      const opened = await onChargebackOpened({
         mpPaymentId: String(paymentId),
-        reason: paymentStatus,
-        amountMajor: ap.transaction_amount ?? null,
-        currency: ap.currency_id ?? null,
+        mpStatus: paymentStatus,
       });
-      if (!revoked.ok) return { ok: false, retry: true };
+      if (!opened.ok) return { ok: false, retry: true };
+    } else if (paymentStatus === 'refunded') {
+      // A refund never changes the plan, price, step or account (§7.3).
+      await onRefundReported({
+        userId: ref.userId,
+        mpPaymentId: String(paymentId),
+        amountMajor: ap.transaction_amount ?? null,
+      });
     } else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
       await notify({
         severity: 'warning',
         title: `Cobro mensual ${paymentStatus === 'rejected' ? 'rechazado' : 'cancelado'} — ${ref.tier}`,
         body: `MP pago #${String(paymentId)} · suscripción ${preapprovalId} · reintento ${ap.retry_attempt ?? 0}${ap.next_retry_date ? ` · próximo ${formatDateEs(ap.next_retry_date)}` : ''}`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
     }
@@ -356,123 +499,6 @@ export async function recordAuthorizedPayment(
 
   const synced = await syncSubscription(preapprovalId);
   return { ok: synced.ok, retry: !synced.ok && synced.retry, synced };
-}
-
-/**
- * POLICY — a reversed subscription charge revokes the plan NOW.
- *
- * A refund we issued, or a chargeback the buyer's bank granted, means the
- * month was not paid for after all. Cancelling keeps the plan to the end of
- * the period because that period WAS paid; a reversal is the opposite case,
- * so the tier drops to FREE at once and the preapproval is cancelled at
- * Mercado Pago so it does not charge again. Anything less leaves a paid plan
- * running on money the user got back.
- *
- * Fail closed: only a payment whose preapproval is on file (our copy of a
- * subscription we created) can revoke anything. Idempotent: a second
- * delivery finds the subscription already cancelled and the tier already
- * FREE, and changes nothing.
- */
-export async function revokeSubscriptionForReversal(input: {
-  preapprovalId: string;
-  mpPaymentId: string;
-  reason: 'refunded' | 'charged_back';
-  amountMajor: number | null;
-  currency: string | null;
-}): Promise<{ ok: boolean }> {
-  const admin = createAdminClient();
-  const { data: sub } = await admin
-    .from('subscriptions')
-    .select('user_id, tier, status')
-    .eq('mp_preapproval_id', input.preapprovalId)
-    .maybeSingle();
-  if (!sub) {
-    console.error(
-      '[mp/subscription] reversal for a preapproval we do not have — nothing revoked',
-      input,
-    );
-    return { ok: true };
-  }
-  const userId = sub.user_id as string;
-  const tier = sub.tier as SubscribableTier;
-  const wasLive = isLiveStatus(normalizePreapprovalStatus(sub.status as string));
-
-  if (wasLive) {
-    try {
-      await cancelPreapproval(input.preapprovalId);
-    } catch (err) {
-      // Mercado Pago may already have cancelled it as part of the dispute.
-      console.warn(
-        '[mp/subscription] cancel after reversal refused (may already be cancelled)',
-        err,
-      );
-    }
-    const { error } = await admin
-      .from('subscriptions')
-      .update({ status: 'cancelled', ended_at: new Date().toISOString() })
-      .eq('mp_preapproval_id', input.preapprovalId);
-    if (error) {
-      console.error('[mp/subscription] could not mark the reversed subscription cancelled', error);
-      return { ok: false };
-    }
-  }
-
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('email, tier, tier_ends_at')
-    .eq('id', userId)
-    .maybeSingle();
-  const email = (profile?.email as string | null) ?? null;
-  if (profile?.tier === tier) {
-    const { error } = await admin
-      .from('profiles')
-      .update({ tier: 'FREE', tier_ends_at: null })
-      .eq('id', userId);
-    if (error) {
-      console.error('[mp/subscription] could not revoke the tier after reversal', error);
-      return { ok: false };
-    }
-    await logAudit({
-      action: 'tier.downgrade',
-      actorId: null,
-      actorEmail: null,
-      targetUserId: userId,
-      targetEmail: email,
-      before: { tier, tier_ends_at: (profile?.tier_ends_at as string | null) ?? null },
-      after: { tier: 'FREE', tier_ends_at: null },
-      metadata: {
-        mp_preapproval_id: input.preapprovalId,
-        mp_payment_id: input.mpPaymentId,
-        kind: `subscription.${input.reason}`,
-        amount_cents: Math.round((input.amountMajor ?? 0) * 100),
-        currency: input.currency,
-      },
-    });
-    await notify({
-      severity: 'warning',
-      title: `Plan ${tier} revocado — pago ${input.reason === 'charged_back' ? 'con contracargo' : 'reembolsado'}`,
-      body: `${email ?? userId} · MP pago #${input.mpPaymentId} · suscripción ${input.preapprovalId}`,
-      href: '/dashboard/billing',
-      source: 'mp.webhook',
-    });
-    if (email) {
-      const tmpl = paymentReversedTemplate({
-        reason: input.reason,
-        what: `tu plan ${TIER_CAPS[tier].label}`,
-        amountMajor: (input.amountMajor ?? 0).toFixed(2),
-        currency: input.currency ?? 'MXN',
-        paymentId: input.mpPaymentId,
-        appUrl: getAppUrl(),
-      });
-      void sendEmail({
-        to: email,
-        subject: `Tu plan ${TIER_CAPS[tier].label} fue retirado · Chalyb`,
-        html: tmpl.html,
-        text: tmpl.text,
-      }).catch((err) => console.error('[mp/subscription] reversal email failed', err));
-    }
-  }
-  return { ok: true };
 }
 
 /**
@@ -493,7 +519,7 @@ async function cancelOtherLiveSubscriptions(
   const admin = createAdminClient();
   const { data: others } = await admin
     .from('subscriptions')
-    .select('mp_preapproval_id, status')
+    .select('mp_preapproval_id, status, next_charge_at, next_payment_date, trial_ends_at')
     .eq('user_id', userId)
     .neq('mp_preapproval_id', keepPreapprovalId)
     .in('status', ['pending', 'authorized', 'paused']);
@@ -501,9 +527,24 @@ async function cancelOtherLiveSubscriptions(
     const id = other.mp_preapproval_id as string;
     try {
       await cancelPreapproval(id);
+      // It stops charging now, but what it already granted runs to the end:
+      // the trial end, or the date it would have charged next (paid through).
+      const paidThrough =
+        (other.status as string) === 'authorized'
+          ? (other.trial_ends_at as string | null) &&
+            Date.parse(other.trial_ends_at as string) > Date.now()
+            ? (other.trial_ends_at as string)
+            : ((other.next_charge_at as string | null) ??
+              (other.next_payment_date as string | null))
+          : null;
       await admin
         .from('subscriptions')
-        .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+        .update({
+          status: 'cancelled',
+          ended_at: new Date().toISOString(),
+          cancel_at_period_end: true,
+          access_until: paidThrough,
+        })
         .eq('mp_preapproval_id', id);
     } catch (err) {
       // The webhook for the new one already ran; the old one keeps charging
@@ -513,7 +554,7 @@ async function cancelOtherLiveSubscriptions(
         severity: 'critical',
         title: 'Suscripción anterior sigue activa — cancélala en Mercado Pago',
         body: `usuario ${userId} · MP ${id} fue reemplazada por ${keepPreapprovalId} pero no se pudo cancelar`,
-        href: '/dashboard/billing',
+        href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
     }
@@ -527,5 +568,75 @@ export function formatDateEs(iso: string): string {
     month: 'long',
     year: 'numeric',
     timeZone: 'America/Mexico_City',
+  });
+}
+
+/** Email 3 / 3b for one recurring charge, once per payment id, with evidence. */
+async function chargeEmail(
+  kind: 'charge_ok' | 'charge_failed',
+  userId: string,
+  preapprovalId: string,
+  paymentId: string,
+  ap: MpAuthorizedPayment,
+): Promise<void> {
+  const admin = createAdminClient();
+  const [{ data: profile }, { data: sub }] = await Promise.all([
+    admin.from('profiles').select('email, full_name').eq('id', userId).maybeSingle(),
+    admin
+      .from('subscriptions')
+      .select('plan_key, tier, card_last4, next_payment_date, grace_ends_at, loyalty_step')
+      .eq('mp_preapproval_id', preapprovalId)
+      .maybeSingle(),
+  ]);
+  const email = profile?.email as string | null;
+  if (!email) return;
+  const planKey =
+    (sub?.plan_key as PlanKey | null) ?? (sub?.tier === 'VIP' ? 'vip_month' : 'pro_month');
+  const renew = (sub?.next_payment_date as string | null) ?? null;
+  const grace = (sub?.grace_ends_at as string | null) ?? null;
+  if (kind === 'charge_failed')
+    await addUserNotice({
+      userId,
+      kind: 'pastDue',
+      ...(await noticeText('pastDue')),
+      href: '/app/billing/tarjeta',
+      dedupeKey: `pay:${paymentId}`,
+      keepUntil: grace,
+    });
+  // Pro Lealtad: a failed charge says what is at stake — the step, kept if
+  // it is paid within the 7-day grace (aceptacion-ux §4.2; day 0 here, day 5
+  // from the cron).
+  if (kind === 'charge_failed' && planKey === 'pro_lealtad') {
+    await dispatchBillingEmail({
+      userId,
+      email,
+      kind: 'lealtad_failed',
+      periodKey: `pay:${paymentId}:d0`,
+      evidence: 'charge_failed',
+      vars: lealtadFailedVars({
+        nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
+        step: (sub?.loyalty_step as number | null) ?? 0,
+        chargedAt: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+        graceEndsAt: grace,
+        appUrl: getAppUrl(),
+      }),
+    });
+    return;
+  }
+  await dispatchBillingEmail({
+    userId,
+    email,
+    kind,
+    periodKey: `pay:${paymentId}`,
+    evidence: kind === 'charge_ok' ? 'charge_succeeded' : 'charge_failed',
+    vars: {
+      nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
+      plan: PLAN_NAMES[planKey],
+      monto: formatMXN(Math.round((ap.transaction_amount ?? 0) * 100)),
+      ultimos4: (sub?.card_last4 as string | null) ?? undefined,
+      fecha_renovacion: renew ? formatFechaLarga(renew, 'es') : undefined,
+      fecha_gracia: grace ? formatFechaLarga(grace, 'es') : undefined,
+      appUrl: getAppUrl(),
+    },
   });
 }

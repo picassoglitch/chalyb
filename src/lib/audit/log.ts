@@ -25,7 +25,32 @@ export type AuditAction =
   | 'promo.welcome_claim' // user accepted the first-time welcome banner
   | 'promo.welcome_reset' // admin reset a user's welcome banner so it shows again
   | 'promo.trial_grant' // trial started/extended (self-claim or admin grant)
-  | 'promo.trial_revoke'; // admin ended a user's ChalyClip trial early
+  | 'promo.trial_revoke' // admin ended a user's ChalyClip trial early
+  | 'engine.launch' // "Abrir" refused by entitlement (P0-3)
+  | 'engine.provision' // account created (or failed) at an engine on launch (P0-2)
+  | 'clips.job_failed' // a Clips job ended in failed(reason) (P0-16)
+  | 'clips.job_retry' // the person pressed "Intentar otra vez" on a failed job (capped at 3)
+  | 'tool.incident' // the owner opened or closed a tool incident from /dashboard/herramientas
+  | 'tool.key_reauth' // a password check before revealing an En vivo stream key; metadata {ok}
+  | 'tool.key_reveal' // an En vivo stream key was shown; metadata {platform, via}
+  | 'tool.error' // a tool screen showed ToolErrorState (WS-11, TOOLS-SPEC §7.1); metadata {tool, reason, supportCode}
+  // Owner panel (P5). Engine and settings actions have no subscriber: the
+  // admin is both actor and target, like engine.status before them.
+  | 'admin.gift_month' // a month of Pro with no charge
+  | 'admin.plan_offer' // emailed the user a plan change to accept (no charge until they do)
+  | 'admin.access_email' // resent the sign-in link
+  | 'admin.refund' // refunded the last charge through Mercado Pago
+  | 'admin.dispute' // a step of a chargeback case (WS-8, aceptacion-ux §10.5)
+  | 'admin.cancel' // cancelled the user's subscription (access kept to period end)
+  | 'engine.visibility' // showed or hid a tool for customers
+  | 'settings.billing_toggle' // Mensual/Anual offered or not
+  | 'settings.usage_margin' // margin charged on top of provider cost
+  | 'settings.pack_prices' // credit-pack prices and how IVA applies
+  // Old P6-7/P6-8 (legal): ARCO requests, copyright takedowns, retention.
+  | 'legal.arco' // an ARCO request received or answered (Aviso de privacidad §5)
+  | 'legal.takedown' // a step of a copyright notice (Uso aceptable §5)
+  | 'legal.repeat_infringer' // an account reached the repeat-infringer threshold (§5.4)
+  | 'legal.retention'; // the 72-month purge of non-compliance marks (Aviso §9.1)
 
 export interface AuditPayload {
   action: AuditAction;

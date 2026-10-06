@@ -28,24 +28,35 @@ module "engine" {
 
   env = merge(
     {
-      ENGINE_SLUG = each.key
-      PUBLIC_URL  = "https://${each.key}.${var.domain}"
+      ENGINE_SLUG     = each.key
+      PUBLIC_URL      = "https://${each.key}.${var.domain}"
+      CHALYB_BASE_URL = coalesce(var.hub_url, "https://www.${var.domain}")
     },
     each.value.env,
+    lookup(var.engine_extra_env, each.key, {}),
+    each.key == local.relay_engine ? local.relay_engine_env : {},
   )
+
+  vpc_egress = each.key == local.relay_engine ? local.relay_vpc_egress : null
 
   secret_env_names          = each.value.secret_env_names
   object_storage_env_prefix = each.value.object_storage_env_prefix
 
-  shared_secret_env = {
-    for var_name, secret_key in each.value.shared_secrets :
-    var_name => google_secret_manager_secret.shared[secret_key].secret_id
-  }
+  shared_secret_env = merge(
+    {
+      for var_name, secret_key in each.value.shared_secrets :
+      var_name => google_secret_manager_secret.shared[secret_key].secret_id
+    },
+    lookup(var.engine_extra_secret_env, each.key, {}),
+  )
 
   worker = each.value.worker
+  boost  = each.value.boost
   jobs   = each.value.jobs
 
-  enable_domain_mapping = var.enable_domain_mappings
+  # Chalito has no subdomain: its screens live inside the hub (/app/chalito) and the browser
+  # calls its api on the Cloud Run URL (owner decision 2026-10-05).
+  enable_domain_mapping = var.enable_domain_mappings && each.key != "chalito"
 
   # Without this the module's resources race API enablement. On a fresh
   # project the root-level secrets (which do wait) got created and nothing in

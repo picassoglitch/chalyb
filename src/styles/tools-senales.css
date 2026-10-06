@@ -1,0 +1,494 @@
+/* Señales inside the app (WS-11, TOOLS-SPEC §5, mockups 53–56). */
+
+.chalyb-app .ch-coinchips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-coinchips .ch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.chalyb-app .ch-coinchips__dot,
+.chalyb-app .ch-signal__coin {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, #ff9f0a 18%, #fff);
+  color: #8a5300;
+  font-weight: 700;
+  flex: none;
+}
+.chalyb-app .ch-coinchips__dot {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+.chalyb-app .ch-sig-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-sig-list {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.chalyb-app .ch-sig-side,
+.chalyb-app .ch-sig-detail__side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.chalyb-app .ch-sig-skel {
+  display: grid;
+  gap: 14px;
+}
+
+/* SignalCard */
+.chalyb-app .ch-signal {
+  padding: 20px 22px;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-signal--top {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-signal__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-signal__coin {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+.chalyb-app .ch-signal__name {
+  font-size: 20px;
+}
+.chalyb-app .ch-signal__sym {
+  font-size: 15px;
+  color: var(--ink3-text);
+  font-weight: 600;
+}
+.chalyb-app .ch-signal__when {
+  margin-left: auto;
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-signal__mid {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-signal__ref {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.chalyb-app .ch-signal__ref small {
+  font-size: 14px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-signal__ref b {
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-signal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-signal__why {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+  font-size: 16px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-signal__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+}
+.chalyb-app .ch-signal__more svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-verdict {
+  font-weight: 700;
+}
+
+/* Side panels */
+.chalyb-app .ch-sig-panel {
+  padding: 18px 20px;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-sig-panel__h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.chalyb-app .ch-sig-h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+.chalyb-app .ch-sig-alerts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 16px;
+}
+.chalyb-app .ch-sig-alerts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.chalyb-app .ch-sig-yes {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-sig-legend {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-sig-legend dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+.chalyb-app .ch-sig-partial {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #ebebf0;
+}
+.chalyb-app .ch-sig-partial p {
+  margin: 0;
+}
+.chalyb-app .ch-sig-empty {
+  gap: 10px;
+}
+.chalyb-app .ch-sig-day {
+  display: grid;
+  gap: 10px;
+}
+
+/* Detail */
+.chalyb-app .ch-sig-old {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #ebebf0;
+  color: var(--ink2);
+}
+.chalyb-app .ch-sig-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-sig-chartcard {
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.chalyb-app .ch-sig-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-sig-detail__id {
+  display: grid;
+}
+.chalyb-app .ch-sig-detail__ref {
+  margin-left: auto;
+  text-align: right;
+}
+.chalyb-app .ch-sig-detail__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-sig-range {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #ebebf0;
+}
+.chalyb-app .ch-sig-range a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.chalyb-app .ch-sig-range a.is-on {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16, 16, 40, 0.12);
+}
+.chalyb-app .ch-chart {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.chalyb-app .ch-chart__plot {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 6px;
+  height: 230px;
+}
+.chalyb-app .ch-chart__area {
+  /* the marker dot and its tag sit over the plot */
+  position: relative;
+  min-width: 0;
+}
+.chalyb-app .ch-chart__area svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.chalyb-app .ch-chart__ticks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+.chalyb-app .ch-chart__ticks li {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--ink3-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.chalyb-app .ch-chart__grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chalyb-app .ch-chart__line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.chalyb-app .ch-chart__mark {
+  stroke: var(--ink3);
+  stroke-dasharray: 4 4;
+  stroke-width: 1.5;
+}
+.chalyb-app .ch-chart__dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px #fff;
+}
+.chalyb-app .ch-chart__tag {
+  position: absolute;
+  top: -6px;
+  transform: translate(-50%, -100%);
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.chalyb-app .ch-chart__days {
+  list-style: none;
+  margin: 0 0 0 92px;
+  padding: 0;
+  height: 20px;
+  font-size: 13px;
+  color: var(--ink3-text);
+  position: relative;
+}
+.chalyb-app .ch-chart__days li {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.chalyb-app .ch-chart__days li:first-child {
+  transform: none;
+}
+.chalyb-app .ch-chart__days li:last-child {
+  transform: translateX(-100%);
+}
+.chalyb-app .ch-sig-why {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  font-size: 16px;
+}
+.chalyb-app .ch-sig-why li {
+  display: flex;
+  gap: 10px;
+}
+.chalyb-app .ch-sig-why li > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--tint);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+.chalyb-app .ch-follow {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow:
+    0 0 0 2px var(--accent),
+    var(--shadow);
+}
+.chalyb-app .ch-follow__tx {
+  display: grid;
+  gap: 2px;
+}
+.chalyb-app .ch-sig-same {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink2);
+}
+
+/* Ajustes */
+.chalyb-app .ch-sigset {
+  display: grid;
+  gap: 22px;
+}
+.chalyb-app .ch-sigset__cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-sigset__col {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.chalyb-app .ch-sigset__pad {
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-sigset__hint {
+  margin: 0;
+  font-size: 15px;
+}
+.chalyb-app .ch-coinlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-coinlist .ch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chalyb-app .ch-coinlist__x {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: -6px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chalyb-app .ch-coinlist__x svg,
+.chalyb-app .ch-coinlist__add svg {
+  width: 16px;
+  height: 16px;
+}
+.chalyb-app .ch-coinlist__add {
+  color: var(--accent);
+  cursor: pointer;
+}
+.chalyb-app .ch-sigset__adv {
+  display: grid;
+}
+.chalyb-app .ch-sigset__save {
+  margin: 0;
+  font-size: 15px;
+}
+.chalyb-app .ch-linkbtn {
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+@media (max-width: 899px) {
+  .chalyb-app .ch-sig-layout,
+  .chalyb-app .ch-sig-detail,
+  .chalyb-app .ch-sigset__cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-signal {
+    padding: 16px;
+  }
+  .chalyb-app .ch-signal__when {
+    margin-left: 0;
+    width: 100%;
+  }
+  .chalyb-app .ch-chart__plot {
+    height: 180px;
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .chalyb-app .ch-chart__days {
+    margin-left: 70px;
+  }
+  .chalyb-app .ch-sig-detail__ref {
+    margin-left: 0;
+    text-align: left;
+  }
+  .chalyb-app .ch-sig-range a {
+    padding: 0 12px;
+  }
+}

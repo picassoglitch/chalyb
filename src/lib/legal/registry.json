@@ -1,0 +1,92 @@
+{
+  "terminos": {
+    "file": "terminos-y-condiciones.md",
+    "path": "/legal/terms",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  },
+  "suscripcion": {
+    "file": "terminos-de-suscripcion.md",
+    "path": "/legal/subscription",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": [],
+        "amountRoles": {
+          "$997": [
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:lealtad_4",
+            "mxn:pro_month",
+            "mxn:pro_month",
+            "mxn:lealtad_4",
+            "mxn:pro_month"
+          ]
+        }
+      }
+    }
+  },
+  "privacidad": {
+    "file": "aviso-de-privacidad.md",
+    "path": "/legal/privacy",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  },
+  "uso_aceptable": {
+    "file": "uso-aceptable-y-contenido.md",
+    "path": "/legal/acceptable-use",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  },
+  "paquetes": {
+    "file": "terminos-paquetes-de-tokens.md",
+    "path": "/legal/packs",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  },
+  "quien_vende": {
+    "file": "quien-vende.md",
+    "path": "/quien-vende",
+    "current": "1.0",
+    "versions": {
+      "1.0": {
+        "published": true,
+        "effective": "2026-10-05",
+        "relevance": "relevant",
+        "changes": []
+      }
+    }
+  }
+}

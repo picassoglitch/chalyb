@@ -1,23 +1,47 @@
-import { useTranslations } from 'next-intl';
+import type { Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { signupHref } from './links';
+import { formatMXN } from '@/lib/billing/format';
+import { toolList, type PublicTool } from '@/lib/tools/public-tools';
+import { claimKey } from './claims';
 
-export function FinalCta() {
-  const t = useTranslations('landing.cta');
+// 9 · CTA final (LANDING-SPEC §3.10), with the active tools.
 
+export async function FinalCta({
+  tools,
+  locale,
+  trialHref,
+  ctaLabel,
+  trialOffered,
+  claimAll,
+}: {
+  tools: PublicTool[];
+  locale: string;
+  trialHref: Route;
+  ctaLabel: string;
+  trialOffered: boolean;
+  claimAll: boolean;
+}) {
+  const t = await getTranslations('landing.final');
   return (
-    <section className="lp-cta">
-      <div className="lp-container">
-        <div className="lp-cta-banner">
-          <h2>{t('title')}</h2>
-          <p>{t('body')}</p>
-          <Link href={signupHref()} className="lp-btn lp-btn-dark lp-btn-lg">
-            {t('btn')}
-            <span className="lp-arrow" aria-hidden="true">
-              →
+    <section className="pub-band pub-band--tight" aria-labelledby="final-title" id="final">
+      <div className="pub-wrap">
+        <div className="pub-final2">
+          <h2 id="final-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h2>
+          <p>
+            <span className="pub-only-desk">
+              {t(claimKey('finalSub', claimAll), { lista: toolList(tools, locale) })}
             </span>
+            <span className="pub-only-mob">{t(claimKey('finalSubMobile', claimAll))}</span>
+          </p>
+          <Link
+            href={trialHref}
+            className="ch-btn ch-btn--white pub-final2__cta"
+            data-cta="final_trial"
+          >
+            {ctaLabel}
           </Link>
-          <p className="lp-micro lp-micro-dark">{t('micro')}</p>
+          {trialOffered && <small>{t('note', { cero: formatMXN(0) })}</small>}
         </div>
       </div>
     </section>

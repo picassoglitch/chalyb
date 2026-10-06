@@ -1,38 +1,48 @@
-import { setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Inbox } from 'lucide-react';
+import { getSessionUser } from '@/lib/auth/session';
+import { getEntitlements } from '@/lib/billing/entitlement';
+import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
+import { collectResults } from '@/lib/results/collect';
+import { toolHref } from '@/lib/tools/routes';
+import { StateBlock } from '@/components/ui/primitives';
+import { ResultsList } from '@/components/app/results-list';
 
-export default async function HistoryPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('results');
+  return { title: t('metaTitle') };
+}
+
+// Mis resultados (SCR-19, P3-13; alias /app/resultados). Real results only: clip
+// jobs and property cards from the tools' adapters. No sample rows.
+
+export default async function ResultadosPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations('results');
+  const session = await getSessionUser();
+  if (!session) return null;
+  const ent = await getEntitlements(session);
+  const items = await collectResults(session.user.id, ent);
+  const clipsIncluded = ent.tools.chalybclip?.state === 'included';
+
   return (
-    <div className="cc-scroll">
-      <div
-        style={{
-          padding: '60px 24px',
-          border: '1px dashed var(--cc-line-2)',
-          borderRadius: 'var(--cc-r-l)',
-          textAlign: 'center',
-          color: 'var(--cc-txt-3)',
-          fontSize: 14,
-          lineHeight: 1.65,
-        }}
-      >
-        Aún no tienes nada en tu historial.
-        <br />
-        <span
-          style={{
-            color: 'var(--cc-txt-4)',
-            fontSize: 12,
-            fontFamily: 'var(--cc-mono), monospace',
-          }}
-        >
-          Cuando corras tu primer sistema, en prueba o en vivo, aquí vas a ver cada trabajo, sus
-          logs y cómo salió.
-        </span>
-      </div>
+    <div style={{ display: 'grid', gap: 22 }}>
+      <header>
+        <h1 className="ch-h1">{t('title')}</h1>
+        <p className="ch-sub">{t('sub')}</p>
+      </header>
+      {items.length === 0 ? (
+        <StateBlock
+          icon={<Inbox />}
+          title={t('empty')}
+          body={t('emptyBody')}
+          action={clipsIncluded ? { href: toolHref('chalybclip'), label: t('emptyCta') } : undefined}
+        />
+      ) : (
+        <ResultsList items={items} toolNames={ENGINE_DISPLAY_NAMES} />
+      )}
     </div>
   );
 }

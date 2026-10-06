@@ -50,7 +50,7 @@ export type CardSubmitResult =
 
 interface Props {
   publicKey: string;
-  /** Major units, e.g. 749 for $749.00 MXN. */
+  /** Major units, e.g. 997 for $997.00 MXN. */
   amount: number;
   payerEmail?: string | null;
   /** 1 for subscriptions (a monthly charge has no installments). */
@@ -62,6 +62,15 @@ interface Props {
   /** Another way to pay (the Mercado Pago-hosted checkout). Always rendered
    *  under the form; when every attempt fails it is the way forward. */
   fallback?: React.ReactNode;
+  /** The page owns the submit button (the trial's consent checkbox gates
+   *  it): the Brick hides its own, and each increment of `submitSignal`
+   *  validates, tokenises and calls onSubmit. */
+  hideSubmit?: boolean;
+  submitSignal?: number;
+  /** 'light' on the new design system's pages. */
+  theme?: 'dark' | 'light';
+  /** Lets the page mirror the form's phase (e.g. disable its button). */
+  onPhaseChange?: (phase: 'loading' | 'ready' | 'processing' | 'done' | 'pending') => void;
 }
 
 const HOST_PATH = '/mp/card-brick.html';
@@ -83,6 +92,8 @@ interface BrickSettings {
   payerEmail: string | null;
   maxInstallments: number;
   submitLabel: string;
+  hideSubmit: boolean;
+  theme: 'dark' | 'light';
 }
 
 interface BrickFormData {
@@ -130,6 +141,7 @@ interface AttemptProps {
   onFail: (reason: string) => void;
   onExtension: (info: ExtensionInfo) => void;
   onSubmit: (form: BrickFormData, extra: { paymentTypeId?: string } | null) => Promise<boolean>;
+  submitSignal?: number;
 }
 
 function BrickAttempt({
@@ -141,6 +153,7 @@ function BrickAttempt({
   onFail,
   onExtension,
   onSubmit,
+  submitSignal = 0,
 }: AttemptProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [src, setSrc] = useState<string | null>(strategy === 'frame' ? HOST_PATH : null);
@@ -194,9 +207,17 @@ function BrickAttempt({
       payerEmail: s.payerEmail,
       maxInstallments: s.maxInstallments,
       submitLabel: s.submitLabel,
+      hideSubmit: s.hideSubmit,
+      theme: s.theme,
       locale: 'es-MX',
     });
   }, [post, strategy]);
+
+  // hideSubmit forms: the page's button asks the Brick to validate, tokenise
+  // and hand the data up (the host answers with a normal submit message).
+  useEffect(() => {
+    if (submitSignal > 0) post({ type: 'chalyb-mp:request-submit' });
+  }, [submitSignal, post]);
 
   // The blob strategy builds its document from the same file.
   useEffect(() => {
@@ -362,8 +383,15 @@ export function MpCardBrick({
   success,
   pending,
   fallback,
+  hideSubmit = false,
+  submitSignal = 0,
+  theme = 'dark',
+  onPhaseChange,
 }: Props) {
   const [phase, setPhase] = useState<Phase>('loading');
+  useEffect(() => {
+    onPhaseChange?.(phase);
+  }, [phase, onPhaseChange]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -385,6 +413,8 @@ export function MpCardBrick({
     payerEmail,
     maxInstallments,
     submitLabel,
+    hideSubmit,
+    theme,
   }));
 
   const handleReady = useCallback(() => {
@@ -532,6 +562,7 @@ export function MpCardBrick({
           onFail={handleFail}
           onExtension={handleExtension}
           onSubmit={handleSubmit}
+          submitSignal={submitSignal}
         />
       )}
 

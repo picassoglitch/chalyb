@@ -17,6 +17,7 @@ export type ChargeStatus =
   | 'cancelled'
   | 'refunded'
   | 'charged_back'
+  | 'in_mediation'
   | 'unknown';
 
 export interface NormalizedCharge {
@@ -91,9 +92,28 @@ export function orderStatusToChargeStatus(status: string | null | undefined): Ch
       return 'rejected';
     case 'refunded':
       return 'refunded';
+    case 'charged_back':
+      return 'charged_back';
+    case 'in_mediation':
+      return 'in_mediation';
     default:
       return 'unknown';
   }
+}
+
+/**
+ * Whether a ledger key is an Orders API payment (`PAY01…`) rather than a
+ * Payments API one (numeric). Orders payments are refunded through
+ * POST /v1/orders/{id}/refund; /v1/payments/{id}/refunds doesn't know them.
+ */
+export function isOrderPaymentId(mpPaymentId: string): boolean {
+  return !/^\d+$/.test(mpPaymentId);
+}
+
+/** The status the ledger keeps: a status we can't read never overwrites one
+ *  we could (an unmapped Orders status would turn "approved" into nothing). */
+export function ledgerStatus(next: ChargeStatus, previous: string | null): string {
+  return next === 'unknown' && previous ? previous : next;
 }
 
 /** Payments API statuses pass through; anything unexpected is `unknown`. */
@@ -107,6 +127,7 @@ export function paymentStatusToChargeStatus(status: string | null | undefined): 
     case 'cancelled':
     case 'refunded':
     case 'charged_back':
+    case 'in_mediation':
       return s;
     // Mercado Pago reports a settled charge as `accredited` on some
     // integrations (it is normally the status_detail). Same money.
@@ -187,7 +208,13 @@ export function chargeFromPayment(payment: PaymentLike, fallbackId: string): Nor
 
 /** A charge Mercado Pago has reversed: the buyer got the money back. */
 export function isReversal(status: ChargeStatus): boolean {
-  return status === 'refunded' || status === 'charged_back';
+  return status === 'refunded' || isDispute(status);
+}
+
+/** A dispute at the buyer's bank or Mercado Pago (WS-8). Opening one changes
+ *  nothing on the account (Términos de Suscripción §10.2). */
+export function isDispute(status: ChargeStatus): boolean {
+  return status === 'charged_back' || status === 'in_mediation';
 }
 
 // ── Idempotency ──────────────────────────────────────────────────────────
@@ -209,12 +236,16 @@ export function orderIdempotencyKey(input: {
   /** 'card' (Brick, automatic order) or 'hosted' (checkout_url). Different
    *  bodies must not share a key. */
   mode: 'card' | 'hosted';
+  /** The total charged. A price changed inside the window must not hand
+   *  back the order created at the old amount. */
+  amountCents?: number;
   now?: Date;
   bucketMs?: number;
 }): string {
   const bucketMs = input.bucketMs ?? ORDER_IDEMPOTENCY_BUCKET_MS;
   const bucket = Math.floor((input.now ?? new Date()).getTime() / bucketMs);
-  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}`;
+  const amount = input.amountCents === undefined ? '' : `|${input.amountCents}`;
+  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}${amount}`;
   return sha256Hex(logical);
 }
 

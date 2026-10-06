@@ -1,0 +1,7 @@
+Read docs/prompts/claude-prompt-chalyb-all-pending.md in full and follow it from §0. It is the master prompt and supersedes every amount and trial rule in the older prompts (claude-prompt-chalyb-full-rebuild.md and claude-prompt-chalyb-mp-fixes.md are history/reference only).
+
+Base: build on claude/rebuild-p5-admin @ c163dfd (the P0–P5 PR stack), not main. Only WS-1-H, the Mercado Pago production hotfix (claude/mp-integration-fixes), branches from main.
+
+Order: WS-0 first: copy this package's docs/ into the repo as the first commit of claude/rebuild-p6a-mp, docs only. Then WS-1 (WS-1-H from main + WS-1-S on the stack: MP_ENV, notification_url, IPN + merchant_order, CC_VAL_433). Then WS-2 prices → WS-3 7-day trial → WS-4 cards → WS-5 VIP anual → WS-6 price increase → WS-7 Pro Lealtad (flag off) → WS-8 FIX-S refund and chargeback policy (its own PR with the S.4 tests) → WS-9 to WS-13. One workstream = one branch = one stacked PR, with the §6 gates green before each PR.
+
+Rules: prices come only from src/config/pricing.ts per PRICING-CARDS-SPEC.md, and the charge always equals the displayed price. Law's copy is verbatim. Open owner decisions (§9, O-1…O-19) are flags/config with the safe defaults given there, so don't stop for them; mark each site TODO(owner O-n). Never apply migrations to prod, change Mercado Pago or Vercel settings, or enable LEGAL_PUBLISH / real charges; list those as OPS (§11). No Linear, GitHub or any other tickets for Chalyb, ever: documents and PR descriptions only. When done, report per §12.

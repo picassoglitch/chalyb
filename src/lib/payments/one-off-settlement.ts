@@ -16,14 +16,19 @@ import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack } from './pricing';
+import { acceptedPackCents, loadPricedPacks } from './pack-prices';
+import type { PackId } from '@/config/pricing';
 import { getAppUrl } from './mercadopago';
 import {
+  autoRefundMismatch,
   checkCharge,
   expectedChargeForPack,
   expectedChargeForTier,
   type ExpectedCharge,
 } from './webhook-verify';
-import { isReversal, type NormalizedCharge } from './order-charge';
+import { isDispute, ledgerStatus, type NormalizedCharge } from './order-charge';
+import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
+import { parsePackReference } from './subscription-reference';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -53,12 +58,14 @@ export async function settleOneOffCharge(
 
   // external_reference is one of two shapes:
   //   1. Legacy one-off tier purchase: "<userId>|<TIER>"  (e.g. "abc|PRO")
-  //   2. Token pack:                   "pack|<userId>|<packId>"
+  //   2. Token pack:                   "pack_<userId>_<packId>" (orders), or
+  //                                    "pack|<userId>|<packId>" (preferences)
+  const packRef = parsePackReference(externalRef);
   const refParts = externalRef.split('|');
-  const isPackPurchase = refParts[0] === 'pack';
-  const userId = isPackPurchase ? refParts[1] : refParts[0];
+  const isPackPurchase = packRef !== null;
+  const userId = packRef ? packRef.userId : refParts[0];
   const tierRaw = isPackPurchase ? null : refParts[1];
-  const packIdRaw = isPackPurchase ? refParts[2] : null;
+  const packIdRaw = packRef ? packRef.packId : null;
   const tier = tierRaw as SubscriptionTier | null;
 
   if (!userId) return ok({ error: 'bad external_reference', externalRef });
@@ -93,6 +100,16 @@ export async function settleOneOffCharge(
   }
   const packForRow = isPackPurchase ? getTokenPack(packIdRaw!) : undefined;
 
+  // What we knew before this notification: a legacy plan is granted on the
+  // charge's FIRST move to approved only, so replaying an old approved
+  // payment (an unsigned IPN anyone can send) can't grant the plan again.
+  const { data: before } = await admin
+    .from('payments')
+    .select('status')
+    .eq('mp_payment_id', mpId)
+    .maybeSingle();
+  const previousStatus = (before?.status as string | null | undefined) ?? null;
+
   // Always record the charge regardless of status — pending/rejected ones
   // are useful audit data. UNIQUE on mp_payment_id makes this idempotent.
   const { error: paymentErr } = await admin.from('payments').upsert(
@@ -108,7 +125,7 @@ export async function settleOneOffCharge(
       mp_payment_id: mpId,
       amount_cents: amountCents,
       currency,
-      status,
+      status: ledgerStatus(status, previousStatus),
       raw,
     },
     { onConflict: 'mp_payment_id' },
@@ -130,15 +147,24 @@ export async function settleOneOffCharge(
     });
   }
 
-  // ── Reversals: the buyer has the money back ───────────────────────────
-  // POLICY. A refund or a chargeback undoes the purchase: a pack's tokens
-  // come off the balance (clamped at zero — clawback_token_pack, migration
-  // 0038) and a legacy one-off plan drops to FREE at once. Both are keyed
-  // to the payment id, so a retried notification changes nothing, and both
-  // refuse when no grant is on file for that payment.
-  if (isReversal(status)) {
-    const reason = status as 'refunded' | 'charged_back';
-    const reversedLabel = reason === 'charged_back' ? 'con contracargo' : 'reembolsado';
+  // ── Disputes: nothing changes (Términos de Suscripción §10.2, WS-8) ───
+  // A chargeback or a mediation is recorded, triaged and handed to an admin.
+  // No tokens come off and no plan drops while it is open.
+  if (isDispute(status)) {
+    const opened = await onChargebackOpened({ mpPaymentId: mpId, mpStatus: status });
+    if (!opened.ok) return retry({ error: 'chargeback record failed' });
+    return ok({ ok: true, status, dispute: true });
+  }
+
+  // ── Refunds ───────────────────────────────────────────────────────────
+  // POLICY. A refunded PACK: only ITS unused credits come off (Paquetes §7.2;
+  // clawback_token_pack, migration 0065). Credits already used are not
+  // charged back, and the plan and other packs are untouched. Keyed to the
+  // payment id so a retry changes nothing. A refund never changes a
+  // plan, price or the account (Términos §7.3): a legacy one-off plan stays.
+  if (status === 'refunded') {
+    const reason = 'refunded' as const;
+    const reversedLabel = 'reembolsado';
     const { data: profile } = await admin
       .from('profiles')
       .select('email, tier, tier_ends_at')
@@ -183,10 +209,11 @@ export async function settleOneOffCharge(
           href: '/dashboard/billing',
           source: 'mp.webhook',
         });
-        if (email) {
+        // Nothing to tell when every credit of the pack was already used.
+        if (email && claw.tokensRemoved > 0) {
           const tmpl = paymentReversedTemplate({
             reason,
-            what: `${claw.tokensGranted.toLocaleString('es-MX')} tokens`,
+            what: `${claw.tokensRemoved.toLocaleString('es-MX')} créditos sin usar del paquete`,
             amountMajor,
             currency,
             paymentId: mpId,
@@ -194,7 +221,7 @@ export async function settleOneOffCharge(
           });
           void sendEmail({
             to: email,
-            subject: 'Pago revertido: retiramos los tokens del pack · Chalyb',
+            subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
             html: tmpl.html,
             text: tmpl.text,
           }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
@@ -208,60 +235,9 @@ export async function settleOneOffCharge(
       });
     }
 
-    // Legacy one-off plan. Only if this payment is the one behind the tier
-    // the user holds — never touch a plan bought by a different payment.
-    if (profile?.tier === tier) {
-      const { data: grant } = await admin
-        .from('audit_events')
-        .select('id')
-        .eq('action', 'tier.payment')
-        .eq('target_user_id', userId)
-        .contains('metadata', { mp_payment_id: mpId })
-        .limit(1)
-        .maybeSingle();
-      if (!grant) {
-        return ok({ ok: true, status, reversal: 'no_grant_on_file' });
-      }
-      const { error } = await admin
-        .from('profiles')
-        .update({ tier: 'FREE', tier_ends_at: null })
-        .eq('id', userId);
-      if (error) return retry({ error: 'db tier revoke failed' });
-      await logAudit({
-        action: 'tier.downgrade',
-        actorId: null,
-        actorEmail: null,
-        targetUserId: userId,
-        targetEmail: email,
-        before: { tier, tier_ends_at: (profile?.tier_ends_at as string | null) ?? null },
-        after: { tier: 'FREE', tier_ends_at: null },
-        metadata: { mp_payment_id: mpId, source: charge.source, kind: `tier.${reason}` },
-      });
-      await notify({
-        severity: 'warning',
-        title: `Plan ${tier} revocado — pago ${reversedLabel}`,
-        body: `${email ?? userId} · MP ${charge.mpReference} · $${amountMajor} ${currency}`,
-        href: '/dashboard/billing',
-        source: 'mp.webhook',
-      });
-      if (email) {
-        const tmpl = paymentReversedTemplate({
-          reason,
-          what: `tu plan ${TIER_CAPS[tier!].label}`,
-          amountMajor,
-          currency,
-          paymentId: mpId,
-          appUrl: getAppUrl(),
-        });
-        void sendEmail({
-          to: email,
-          subject: `Tu plan ${TIER_CAPS[tier!].label} fue retirado · Chalyb`,
-          html: tmpl.html,
-          text: tmpl.text,
-        }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
-      }
-    }
-    return ok({ ok: true, status, reversal: 'done' });
+    // Legacy one-off plan: the plan stays (§7.3); a person classifies it.
+    await onRefundReported({ userId, mpPaymentId: mpId, amountMajor: Number(amountMajor) || null });
+    return ok({ ok: true, status, reversal: 'recorded' });
   }
 
   // ── Amount + currency gate ───────────────────────────────────────────
@@ -270,16 +246,35 @@ export async function settleOneOffCharge(
   //
   // Without it, external_reference is the only input deciding entitlements and
   // it is attacker-chosen: pay for the $149 token pack, then have the webhook
-  // processed against "<myUserId>|VIP" and walk away with a $2,499 plan. The
+  // processed against "<myUserId>|VIP" and walk away with a VIP plan. The
   // payment row above is already written either way, so a mismatch is visible
   // in /dashboard/billing and the audit log.
   //
   // A mismatch returns 200: MP retrying the same charge can never make the
   // amount right, and we do not want a retry storm on a payment we refuse.
   if (status === 'approved') {
-    const expected: ExpectedCharge | null = isPackPurchase
-      ? expectedChargeForPack(packIdRaw!)
-      : expectedChargeForTier(tier!);
+    let expected: ExpectedCharge | null;
+    // A pack refusal decided without the buyer's accepted amounts could
+    // refund a price they did accept: retry instead.
+    let packGateUncertain = false;
+    if (isPackPurchase) {
+      // The pack price is the owner's setting; the buyer's own accepted
+      // amounts cover a price changed while they were paying. Neither
+      // readable → retry later rather than refuse (and refund) on a guess.
+      const [priced, accepted] = await Promise.all([
+        loadPricedPacks().catch(() => null),
+        acceptedPackCents(userId, packIdRaw!).catch((e: unknown) => {
+          console.error('[mp/webhook] pack consent read failed', e);
+          return null;
+        }),
+      ]);
+      const current = priced?.totals[packIdRaw as PackId] ?? accepted?.[0];
+      if (current === undefined) return retry({ error: 'pack prices unavailable' });
+      packGateUncertain = accepted === null;
+      expected = expectedChargeForPack(packIdRaw!, current, accepted ?? []);
+    } else {
+      expected = expectedChargeForTier(tier!);
+    }
 
     if (!expected) {
       // FREE and PARTNER have no price (TIER_PRICING null): no payment can
@@ -302,6 +297,9 @@ export async function settleOneOffCharge(
       amountMajor: charge.amountMajor,
       currency: charge.currency,
     });
+    if (!check.ok && packGateUncertain) {
+      return retry({ error: 'pack consent log unavailable' });
+    }
     if (!check.ok) {
       console.error('[mp/webhook] REFUSING grant — payment does not match the price', {
         reason: check.reason,
@@ -343,6 +341,38 @@ export async function settleOneOffCharge(
         href: '/dashboard/billing',
         source: 'mp.webhook',
       });
+      // Nothing was granted, so the whole amount goes back (Términos
+      // §7.2(d): an amount other than the one shown), within 5 business days
+      // — but only when MP told us what was paid and in what currency. A
+      // response missing either is a person's call, never a refund on a guess.
+      const paid = { amountMajor: charge.amountMajor, currency: charge.currency };
+      if (userId && autoRefundMismatch(check, paid)) {
+        const refunded = await issueRefund({
+          userId,
+          mpPaymentId: mpId,
+          cents: check.paidCents,
+          reason: 'legal_7_2_d',
+          surface: 'mp_webhook',
+          actor: null,
+        });
+        if (!refunded.ok) {
+          await notify({
+            severity: 'critical',
+            title: 'Reembolso automático fallido — reembolsar a mano',
+            body: `MP ${charge.mpReference} (pago ${mpId}) · $${(check.paidCents / 100).toFixed(2)} ${check.paidCurrency} · Términos §7.2(d), dentro de 5 días hábiles`,
+            href: '/dashboard/dinero',
+            source: 'mp.webhook',
+          });
+        }
+      } else if (userId) {
+        await notify({
+          severity: 'critical',
+          title: 'Pago rechazado sin datos completos — revisar y reembolsar si procede',
+          body: `MP ${charge.mpReference} (pago ${mpId}) · monto ${charge.amountMajor ?? '?'} · moneda ${charge.currency ?? '?'}: no se otorgó nada ni se reembolsó automáticamente`,
+          href: '/dashboard/dinero',
+          source: 'mp.webhook',
+        });
+      }
       return ok({
         error: 'amount mismatch',
         expected: expected.amountCents,
@@ -402,6 +432,11 @@ export async function settleOneOffCharge(
   // Plans are sold as subscriptions now (subscription-sync.ts); this stays
   // for preferences created before that, which Mercado Pago may still
   // settle. Only flip the tier if the payment is actually approved.
+  if (status === 'approved' && previousStatus === 'approved') {
+    // Already settled: a replay or a repeat changes nothing — not a plan
+    // the user has since cancelled, nor one they've changed.
+    return ok({ ok: true, status, tier, alreadySettled: true });
+  }
   if (status === 'approved') {
     const { data: targetBefore } = await admin
       .from('profiles')
@@ -417,6 +452,11 @@ export async function settleOneOffCharge(
       .eq('id', userId);
     if (tierErr) {
       console.error('[mp/webhook] tier update failed', tierErr);
+      // Undo "approved" on our row, so MP's retry is a first approval again.
+      await admin
+        .from('payments')
+        .update({ status: previousStatus ?? 'pending' })
+        .eq('mp_payment_id', mpId);
       return retry({ error: 'db tier update failed' });
     }
     // Auto-provision engine access on VIP upgrades. PRO upgrades wait

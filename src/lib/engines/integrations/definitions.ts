@@ -34,6 +34,15 @@ export const ENGINE_INTEGRATIONS: EngineIntegration[] = [
     displayName: 'ChalyCrypto',
   }),
 
+  createEngineIntegration({
+    slug: 'chalito',
+    displayName: 'Chalito',
+    // Chalito's web app opens the companion's home after SSO; notification links
+    // (/n/<nid>) come back through Chalito's own chalito_next cookie until the
+    // launch route forwards `next` (see the optional launch patch).
+    postSsoPath: '/',
+  }),
+
   // Next agent goes here. Env vars follow from the slug:
   //   <SLUG>_ADMIN_TOKEN and <SLUG>_SSO_SECRET, both uppercase.
 ];

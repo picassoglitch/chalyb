@@ -15,9 +15,9 @@
   --color-ember: #ff6b3d;
   --color-magenta: #ff3df0;
 
-  --font-display: 'Familjen Grotesk', sans-serif;
-  --font-serif: 'Fraunces', serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-display: var(--font-familjen), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --font-mono: var(--font-space-mono), monospace;
 }
 
 /* Raw CSS custom properties — the auth shell, legal prose and the landing all
@@ -29,7 +29,8 @@
   --panel: #101320;
   --ink: #f4f3ee;
   --ink-dim: #b9b9c4;
-  --ink-faint: #6c6d7c;
+  /* AA: ≥ 4.5:1 on every landing surface (was #6c6d7c, 3.9:1). */
+  --ink-faint: #858696;
   --line: rgba(255, 255, 255, 0.08);
   --line-bright: rgba(255, 255, 255, 0.16);
   /* Brand accent — the emblem's gold. Same reasoning as dashboard.css: .lp-btn-primary
@@ -44,9 +45,9 @@
   --cyan: #8ea2e8; /* the mark's indigo, lifted for legibility on --bg */
   --ember: #ff6b3d;
   --magenta: #ff3df0;
-  --font-display: 'Familjen Grotesk', sans-serif;
-  --font-serif: 'Fraunces', serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-display: var(--font-familjen), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --font-mono: var(--font-space-mono), monospace;
   --path: var(--brand);
   --path-glow: rgba(232, 187, 127, 0.4);
 }
@@ -1275,6 +1276,39 @@ a {
   margin-top: 4px;
 }
 
+/* Sign-up (SCR-13): the legal line, the password hint and the marketing
+   box. Legal and billing text is never under 14px (BUILD-SPEC §0.10). */
+.auth-legal {
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+.auth-legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+.auth-hint {
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-top: 6px;
+}
+.auth-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+  cursor: pointer;
+}
+.auth-check input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 1px;
+}
+
 /* Premium Google button */
 .auth-google {
   width: 100%;
@@ -1559,6 +1593,43 @@ a {
 }
 .legal-prose .legal-toc a:hover {
   color: var(--path);
+}
+/* Law's tables (plans, Lealtad schedule): scroll inside their own box at
+   360 px instead of widening the page. */
+.legal-prose .legal-table {
+  overflow-x: auto;
+  margin: 0 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.legal-prose .legal-table:focus-visible {
+  outline: 2px solid var(--path);
+  outline-offset: 2px;
+}
+.legal-prose table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.legal-prose th,
+.legal-prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.legal-prose th {
+  color: var(--ink);
+  font-weight: 600;
+}
+.legal-prose tr:last-child td {
+  border-bottom: none;
+}
+.legal-prose hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 28px 0;
 }
 
 .auth-mode-switch {

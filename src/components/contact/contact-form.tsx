@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { submitContactForm, type ContactErrorKey } from '@/lib/contact/contact-actions';
 
-type FieldError = 'name' | 'email' | 'subject' | 'message' | null;
+type FieldError = 'name' | 'email' | 'subject' | 'message' | 'chargeDate' | 'chargeAmount' | null;
 type Pane = 'client' | 'partner' | 'earn';
 
 interface Props {
@@ -13,9 +13,12 @@ interface Props {
    *  / 'earn'; the /contacto page itself doesn't differentiate, but the
    *  prop is here so it can. */
   pane?: Pane;
+  /** From Ayuda: a billing problem (tags the message server-side). */
+  category?: 'cobro';
+  defaultSubject?: string;
 }
 
-export function ContactForm({ pane = 'client' }: Props = {}) {
+export function ContactForm({ pane = 'client', category, defaultSubject }: Props = {}) {
   const t = useTranslations('contact.form');
   const tError = useTranslations('contact.errors');
   const [pending, startTransition] = useTransition();
@@ -43,37 +46,19 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
 
   if (done) {
     return (
-      <div
-        style={{
-          padding: '28px 22px',
-          border: '1px solid var(--path)',
-          background: 'rgba(198,242,78,0.06)',
-          borderRadius: 12,
-          color: 'var(--ink)',
-          fontSize: 14,
-          lineHeight: 1.55,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: 'var(--path)',
-            marginBottom: 8,
-          }}
-        >
-          {t('successTitle')}
-        </div>
+      <div className="pub-form-done" role="status">
+        <div className="pub-form-done__title">{t('successTitle')}</div>
         {t('successBody')}
       </div>
     );
   }
 
-  // We use the .auth-* classes from globals.css so this form is styled
-  // consistently with sign-in/sign-up (the only other place these inputs
-  // appear). dashboard.css's cc-mod-* classes aren't loaded outside the
-  // /dashboard and /app route groups, so we can't use them here.
+  // The .auth-* field classes are styled for the public pages in
+  // chalyb-legal.css (sign-in/up still style them from globals.css).
   const fieldClass = (key: FieldError) => `auth-field${fieldError === key ? ' err' : ''}`;
+  // Problema con un cobro (Términos de Suscripción §7.5): only email, date
+  // and amount are required.
+  const cobro = category === 'cobro';
 
   return (
     <form
@@ -104,12 +89,12 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
       <input type="hidden" name="pane" value={pane} />
 
       <div className={fieldClass('name')}>
-        <label htmlFor="contact-name">{t('name')}</label>
+        <label htmlFor="contact-name">{cobro ? t('nameOptional') : t('name')}</label>
         <input
           id="contact-name"
           name="name"
           type="text"
-          required
+          required={!cobro}
           maxLength={120}
           placeholder={t('namePlaceholder')}
         />
@@ -127,25 +112,48 @@ export function ContactForm({ pane = 'client' }: Props = {}) {
         />
       </div>
 
-      <div className={fieldClass('subject')}>
-        <label htmlFor="contact-subject">{t('subject')}</label>
-        <input
-          id="contact-subject"
-          name="subject"
-          type="text"
-          required
-          maxLength={200}
-          placeholder={t('subjectPlaceholder')}
-        />
-      </div>
+      {cobro ? (
+        <>
+          <input type="hidden" name="category" value="cobro" />
+          <div className={fieldClass('chargeDate')}>
+            <label htmlFor="contact-charge-date">{t('chargeDate')}</label>
+            <input id="contact-charge-date" name="chargeDate" type="date" required />
+          </div>
+          <div className={fieldClass('chargeAmount')}>
+            <label htmlFor="contact-charge-amount">{t('chargeAmount')}</label>
+            <input
+              id="contact-charge-amount"
+              name="chargeAmount"
+              type="text"
+              inputMode="decimal"
+              required
+              maxLength={12}
+              placeholder="997"
+            />
+          </div>
+        </>
+      ) : (
+        <div className={fieldClass('subject')}>
+          <label htmlFor="contact-subject">{t('subject')}</label>
+          <input
+            id="contact-subject"
+            name="subject"
+            type="text"
+            required
+            maxLength={200}
+            placeholder={t('subjectPlaceholder')}
+            defaultValue={defaultSubject}
+          />
+        </div>
+      )}
 
       <div className={fieldClass('message')}>
-        <label htmlFor="contact-message">{t('message')}</label>
+        <label htmlFor="contact-message">{cobro ? t('messageOptional') : t('message')}</label>
         <textarea
           id="contact-message"
           name="message"
-          required
-          minLength={10}
+          required={!cobro}
+          minLength={cobro ? undefined : 10}
           maxLength={5000}
           rows={6}
           placeholder={t('messagePlaceholder')}

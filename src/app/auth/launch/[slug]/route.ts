@@ -11,7 +11,7 @@
 // (/sign-in?next=/auth/launch/chalybclip) — sign-up flows straight back into
 // ChalyClip with trial + provisioning handled here in the background.
 //
-// Gated to VIP for cross-engine launches (the streaming↔clips perk).
+// Cross-tool launches need the target tool in the user's plan.
 // ChalyClip itself is open to every signed-in user: first-timers get the
 // welcome gift / 7-day trial claimed silently, and ChalyClip enforces its
 // own tier perks once inside.
@@ -25,7 +25,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { effectiveTier, CHALYBCLIP_TRIAL_SLUG } from '@/lib/billing/tiers';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
 import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
+import { getEntitlements } from '@/lib/billing/entitlement';
+import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
+import { reportToolError } from '@/lib/tools/bff';
+import { hasRiskAck } from '@/lib/tools/consents';
+import { RISK_TOOLS, localizedPath, toolHref } from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -33,11 +38,30 @@ export async function GET(
 ): Promise<NextResponse> {
   const { slug } = await ctx.params;
   const origin = request.nextUrl.origin;
+  // From a hub tool screen (loadTool) that has no in-hub adapter: a failure
+  // must not go back to /app/engines/<slug>, which leads to that same screen.
+  const fromHub = request.nextUrl.searchParams.get('via') === 'hub';
+  const fallback = (path: string) =>
+    NextResponse.redirect(new URL(fromHub ? '/app/herramientas' : path, origin));
+  // The engine could not be opened. From a hub tool screen, Tus herramientas
+  // says so (with a support code logged to Actividad) instead of landing there
+  // silently.
+  const launchFailed = async (path: string, userId: string) => {
+    if (!fromHub) return NextResponse.redirect(new URL(path, origin));
+    const { supportCode } = await reportToolError(slug, userId, 'unavailable', true);
+    const to = new URL('/app/herramientas', origin);
+    to.searchParams.set('no_abrio', slug);
+    to.searchParams.set('codigo', supportCode);
+    return NextResponse.redirect(to);
+  };
 
   const session = await getSessionUser();
   if (!session) {
     return NextResponse.redirect(
-      new URL(`/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}`)}`, origin),
+      new URL(
+        `/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}${fromHub ? '?via=hub' : ''}`)}`,
+        origin,
+      ),
     );
   }
 
@@ -48,9 +72,15 @@ export async function GET(
   // below (trial claim + provisioning) and ChalyClip enforces its own
   // per-tier perks — the visitor goes straight from sign-up to
   // ChalyClip's /dashboard/start without ever seeing the Chalyb dashboard.
+  //
+  // The gate is getEntitlements, like every other launch path (P0-3): a tool
+  // the user's plan doesn't include goes to its page, which explains the offer.
   const tier = effectiveTier(session.role, session.tier);
-  if (slug !== CHALYBCLIP_TRIAL_SLUG && tier !== 'VIP') {
-    return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+  if (slug !== CHALYBCLIP_TRIAL_SLUG) {
+    const entitlements = await getEntitlements(session);
+    if (entitlements.tools[slug]?.state !== 'included') {
+      return fallback(`/app/engines/${slug}`);
+    }
   }
 
   const admin = createAdminClient();
@@ -60,7 +90,7 @@ export async function GET(
     .eq('slug', slug)
     .maybeSingle();
   if (!engine) {
-    return NextResponse.redirect(new URL('/app/engines', origin));
+    return NextResponse.redirect(new URL('/app/herramientas', origin));
   }
 
   // Only `active` engines are actually serving. `coming_soon` / `deprecated`
@@ -77,12 +107,25 @@ export async function GET(
   // the engine's admin_api_base, so skipping it also avoids hanging the
   // request on a dead backend until the socket times out.
   if (engine.status !== 'active') {
-    return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+    return launchFailed(`/app/engines/${slug}`, session.user.id);
+  }
+
+  // A risk tool (Señales) needs its notice accepted first (aceptacion-ux §6);
+  // getEngineLaunchUrl would refuse anyway, but only after provisioning, and
+  // via=hub would then strand the person on Tus herramientas. The tool's own
+  // screen opens the sheet, and accepting it comes back here. Not a failure:
+  // no launchFailed, so no "no abrió" banner.
+  if (RISK_TOOLS.has(slug) && !(await hasRiskAck(session.user.id, slug))) {
+    const lang = request.nextUrl.searchParams.get('lang');
+    return NextResponse.redirect(new URL(localizedPath(toolHref(slug), lang), origin));
   }
 
   const engineId = engine.id as string;
 
-  if (slug === CHALYBCLIP_TRIAL_SLUG) {
+  // Q8: once the Pro trial is live, new accounts no longer get the legacy
+  // 7-day Clips trial / welcome gift (Clips is free anyway); active ones are
+  // honoured where they are.
+  if (slug === CHALYBCLIP_TRIAL_SLUG && !trialFlowEnabled()) {
     // Idempotent: first-timers get the welcome gift + 7-day trial started
     // and a ChalyClip tenant provisioned; returning users no-op. The audit
     // log's `via: chalybclip_landing_launch` marks the user as having
@@ -102,7 +145,11 @@ export async function GET(
     await provisionEngineAccess(
       session.user.id,
       engineId,
-      slug === CHALYBCLIP_TRIAL_SLUG ? 'manual' : 'all_access_seed',
+      slug === CHALYBCLIP_TRIAL_SLUG
+        ? 'manual'
+        : tier === 'VIP'
+          ? 'all_access_seed'
+          : 'pro_selection',
     );
   } catch {
     // Non-fatal — getEngineLaunchUrl will report if access is still missing.
@@ -114,5 +161,5 @@ export async function GET(
   }
   // Couldn't build the launch URL (engine not configured / provisioning
   // failed) — drop the user on the engine page where the error surfaces.
-  return NextResponse.redirect(new URL(`/app/engines/${slug}`, origin));
+  return launchFailed(`/app/engines/${slug}`, session.user.id);
 }

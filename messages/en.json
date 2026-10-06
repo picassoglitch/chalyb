@@ -1,7 +1,8 @@
 {
   "meta": {
-    "title": "Chalyb — Ready-made AI engines in one dashboard",
-    "description": "Clip your streams, run trading signals and automate your operation with AI engines. Start free, test in simulation, go live when it pays."
+    "title": "Chalyb — Bots that work for you while you sleep",
+    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 7 days. Prices in MXN, VAT included.",
+    "descriptionNoTrial": "Clips for your socials, crypto alerts and your stream in one place. Prices in MXN, VAT included."
   },
   "landing": {
     "nav": {
@@ -9,165 +10,242 @@
       "signup": "Get started",
       "app": "Open app"
     },
-    "hero": {
-      "kicker": "AI automation platform",
-      "h1": "Put AI engines to work. Live in under a minute.",
-      "lead": "Chalyb is one dashboard for ready-made AI engines: clip your streams, run trading signals, automate your operation. Start free, test in simulation, go live when it pays.",
-      "cta": "Get started free",
-      "micro": "Free plan · No credit card required · Sign up with Google or email",
-      "preview": {
-        "title": "Your engines",
-        "live": "Live",
-        "stat1": "Engines live",
-        "stat2": "Clips this week",
-        "stat3": "Tokens used",
-        "chart": "Clips generated · last 14 days",
-        "statusLive": "Live",
-        "statusSim": "Simulation",
-        "statusSoon": "Coming soon"
-      }
-    },
-    "proof": {
-      "label": "Runs on production-grade infrastructure",
-      "metrics": {
-        "1": "uptime target",
-        "2": "monitored systems",
-        "3": "from sign-up to first run",
-        "4": "operating in LATAM and North America"
-      },
-      "stack": "Built with"
-    },
-    "pillars": {
-      "title": "Everything you need to run AI. Nothing you don't.",
-      "subtitle": "Three things the platform does well, so you don't have to build any of them.",
-      "items": {
-        "1": {
-          "kicker": "Engine library",
-          "title": "Ready-made AI engines, no build required",
-          "body": "Pick from a growing library of engines the Chalyb team runs in production. Each one solves a specific job from day one.",
-          "bullets": {
-            "1": "ChalyClip turns your streams into vertical clips ready to post",
-            "2": "ChalyCrypto delivers backtested crypto signals and 24/7 alerts",
-            "3": "New engines ship continuously and are included in your plan"
-          }
-        },
-        "2": {
-          "kicker": "Simulation to live",
-          "title": "Test everything free. Go live when you're ready",
-          "body": "Every engine runs in simulation on the free plan. When the results convince you, flip it live with one click.",
-          "bullets": {
-            "1": "Unlimited simulation runs on every engine",
-            "2": "Pro puts one engine live, VIP puts them all live",
-            "3": "Switch engines or pause any time, no lock-in"
-          }
-        },
-        "3": {
-          "kicker": "Monitoring and billing",
-          "title": "See every run. Pay only for what you use",
-          "body": "Dashboards, execution history and a token meter come built in. It is the same tooling the Chalyb team uses on its own systems.",
-          "bullets": {
-            "1": "Live dashboards and full execution history",
-            "2": "Monthly tokens included, top-ups never expire",
-            "3": "Secure checkout with Mercado Pago, cancel any time"
-          }
-        }
-      },
-      "visuals": {
-        "libraryTitle": "Engine library",
-        "libraryClip": "Stream clipping",
-        "libraryCrypto": "Trading signals",
-        "libraryObs": "Broadcast control",
-        "ready": "Ready",
-        "soon": "Coming soon",
-        "modeTitle": "Execution mode",
-        "modeSim": "Simulation · free",
-        "modeLive": "Live · Pro",
-        "modeFoot": "One click to switch. No redeploy, no downtime.",
-        "usageTitle": "Usage this month",
-        "usageTokens": "AI tokens",
-        "usageRun": "run",
-        "usageOk": "Completed"
-      }
-    },
-    "how": {
-      "title": "Up and running in three steps",
-      "subtitle": "No sales call, no onboarding project.",
-      "steps": {
-        "1": {
-          "title": "Sign up and connect",
-          "body": "Create your account with Google or email. Your workspace is ready in under a minute."
-        },
-        "2": {
-          "title": "Pick and configure an engine",
-          "body": "Choose an engine, connect your channel or exchange and set the rules. Run it in simulation first."
-        },
-        "3": {
-          "title": "Get results",
-          "body": "Clips post themselves, signals arrive in real time and every run is logged. Go live on Pro when it pays."
-        }
-      }
-    },
-    "pricing": {
-      "title": "Start free. Scale when it pays.",
-      "subtitle": "No contracts, no sales calls. Pick a plan and you're running in under a minute.",
-      "badge": "Most popular",
-      "note": "Prices in MXN. Pro and VIP are billed monthly through Mercado Pago and can be cancelled any time.",
-      "tiers": {
-        "free": {
-          "name": "Free",
-          "amount": "$0",
-          "per": " /forever",
-          "tagline": "Create an account and explore the whole platform.",
-          "features": {
-            "1": "ChalyClip free for 7 days",
-            "2": "50,000 free AI tokens",
-            "3": "Community access",
-            "4": "Watermarked clips · manual download"
-          },
-          "cta": "Start free"
-        },
-        "pro": {
-          "name": "Pro",
-          "amount": "MXN $749",
-          "per": " /month",
-          "tagline": "One engine live, your choice.",
-          "features": {
-            "1": "Everything in Free",
-            "2": "1 engine live · you pick which",
-            "3": "1,000,000 tokens / month, refilled monthly",
-            "4": "ChalyClip Pro: no watermark · ~12 streams/mo · 1 brand kit",
-            "5": "Premium community"
-          },
-          "cta": "Start with Pro"
-        },
-        "vip": {
-          "name": "VIP",
-          "amount": "MXN $2,499",
-          "per": " /month",
-          "tagline": "All of Chalyb unlocked. AI + Clip, no limits.",
-          "features": {
-            "1": "Everything in Pro",
-            "2": "All engines live",
-            "3": "5× Pro's tokens",
-            "4": "ChalyClip full streamer package",
-            "5": "Priority support · the Chalyb team helps build your idea"
-          },
-          "cta": "Start with VIP"
-        }
-      }
-    },
-    "cta": {
-      "title": "Start today. Your first engine is free.",
-      "body": "Create your account, run an engine in simulation and see results before you pay anything.",
-      "btn": "Start today",
-      "micro": "Free plan · No credit card required"
-    },
     "footer": {
       "rights": "© {year} Chalyb · Mexico City",
       "terms": "Terms",
       "privacy": "Privacy",
       "status": "Status",
       "contact": "Contact"
+    },
+    "publicNav": {
+      "aria": "Sections",
+      "tools": "Tools",
+      "pricing": "Pricing",
+      "help": "Help",
+      "login": "Sign in",
+      "trial": "Free trial",
+      "trialNoTrial": "Start free",
+      "app": "Open Chalyb",
+      "menu": "Open menu",
+      "close": "Close menu",
+      "skip": "Skip to content"
+    },
+    "hero": {
+      "eyebrowTag": "All included",
+      "eyebrowTagNoClaim": "In Spanish",
+      "eyebrow": "One plan, every tool",
+      "eyebrowNoClaim": "Tools that work for you",
+      "title": "You sleep. <em>Your bots work.</em>",
+      "sub": "Clips for your socials, crypto signals, your stream and much more, in one plan.",
+      "subNoClaim": "Clips for your socials, crypto signals, your stream and much more.",
+      "noteStrong": "Cancel anytime.",
+      "noteRest": "You pay {cero} today.",
+      "seal1": "In Spanish",
+      "seal2": "No tech skills needed",
+      "seal3": "Cancel in 1 click",
+      "alt": "Chalyb on a computer and a phone: the Your clips are ready screen and the Home screen.",
+      "notifApp": "Chalyb",
+      "notifWhen": "now",
+      "notifTitle": "Your clips are ready",
+      "notifBody": "They already have subtitles. Download them whenever you like."
+    },
+    "cta": "Start my 7-day free trial",
+    "ctaSub": "Every tool included. Cancel anytime.",
+    "tools": {
+      "label": "Tools",
+      "title": "Everything in one plan",
+      "titleNoClaim": "Tools that work for you",
+      "sub": "Each tool does one thing and does it for you. All of them come with Pro.",
+      "subNoClaim": "Each tool does one thing and does it for you.",
+      "included": "Included in Pro",
+      "liveBot": "Live + Assistant",
+      "legalFin": "Informational, not financial advice.",
+      "legalBets": "Informational, not betting advice.",
+      "desc": {
+        "chalybclip": "Paste your stream’s link and get short subtitled clips for TikTok, Reels and Shorts.",
+        "chalybcrypto": "We let you know when it’s a good time to buy or sell crypto.",
+        "liveBot": "Run your stream with big buttons. And an Assistant that answers your customers and followers, day and night.",
+        "chalybobs": "Run your stream and your OBS scenes with big buttons.",
+        "chalybbot": "An Assistant that answers your customers and followers, day and night.",
+        "chalybpicks": "Today’s sports picks, explained simply.",
+        "chalybrealtor": "List your properties and handle leads without wasting time.",
+        "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money.",
+        "chalito": "Your coding agents ask first, and you approve from your phone."
+      },
+      "allTitle": "You came for one thing and got it all.",
+      "allBody": "You come for the clips and stay for the signals, your stream, your Assistant and more. All in the same plan, nothing extra to pay.",
+      "allBodyMobile": "You come for the clips and stay for everything else. Same plan, nothing extra."
+    },
+    "how": {
+      "label": "How it works",
+      "title": "That easy: 3 steps",
+      "sub": "Just like in the app. This is how your clips get made:",
+      "s1": "Paste the link",
+      "s1p": "Copy your stream or video’s address and paste it. Works with YouTube, Twitch, Kick and Facebook.",
+      "s2": "Choose where you’ll post it",
+      "s2p": "TikTok, Reels, Shorts, YouTube or Instagram. We recommend the best format.",
+      "s3": "Download your clips",
+      "s3p": "We let you know when they’re ready, already subtitled. Download or share them.",
+      "stepOf": "Step {n} of 3",
+      "alt": "Screen for step {n}: {titulo}",
+      "note": "Every tool works the same: 3 steps, big buttons and simple words."
+    },
+    "gallery": {
+      "label": "Clips",
+      "title": "This is what your clips look like",
+      "sub": "Vertical, subtitled and ready to post. You just paste the link.",
+      "subMobile": "Vertical, subtitled and ready to post.",
+      "c1": "The best moment of the stream",
+      "c2": "Epic reaction",
+      "c3": "The final play",
+      "c4": "Answering the chat",
+      "c5": "Laughing with friends",
+      "c6": "Tip of the day",
+      "format": "Vertical · subtitled",
+      "foot": "Example images.",
+      "platforms": "Formats",
+      "cap1": "I CAN’T BELIEVE IT!",
+      "cap2": "THAT WAS EPIC",
+      "cap3": "LAST SECOND",
+      "cap4": "WHAT DO YOU RECOMMEND?",
+      "cap5": "I CAN’T STOP LAUGHING",
+      "cap6": "HERE’S THE TRICK",
+      "p1": "TikTok",
+      "p2": "Reels",
+      "p3": "Shorts"
+    },
+    "who": {
+      "label": "Who it’s for",
+      "title": "For you, and for your mom too",
+      "sub": "If you don’t have time to edit, answer or keep watch, Chalyb does it for you.",
+      "streamers": "Streamers",
+      "streamersP": "Clips from every stream and your OBS scenes in one tap.",
+      "creators": "Creators",
+      "creatorsP": "Post every day without hours of editing.",
+      "business": "Businesses",
+      "businessP": "An Assistant that answers your customers, day and night.",
+      "mom": "Your mom too",
+      "momP": "Simple and easy to use: everything clear, in a few steps, with nothing complicated to learn.",
+      "strip1": "In Spanish, for Mexico and Latin America",
+      "strip2": "Secure payment with Mercado Pago",
+      "strip3": "Cancel in 1 click, no calls"
+    },
+    "plans": {
+      "label": "Pricing",
+      "seeAll": "See every plan and what it includes",
+      "iva": "Prices in MXN, VAT included.",
+      "secure": "Secure payment with Mercado Pago.",
+      "trialNote": "Free {dias}-day trial on any plan, monthly or yearly: once per account and per card."
+    },
+    "partner": {
+      "label": "Partners",
+      "title": "You have the idea, we build it",
+      "sub": "Tell us which tool would make your life easier. We review it and get back to you.",
+      "open": "Pitch my idea",
+      "sheetTitle": "Pitch my idea",
+      "close": "Close"
+    },
+    "idea": {
+      "name": "Your name",
+      "email": "Your email",
+      "idea": "What tool would you like?",
+      "submit": "Send my idea",
+      "sending": "Sending…",
+      "done": "Thanks! We got your idea. We’ll write to you at {correo}.",
+      "clickwrap": "By sending, you agree that we use your data to reply to you, as described in the <aviso>Privacy Notice</aviso>.",
+      "errors": {
+        "name": "Enter your name.",
+        "email": "Check your email.",
+        "idea": "Tell us a bit more about your idea.",
+        "rateLimited": "We got several ideas in a row. Try again in a few minutes.",
+        "sendFailed": "We couldn't send your idea. Try again."
+      }
+    },
+    "faq": {
+      "label": "Questions",
+      "title": "Frequently asked questions",
+      "q1": "Are the first 7 days really free?",
+      "a1": "Yes, on any plan, monthly or yearly, the first time. You pay {cero} today and we email you the charge notice today, with the date and the amount. If you don’t want to continue, cancel in 1 click before that date and you’re not charged.",
+      "q2": "How much do I pay after the 7 days?",
+      "q2NoTrial": "How much is Pro?",
+      "a2": "Pro costs {pro_mes} MXN a month or {pro_anual} MXN a year, VAT included. We email you before every renewal.",
+      "a2Month": "Pro costs {pro_mes} MXN a month, VAT included. We email you before every renewal.",
+      "a2Year": "Pro costs {pro_anual} MXN a year, VAT included. We email you before every renewal.",
+      "q3": "How do I cancel?",
+      "a3": "Go to My account → My plan → Cancel. It’s 1 click and 1 confirmation, no calls. You keep your plan until the end of the period you paid for.",
+      "q4": "Do I need tech skills?",
+      "a4": "No. Each tool guides you in 3 steps, with big buttons and simple words.",
+      "q5": "What does Pro include?",
+      "a5": "Every tool: {lista}, with new credits every month. No extra payments.",
+      "a5NoClaim": "Chalyb’s tools, with new credits every month.",
+      "q6": "Do the Signals tell me what to invest in?",
+      "a6": "No. They’re informational alerts, the same for everyone, and they don’t use your balances or investments. They aren’t financial advice: you decide.",
+      "q7": "How do I pay?",
+      "a7": "With a credit or debit card, securely through Mercado Pago. Chalyb doesn’t store your card number.",
+      "q8": "Can I change plans?",
+      "a8": "Yes. From My account → My plan you can go from monthly to yearly, move up to VIP or go back to Free anytime.",
+      "a8OneInterval": "Yes. From My account → My plan you can move up to VIP or go back to Free anytime."
+    },
+    "final": {
+      "title": "Start today. <em>Tomorrow they work for you.</em>",
+      "sub": "{lista}. All in one plan.",
+      "subNoClaim": "{lista}.",
+      "subMobile": "Every tool in one plan.",
+      "subMobileNoClaim": "All from your phone or your computer.",
+      "note": "You pay {cero} today. Cancel anytime."
+    },
+    "publicFooter": {
+      "lead": "Tools that work for you, in Spanish and with no tech skills needed.",
+      "tools": "Tools",
+      "toolsAll": "See all",
+      "chalyb": "Chalyb",
+      "pricing": "Pricing",
+      "help": "Help",
+      "idea": "Pitch an idea",
+      "login": "Sign in",
+      "legal": "Legal",
+      "legalDocs": {
+        "terms": "Terms and Conditions",
+        "subscription": "Subscription Terms",
+        "packs": "Credit packs",
+        "privacy": "Privacy Notice",
+        "acceptable": "Acceptable use"
+      },
+      "seller": "Who sells",
+      "copyright": "Copyright",
+      "sellerLabel": "Who sells:",
+      "contact": "Contact",
+      "write": "Write to us",
+      "disclaimer": "Signals, Picks and Investments are informational: not financial or betting advice, and they don’t guarantee results. The decisions and the risks are yours.",
+      "copy": "© {year} Chalyb. Prices in MXN, VAT included.",
+      "secure": "Secure payment with Mercado Pago",
+      "lang": "Español · English"
+    },
+    "cookies": {
+      "title": "Cookie preferences",
+      "text": "We use necessary cookies so Chalyb works and, if you accept, analytics and advertising cookies to improve and measure campaigns.",
+      "privacy": "Privacy Notice",
+      "acceptAll": "Accept all",
+      "necessaryOnly": "Necessary only",
+      "configure": "Settings",
+      "save": "Save my choice",
+      "necessary": "Necessary",
+      "necessaryHint": "To sign in and remember your preferences. Always on.",
+      "analytics": "Analytics",
+      "analyticsHint": "Tell us which pages are used so we can improve them.",
+      "ads": "Advertising",
+      "adsHint": "Measure whether our ads work.",
+      "link": "Cookie settings"
+    },
+    "sticky": {
+      "note": "You pay {cero} today. Cancel anytime."
+    },
+    "ctaNoTrial": "Start free",
+    "ctaSignedIn": "See plans",
+    "ctaSubShort": "Cancel any time.",
+    "meta": {
+      "title": "Chalyb: bots that work for you while you sleep",
+      "description": "Clips for your socials, crypto signals, your stream and more. Try Pro free for 7 days and cancel anytime. In Spanish."
     }
   },
   "auth": {
@@ -178,8 +256,6 @@
       "googleFastNote": "Fastest way to start",
       "errorGeneric": "Something went wrong signing you in. Try again.",
       "errorMissingCode": "Sign-in flow incomplete. Try again.",
-      "fine": "By continuing you agree to the Terms and Privacy Policy.",
-      "liveStatus": "Platform live · systems in production",
       "newTitle": "New here?",
       "newSubtitle": "Create your operator workspace in seconds.",
       "newCta": "Start free",
@@ -187,7 +263,7 @@
       "returningSubtitle": "Pick up where you left off — bots, AI agents, execution history.",
       "returningCta": "Continue →",
       "benefits": {
-        "1": "Run any system in simulation",
+        "1": "Make clips for free from day one",
         "2": "Live monitoring & execution history",
         "3": "Pay only for what you use"
       },
@@ -213,10 +289,18 @@
       "checkInboxTitle": "Check your inbox.",
       "checkInboxBody": "We sent a confirmation link to {email}. Click it to finish creating your account.",
       "forgotPassword": "Forgot password?",
-      "resetSuccess": "Password updated. Sign in with your new password."
+      "resetSuccess": "Password updated. Sign in with your new password.",
+      "nameLabel": "Your name",
+      "passwordHintSignup": "At least 8 letters or numbers",
+      "errorShortPassword": "Your password needs at least 8 letters or numbers.",
+      "marketing": "I want to get news, tips and offers from Chalyb by email. I can unsubscribe any time.",
+      "legalPublished": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and the <uso>Acceptable Use Policy</uso>, and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
+      "legalCurrent": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
+      "creating": "Creating your account…",
+      "metaTitle": "Sign in",
+      "metaTitleSignup": "Create account"
     },
     "forgotPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Reset your password",
       "intro": "Enter your account email and we'll send you a link to set a new password.",
       "emailLabel": "Email",
@@ -228,7 +312,6 @@
       "errorRateLimit": "Too many attempts. Wait a minute and try again."
     },
     "resetPassword": {
-      "liveStatus": "Platform live · systems in production",
       "title": "Set a new password",
       "intro": "Choose a new password for your account.",
       "passwordLabel": "New password",
@@ -249,8 +332,10 @@
     "account": {
       "title": "Account",
       "signedInAs": "Signed in as",
-      "signOut": "Sign out"
-    }
+      "signOut": "Sign out",
+      "signingOut": "Signing out…"
+    },
+    "backHome": "Back to Chalyb"
   },
   "tour": {
     "step": "{current} of {total}",
@@ -269,12 +354,12 @@
         "body": "Navigate everything from here, grouped into Your account, Platform and Settings. Switch sections in one click."
       },
       "engines": {
-        "title": "Your engines",
-        "body": "Under “My engines” you view, open and activate engines (ChalyClip, ChalyCrypto and more). “Live” = running; “Available” = ready to use on your plan."
+        "title": "Your tools",
+        "body": "Under “Tools” you see and open your tools (Clips, Señales and more). “Included in your plan” = ready to use."
       },
       "tokens": {
-        "title": "Your token balance",
-        "body": "Under “Usage” you check how many AI tokens you have left this month and your consumption. Out of tokens? Top up or upgrade."
+        "title": "Your credits",
+        "body": "Under “Usage” you check how many credits you have left this month. Out of credits? Top up or change plans."
       },
       "plan": {
         "title": "Your plan",
@@ -291,65 +376,55 @@
     }
   },
   "engines": {
-    "title": "My engines",
+    "title": "Tools",
     "hero": {
       "badgeLive": "{count} live now",
-      "badgeIdle": "Your engine hub",
+      "badgeIdle": "Your tools",
       "headingContinue": "Pick up where you left off",
-      "headingStart": "Start with ChalyClip",
+      "headingStart": "Start with Clips",
       "subContinue": "{name} is running live. Jump back in whenever you want.",
-      "subStart": "Turn your streams into viral clips — the one engine ready to use right now.",
+      "subStart": "Turn your stream into short clips for TikTok, Reels and Shorts.",
       "ctaContinue": "Continue →",
-      "ctaOpen": "Open ChalyClip →",
-      "ctaDemo": "View demo"
+      "ctaOpen": "Open Clips →"
     },
     "sections": {
-      "available": "Available now",
+      "available": "Included in your plan",
       "availableSub": "Ready to use on your current plan.",
-      "pro": "Unlock with Pro",
-      "proSub": "Activate these engines by upgrading your plan.",
-      "soon": "Coming soon",
-      "soonSub": "In the works — we'll let you know at launch.",
-      "soonShow": "View upcoming engines ({count})",
-      "soonHide": "Hide upcoming engines"
+      "pro": "Included in Pro",
+      "proSub": "Try them free with Pro."
     },
     "card": {
-      "ribbon": "Available now",
-      "statusLive": "Live",
-      "statusTrial": "Live trial",
-      "statusSimulation": "Available",
-      "statusLocked": "Requires {plan}",
-      "statusSoon": "Coming soon",
-      "open": "Open engine →",
+      "ribbon": "Included in your plan",
+      "statusLive": "Included in your plan",
+      "statusLocked": "Included in Pro · Try it free",
+      "open": "Open →",
       "openNamed": "Open {name} →",
-      "unlock": "Unlock with Pro",
+      "unlock": "See plans",
       "notify": "Notify me",
       "details": "View details",
       "ownerChalyb": "by Chalyb",
       "ownerBy": "by {owner}",
-      "ownerMine": "Your engine",
+      "ownerMine": "Your tool",
       "notifyDone": "Done — we'll let you know when {name} launches."
     },
     "filters": {
-      "aria": "Filter engines",
+      "aria": "Filter tools",
       "all": "All",
-      "live": "Live",
-      "simulation": "Available",
-      "coming_soon": "Coming soon",
-      "locked": "Requires Pro",
-      "emptyTitle": "No engines in this filter",
+      "live": "Included in your plan",
+      "locked": "Included in Pro",
+      "emptyTitle": "No tools in this filter",
       "emptyCta": "View all"
     },
     "upsell": {
-      "title": "Unlock more engines with Pro",
-      "sub": "Run ChalyCrypto, ChalyOBS and more live with a Pro plan.",
-      "cta": "Upgrade to Pro →"
+      "title": "More tools with Pro",
+      "sub": "Use Señales, En vivo and more with a Pro plan.",
+      "cta": "See plans →"
     },
     "caps": {
       "heading": "Your plan capabilities · {plan}",
       "headingPriced": "Your plan capabilities · {plan} · {price}/{per}",
-      "liveEngines": "Live engines",
-      "tokens": "AI tokens / mo",
+      "liveEngines": "Tools included",
+      "tokens": "Credits a month",
       "storage": "Storage",
       "history": "History",
       "historyYear": "1 year+",
@@ -360,12 +435,12 @@
       "supportCommunity": "Community"
     },
     "empty": {
-      "title": "No engines available",
-      "hint": "If you're an admin: run 0010_rename_bots_to_engines.sql in Supabase and refresh."
+      "title": "We could not load your tools",
+      "hint": "Try again in a few minutes."
     },
     "marketing": {
       "chalybclip": {
-        "tagline": "Turn your streams into viral clips, automatically.",
+        "tagline": "Turn your stream into short clips for TikTok, Reels and Shorts.",
         "bullets": [
           "AI finds your best moments",
           "Vertical 9:16 render ready to post",
@@ -373,12 +448,20 @@
         ]
       },
       "chalybcrypto": {
-        "tagline": "24/7 crypto trading signals and automation.",
-        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+        "tagline": "We tell you when it is a good moment to buy or sell crypto.",
+        "bullets": [
+          "Backtested strategies",
+          "Real-time alerts",
+          "Emotion-free execution"
+        ]
       },
       "chalybobs": {
-        "tagline": "Control your live broadcast from a single panel.",
-        "bullets": ["Dynamic scenes and overlays", "Stream automation", "Connects with ChalyClip"]
+        "tagline": "Run your stream and your OBS scenes with big buttons.",
+        "bullets": [
+          "Dynamic scenes and overlays",
+          "Stream automation",
+          "Works with Clips"
+        ]
       }
     },
     "marketingCat": {
@@ -391,7 +474,9 @@
     }
   },
   "language": {
-    "label": "Language"
+    "label": "Language",
+    "es": "Español (México)",
+    "en": "English"
   },
   "contact": {
     "metaTitle": "Contact",
@@ -417,7 +502,11 @@
       "submitting": "Sending…",
       "genericError": "The message could not be sent.",
       "successTitle": "● Message received",
-      "successBody": "Thanks for writing. We will reply to the address you left within 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation."
+      "successBody": "Thanks for writing. We will reply to the address you left within 24 business hours. Check your inbox (and the spam folder, just in case) for the confirmation.",
+      "nameOptional": "Name (optional)",
+      "messageOptional": "What happened? (optional)",
+      "chargeDate": "Date of the charge",
+      "chargeAmount": "Amount charged (MXN)"
     },
     "errors": {
       "name": "Name is required (2–120 characters).",
@@ -425,8 +514,12 @@
       "subject": "Subject is required (3–200 characters).",
       "message": "Message is required (10–5000 characters).",
       "rateLimited": "We have received a lot of messages from your connection. Wait a few minutes and try again.",
-      "sendFailed": "We couldn't send your message. Try again in a few minutes."
-    }
+      "sendFailed": "We couldn't send your message. Try again in a few minutes.",
+      "chargeDate": "Enter the date of the charge.",
+      "chargeAmount": "Enter the amount charged, for example 997."
+    },
+    "cobroSubject": "Problem with a charge",
+    "cobroIntro": "All we need is your email, the date and the amount of the charge. We answer in writing within 5 business days. Asking for a refund never works against you: it doesn’t change your plan, your price or your account."
   },
   "legal": {
     "eyebrow": "Legal",
@@ -439,9 +532,41 @@
     },
     "terms": {
       "metaTitle": "Terms of service",
-      "metaDescription": "Terms and conditions for using Chalyb and its engines (ChalyClip, ChalyStreamManager and future products).",
+      "metaDescription": "Terms and conditions for using Chalyb and its tools.",
       "title": "Terms of service",
       "lastUpdated": "17 June 2026"
+    },
+    "subscription": {
+      "metaTitle": "Subscription terms",
+      "metaDescription": "Chalyb plans, the 7-day free trial, charges, cancellation and refunds.",
+      "title": "Subscription terms"
+    },
+    "acceptableUse": {
+      "metaTitle": "Acceptable use and content",
+      "metaDescription": "What you can upload and publish with Chalyb, copyright notices and notices about financial tools.",
+      "title": "Acceptable use and content"
+    },
+    "doc": {
+      "toc": "Contents",
+      "versionLine": "Version {version} · In force from {fecha}",
+      "noDate": "date to be confirmed",
+      "draftTitle": "Draft under review.",
+      "draftBody": "This document is not in force yet: it still needs some details and an attorney’s signature.",
+      "spanishPrevails": "This document is available in Spanish. The Spanish version prevails.",
+      "fixedUrl": "Fixed link to this version:",
+      "otherVersions": "Other versions:",
+      "reviewLine": "Under review",
+      "currentLead": "Until then, these apply:"
+    },
+    "packs": {
+      "metaTitle": "Credit pack terms",
+      "metaDescription": "One-time purchase of extra Chalyb credits: prices, use, validity and refunds.",
+      "title": "Credit pack terms"
+    },
+    "seller": {
+      "metaTitle": "Who sells",
+      "metaDescription": "Who sells Chalyb: seller details, customer service and PROFECO.",
+      "title": "Who sells"
     }
   },
   "workspace": {
@@ -453,7 +578,7 @@
       "subscription": "Subscription",
       "usage": "Usage",
       "billing": "Billing",
-      "myengines": "My engines",
+      "myengines": "Tools",
       "history": "History",
       "messages": "Messages",
       "profile": "Profile & security",
@@ -468,11 +593,11 @@
     "pages": {
       "home": {
         "title": "Your workspace",
-        "sub": "Your subscription, usage and active engines at a glance."
+        "sub": "Your plan, your credits and your tools."
       },
       "subscription": {
         "title": "Subscription",
-        "sub": "Your current plan, tier changes and payment method."
+        "sub": "Your current plan and payment method."
       },
       "usage": {
         "title": "Usage",
@@ -483,8 +608,8 @@
         "sub": "Payment history and payment method."
       },
       "engines": {
-        "title": "My engines",
-        "sub": "{clip}, {stream} and upcoming products — whatever your tier includes."
+        "title": "Tools",
+        "sub": "The tools included in your plan."
       },
       "history": {
         "title": "History",
@@ -506,32 +631,2463 @@
         "title": "Your workspace",
         "sub": ""
       }
+    }
+  },
+  "home": {
+    "metaTitle": "Home",
+    "greeting": "Hi, {nombre} 👋",
+    "greetingAnon": "Hi 👋",
+    "title": "What do you want to do today?",
+    "task": {
+      "clips": {
+        "title": "Make clips from my stream",
+        "body": "Create short clips ready for TikTok, Reels and Shorts.",
+        "short": "For TikTok, Reels and Shorts."
+      },
+      "senales": {
+        "title": "Get crypto signals",
+        "body": "We tell you when to buy or sell, on your phone.",
+        "short": "We tell you when to buy or sell."
+      },
+      "envivo": {
+        "title": "Run my stream",
+        "body": "Control your OBS scenes from one place.",
+        "short": "Control OBS from your phone."
+      },
+      "mas": {
+        "label": "And much more",
+        "title": "More tools",
+        "short": "{tools} and more."
+      }
+    },
+    "included": {
+      "aria": "Your plan",
+      "all": "Everything included in your {plan} plan.",
+      "noExtra": "No extra payments.",
+      "single": "Your Pro plan includes {tools}.",
+      "toolsAria": "Included tools",
+      "more": "and {n} more",
+      "gratis": "Try Pro free for 7 days. Cancel any time.",
+      "gratisPlans": "Pro gives you more tools.",
+      "cta": {
+        "trial": "Start my 7-day free trial",
+        "return": "Back to Pro",
+        "plans": "See plans"
+      }
+    },
+    "latest": {
+      "title": "Latest"
+    },
+    "empty": {
+      "title": "You have no clips yet",
+      "body": "Make your first one in 1 minute. Just paste your stream link.",
+      "cta": "Make my first clip"
+    }
+  },
+  "errors": {
+    "tool": {
+      "NEEDS_PLAN": "Included in Pro · Try it free",
+      "SETUP_NEEDED": "One step left before you can use {tool}.",
+      "TOOL_UNAVAILABLE": "We could not open {tool} right now. Try again in a few minutes.",
+      "PROVISION_FAILED": "We could not get {tool} ready for your account. Try again in a moment.",
+      "PROVISION_FAILED_CLIPS": "We could not get your Clips ready. Try again in a moment.",
+      "SESSION_EXPIRED": "Your session ended. Sign in again.",
+      "NETWORK": "It looks like you are offline. Check your internet and try again.",
+      "UNKNOWN": "Something went wrong. Try again or write to us.",
+      "RISK_ACK_REQUIRED": "Before opening {tool}, read the notice and accept it."
+    }
+  },
+  "setup": {
+    "cta": "Connect now",
+    "alt": "Or paste a link, no connection needed.",
+    "youtube": {
+      "title": "Connect YouTube first",
+      "body": "That way we can bring in your streams and make your clips for you. It takes 30 seconds."
+    },
+    "twitch": {
+      "title": "Connect Twitch first",
+      "body": "That way we can bring in your streams and make your clips for you. It takes 30 seconds."
+    },
+    "obs": {
+      "title": "Connect OBS first",
+      "body": "That way you can run your scenes from here. It takes 30 seconds."
+    },
+    "whatsapp": {
+      "title": "Connect WhatsApp first",
+      "body": "That way we can send you notices and answer your customers. It takes 30 seconds."
+    },
+    "exchange": {
+      "title": "Connect your exchange first",
+      "body": "Trading permission only, never withdrawals. It takes 30 seconds."
+    }
+  },
+  "usage": {
+    "loadFailed": "We could not load your usage. Try again in a few minutes.",
+    "retry": "Try again",
+    "priceSuffix": "MXN, IVA (VAT) included"
+  },
+  "clips": {
+    "wizardNav": "Clips navigation",
+    "home": "Home",
+    "back": "Back",
+    "close": "Close and go back to Home",
+    "step": "Step {n} of 3",
+    "s1": {
+      "metaTitle": "Clips · Step 1",
+      "title": "Paste the link to your stream or video",
+      "sub": "Copy your video’s address and paste it here. We do the rest.",
+      "placeholder": "https://youtube.com/...",
+      "works": "Works with {plataformas}.",
+      "cta": "Continue",
+      "paste": "Paste"
+    },
+    "s2": {
+      "metaTitle": "Clips · Step 2",
+      "title": "Where will you post them?",
+      "sub": "Pick the shape of your clips. You can change it later.",
+      "recommended": "Recommended",
+      "formats": {
+        "vertical": {
+          "title": "TikTok / Reels / Shorts",
+          "detail": "Vertical"
+        },
+        "horizontal": {
+          "title": "YouTube",
+          "detail": "Horizontal"
+        },
+        "square": {
+          "title": "Instagram",
+          "detail": "Square"
+        }
+      },
+      "count": "How many clips?",
+      "countHint": "We recommend 6 to start.",
+      "cta": "Make my clips"
+    },
+    "wait": {
+      "metaTitle": "Making your clips",
+      "title": "We are making your clips",
+      "sub": "It takes a few minutes. You can close this page and come back any time.",
+      "progress": "Progress",
+      "found": "We found {n}",
+      "steps": {
+        "received": "Video received",
+        "finding_moments": "Finding the best moments",
+        "adding_captions": "Adding captions…",
+        "ready": "Ready to download"
+      },
+      "status": {
+        "done": "done",
+        "run": "in progress",
+        "wait": "pending"
+      }
+    },
+    "done": {
+      "title": "Your clips are ready 🎉",
+      "sub": "We made {n} clips. They already have captions.",
+      "duration": "{seconds} seconds",
+      "download": "Download",
+      "downloadClip": "Download {title}",
+      "saved": "Your clips are saved in",
+      "results": "My results",
+      "more": "Make more clips",
+      "thumbAlt": "Clip: {title}",
+      "share": "Share",
+      "shareClip": "Share {title}",
+      "copied": "Link copied"
+    },
+    "error": {
+      "title": "We could not make your clips",
+      "link": {
+        "title": "We could not read that link",
+        "body": "Check that the video is public and paste it again."
+      },
+      "unsupported": "That link is not from a platform we can read. It works with YouTube, Twitch, Kick and Facebook.",
+      "tooLong": "That video is too long. Upload part of it or move to VIP.",
+      "noCredits": "You ran out of credits this month. They renew on {fecha}.",
+      "seePlan": "See my plan",
+      "platform": "{plataforma} is not responding right now. Try again in a few minutes.",
+      "platformFallback": "Your video’s platform",
+      "unknown": "Something went wrong on our side. We are already looking into it.",
+      "noCharge": "No credits were used.",
+      "retry": "Try again",
+      "help": "Talk to a person",
+      "blocked": {
+        "title": "We can’t use that video",
+        "body": "That content was removed after a copyright notice and can’t be uploaded again. If you think this is a mistake, talk to a person."
+      }
+    },
+    "adv": {
+      "title": "Advanced options",
+      "sub": "For professional creators",
+      "bulk": "Upload several videos at once",
+      "bulkHint": "Paste one link per line. Up to {n} more.",
+      "captions": "Captions: style and language",
+      "captionStyle": "Style",
+      "styles": {
+        "clasico": "Classic",
+        "grande": "Large",
+        "ninguno": "No captions"
+      },
+      "captionLang": "Language",
+      "langs": {
+        "es": "Spanish",
+        "en": "English"
+      },
+      "duration": "Custom format and length",
+      "durationHint": "From 15 to 60 seconds",
+      "min": "Minimum (seconds)",
+      "max": "Maximum (seconds)",
+      "autopublish": "Publish to my accounts automatically",
+      "vip": "Included in VIP",
+      "default": "If you don’t touch anything, we use the best settings for you."
+    }
+  },
+  "app": {
+    "nav": {
+      "aria": "Main navigation",
+      "skip": "Skip to content",
+      "inicio": "Home",
+      "resultados": "My results",
+      "cuenta": "My account",
+      "admin": "Admin view",
+      "tab": {
+        "inicio": "Home",
+        "resultados": "Results",
+        "cuenta": "Account"
+      },
+      "plan": {
+        "gratis": "Free plan",
+        "prueba": "Pro trial",
+        "pro": "Pro plan",
+        "pro_anual": "Pro annual plan",
+        "vip": "VIP plan"
+      },
+      "yourAccount": "Your account"
+    }
+  },
+  "account": {
+    "title": "My account",
+    "plan": {
+      "k": "Your plan",
+      "name": {
+        "gratis": "Free plan",
+        "pro": "Pro plan",
+        "vip": "VIP plan"
+      },
+      "nameAll": "{plan} — everything included",
+      "allTools": "Every tool",
+      "cta": "See my plan"
+    },
+    "billing": {
+      "title": "My plan and payments",
+      "credits": "Available credits",
+      "method": "Payment method",
+      "invoices": "Invoices"
+    },
+    "prefs": {
+      "title": "Preferences",
+      "language": "Language",
+      "profile": "My profile"
+    },
+    "help": {
+      "title": "Help",
+      "human": {
+        "title": "Talk to a person",
+        "body": "We answer as soon as we can, in Spanish or English.",
+        "bodyFast": "We answer within minutes, in Spanish or English.",
+        "cta": "Write"
+      }
+    },
+    "more": {
+      "title": "More",
+      "tools": "Tools",
+      "messages": "Messages",
+      "unread": "{n} unread",
+      "help": "Frequently asked questions"
+    },
+    "privacy": {
+      "title": "Privacy and account",
+      "notice": "Privacy and notifications",
+      "arco": "My data (ARCO rights)",
+      "connected": "Connected accounts",
+      "connectedNone": "None",
+      "charge": "Problem with a charge",
+      "close": "Close my account"
+    },
+    "ivaIncluded": "IVA (VAT) included"
+  },
+  "billing": {
+    "price": {
+      "proYearBig": "{monto} MXN a year",
+      "renewYear": "Renews every year",
+      "renewMonth": "Renews every month",
+      "saveYear": "You save {ahorro} a year",
+      "monthlyRef": "or pay monthly: {monto} MXN a month (monthly plan)",
+      "proMonthBig": "{monto} MXN a month",
+      "monthLine": "{monto} MXN a month · renews every month",
+      "tax": "Prices in MXN, IVA (VAT) included.",
+      "free": "No card needed · Free forever",
+      "ref": {
+        "wasSr": "Previous price:",
+        "labelA1": "Previous price on <b>{sitio}</b> until <b>{fecha}</b>. Here you pay {pct}% less.",
+        "labelA2": "Launch price valid until <b>{fecha_fin_promo}</b>.",
+        "launch": "Launch price: {monto} MXN a month"
+      },
+      "taxUS": "Prices in US dollars. Sales tax, if any, is added at checkout and shown before you pay.",
+      "taxCA": "Prices in US dollars (USD). GST/HST and, in Quebec, QST are added where applicable and shown before you pay.",
+      "unitYear": "MXN a year",
+      "unitMonth": "MXN a month"
+    },
+    "vars": {
+      "periodicidad": {
+        "year": "for 1 year of {plan}",
+        "month": "for your first month of {plan}"
+      },
+      "renovacion": {
+        "year": "every year ({monto} MXN)",
+        "month": "every month ({monto} MXN)"
+      },
+      "renovacionCorta": {
+        "year": "and every year after",
+        "month": "and every month after"
+      },
+      "cadaPeriodo": {
+        "year": "every year",
+        "month": "every month"
+      },
+      "tarjeta": {
+        "none": "the card you add",
+        "last4": "your card ending in {ultimos4}"
+      }
+    },
+    "disclosure": {
+      "today": "<b>You pay $0 today.</b>",
+      "charge": "If you don’t cancel before, on <b>{fecha_cobro}</b> we will charge <b>{monto} MXN</b> {periodicidad} to {tarjeta}, and it will renew automatically {renovacion} until you cancel.",
+      "cancel": "Cancel in 1 click from <b>My account → My plan</b>, no calls. If you cancel, you keep {plan} until {fecha_fin_prueba} and you aren’t charged.",
+      "ends": "Your {dias}-day free trial ends on <b>{fecha_fin_prueba}</b>.",
+      "notice": "Today we email you the charge notice with this date and this amount."
+    },
+    "pay": {
+      "consent": "I agree that, if I don’t cancel before <b>{fecha_cobro}</b>, Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+    },
+    "paid": {
+      "chargeYear": "<b>{monto} MXN is charged today</b> (VAT included) for 1 year of {plan} to {tarjeta}. It renews automatically on <b>{fecha_renovacion}</b> and every year after for {monto} MXN until you cancel. We’ll remind you 30 and 7 days before. Cancel in 1 click from My account → My plan; you keep {plan} until the end of the paid year.",
+      "consentYear": "I accept the charge of {monto} MXN today and its automatic renewal every year, and I accept the <terms>Subscription Terms</terms>.",
+      "chargeMonth": "<b>{monto} MXN is charged today</b> (VAT included) to {tarjeta}, and it renews automatically {cada_periodo} for {monto} MXN until you cancel. We’ll remind you 7 days before each charge. Cancel in 1 click from My account → My plan.",
+      "consentMonth": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> today {renovacion_corta} to my card, and I accept the <terms>Subscription Terms</terms>."
+    },
+    "lealtad": {
+      "checkout": {
+        "today": "<b>Today, {fecha_hoy}, {m1} MXN is charged</b> to {tarjeta} (month 1 of Pro Loyalty).",
+        "after": "After that, every month, automatically and until you cancel:",
+        "row": "{fecha}: {monto}",
+        "rowLast": "from {fecha}: {monto} MXN every month",
+        "notice": "We email you 7 days before each charge, with its amount.",
+        "reset": "If you cancel, switch plans or a payment is still unpaid 7 days after it failed, your price starts again at {m1}.",
+        "cancel": "Cancel in 1 click from <b>My account → My plan</b>; you keep Pro until the end of the paid month.",
+        "fromOther": "Pro Loyalty starts at month 1 ({m1}) when your current period ends; your months on another plan don’t count."
+      },
+      "consent": "I agree that Chalyb charges <b>{m1} MXN today</b> to my card and then, <b>automatically every month</b>, {m2}, {m3}, {m4}, {m5} and {m6} MXN, and then <b>{piso} MXN a month</b> while I stay subscribed, until I cancel. I understand that <b>my price starts again at {m1}</b> if I cancel, switch plans or a payment is still unpaid 7 days after it failed, and I accept the <terms>Subscription Terms</terms>.",
+      "step": "Month {n}: you pay {monto}, {pct}% less than month 1.",
+      "stepFirst": "Month 1: you pay {monto}.",
+      "rule": "Every month you stay it drops 10% of month 1, down to 60%.",
+      "thisMonth": "MXN this month",
+      "progress": "{pct}% less than month 1",
+      "progressMeta": "Month {n} · {k} to go",
+      "progressMetaFloor": "Month {n} · already at your lowest price",
+      "floor": "From month 7: {piso} MXN a month while you stay.",
+      "nextSub": "Month {n} · {pct}% less than month 1",
+      "warn": "ⓘ <b>Your price goes back to {m1} if</b> you cancel (when your paid month ends), switch to another plan, or a payment is still unpaid 7 days after it failed. Changing your card, a refund or a chargeback don’t reset it.",
+      "changeSub": "Your price starts again at {m1}",
+      "cancelSub": "You keep Pro until {fecha}. There will be no more charges. If you come back later, Pro Loyalty starts again at {m1}.",
+      "monthTick": "Month {n}",
+      "monthTickLast": "Month {n}+"
+    }
+  },
+  "plans": {
+    "metaTitle": "Plans",
+    "metaDescription": "Free, Pro or VIP. Prices in MXN, IVA (VAT) included. Cancel any time.",
+    "title": "Start free, grow with Pro",
+    "sub": "Try Pro free for {dias} days. Cancel online in 1 click, no calls.",
+    "subNoTrial": "Cancel online anytime, no calls.",
+    "toggleAria": "Billing period",
+    "toggle": {
+      "month": "Monthly",
+      "year": "Yearly",
+      "save": "Save up to {pct}%",
+      "saveShort": "up to −{pct}%",
+      "lealtad": "Loyalty",
+      "lealtadPill": "Pro only"
+    },
+    "gratis": {
+      "name": "Free",
+      "tag": "See what Chalyb can do",
+      "cta": "Create free account",
+      "ctaManage": "See my plan"
+    },
+    "pro": {
+      "badge": "Recommended",
+      "name": "Pro",
+      "tag": "For creators who post every week",
+      "cta": "Start my 7-day free trial",
+      "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
+      "fCredits": "{creditos} credits every month",
+      "ctaMonth": "Choose Pro monthly",
+      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
+      "badgePopular": "Most popular",
+      "save": "Save {ahorro} a year · {pct}%",
+      "switchYear": "Switch to yearly and save {ahorro} a year",
+      "ctaYear": "Choose Pro yearly"
+    },
+    "vip": {
+      "name": "VIP",
+      "tag": "For daily streamers and multi-channel creators",
+      "noYear": "Monthly billing only",
+      "cta": "Choose VIP",
+      "ctaUp": "Upgrade to VIP",
+      "featsTitle": "Everything in Pro, plus:",
+      "save": "Save {ahorro} a year · {pct}%",
+      "switchYear": "Switch to yearly and save {ahorro} a year",
+      "ctaYear": "Choose VIP yearly",
+      "ctaMonth": "Choose VIP monthly",
+      "ctaTrial": "Start my 7-day free trial"
+    },
+    "current": "Your current plan",
+    "soon": "Available soon",
+    "trialing": "You’re on your Pro trial",
+    "notIncluded": "Not included",
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "q1": "How does the free trial work?",
+      "a1": "You pick your plan and whether you pay monthly or yearly. You pay $0 today and we email you the charge notice today. If you don’t cancel before your {dias} free days end, the plan you picked is charged. If you cancel before, you pay nothing. One trial per account and per card, first time only.",
+      "q2": "Can I switch from yearly to monthly?",
+      "a2": "Yes, from My account → My plan, whenever you want.",
+      "q3": "What are credits?",
+      "a3": "They’re what the tools use to work, for example each clip. Your plan brings new credits every month.",
+      "q4": "Can I cancel whenever I want?",
+      "a4": "Yes. It’s 1 click from My account. You keep your plan until the end of the period you paid for."
+    },
+    "quebec": "Paid plans aren’t available in Quebec for now.",
+    "trialChip": "{dias} days free",
+    "trialFootnote": "Free {dias}-day trial on any plan, monthly or yearly: first time only, once per account and per card.",
+    "yourPlan": "Your plan",
+    "featsTitle": "What you get:",
+    "notePaid": "Charged today. Cancel online anytime.",
+    "feat": {
+      "clipsTry": "Test clips (SD, watermarked)",
+      "clipsTryWatermark": "Test clips (watermarked)",
+      "noWatermarkHd": "Watermark-free clips in HD",
+      "clips4k": "4K clip exports",
+      "noStreams": "Clips from your live streams",
+      "streams": "Clip up to {n} live streams a month",
+      "streamsUnlimited": "Unlimited live streams to clip",
+      "history": "{dias} days of history",
+      "historyYear": "A full year of history",
+      "storage": "{espacio} of storage",
+      "cancel": "Cancel online anytime, no calls"
+    },
+    "lealtad": {
+      "subtitle": "With Pro Loyalty, every month you stay you pay less.",
+      "badge": "New · Pro only",
+      "name": "Pro Loyalty",
+      "tag": "For people who stay: every month you keep Pro, you pay less.",
+      "first": "MXN the first month",
+      "header": "Renews every month · No free trial",
+      "explain": "Every month you keep paying, your price drops 10% of month 1’s price, down to <b>{piso} MXN a month from month 7</b> (60% less).",
+      "charge": "<b>{m1} MXN is charged today.</b> After that, each month’s amount on the calendar is charged automatically until you cancel. We email you and tell you in the app 7 days before each charge, with its amount and date.",
+      "reset": "ⓘ <b>Your price goes back to {m1} if</b> you cancel (when your paid month ends), switch to another plan, or a payment is still unpaid 7 days after it failed. Changing your card, a refund or a chargeback don’t reset it.",
+      "chartTitle": "How your price drops",
+      "legend": "% = less than month 1",
+      "month": "Month {n}",
+      "monthLast": "Month {n}+",
+      "barPct": "{pct}% less",
+      "barAria": "Month {n}: {monto} MXN, {pct}% less than month 1",
+      "barAriaFirst": "Month 1: {monto} MXN",
+      "rounding": "<b>Amounts include VAT, rounded down to the whole peso</b>; the real discount is equal to or greater than shown.",
+      "yearLealtad": "Pro Loyalty, 1st year",
+      "yearLealtadSub": "2nd year, if you stay: {total}",
+      "yearMonthly": "Pro monthly, 1 year",
+      "yearMonthlySub": "12 × {monto}",
+      "yearAnnual": "Pro yearly, 1 year",
+      "cheapest": "The cheapest in year 1",
+      "compare": "From month 1 to 4 you pay more than on Pro monthly ({pm}); from month 6 you pay less. In the first year, Pro yearly ({pa}) is the cheapest. Second year, if you stay: Pro Loyalty {l2} · Pro yearly {pa} · Pro monthly {pm12}.",
+      "cta": "Pay {m1} and start Pro Loyalty",
+      "ctaContinue": "Continue with Pro Loyalty",
+      "notOthers": "Free and VIP have no Pro Loyalty:",
+      "seeOthers": "see Monthly and Yearly"
+    }
+  },
+  "checkout": {
+    "tool": "Free trial",
+    "toolPaid": "Pro plan",
+    "step": "Step {n} of 3",
+    "back": "Back",
+    "close": "Close and go back to Home",
+    "trial": {
+      "metaTitle": "Your trial",
+      "title": "Try {plan} free for {dias} days",
+      "sub": "Cancel any time.",
+      "q": "Which plan do you want when your {dias} free days end?",
+      "year": "Pro yearly",
+      "month": "Pro monthly",
+      "cta": "Continue to payment",
+      "subAllTools": "Every tool included. Cancel any time.",
+      "monthRow": "{plan} monthly — {monto} MXN a month",
+      "yearRow": "{plan} yearly — {monto} MXN a year",
+      "yearOnce": "(one charge a year)",
+      "yearSave": "You save {ahorro} a year compared with 12 months of {plan} monthly",
+      "cameFromYear": "You picked {plan} yearly on the card",
+      "pickFirst": "Pick a plan to continue."
+    },
+    "paid": {
+      "title": "Choose your Pro plan",
+      "today": "{monto} MXN is charged today",
+      "cta": "Pay and start",
+      "q": "Which plan do you want?"
+    },
+    "pay": {
+      "metaTitle": "Payment",
+      "title": "Add your card",
+      "oneLine": "<b>$0</b> today. First charge: <b>{monto} MXN</b> {periodo} on <b>{fecha_cobro}</b>, unless you cancel before.",
+      "oneLinePaid": "<b>{monto} MXN</b> is charged today and then <b>{cada_periodo}</b>, unless you cancel.",
+      "secure": "Secure payment with Mercado Pago. Chalyb doesn’t store your card number.",
+      "seller": "Who sells",
+      "cta": "Start my 7-day free trial",
+      "ctaHint": "Tick the box to continue. You can cancel any time.",
+      "consentError": "Tick the box to confirm the automatic charge. You can cancel any time.",
+      "declined": "Your bank didn’t accept this card. Try another one or talk to your bank.",
+      "saving": "Saving your card…",
+      "cardUsed": "This card already had a free trial. You can pick a plan and start today.",
+      "cardUnverified": "We couldn't verify this card for the free trial. Try again with the same card or another one.",
+      "review": "Ask a person to review it",
+      "unavailable": "This isn’t available right now. Try later or write to us.",
+      "error": "We couldn’t save your card. Try again in a moment.",
+      "where": "Where do you live?",
+      "whereOpts": {
+        "mx": "Mexico",
+        "us": "United States",
+        "qc": "Canada · Quebec",
+        "ca": "Canada · another province",
+        "other": "Another country"
+      },
+      "periodYear": "for 1 year",
+      "periodMonth": "every month",
+      "accountClosed": "This account is closed because of an unpaid bad-faith chargeback (Subscription Terms §10.6). You can always download your content. If you think this is a mistake, write to us.",
+      "paidRefused": "We can’t start a paid plan on this account for now (Subscription Terms §10.8). You can always use the Free plan."
+    },
+    "summary": {
+      "title": "Summary",
+      "planAfter": "Plan after the trial",
+      "trialEnds": "Your free trial ends",
+      "remind": "Charge notice by email",
+      "first": "First charge",
+      "firstValue": "{monto} MXN · {fecha}",
+      "after": "After that",
+      "afterValue": "{monto} MXN {cada_periodo}",
+      "totalToday": "Total today",
+      "switchMonth": "Switch to {plan} monthly ({monto} a month)",
+      "switchYear": "Switch to {plan} yearly ({monto} a year)",
+      "ivaLabel": "IVA (VAT) included"
+    },
+    "done": {
+      "metaTitle": "Done",
+      "title": "All set, {nombre}!",
+      "titleAnon": "All set!",
+      "headline": "Your {dias} free days of {plan} have started.",
+      "headlinePaid": "Your Pro plan is active.",
+      "sub": "They end on {fecha_fin_prueba}. First charge: <b>{monto} MXN</b> on {fecha_cobro} to your card ••{ultimos4}. We sent the charge notice to {correo}.",
+      "paidToday": "You paid today",
+      "firstCharge": "First charge ({plan})",
+      "card": "{marca} ••{ultimos4} · renews {cada_periodo} until you cancel",
+      "cta": "Make my first clips",
+      "plan": "See my plan",
+      "footer": "We sent these details to {correo} · Your acceptance folio: {folio}"
+    }
+  },
+  "banner": {
+    "trial": "<b>Free {plan} trial</b> · On <b>{fecha_cobro}</b> you’ll be charged <b>{monto} MXN</b>, unless you cancel before.",
+    "ended": "Your trial ended. You’re on the Free plan.",
+    "pastDue": "We couldn’t charge your plan. Update your card before <b>{fecha_gracia}</b> to keep Pro.",
+    "renew": "Your {plan} plan renews on <b>{fecha_cobro}</b> for <b>{monto} MXN</b>.",
+    "cta": {
+      "plan": "See my plan",
+      "return": "Back to Pro",
+      "card": "Update card",
+      "email": "Check email"
+    },
+    "noticeHold": "We couldn’t send the charge notice to <b>{correo}</b>. Confirm or update it: <b>we won’t charge you</b> until 5 days after we reach you.",
+    "trialTomorrow": "Tomorrow, <b>{fecha_cobro}</b>, you’ll be charged <b>{monto} MXN</b>. If you don’t want to continue, cancel today in 1 click.",
+    "lealtad": "On <b>{fecha_cobro}</b> <b>{monto} MXN</b> of your Pro Loyalty (month {n}) will be charged, {pct}% less than your month 1. Don’t want to continue? Cancel before that date and you won’t be charged."
+  },
+  "myplan": {
+    "title": "My plan",
+    "crumb": "My account",
+    "status": {
+      "active": "Your plan · active",
+      "trial": "Your plan · trial",
+      "cancelled": "Your plan · cancelled",
+      "pastDue": "Your plan · payment pending",
+      "free": "Your plan"
+    },
+    "heading": {
+      "pro_month": "Pro monthly — everything included",
+      "pro_year": "Pro yearly — everything included",
+      "vip_month": "VIP — everything included and more credits",
+      "trial": "Free {plan} trial",
+      "free": "Free",
+      "vip_year": "VIP yearly — everything included and more credits",
+      "pro_lealtad": "Pro Loyalty — your price drops every month"
+    },
+    "planName": {
+      "pro_month": "Pro monthly",
+      "pro_year": "Pro yearly",
+      "vip_month": "VIP",
+      "vip_year": "VIP yearly",
+      "pro_lealtad": "Pro Loyalty"
+    },
+    "renewMonth": "Renews every month.",
+    "renewYear": "Renews every year.",
+    "nextCharge": "Next charge: {fecha}",
+    "priceMonth": "{monto} MXN a month",
+    "priceYear": "{monto} MXN a year",
+    "trialLeft": "{n} days left · ends on {fecha}",
+    "trialAfter": "After the trial: {plan} · {monto} MXN {periodo}",
+    "periodYear": "a year",
+    "periodMonth": "a month",
+    "cancelledUntil": "{plan} until {fecha}",
+    "noMoreCharges": "There will be no more charges.",
+    "reactivate": "Reactivate {plan}",
+    "pastDueAmount": "We couldn’t charge {monto} MXN",
+    "pastDueBody": "Update your card before {fecha} to keep {plan}.",
+    "updateCard": "Update card",
+    "changeCta": "Change plan",
+    "freeBody": "No card · Forever",
+    "freeCta": "See plans",
+    "next": {
+      "title": "Next charge",
+      "notice7": "Email notice 7 days before",
+      "notice30": "Email notice 30 and 7 days before",
+      "noticeOn": "Email notice on {fecha}",
+      "retry": "Mercado Pago will try again in the next few days",
+      "afterCancel": "After {fecha} you’ll move to the Free plan. Your results stay saved."
+    },
+    "method": "Payment method",
+    "methodSub": "Expires {exp}",
+    "methodChange": "Change card",
+    "credits": "This month’s credits",
+    "change": {
+      "title": "Change plan",
+      "toYear": "Move to Pro yearly",
+      "toYearSub": "Save {ahorro} a year. Applies today, with credit for the unused part of your month",
+      "toMonth": "Move to Pro monthly",
+      "toMonthSubYear": "Starts when your paid year ends",
+      "toVip": "Upgrade to VIP",
+      "toVipSub": "Applies today; we show you the adjustment first",
+      "toFree": "Move to Free",
+      "toFreeSubMonth": "When your paid month ends",
+      "toFreeSubYear": "When your paid year ends",
+      "downMonth": "Move down to Pro monthly",
+      "downYear": "Move down to Pro yearly",
+      "nextDate": "Starts on your next charge date",
+      "trialSwitch": "Switch to {plan} (before the first charge)",
+      "priceYearShort": "{monto} a year",
+      "priceMonthShort": "{monto} a month",
+      "toVipYear": "Upgrade to VIP yearly",
+      "toVipYearFromMonth": "Switch to VIP yearly",
+      "toVipMonth": "Switch to VIP monthly"
+    },
+    "invoices": "Invoices",
+    "invoicesEmpty": "None yet",
+    "invoiceRow": "{fecha} · {plan} · {monto}",
+    "movement": {
+      "approved": "Charged",
+      "rejected": "Failed",
+      "refunded": "Refunded",
+      "pending": "Pending",
+      "pack": "Extra credits",
+      "plan": "Plan"
+    },
+    "cancelSub": "Cancel subscription",
+    "cancelTrial": "Cancel trial",
+    "cancelSubSub": "1 click, no calls. You keep {plan} until {fecha}.",
+    "cancelTrialSub": "1 click, no calls",
+    "loadError": "We couldn’t load your plan. Try again in a moment.",
+    "adminNote": "Admin accounts have VIP with no charge."
+  },
+  "cancel": {
+    "trial": {
+      "title": "Cancel your trial?",
+      "body": "You’ll keep Pro until <b>{fecha}</b>. After that you won’t be charged and you’ll move to the Free plan. Your clips and results stay saved."
+    },
+    "paid": {
+      "title": "Cancel your {plan} plan?",
+      "body": "You’ll keep {plan} until <b>{fecha}</b>. There will be no more charges. After that you’ll move to the Free plan and your results stay saved."
+    },
+    "offer": "Would you rather pay month to month?",
+    "offerCta": "Switch to {monto} a month",
+    "yes": "Yes, cancel",
+    "keep": "Keep {plan}",
+    "working": "Cancelling…",
+    "error": "We couldn’t cancel right now. Try again or write to us.",
+    "done": {
+      "title": "Done, you cancelled.",
+      "body": "You won’t be charged again. You have {plan} until <b>{fecha}</b>.",
+      "again": "If you change your mind, you can reactivate Pro any time.",
+      "home": "Back to Home",
+      "reactivate": "Reactivate Pro",
+      "folio": "Folio: {folio} · We sent the confirmation to {correo}"
+    },
+    "close": "Close"
+  },
+  "change": {
+    "metaTitle": "Change plan",
+    "title": "Change to {plan}",
+    "whenLater": "Your change starts on {fecha}. Until then you keep {plan}.",
+    "trialSwitch": "Your trial stays the same. When it ends, on {fecha}, {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount.",
+    "trialSwitchMoved": "Because you're switching plans, your first charge moves to {fecha} so we can notify you 5 days ahead; your trial stays free until then. That day {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount and date.",
+    "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
+    "card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
+    "cta": "Confirm change",
+    "toFreeTitle": "Move to Free",
+    "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
+    "toFreeCta": "Go to cancel",
+    "done": "Done. Your change is recorded.",
+    "credit": "We refund {credito} MXN for the unused part of your current plan."
+  },
+  "seller": {
+    "title": "Who sells",
+    "name": "Name",
+    "rfc": "Tax ID (RFC)",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Support hours",
+    "complaints": "Complaints",
+    "pending": "These details are published before payments open.",
+    "close": "Close"
+  },
+  "consents": {
+    "risk": {
+      "title": "Before you start",
+      "body": "{herramienta} gives <b>general information</b> generated with AI, the same for every user of your plan. <b>It is not financial, investment or betting advice</b>, it is not a personal recommendation for you and it does not take your balances, positions or goals into account. We don’t guarantee results and <b>you can lose all your money</b>. Chalyb is not an investment adviser registered with the CNBV, nor a brokerage, exchange or betting house.",
+      "read": "Read the full notice",
+      "check": "I understand and accept that the decisions and the risks are mine.",
+      "cta": "Understood, continue",
+      "error": "We couldn’t save your answer. Try again.",
+      "close": "Back to Home"
+    },
+    "likeness": {
+      "title": "Before using an AI voice or image",
+      "body": "You’re about to create an AI voice or image that looks or sounds like a real person. You may only do this with your own voice or image, or with the <b>prior written agreement</b> of the person shown. Using it to deceive or impersonate someone is prohibited.",
+      "check": "I confirm it’s my voice or image, or that I have the person’s written agreement, and I accept the <terms>Acceptable Use Policy</terms>.",
+      "cta": "Continue"
+    },
+    "connect": {
+      "body": "You are about to connect your {plataforma} account. Chalyb will be able to see your videos and <b>publish only when you say so</b> or turn on automatic publishing. We never see your password. You can disconnect it whenever you want.",
+      "cta": "Connect {plataforma}"
+    },
+    "autopublish": {
+      "check": "I understand that Chalyb will publish clips to <b>{cuenta}</b> following the rules I set, and that <b>I am responsible</b> for what gets published.",
+      "cta": "Turn on automatic publishing"
+    }
+  },
+  "wizard": {
+    "step": "Step {n} of 3",
+    "back": "Back",
+    "home": "Home",
+    "close": "Close and go back to Home",
+    "continue": "Continue",
+    "unsaved": "Leave? What you wrote won’t be saved.",
+    "fixFields": "Check the highlighted fields.",
+    "edit": "Change",
+    "leave": "Yes, leave",
+    "stay": "Stay here"
+  },
+  "signals": {
+    "metaTitle": "Signals",
+    "s1": {
+      "title": "Which coins interest you?",
+      "sub": "Pick one or more. You can change them later.",
+      "count": "You picked <b>{n} coins</b>: {lista}.",
+      "same": "Signals are the same for everyone on your plan.",
+      "none": "Pick at least one coin."
+    },
+    "adv": {
+      "title": "Timeframe and notice hours",
+      "timeframe": "Timeframe",
+      "day": "Daily",
+      "week": "Weekly",
+      "quiet": "Don’t notify me at night (10 p.m. to 8 a.m.)"
+    },
+    "s2": {
+      "title": "How should we notify you?",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "app": "In the app",
+      "none": "Pick at least one channel."
+    },
+    "done": {
+      "title": "Your signals are active",
+      "sub": "We’ll notify you by {canal} when something important happens. Here’s the latest.",
+      "channels": "How we notify you",
+      "coins": "Your coins",
+      "edit": "Change",
+      "why": "See why",
+      "empty": "No signals for your coins yet. We’ll tell you as soon as there is one."
+    },
+    "disclaimer": "<b>This is information, not financial advice.</b> Signals are the same for everyone and don’t use your balances or investments. You decide.",
+    "readNotice": "Read the full notice",
+    "state": {
+      "buy": "Good moment to buy",
+      "sell": "Good moment to sell",
+      "wait": "Better wait"
+    },
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "none": "No rush"
+    }
+  },
+  "tools": {
+    "metaTitle": "Tools",
+    "yours": "Your tools",
+    "included": "Included in your plan",
+    "inPro": "Included in Pro",
+    "try": "Try it free",
+    "return": "Back to Pro",
+    "plans": "See plans",
+    "setup": "One step left",
+    "connect": "Connect now",
+    "open": "Open",
+    "strip": "Try Pro free for 7 days · Cancel any time.",
+    "tagline": {
+      "chalybclip": "Turn your stream into short clips for TikTok, Reels and Shorts.",
+      "chalybcrypto": "We tell you when it’s a good moment to buy or sell crypto.",
+      "chalybobs": "Run your stream and your OBS scenes with big buttons.",
+      "chalybbot": "A bot that answers your customers and followers, day and night.",
+      "chalybpicks": "Today’s sports forecasts, explained simply.",
+      "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
+      "chalybtrade": "Your exchange follows the rules you write. We can never withdraw your money.",
+      "chalito": "Approve from your phone what your coding agents want to do."
+    },
+    "crumb": "Home",
+    "sub": "They're all included in your {plan} plan and open right here.",
+    "also": "Also included",
+    "openArrow": "Open ›",
+    "status": {
+      "clipsBoth": "{n} in progress · {m} ready {cuando}",
+      "clipsWorking": "{n} in progress",
+      "clipsReady": "{m} ready {cuando}",
+      "clipsNone": "You don't have clips yet",
+      "signalsToday": "{n, plural, one {# new signal today} other {# new signals today}}",
+      "signalsNone": "No new signals today",
+      "liveSetup": "One step left: connect",
+      "liveReady": "Ready to go live",
+      "liveOn": "Live now"
+    }
+  },
+  "assistant": {
+    "metaTitle": "Assistant",
+    "s1": {
+      "title": "Where does it answer?",
+      "business": "Your business name",
+      "whatsapp": "WhatsApp",
+      "instagram": "Instagram",
+      "web": "Your website"
+    },
+    "s2": {
+      "title": "What should it know?",
+      "sub": "Paste your hours, prices and FAQs, or your website link.",
+      "label": "What your Assistant should know"
+    },
+    "s3": {
+      "title": "Try it",
+      "sub": "Write as if you were a customer.",
+      "label": "Your message",
+      "send": "Send",
+      "note": "Your Assistant always says it’s automatic. It never presents itself as a person.",
+      "saved": "Done. Your Assistant is answering."
+    }
+  },
+  "forecasts": {
+    "metaTitle": "Forecasts",
+    "title": "Today’s forecasts",
+    "sub": "Explained simply.",
+    "why": "Why",
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence"
+    },
+    "footer": "This is information only. It isn’t betting advice.",
+    "empty": "No forecasts today. Come back tomorrow."
+  },
+  "homes": {
+    "metaTitle": "Properties",
+    "s1": {
+      "title": "Your property",
+      "name": "Title",
+      "namePh": "House with garden in Querétaro"
+    },
+    "s2": {
+      "title": "Tell us about it",
+      "label": "Details",
+      "sub": "Bedrooms, bathrooms, size, price and what makes it special.",
+      "photos": "Links to your photos (one per line)"
+    },
+    "s3": {
+      "title": "Your listing is ready",
+      "share": "Share",
+      "copied": "Link copied",
+      "another": "Make another"
+    },
+    "note": "Chalyb doesn’t charge or receive payments for your deals."
+  },
+  "invest": {
+    "metaTitle": "Investments",
+    "s1": {
+      "title": "Connect your exchange",
+      "exchange": "Exchange",
+      "key": "API key",
+      "secret": "Secret key",
+      "consentText": "To connect {exchange}, Chalyb will process your API keys and account data (balances, positions, trades) only to show them to you and run the rules you set, as the <privacy>Privacy Notice</privacy> explains. We recommend <b>read-only</b> keys (and trading keys only if you’ll use automations). <b>We reject keys with withdrawal permission.</b>",
+      "noWithdraw": "<b>We can never withdraw your money.</b> Use read-only keys, or read and trade if you’ll use rules. We reject keys with withdrawal permission.",
+      "check": "I give my express consent for Chalyb to process this financial data.",
+      "cta": "Connect",
+      "rejected": "This key allows withdrawals. For your safety we don’t accept it. Create a new one without that permission.",
+      "noRead": "This key can’t read your account. Create one with read permission.",
+      "connected": "{exchange} connected"
+    },
+    "s2": {
+      "title": "Write your rule",
+      "sub": "You decide everything: what, when and how much.",
+      "asset": "Asset",
+      "side": "What to do",
+      "buy": "Buy",
+      "sell": "Sell",
+      "condition": "When (in your words)",
+      "max": "Maximum per order (MXN)",
+      "schedule": "Schedule",
+      "invalid": "Check the highlighted fields."
+    },
+    "s3": {
+      "title": "Review and activate",
+      "text": "This automation will send orders to your {exchange} account <b>only according to the rule you defined</b>: {resumen_regla}. Chalyb doesn’t choose assets, amounts or timing for you. You can pause it any time.",
+      "check": "I reviewed the rule and accept that the orders and their risks are mine.",
+      "activate": "Activate",
+      "pause": "Pause",
+      "resume": "Resume",
+      "active": "Active",
+      "paused": "Paused",
+      "summary": "{lado} {activo} {condicion}, up to {monto} MXN per order, {horario}",
+      "rules": "Your rules",
+      "newRule": "Write another rule"
+    }
+  },
+  "results": {
+    "metaTitle": "My results",
+    "title": "My results",
+    "sub": "Everything your tools did for you.",
+    "search": "Search my results",
+    "all": "All",
+    "ready": "Ready",
+    "noMatch": "We didn’t find “{busqueda}”. Try another word.",
+    "seeAll": "See all",
+    "creating": "Creating… {pct}%",
+    "viewClips": "See clips",
+    "open": "Open",
+    "share": "Share",
+    "clipsTitle": "{n} clips",
+    "propertyTitle": "{titulo}",
+    "empty": "No results yet",
+    "emptyBody": "When your tools finish something, it shows up here.",
+    "emptyCta": "Make my first clips",
+    "failed": "Couldn’t finish",
+    "seeWhy": "See what happened",
+    "copied": "Link copied",
+    "filters": "Filter results"
+  },
+  "help": {
+    "metaTitle": "Help",
+    "title": "Help",
+    "sub": "We’re here to help, in Spanish or English.",
+    "human": {
+      "title": "Talk to a person",
+      "sub": "We answer within minutes. No bots, no long waits.",
+      "subAlt": "We answer as soon as we can, in Spanish or English.",
+      "whatsapp": "WhatsApp",
+      "write": "Write"
+    },
+    "faq": "Common questions",
+    "q": {
+      "clips": "How do I make my first clips?",
+      "clipsA": "Tap Clips on Home, paste your video link and choose where you’ll post them. Done.",
+      "clipsCta": "Make clips",
+      "connect": "How do I connect YouTube or Twitch?",
+      "connectA": "You don’t need to connect anything to make clips: paste your video link. When your tool allows connecting accounts, the button will show in Clips.",
+      "credits": "What are credits?",
+      "creditsA": "They’re what the tools use to work, for example each clip. Your plan brings new credits every month.",
+      "plan": "How do I change or cancel my plan?",
+      "planA": "From My account → My plan. Cancelling is 1 click, no calls.",
+      "planCta": "See my plan",
+      "charge": "I have a problem with a charge",
+      "chargeA": "All we need is your email, the date and the amount. We answer in writing within 5 business days, and asking for a refund never works against you. You can also go to PROFECO or your bank at any time.",
+      "chargeCta": "Problem with a charge"
+    }
+  },
+  "notif": {
+    "metaTitle": "Notices",
+    "title": "Notices",
+    "today": "Today",
+    "week": "This week",
+    "earlier": "Earlier",
+    "markRead": "Mark as read",
+    "empty": "You have no notices.",
+    "bell": "Notices ({n} unread)",
+    "bellNone": "Notices",
+    "delete": "Delete",
+    "clipsReady": {
+      "title": "Your clips are ready",
+      "body": "We made {n} clips. They already have captions."
+    },
+    "trial7": {
+      "title": "Charge notice for your trial",
+      "body": "On {fecha_cobro} {monto} MXN will be charged unless you cancel before. You can cancel in 1 click."
+    },
+    "renew": {
+      "title": "Your plan renews in 7 days",
+      "body": "On {fecha_cobro} {monto} MXN will be charged."
+    },
+    "pastDue": {
+      "title": "We couldn’t charge your plan",
+      "body": "Update your card to keep it."
+    },
+    "liveEnded": {
+      "title": "Your stream ended",
+      "body": "It lasted {duracion}. Shall we make clips?"
+    },
+    "arcoReceived": {
+      "title": "We received your request about your data",
+      "body": "We’ll answer by {fecha}, at your account’s email."
+    },
+    "contentRemoved": {
+      "title": "We removed content after a copyright notice",
+      "body": "\"{contenido}\". If you think this was a mistake, you can send a counter-notice."
+    },
+    "contentRestored": {
+      "title": "We restored your content",
+      "body": "Your counter-notice was upheld: the content is available again."
+    },
+    "arcoAnswered": {
+      "title": "We answered your request about your data",
+      "body": "Reference {folio}. We emailed you the answer; you can also see it in My data."
+    }
+  },
+  "admin": {
+    "nav": {
+      "aria": "Owner panel",
+      "command": "Command center",
+      "people": "People",
+      "money": "Money",
+      "tools": "Tools",
+      "activity": "Activity",
+      "settings": "Settings",
+      "more": "More",
+      "owner": "Owner",
+      "viewApp": "View the app ›",
+      "menu": "Menu"
+    },
+    "more": {
+      "team": "Team, roles and credits",
+      "engines": "Engines (technical)",
+      "royalties": "Royalties",
+      "revenue": "Revenue by engine",
+      "audit": "Audit log",
+      "messages": "Messages",
+      "models": "AI Models",
+      "analytics": "Analytics",
+      "api": "API & Keys",
+      "labs": "Labs (not connected)",
+      "overview": "Technical view",
+      "legal": "Legal"
+    },
+    "hello": {
+      "morning": "Good morning 👋",
+      "afternoon": "Good afternoon 👋",
+      "night": "Good evening 👋"
+    },
+    "home": {
+      "metaTitle": "Command center",
+      "title": "Command center",
+      "sub": "How Chalyb is doing this month. What matters first.",
+      "range": "Period",
+      "today": "Today",
+      "week": "7 days",
+      "month": "This month",
+      "revenue": "Revenue this month",
+      "revenueSub": "VAT included · refunds already out",
+      "vsLast": "{delta} vs last month",
+      "noBase": "not enough data to compare",
+      "subscribers": "Active subscribers",
+      "subscribersSub": "+{n} this month",
+      "trials": "Active trials",
+      "trialsSub": "Ending this week: {n}",
+      "conversion": "Trial conversion",
+      "conversionSub": "Out of 10 trials, {n} stay",
+      "conversionNone": "not enough data ({n} trials finished)",
+      "attention": "Needs your attention",
+      "attentionNone": "Nothing pending. All good.",
+      "att": {
+        "failedCharges": "{n, plural, one {# failed charge} other {# failed charges}}",
+        "refundRequests": "{n, plural, one {# refund request} other {# refund requests}}",
+        "slowTools": "{n, plural, one {# slow tool} other {# slow tools}}",
+        "newIdeas": "{n, plural, one {# new idea} other {# new ideas}}",
+        "bouncedNotices": "{n, plural, one {# charge notice bounced} other {# charge notices bounced}}",
+        "chargesWithoutNotice": "{n, plural, one {# charge without a delivered notice (refundable)} other {# charges without a delivered notice (refundable)}}",
+        "cta": {
+          "failedCharges": "Review",
+          "refundRequests": "Reply",
+          "slowTools": "See",
+          "newIdeas": "Read",
+          "bouncedNotices": "See",
+          "chargesWithoutNotice": "Review"
+        },
+        "arcoDue": "{n, plural, one {# ARCO request due soon} other {# ARCO requests due soon}}",
+        "takedownsOpen": "{n, plural, one {# copyright notice} other {# copyright notices}}"
+      },
+      "tools": "Tools",
+      "health": {
+        "ok": "Working well",
+        "slow": "Slow today",
+        "down": "Not working now"
+      },
+      "seeActivity": "See activity",
+      "noData": "no data",
+      "loadFailed": "We couldn’t read this data right now.",
+      "revenueToday": "Revenue today",
+      "revenueWeek": "Revenue, last 7 days"
+    },
+    "people": {
+      "metaTitle": "People",
+      "title": "People",
+      "sub": "All your subscribers in one place.",
+      "search": "Search by name or email",
+      "chips": {
+        "all": "All",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "cancelled": "Cancelled"
+      },
+      "col": {
+        "person": "Person",
+        "plan": "Plan",
+        "status": "Status",
+        "since": "Since",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "ending": "Ending soon",
+        "cancelled": "Cancelled",
+        "free": "Free"
+      },
+      "empty": "Nobody matches that search.",
+      "none": "No subscribers yet.",
+      "actionsFor": "Actions for {nombre}",
+      "act": {
+        "giftMonth": "Give 1 free month",
+        "changePlan": "Change their plan",
+        "resendAccess": "Resend sign-in email",
+        "refundLast": "Refund last charge",
+        "cancel": "Cancel their subscription"
+      },
+      "giftBlocked": "They have an active automatic charge: a free month wouldn’t stop it.",
+      "choosePlan": "Choose the plan to offer",
+      "confirm": {
+        "step": "Confirm · step 2 of 2",
+        "no": "No, go back",
+        "giftMonth": {
+          "q": "Give {nombre} 1 month of Pro?",
+          "body": "They get Pro for 30 more days, no charge. Logged with your name.",
+          "yes": "Yes, give it"
+        },
+        "changePlan": {
+          "q": "Offer {plan} to {nombre}?",
+          "body": "They get an email to review it. Nothing is charged until they accept with their checkbox. Logged with your name.",
+          "yes": "Yes, send"
+        },
+        "resendAccess": {
+          "q": "Resend the sign-in email to {nombre}?",
+          "body": "They get a short-lived, single-use sign-in link. Logged with your name.",
+          "yes": "Yes, resend"
+        },
+        "refundLast": {
+          "q": "Refund {monto} MXN to {nombre}?",
+          "body": "It goes back to their card through Mercado Pago in 5 to 10 days. Logged with your name.",
+          "yes": "Yes, refund"
+        },
+        "cancel": {
+          "q": "Cancel {nombre}’s subscription?",
+          "body": "No more charges. They keep what they paid for until the period ends and get their folio by email. Logged with your name.",
+          "yes": "Yes, cancel"
+        }
+      },
+      "done": "Done. It’s in Activity.",
+      "err": {
+        "FORBIDDEN": "Only an admin can do this.",
+        "NOT_ALLOWED": "This action doesn’t apply to this person.",
+        "NOT_FOUND": "We couldn’t find this person.",
+        "MP_ERROR": "Mercado Pago didn’t respond. Nothing changed.",
+        "EMAIL_ERROR": "We couldn’t send the email. Nothing changed."
+      },
+      "refundReason": {
+        "label": "Legal case for the refund (Subscription Terms §7.2)",
+        "pick": "Pick the case",
+        "legal_7_2_a": "(a) Unauthorized charge or no consent",
+        "legal_7_2_b": "(b) Charge without a notice delivered 5+ days before",
+        "legal_7_2_c": "(c) Charge after cancelling",
+        "legal_7_2_d": "(d) Duplicate, error or more than the amount shown",
+        "legal_7_2_e": "(e) Service not provided or deficient because of Chalyb",
+        "legal_7_2_f": "(f) Offer or conditions not honored",
+        "legal_7_2_g": "(g) Closure without cause or removal of an essential feature",
+        "legal_7_2_h": "(h) Revocation (LFPC art. 56)",
+        "legal_7_2_i": "(i) Ordered by law, PROFECO or an authority"
+      }
+    },
+    "money": {
+      "metaTitle": "Money",
+      "title": "Money",
+      "sub": "One source of truth for your revenue.",
+      "source": "From Mercado Pago · updated hourly",
+      "revenue": "Revenue this month",
+      "revenueSub": "Refunds already deducted",
+      "trials": "Trials that convert",
+      "trialsSub": "{a} of {b} trials",
+      "failed": "Failed charges",
+      "failedSub": "{n, plural, one {# charge} other {# charges}} · retried automatically",
+      "refunds": "Refunds",
+      "refundsSub": "{n} this month",
+      "chart": "Revenue by month",
+      "chartAria": "{mes}: {monto}",
+      "funnel": "This month’s trials",
+      "funnelSteps": {
+        "started": "Started a trial",
+        "stillTrial": "Still on trial",
+        "paid": "Already paid",
+        "cancelled": "Cancelled"
+      },
+      "payments": "Payments",
+      "subscriptions": "Subscriptions",
+      "costs": "Costs",
+      "col": {
+        "date": "Date",
+        "person": "Person",
+        "concept": "Concept",
+        "amount": "Amount",
+        "state": "Status"
+      },
+      "state": {
+        "charged": "Charged",
+        "failed": "Failed",
+        "refunded": "Refunded",
+        "pending": "Pending"
+      },
+      "noMovements": "No movements this month yet.",
+      "subsBy": {
+        "active": "Active",
+        "trial": "On trial",
+        "past_due": "Payment due",
+        "cancelled": "Cancelled"
+      },
+      "costsNote": "Fixed costs set by hand, not measured. See src/lib/billing/operating-costs.ts.",
+      "iva": "Amounts include VAT.",
+      "recon": {
+        "title": "Real vs. recorded costs · Anthropic",
+        "note": "What Anthropic billed us against what the engines recorded (and so charged users). A positive gap is usage we paid for and didn't charge.",
+        "billed": "Billed by Anthropic",
+        "recorded": "Recorded",
+        "gap": "Gap",
+        "model": "Model",
+        "workspaces": "By Anthropic workspace",
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "error": {
+          "no_key": "ANTHROPIC_ADMIN_KEY is missing in Vercel",
+          "api": "Anthropic didn't answer (check it's an Admin key)",
+          "db": "couldn't read recorded usage"
+        }
+      }
+    },
+    "activity": {
+      "metaTitle": "Activity",
+      "title": "Activity",
+      "sub": "Everything that happened, in order. No sensitive personal data.",
+      "type": "Type",
+      "tool": "Tool",
+      "all": "All",
+      "types": {
+        "charge": "Charges",
+        "failed": "Failed",
+        "refund": "Refunds",
+        "cancel": "Cancellations",
+        "notice": "Notices",
+        "consent": "Consents",
+        "admin": "Team actions",
+        "tool": "Tools"
+      },
+      "empty": "Nothing with this filter in the last 30 days.",
+      "by": "by {quien}"
+    },
+    "tools": {
+      "metaTitle": "Tools",
+      "title": "Tools",
+      "sub": "What your customers see. Anything you hide disappears from Home, More tools, the landing page and counts.",
+      "visible": "Visible to customers",
+      "hidden": "Hidden",
+      "toggle": "Show {herramienta} to customers",
+      "failures": "{n, plural, one {# failure} other {# failures}} in 24 h",
+      "confirm": {
+        "q": "Hide {herramienta}?",
+        "body": "{n, plural, one {# paying person used it} other {# paying people used it}} in the last 30 days. The terms (§7.3) require notice in advance (30 days when possible) and an alternative or a refund. Logged with your name.",
+        "yes": "Yes, hide",
+        "no": "No, go back"
+      },
+      "err": "We couldn’t save the change. Try again.",
+      "incident": "Incident",
+      "incidentToggle": "Open incident in {herramienta}: the error screen says we've been alerted"
     },
     "settings": {
-      "loading": "Loading…",
-      "accountSection": "Account",
-      "name": "Name",
-      "email": "Email",
-      "save": "Save changes",
-      "saving": "Saving…",
-      "savedToast": "Profile updated",
-      "saveErrorPrefix": "Error",
-      "saveErrorFallback": "We couldn't save your profile.",
-      "prefsSection": "Preferences",
-      "prefsNote": "Language is saved to your account with the “Save changes” button above. The timezone and the switches below are stored in this browser only.",
-      "language": "Language",
-      "timezone": "Timezone",
-      "notifsSection": "Notifications",
-      "critical": "Critical errors",
-      "criticalSub": "We email and push you when something goes down.",
-      "daily": "Daily digest",
-      "dailySub": "Yesterday's revenue, jobs and errors, at 09:00.",
-      "marketing": "Marketing events",
-      "marketingSub": "When a post goes viral or engagement spikes.",
-      "securitySection": "Security",
-      "twofa": "2FA with an authenticator app",
-      "twofaSub": "The TOTP code is mandatory for Admin and Super Admin roles.",
-      "toggleAria": "Toggle {label}"
+      "metaTitle": "Settings",
+      "title": "Settings",
+      "sub": "What you save here is logged with your name.",
+      "pricing": "Prices",
+      "pricingNote": "Read only. Changed in src/config/pricing.ts.",
+      "plan": {
+        "pro_month": "Pro monthly",
+        "pro_year": "Pro yearly",
+        "vip_month": "VIP monthly",
+        "vip_year": "VIP yearly",
+        "pro_lealtad": "Pro Loyalty"
+      },
+      "toggle": "Offer Monthly as well as Yearly",
+      "toggleHelp": "If you turn it off, the trial and Plans offer Yearly only.",
+      "saved": "Saved.",
+      "saveError": "Couldn’t save.",
+      "seller": "Who sells",
+      "sellerMissing": "Not configured",
+      "legal": "Legal documents",
+      "version": "version {v}",
+      "account": "Your account",
+      "org": "Organization",
+      "security": "Security",
+      "readOnly": "Read only",
+      "rows": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "orgName": "Name",
+        "timezone": "Time zone",
+        "auth": "Sign-in",
+        "twofa": "Two-factor"
+      },
+      "authValue": "Supabase Auth",
+      "twofaValue": "Not connected",
+      "margin": "Margin on usage cost",
+      "marginHelp": "Users' balances are charged the real provider cost plus this percentage. Applies to new usage; what's already recorded doesn't change.",
+      "marginSave": "Save",
+      "packs": "Credit pack prices",
+      "packsHelp": "What the customer pays for each pack. The same price is used in the store, the payment, Mercado Pago and the packs legal page. Applies to new purchases.",
+      "packName": {
+        "tokens_100k": "Small · 100,000 credits",
+        "tokens_500k": "Medium · 500,000 credits",
+        "tokens_2m": "Large · 2,000,000 credits"
+      },
+      "ivaLegend": "VAT (IVA)",
+      "ivaIncluded": "VAT included: the price you type is the total",
+      "ivaAdd": "Add VAT to the price you type",
+      "ivaRate": "VAT rate",
+      "packTotal": "The customer pays {monto} MXN",
+      "packsSave": "Save prices",
+      "packsInvalid": "Check the prices: $1 to $100,000 per pack, and a rate from 0% to 50%.",
+      "packsMissing": "The saved prices couldn’t be read: pack purchases are closed until you save valid prices.",
+      "termsStale": "The published version of the Credit Pack Terms shows other prices: pack purchases stay closed until a version with these is published.",
+      "currencyNote": "Prices in MXN, always VAT-inclusive for the customer. USD prices never include VAT."
+    },
+    "example": "Example",
+    "disputes": {
+      "title": "Disputes and chargebacks",
+      "sub": "While a dispute is open, the account, plan and price don’t change. Section 7.2 cases are never contested.",
+      "empty": "No disputes.",
+      "col": {
+        "opened": "Opened",
+        "person": "Person",
+        "amount": "Amount",
+        "stage": "Stage",
+        "deadline": "Deadline",
+        "actions": "Actions"
+      },
+      "stage": {
+        "legal_closed": "Legal case: don’t contest",
+        "awaiting_resolution": "Waiting on Mercado Pago",
+        "ready_for_notice": "Ready for the notice",
+        "notice_running": "10 business days running",
+        "decided_none": "Closed, no measure",
+        "decided_bad_faith": "Bad faith decided"
+      },
+      "hint": {
+        "legal_closed": "Accept the dispute in Mercado Pago. No notice, no measure.",
+        "awaiting_resolution": "Generate the evidence package, upload it to Mercado Pago and record the result.",
+        "ready_for_notice": "Send the notice only if Subscription Terms §10.4 is met.",
+        "notice_running": "Record a payment or an answer. When the deadline passes, the written decision is made.",
+        "decided_none": "Case closed with no measure.",
+        "decided_bad_faith": "Measures apply only with CHARGEBACK_MEASURES_ENABLED. Content download always stays."
+      },
+      "open": "View case",
+      "close": "Close",
+      "sheetTitle": "Dispute for payment {pago}",
+      "nothingChanges": "The dispute changes nothing on the account: no access, plan, price or Pro Lealtad schedule change.",
+      "evidence": "Generate evidence package (PDF)",
+      "won": "Mercado Pago resolved it for Chalyb",
+      "lost": "Mercado Pago resolved it for the user",
+      "legal": "It’s a legal case: close with no notice or measure",
+      "payUrl": "Mercado Pago payment link for the amount owed",
+      "medida": "Measure the notice mentions",
+      "medidaSuspender": "Suspend paid features until paid",
+      "medidaCerrar": "Close the account (repeat cases only)",
+      "sendNotice": "Send the 10-business-day notice",
+      "responseOk": "Answered: the charge wasn’t theirs",
+      "responseNo": "Answered: not shown",
+      "paid": "Paid the amount",
+      "done": "Done. It’s on record.",
+      "err": {
+        "FORBIDDEN": "You don’t have permission.",
+        "NOT_ALLOWED": "That step doesn’t apply to this case.",
+        "PAY_URL": "A valid Mercado Pago payment link is missing.",
+        "EMAIL": "The email couldn’t be sent."
+      }
+    },
+    "legal": {
+      "title": "Legal",
+      "sub": "Data requests (ARCO) and copyright notices, with their legal deadlines.",
+      "error": "Couldn’t save. Try again.",
+      "arco": {
+        "title": "Open ARCO requests ({n})",
+        "none": "No open requests.",
+        "rights": {
+          "access": "Access",
+          "rectification": "Rectification",
+          "cancellation": "Cancellation",
+          "opposition": "Opposition",
+          "automated": "Objection to an automated decision"
+        },
+        "correct": "Correct value: {valor}",
+        "due": "Received {recibida} · answer by {fecha}",
+        "extended": "deadline extended",
+        "outcome": "Outcome",
+        "outcomes": {
+          "granted": "Granted",
+          "partially_granted": "Partly granted",
+          "denied": "Denied",
+          "incomplete": "Missing information"
+        },
+        "answer": "Record answer",
+        "extend": "Extend deadline (once)"
+      },
+      "takedown": {
+        "title": "Copyright notices ({n})",
+        "none": "No pending notices.",
+        "status": {
+          "received": "New",
+          "removed": "Removed",
+          "counter_noticed": "Counter-noticed"
+        },
+        "counterShown": "Counter-notice: {texto}",
+        "received": "Received {fecha}",
+        "deadline": "the claimant has until {fecha}",
+        "targetEmail": "Uploader’s email",
+        "remove": "Remove and block",
+        "reject": "Reject",
+        "counterText": "Counter-notice text",
+        "counter": "Record counter-notice",
+        "uphold": "Claimant showed a proceeding",
+        "repeat": "This account reached the repeat-infringer limit: review closing it (Acceptable Use §5.4).",
+        "noUser": "No account with that email.",
+        "lookup": "Find their jobs",
+        "pickSource": "Pick the exact video (or paste the link)",
+        "noJobs": "The panel found no job of this account with that video; you can still remove with the exact link.",
+        "sourceUrl": "Exact video link",
+        "willBlock": "Will block: {fuente}. Every job of theirs made from that video is hidden.",
+        "badSource": "That link can’t be normalized; check it’s the video’s link.",
+        "needReason": "Type the reason for rejecting.",
+        "rejectReason": "Reason for rejecting",
+        "done": "Done: the video is blocked, the person was notified, and {n} job(s) were hidden in the panel.",
+        "hubBlind": "The panel can’t see this account’s jobs (Clips runs in its own app). Paste the exact video link: Remove blocks it and notifies the person; clips already made must also be removed in the Clips tool.",
+        "engineToo": "Also remove the clips already made in the Clips tool.",
+        "tooLong": "That link is too long."
+      },
+      "notices": {
+        "title": "Change notices (≥ 30 days)",
+        "doc": "{doc}, version {version}",
+        "docs": {
+          "terminos": "Terms",
+          "suscripcion": "Subscription Terms",
+          "privacidad": "Privacy Notice"
+        },
+        "counts": "Sent: {sent} · in progress: {pending} · failed: {failed} · bounced: {bounced} · undeliverable: {undeliverable}",
+        "complete": "Every notice went out on {fecha}.",
+        "sending": "Sending since {fecha}; people still owed.",
+        "notStarted": "Sending hasn’t started.",
+        "inForce": "Applies from {fecha}.",
+        "notInForce": "Not in force yet: notices still owed (planned {fecha}; it moves if they finish late).",
+        "lost": "{n, plural, one {# person not noticed} other {# people not noticed}} (they stay on their current terms and aren’t asked to accept)"
+      },
+      "blocks": {
+        "title": "Blocked videos ({n})",
+        "none": "No blocked videos.",
+        "since": "Blocked since {fecha}",
+        "lift": "Lift block",
+        "error": "Couldn’t lift it. Try again."
+      }
     }
+  },
+  "priceChange": {
+    "eyebrow": "Price change notice · {fecha}",
+    "title": "The price of your {plan} plan is changing",
+    "today": "Today",
+    "from": "From {fecha}",
+    "line1": "Today you pay {anterior} MXN a {periodo}. From {fecha}: <b>{nuevo} MXN a {periodo}</b>, VAT included.",
+    "line2Gratis": "You’ll only be charged if you accept. If not, you keep {plan} until {fecha} and then move to Free, with no charge.",
+    "line2KeepOld": "You’ll only be charged if you accept. If not, you’ll keep paying {anterior} MXN a {periodo}.",
+    "remind": "We’ll remind you on {fecha} if you haven’t decided.",
+    "accept": "I accept the new price",
+    "decline": "No, thanks",
+    "cancel": "Cancel my plan",
+    "error": "We couldn’t save your answer. Please try again.",
+    "periodMonth": "month",
+    "periodYear": "year"
+  },
+  "freeplan": {
+    "f": {
+      "watermark": "Clips with a watermark",
+      "credits": "{creditos} credits every month",
+      "manual": "You download your clips yourself",
+      "community": "Community access"
+    },
+    "group": "Your Free account",
+    "credits": {
+      "used": "You used {usados} of {total}",
+      "link": "See my credits ›"
+    },
+    "method": {
+      "value": "No card",
+      "sub": "You don’t need one"
+    },
+    "other": "Other plans",
+    "vip": {
+      "title": "VIP",
+      "sub": "More credits and priority help",
+      "value": "{monto} a month"
+    },
+    "offer": {
+      "pill": "Included in Pro · Try it free",
+      "title": "Try Pro free for {dias} days",
+      "sub": "Monthly or yearly. Cancel in 1 click, no calls.",
+      "adds": "What Pro adds"
+    },
+    "add": {
+      "tools": "Every tool",
+      "credits": "{creditos} credits a month",
+      "noWatermark": "Clips without a watermark",
+      "logo": "Your logo on your clips",
+      "publish": "Post to your socials",
+      "community": "Premium community"
+    },
+    "price": {
+      "today": "You pay today",
+      "after": "After your {dias} days",
+      "monthUnit": "MXN a month",
+      "renew": "Renews every month",
+      "yearAlt": "or Pro yearly: {monto_anual} MXN a year",
+      "save": "Save {ahorro} a year · {pct}%"
+    },
+    "ctaTrial": "Start my {dias} free days",
+    "ctaNoTrial": "Choose Pro",
+    "legal": "Today we email you the charge notice with the date and the amount. Cancel in 1 click from My plan, no calls. Prices in MXN, VAT included.",
+    "legalNoTrial": "Renews every month until you cancel. Cancel in 1 click from My plan, no calls. Prices in MXN, VAT included.",
+    "choiceNote": "You choose monthly or yearly in the next step.",
+    "used": {
+      "title": "Choose your Pro plan",
+      "today": "Charged today",
+      "renew": "Renews every month until you cancel. Or {monto_anual} MXN a year."
+    },
+    "admin": "You’re an admin: everything is included, whatever the plan.",
+    "adminAdvanced": "Advanced options · Admins only",
+    "adminMissing": "To take payments, these variables are missing: {vars}",
+    "payDown": "We can’t take payments right now. Try again in a few hours or talk to a person.",
+    "human": "Talk to a person",
+    "payError": "We couldn’t open the payment. Try again in a moment.",
+    "retry": "Try again",
+    "activated": "Done, your plan is active.",
+    "salesSoon": "Soon you’ll be able to get Pro and VIP right here.",
+    "salesSoonBody": "Meanwhile, keep using Chalyb for free. We won’t charge you anything."
+  },
+  "credits": {
+    "title": "My credits",
+    "sub": "Credits are used when your tools work for you.",
+    "left": "You have",
+    "unit": "credits",
+    "used": "You used {usados} of {total} this month",
+    "none": "You’re out of credits this month. They renew on {fecha}.",
+    "renew": "They renew on <b>{fecha}</b>. You get {total} again.",
+    "extra": "Unused extra credits: <b>{n}</b>. Used once, after your plan’s.",
+    "held": "Extra credits set aside while a dispute is resolved: <b>{n}</b>. If it is resolved in Chalyb’s favor, they return to your balance.",
+    "unlimited": "No credit limit",
+    "admin": "You’re an admin.",
+    "cta": "Get more credits",
+    "lowCta": "Get more",
+    "tool": "Tool",
+    "byTool": {
+      "title": "What you used them on this month",
+      "generic": "You used it {n, plural, one {# time} other {# times}}"
+    },
+    "history": {
+      "title": "History",
+      "all": "See all",
+      "renewal": "Your credits renewed",
+      "pack": "You bought {n} credits"
+    },
+    "adv": {
+      "title": "Advanced options",
+      "tag": "For pros",
+      "limits": "Your plan’s limits",
+      "tech": "Technical detail",
+      "historyDays": "We keep your results for {n} days",
+      "streams": "Clips streams per month: {n}",
+      "pct": "You used {pct}% of this month’s credits",
+      "perThousand": "{n}-credit pack: {monto} MXN per 1,000",
+      "col": {
+        "date": "Date",
+        "tool": "Tool",
+        "operation": "Operation",
+        "kind": "Type",
+        "amount": "Amount"
+      },
+      "diag": "Diagnostics: {warnings}. Search the logs for the [/app/usage] prefix."
+    },
+    "sheet": {
+      "title": "Get more credits",
+      "sub": "They add to what you have. Your plan and charge date don’t change.",
+      "terms": "It’s a <b>one-time payment</b>, not a subscription. Extra credits are used after your plan’s and {vigencia}. Prices in MXN, VAT included.",
+      "noExpiry": "don’t expire",
+      "card": "You enter your card in the next step. Secure payment with Mercado Pago.",
+      "cta": "Continue to payment · {monto} MXN",
+      "later": "Not now",
+      "unavailable": "Credit packs aren’t available right now. Try again later."
+    },
+    "pack": {
+      "name": "{n} credits",
+      "small": "For a few more clips",
+      "mid": "Each credit costs you less",
+      "big": "The cheapest per credit, for daily use",
+      "once": "One-time payment"
+    },
+    "paid": "<b>Payment received.</b> Your credits land in a few minutes.",
+    "low": "You’re running low: <b>{pct}%</b> of your credits left. They renew on {fecha}.",
+    "empty": {
+      "title": "You haven’t used your credits yet",
+      "body": "When you make your first clip, you’ll see here what they went to.",
+      "cta": "Make my first clip"
+    },
+    "error": {
+      "title": "We couldn’t load your credits",
+      "body": "Your credits are fine; we just couldn’t show them right now.",
+      "cta": "Try again"
+    },
+    "partner": {
+      "title": "Your partner earnings",
+      "month": "This month · paid when the month closes",
+      "paid": "Paid on {fecha}"
+    },
+    "soon": "Soon you’ll be able to get more credits right here.",
+    "invoice": "Need an invoice (CFDI) for a pack? Email <b>{correo}</b> with your RFC within the same month as your purchase."
+  },
+  "profile": {
+    "title": "My profile",
+    "data": "Your details",
+    "photo": "Your photo",
+    "photoSub": "Optional",
+    "photoCta": "Change photo",
+    "name": "Your name",
+    "nameError": "Enter your name (at least 2 letters).",
+    "nameTooLong": "Your name can have up to 120 letters.",
+    "email": "Email",
+    "emailHint": "We send your notices and receipts here.",
+    "langTime": "Language and time",
+    "language": "Language",
+    "timezone": "Time zone",
+    "tzHint": "We use this time in your notices and dates.",
+    "tz": {
+      "America_Mexico_City": "Mexico City",
+      "America_Tijuana": "Tijuana",
+      "America_Hermosillo": "Hermosillo",
+      "America_Cancun": "Cancún",
+      "America_New_York": "New York",
+      "America_Los_Angeles": "Los Angeles",
+      "Europe_Madrid": "Madrid"
+    },
+    "notifs": "Notifications",
+    "n": {
+      "critical": "If something stops working",
+      "criticalSub": "We let you know by email and on your phone.",
+      "daily": "Daily summary",
+      "dailySub": "What your tools did yesterday, at {hora}.",
+      "dailyHour": "9:00 a.m.",
+      "viral": "When one of your clips does really well",
+      "viralSub": "If it goes viral or gets lots of reactions.",
+      "marketing": "News and offers",
+      "marketingSub": "Tips and offers by email. Turn it off anytime."
+    },
+    "adv": "Advanced options",
+    "advTag": "Security",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "note": {
+      "clean": "Everything is saved to your account: it looks the same on your phone and your computer.",
+      "dirty": "You have unsaved changes."
+    },
+    "saved": "Done, your changes are saved.",
+    "saveError": "We couldn’t save. Check your connection and try again. Your changes are still here.",
+    "retry": "Try again",
+    "leave": {
+      "title": "Leave without saving? Your changes will be lost.",
+      "stay": "Keep editing",
+      "go": "Leave without saving"
+    }
+  },
+  "termsUpdate": {
+    "titles": {
+      "terminos": "We updated our Terms",
+      "suscripcion": "We updated our Subscription Terms",
+      "privacidad": "We updated our Privacy Notice"
+    },
+    "lead": "Starting <b>{fecha}</b>, a few things change:",
+    "seeAll": "See all changes",
+    "disagree": "If you don’t agree, you can cancel your plan at no cost.",
+    "accept": "Accept and continue",
+    "options": "I don’t accept, see options",
+    "error": "We couldn’t save your answer. Please try again.",
+    "banner": {
+      "terminos": "We updated the Terms.",
+      "suscripcion": "We updated the Subscription Terms.",
+      "privacidad": "We updated the Privacy Notice."
+    },
+    "bannerLink": "See changes",
+    "optionsPage": {
+      "title": "Your options",
+      "sub": "If you don’t accept the new Terms, they don’t apply to any charge. You can do any of these at any time:",
+      "cancel": {
+        "title": "Cancel your plan with no penalty",
+        "body": "You keep access until the end of the period you already paid for, and you won’t be charged again.",
+        "cta": "Cancel my plan"
+      },
+      "refund": {
+        "title": "Ask for a proportional refund",
+        "body": "If you have an annual plan and the change hurts you, you can ask us to refund the part you won’t use.",
+        "cta": "Write to us"
+      },
+      "download": {
+        "title": "Download your content",
+        "body": "Your clips and results are still available to download.",
+        "cta": "See my results"
+      },
+      "close": {
+        "title": "Close your account",
+        "body": "We help you close it and delete your data as the Privacy Notice explains.",
+        "cta": "Get help"
+      }
+    },
+    "changesPage": {
+      "title": "Changes to the Terms",
+      "versionLine": "Version {version} · In force from {fecha}",
+      "noDate": "date to be confirmed",
+      "none": "This version has no listed changes.",
+      "fullText": "Read the full text of this version"
+    }
+  },
+  "arco": {
+    "title": "My data (ARCO rights)",
+    "sub": "Ask to see, correct or delete your data, or object to a use. It’s free.",
+    "mine": "Your requests",
+    "answered": "Answered on {fecha}",
+    "pending": "We’ll answer by {fecha}",
+    "folio": "Reference {folio}",
+    "limits": "We may keep some data even if you ask us to delete it when the law requires it (for example, the evidence of your acceptance and your charges). In that case we lock it and use it only for that.",
+    "form": {
+      "right": "What would you like to do?",
+      "rights": {
+        "access": {
+          "title": "See my data (access)",
+          "body": "What data we hold about you and how we use it."
+        },
+        "rectification": {
+          "title": "Correct my data (rectification)",
+          "body": "Something inaccurate or incomplete."
+        },
+        "cancellation": {
+          "title": "Delete my data (cancellation)",
+          "body": "Erase it once the law no longer requires us to keep it."
+        },
+        "opposition": {
+          "title": "Object to a use (opposition)",
+          "body": "Stop using your data for a specific purpose."
+        },
+        "automated": {
+          "title": "Ask for human review of an automated decision",
+          "body": "For example, if the anti-fraud system refused you the free trial."
+        }
+      },
+      "description": "Tell us which data and what you need",
+      "dataLocation": "Where you saw it (screen, email, date)",
+      "correctValue": "The correct value",
+      "optional": "optional",
+      "identity": "We’ll answer at {correo}, your account’s email. If you act for someone else, reply to our email with their power of attorney.",
+      "submit": "Send request",
+      "sent": "Done. We received your request and will answer within 20 days at your account’s email.",
+      "errors": {
+        "description": "Tell us which data and what you need.",
+        "correctValue": "Enter the correct value.",
+        "send": "We couldn’t send your request. Please try again.",
+        "rateLimited": "You sent several requests today. Try tomorrow or write to us."
+      }
+    },
+    "outcome": {
+      "granted": "Granted",
+      "partially_granted": "Partly granted",
+      "denied": "Denied",
+      "incomplete": "Missing information"
+    },
+    "effectiveBy": "Carried out by {fecha} at the latest.",
+    "answeredWith": "Answered on {fecha}: {resultado}"
+  },
+  "takedown": {
+    "metaTitle": "Copyright notice",
+    "metaDescription": "Report content on Chalyb that infringes your copyright.",
+    "title": "Copyright notice",
+    "policy": "Acceptable Use Policy, section 5",
+    "intro": "If you own a copyright (or represent the owner) and believe content on Chalyb infringes it, send us this notice.",
+    "steps": {
+      "remove": "If it has the minimum details, we remove the content promptly.",
+      "block": "We take steps so the same content can’t be uploaded again.",
+      "notify": "We tell the person who uploaded it and send them a copy of the notice.",
+      "counter": "If that person sends a counter-notice, we tell you: you have 15 business days to show you started a proceeding, or we restore the content."
+    },
+    "policyLinkLead": "The full procedure is in the",
+    "policyLink": "Acceptable Use Policy, section 5",
+    "form": {
+      "claimantName": {
+        "label": "Your name (owner or legal representative)",
+        "hint": "Full name or company name"
+      },
+      "claimantContact": {
+        "label": "How we can reach you",
+        "hint": "Email or phone"
+      },
+      "contentIdentification": {
+        "label": "Which content you’re reporting",
+        "hint": "For example: the clip with song X"
+      },
+      "rightStatement": {
+        "label": "What right you hold over the work",
+        "hint": "For example: I’m the author; I represent label Y"
+      },
+      "contentLocation": {
+        "label": "Where the content is",
+        "hint": "Link, account name and date"
+      },
+      "workDescription": {
+        "label": "Description of the protected work",
+        "hint": "For example: song, video, photograph"
+      },
+      "ownershipEvidence": {
+        "label": "Documents proving your ownership or representation",
+        "hint": "Links or a description"
+      },
+      "optional": "optional",
+      "optionalNote": "The rest is optional: it helps us resolve faster, but removal never depends on it.",
+      "truthful": "I declare the information in this notice is true",
+      "required": "This field is required.",
+      "submit": "Send notice",
+      "error": "We couldn’t send the notice. Check the details and try again.",
+      "sentTitle": "We received your notice.",
+      "sentBody": "We’ll review it and contact you through the details you gave.",
+      "folio": "Reference {folio}.",
+      "rateLimited": "We received several notices in a row. Try again later or write to us."
+    }
+  },
+  "toolShell": {
+    "crumb": "Home",
+    "included": "Included in your plan",
+    "inProTry": "Included in Pro · Try it free",
+    "inPro": "Included in Pro",
+    "tabsAria": "{herramienta} sections",
+    "tab": {
+      "chalybclip": {
+        "main": "Make clips",
+        "history": "My clips",
+        "settings": "Settings"
+      },
+      "chalybcrypto": {
+        "main": "Signals",
+        "history": "History",
+        "settings": "Settings"
+      },
+      "chalybobs": {
+        "main": "Go live",
+        "history": "My streams",
+        "settings": "Settings"
+      },
+      "chalito": {
+        "main": "Home",
+        "history": "Sessions",
+        "settings": "Settings"
+      }
+    },
+    "error": {
+      "title": "{herramienta} didn't open this time",
+      "body": "Something failed on our side, it's not your fault.",
+      "saved": "What you already did is saved.",
+      "retry": "Try again",
+      "retrying": "Trying…",
+      "human": "Talk to a person",
+      "known": "We've been alerted and are fixing it.",
+      "code": "If you write to us, mention this code: <b>{codigo}</b>",
+      "meanwhile": {
+        "chalybclip": "Meanwhile, your earlier clips are still in",
+        "chalybcrypto": "Meanwhile, the latest signals are still in",
+        "chalybobs": "If you were already live, your stream keeps going in OBS.",
+        "chalito": "Meanwhile, your agents won't do anything that needs your approval."
+      },
+      "meanwhileLink": {
+        "chalybclip": "My results",
+        "chalybcrypto": "History"
+      }
+    },
+    "locked": {
+      "title": "{herramienta} comes with Pro",
+      "bodyTrial": "Try it free for 7 days. Cancel anytime.",
+      "ctaTrial": "Start my 7 free days",
+      "bodyPlans": "It's included in the Pro plan.",
+      "ctaPlans": "See plans"
+    },
+    "advanced": {
+      "title": "Advanced options",
+      "sub": "For professional creators"
+    },
+    "risk": {
+      "sub": "Read it once. It's 3 things.",
+      "b1": {
+        "title": "These are informational ideas, not personal advice.",
+        "body": "It's not financial advice or a recommendation for you."
+      },
+      "b2": {
+        "title": "Signals are the same for everyone on your plan.",
+        "body": "We don't use your balances, your investments or your goals."
+      },
+      "b3": {
+        "title": "You decide and the risk is yours.",
+        "body": "We don't guarantee results. You can lose money."
+      },
+      "legalK": "The notice, word for word",
+      "hint": "We'll only ask again if the notice changes."
+    },
+    "disclaimer": {
+      "text": "<b>This is informational, not financial advice.</b> Signals are the same for everyone and don't use your balances or your investments. You decide.",
+      "read": "Read full notice",
+      "sheetTitle": "Risk notice",
+      "close": "Close"
+    },
+    "autosave": "Changes save on their own.",
+    "saving": "Saving…",
+    "saved": "Saved"
+  },
+  "signalsTool": {
+    "metaTitle": "Signals",
+    "metaDetail": "{moneda} signal",
+    "metaHistory": "Signal history",
+    "metaSettings": "Signals settings",
+    "listTitle": "Your latest signals",
+    "filter": {
+      "all": "All",
+      "aria": "Filter by coin"
+    },
+    "new": "New",
+    "when": {
+      "today": "Today, {hora}",
+      "yesterday": "Yesterday, {hora}",
+      "date": "{fecha}, {hora}"
+    },
+    "verdict": {
+      "buy": "Buying moment",
+      "sell": "Selling moment",
+      "wait": "No clear signal"
+    },
+    "ref": "Reference price",
+    "why": "<b>Why:</b> {texto}",
+    "detail": "See details",
+    "detailAria": "See details for {moneda}",
+    "alerts": {
+      "title": "My alerts",
+      "change": "Change",
+      "yes": "On",
+      "no": "Off",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "app": "In the app",
+      "schedule": "Hours",
+      "range": "{desde} to {hasta}",
+      "allDay": "All day"
+    },
+    "legend": {
+      "title": "What does each one mean?",
+      "buy": "The price is rising steadily.",
+      "sell": "It rose fast and could drop.",
+      "wait": "Nothing is clear for now."
+    },
+    "empty": "There are no signals for your coins yet. We'll let you know as soon as there is one.",
+    "emptyAdd": "Add more coins",
+    "partial": "We couldn't get the new signals. Here are the latest ones we had.",
+    "retry": "Try again",
+    "history": {
+      "empty": "There are no signals in your history yet.",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "detailPage": {
+      "back": "Signals",
+      "range": {
+        "1d": "1 day",
+        "7d": "7 days",
+        "1m": "1 month"
+      },
+      "rangeAria": "Chart period",
+      "marker": "We alerted you here · {hora}",
+      "chartAria": "{moneda} price over the last {periodo}",
+      "whyTitle": "Why, in plain words",
+      "follow": "Get alerts for this coin",
+      "followVia": "By {canales}",
+      "same": "Everyone on your plan sees this same signal. It doesn't use your balances or your investments.",
+      "old": "This signal is from {fecha}. It may no longer apply.",
+      "notFound": {
+        "title": "We couldn't find this signal",
+        "body": "It may no longer be available.",
+        "cta": "See signals"
+      }
+    },
+    "settings": {
+      "coins": "Your coins",
+      "coinsHint": "You only choose which coins we alert you about. The signal is the same for everyone.",
+      "addCoin": "Add coin",
+      "removeCoin": "Remove {moneda}",
+      "how": "How we alert you",
+      "appHint": "A notification on your phone",
+      "when": "Hours",
+      "from": "Alert me from",
+      "to": "Until",
+      "night": "We don't bother you at night",
+      "days": "Days",
+      "daysAll": "Every day",
+      "daysWeekdays": "Monday to Friday",
+      "legal": "Important information",
+      "riskNotice": "Risk notice",
+      "riskAccepted": "You accepted it on {fecha}",
+      "readAgain": "Read again",
+      "advSummary": "Time frame, daily summary and alert format",
+      "timeframe": "Time frame",
+      "short": "Short term",
+      "medium": "Medium term",
+      "timeframeHint": "Filters which signals you get. They're the same for everyone.",
+      "daily": "Daily summary",
+      "dailyHint": "Once a day, when your hours start.",
+      "format": "Alert format",
+      "formatShort": "Short",
+      "formatExplained": "With explanation",
+      "error": "We couldn't save the change. Try again.",
+      "noCoins": "Choose at least one coin."
+    }
+  },
+  "liveTool": {
+    "metaTitle": "Live",
+    "metaConnect": "Connect your computer",
+    "metaStreams": "My streams",
+    "metaSettings": "Live settings",
+    "setup": {
+      "title": "Connect your computer",
+      "sub": "You only do this once. It takes about 2 minutes.",
+      "obs": "<b>What is OBS?</b> It's the free program that sends your computer's picture to YouTube or Twitch. We run it for you.",
+      "now": "Now",
+      "later": "Next",
+      "last": "Last",
+      "s1": {
+        "title": "Download the Live program",
+        "body": "Open it on the computer you stream from. If you don't have OBS, it installs it for you.",
+        "windows": "Download for Windows",
+        "mac": "Download for Mac",
+        "otherWindows": "Have Windows?",
+        "otherMac": "Have a Mac?",
+        "again": "Download didn't start? Download it again."
+      },
+      "s2": {
+        "title": "Type this code in the program",
+        "body": "The program asks for it when it opens. That's how we know it's your computer.",
+        "valid": "This code works for 10 minutes.",
+        "expired": "This code has expired.",
+        "newCode": "Get a new code",
+        "aria": "Your code: {codigo}"
+      },
+      "s3": {
+        "title": "Done!",
+        "body": "When it connects, you'll see a green check here and you can go live.",
+        "done": "Done! Your computer is connected."
+      },
+      "wait": "Waiting for your computer… This page updates on its own.",
+      "human": "Talk to a person",
+      "codeError": "We couldn't get you a code. Try again."
+    },
+    "room": {
+      "title": "Your stream",
+      "sub": "All set. Whenever you want, tap the big button.",
+      "obsOk": "OBS connected",
+      "platforms": "Your stream will go to {plataformas}",
+      "change": "Change",
+      "start": "Go live",
+      "startSub": "Starts in 3 seconds. You can stop it whenever you want.",
+      "on": "Live · {tiempo}",
+      "onLabel": "Live",
+      "viewers": "{n, plural, one {# person watching} other {# people watching}}",
+      "internet": "Internet",
+      "good": "Good",
+      "slow": "Slow",
+      "offline": "Offline",
+      "slowNote": "We lowered the quality so it doesn't cut out.",
+      "previewLive": "LIVE",
+      "previewLabel": "What your audience sees",
+      "scenes": "Scenes",
+      "scenesSub": "Tap one to change what your audience sees",
+      "onAir": "On screen",
+      "stop": "End stream",
+      "stopSub": "We'll ask before ending.",
+      "mic": "Microphone",
+      "cam": "Camera",
+      "micOn": "On",
+      "micOff": "Off",
+      "camOn": "On",
+      "camOff": "Off",
+      "clipsAfter": "Make clips when it ends",
+      "quick": "Quick controls",
+      "before": "Before you start",
+      "streamTitle": "Title",
+      "clipNow": "Clip this moment",
+      "clipNowSub": "Saves the last minute to Clips.",
+      "clipNowDone": "Done, we saved this moment. You'll see it in Clips in a few minutes.",
+      "clipNowNeedsRec": "To clip while live, turn on Save the recording in Settings.",
+      "clipNowError": "We couldn't save this moment. Try again.",
+      "advSummary": "Quality, servers and shortcuts",
+      "advBody": "Quality, servers and shortcuts are in Settings.",
+      "advLink": "Go to Settings",
+      "confirmTitle": "End your stream?",
+      "confirmBody": "Your audience will stop seeing you.",
+      "confirmYes": "Yes, end it",
+      "confirmNo": "Keep streaming",
+      "ended": "Your stream ended · It lasted {duracion}.",
+      "endedClips": "Make clips from this stream",
+      "endedList": "See my streams",
+      "startError": "We couldn't start your stream. Check that {plataforma} is still connected.",
+      "retry": "Try again",
+      "human": "Talk to a person",
+      "actionError": "We couldn't do that. Try again.",
+      "lost": "We lost the connection to your computer. Your stream may keep going in OBS.",
+      "reconnect": "Reconnect",
+      "offlineTitle": "Your computer isn't connected",
+      "offlineBody": "Open the Live program on your computer.",
+      "offlineCta": "Try again",
+      "noDestTitle": "Choose where to stream",
+      "noDestBody": "Turn on at least one platform to start.",
+      "noDestCta": "Go to Settings",
+      "confirmClose": "Close"
+    },
+    "streams": {
+      "title": "My streams",
+      "duration": "Lasted {duracion}",
+      "watch": "Watch recording",
+      "clips": "Make clips",
+      "noRecording": "The recording wasn't saved.",
+      "emptyTitle": "You don't have streams yet",
+      "emptyBody": "When you finish your first stream, it shows up here.",
+      "emptyCta": "Go to Go live"
+    },
+    "settings": {
+      "where": "Where you stream",
+      "whereNote": "You can stream to several at once.",
+      "connected": "{usuario} · connected",
+      "connect": "Connect",
+      "streamThere": "Stream on {plataforma}",
+      "device": "Your computer",
+      "deviceReady": "OBS ready · {sistema}",
+      "deviceNotReady": "OBS missing · {sistema}",
+      "deviceOn": "Connected",
+      "deviceOff": "Offline",
+      "disconnect": "Disconnect",
+      "addDevice": "Connect another computer",
+      "noDevice": "You haven't connected your computer yet.",
+      "noDeviceCta": "Connect my computer",
+      "quality": "Quality",
+      "recommended": "Recommended",
+      "auto": "Automatic",
+      "autoBody": "Adjusts itself to your internet.",
+      "high": "High",
+      "highBody": "For very fast internet.",
+      "saver": "Saver",
+      "saverBody": "If your internet is slow or you use data.",
+      "after": "When it ends",
+      "clipsAfter": "Make clips when it ends",
+      "clipsAfterBody": "They arrive in Clips",
+      "saveRecording": "Save the recording",
+      "saveRecordingBody": "So you can make clips while you stream.",
+      "keyNote": "Your stream key is hidden for security. It only shows in Advanced options.",
+      "advSummary": "Bitrate, servers, shortcuts and stream key",
+      "bitrate": "Bitrate (kbps)",
+      "resolution": "Resolution and fps",
+      "server": "Ingest server",
+      "serverAuto": "Automatic",
+      "key": "{plataforma} stream key",
+      "show": "Show",
+      "hide": "Hide",
+      "revealTitle": "Confirm it's you",
+      "revealBody": "Type your password to see the key.",
+      "password": "Your password",
+      "revealCta": "Show the key",
+      "revealError": "The password doesn't match.",
+      "revealSignIn": "Signed in with a link or Google? Sign in again and come back here.",
+      "revealSignInCta": "Sign in again",
+      "shortcuts": "Keyboard shortcuts",
+      "shortcutsBody": "You set the shortcuts in the Live program on your computer.",
+      "manual": "Manual OBS connection",
+      "manualBody": "If you'd rather not use the program, connect OBS with its address, port and password from the Live program.",
+      "saveError": "We couldn't save the change. Try again.",
+      "connectTitle": "Connect {plataforma}",
+      "close": "Close"
+    }
+  },
+  "clipsTool": {
+    "metaTitle": "Clips",
+    "metaMine": "My clips",
+    "metaDetail": "Clip details",
+    "metaSettings": "Clips settings",
+    "home": {
+      "hero": {
+        "title": "Make new clips",
+        "body": "Paste the link to your stream or video. We give you clips with captions, ready to post.",
+        "cta": "Make new clips",
+        "hint": "Takes 1 minute. Works with {plataformas}."
+      },
+      "noCredits": {
+        "title": "You ran out of credits this month. They renew on {fecha}.",
+        "cta": "See my plan"
+      },
+      "accounts": "Connected accounts",
+      "accountsSettings": "Settings",
+      "connected": "Connected",
+      "connect": "Connect",
+      "processing": "In progress",
+      "processingHint": "We'll let you know when they're ready",
+      "row": {
+        "title": "Clips from “{titulo}”",
+        "step": "{paso}…",
+        "eta": "About {n} minutes left.",
+        "stepOf": "Step {n} of 4",
+        "progress": "Progress of “{titulo}”",
+        "see": "See progress",
+        "failed": "We couldn't finish “{titulo}”.",
+        "noCharge": "No credits were used.",
+        "retry": "Try again"
+      },
+      "steps": {
+        "receiving": "Receiving your video",
+        "finding": "Finding the best moments",
+        "captions": "Adding captions",
+        "preparing": "Preparing the download"
+      },
+      "more": "and {n} more",
+      "latest": "Your latest clips",
+      "latestAll": "See all ({n})",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "card": {
+      "meta": "{fecha} · {formato}",
+      "open": "Open {titulo}"
+    },
+    "format": {
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "square": "Square"
+    },
+    "mine": {
+      "title": "My clips",
+      "search": "Search my clips",
+      "filters": "Filter by format",
+      "all": "All",
+      "count": "{n, plural, one {# clip} other {# clips}}",
+      "none": "No clips match that filter.",
+      "empty": {
+        "title": "You don't have clips yet",
+        "body": "Make your first one in 1 minute. Just paste your stream's link."
+      }
+    },
+    "detail": {
+      "back": "My clips",
+      "position": "Clip {n} of {total}",
+      "prev": "Previous clip",
+      "next": "Next clip",
+      "title": "Clip title",
+      "titleHint": "This is its name when you post it",
+      "captions": "Captions",
+      "captionsSub": "{idioma} · {estilo}",
+      "trim": "Trim",
+      "trimHint": "Drag the purple edges",
+      "trimStart": "Starts at <b>{t}</b>",
+      "trimLength": "Lasts <b>{t}</b>",
+      "trimEnd": "Ends at <b>{t}</b>",
+      "trimStartHandle": "Trim start",
+      "trimEndHandle": "Trim end",
+      "format": "Format",
+      "download": "Download",
+      "preparing": "Preparing your download…",
+      "share": "Share",
+      "copied": "Link copied",
+      "publish": "Post to {plataforma}",
+      "published": "Done, we sent it to {plataforma}.",
+      "publishError": "{plataforma} didn't respond. We'll try again in a few minutes and let you know.",
+      "autosave": "Changes save on their own. Your original clip isn't deleted.",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "We couldn't save that change. Try again.",
+      "player": "Preview of {titulo}",
+      "notFound": {
+        "title": "We couldn't find this clip",
+        "cta": "See my clips"
+      }
+    },
+    "langs": {
+      "es": "Spanish (Mexico)",
+      "en": "English"
+    },
+    "presets": {
+      "clasico": "Classic",
+      "amarillo": "Yellow",
+      "fondo": "With background",
+      "sample": "THIS WAS EPIC"
+    },
+    "settings": {
+      "accounts": "Connected accounts",
+      "tiktokSub": "To post with one tap",
+      "captions": "Captions",
+      "captionsOn": "Add captions to my clips",
+      "captionLang": "Caption language",
+      "style": "Caption style",
+      "styleHint": "Tap one. We'll use it on your next clips.",
+      "brand": "Your brand",
+      "watermark": "Watermark / logo",
+      "watermarkSub": "Your logo in a corner of every clip",
+      "autosave": "Changes save on their own and apply to your next clips.",
+      "autopublish": "Post automatically to my accounts",
+      "autopublishAccount": "Account",
+      "autopublishOn": "Automatic posting is on for {cuenta}.",
+      "duration": "Clip length",
+      "durationAuto": "Automatic",
+      "durationFixed": "{n} seconds",
+      "framing": "Framing",
+      "framingCenter": "Auto center",
+      "framingFollow": "Follow the person",
+      "bulk": "Upload several videos at once",
+      "bulkHint": "Paste several links in step 1 of Make new clips.",
+      "bulkCta": "Make new clips"
+    },
+    "connect": {
+      "title": "Connect {plataforma}",
+      "close": "Close",
+      "error": "We couldn't start the connection. Try again."
+    },
+    "close": "Close and go back to Clips"
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "We couldn't find this page",
+    "lead": "The link may be mistyped, or the page may no longer exist.",
+    "home": "Go to the home page",
+    "app": "Back to Chalyb",
+    "help": "Get help"
+  },
+  "closeAccount": {
+    "metaTitle": "Close my account",
+    "title": "Close my account",
+    "sub": "Before you confirm, check what happens to your credits and your plan.",
+    "credits": {
+      "title": "Extra credits",
+      "some": "You have {n, number} unused extra credits. They are lost when you close your account.",
+      "none": "You have no unused extra credits.",
+      "unknown": "We couldn't read your extra credit balance. Try again later: we need to show it to you before closing your account."
+    },
+    "plan": {
+      "title": "Your plan",
+      "charging": "When you confirm, we cancel your plan and there are no more charges. While we close your account you keep your current access, until {fecha} at the latest.",
+      "chargingNoDate": "When you confirm, we cancel your plan and there are no more charges.",
+      "ending": "Your plan is already cancelled: there are no more charges.",
+      "none": "You don't have a paid plan."
+    },
+    "after": "Closing your account deletes your data as described in the Privacy Notice. We'll answer by email within 20 days with the date it will be closed.",
+    "onlyStopPaying": "Just want to stop paying? Cancel your plan in My plan and keep your account.",
+    "onlyStopPayingCta": "Go to My plan",
+    "check": "I understand that closing my account loses my unused extra credits and cancels my plan.",
+    "cta": "Close my account",
+    "back": "Back to My account",
+    "open": "You asked to close your account on {recibida}. We'll answer by {fecha} at the latest.",
+    "done": "We received your request to close your account. We'll answer by {fecha} at the latest.",
+    "errors": {
+      "credits_changed": "Your credit balance changed. Check the updated number and confirm again.",
+      "not_confirmed": "Tick the box to continue.",
+      "mp_error": "Mercado Pago didn't answer when cancelling your plan. Nothing was closed; try again in a few minutes.",
+      "rateLimited": "You've sent several requests today. Try again tomorrow.",
+      "send": "We couldn't send your request. Try again."
+    }
+  },
+  "packCheckout": {
+    "metaTitle": "Buy credits",
+    "title": "Buy {n} extra credits",
+    "once": "One-time payment",
+    "ivaIncluded": "Total price in MXN, VAT (IVA) included.",
+    "lead": "They don’t expire while your account exists and are used after your plan’s credits, once.",
+    "disclosure": "<b>{n} extra credits</b> for a <b>one-time charge of {monto} MXN</b>, VAT (IVA) included. It isn’t a subscription and doesn’t renew.",
+    "consent": "I accept a <b>one-time charge of {monto} MXN (VAT/IVA included)</b> for <b>{n} extra credits</b>. It isn’t a subscription and doesn’t renew. The credits don’t expire while my account exists, aren’t money and can’t be transferred. I accept the <terms>Credit Pack Terms</terms>.",
+    "consentError": "Tick the box to accept the one-time charge. Nothing was charged.",
+    "ctaHint": "Tick the box to continue.",
+    "cta": "Pay {monto} MXN",
+    "hostedHint": "Prefer OXXO, SPEI or Mercado Pago balance? Those are paid on Mercado Pago’s page.",
+    "hostedCta": "Pay {monto} MXN on Mercado Pago",
+    "invoice": "Need an invoice (CFDI)? Email <b>{correo}</b> with your RFC within the same month as your purchase.",
+    "secure": "Your card details go straight to Mercado Pago in secure fields; Chalyb never sees or stores them.",
+    "back": "Back to My credits",
+    "unavailableTitle": "Payments not available yet",
+    "unavailable": "Credit packs aren’t available right now. Try again later or write to us.",
+    "priceChanged": "The price changed. Reload the page to see the current one. Nothing was charged.",
+    "error": "We couldn’t process the payment. Try again in a moment.",
+    "approved": "<b>Payment approved.</b> Your credits are already in your balance. Taking you to My credits…",
+    "approvedToast": "Extra credits added.",
+    "pending": "<b>Payment under review.</b> Mercado Pago hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
+    "pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved."
   }
 }

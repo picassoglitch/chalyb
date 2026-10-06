@@ -1,0 +1,80 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Precios · Anual · prueba disponible</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><style>
+body{font-family:"Inter",-apple-system,system-ui,sans-serif;background:#fff}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap;font-style:normal}
+.pill svg.i{width:16px;height:16px}
+.pill.acc{background:var(--tint);color:var(--accent)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)}
+.pill.dark{background:var(--ink);color:#fff}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:3px 8px;border-radius:7px;white-space:nowrap}
+.band{background:#fff;padding:96px 0 88px}
+.sec{max-width:1280px;margin:0 auto;padding:0 40px}
+.shd{text-align:center;max-width:880px;margin:0 auto}
+.shd .label{margin-bottom:14px}
+.shd h2{font-size:48px;letter-spacing:-.04em;line-height:1.08;font-weight:750}
+.shd p{font-size:21px;color:var(--ink2);margin-top:14px;line-height:1.45}
+.ejbar{display:flex;justify-content:center;margin-top:18px}
+/* toggle — sits ABOVE the cards, centred */
+.tog{display:inline-flex;background:#EBEBF0;border-radius:18px;padding:5px;margin-top:30px;gap:4px}
+.tog span{height:54px;padding:0 26px;display:flex;align-items:center;gap:10px;border-radius:14px;font-size:19px;font-weight:600;color:var(--ink2)}
+.tog span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.tog .pill{font-size:13.5px;padding:4px 10px}
+/* cards: one grid, subgrid rows => equal heights + every row (price, CTA, list) aligned */
+.pc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(6,auto);column-gap:24px;row-gap:0;margin-top:52px;align-items:stretch}
+.pk{grid-row:span 6;display:grid;grid-template-rows:subgrid;row-gap:0;background:var(--bg);border-radius:28px;padding:34px 28px 32px;position:relative;min-width:0}
+.pk.hi{background:#fff;box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.pk .tagx{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:15px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap}
+.pk .tagx.cur{background:var(--ink)}
+.pk .hd h3{font-size:26px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.pk .hd .who{font-size:17.5px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.pk .hd .chip{margin-top:14px;font-size:15px;padding:7px 14px 7px 11px}
+.pk .pb{margin-top:24px;container-type:inline-size}
+.pk .pr{display:flex;align-items:baseline;gap:8px;white-space:nowrap;flex-wrap:nowrap}
+.pk .pr b{font-size:clamp(30px,12.2cqi,46px);font-weight:750;letter-spacing:-.045em;line-height:1}
+.pk .pr span{font-size:clamp(14px,5cqi,18.5px);font-weight:600;color:var(--ink2);letter-spacing:-.01em}
+.pk .pn{font-size:17.5px;color:var(--ink);font-weight:650;margin-top:10px}
+.pk .pb .tag-ej{margin-bottom:10px}
+.pk .ref{font-size:15.5px;color:var(--ink2);margin-top:6px}
+.pk .vl .save-g{font-size:16px;color:var(--ink2);font-weight:600}
+.lnk.mute{color:var(--ink2)}
+.pk .vl{margin-top:14px;min-height:30px}
+.pk .vl .pill{font-size:15px}
+.pk .vl .muted2{font-size:16.5px;color:var(--ink2)}
+.pk .vl .swy{font-size:16.5px}
+.pk .vl .was{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pk .vl .was s{font-size:18px;font-weight:600;color:var(--ink2);text-decoration-thickness:1.5px}
+.pk .vl .refl{font-size:15.5px;color:var(--ink2);line-height:1.45;margin-top:4px}
+.pk .vl .refl b{color:var(--ink);font-weight:650}
+.ph{font-style:normal;font-weight:700;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:0 5px;border-radius:5px;white-space:nowrap}
+.pk .vl .launch{font-size:16px;font-weight:650;color:var(--ink)}
+.pk .ct{margin-top:24px}
+.pk .btn{width:100%}
+.pk .btn.cur{background:#EBEBF0;color:var(--ink2);box-shadow:none}
+.pk .bn{font-size:15.5px;color:var(--ink2);text-align:center;margin-top:12px;line-height:1.45}
+.pk .bn b{color:var(--ink);font-weight:650}
+.pk .ft{margin-top:24px;padding-top:22px;border-top:1px solid #E1E1E8;align-self:start}
+.pk.hi .ft{border-top-color:var(--line)}
+.pk .ft h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:-.005em}
+.pk ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+.pk li{display:flex;gap:12px;font-size:17.5px;line-height:1.38}
+.pk li .ck{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.pk li .ck svg{width:15px;height:15px;stroke-width:3}
+.pk li.no{color:var(--ink3)} .pk li.no .ck{background:#E9E9EE;color:#A8A8B0}
+.pnote{text-align:center;font-size:17px;color:var(--ink2);margin-top:40px;line-height:1.6}
+.pnote small{display:block;font-size:15px;color:var(--ink2);margin-top:4px}
+.pnote a{display:table;margin:10px auto 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* ---------- mobile 390 ---------- */
+body.m .band{padding:56px 0 48px}
+body.m .sec{padding:0 20px}
+body.m .shd h2{font-size:31px;line-height:1.12}
+body.m .shd p{font-size:18px}
+body.m .tog{display:flex;width:100%;margin-top:22px;border-radius:16px;padding:4px}
+body.m .tog span{flex:1;justify-content:center;height:52px;padding:0 10px;font-size:18px;border-radius:13px}
+body.m .tog .pill{font-size:12.5px;padding:3px 8px}
+body.m .pc{display:flex;flex-direction:column;gap:30px;margin-top:40px}
+body.m .pk{display:block;padding:30px 22px 26px;border-radius:26px}
+body.m .pk .vl{min-height:0}
+body.m .pk .btn{height:60px}
+body.m .pnote{font-size:16px;margin-top:30px}
+</style></head><body class=""><section class="band" id="precios"><div class="sec"><div class="shd"><div class="label">Planes</div><h2>Empieza gratis, crece con Pro</h2><p>Prueba Pro gratis 7 días. Cancela en 1 clic, sin llamadas.</p><div class="tog" role="radiogroup"><span class="" role="radio" aria-checked="false">Mensual</span><span class="on" role="radio" aria-checked="true">Anual <i class="pill acc">Ahorra hasta 20%</i></span></div></div><div class="pc"><section class="pk" aria-labelledby="pl-gratis"><div class="hd"><h3 id="pl-gratis">Gratis</h3><div class="who">Para conocer Chalyb</div></div><div class="pb"><div class="pr"><b>$0</b></div><div class="pn">Sin tarjeta · Para siempre</div></div><div class="vl"></div><div class="ct"><button class="btn btn-secondary">Crear cuenta gratis</button></div><div class="bn"></div><div class="ft"><h4>Incluye:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Haz clips para probar (calidad SD, con marca de agua)</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Tus resultados se guardan 7 días</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>500 MB para tus videos y archivos</span></li><li class="no"><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M18 6 6 18M6 6l12 12"/></svg></span><span><span class="sr">No incluye: </span>Clips de tus transmisiones en vivo</span></li></ul></div></section><section class="pk hi" aria-labelledby="pl-pro"><div class="tagx">Más popular</div><div class="hd"><h3 id="pl-pro">Pro</h3><div class="who">Para quien publica cada semana</div><div><span class="pill acc chip"><svg class="i" viewBox="0 0 24 24" style=""><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>7 días gratis</span></div></div><div class="pb"><div class="pr"><b>$9,970</b><span>MXN al año</span></div><div class="pn">Se renueva cada año</div><div class="ref">o paga mes a mes: $997 MXN al mes (plan mensual)</div></div><div class="vl"><span class="pill acc">Ahorras $1,994 al año · 16%</span></div><div class="ct"><button class="btn btn-primary">Empezar mis 7 días gratis</button></div><div class="bn"><b>Hoy pagas $0.</b> El 10 de octubre se cobran $9,970 MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.</div><div class="ft"><h4>Incluye:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips sin marca de agua, en HD</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips de hasta 12 transmisiones en vivo al mes</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Tus resultados se guardan 90 días</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>5 GB para tus videos y archivos</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Cancela en 1 clic, sin llamadas</span></li></ul></div></section><section class="pk" aria-labelledby="pl-vip"><div class="hd"><h3 id="pl-vip">VIP</h3><div class="who">Para quien transmite a diario o maneja varios canales</div></div><div class="pb"><div class="pr"><b>$36,325</b><span>MXN al año</span></div><div class="pn">Se renueva cada año</div><div class="ref">o paga mes a mes: $3,799 MXN al mes (plan mensual)</div></div><div class="vl"><span class="save-g">Ahorras $9,263 al año · 20%</span></div><div class="ct"><button class="btn btn-secondary">Elegir VIP anual</button></div><div class="bn">Se cobra hoy. Cancela en 1 clic, sin llamadas.</div><div class="ft"><h4>Todo lo de Pro, más:</h4><ul><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips en 4K</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Clips de transmisiones en vivo sin límite al mes</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>Tus resultados se guardan 1 año</span></li><li class=""><span class="ck"><svg class="i" viewBox="0 0 24 24" style=""><path d="M20 6 9 17l-5-5"/></svg></span><span>50 GB para tus videos y archivos</span></li></ul></div></section></div><div class="pnote">Precios en MXN, IVA incluido.<small>Prueba Pro gratis 7 días: mensual o anual, una vez por cuenta y por tarjeta. VIP no tiene prueba.</small><a class="lnk">Ver todos los planes y qué incluyen</a></div></div></section></body></html>

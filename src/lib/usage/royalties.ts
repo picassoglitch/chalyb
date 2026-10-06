@@ -63,6 +63,14 @@ function currentPeriodStartIso(): string {
   ).toISOString();
 }
 
+/** The last month that has ended — the one finalize pays out. The current
+ *  month is still accruing, so a payout cut from it would miss whatever is
+ *  used after the click, and (engine_id, period_start) is unique, so that
+ *  late usage could never be paid. */
+export function previousPeriodStartIso(now = new Date()): string {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString();
+}
+
 function nextMonthStartIso(periodStartIso: string): string {
   const d = new Date(periodStartIso);
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString();
@@ -80,9 +88,10 @@ function nextMonthStartIso(periodStartIso: string): string {
  *  per active partner-eligible engine. The remaining JS work (enriching
  *  with engine name/slug + partner profile + already-finalized check) only
  *  touches a handful of rows per call. */
-export async function getCurrentPeriodAccruals(): Promise<RoyaltySummary> {
+export async function getCurrentPeriodAccruals(
+  periodStart: string = currentPeriodStartIso(),
+): Promise<RoyaltySummary> {
   const admin = createAdminClient();
-  const periodStart = currentPeriodStartIso();
   const periodEnd = nextMonthStartIso(periodStart);
 
   const emptyResult: RoyaltySummary = {

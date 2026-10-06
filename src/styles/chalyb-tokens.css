@@ -1,0 +1,2666 @@
+/* Chalyb 2026 design system (rebuild prompt §5, BUILD-SPEC §1).
+   Source: docs/design/app-reimagine/html/style.css + more_shared.py.
+
+   SCOPED: everything lives under .chalyb-app, which wraps the new subscriber
+   shell (and, later, the signup flow and the public site). The owner panel
+   (/dashboard) and the legacy /app screens keep their own dark theme
+   (dashboard.css) and never see these rules.
+
+   AA overrides (§5, Q28): --ink3 (#8E8E96) and --ok (#1FA855) fail 4.5:1 as
+   text, so text uses --ink3-text / --ok-text and the originals stay for icons,
+   dots and dividers only. */
+
+/* While the cookie banner is open it publishes its height as --consent-h
+   (cookie-banner.tsx): the page gets that much room at the bottom, and
+   scrolling to an element keeps it clear of the banner, so the banner never
+   covers content or a primary button (TOOLS-SPEC F6). */
+html {
+  scroll-padding-bottom: var(--consent-h, 0px);
+}
+body {
+  padding-bottom: var(--consent-h, 0px);
+}
+
+.chalyb-app {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --ink2: #5e5e66;
+  --ink3: #8e8e96;
+  --ink3-text: #6c6c74;
+  --line: #e6e6eb;
+  --accent: #5b4bff;
+  --accent-d: #4a3ae8;
+  --tint: #efedff;
+  --tint2: #f6f5ff;
+  --ok: #1fa855;
+  --ok-text: #167a3e;
+  --ok-tint: #e6f6ec;
+  --warn: #a65a00;
+  --warn-tint: #fff3df;
+  --warn-line: #ffd999;
+  --bad: #d70015;
+  --bad-tint: #ffedee;
+  --bad-line: #ffc9cd;
+  --side: #fbfbfd;
+  --r: 22px;
+  --shadow: 0 1px 2px rgba(16, 16, 40, 0.04), 0 6px 24px rgba(16, 16, 40, 0.06);
+  --shadow-lg: 0 2px 4px rgba(16, 16, 40, 0.04), 0 18px 48px rgba(16, 16, 40, 0.1);
+  --logo-grad: linear-gradient(140deg, #7b6cff 0%, #5b4bff 55%, #3f2fe0 100%);
+  --plan-grad: linear-gradient(135deg, #6b5cff 0%, #5b4bff 50%, #4632e6 100%);
+
+  /* Q27: system stack + Inter (loaded by the /app layout as --cc-body). */
+  font-family:
+    -apple-system, 'SF Pro Display', 'SF Pro Text', var(--cc-body, 'Inter'), Inter, system-ui,
+    sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.011em;
+  font-feature-settings: 'cv11', 'ss01';
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+.chalyb-app *,
+.chalyb-app *::before,
+.chalyb-app *::after {
+  box-sizing: border-box;
+}
+.chalyb-app :where(h1, h2, h3, p, ul, ol, dl, dd, figure) {
+  margin: 0;
+}
+.chalyb-app :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+.chalyb-app :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+.chalyb-app :where(button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.chalyb-app :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chalyb-app * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- Type ---------- */
+.chalyb-app .ch-eyebrow {
+  font-size: 20px;
+  color: var(--ink2);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.chalyb-app .ch-h1 {
+  font-size: 40px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.chalyb-app .ch-h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.chalyb-app .ch-sub {
+  font-size: 20px;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+.chalyb-app .ch-muted {
+  color: var(--ink2);
+}
+.chalyb-app .ch-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.chalyb-app .ch-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-h1 {
+    font-size: 29px;
+  }
+  .chalyb-app .ch-h2 {
+    font-size: 21px;
+  }
+  .chalyb-app .ch-eyebrow {
+    font-size: 18px;
+  }
+  .chalyb-app .ch-sub {
+    font-size: 17px;
+  }
+}
+
+/* ---------- Card ---------- */
+.chalyb-app .ch-card {
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Buttons ---------- */
+.chalyb-app .ch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 0 28px;
+  border-radius: 16px;
+  font-size: 19px;
+  font-weight: 600;
+  text-align: center;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+.chalyb-app .ch-btn svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.chalyb-app .ch-btn--primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(91, 75, 255, 0.32);
+}
+.chalyb-app .ch-btn--primary:hover {
+  background: var(--accent-d);
+}
+.chalyb-app .ch-btn--secondary {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px #dad6ff;
+}
+.chalyb-app .ch-btn--gray {
+  background: #ebebf0;
+  color: var(--ink);
+}
+.chalyb-app .ch-btn--danger {
+  background: #fff;
+  color: var(--bad);
+  box-shadow: inset 0 0 0 1.5px var(--bad-line);
+}
+.chalyb-app .ch-btn--ok {
+  background: var(--ok-text);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(31, 168, 85, 0.28);
+}
+.chalyb-app .ch-btn--white {
+  background: #fff;
+  color: var(--accent);
+}
+.chalyb-app .ch-btn--dark {
+  background: var(--ink);
+  color: #fff;
+}
+.chalyb-app .ch-btn--xl {
+  min-height: 68px;
+  font-size: 21px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 520px;
+}
+.chalyb-app .ch-btn--compact {
+  min-height: 48px;
+  font-size: 17px;
+  padding: 0 20px;
+  border-radius: 13px;
+  box-shadow: none;
+}
+.chalyb-app .ch-btn[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ---------- Chips & pills ---------- */
+.chalyb-app .ch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e1e1e8;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.chalyb-app .ch-chip--on {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-chip--sm {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.chalyb-app .ch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chalyb-app .ch-pill svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+.chalyb-app .ch-pill--ok {
+  background: var(--ok-tint);
+  color: var(--ok-text);
+}
+.chalyb-app .ch-pill--acc {
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-pill--warn {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-pill--bad {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-pill--gray {
+  background: #eeeef2;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pill--dark {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* ---------- Group + Row (iOS-style lists) ---------- */
+.chalyb-app .ch-ghead {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink3-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 20px 10px;
+}
+.chalyb-app .ch-group {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.chalyb-app .ch-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 68px;
+  padding: 12px 20px;
+  position: relative;
+  width: 100%;
+  text-align: left;
+}
+.chalyb-app .ch-row + .ch-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 72px;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+.chalyb-app a.ch-row:hover,
+.chalyb-app button.ch-row:hover {
+  background: #fafafc;
+}
+.chalyb-app .ch-row__ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: #fff;
+  background: var(--accent);
+}
+.chalyb-app .ch-row__ic svg {
+  width: 21px;
+  height: 21px;
+}
+.chalyb-app .ch-row__tx {
+  flex: 1;
+  min-width: 0;
+}
+.chalyb-app .ch-row__tx b {
+  display: block;
+  font-size: 19px;
+  font-weight: 550;
+}
+.chalyb-app .ch-row__tx small {
+  display: block;
+  font-size: 16px;
+  color: var(--ink3-text);
+  margin-top: 1px;
+}
+.chalyb-app .ch-row__val {
+  font-size: 18px;
+  color: var(--ink3-text);
+  text-align: right;
+}
+.chalyb-app .ch-row__chev {
+  color: #c4c4cc;
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* ---------- Switch / Segmented / Checkbox / Field ---------- */
+.chalyb-app .ch-switch {
+  width: 56px;
+  height: 34px;
+  border-radius: 17px;
+  background: #e3e3e8;
+  position: relative;
+  flex: none;
+}
+.chalyb-app .ch-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+  transition: left 0.15s;
+}
+.chalyb-app .ch-switch[aria-checked='true'] {
+  background: var(--accent);
+}
+.chalyb-app .ch-switch[aria-checked='true']::after {
+  left: 25px;
+}
+.chalyb-app .ch-seg {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-seg label {
+  position: relative;
+}
+.chalyb-app .ch-seg input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+.chalyb-app .ch-seg input:checked + span {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-seg input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.chalyb-app .ch-check {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: 17px;
+  color: var(--ink2);
+  line-height: 1.4;
+  cursor: pointer;
+}
+.chalyb-app .ch-check input {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px #c9c9d2;
+  background: #fff;
+  flex: none;
+  margin: -1px 0 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.chalyb-app .ch-check input:checked {
+  background: var(--accent);
+  box-shadow: none;
+}
+.chalyb-app .ch-check input:checked::after {
+  content: '';
+  width: 8px;
+  height: 14px;
+  border: solid #fff;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.chalyb-app .ch-field {
+  margin-top: 16px;
+}
+.chalyb-app .ch-field label {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.chalyb-app .ch-input {
+  width: 100%;
+  min-height: 62px;
+  border-radius: 16px;
+  background: #fff;
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px #dcdce3;
+  padding: 0 20px;
+  font-size: 19px;
+  color: var(--ink);
+  font-family: inherit;
+}
+.chalyb-app .ch-input::placeholder {
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-input:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 5px rgba(91, 75, 255, 0.12);
+}
+
+/* ---------- Disclosure / banners / states ---------- */
+.chalyb-app .ch-disc {
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e4e0ff;
+  padding: 22px 24px;
+  display: flex;
+  gap: 16px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.chalyb-app .ch-disc__ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--tint);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.chalyb-app .ch-disc b {
+  font-weight: 700;
+}
+.chalyb-app .ch-bnr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 10px 12px 10px 22px;
+  font-size: 18px;
+  line-height: 1.35;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-bnr__ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.chalyb-app .ch-bnr__ic svg {
+  width: 19px;
+  height: 19px;
+}
+.chalyb-app .ch-bnr__tx {
+  flex: 1;
+  min-width: 200px;
+}
+.chalyb-app .ch-bnr--trial {
+  background: var(--tint2);
+  border-bottom: 1px solid #e4e0ff;
+}
+.chalyb-app .ch-bnr--trial .ch-bnr__ic {
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-bnr--warn {
+  background: var(--warn-tint);
+  border-bottom: 1px solid var(--warn-line);
+}
+.chalyb-app .ch-bnr--warn .ch-bnr__ic {
+  background: #fff;
+  color: var(--warn);
+}
+.chalyb-app .ch-bnr--gray {
+  background: #eeeef2;
+  border-bottom: 1px solid var(--line);
+}
+.chalyb-app .ch-bnr--gray .ch-bnr__ic {
+  background: #fff;
+  color: var(--ink2);
+}
+.chalyb-app .ch-bnr--bad {
+  background: var(--bad-tint);
+  border-bottom: 1px solid var(--bad-line);
+}
+.chalyb-app .ch-bnr--bad .ch-bnr__ic {
+  background: #fff;
+  color: var(--bad);
+}
+.chalyb-app .ch-state {
+  text-align: center;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.chalyb-app .ch-state__ic {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: var(--tint);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+.chalyb-app .ch-state__ic svg {
+  width: 34px;
+  height: 34px;
+}
+.chalyb-app .ch-skel {
+  background: linear-gradient(90deg, #ececf1 25%, #f5f5f8 50%, #ececf1 75%);
+  background-size: 200% 100%;
+  animation: ch-shimmer 1.4s infinite;
+  border-radius: var(--r);
+}
+@keyframes ch-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Avatar / logo / tool icon / example tag ---------- */
+.chalyb-app .ch-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffb86b, #ff7a8a);
+  color: #fff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex: none;
+}
+.chalyb-app .ch-avatar--lg {
+  width: 88px;
+  height: 88px;
+  font-size: 32px;
+}
+.chalyb-app .ch-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chalyb-app .ch-logo__mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex: none;
+}
+.chalyb-app .ch-logo__word {
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.chalyb-app .ch-tool-ic {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-tool-ic svg {
+  width: 34px;
+  height: 34px;
+}
+.chalyb-app .ch-tool-ic--fill {
+  background: var(--accent);
+  color: #fff;
+}
+/* F9: each tool's own color (config/tools.ts). */
+.chalyb-app .ch-tool-ic--own {
+  background: color-mix(in srgb, var(--tool) 14%, #fff);
+  color: var(--tool);
+}
+.chalyb-app .ch-tool-ic--own.ch-tool-ic--fill {
+  background: var(--tool);
+  color: #fff;
+}
+.chalyb-app .ch-tag-ej {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #8e6a00;
+  background: #fff6d6;
+  border: 1px dashed #e8c55a;
+  padding: 2px 8px;
+  border-radius: 7px;
+}
+
+/* ---------- App shell ---------- */
+.chalyb-app.ch-shell {
+  display: flex;
+  min-height: 100dvh;
+}
+.chalyb-app .ch-side {
+  width: 272px;
+  flex: none;
+  background: var(--side);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 20px 24px;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+.chalyb-app .ch-side .ch-logo {
+  padding: 4px 12px 34px;
+}
+.chalyb-app .ch-nav a {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 60px;
+  padding: 0 16px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.chalyb-app .ch-nav a svg {
+  width: 26px;
+  height: 26px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-nav a[aria-current='page'] {
+  background: var(--tint);
+  color: var(--accent);
+  font-weight: 600;
+}
+.chalyb-app .ch-nav a[aria-current='page'] svg {
+  color: var(--accent);
+}
+.chalyb-app .ch-nav a:hover:not([aria-current='page']) {
+  background: #f1f1f5;
+}
+.chalyb-app .ch-side__extra {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.chalyb-app .ch-side__extra a {
+  font-size: 16px;
+  min-height: 48px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-me {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.chalyb-app .ch-me__n {
+  font-weight: 600;
+  font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-me__p {
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chalyb-app .ch-content {
+  padding: 52px 64px 40px;
+  flex: 1;
+}
+.chalyb-app .ch-content--legacy {
+  padding: 24px;
+}
+.chalyb-app .ch-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.chalyb-app .ch-mhead {
+  display: none;
+}
+.chalyb-app .ch-tabs {
+  display: none;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-side {
+    display: none;
+  }
+  .chalyb-app .ch-content,
+  .chalyb-app .ch-content--legacy {
+    padding: 16px 16px 120px;
+  }
+  .chalyb-app .ch-mhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 16px 4px;
+  }
+  .chalyb-app .ch-mhead__r {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chalyb-app .ch-iconbtn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--ink2);
+  }
+  .chalyb-app .ch-tabs {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 88px;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(250, 250, 252, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--line);
+    z-index: 20;
+  }
+  .chalyb-app .ch-tabs a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink2);
+    min-height: 48px;
+  }
+  .chalyb-app .ch-tabs a svg {
+    width: 28px;
+    height: 28px;
+  }
+  .chalyb-app .ch-tabs a[aria-current='page'] {
+    color: var(--accent-d);
+  }
+}
+
+/* ---------- Focus (wizard) layout ---------- */
+.chalyb-app .ch-flow {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.chalyb-app .ch-topbar {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 40px;
+  position: relative;
+}
+.chalyb-app .ch-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 18px 0 12px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.chalyb-app .ch-back svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+.chalyb-app .ch-toptitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 650;
+}
+.chalyb-app .ch-toptitle__mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--tint);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+.chalyb-app .ch-toptitle__mark svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-close {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+  color: var(--ink2);
+}
+.chalyb-app .ch-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.chalyb-app .ch-steps__bar {
+  display: flex;
+  gap: 8px;
+}
+.chalyb-app .ch-steps__bar i {
+  display: block;
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  background: #dcdce3;
+}
+.chalyb-app .ch-steps__bar i.on {
+  background: var(--accent);
+}
+.chalyb-app .ch-steps__t {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.chalyb-app .ch-col {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+}
+.chalyb-app .ch-col--narrow {
+  max-width: 760px;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-topbar {
+    padding: 0 16px;
+    min-height: 72px;
+  }
+  .chalyb-app .ch-toptitle {
+    position: static;
+    transform: none;
+  }
+  /* Icon-only on phones; the label stays for screen readers. */
+  .chalyb-app .ch-back span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .chalyb-app .ch-steps__bar i {
+    width: 52px;
+  }
+  .chalyb-app .ch-col {
+    padding: 24px 16px 48px;
+  }
+}
+
+/* ---------- Legacy screens inside the new shell ----------
+   Screens P2/P3 haven't rebuilt yet keep their dark cc- theme, contained in
+   a rounded panel so their variables (defined on .cc-shell) still resolve. */
+.chalyb-app .cc-shell.ch-legacy {
+  display: block;
+  height: auto;
+  min-height: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 8px 0 24px;
+}
+.chalyb-app .cc-shell.ch-legacy .cc-scroll {
+  overflow: visible;
+  height: auto;
+}
+
+/* dashboard.css paints the body dark and locks its scroll whenever a .cc-shell
+   is on screen. A legacy panel inside the new shell must not do that: the new
+   shell scrolls the page. Higher specificity than body:has(.cc-shell). */
+html body:has(.ch-shell),
+html body:has(.ch-flow) {
+  background: #f5f5f7 !important;
+  color: #1d1d1f !important;
+  overflow: auto !important;
+}
+
+/* ---------- Task card (Inicio) ---------- */
+.chalyb-app .ch-tasks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+/* F7: an odd last card (3 tools, no "Más herramientas") takes the full row
+   instead of leaving a hole in a 2×2 grid. */
+.chalyb-app .ch-tasks > .ch-task:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+.chalyb-app .ch-task {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 248px;
+  padding: 36px 28px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+.chalyb-app .ch-task:hover {
+  box-shadow: var(--shadow-lg);
+}
+.chalyb-app .ch-task--first {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-task .ch-tool-ic {
+  align-self: flex-start;
+}
+.chalyb-app .ch-task__tx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chalyb-app .ch-task__h {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.chalyb-app .ch-task__p {
+  font-size: 18px;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+.chalyb-app .ch-task__go {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f1f1f5;
+  color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-task--first .ch-task__go {
+  background: var(--accent);
+  color: #fff;
+}
+.chalyb-app .ch-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 22px;
+  border-radius: 22px;
+  background: var(--tint2);
+  box-shadow: inset 0 0 0 1.5px #e4e0ff;
+}
+.chalyb-app .ch-strip__ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.chalyb-app .ch-strip__ic svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+}
+.chalyb-app .ch-strip__tx {
+  flex: 1;
+  min-width: 220px;
+}
+.chalyb-app .ch-strip__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-tasks {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .chalyb-app .ch-task {
+    min-height: 0;
+    padding: 22px 18px;
+    gap: 16px;
+    border-radius: 22px;
+  }
+  .chalyb-app .ch-task .ch-tool-ic {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    align-self: center;
+  }
+  .chalyb-app .ch-task .ch-tool-ic svg {
+    width: 28px;
+    height: 28px;
+  }
+  .chalyb-app .ch-task__h {
+    font-size: 21px;
+  }
+  .chalyb-app .ch-task__p {
+    font-size: 16px;
+  }
+  .chalyb-app .ch-task__go {
+    background: none;
+    color: #c4c4cc;
+    width: 24px;
+  }
+  .chalyb-app .ch-task--first .ch-task__go {
+    background: none;
+    color: #c4c4cc;
+  }
+  .chalyb-app .ch-task__p--long {
+    display: none;
+  }
+}
+@media (min-width: 900px) {
+  .chalyb-app .ch-task__p--short {
+    display: none;
+  }
+}
+
+/* ---------- Skip link / toast ---------- */
+.chalyb-app .ch-skip {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 60;
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+}
+.chalyb-app .ch-skip:focus {
+  top: 16px;
+}
+.chalyb-app .ch-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 104px;
+  transform: translateX(-50%);
+  z-index: 70;
+  max-width: calc(100vw - 32px);
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  font-size: 17px;
+}
+@media (min-width: 900px) {
+  .chalyb-app .ch-toast {
+    bottom: 32px;
+  }
+}
+
+/* ---------- Mi cuenta ---------- */
+.chalyb-app .ch-acct {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 32px;
+  align-items: start;
+}
+.chalyb-app .ch-acct__col {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+.chalyb-app .ch-plan {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: 30px 32px;
+  background: var(--plan-grad);
+  color: #fff;
+  box-shadow: 0 18px 48px rgba(91, 75, 255, 0.28);
+}
+.chalyb-app .ch-plan::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+.chalyb-app .ch-plan__k {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.chalyb-app .ch-plan__h {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+.chalyb-app .ch-plan__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  position: relative;
+  z-index: 1;
+}
+.chalyb-app .ch-plan__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.chalyb-app .ch-plan__all svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-human {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 22px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--ok);
+}
+.chalyb-app .ch-human__ic {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ok-text);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-acct {
+    grid-template-columns: 1fr;
+  }
+  .chalyb-app .ch-plan {
+    padding: 24px 20px;
+  }
+  .chalyb-app .ch-plan__h {
+    font-size: 26px;
+  }
+}
+
+/* ---------- Wizard content (Clips) ---------- */
+.chalyb-app .ch-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+.chalyb-app .ch-center-col .ch-input {
+  max-width: 640px;
+}
+.chalyb-app .ch-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.chalyb-app .ch-fieldset legend {
+  margin-bottom: 4px;
+}
+.chalyb-app .ch-formats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  width: 100%;
+  margin-top: 12px;
+}
+.chalyb-app .ch-format {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 18px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.chalyb-app .ch-format input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+.chalyb-app .ch-format:has(input:checked) {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-format:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.chalyb-app .ch-format__t {
+  font-size: 19px;
+  font-weight: 650;
+}
+.chalyb-app .ch-format__shape {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #7b6cff, #3f2fe0);
+  margin-bottom: 6px;
+}
+.chalyb-app .ch-format__shape--vertical {
+  width: 54px;
+  height: 96px;
+}
+.chalyb-app .ch-format__shape--horizontal {
+  width: 120px;
+  height: 68px;
+  margin-top: 14px;
+  margin-bottom: 20px;
+}
+.chalyb-app .ch-format__shape--square {
+  width: 84px;
+  height: 84px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+.chalyb-app .ch-ring {
+  --p: 0%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--accent) var(--p), #e6e6eb 0);
+}
+.chalyb-app .ch-ring span {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-status {
+  width: 100%;
+  max-width: 520px;
+  padding: 8px 22px;
+  text-align: left;
+}
+.chalyb-app .ch-status__i {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  font-size: 18px;
+}
+.chalyb-app .ch-status__i + .ch-status__i {
+  border-top: 1px solid var(--line);
+}
+.chalyb-app .ch-status__dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  box-shadow: inset 0 0 0 2px #dcdce3;
+}
+.chalyb-app .ch-status__dot svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 3;
+}
+.chalyb-app .ch-status__i--done .ch-status__dot {
+  background: var(--ok);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-status__i--run .ch-status__dot {
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+.chalyb-app .ch-status__i--run {
+  font-weight: 650;
+}
+.chalyb-app .ch-status__i--wait {
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-clips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+}
+.chalyb-app .ch-clip {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-clip__thumb {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+}
+.chalyb-app .ch-clip__dur {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+.chalyb-app .ch-lnk {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-formats {
+    grid-template-columns: 1fr;
+  }
+  .chalyb-app .ch-format {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+  }
+  .chalyb-app .ch-format__shape {
+    transform: scale(0.55);
+    margin: -20px -14px;
+  }
+  .chalyb-app .ch-clips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Legacy text tones fail AA on the dark panel (--cc-txt-3 4.1:1, --cc-txt-4
+   2.3:1). Inside the new shell they are lifted to ≥ 5.4:1 until P2/P3
+   rebuild these screens; the owner panel keeps its own values. */
+.chalyb-app .cc-shell.ch-legacy {
+  --cc-txt-3: #8a929e;
+  --cc-txt-4: #848c98;
+  --cc-purple: #ab8fff;
+}
+.chalyb-app .cc-shell.ch-legacy :is(p, li, span, div) > a:not([class]) {
+  text-decoration: underline;
+}
+
+/* ---------- Billing ---------- */
+.chalyb-app .ch-plan-opt {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.chalyb-app .ch-plan-opt input {
+  width: 24px;
+  height: 24px;
+  margin-top: 4px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-plan-opt[data-on='true'] {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-plan-opt[data-highlight='true'] {
+  box-shadow:
+    0 0 0 2px var(--accent-soft, var(--accent)),
+    var(--shadow);
+}
+.chalyb-app .ch-plan-opt:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.chalyb-app .ch-summary {
+  padding: 22px 24px;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-summary dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 16px;
+  font-size: 17px;
+}
+.chalyb-app .ch-summary dt {
+  color: var(--ink2);
+}
+.chalyb-app .ch-summary dd {
+  font-weight: 600;
+  text-align: right;
+}
+.chalyb-app .ch-pay {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+.chalyb-app .ch-brick {
+  --cc-red: #d70015;
+  --cc-red-g: #ffedee;
+  --cc-txt-2: #5e5e66;
+  --cc-txt-3: #6c6c74;
+  --cc-line: #e6e6eb;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+.chalyb-app .ch-select {
+  min-height: 52px;
+  border-radius: 14px;
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px #dcdce3;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 17px;
+  background: #fff;
+  color: var(--ink);
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-pay {
+    grid-template-columns: 1fr;
+  }
+}
+.chalyb-app .ch-feats {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+.chalyb-app .ch-feats li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 17px;
+}
+.chalyb-app .ch-feats svg {
+  width: 20px;
+  height: 20px;
+  color: var(--ok-text);
+  flex: none;
+  margin-top: 2px;
+}
+.chalyb-app .ch-feats__no {
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-feats__no svg {
+  color: var(--ink3);
+}
+
+/* ---------- Plan cards (PRICING-CARDS-SPEC §3; mockups 80–85) ----------
+   One grid, equal columns; each card spans 6 subgrid rows so name, price,
+   value line, button, note and list line up across the three cards. Pro is
+   emphasised by its ring, badge and the only primary button (C16). */
+.chalyb-app .ch-pc-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; justify-items: center; }
+.chalyb-app .ch-pc-toggle {
+  display: inline-flex; gap: 4px; padding: 5px; border-radius: 999px;
+  background: #e9e9ee; box-shadow: inset 0 0 0 1px rgba(16, 16, 40, 0.04);
+}
+.chalyb-app .ch-pc-toggle__opt {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 54px;
+  padding: 0 26px; border: 0; border-radius: 999px; background: transparent;
+  font: inherit; font-size: 18px; font-weight: 600; color: var(--ink2); cursor: pointer;
+}
+.chalyb-app .ch-pc-toggle__opt[aria-checked='true'] {
+  background: #fff; color: var(--ink); box-shadow: var(--shadow);
+}
+.chalyb-app .ch-pc-toggle__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chalyb-app .ch-pc-toggle__pill {
+  padding: 4px 10px; border-radius: 999px; background: var(--tint);
+  color: var(--accent); font-size: 14px; font-weight: 700;
+}
+.chalyb-app .ch-pc-grid {
+  width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(6, auto); column-gap: 24px; row-gap: 0;
+}
+.chalyb-app .ch-pc {
+  position: relative; grid-row: span 6; display: grid; grid-template-rows: subgrid;
+  row-gap: 0; min-width: 0; border-radius: 28px; padding: 34px 28px 32px; background: var(--bg);
+}
+@supports not (grid-template-rows: subgrid) {
+  .chalyb-app .ch-pc { display: flex; flex-direction: column; }
+  .chalyb-app .ch-pc__hd { min-height: 130px; }
+  .chalyb-app .ch-pc__vl { min-height: 110px; }
+}
+.chalyb-app .ch-pc--pro { background: #fff; box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg); }
+.chalyb-app .ch-pc__badge {
+  position: absolute; top: -17px; left: 50%; transform: translateX(-50%);
+  padding: 6px 16px; border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: 15px; font-weight: 700; white-space: nowrap;
+}
+.chalyb-app .ch-pc__badge--ink { background: var(--ink); }
+.chalyb-app .ch-pc__hd { display: grid; gap: 6px; align-content: start; padding-bottom: 22px; }
+.chalyb-app .ch-pc__name { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+.chalyb-app .ch-pc__tag { font-size: 17.5px; color: var(--ink2); }
+.chalyb-app .ch-pc__chip {
+  justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+  padding: 6px 12px; border-radius: 999px; background: var(--tint); color: var(--accent);
+  font-size: 15.5px; font-weight: 700;
+}
+.chalyb-app .ch-pc__chip svg { width: 17px; height: 17px; }
+.chalyb-app .ch-pc__pb { container-type: inline-size; display: grid; gap: 4px; }
+.chalyb-app .ch-pc__pr { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.chalyb-app .ch-pc__amt { font-size: clamp(30px, 12.2cqi, 46px); font-weight: 750; letter-spacing: -0.045em; }
+.chalyb-app .ch-pc__unit { font-size: clamp(14px, 5cqi, 18.5px); font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-pc__renew { font-size: 17.5px; font-weight: 600; }
+.chalyb-app .ch-pc__vl { display: grid; gap: 12px; align-content: start; justify-items: start; padding: 12px 0 24px; }
+.chalyb-app .ch-pc__ref { font-size: 15.5px; color: var(--ink2); }
+.chalyb-app .ch-pc__save { font-size: 16.5px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-pc__switch {
+  padding: 0; border: 0; background: none; font: inherit; font-size: 16.5px; font-weight: 600;
+  text-align: left; cursor: pointer;
+}
+.chalyb-app .ch-pc__switch--ink { color: var(--ink2); }
+.chalyb-app .ch-pc__ct { align-self: start; }
+.chalyb-app .ch-pc__btn { width: 100%; min-height: 60px; padding-inline: 14px; font-size: clamp(16px, 1.25vw + 4px, 19px); }
+.chalyb-app .ch-pc__bn { padding: 12px 4px 26px; font-size: 15.5px; color: var(--ink2); text-align: center; }
+.chalyb-app .ch-pc__ft { display: grid; gap: 12px; align-content: start; padding-top: 24px; border-top: 1px solid var(--line); }
+.chalyb-app .ch-pc__fth { font-size: 15.5px; font-weight: 700; }
+.chalyb-app .ch-pc .ch-feats svg {
+  width: 26px; height: 26px; padding: 5px; border-radius: 50%; background: var(--tint); color: var(--accent);
+  margin-top: 0;
+}
+.chalyb-app .ch-pc .ch-feats__no svg { background: var(--line); color: var(--ink3); }
+.chalyb-app .ch-pc-foot { display: grid; gap: 8px; justify-items: center; text-align: center; color: var(--ink2); }
+.chalyb-app .ch-pc-foot__note { font-size: 15.5px; }
+@media (max-width: 1023px) {
+  .chalyb-app .ch-pc-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; row-gap: 30px; }
+  .chalyb-app .ch-pc { grid-row: auto; display: flex; flex-direction: column; }
+  .chalyb-app .ch-pc--pro { order: -1; }
+  .chalyb-app .ch-pc-toggle { width: 100%; }
+  .chalyb-app .ch-pc-toggle__opt { flex: 1; justify-content: center; padding: 0 12px; }
+}
+/* Three options (Lealtad on, mockup 88): on phones, three equal columns with
+   each pill under its label, so nothing spills at 320. The two-option toggle
+   above is untouched. */
+@media (max-width: 599px) {
+  .chalyb-app .ch-pc-toggle--3 {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 22px;
+  }
+  .chalyb-app .ch-pc-toggle--3 .ch-pc-toggle__opt {
+    flex-direction: column; justify-content: center; gap: 2px; min-width: 0;
+    min-height: 62px; padding: 8px 4px; border-radius: 18px; font-size: 16px; text-align: center;
+  }
+  .chalyb-app .ch-pc-toggle--3 .ch-pc-toggle__pill {
+    /* No chip behind it here, so the darker accent keeps AA (5.6:1 on the
+       toggle's grey; the accent itself is 4.4:1). */
+    padding: 0; background: transparent; color: var(--accent-d); font-size: 12.5px; white-space: nowrap;
+  }
+}
+
+.chalyb-app .ch-closable .ch-bnr {
+  padding-right: 52px;
+}
+
+/* ---------- Blocking gate (risk notice) ---------- */
+.chalyb-app .ch-gate { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(20, 20, 30, 0.45); }
+.chalyb-app .ch-gate__card { max-width: 600px; width: 100%; padding: 32px; display: grid; gap: 16px; border-radius: 28px; max-height: 92dvh; overflow: auto; }
+
+/* ---------- En vivo ---------- */
+.chalyb-app .ch-giant { width: 100%; min-height: 100px; border-radius: 24px; background: var(--accent); color: #fff; font-size: 28px; font-weight: 700; display: grid; place-items: center; gap: 4px; padding: 16px; box-shadow: 0 10px 28px rgba(91, 75, 255, 0.35); }
+.chalyb-app .ch-giant--stop { background: var(--bad); box-shadow: 0 10px 28px rgba(215, 0, 21, 0.3); }
+.chalyb-app .ch-giant__sub { font-size: 16px; font-weight: 500; opacity: 0.92; }
+.chalyb-app .ch-scene { min-height: 96px; padding: 16px; display: grid; gap: 8px; place-items: center; text-align: center; }
+.chalyb-app .ch-scene[aria-pressed='true'] { box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg); }
+
+/* ---------- Tool wizards (P3) ---------- */
+.chalyb-app .ch-err { color: var(--bad); font-weight: 600; font-size: 17px; }
+.chalyb-app .ch-textarea { height: auto; min-height: 120px; padding: 14px 18px; line-height: 1.5; resize: vertical; font: inherit; }
+.chalyb-app .ch-opt { display: flex; align-items: center; gap: 14px; padding: 16px 18px; min-height: 62px; cursor: pointer; font-size: 18px; }
+.chalyb-app .ch-opt input { width: 24px; height: 24px; accent-color: var(--accent); }
+.chalyb-app .ch-opt:has(input:checked) { box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg); }
+.chalyb-app .ch-chat { list-style: none; display: grid; gap: 12px; padding: 0; margin: 0; }
+.chalyb-app .ch-chat li { display: grid; gap: 8px; }
+.chalyb-app .ch-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); font-size: 17px; display: flex; gap: 8px; align-items: flex-start; }
+.chalyb-app .ch-bubble svg { flex: none; width: 20px; height: 20px; color: var(--accent-d); margin-top: 2px; }
+.chalyb-app .ch-bubble--me { justify-self: end; background: var(--accent); color: #fff; }
+
+/* ---------- Más herramientas ---------- */
+.chalyb-app .ch-tools { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.chalyb-app .ch-tool { display: flex; gap: 16px; align-items: center; padding: 18px; flex-wrap: wrap; }
+.chalyb-app .ch-tool__tx { flex: 1; min-width: 180px; display: grid; gap: 6px; justify-items: start; }
+.chalyb-app .ch-tool__name { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+.chalyb-app .ch-tool__tx .ch-muted { font-size: 16px; }
+
+/* ---------- Mis resultados ---------- */
+.chalyb-app .ch-search { position: relative; }
+.chalyb-app .ch-search svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; color: var(--ink2); pointer-events: none; }
+.chalyb-app .ch-search .ch-input { padding-left: 52px; }
+.chalyb-app .ch-chipbtn { background: none; border: 0; padding: 0; border-radius: 999px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
+.chalyb-app .ch-results { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.chalyb-app .ch-result { display: flex; align-items: center; gap: 14px; padding: 16px; flex-wrap: wrap; }
+.chalyb-app .ch-result__tx { flex: 1; min-width: 160px; display: grid; gap: 4px; justify-items: start; }
+.chalyb-app .ch-result__tx b { font-size: 18px; }
+.chalyb-app .ch-progress { display: block; width: 100%; max-width: 280px; height: 8px; border-radius: 99px; background: var(--line, #e5e5ea); overflow: hidden; }
+.chalyb-app .ch-progress span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+
+/* ---------- Ayuda ---------- */
+.chalyb-app .ch-faq { padding: 0 20px; }
+.chalyb-app .ch-faq summary { cursor: pointer; font-weight: 600; font-size: 18px; min-height: 62px; display: flex; align-items: center; }
+.chalyb-app .ch-faq[open] { padding-bottom: 18px; }
+.chalyb-app .ch-faq p { font-size: 17px; margin-bottom: 12px; }
+
+/* ---------- Avisos ---------- */
+.chalyb-app .ch-side__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.chalyb-app .ch-bell { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--ink); }
+.chalyb-app .ch-bell:hover { background: var(--fill, rgba(0, 0, 0, 0.05)); }
+.chalyb-app .ch-bell svg { width: 24px; height: 24px; }
+.chalyb-app .ch-bell__n { position: absolute; top: 4px; right: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; background: var(--bad); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.chalyb-app .ch-notices { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.chalyb-app .ch-notice { display: flex; gap: 14px; align-items: flex-start; padding: 16px; flex-wrap: wrap; }
+.chalyb-app .ch-notice[data-unread='true'] { box-shadow: inset 4px 0 0 var(--accent), var(--shadow); }
+.chalyb-app .ch-notice__tx { flex: 1; min-width: 180px; display: grid; gap: 4px; }
+.chalyb-app .ch-notice__tx b { font-size: 18px; }
+.chalyb-app .ch-iconbtn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; border: 0; background: transparent; color: var(--ink2); cursor: pointer; }
+.chalyb-app .ch-iconbtn:hover { background: var(--bad-tint); color: var(--bad); }
+.chalyb-app .ch-iconbtn svg { width: 22px; height: 22px; }
+
+/* ---------- Clips P3 ---------- */
+.chalyb-app .ch-paste { display: flex; gap: 10px; align-items: center; width: 100%; }
+.chalyb-app .ch-paste .ch-input { flex: 1; min-width: 0; }
+.chalyb-app .ch-btn svg { width: 20px; height: 20px; }
+.chalyb-app .ch-adv { width: 100%; padding: 0 20px; text-align: left; }
+.chalyb-app .ch-adv summary { cursor: pointer; min-height: 62px; display: flex; align-items: center; gap: 6px; font-size: 18px; flex-wrap: wrap; }
+.chalyb-app .ch-adv__body { display: grid; gap: 18px; padding-bottom: 20px; }
+.chalyb-app .ch-adv__row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.chalyb-app .ch-adv__row legend { font-weight: 600; font-size: 18px; margin-bottom: 8px; }
+.chalyb-app .ch-adv__row .ch-field span { display: block; font-weight: 500; margin-bottom: 6px; }
+
+/* ---------- Owner panel (P5) ---------- */
+.chalyb-app.ch-admin .ch-nav a { min-height: 50px; font-size: 17px; margin-bottom: 4px; }
+.chalyb-app.ch-admin .ch-nav a svg { width: 22px; height: 22px; }
+.chalyb-app .ch-wrap--wide { max-width: 1180px; }
+.chalyb-app .ch-adm-more { margin: 10px 0 16px; padding-top: 10px; border-top: 1px solid var(--line); }
+.chalyb-app .ch-adm-more summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; padding: 0 16px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-adm-more ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; }
+.chalyb-app .ch-adm-more a { display: flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; color: var(--ink2); font-size: 15px; }
+.chalyb-app .ch-adm-more a:hover { background: #f1f1f5; }
+.chalyb-app .ch-adm-mnav { display: none; }
+@media (max-width: 899px) {
+  .chalyb-app .ch-adm-mnav { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 4px; scrollbar-width: none; }
+  .chalyb-app .ch-adm-mnav a { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); }
+  .chalyb-app .ch-adm-mnav a svg { width: 18px; height: 18px; }
+  .chalyb-app .ch-adm-mnav a[aria-current='page'] { background: var(--tint); color: var(--accent-d); border-color: transparent; font-weight: 600; }
+  .chalyb-app.ch-admin .ch-content { padding-bottom: 40px; }
+}
+.chalyb-app .ch-kpis { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.chalyb-app .ch-kpi { padding: 20px; display: grid; gap: 6px; align-content: start; }
+.chalyb-app .ch-kpi__k { font-size: 15px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-kpi__v { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.chalyb-app .ch-kpi__s { font-size: 15px; color: var(--ink2); }
+.chalyb-app .ch-kpi__s--up { color: var(--ok-text); }
+.chalyb-app .ch-kpi__s--down { color: var(--bad); }
+.chalyb-app .ch-table-wrap { position: relative; overflow-x: auto; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+.chalyb-app .ch-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.chalyb-app .ch-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.chalyb-app .ch-table th { text-align: left; font-size: 14px; font-weight: 600; color: var(--ink2); padding: 14px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.chalyb-app .ch-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.chalyb-app .ch-table tr:last-child td { border-bottom: 0; }
+.chalyb-app .ch-table td.num, .chalyb-app .ch-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chalyb-app .ch-bars { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 16px 8px 0; }
+.chalyb-app .ch-bars li { flex: 1; list-style: none; display: grid; grid-template-rows: 1fr auto; gap: 6px; height: 100%; text-align: center; font-size: 13px; color: var(--ink2); }
+.chalyb-app .ch-bars__bar { align-self: end; background: var(--accent); border-radius: 8px 8px 2px 2px; min-height: 2px; }
+.chalyb-app .ch-funnel { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.chalyb-app .ch-funnel li { display: grid; grid-template-columns: minmax(130px, 200px) 1fr auto; gap: 12px; align-items: center; font-size: 16px; }
+.chalyb-app .ch-funnel__bar { height: 14px; border-radius: 99px; background: var(--tint); overflow: hidden; }
+.chalyb-app .ch-funnel__bar span { display: block; height: 100%; background: var(--accent); }
+.chalyb-app .ch-attn { list-style: none; margin: 0; padding: 0; }
+.chalyb-app .ch-section { display: grid; gap: 14px; }
+.chalyb-app .ch-section > h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+/* Page stacks: one column that can shrink, so wide tables scroll inside
+   .ch-table-wrap instead of widening the page (360px). :where keeps this
+   below any class that sets its own columns (.ch-kpis, inline grids). */
+:where(.chalyb-app.ch-admin .ch-wrap) > div,
+:where(.chalyb-app.ch-admin .ch-wrap) > div > div {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---------- Price-change notice (mockup 89) ---------- */
+.chalyb-app .ch-pcm {
+  display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 20px;
+  background: var(--bg); flex-wrap: wrap;
+}
+.chalyb-app .ch-pcm small { font-size: 15.5px; color: var(--ink2); }
+.chalyb-app .ch-pcm svg { width: 24px; height: 24px; color: var(--ink2); }
+.chalyb-app .ch-pcm__old { font-size: 26px; font-weight: 700; color: var(--ink2); }
+.chalyb-app .ch-pcm__new { font-size: 30px; font-weight: 750; letter-spacing: -0.02em; }
+
+/* ---------- Pro Lealtad panel (mockups 86 / 88) ---------- */
+.chalyb-app .ch-lp {
+  position: relative; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  border-radius: 28px; background: #fff; box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg);
+}
+.chalyb-app .ch-lp .ch-pc__badge { left: 28%; }
+.chalyb-app .ch-lp__l { display: grid; gap: 14px; align-content: start; min-width: 0; padding: 40px 30px 32px; border-right: 1px solid var(--line); }
+.chalyb-app .ch-lp__r { display: grid; gap: 18px; align-content: start; min-width: 0; padding: 40px 30px 32px; }
+.chalyb-app .ch-lp__charge { font-size: 16px; color: var(--ink2); }
+.chalyb-app .ch-lp__reset {
+  padding: 16px 18px; border-radius: 16px; background: var(--warn-tint); border: 1px solid var(--warn-line);
+  color: var(--warn); font-size: 16px; line-height: 1.5;
+}
+.chalyb-app .ch-lp__head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.chalyb-app .ch-lp__title { font-size: 20px; font-weight: 700; }
+.chalyb-app .ch-lp__bars {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; align-items: end; height: 300px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.chalyb-app .ch-lp__bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; min-width: 0; }
+.chalyb-app .ch-lp__amt { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.chalyb-app .ch-lp__pct { font-size: 14px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.chalyb-app .ch-lp__col { width: 100%; height: calc(var(--w) * 0.7); border-radius: 10px 10px 4px 4px; background: var(--tint); border: 1px solid #ddd8ff; }
+.chalyb-app .ch-lp__bar--first .ch-lp__col { background: #ececf1; border-color: var(--line); }
+.chalyb-app .ch-lp__bar--floor .ch-lp__col { background: var(--accent); border-color: var(--accent); }
+.chalyb-app .ch-lp__mes { font-size: 15px; color: var(--ink2); white-space: nowrap; }
+.chalyb-app .ch-lp__bar--floor .ch-lp__mes { color: var(--accent); font-weight: 600; }
+.chalyb-app .ch-lp__years { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.chalyb-app .ch-lp__year { display: grid; gap: 4px; padding: 16px 18px; border-radius: 18px; background: var(--bg); }
+.chalyb-app .ch-lp__year b { font-size: 26px; letter-spacing: -0.02em; }
+.chalyb-app .ch-lp__year small { font-size: 15px; color: var(--ink2); }
+.chalyb-app .ch-lp__year--on { background: var(--tint2); box-shadow: 0 0 0 1px #ddd8ff; }
+@media (max-width: 1023px) {
+  .chalyb-app .ch-lp { grid-template-columns: minmax(0, 1fr); }
+  .chalyb-app .ch-lp__l { border-right: 0; border-bottom: 1px solid var(--line); }
+  .chalyb-app .ch-lp .ch-pc__badge { left: 50%; }
+  .chalyb-app .ch-lp__l, .chalyb-app .ch-lp__r { padding: 34px 20px 26px; }
+  .chalyb-app .ch-lp .ch-pc__pr { flex-wrap: wrap; white-space: normal; }
+  /* Mockup 88: one row per month — month · bar · amount · % */
+  .chalyb-app .ch-lp__bars { grid-template-columns: minmax(0, 1fr); height: auto; gap: 10px; border-bottom: 0; }
+  .chalyb-app .ch-lp__bar {
+    display: grid; grid-template-columns: 56px minmax(0, 1fr) auto 86px; grid-template-areas: 'mes col amt pct';
+    align-items: center; gap: 10px; height: auto;
+  }
+  .chalyb-app .ch-lp__mes { grid-area: mes; font-size: 15px; }
+  .chalyb-app .ch-lp__col { grid-area: col; width: var(--w); height: 22px; border-radius: 8px; }
+  .chalyb-app .ch-lp__amt { grid-area: amt; text-align: right; }
+  .chalyb-app .ch-lp__pct { grid-area: pct; font-size: 14px; }
+  .chalyb-app .ch-lp__years { grid-template-columns: minmax(0, 1fr); }
+}
+.chalyb-app .ch-lprog { padding: 24px 28px; display: grid; gap: 14px; }
+.chalyb-app .ch-lprog__head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.chalyb-app .ch-lprog__bar { height: 14px; border-radius: 999px; background: #ececf1; overflow: hidden; }
+.chalyb-app .ch-lprog__bar span { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+.chalyb-app .ch-lprog__ticks { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; font-size: 15px; color: var(--ink2); text-align: center; }
+.chalyb-app .ch-lprog__ticks li[data-on='true'] { color: var(--accent); font-weight: 600; }
+.chalyb-app .ch-lprog__ticks li[data-now='true'] { color: var(--ink); font-weight: 700; }
+
+/* ── FIX-3 · Mi plan Gratis (mockup 70). Only what no existing class did:
+   the offer card (accent ring, like .ch-task--first), its price block on
+   --tint2, a two-column feature list, and a row that stacks a bar. ── */
+.chalyb-app .ch-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.chalyb-app .ch-link:hover {
+  text-decoration: underline;
+}
+.chalyb-app .ch-freeplan {
+  display: grid;
+  gap: 10px;
+  padding: 26px 28px;
+}
+.chalyb-app .ch-offer {
+  display: grid;
+  gap: 16px;
+  padding: 30px 32px;
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+  justify-items: start;
+}
+.chalyb-app .ch-offer > .ch-btn {
+  justify-self: stretch;
+}
+.chalyb-app .ch-offer__adds {
+  font-weight: 600;
+  font-size: 18px;
+}
+.chalyb-app .ch-feats--2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+  width: 100%;
+}
+.chalyb-app .ch-offer__price {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-offer__today {
+  display: grid;
+  gap: 4px;
+  padding-right: 24px;
+  border-right: 1px solid var(--line);
+  font-size: 18px;
+}
+.chalyb-app .ch-offer__today b {
+  font-size: 34px;
+  font-weight: 750;
+}
+.chalyb-app .ch-offer__after {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  font-size: 17px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-offer__big {
+  font-size: 28px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.chalyb-app .ch-offer__big small {
+  font-size: 18px;
+  font-weight: 650;
+}
+.chalyb-app .ch-row--stack {
+  align-items: flex-start;
+}
+.chalyb-app .ch-row__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-row .ch-row__big {
+  font-size: 26px;
+  font-weight: 750;
+}
+.chalyb-app .ch-row--stack .ch-lprog__bar {
+  margin: 10px 0 8px;
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-feats--2 {
+    grid-template-columns: 1fr;
+  }
+  .chalyb-app .ch-offer {
+    padding: 24px 20px;
+  }
+  .chalyb-app .ch-offer__price {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .chalyb-app .ch-offer__today {
+    border-right: 0;
+    padding-right: 0;
+  }
+}
+@media (min-width: 900px) {
+  .chalyb-app .ch-acct--plan {
+    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-acct--plan .ch-pill {
+  font-size: 16px;
+}
+@media (max-width: 899px) {
+  /* The one offer first on a phone: the primary action without scrolling. */
+  .chalyb-app .ch-acct--plan > .ch-acct__col:last-child {
+    order: -1;
+  }
+}
+
+/* ── FIX-3 · Mis créditos (mockups 72, 72b). The balance card, the pack
+   options in the sheet and a group header with a link. ── */
+@media (min-width: 900px) {
+  .chalyb-app .ch-acct--credits {
+    grid-template-columns: minmax(0, 470px) minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-credits {
+  display: grid;
+  gap: 12px;
+  padding: 26px 28px;
+}
+.chalyb-app .ch-credits__k {
+  font-size: 20px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-credits__n {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-credits__n b {
+  font-size: clamp(44px, 6vw, 60px);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.chalyb-app .ch-credits__n span {
+  font-size: 22px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-credits__bar {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.chalyb-app .ch-credits__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b7dff, var(--accent));
+}
+.chalyb-app .ch-credits__li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: 18px;
+}
+.chalyb-app .ch-credits__li > span:first-child {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-credits__li svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-credits > .ch-btn {
+  margin-top: 6px;
+  min-height: 60px;
+}
+.chalyb-app .ch-ghead-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-right: 20px;
+}
+.chalyb-app .ch-adv__h {
+  font-size: 18px;
+  font-weight: 650;
+}
+.chalyb-app .ch-adv__list {
+  display: grid;
+  gap: 6px;
+  padding-left: 20px;
+  font-size: 17px;
+  list-style: disc;
+}
+.chalyb-app .ch-packs {
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-pack {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  cursor: pointer;
+}
+.chalyb-app .ch-pack--on {
+  box-shadow: 0 0 0 3px var(--accent);
+  border-color: transparent;
+}
+.chalyb-app .ch-pack:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-pack__l,
+.chalyb-app .ch-pack__r {
+  display: grid;
+  gap: 2px;
+  font-size: 18px;
+}
+.chalyb-app .ch-pack__r {
+  text-align: right;
+  flex: none;
+}
+.chalyb-app .ch-adv .ch-pill,
+.chalyb-app .ch-adv .ch-table th,
+.chalyb-app .ch-adv .ch-table td {
+  font-size: 16px;
+}
+
+/* ── FIX-3 · Mi perfil (mockup 73). Field states, the read-only email, a
+   select with a leading icon, switch rows and the save bar (fixed above the
+   tab bar on a phone). ── */
+.chalyb-app .ch-profile__card {
+  display: grid;
+  gap: 4px;
+  padding: 24px 28px 28px;
+}
+.chalyb-app .ch-profile__card .ch-field:first-of-type {
+  margin-top: 8px;
+}
+.chalyb-app .ch-profile .ch-field label {
+  font-size: 18px;
+}
+.chalyb-app .ch-profile__photo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 18px;
+}
+.chalyb-app .ch-field__hint {
+  font-size: 16px;
+  margin-top: 8px;
+}
+.chalyb-app .ch-field__err {
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--bad);
+}
+.chalyb-app .ch-field--bad .ch-input {
+  box-shadow: inset 0 0 0 2px var(--bad);
+}
+.chalyb-app .ch-input--ro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f7f7fa;
+}
+.chalyb-app .ch-input--ro svg,
+.chalyb-app .ch-select-wrap svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--ink2);
+}
+.chalyb-app .ch-input--ro input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+  outline: none;
+}
+.chalyb-app .ch-select-wrap {
+  position: relative;
+}
+.chalyb-app .ch-select-wrap svg {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.chalyb-app .ch-select-wrap .ch-select {
+  min-height: 62px;
+  border-radius: 16px;
+  padding-left: 54px;
+  font-size: 19px;
+}
+.chalyb-app .ch-row--switch {
+  cursor: pointer;
+  min-height: 68px;
+}
+.chalyb-app .ch-profile__save {
+  display: grid;
+  gap: 14px;
+}
+.chalyb-app .ch-profile__note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 17px;
+}
+.chalyb-app .ch-profile__note svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--ok-text);
+}
+.chalyb-app .ch-profile__err {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--bad);
+  font-size: 17px;
+}
+.chalyb-app .ch-profile__save .ch-btn[disabled] {
+  background: var(--line);
+  color: var(--ink2);
+  box-shadow: none;
+  cursor: default;
+}
+.chalyb-app .ch-toast--ok {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chalyb-app .ch-toast--ok svg {
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #34c759;
+  color: #fff;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-profile {
+    padding-bottom: 120px;
+  }
+  .chalyb-app .ch-profile__save {
+    position: fixed;
+    left: 0;
+    right: 0;
+    /* Above the tab bar, and above the cookie banner while it's open. */
+    bottom: calc(76px + var(--consent-h, 0px));
+    z-index: 40;
+    padding: 12px 16px;
+    background: rgba(245, 245, 247, 0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+  }
+  .chalyb-app .ch-profile__save .ch-btn {
+    min-height: 56px;
+  }
+  .chalyb-app .ch-profile__note {
+    display: none;
+  }
+}
+.chalyb-app .ch-profile__card > *,
+.chalyb-app .ch-profile .ch-input {
+  min-width: 0;
+}
+
+/* ---------- Tools inside the app (WS-11, TOOLS-SPEC §3) ---------- */
+.chalyb-app .ch-btn--okline {
+  background: #fff;
+  color: var(--ok-text);
+  box-shadow: inset 0 0 0 2px var(--ok);
+}
+.chalyb-app .ch-toolshell {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-top: -18px;
+}
+.chalyb-app .ch-toolhead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 17px;
+  color: var(--ink2);
+  margin-bottom: 10px;
+}
+.chalyb-app .ch-crumb svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-toolhead__row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.chalyb-app .ch-toolhead .ch-tool-ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+.chalyb-app .ch-toolhead__name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.chalyb-app .ch-toolhead .ch-h1 {
+  font-size: 36px;
+  line-height: 1.1;
+}
+.chalyb-app .ch-tooltabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #ebebf0;
+}
+.chalyb-app .ch-tooltabs a {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 22px;
+  border-radius: 13px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink2);
+  white-space: nowrap;
+}
+.chalyb-app .ch-tooltabs a[aria-selected='true'] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16, 16, 40, 0.12);
+}
+.chalyb-app .ch-tooltabs a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-toolbody {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.chalyb-app .ch-toolerr {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+}
+.chalyb-app .ch-toolerr__card {
+  max-width: 560px;
+  width: 100%;
+}
+.chalyb-app .ch-toolerr__ic {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-toolerr__btns {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+}
+.chalyb-app .ch-toolerr__btns .ch-btn {
+  width: 100%;
+}
+.chalyb-app .ch-toolerr__code,
+.chalyb-app .ch-toolerr__meanwhile {
+  font-size: 15px;
+  text-align: center;
+}
+.chalyb-app .ch-adv {
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #dedee4;
+}
+.chalyb-app .ch-adv__bar {
+  width: 100%;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.chalyb-app .ch-adv__bar > svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--ink2);
+}
+.chalyb-app .ch-adv__t {
+  font-weight: 600;
+  font-size: 18px;
+}
+.chalyb-app .ch-adv__sum {
+  margin-left: auto;
+  color: var(--ink3-text);
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.chalyb-app .ch-adv--open .ch-adv__chev {
+  transform: rotate(180deg);
+}
+.chalyb-app .ch-adv__body {
+  padding: 4px 20px 20px;
+}
+.chalyb-app .ch-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #e4e0ff;
+  font-size: 16px;
+}
+.chalyb-app .ch-disclaimer > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-disclaimer p {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+}
+.chalyb-app .ch-disclaimer .ch-lnk {
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.chalyb-app .ch-risk {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+/* Over the work area only: the sidebar keeps working (§5.1). */
+@media (min-width: 900px) {
+  .chalyb-app .ch-risk {
+    left: 272px;
+  }
+}
+.chalyb-app .ch-risk__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.38);
+}
+.chalyb-app .ch-risk__sheet {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  max-height: 92dvh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(10, 10, 30, 0.3);
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.chalyb-app .ch-risk__x {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+.chalyb-app .ch-risk__head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding-right: 44px;
+}
+.chalyb-app .ch-risk__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.chalyb-app .ch-risk__points li {
+  display: flex;
+  gap: 12px;
+  font-size: 17px;
+}
+.chalyb-app .ch-risk__points li > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chalyb-app .ch-risk__ok {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-risk__ok svg {
+  width: 16px;
+  height: 16px;
+}
+.chalyb-app .ch-risk__legal {
+  background: #f5f5f7;
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.chalyb-app .ch-risk__legal p {
+  margin: 6px 0 0;
+}
+.chalyb-app .ch-risk__hint {
+  text-align: center;
+  font-size: 15px;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-toolshell {
+    margin-top: 0;
+    gap: 18px;
+  }
+  .chalyb-app .ch-toolhead .ch-tool-ic {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+  }
+  .chalyb-app .ch-toolhead .ch-h1 {
+    font-size: 28px;
+  }
+  .chalyb-app .ch-tooltabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .chalyb-app .ch-tooltabs a {
+    flex: 1;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .chalyb-app .ch-risk__sheet {
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+  .chalyb-app .ch-adv__sum {
+    display: none;
+  }
+}
+/* Tus herramientas (mockup 61) */
+.chalyb-app .ch-tools--big { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; }
+.chalyb-app .ch-tool--big { flex-direction: column; align-items: stretch; gap: 14px; padding: 22px; }
+.chalyb-app .ch-tool--big .ch-btn { width: 100%; }
+.chalyb-app .ch-tool__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.chalyb-app .ch-tool--big .ch-tool-ic { width: 56px; height: 56px; border-radius: 16px; }
+.chalyb-app .ch-tool--big .ch-tool__tx { min-width: 0; flex: 1; }
+.chalyb-app .ch-tool__status { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; font-size: 15px; font-weight: 600; color: var(--ink2); }
+.chalyb-app .ch-tool__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.chalyb-app .ch-tool__status--warn .ch-tool__dot { background: #ff9f0a; }
+.chalyb-app .ch-tools--light { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.chalyb-app .ch-tool--light { padding: 14px; gap: 12px; }
+/* Tool screens at 360 px: single-column grids never grow past the screen
+   (an implicit auto column sizes to its widest unwrapped child). */
+.chalyb-app :is(
+    .ch-toolbody, .ch-pair, .ch-live, .ch-live__main, .ch-live__side, .ch-live__panel,
+    .ch-ev-streams, .ch-ev-set, .ch-ev-set__col, .ch-ev-adv, .ch-jobrows, .ch-sig-list,
+    .ch-sig-side, .ch-sig-detail__side, .ch-sig-panel, .ch-sig-day, .ch-sig-chartcard,
+    .ch-sigset, .ch-sigset__col, .ch-sigset__adv, .ch-ev-q, .ch-toolerr
+  ) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.chalyb-app .ch-toolbody > * {
+  min-width: 0;
+}
+/* Inside Opciones avanzadas a row's control drops under its label on a
+   phone instead of pushing past the screen. */
+.chalyb-app .ch-adv__body > * {
+  min-width: 0;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-adv__body .ch-row {
+    flex-wrap: wrap;
+  }
+  .chalyb-app .ch-adv__body .ch-row .ch-select {
+    max-width: 100%;
+  }
+  .chalyb-app .ch-adv__bar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    row-gap: 6px;
+  }
+  .chalyb-app .ch-adv__sub {
+    order: 3;
+    flex-basis: 100%;
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+/* Phones: scrolling to an element (keyboard focus, in-page links) keeps it
+   clear of the fixed bottom tab bar as well as the cookie banner. */
+@media (max-width: 899px) {
+  html:has(.ch-tabs) {
+    scroll-padding-bottom: calc(96px + var(--consent-h, 0px));
+  }
+}

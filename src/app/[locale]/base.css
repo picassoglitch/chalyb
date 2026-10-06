@@ -1,0 +1,16 @@
+/* The html/body base every page shares, now that the legacy globals.css
+   (Tailwind and its preflight) loads only where it's still used. The rebuilt
+   pages reset their own content under .chalyb-app (chalyb-tokens.css). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}

@@ -1,0 +1,37 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Paso 2</title>
+<link rel="stylesheet" href="style.css"><style>
+.col{max-width:1000px}
+.title{margin-top:36px;text-align:center}
+.fmts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
+.fmt{position:relative;background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:18px 18px 22px;text-align:center}
+.fmt .stage{height:158px;border-radius:16px;background:var(--bg);display:grid;place-items:center}
+.fmt .shape{border-radius:10px;background:linear-gradient(160deg,#C9C3FF,#8C80FF);position:relative;box-shadow:0 6px 16px rgba(91,75,255,.25)}
+.fmt .shape::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-35%,-50%);border-left:14px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent}
+.fmt h3{font-size:21px;font-weight:650;margin-top:18px;letter-spacing:-.015em}
+.fmt p{font-size:17px;color:var(--ink2);margin-top:4px}
+.fmt.sel{box-shadow:0 0 0 3px var(--accent),var(--shadow-lg)}
+.fmt.sel .stage{background:var(--tint)}
+.fmt .chk{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 0 0 4px #fff}
+.fmt .chk svg{width:19px;height:19px;stroke-width:3}
+.fmt .rad{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 2px #D2D2DA;background:#fff}
+.badge{position:absolute;top:14px;left:14px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px;letter-spacing:.01em}
+.count{margin-top:22px;display:flex;align-items:center;justify-content:space-between;padding:20px 22px 20px 26px}
+.count b{font-size:21px;font-weight:650;display:block}
+.count small{font-size:17px;color:var(--ink2)}
+.seg{display:flex;background:#EBEBF0;border-radius:16px;padding:4px;gap:4px}
+.seg span{width:96px;height:52px;display:grid;place-items:center;border-radius:13px;font-size:21px;font-weight:600;color:var(--ink2)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.adv{margin-top:14px;display:flex;align-items:center;gap:16px;padding:0 22px 0 26px;height:68px;border-radius:20px;background:transparent;box-shadow:inset 0 0 0 1.5px #DEDEE4}
+.adv .ic2{color:var(--ink2)}
+.adv b{font-size:19px;font-weight:600}
+.adv small{font-size:16px;color:var(--ink3);margin-left:auto;margin-right:6px}
+.adv .chev{color:var(--ink3)}
+.foot{margin-top:24px;display:flex;justify-content:center}
+.foot .btn-xl{max-width:520px}
+</style></head><body><div class="flow"><header class="topbar" style="position:relative"><button class="back"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Atrás</button>
+<div class="toptitle"><span class="tmark"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></span>Hacer clips</div>
+<button class="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></header><div class="steps"><div class="bar"><i class="on"></i><i class="on"></i><i class=""></i></div><div class="t">Paso 2 de 3</div></div><div class="col"><div class="title"><h1>¿Dónde los vas a publicar?</h1>
+<p class="sub">Elige la forma de tus clips. Puedes cambiarla después.</p></div>
+<div class="fmts"><div class="fmt sel"><div class="chk"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="badge">Recomendado</div><div class="stage"><div class="shape" style="width:64px;height:112px"></div></div><h3>TikTok / Reels / Shorts</h3><p>Vertical</p></div><div class="fmt"><div class="rad"></div><div class="stage"><div class="shape" style="width:168px;height:94px"></div></div><h3>YouTube</h3><p>Horizontal</p></div><div class="fmt"><div class="rad"></div><div class="stage"><div class="shape" style="width:104px;height:104px"></div></div><h3>Cuadrado</h3><p>Instagram</p></div></div><div class="card count"><div><b>¿Cuántos clips?</b><small>Te recomendamos 6 para empezar.</small></div>
+<div class="seg"><span>3</span><span class="on">6</span><span>10</span></div></div><div class="adv"><svg class="i ic2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg><b>Opciones avanzadas</b><small>Para creadores profesionales</small><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+<div class="foot"><button class="btn btn-primary btn-xl">Crear mis clips</button></div></div></div></body></html>

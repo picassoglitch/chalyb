@@ -110,6 +110,29 @@ variable "worker" {
   default = null
 }
 
+variable "boost" {
+  description = <<-EOT
+    The boost lane: a Cloud Run Job the engine executes once per paid job on
+    a dedicated, larger machine (docs/engines/consumption-contract.md). Omit
+    (null) for engines without heavy batch work.
+
+    command/args    the single-job entrypoint; it reads the job id from the
+                    env override the API sets on each execution.
+    name_env_var    the API and worker get the job's name under this var,
+                    plus GOOGLE_CLOUD_PROJECT and CLOUD_RUN_REGION.
+  EOT
+  type = object({
+    command      = list(string)
+    args         = optional(list(string), [])
+    cpu          = optional(string, "8")
+    memory       = optional(string, "32Gi")
+    timeout      = optional(string, "3600s")
+    env          = optional(map(string), {})
+    name_env_var = string
+  })
+  default = null
+}
+
 variable "jobs" {
   description = <<-EOT
     Cloud Run Jobs for this engine, keyed by name — batch work with a CLI
@@ -132,4 +155,18 @@ variable "jobs" {
     paused   = optional(bool, true)
   }))
   default = {}
+}
+
+variable "vpc_egress" {
+  description = <<-EOT
+    Direct VPC egress for the API service: { network, subnetwork }. Private
+    ranges only, so the engine reaches a VM's internal IP (ChalyOBS → the
+    relay's HLS preview) while everything else still leaves directly. No
+    connector, so no idle cost. Null = no VPC.
+  EOT
+  type = object({
+    network    = string
+    subnetwork = string
+  })
+  default = null
 }

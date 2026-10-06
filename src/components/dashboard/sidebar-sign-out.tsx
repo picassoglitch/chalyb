@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
 interface Props {
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function SidebarSignOut({ onBeforeNav }: Props) {
+  const t = useTranslations('auth.account');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -51,8 +53,8 @@ export function SidebarSignOut({ onBeforeNav }: Props) {
       onClick={handleSignOut}
       disabled={loading}
       className="cc-cog"
-      title={loading ? 'Cerrando sesión…' : 'Cerrar sesión'}
-      aria-label="Cerrar sesión"
+      title={loading ? t('signingOut') : t('signOut')}
+      aria-label={t('signOut')}
       style={{
         // Inline override of .cc-cog so the logout icon reads as a
         // destructive (red-ish) action without needing a new global class.

@@ -1,102 +1,98 @@
-import { useTranslations } from 'next-intl';
+import type { Route } from 'next';
+import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
+import { ArrowRight, Check } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { signupHref } from './links';
-import { ENGINE_DISPLAY_NAMES } from '@/lib/engines/display-names';
+import { formatMXN } from '@/lib/billing/format';
+import { BrandMark } from './brand-mark';
+import { claimKey } from './claims';
 
-const CHART_LINE =
-  'M0,88 L28,80 L56,84 L84,66 L112,70 L140,52 L168,58 L196,40 L224,46 L252,30 L280,36 L308,22 L336,28 L364,14 L392,18';
+// 1 · Hero (LANDING-SPEC §3.2, mockup 42). The only h1. The visual is the
+// real app: the "Tus clips están listos" screen in a CSS laptop, Inicio in a
+// CSS phone (no person's name on either), and the clips notification. Only
+// the laptop image has priority (LCP).
 
-export function Hero() {
-  const t = useTranslations('landing.hero');
-  const tp = useTranslations('landing.hero.preview');
-
+export async function Hero({
+  trialHref,
+  ctaLabel,
+  trialOffered,
+  claimAll,
+}: {
+  trialHref: Route;
+  ctaLabel: string;
+  /** hero.noteRest ("Hoy pagas …") only when this visitor can start the trial (K-7). */
+  trialOffered: boolean;
+  /** allToolsClaimAllowed(): "Todo incluido" and "un solo plan" only then. */
+  claimAll: boolean;
+}) {
+  const t = await getTranslations('landing.hero');
+  const cero = formatMXN(0);
   return (
-    <section className="lp-hero">
-      <div className="lp-container">
-        <p className="lp-kicker lp-rise">{t('kicker')}</p>
-        <h1 className="lp-h1 lp-rise lp-d1">{t('h1')}</h1>
-        <p className="lp-lead lp-rise lp-d2">{t('lead')}</p>
-        <div className="lp-hero-cta lp-rise lp-d3">
-          <Link href={signupHref()} className="lp-btn lp-btn-primary lp-btn-lg">
-            {t('cta')}
-            <span className="lp-arrow" aria-hidden="true">
-              →
-            </span>
+    <section id="hero" className="pub-hero2" aria-labelledby="hero-title">
+      <div className="pub-hero2__in">
+        <div className="pub-hero2__copy">
+          <p className="pub-kick">
+            <span>{t(claimKey('heroTag', claimAll))}</span>
+            <span className="pub-kick__rest">{t(claimKey('heroEyebrow', claimAll))}</span>
+          </p>
+          <h1 id="hero-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h1>
+          <p className="pub-hero2__sub">{t(claimKey('heroSub', claimAll))}</p>
+          <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
+            {ctaLabel}
+            <ArrowRight aria-hidden="true" />
           </Link>
-          <p className="lp-micro">{t('micro')}</p>
+          <p className="pub-hero2__note">
+            <b>{t('noteStrong')}</b>
+            {trialOffered && <> {t('noteRest', { cero })}</>}
+          </p>
+          <ul className="pub-trust">
+            {(['seal1', 'seal2', 'seal3'] as const).map((k) => (
+              <li key={k}>
+                <Check aria-hidden="true" />
+                {t(k)}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Product preview — a static, CSS-built snapshot of the /app engines
-            dashboard. No live data, no animation loops. */}
-        <div className="lp-preview lp-rise lp-d4" aria-hidden="true">
-          <div className="lp-preview-bar">
-            <span className="lp-dot" />
-            <span className="lp-dot" />
-            <span className="lp-dot" />
-            <span className="lp-preview-url">app.chalyb.com/app</span>
-          </div>
-          <div className="lp-preview-body">
-            <div className="lp-preview-main">
-              <div className="lp-preview-head">
-                <strong>{tp('title')}</strong>
-                <span className="lp-status lp-status-live">
-                  <i />
-                  {tp('live')}
-                </span>
-              </div>
-              <div className="lp-tiles">
-                <div className="lp-tile">
-                  <div className="lp-tile-label">{tp('stat1')}</div>
-                  <div className="lp-tile-val">1</div>
-                </div>
-                <div className="lp-tile">
-                  <div className="lp-tile-label">{tp('stat2')}</div>
-                  <div className="lp-tile-val lp-up">34</div>
-                </div>
-                <div className="lp-tile">
-                  <div className="lp-tile-label">{tp('stat3')}</div>
-                  <div className="lp-tile-val">312k</div>
-                </div>
-              </div>
-              <div className="lp-chart">
-                <div className="lp-chart-label">{tp('chart')}</div>
-                <svg viewBox="0 0 392 100" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="lpChartFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#e8bb7f" stopOpacity="0.32" />
-                      <stop offset="100%" stopColor="#e8bb7f" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d={`${CHART_LINE} L392,100 L0,100 Z`} fill="url(#lpChartFill)" />
-                  <path d={CHART_LINE} fill="none" stroke="#e8bb7f" strokeWidth="2" />
-                </svg>
-              </div>
+        <div className="pub-dev" role="img" aria-label={t('alt')}>
+          <div className="pub-dev__halo" aria-hidden="true" />
+          <div className="pub-laptop" aria-hidden="true">
+            <div className="pub-laptop__screen">
+              <Image
+                src="/landing/hero-laptop.webp"
+                alt=""
+                width={1072}
+                height={670}
+                sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
+                // The LCP: high fetch priority straight from the HTML (Next
+                // 16 deprecated `priority`; its preload carried no
+                // fetchpriority). The only image with priority (§7).
+                loading="eager"
+                fetchPriority="high"
+              />
             </div>
-            <div className="lp-engine-list">
-              <div className="lp-engine">
-                <span className="lp-engine-name">
-                  <i className="lp-engine-icon">◆</i>
-                  {ENGINE_DISPLAY_NAMES.chalybclip}
-                </span>
-                <span className="lp-status lp-status-live">
-                  <i />
-                  {tp('statusLive')}
-                </span>
-              </div>
-              <div className="lp-engine">
-                <span className="lp-engine-name">
-                  <i className="lp-engine-icon">▲</i>
-                  {ENGINE_DISPLAY_NAMES.chalybcrypto}
-                </span>
-                <span className="lp-status lp-status-sim">{tp('statusSim')}</span>
-              </div>
-              <div className="lp-engine">
-                <span className="lp-engine-name">
-                  <i className="lp-engine-icon">●</i>
-                  {ENGINE_DISPLAY_NAMES.chalybobs}
-                </span>
-                <span className="lp-status lp-status-soon">{tp('statusSoon')}</span>
-              </div>
+            <div className="pub-laptop__base" />
+          </div>
+          <div className="pub-phone" aria-hidden="true">
+            <Image
+              src="/landing/hero-phone.webp"
+              alt=""
+              width={400}
+              height={866}
+              sizes="(max-width: 767px) 108px, (max-width: 1279px) 170px, 200px"
+              loading="eager"
+            />
+          </div>
+          <div className="pub-notif" aria-hidden="true">
+            <BrandMark size={44} />
+            <div>
+              <p className="pub-notif__top">
+                <span className="pub-notif__app">{t('notifApp')}</span>
+                <span>{t('notifWhen')}</span>
+              </p>
+              <b>{t('notifTitle')}</b>
+              <p>{t('notifBody')}</p>
             </div>
           </div>
         </div>

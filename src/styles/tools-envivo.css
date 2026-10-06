@@ -1,0 +1,809 @@
+/* En vivo inside the app (WS-11, TOOLS-SPEC §6, mockups 22, 57–59). */
+
+.chalyb-app .ch-h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+.chalyb-app .ch-spin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--tint);
+  border-top-color: var(--accent);
+  animation: ch-spin 0.9s linear infinite;
+  flex: none;
+}
+@keyframes ch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chalyb-app .ch-spin {
+    animation: none;
+  }
+}
+
+/* ---- Conectar (57) ---- */
+.chalyb-app .ch-pair {
+  display: grid;
+  gap: 22px;
+}
+.chalyb-app .ch-pair__title {
+  font-size: 32px;
+}
+.chalyb-app .ch-pair__obs {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: var(--tint2);
+  box-shadow: inset 0 0 0 1.5px #e4e0ff;
+  font-size: 17px;
+}
+.chalyb-app .ch-pair__obs svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  flex: none;
+  margin-top: 2px;
+}
+.chalyb-app .ch-pair__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.chalyb-app .ch-pair__step {
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-pair__step h3 {
+  font-size: 21px;
+  margin: 0;
+  line-height: 1.25;
+}
+.chalyb-app .ch-pair__step--on {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-pair__step--done {
+  box-shadow:
+    0 0 0 3px var(--ok),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-pair__n {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-pair__n b {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #ebebf0;
+  color: var(--ink);
+  font-size: 17px;
+}
+.chalyb-app .ch-pair__step--on .ch-pair__n {
+  color: var(--accent);
+}
+.chalyb-app .ch-pair__step--on .ch-pair__n b {
+  background: var(--accent);
+  color: #fff;
+}
+.chalyb-app .ch-pair__dl {
+  margin-top: auto;
+  width: 100%;
+}
+.chalyb-app .ch-pair__alt,
+.chalyb-app .ch-pair__valid {
+  text-align: center;
+  font-size: 15px;
+  margin: 0;
+}
+.chalyb-app .ch-pair__again {
+  font-size: 15px;
+  text-align: center;
+}
+.chalyb-app .ch-pair__code {
+  margin: auto 0 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+.chalyb-app .ch-pair__grp {
+  display: flex;
+  gap: 6px;
+}
+.chalyb-app .ch-pair__d {
+  width: 46px;
+  height: 70px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #dedee4;
+  font-size: 38px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-pair__expired {
+  margin-top: auto;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+}
+.chalyb-app .ch-pair__expired p {
+  margin: 0;
+  color: var(--warn);
+  font-weight: 600;
+}
+.chalyb-app .ch-pair__check {
+  margin: auto auto 0;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #ebebf0;
+  color: #b8b8c0;
+}
+.chalyb-app .ch-pair__check svg {
+  width: 52px;
+  height: 52px;
+}
+.chalyb-app .ch-pair__check--on {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.chalyb-app .ch-pair__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-pair__wait {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+/* ---- Transmitir (22 / 58) ---- */
+.chalyb-app .ch-live {
+  display: grid;
+  gap: 20px;
+}
+.chalyb-app .ch-live__head {
+  display: grid;
+  gap: 4px;
+}
+.chalyb-app .ch-live__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-live__main,
+.chalyb-app .ch-live__side {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.chalyb-app .ch-live__obs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+}
+.chalyb-app .ch-live__ok {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ok-tint);
+  color: var(--ok);
+  flex: none;
+}
+.chalyb-app .ch-live__obstx {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.chalyb-app .ch-live__giant {
+  display: flex;
+  gap: 14px;
+}
+.chalyb-app .ch-live__giant svg {
+  width: 30px;
+  height: 30px;
+  fill: currentColor;
+}
+.chalyb-app .ch-giant--quiet {
+  background: #ebebf0;
+  color: var(--ink);
+  box-shadow: none;
+}
+.chalyb-app .ch-live__under {
+  text-align: center;
+  font-size: 16px;
+  margin: 8px 0 0;
+}
+.chalyb-app .ch-live__sechead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.chalyb-app .ch-live__sechead p {
+  margin: 0;
+}
+.chalyb-app .ch-live__scenegrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+.chalyb-app .ch-scenecard {
+  display: grid;
+  gap: 4px;
+  padding: 10px 10px 14px;
+  text-align: left;
+  background: #fff;
+  border: 0;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 48px;
+}
+.chalyb-app .ch-scenecard b {
+  padding: 4px 8px 0;
+  font-size: 18px;
+}
+.chalyb-app .ch-scenecard > span:last-child {
+  padding: 0 8px;
+  font-size: 15px;
+}
+.chalyb-app .ch-scenecard[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-scenecard:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-scenecard__on {
+  color: var(--accent);
+  font-weight: 600;
+}
+.chalyb-app .ch-scenecard__thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #3b2a7a, #c0508a);
+}
+.chalyb-app .ch-scenecard__thumb--1 {
+  background: linear-gradient(135deg, #1d2a6b, #5b6cff);
+}
+.chalyb-app .ch-scenecard__thumb--2 {
+  background: linear-gradient(135deg, #0d4b5a, #3fc2c9);
+}
+.chalyb-app .ch-scenecard__ic {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--ink);
+}
+.chalyb-app .ch-scenecard__ic svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-live__panel {
+  padding: 20px 22px;
+  display: grid;
+  gap: 6px;
+}
+.chalyb-app .ch-live__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+}
+.chalyb-app .ch-live__rtx {
+  flex: 1;
+  display: grid;
+  font-size: 18px;
+  min-width: 0;
+}
+.chalyb-app .ch-live__rtx small {
+  font-size: 15px;
+}
+.chalyb-app .ch-live__ric {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #ff375f;
+  flex: none;
+}
+.chalyb-app .ch-live__ric--cam {
+  background: var(--accent);
+}
+.chalyb-app .ch-live__ric--clipsAfter {
+  background: #ff9f0a;
+}
+.chalyb-app .ch-live__ric svg {
+  width: 21px;
+  height: 21px;
+}
+.chalyb-app .ch-live__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  padding: 16px 22px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  font-size: 18px;
+}
+.chalyb-app .ch-live__on {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--bad);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 21px;
+}
+.chalyb-app .ch-live__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bad);
+  box-shadow: 0 0 0 4px var(--bad-tint);
+}
+.chalyb-app .ch-live__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-live__item svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-live__net--ok {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-live__net--warn {
+  color: var(--warn);
+}
+.chalyb-app .ch-live__net--bad {
+  color: var(--bad);
+}
+.chalyb-app .ch-live__note {
+  margin: -8px 0 0;
+}
+.chalyb-app .ch-live__lost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: var(--bad);
+  color: #fff;
+  font-weight: 600;
+}
+.chalyb-app .ch-live__lost p,
+.chalyb-app .ch-live__alert p {
+  margin: 0;
+}
+.chalyb-app .ch-live__alert {
+  display: grid;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: var(--bad-tint);
+  box-shadow: inset 0 0 0 1.5px var(--bad-line);
+  color: var(--ink);
+}
+.chalyb-app .ch-live__alertbtns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-live__ended {
+  padding: 20px 22px;
+  display: grid;
+  gap: 12px;
+}
+.chalyb-app .ch-live__ended p {
+  margin: 0;
+  font-size: 18px;
+}
+.chalyb-app .ch-live__preview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 24px;
+  background: radial-gradient(circle at 80% 70%, #a9b6ff 0%, #4d5fd9 35%, #18205a 100%);
+  overflow: hidden;
+}
+.chalyb-app .ch-live__tag,
+.chalyb-app .ch-live__pl {
+  position: absolute;
+  top: 16px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.chalyb-app .ch-live__tag {
+  left: 16px;
+  background: var(--bad);
+  letter-spacing: 0.04em;
+}
+.chalyb-app .ch-live__pl {
+  right: 16px;
+  background: rgba(10, 10, 40, 0.6);
+  font-weight: 600;
+}
+.chalyb-app .ch-live__toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.chalyb-app .ch-bigtoggle {
+  min-height: 132px;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 6px;
+  padding: 18px;
+  border: 0;
+  border-radius: 20px;
+  background: #f0f0f3;
+  box-shadow: inset 0 0 0 1.5px #dedee4;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink3-text);
+  cursor: pointer;
+  text-align: left;
+}
+.chalyb-app .ch-bigtoggle b {
+  font-size: 19px;
+  color: var(--ink);
+}
+.chalyb-app .ch-bigtoggle--on {
+  background: #fff;
+  box-shadow: var(--shadow);
+  color: var(--accent);
+  font-weight: 600;
+}
+.chalyb-app .ch-bigtoggle__ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--ink2);
+}
+.chalyb-app .ch-bigtoggle--on .ch-bigtoggle__ic {
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-bigtoggle:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-live__clip {
+  width: 100%;
+  min-height: 64px;
+}
+.chalyb-app .ch-live__confirm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ---- Mis transmisiones ---- */
+.chalyb-app .ch-ev-streams {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.chalyb-app .ch-ev-stream {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ev-stream__thumb {
+  width: 96px;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #1d2a6b, #5b6cff);
+  color: #fff;
+  flex: none;
+}
+.chalyb-app .ch-ev-stream__tx {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 200px;
+}
+.chalyb-app .ch-ev-stream__btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- Ajustes (59) ---- */
+.chalyb-app .ch-ev-set {
+  display: grid;
+  gap: 22px;
+}
+.chalyb-app .ch-ev-set__cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.chalyb-app .ch-ev-set__col {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.chalyb-app .ch-ev-set__h {
+  display: block;
+  margin: 0 0 10px 6px;
+  padding: 0;
+}
+.chalyb-app .ch-ev-set__note {
+  display: inline-block;
+  margin: 10px 0 0 6px;
+  font-size: 15px;
+}
+.chalyb-app .ch-ev-set__connect {
+  background: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+.chalyb-app .ch-ev-plat {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #fff;
+  flex: none;
+  background: #ff0033;
+}
+.chalyb-app .ch-ev-plat--twitch {
+  background: #9146ff;
+}
+.chalyb-app .ch-ev-plat--kick {
+  background: #1a1a1a;
+  color: #53fc18;
+}
+.chalyb-app .ch-ev-plat--facebook {
+  background: #1877f2;
+}
+.chalyb-app .ch-ev-set__dev {
+  background: #2bb3c0;
+  color: #fff;
+}
+.chalyb-app .ch-ev-set__acc {
+  background: var(--accent);
+  color: #fff;
+}
+.chalyb-app .ch-ev-set__devr {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+.chalyb-app .ch-ev-set__ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ok-text);
+  font-weight: 600;
+}
+.chalyb-app .ch-ev-set__ok svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-ev-q {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.chalyb-app .ch-ev-q__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}
+.chalyb-app .ch-ev-q__opt input {
+  width: 26px;
+  height: 26px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-ev-q__opt--on {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-ev-q__tx {
+  display: grid;
+  gap: 2px;
+}
+.chalyb-app .ch-ev-q__tx b {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ev-adv {
+  display: grid;
+  gap: 18px;
+}
+.chalyb-app .ch-ev-key {
+  display: grid;
+  gap: 8px;
+}
+.chalyb-app .ch-ev-key__l {
+  font-weight: 600;
+}
+.chalyb-app .ch-ev-key__row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chalyb-app .ch-ev-key__v {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--cc-mono, monospace);
+}
+.chalyb-app .ch-ev-set__lock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+}
+.chalyb-app .ch-ev-set__lock svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.chalyb-app .ch-ev-set__save {
+  margin: 0;
+  font-size: 15px;
+}
+
+@media (max-width: 1099px) {
+  .chalyb-app .ch-live__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-pair__steps,
+  .chalyb-app .ch-ev-set__cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-pair__title {
+    font-size: 26px;
+  }
+  .chalyb-app .ch-pair__d {
+    width: 40px;
+    height: 60px;
+    font-size: 32px;
+  }
+  .chalyb-app .ch-pair__code {
+    gap: 12px;
+  }
+  .chalyb-app .ch-pair__check {
+    width: 72px;
+    height: 72px;
+  }
+  .chalyb-app .ch-pair__check svg {
+    width: 34px;
+    height: 34px;
+  }
+  .chalyb-app .ch-live__scenegrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .chalyb-app .ch-live__bar {
+    font-size: 16px;
+    gap: 8px 16px;
+    padding: 14px 16px;
+  }
+  .chalyb-app .ch-live__giant {
+    font-size: 24px;
+  }
+  .chalyb-app .ch-ev-stream__thumb {
+    width: 72px;
+  }
+}
+
+/* §6.4: "Terminar transmisión" is found in under 3 s on a phone too: while
+   live it rides above the tab bar (and the cookie banner), never below the
+   fold. The room leaves room for it. */
+@media (max-width: 899px) {
+  .chalyb-app .ch-live[data-state='live'] {
+    padding-bottom: 116px;
+  }
+  .chalyb-app .ch-live[data-state='live'] .ch-giant--stop {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    bottom: calc(92px + env(safe-area-inset-bottom) + var(--consent-h, 0px));
+    z-index: 30;
+    min-height: 76px;
+    box-shadow: 0 12px 32px rgba(215, 0, 21, 0.35);
+  }
+}
+@media (max-width: 899px) {
+  /* Scrolling to a control keeps it clear of the pinned stop button too. */
+  html:has(.ch-live[data-state='live']) {
+    scroll-padding-bottom: calc(196px + var(--consent-h, 0px));
+  }
+}

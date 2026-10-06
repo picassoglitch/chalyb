@@ -1,0 +1,158 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><title>Chalyb móvil</title>
+<link rel="stylesheet" href="style.css"><style>
+:root{--warn:#A65A00;--warn-tint:#FFF3DF;--warn-line:#FFD999;--bad:#D70015;--bad-tint:#FFEDEE;--bad-line:#FFC9CD}
+.label.ink{color:var(--ink3)}
+.tag-ej{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8E6A00;background:#FFF6D6;border:1px dashed #E8C55A;padding:2px 8px;border-radius:7px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #E1E1E8;font-size:18px;font-weight:600;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip svg.i{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.pill svg.i{width:14px;height:14px;stroke-width:3}
+.pill.ok{background:var(--ok-tint);color:var(--ok)} .pill.acc{background:var(--tint);color:var(--accent)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)} .pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.gray{background:#EEEEF2;color:var(--ink2)} .pill.dark{background:var(--ink);color:#fff}
+.btn-danger{background:#fff;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad-line)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 6px 18px rgba(31,168,85,.28)}
+.btn-white{background:#fff;color:var(--accent)}
+.lnk{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.field{margin-top:16px}
+.field label{display:block;font-size:17px;font-weight:600;margin-bottom:8px}
+.field .in{height:62px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px #DCDCE3;display:flex;align-items:center;padding:0 20px;font-size:19px;color:#A8A8B0;gap:12px}
+.field .in.val{color:var(--ink)}
+.field .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 5px rgba(91,75,255,.12)}
+.field .in svg.i{color:var(--ink3)}
+.cbx{display:flex;gap:14px;align-items:flex-start;font-size:17px;color:var(--ink2);line-height:1.4}
+.cbx .b{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9C9D2;background:#fff;flex:none;margin-top:-1px}
+.disc{border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:22px 24px 22px 24px;display:flex;gap:16px;font-size:18px;line-height:1.5;color:var(--ink)}
+.disc .di{width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--accent);display:grid;place-items:center;flex:none}
+.disc p + p{margin-top:8px}
+.disc b{font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(20,20,30,.38)}
+.sheetc{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(10,10,30,.30);padding:34px}
+/* banners */
+.bnr{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 22px;font-size:18px;line-height:1.35}
+.bnr .bi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.bnr .bi svg.i{width:19px;height:19px}
+.bnr .bt{flex:1}
+.bnr .btn{height:46px;font-size:17px;padding:0 20px;border-radius:13px;box-shadow:none}
+.bnr.trial{background:var(--tint2);border-bottom:1px solid #E4E0FF;color:var(--ink)} .bnr.trial .bi{background:var(--tint);color:var(--accent)} .bnr.trial .btn{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 1.5px #DAD6FF}
+.bnr.warn{background:var(--warn-tint);border-bottom:1px solid var(--warn-line)} .bnr.warn .bi{background:#FFE2B0;color:var(--warn)} .bnr.warn .btn{background:var(--ink);color:#fff}
+.bnr.gray{background:#EEEEF2;border-bottom:1px solid #DEDEE4} .bnr.gray .bi{background:#fff;color:var(--ink2)} .bnr.gray .btn{background:var(--accent);color:#fff}
+.bnr.bad{background:var(--bad-tint);border-bottom:1px solid var(--bad-line)} .bnr.bad .bi{background:var(--bad);color:#fff} .bnr.bad .btn{background:var(--bad);color:#fff}
+/* public nav */
+.pnav{height:84px;display:flex;align-items:center;padding:0 56px;gap:40px;background:rgba(245,245,247,.9);border-bottom:1px solid var(--line)}
+.pnav .logo{padding:0}
+.pnav .links{display:flex;gap:34px;font-size:18px;font-weight:550;color:var(--ink2)}
+.pnav .links a.on{color:var(--ink)}
+.pnav .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.pnav .r .in{font-size:18px;font-weight:600;color:var(--ink);padding:0 14px}
+.pnav .btn{height:50px;font-size:17px;padding:0 22px;border-radius:14px}
+/* generic coin dot */
+.coin{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:none;letter-spacing:-.02em}
+.tico{display:grid;place-items:center;color:#fff;flex:none}
+
+body{background:var(--bg)} .pg{width:390px;overflow:hidden}
+.status{height:50px;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 34px;font-size:17px;font-weight:600}
+.status .r{display:flex;gap:6px;align-items:center}
+.mn{display:flex;align-items:center;justify-content:space-between;padding:6px 20px 8px}
+.mn .logo{padding:0;gap:9px}.mn .logo .mark{width:34px;height:34px;border-radius:10px}.mn .logo .mark svg{width:19px;height:19px}.mn .logo .word{font-size:21px}
+.mn .r{display:flex;gap:10px;align-items:center}
+.mn .in{font-size:17px;font-weight:600}
+.mn .bur{width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center}
+.mh{padding:26px 22px 8px}
+.mh .kick{display:inline-block;background:var(--tint);color:var(--accent);border-radius:999px;padding:6px 14px;font-size:15px;font-weight:700}
+.mh h1{font-size:40px;line-height:1.06;letter-spacing:-.04em;margin-top:16px}
+.mh h1 em{font-style:normal;background:linear-gradient(90deg,#5B4BFF,#9B5BFF);-webkit-background-clip:text;color:transparent}
+.mh .sub{font-size:19px;margin-top:14px}
+.mh .btn-xl{margin-top:24px;font-size:20px}
+.mh small{display:block;text-align:center;font-size:16px;color:var(--ink2);margin-top:12px}
+.mvis{margin:26px 16px 0;background:#fff;border-radius:24px;box-shadow:var(--shadow-lg);padding:18px 18px 8px}
+.mvis h4{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.mvis .it{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.mvis .it:last-child{border-bottom:0}
+.mvis .it b{font-size:16.5px;display:block}.mvis .it small{font-size:14.5px;color:var(--ink2)}
+.mvis .it .tx{flex:1;min-width:0}
+.ms{padding:52px 16px 0}
+.ms .hd{padding:0 6px}
+.ms .label{margin-bottom:8px}
+.ms h2{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.12}
+.ms .p{font-size:18px;color:var(--ink2);margin-top:8px}
+.mt{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.mtc{display:flex;gap:14px;align-items:center;background:#fff;border-radius:20px;box-shadow:var(--shadow);padding:16px}
+.mtc b{font-size:19px;font-weight:700;display:block}
+.mtc p{font-size:15.5px;color:var(--ink2);line-height:1.35;margin-top:2px}
+.mst{display:flex;gap:14px;align-items:flex-start;background:#fff;border-radius:20px;box-shadow:var(--shadow);padding:18px}
+.mst .n{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:19px;display:grid;place-items:center;flex:none}
+.mst b{font-size:19px;display:block}.mst p{font-size:16px;color:var(--ink2);margin-top:2px}
+.mg{display:flex;gap:10px;margin-top:22px;overflow:hidden;padding:0 6px}
+.maud{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.maud div{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px;font-size:17px;font-weight:650;display:flex;flex-direction:column;gap:10px}
+.maud div svg.i{color:var(--accent);width:26px;height:26px}
+.maud small{font-size:14.5px;color:var(--ink2);font-weight:500}
+.mpl{background:#fff;border-radius:24px;box-shadow:0 0 0 3px var(--accent),var(--shadow-lg);padding:24px 20px;margin-top:26px;position:relative}
+.mpl .tagx{position:absolute;top:-15px;left:20px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px}
+.mpl h3{font-size:21px}
+.mpl .pr{font-size:42px;font-weight:750;letter-spacing:-.04em;margin-top:6px}
+.mpl .pr span{font-size:18px;color:var(--ink2);font-weight:600;letter-spacing:0}
+.mpl .pn{font-size:17px;color:var(--ink2)} .mpl .pn b{color:var(--ink)}
+.strike{text-decoration:line-through;color:var(--ink3)}
+.mpl2{display:flex;gap:10px;margin-top:12px}
+.mpl2 div{flex:1;background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px}
+.mpl2 b{font-size:17px;display:block}.mpl2 span{font-size:22px;font-weight:750;letter-spacing:-.03em}.mpl2 small{font-size:14px;color:var(--ink2)}
+.midea{margin-top:20px;display:flex;gap:14px;align-items:center;background:#fff;border-radius:20px;box-shadow:inset 0 0 0 1.5px #E4E0FF;padding:18px}
+.midea b{font-size:18px;display:block}.midea p{font-size:15.5px;color:var(--ink2);margin-top:2px}
+.mfq{margin-top:20px;background:#fff;border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.mfq .q{display:flex;align-items:center;gap:10px;padding:18px;font-size:18px;font-weight:600;border-top:1px solid var(--line)}
+.mfq .q:first-child{border-top:0}
+.mfq .q svg.i{margin-left:auto;color:var(--ink3);width:20px;height:20px}
+.mfq .a{padding:0 18px 18px;font-size:16.5px;color:var(--ink2);margin-top:-8px}
+.mfin{margin:52px 16px 0;border-radius:28px;background:linear-gradient(135deg,#6B5CFF 0%,#5B4BFF 50%,#4632E6 100%);color:#fff;padding:32px 22px;text-align:center}
+.mfin h2{font-size:28px;letter-spacing:-.03em;line-height:1.15}
+.mfin .btn{width:100%;margin-top:20px;height:64px;background:#fff;color:var(--accent);font-size:19px;border-radius:17px}
+.mfin small{display:block;font-size:15px;opacity:.88;margin-top:12px}
+.mfoot{margin-top:40px;background:#fff;border-top:1px solid var(--line);padding:30px 22px 40px}
+.mfoot .logo{padding:0}
+.mfoot .lk{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:22px;font-size:16.5px}
+.mfoot .cp{font-size:14.5px;color:var(--ink3);margin-top:22px;line-height:1.5}
+</style></head><body><div class="pg"><div class="status"><span>9:41</span><span class="r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#1D1D1F"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#1D1D1F"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#1D1D1F"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#1D1D1F"/></svg><svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2.2c2.4 0 4.6.9 6.3 2.5l1.2-1.2A10.6 10.6 0 0 0 8.5.5 10.6 10.6 0 0 0 1 3.5l1.2 1.2a9 9 0 0 1 6.3-2.5zm0 3.4c1.5 0 2.9.6 3.9 1.5l1.2-1.2a7.3 7.3 0 0 0-10.2 0l1.2 1.2c1-1 2.4-1.5 3.9-1.5zm0 3.4c.6 0 1.2.2 1.6.6L8.5 11.2 6.9 9.6c.4-.4 1-.6 1.6-.6z" fill="#1D1D1F"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#1D1D1F" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="#1D1D1F"/><path d="M25 4.5v4c.8-.3 1.5-1.1 1.5-2s-.7-1.7-1.5-2z" fill="#1D1D1F" opacity=".5"/></svg></span></div><div class="mn"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="r"><a class="in">Entrar</a><div class="bur"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div></div></div>
+<div class="mh"><span class="kick">Un plan, todas las herramientas</span><h1>Bots que <em>trabajan por ti</em> mientras duermes</h1>
+<p class="sub">Clips, señales de cripto, tu transmisión y mucho más. Fuiste por una cosa y te llevaste todo.</p>
+<button class="btn btn-primary btn-xl">Empezar mis 7 días gratis</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
+<div class="mvis"><h4>Mientras dormías</h4><div class="it"><div class="tico" style="width:42px;height:42px;border-radius:12px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div class="tx"><b>6 clips listos</b><small>De tu stream de anoche</small></div><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Listo</span></div>
+<div class="it"><div class="tico" style="width:42px;height:42px;border-radius:12px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="tx"><b>Señal: Bitcoin</b><small>Buen momento para comprar</small></div><span class="pill acc">Nuevo</span></div>
+<div class="it"><div class="tico" style="width:42px;height:42px;border-radius:12px;background:#30B0C7"><svg class="i" viewBox="0 0 24 24" style="width:21px;height:21px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><div class="tx"><b>Tu Asistente respondió</b><small>Mientras dormías</small></div><span class="pill ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Hecho</span></div></div>
+<section class="ms"><div class="hd"><div class="label">Herramientas</div><h2>Todo lo que necesitas, en un solo lugar</h2></div><div class="mt"><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#5B4BFF"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></div><div><b>Clips</b><p>Convierte tu stream en clips cortos para TikTok, Reels y Shorts.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#FF9F0A"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div><b>Señales</b><p>Te avisamos cuándo es buen momento para comprar o vender cripto.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#FF375F"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg></div><div><b>En vivo</b><p>Maneja tu transmisión y tus escenas de OBS con botones grandes.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#30B0C7"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg></div><div><b>Asistente</b><p>Un bot que contesta a tus clientes y seguidores, de día y de noche.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#34A853"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></div><div><b>Pronósticos</b><p>Los pronósticos deportivos del día, explicados en simple.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#0A84FF"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M3 11 12 4l9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div><div><b>Inmuebles</b><p>Publica tus propiedades y atiende a interesados sin perder tiempo.</p></div></div><div class="mtc"><div class="tico" style="width:52px;height:52px;border-radius:15px;background:#AF52DE"><svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="9" rx="1"/><rect x="17" y="5" width="3" height="12" rx="1"/></svg></div><div><b>Inversiones</b><p>Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero.</p></div></div></div></section>
+<section class="ms"><div class="hd"><div class="label">Cómo funciona</div><h2>Cómo funciona en 3 pasos</h2></div><div class="mt">
+<div class="mst"><div class="n">1</div><div><b>Crea tu cuenta</b><p>Con Google o con tu correo. Toma 1 minuto.</p></div></div>
+<div class="mst"><div class="n">2</div><div><b>Elige qué quieres hacer</b><p>Todo está en Inicio, con botones grandes.</p></div></div>
+<div class="mst"><div class="n">3</div><div><b>Listo, trabaja por ti</b><p>Te avisamos cuando tus resultados estén listos.</p></div></div></div></section>
+<section class="ms"><div class="hd"><div class="label">Clips</div><h2>Así se ven tus clips</h2></div>
+<div class="mg"><div class="thumb" style="width:110px;height:196px;border-radius:16px"><div style="position:absolute;inset:0;background:linear-gradient(160deg,#2B1B6B 0%,#6A2CC9 45%,#FF6B9A 100%)"></div>
+<div style="position:absolute;width:121.00000000000001px;height:121.00000000000001px;left:38.5px;top:-27.5px;border-radius:50%;background:radial-gradient(circle,#FFD36Bcc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:13.2px;right:13.2px;top:35.28px;height:58.8px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:66.64px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:39.2px;height:31.36px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="play" style="width:38px;height:38px;"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#fff"/></svg></div><div class="dur">0:42</div></div><div class="thumb" style="width:110px;height:196px;border-radius:16px"><div style="position:absolute;inset:0;background:linear-gradient(170deg,#0C2D48 0%,#1478A8 50%,#38E1C4 100%)"></div>
+<div style="position:absolute;width:121.00000000000001px;height:121.00000000000001px;left:38.5px;top:-27.5px;border-radius:50%;background:radial-gradient(circle,#B9FFF1cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:13.2px;right:13.2px;top:35.28px;height:58.8px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:66.64px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:39.2px;height:31.36px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="play" style="width:38px;height:38px;"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#fff"/></svg></div><div class="dur">0:28</div></div><div class="thumb" style="width:110px;height:196px;border-radius:16px"><div style="position:absolute;inset:0;background:linear-gradient(165deg,#3A0D12 0%,#C2362C 50%,#FFB347 100%)"></div>
+<div style="position:absolute;width:121.00000000000001px;height:121.00000000000001px;left:38.5px;top:-27.5px;border-radius:50%;background:radial-gradient(circle,#FFE7A3cc 0%,transparent 62%);opacity:.75"></div>
+<div style="position:absolute;left:13.2px;right:13.2px;top:35.28px;height:58.8px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:66.64px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:-10%;right:-10%;bottom:39.2px;height:31.36px;border-radius:50% 50% 0 0;background:rgba(0,0,0,.22)"></div><div class="play" style="width:38px;height:38px;"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#fff"/></svg></div><div class="dur">0:35</div></div></div></section>
+<section class="ms"><div class="hd"><h2>Hecho para streamers, creadores y negocios</h2></div><div class="maud">
+<div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>Streamers<small>Clips y control de OBS</small></div><div><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>Creadores<small>Publica sin editar</small></div>
+<div><svg class="i" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor"/><circle cx="15" cy="14" r="1.3" fill="currentColor"/></svg>Negocios<small>Atiende a tus clientes</small></div><div><svg class="i" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Quien invierte<small>Avisos claros</small></div></div></section>
+<section class="ms"><div class="hd"><div class="label">Planes</div><h2>Empieza gratis, crece con Pro</h2></div>
+<div class="mpl"><div class="tagx">Más popular</div><h3>Pro anual</h3><div class="pr">$9,970<span> MXN al año</span></div>
+<div class="pn"><b>Se renueva cada año</b></div><div class="pn" style="font-size:15px">o paga mes a mes: $997 MXN al mes (plan mensual)</div><div class="pn" style="font-size:15px;color:var(--accent);font-weight:650">Ahorras $1,994 al año · 16%</div>
+<button class="btn btn-primary btn-xl" style="margin-top:18px;font-size:19px">Empezar mis 7 días gratis</button></div>
+<div class="mpl2"><div><b>Gratis</b><span>$0</span><small style="display:block">Para conocer Chalyb</small></div><div><b>VIP</b><span>$3,799</span><small style="display:block">MXN al mes · más créditos</small></div></div>
+<div style="text-align:center;margin-top:16px"><a class="lnk" style="font-size:17px">Ver todos los planes</a></div>
+<div class="midea"><div class="tico" style="width:48px;height:48px;border-radius:14px;background:#E8A600"><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></div><div><b>Tienes la idea, nosotros la construimos</b><p>Propón una herramienta y compartimos las ganancias.</p></div></div></section>
+<section class="ms"><div class="hd"><h2>Preguntas frecuentes</h2></div><div class="mfq">
+<div class="q">¿De verdad los primeros 7 días son gratis?<svg class="i" viewBox="0 0 24 24" style="transform:rotate(180deg)"><path d="m6 9 6 6 6-6"/></svg></div><div class="a">Sí, en Pro mensual y Pro anual. Hoy pagas $0 y hoy mismo te enviamos por correo el aviso de cobro, con la fecha y el monto. Puedes cancelar en 1 clic desde Mi cuenta, sin llamadas.</div>
+<div class="q">¿Necesito saber de tecnología?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><div class="q">¿Qué incluye el plan Pro?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><div class="q">¿Cómo cancelo?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><div class="q">¿Cómo pago?<svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div></section>
+<div class="mfin"><h2>Fuiste por una cosa y te llevaste todo.</h2><button class="btn">Empezar mis 7 días gratis</button><small>Todas las herramientas incluidas. Cancela cuando quieras.</small></div>
+<footer class="mfoot"><div class="logo "><div class="mark"><svg viewBox="0 0 24 24"><path d="M17.5 7.2A7 7 0 1 0 17.5 16.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="17.6" cy="12" r="2" fill="#fff"/></svg></div><div class="word">Chalyb</div></div><div class="lk"><a>Términos y Condiciones</a><a>Términos de Suscripción</a><a>Aviso de Privacidad</a><a>Uso aceptable</a><a>Planes</a><a>Ayuda</a></div>
+<div class="cp">© 2026 Chalyb · Hecho en México.<br>Precios en MXN, IVA incluido. Pago seguro con Mercado Pago.</div></footer></div></body></html>

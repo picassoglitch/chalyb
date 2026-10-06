@@ -1,16 +1,57 @@
 import type { Metadata } from 'next';
+import { Familjen_Grotesk, Fraunces, Inter, Space_Mono } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Analytics } from '@vercel/analytics/next';
+import { CookieConsent } from '@/components/public/cookie-banner';
 import { routing } from '@/i18n/routing';
-import './globals.css';
+import { PUBLIC_CLIENT_NAMESPACES, pickNamespaces } from '@/i18n/client-messages';
+import { HREFLANG } from '@/i18n/locales';
+import { canonicalOrigin } from '@/lib/site';
+// Only the html/body base; the legacy globals.css loads in the layouts that
+// still use it ((dashboard), (auth), legal, contacto), not on every page.
+import './base.css';
 
 // Lock the [locale] segment to real locales. Without this, requests for
 // non-locale top-level paths (/favicon.ico, /robots.txt, …) match the dynamic
 // segment and run generateMetadata with locale="favicon.ico", which threw
 // MODULE_NOT_FOUND on `import('messages/favicon.ico.json')`. Now they 404 clean.
 export const dynamicParams = false;
+
+// The design system's font (Q27; LANDING-SPEC §7) for every page, public ones
+// included: self-hosted by next/font, no request to Google at runtime. The
+// tokens read it as var(--cc-body). Not preloaded: the 48 KB preload
+// competed with the hero's LCP image, and the fallback is metric-adjusted, so
+// the swap shifts nothing (LANDING-SPEC §7, CLS 0 measured).
+const inter = Inter({ subsets: ['latin'], display: 'swap', preload: false, variable: '--cc-body' });
+
+// The legacy faces (globals.css --font-display/--font-serif/--font-mono) for
+// the pages not yet rebuilt. Self-hosted too: the Google Fonts <link> they
+// used to come from blocked the landing's first paint (LANDING-SPEC §7). Not
+// preloaded, so a page that never uses them never downloads them.
+const legacyDisplay = Familjen_Grotesk({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-familjen',
+});
+const legacySerif = Fraunces({
+  subsets: ['latin'],
+  // Variable weight (covers the 400/500 the <link> asked for) with opsz.
+  axes: ['opsz'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-fraunces',
+});
+const legacyMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-space-mono',
+});
+const fontVars = [inter, legacyDisplay, legacySerif, legacyMono].map((f) => f.variable).join(' ');
 
 export async function generateMetadata({
   params,
@@ -25,11 +66,14 @@ export async function generateMetadata({
   // render as "Engines · Chalyb" in the browser tab. Pages without a title
   // fall back to the locale-level meta.title (the marketing tagline).
   return {
+    // Relative metadata URLs resolve against the canonical www origin.
+    metadataBase: new URL(canonicalOrigin()),
     title: {
       default: messages.meta.title,
       template: '%s · Chalyb',
     },
-    description: messages.meta.description,
+    // Every page's fallback: no trial claim (it depends on a runtime flag).
+    description: messages.meta.descriptionNoTrial,
     // Icons come from the file conventions (app/favicon.ico, app/icon.png) and
     // from public/apple-touch-icon.png, which iOS requests by that exact path.
     // Declaring `icons` here would replace the convention's <link> tags, so we
@@ -53,19 +97,13 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   return (
-    <html lang={locale} data-scroll-behavior="smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={HREFLANG[locale]} data-scroll-behavior="smooth" className={fontVars}>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-
-        <Analytics />
+        <NextIntlClientProvider messages={pickNamespaces(messages, PUBLIC_CLIENT_NAMESPACES)}>
+          {children}
+          {/* Loads Vercel Analytics only after cookie consent (P4-7). */}
+          <CookieConsent />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

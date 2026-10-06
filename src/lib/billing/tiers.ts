@@ -3,6 +3,8 @@
 // Updating a tier's capabilities = edit this file. No magic numbers elsewhere.
 
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
+import { planPrice } from '@/config/pricing';
+import { formatMXN } from './format';
 
 /**
  * ROLE OVERRIDES TIER.
@@ -61,6 +63,18 @@ export interface TierCapabilities {
   historyDays: number;
   /** Whether advanced analytics dashboards unlock. */
   hasAdvancedAnalytics: boolean;
+  /** Largest single file an engine accepts for this tier (MB). */
+  maxUploadMB: number;
+  /** Longest single video/VOD an engine will process (minutes). */
+  maxSourceMinutes: number;
+  /** Media minutes processed per calendar month, across engines. */
+  sourceMinutesPerMonth: number;
+  /** Jobs (uploads, renders, analyses) running at once, across engines. */
+  maxConcurrentJobs: number;
+  /** Boost lane (a dedicated big instance per job, gone when it ends):
+   *  'included' = every job runs there at no fee; 'paid' = on request, for
+   *  BOOST_FEE_TOKENS per successful job. */
+  boost: 'included' | 'paid';
   /** Whether the user gets priority support. */
   hasPrioritySupport: boolean;
   /** Whether the user sees alpha / preview features. */
@@ -109,6 +123,11 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     tokensPerMonth: 50_000,
     storageMB: 500,
     activeStreams: 0,
+    maxUploadMB: 500,
+    maxSourceMinutes: 30,
+    sourceMinutesPerMonth: 60,
+    maxConcurrentJobs: 1,
+    boost: 'paid',
     historyDays: 7,
     hasAdvancedAnalytics: false,
     hasPrioritySupport: false,
@@ -129,29 +148,37 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   },
   PRO: {
     liveEnginesCount: 1,
-    // 1,000,000 tokens/month, regenerated on the 1st (see lib/usage/tokens.ts).
+    // Regenerated on the 1st (see lib/usage/tokens.ts). Sized by
+    // USAGE_ECONOMICS below: what the allowance is worth at billed prices
+    // never exceeds what the plan earns in a month.
     jobsPerMonth: 2_000,
-    tokensPerMonth: 1_000_000,
+    tokensPerMonth: 8_000_000,
     storageMB: 5_000,
     activeStreams: 1,
+    maxUploadMB: 4096,
+    maxSourceMinutes: 180,
+    sourceMinutesPerMonth: 3_000,
+    maxConcurrentJobs: 2,
+    boost: 'paid',
     historyDays: 90,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: false,
     hasEarlyAccess: false,
     community: 'premium',
-    // ChalyClip Pro ("el streamer"): no watermark, ~12 streams/mo, HD-only
+    // ChalyClip Pro ("el streamer"): no watermark, HD-only
     // export, one brand kit. Auto-publish stays a VIP-only perk. Out of tokens
     // before month end → prompted to buy a top-up pack (TOKEN_PACKS).
     clipWatermark: false,
     clipVodRetentionDays: 90,
-    clipStreamsPerMonth: 12,
+    clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
     clipDriveAutoIngest: true,
     clipConnectSocials: true,
     label: 'Pro',
-    price: 'MXN $749',
+    // Display only, IVA included; the amount charged comes from the same config.
+    price: `${formatMXN(planPrice('pro_month').totalCents)} MXN`,
     per: 'mes',
   },
   // PARTNER = PRO + 1 owned engine. The owned engine is ALWAYS live regardless
@@ -163,9 +190,14 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   PARTNER: {
     liveEnginesCount: 1,
     jobsPerMonth: 2_000,
-    tokensPerMonth: 1_000_000,
+    tokensPerMonth: 8_000_000, // mirrors Pro
     storageMB: 5_000,
     activeStreams: 1,
+    maxUploadMB: 4096,
+    maxSourceMinutes: 180,
+    sourceMinutesPerMonth: 3_000,
+    maxConcurrentJobs: 2,
+    boost: 'paid',
     historyDays: 180,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
@@ -173,7 +205,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     community: 'premium',
     clipWatermark: false,
     clipVodRetentionDays: 90,
-    clipStreamsPerMonth: 12,
+    clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
@@ -188,9 +220,14 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   VIP: {
     liveEnginesCount: Infinity,
     jobsPerMonth: 20_000,
-    tokensPerMonth: 5_000_000,
+    tokensPerMonth: 32_000_000,
     storageMB: 50_000,
     activeStreams: 5,
+    maxUploadMB: 20_480,
+    maxSourceMinutes: 480,
+    sourceMinutesPerMonth: 12_000,
+    maxConcurrentJobs: 4,
+    boost: 'included',
     historyDays: 365,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
@@ -205,10 +242,44 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipDriveAutoIngest: true,
     clipConnectSocials: true,
     label: 'VIP',
-    price: 'MXN $2,499',
+    price: `${formatMXN(planPrice('vip_month').totalCents)} MXN`,
     per: 'mes',
   },
 };
+
+/**
+ * How the token allowances are sized (owner, 2026-10-03: every unit a user
+ * consumes must earn 160% over what we pay for it).
+ *
+ * Usage is charged at real provider cost × (1 + margin), with the margin in
+ * Ajustes (default 160%), at $4 per 1M billable tokens. So an allowance of T
+ * tokens is worth T × $4/1M at billed prices, and costs us that ÷ 2.6. Sizing
+ * T so its billed value ≤ the plan's monthly revenue means a user who spends
+ * every token still leaves the full margin. Revenue is the CHEAPEST way to
+ * buy the tier (Pro anual: 7,490 MXN / 12), before IVA, at a deliberately
+ * weak peso so a currency move doesn't eat the margin.
+ *
+ *   Pro:  624 MXN ÷ 19.5 = $32/mo → 8M tokens   (~28 typical runs)
+ *   VIP: 2,499 MXN ÷ 19.5 = $128/mo → 32M tokens (~114 typical runs)
+ *
+ * A typical ChalyClip run (89-min VOD, prod data Jun–Aug 2026 re-priced at
+ * today's rates) costs us ~$0.43 — transcription $0.34, Claude $0.04,
+ * compute ~$0.05 — so ~280k tokens billed. Credits are what limit volume;
+ * the monthly-minutes caps sit above what the credits buy and only stop
+ * abuse (Pro 3,000 min, VIP 12,000). No stream counts are promised.
+ * tests/consumption.test.ts holds the rule.
+ */
+export const USAGE_ECONOMICS = {
+  usdPerMillionBillable: 4,
+  conservativeMxnPerUsd: 19.5,
+  defaultMarginPercent: 160,
+} as const;
+
+/** What a non-VIP job pays to run on the boost lane, in billable tokens
+ *  (≈ $0.20 at 4 micros/token), charged only when the job succeeds. The
+ *  instance's compute is metered separately as compute.seconds, so this is
+ *  the convenience premium, not the machine cost. */
+export const BOOST_FEE_TOKENS = 50_000;
 
 /**
  * Returns whether a specific engine is allowed in LIVE mode for the given user state.
@@ -239,6 +310,19 @@ export function engineCanRunLive(
   if (caps.liveEnginesCount === Infinity) return true;
   // PRO + PARTNER (or any finite > 0 case) — must match selection.
   return engineId === selectedEngineId;
+}
+
+/**
+ * D7 · how many tools a plan runs live, from the same rule the entitlement
+ * uses (entitlement-core: PRO_INCLUDES_ALL_TOOLS gives paid plans every
+ * tool). TIER_CAPS.liveEnginesCount is the legacy one-slot model; read this
+ * instead wherever a count or a slot picker is shown, so the screens, the
+ * server entitlement and the terms say the same thing.
+ */
+export function liveToolSlots(tier: SubscriptionTier, proIncludesAllTools: boolean): number {
+  const caps = TIER_CAPS[tier];
+  if (proIncludesAllTools && caps.liveEnginesCount > 0) return Infinity;
+  return caps.liveEnginesCount;
 }
 
 // Back-compat alias — remove after all call sites migrated.
@@ -344,32 +428,57 @@ export function tierLabelShort(tier: SubscriptionTier): string {
 /** Quotas formatted as the UI list expects them. */
 export interface QuotaRow {
   label: string;
-  used: number;
+  /** null = not measured by the hub (the engine holds it). */
+  used: number | null;
   cap: number;
   unit: string;
   sub?: string;
 }
 
-export function buildQuotaRows(tier: SubscriptionTier): QuotaRow[] {
+export interface QuotaUsage {
+  tokensUsed: number;
+  jobs: number;
+  sourceMinutes: number;
+  running: number;
+}
+
+const NO_USAGE: QuotaUsage = { tokensUsed: 0, jobs: 0, sourceMinutes: 0, running: 0 };
+
+export function buildQuotaRows(tier: SubscriptionTier, usage: QuotaUsage = NO_USAGE): QuotaRow[] {
   const caps = TIER_CAPS[tier];
   return [
     {
       label: 'Trabajos IA · este mes',
-      used: 0,
+      used: usage.jobs,
       cap: caps.jobsPerMonth,
       unit: 'trabajos',
       sub: 'Reinicia el día 1',
     },
     {
       label: 'Tokens IA · este mes',
-      used: 0,
+      used: usage.tokensUsed,
       cap: caps.tokensPerMonth,
       unit: 'tokens',
       sub: 'Across all sistemas',
     },
     {
+      label: 'Minutos de video · este mes',
+      used: usage.sourceMinutes,
+      cap: caps.sourceMinutesPerMonth,
+      unit: 'min',
+      sub: `Hasta ${caps.maxSourceMinutes} min y ${caps.maxUploadMB.toLocaleString('es-MX')} MB por archivo`,
+    },
+    {
+      label: 'Trabajos en curso',
+      used: usage.running,
+      cap: caps.maxConcurrentJobs,
+      unit: 'a la vez',
+      sub:
+        caps.boost === 'included' ? 'Cada trabajo corre en su propio servidor dedicado' : undefined,
+    },
+    {
       label: 'Almacenamiento',
-      used: 0,
+      used: null,
       cap: caps.storageMB,
       unit: 'MB',
       sub: 'Clips · VODs · uploads',

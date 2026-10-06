@@ -18,7 +18,10 @@ const daysFromNow = (n: number) => new Date(NOW.getTime() + n * DAY);
 test('a period runs 30 days from the payment', () => {
   const end = periodEndFrom('2026-09-01T00:00:00Z');
   assert.ok(end);
-  assert.equal(end.toISOString(), new Date(Date.parse('2026-09-01T00:00:00Z') + PAID_PERIOD_DAYS * DAY).toISOString());
+  assert.equal(
+    end.toISOString(),
+    new Date(Date.parse('2026-09-01T00:00:00Z') + PAID_PERIOD_DAYS * DAY).toISOString(),
+  );
 });
 
 test('cancelling mid-period keeps the plan to the end of it', () => {
