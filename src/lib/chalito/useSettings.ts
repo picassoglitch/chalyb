@@ -44,6 +44,23 @@ export const useSettings = () => {
     }
   }, [store, status, reload]);
 
+  // Leaving the screen (or reloading) inside the debounce must not drop the rename: save it now.
+  useEffect(() => {
+    if (!store) return;
+    const flush = () => {
+      if (!companionTimer.current) return;
+      clearTimeout(companionTimer.current);
+      companionTimer.current = null;
+      const cur = latest.current;
+      if (cur) void store.saveCompanion(cur).catch(() => undefined);
+    };
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, [store]);
+
   const set: SettingContext["set"] = (k, v) => {
     setError(null);
     setValues((cur) => {
@@ -57,6 +74,7 @@ export const useSettings = () => {
       // Typing a name shouldn't be one RPC per keystroke.
       if (companionTimer.current) clearTimeout(companionTimer.current);
       companionTimer.current = setTimeout(() => {
+        companionTimer.current = null;
         const cur = latest.current;
         if (cur) void store.saveCompanion(cur).catch(() => setError("failed"));
       }, 500);
@@ -77,6 +95,7 @@ export const useSettings = () => {
       return;
     }
     if (companionTimer.current) clearTimeout(companionTimer.current);
+    companionTimer.current = null;
     await store.saveCompanion(v);
     await store.markOnboarded();
   };

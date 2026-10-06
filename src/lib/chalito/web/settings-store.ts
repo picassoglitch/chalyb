@@ -184,7 +184,7 @@ export class SettingsStore {
     await must(this.db.rpc("update_my_settings", { p: { phone_pending_e164: e164 } }));
   }
 
-  /** Creates the companion once (create_my_companion), then renames it through the column grant. */
+  /** Creates the companion once (create_my_companion), then saves changes with update_my_companion. */
   async saveCompanion(v: Pick<SettingsValues, "avatar" | "companionName">): Promise<void> {
     const name =
       v.companionName.isRenamed && v.companionName.name.trim() ? v.companionName.name.trim().slice(0, 40) : "Chalito";
@@ -198,11 +198,14 @@ export class SettingsStore {
       );
     } catch (err) {
       if (!(err instanceof SettingsError && err.code === "companion_exists")) throw err;
+      // Not a direct UPDATE: its policy needs a paired device, so the person's session matched
+      // 0 rows without an error and the rename was lost (chalito migration 20261006090000).
       await must(
-        this.db
-          .from("companions")
-          .update({ name, is_renamed: v.companionName.isRenamed, avatar: v.avatar })
-          .eq("owner", this.owner),
+        this.db.rpc("update_my_companion", {
+          p_name: name,
+          p_avatar: v.avatar,
+          p_is_renamed: v.companionName.isRenamed,
+        }),
       );
     }
   }
