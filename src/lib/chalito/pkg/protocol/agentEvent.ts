@@ -156,6 +156,12 @@ export const CommandRejectReason = z.enum([
   "step_up_failed",
   /** Accepted, but the coding agent failed to start (version, login, binary). */
   "start_failed",
+  /** provider.connect signin: providers.yaml `subscriptionLocal` doesn't allow it for this person. */
+  "blocked_by_policy",
+  /** provider.*: an install or sign-in for that provider is already running on the device. */
+  "provider_busy",
+  /** provider.*: the key couldn't be stored, the CLI is missing, or its sign-in/install failed. */
+  "provider_failed",
   "internal",
 ]);
 export type CommandRejectReason = z.infer<typeof CommandRejectReason>;
@@ -244,6 +250,20 @@ export const DeviceEvent = z.discriminatedUnion("type", [
     type: z.literal("trust.client_revoked"),
     deviceId: DeviceId,
     clientDeviceId: DeviceId,
+    t: EpochMs,
+  }),
+  /**
+   * Computer control's state on this device, for display only (remote surfaces can read it,
+   * never turn it on): whether it is enabled locally and how many sessions hold control now.
+   * `by` names what ended control when it was stopped (`hotkey`, `tray`, `panel`, `cli`, `policy`).
+   */
+  z.object({
+    v: z.literal(1),
+    type: z.literal("computer.changed"),
+    deviceId: DeviceId,
+    enabled: z.boolean(),
+    activeSessions: z.number().int().min(0).max(1000),
+    by: z.string().max(32).optional(),
     t: EpochMs,
   }),
 ]);

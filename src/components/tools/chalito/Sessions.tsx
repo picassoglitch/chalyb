@@ -5,7 +5,20 @@ import { ActionError, type EventView, type SessionView } from "@chalito/client";
 import type { RemotePermissionMode } from "@chalito/protocol";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
+import { adapterNameKey } from "@/lib/chalito/web/adapters";
 import { SharingToggle } from "./SharingToggle";
+
+/** The session's coding agent by name (integrations.*), or nothing when unknown. */
+const AgentName = ({ adapter }: { adapter: string | undefined }) => {
+  const ti = useTranslations("chalito.integrations");
+  const key = adapterNameKey(adapter);
+  return key ? (
+    <span data-testid="session-adapter" data-kind={adapter}>
+      {" · "}
+      {ti(key)}
+    </span>
+  ) : null;
+};
 
 /** The only modes a remote surface may set (the device policy is still the ceiling). Never bypassPermissions. */
 export const REMOTE_MODES: readonly RemotePermissionMode[] = ["default", "plan", "acceptEdits"];
@@ -32,6 +45,7 @@ export const SessionsList = () => {
               <span className="font-medium">{s.card?.goal ?? s.label ?? s.sid}</span>
               <span className="text-sm text-neutral-600">
                 {s.card?.workspaceLabel ?? s.label} · {t(`state.${s.card?.state ?? s.state ?? "starting"}`)}
+                <AgentName adapter={s.card?.adapter ?? s.adapter} />
               </span>
             </Link>
           </li>
@@ -167,6 +181,7 @@ export const SessionDetail = ({ sid }: { sid: string }) => {
         <p className="text-sm text-neutral-600">
           {card?.workspaceLabel ?? s.label} ·{" "}
           <span data-testid="session-state">{ts(`state.${card?.state ?? s.state ?? "starting"}`)}</span>
+          <AgentName adapter={card?.adapter ?? s.adapter} />
         </p>
       </header>
       {card ? (

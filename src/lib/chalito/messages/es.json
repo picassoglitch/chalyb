@@ -536,7 +536,14 @@
       "title": "Confirma que eres tú",
       "body": "Esta acción es de riesgo {risk}. Confírmala con tu huella, rostro o llave de seguridad.",
       "confirm": "Confirmar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "computer": {
+        "title": "¿Dejas que la IA use tu computadora?",
+        "body": "La IA podrá ver la pantalla y usar el mouse y el teclado de {computer} durante esta sesión.",
+        "stop": "Puedes detenerla cuando quieras con el botón en pantalla o con Ctrl+Alt+Esc.",
+        "passkey": "Después confirma con tu huella, rostro o llave de seguridad.",
+        "confirm": "Sí, continuar"
+      }
     },
     "approval": {
       "unknownTool": "Acción",
@@ -573,7 +580,17 @@
       "fullInput": "Ver lo que se va a ejecutar, completo",
       "mustExpand": "El resumen está cortado: abre el contenido completo antes de aprobar.",
       "unverified": "Sin verificar",
-      "unverifiedNote": "Tu computadora no firmó esta solicitud, o no coincide con lo que firmó. No se puede aprobar; puedes denegarla."
+      "unverifiedNote": "Tu computadora no firmó esta solicitud, o no coincide con lo que firmó. No se puede aprobar; puedes denegarla.",
+      "computer": {
+        "title": "Control de tu computadora",
+        "thisComputer": "tu computadora",
+        "body": "Esta sesión pide ver la pantalla y usar el mouse y el teclado de {computer}. Si apruebas, la IA podrá hacerlo durante esta sesión.",
+        "session": "Sesión: {session} · Agente: {agent}",
+        "stop": "Puedes detenerla cuando quieras con el botón en pantalla o con Ctrl+Alt+Esc en esa computadora.",
+        "once": "Se pide una vez por sesión, siempre con tu passkey. Nunca se aprueba sola.",
+        "invalid": "Esta solicitud de control no pide tu passkey como debe. No se puede aprobar; puedes denegarla.",
+        "approve": "Aprobar control"
+      }
     },
     "inbox": {
       "title": "Bandeja",
@@ -761,7 +778,10 @@
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
       "failed": "No pudimos enviarlo.",
       "noComputers": "Aún no tienes una computadora vinculada.",
-      "download": "Descargar Chalito para tu computadora"
+      "download": "Descargar Chalito para tu computadora",
+      "connect": "Conectar",
+      "connectAdapter": "Conectar {name}",
+      "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes."
     },
     "account": {
       "title": "Eliminar mi cuenta de Chalito",
@@ -1097,6 +1117,17 @@
     "timeout": "Tu computadora no respondió. Revisa que esté encendida y con Chalito abierto, y vuelve a intentar.",
     "sendError": "No pudimos enviar la orden a tu computadora. Vuelve a intentar.",
     "errorDetail": "Detalle: {error}",
-    "blocked": "Por ahora, iniciar sesión con tu plan de {name} no está disponible para tu cuenta. Conéctalo con tu API key."
+    "blocked": "Por ahora, iniciar sesión con tu plan de {name} no está disponible para tu cuenta. Conéctalo con tu API key.",
+    "errors": {
+      "install_failed": "No se pudo instalar. Revisa tu conexión a internet e inténtalo de nuevo.",
+      "install_unconfirmed": "La instalación no se confirmó en esa computadora.",
+      "npm_missing": "Esa computadora necesita Node.js para instalarlo. Instálalo desde nodejs.org y vuelve a intentarlo.",
+      "pin_failed": "Se instaló, pero no pudimos verificarlo. Vuelve a intentarlo.",
+      "signin_failed": "El inicio de sesión no se completó.",
+      "signin_timeout": "El inicio de sesión tardó demasiado. Vuelve a intentarlo desde esa computadora.",
+      "key_invalid": "Esa API key no funcionó. Revisa que esté completa y vigente.",
+      "keychain_failed": "No pudimos guardar la llave en esa computadora.",
+      "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo."
+    }
   }
 }
