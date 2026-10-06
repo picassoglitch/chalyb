@@ -11,11 +11,13 @@ import { useCompanionPick } from "@/lib/chalito/companion";
 import { PushOptIn } from "./PushOptIn";
 import { AccountDeletion } from "./AccountDeletion";
 import { BrainKeys } from "./BrainKeys";
+import { ConnectProviders } from "./ConnectProviders";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
   const tw = useTranslations("chalito.live.settings");
   const ti = useTranslations("chalito.integrations");
+  const tc = useTranslations("chalito.connect");
   const { phoneVerifier } = useChalito();
   const { values, set, error, persisted } = useSettings();
   const locale = useLocale();
@@ -35,12 +37,21 @@ export const Settings = () => {
           {tw(`error.${error}`)}
         </p>
       ) : null}
+      <section aria-labelledby="settings-connect" className="grid gap-3" data-testid="settings-connect">
+        <h2 id="settings-connect" className="text-lg font-semibold">
+          {tc("title")}
+        </h2>
+        <p className="text-sm text-neutral-600">{tc("body")}</p>
+        <ConnectProviders />
+      </section>
       <PushOptIn />
       <Link href="/conexiones" className="w-fit text-emerald-700 underline">
         {tw("connectedApps")}
       </Link>
       <SettingsPanel
         shell="web"
+        // "Conecta tus IA" above shows (and acts on) the connections.
+        omit={["connections"]}
         values={values}
         onChange={set}
         providerLabel={(p) => ti(`${p}.name`)}

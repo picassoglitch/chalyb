@@ -77,8 +77,12 @@ export type Level = z.infer<typeof Level>;
 export const Platform = z.enum(["linux", "windows", "macos", "ios", "android", "web"]);
 export const DeviceKind = z.enum(["desktop", "laptop", "phone", "web"]);
 
-export const AdapterKind = z.enum(["claude-code", "codex", "acp"]);
+export const AdapterKind = z.enum(["claude-code", "codex", "acp", "grok", "gemini"]);
 export type AdapterKind = z.infer<typeof AdapterKind>;
+
+/** AI providers a device can connect (providers.yaml; chalito.connections.provider). */
+export const Provider = z.enum(["anthropic", "openai", "xai", "google"]);
+export type Provider = z.infer<typeof Provider>;
 
 /**
  * Where a session prompt came from. The agent's local policy can disable each origin.
