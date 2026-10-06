@@ -16,6 +16,9 @@ const TOOL_REDIRECTS: [string, string][] = [
   ['/app/engines/chalybclip/:rest*', '/app/clips'],
   ['/app/engines/chalybcrypto/:rest*', '/app/senales'],
   ['/app/engines/chalybobs/:rest*', '/app/en-vivo'],
+  ['/app/engines/chalito/:rest*', '/app/chalito'],
+  // Chalito's api sends MCP consent to <web origin>/oauth/consent?request=… (keeps the query).
+  ['/oauth/consent', '/app/chalito/oauth/consent'],
   ['/app/engines/:slug/:rest*', '/app/herramientas'],
   // Señales' first activation moved under /app/senales/empezar.
   ['/app/senales/avisos', '/app/senales/empezar/avisos'],
@@ -45,17 +48,33 @@ const nextConfig: NextConfig = {
       ]),
       // Spanish aliases for the customer screens.
       { source: '/app/resultados', destination: '/app/history', permanent: false },
-      { source: '/:locale(en|es)/app/resultados', destination: '/:locale/app/history', permanent: false },
+      {
+        source: '/:locale(en|es)/app/resultados',
+        destination: '/:locale/app/history',
+        permanent: false,
+      },
       { source: '/app/ayuda', destination: '/app/help', permanent: false },
       { source: '/:locale(en|es)/app/ayuda', destination: '/:locale/app/help', permanent: false },
       // P5: main's Dinero, Actividad and Ajustes screens folded into the
       // rebuilt owner panel.
       { source: '/dashboard/billing', destination: '/dashboard/dinero', permanent: true },
-      { source: '/:locale(en|es)/dashboard/billing', destination: '/:locale/dashboard/dinero', permanent: true },
+      {
+        source: '/:locale(en|es)/dashboard/billing',
+        destination: '/:locale/dashboard/dinero',
+        permanent: true,
+      },
       { source: '/dashboard/activity', destination: '/dashboard/actividad', permanent: true },
-      { source: '/:locale(en|es)/dashboard/activity', destination: '/:locale/dashboard/actividad', permanent: true },
+      {
+        source: '/:locale(en|es)/dashboard/activity',
+        destination: '/:locale/dashboard/actividad',
+        permanent: true,
+      },
       { source: '/dashboard/settings', destination: '/dashboard/ajustes', permanent: true },
-      { source: '/:locale(en|es)/dashboard/settings', destination: '/:locale/dashboard/ajustes', permanent: true },
+      {
+        source: '/:locale(en|es)/dashboard/settings',
+        destination: '/:locale/dashboard/ajustes',
+        permanent: true,
+      },
       { source: '/login', destination: '/sign-in', permanent: true },
       { source: '/register', destination: '/sign-in?mode=signup', permanent: true },
       { source: '/signup', destination: '/sign-in?mode=signup', permanent: true },
@@ -112,7 +131,11 @@ const nextConfig: NextConfig = {
       },
       ...LEGAL_ALIASES.flatMap(([alias, slug]) => [
         { source: `/${alias}`, destination: `/legal/${slug}`, permanent: true },
-        { source: `/:locale(en|es)/${alias}`, destination: `/:locale/legal/${slug}`, permanent: true },
+        {
+          source: `/:locale(en|es)/${alias}`,
+          destination: `/:locale/legal/${slug}`,
+          permanent: true,
+        },
         {
           source: `/${alias}/:version(v\\d+-\\d+)`,
           destination: `/legal/${slug}/:version`,

@@ -6,6 +6,7 @@ export const TOOL_ROUTES: Record<string, string> = {
   chalybclip: '/app/clips',
   chalybcrypto: '/app/senales',
   chalybobs: '/app/en-vivo',
+  chalito: '/app/chalito',
   chalybbot: '/app/herramientas/asistente',
   chalybpicks: '/app/herramientas/pronosticos',
   chalybrealtor: '/app/herramientas/inmuebles',

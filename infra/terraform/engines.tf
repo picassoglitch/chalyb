@@ -54,7 +54,9 @@ module "engine" {
   boost  = each.value.boost
   jobs   = each.value.jobs
 
-  enable_domain_mapping = var.enable_domain_mappings
+  # Chalito has no subdomain: its screens live inside the hub (/app/chalito) and the browser
+  # calls its api on the Cloud Run URL (owner decision 2026-10-05).
+  enable_domain_mapping = var.enable_domain_mappings && each.key != "chalito"
 
   # Without this the module's resources race API enablement. On a fresh
   # project the root-level secrets (which do wait) got created and nothing in

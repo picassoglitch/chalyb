@@ -1,0 +1,1026 @@
+{
+  "common": {
+    "appName": "Chalito",
+    "continue": "Continue",
+    "back": "Back",
+    "skip": "Skip",
+    "finish": "Finish",
+    "loading": "Loading…",
+    "save": "Save",
+    "home": "Home",
+    "language": "Language",
+    "comingSoon": "Coming soon"
+  },
+  "nav": {
+    "home": "Home",
+    "settings": "Settings",
+    "onboarding": "Get started",
+    "credits": "Credits",
+    "download": "Download",
+    "inbox": "Inbox",
+    "sessions": "Sessions",
+    "devices": "Devices",
+    "store": "Store",
+    "rooms": "Rooms",
+    "mesas": "Mesas"
+  },
+  "home": {
+    "title": "Hi, I'm {name}",
+    "subtitle": "I help you run your AI team from anywhere.",
+    "startOnboarding": "Get started",
+    "signedOut": "Sign in from your Chalyb account to continue.",
+    "signIn": "Sign in with Chalyb",
+    "companion": "Your companion: {name}"
+  },
+  "landing": {
+    "download": "Download",
+    "signIn": "Sign in with Chalyb",
+    "toInbox": "Go to your inbox",
+    "roster": {
+      "title": "Pick your companion",
+      "body": "Six characters to start with. You can switch whenever you like."
+    },
+    "tryon": {
+      "title": "Dress it your way",
+      "body": "Outfits and effects from the store. They only change how it looks, never what it can do."
+    },
+    "together": {
+      "title": "Shared rooms",
+      "body": "Your companion and your family's or team's, in one room."
+    },
+    "recharge": {
+      "title": "When it gets tired, it tells you",
+      "body": "If it runs out of energy, the basics keep working: your approvals and alerts. For the rest, you recharge it."
+    },
+    "plans": {
+      "title": "Plans",
+      "soon": "Coming soon",
+      "perMonth": "{price} a month",
+      "devices": "{n, plural, one {# device} other {# devices}}",
+      "sessions": "{n, plural, one {# session at a time} other {# sessions at a time}}",
+      "voiceMinutes": "{n} voice minutes a month",
+      "rooms": "{n, plural, one {# room} other {# rooms}}",
+      "solo": {
+        "title": "Solo Chalito",
+        "body": "Just the companion, without the rest of Chalyb."
+      },
+      "hub": {
+        "title": "With your Chalyb plan",
+        "body": "Chalyb plans include Chalito.",
+        "free": "Chalyb Gratis",
+        "pro": "Chalyb Pro",
+        "vip": "Chalyb VIP",
+        "includes": "Includes Chalito {tier}",
+        "byo": "With your own AI keys"
+      }
+    }
+  },
+  "sso": {
+    "working": "Signing you in to Chalito…",
+    "failed": "We couldn't open your session. Sign in again from Chalyb.",
+    "missingToken": "The sign-in link is missing. Sign in from Chalyb.",
+    "retry": "Back to Chalyb",
+    "desktop": {
+      "title": "Open Chalito to finish",
+      "body": "You're signed in. Go back to the desktop app to finish signing in.",
+      "open": "Open Chalito"
+    },
+    "rateLimited": "Too many attempts. Wait a moment, then sign in again.",
+    "unsolicited": "This sign-in link wasn't started from Chalito in this browser, so we didn't use it. To sign in, start here.",
+    "continue": "Sign in with Chalyb"
+  },
+  "onboarding": {
+    "title": "Get started",
+    "progress": "Step {step} of {total}",
+    "signIn": {
+      "title": "Sign in",
+      "body": "Chalito uses your Chalyb account. No new password needed.",
+      "signedIn": "You're signed in. Let's go!",
+      "cta": "Sign in with Chalyb"
+    },
+    "companion": {
+      "title": "Choose your companion",
+      "body": "You can change it any time. Soon you'll be able to upload your own image or model."
+    },
+    "name": {
+      "title": "Name it",
+      "body": "If you rename it, we show the credit line underneath."
+    },
+    "connect": {
+      "title": "Connect your AIs",
+      "body": "We only use each provider's official options. Your keys stay on your computer.",
+      "guided": "Guided",
+      "expert": "Expert",
+      "expertBody": "Paste your API keys in the desktop app or with \"chalito keys set\". We never send them to the cloud.",
+      "later": "You can connect them later in Settings → Connections."
+    },
+    "billing": {
+      "title": "How you pay",
+      "body": "Your plan and credits come from your Chalyb account.",
+      "byo": "Your own keys: what you use is billed by each provider to your account.",
+      "energy": "Chalito energy: drawn from your Chalyb balance.",
+      "both": "Both: your keys first, energy when needed.",
+      "tier": "Your Chalyb tier: {tier}",
+      "tierUnknown": "We don't know your Chalyb tier yet.",
+      "trial": "Your trial ends on {date}.",
+      "manage": "See plans on Chalyb"
+    },
+    "phone": {
+      "title": "Your phone",
+      "body": "For WhatsApp messages and calls when something is urgent. Optional."
+    },
+    "pair": {
+      "title": "Connect your computer",
+      "body": "Install Chalito on your computer and pair it with the Chalito glyph.",
+      "download": "Go to Download",
+      "later": "You can do this later."
+    },
+    "done": {
+      "title": "All set!",
+      "body": "{name} is here for you."
+    },
+    "passkey": {
+      "title": "Protect your approvals",
+      "body": "High-risk actions ask for your passkey."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "contact": "Contact and alerts",
+      "companion": "Your companion",
+      "privacy": "Privacy and connections",
+      "account": "Plan and credits",
+      "display": "Display"
+    },
+    "charges": "Charges may apply.",
+    "needsPhone": "Add your phone first.",
+    "phone": {
+      "label": "Phone",
+      "country": "Country or region",
+      "number": "Number",
+      "placeholder": "Your number",
+      "invalid": "That number doesn't look valid for the chosen country.",
+      "willSend": "We'll text you a code to verify it.",
+      "sendCode": "Send code",
+      "codeSent": "We sent a code to {number}.",
+      "code": "Code",
+      "verify": "Verify",
+      "verified": "{number} verified",
+      "change": "Change number",
+      "wrongCode": "That code isn't right.",
+      "rateLimited": "Too many attempts. Wait a moment.",
+      "error": "We couldn't verify the number. Try again later.",
+      "channel": "How to get the code",
+      "by": {
+        "sms": "By text",
+        "call": "By call"
+      },
+      "willCall": "We'll call you with a code.",
+      "inUse": "That number is already on another account."
+    },
+    "whatsapp": {
+      "label": "WhatsApp alerts",
+      "hint": "We message you when something needs your attention."
+    },
+    "calls": {
+      "label": "Calls",
+      "hint": "We call you if something is urgent and you don't respond."
+    },
+    "callBriefing": {
+      "label": "Call briefing",
+      "hint": "On a call we read you one line per pending item.",
+      "plaintext": "Those lines leave your computer unencrypted so they can be read aloud."
+    },
+    "quietHours": {
+      "label": "Quiet hours",
+      "hint": "No calls or messages during these hours, except emergencies.",
+      "default": "Default hours",
+      "custom": "Custom",
+      "off": "No quiet hours",
+      "from": "From",
+      "to": "to"
+    },
+    "avatar": {
+      "label": "Companion"
+    },
+    "companionName": {
+      "label": "Name",
+      "placeholder": "Chalito"
+    },
+    "privacyMode": {
+      "label": "Private mode",
+      "hint": "Use your own keys from your device and store only encrypted content."
+    },
+    "connections": {
+      "label": "Connections",
+      "none": "You haven't connected any AI yet.",
+      "notConnected": "Not connected",
+      "mode": {
+        "byo_api_key": "Your API key",
+        "byo_subscription_local": "Your plan",
+        "byo_mcp_connector": "Connector",
+        "managed": "Chalito energy"
+      }
+    },
+    "planCredits": {
+      "label": "Plan and credits",
+      "tier": "Tier: {tier}",
+      "unknown": "Unknown tier",
+      "trial": "Trial until {date}",
+      "manage": "Manage on Chalyb",
+      "usage": "See your usage"
+    },
+    "renderQuality": {
+      "label": "Animation quality",
+      "auto": "Automatic",
+      "bajo": "Low",
+      "medio": "Medium",
+      "alto": "High"
+    },
+    "needsAck": "First confirm you understand that charges may apply.",
+    "chargesAck": "I understand that charges may apply.",
+    "rooms": {
+      "you": "You",
+      "member": "Member {id}",
+      "owner": "created the room",
+      "feed": "Room messages",
+      "members": "Members",
+      "empty": "No messages yet.",
+      "sealed": "Can't be read on this device (missing the room key).",
+      "report": "Report",
+      "kind": {
+        "notice": "notice",
+        "event_proposal": "proposes an event",
+        "ask": "asks",
+        "ack": "replies",
+        "enter": "joined",
+        "leave": "left",
+        "presence": "status"
+      },
+      "composer": "Write a notice for the room",
+      "send": "Send",
+      "reportTitle": "Report",
+      "reason": "Reason",
+      "reasons": {
+        "spam": "Spam",
+        "abuse": "Harassment or abuse",
+        "impersonation": "Pretending to be someone else",
+        "other": "Other"
+      },
+      "note": "Comment (optional)",
+      "attach": "Attach this message's text to the report. Only you can read it: Chalito doesn't see room content unless you send it.",
+      "reportSend": "Send report",
+      "cancel": "Cancel",
+      "ended": {
+        "left": "You left this room.",
+        "kicked": "You're no longer a member of this room.",
+        "dissolved": "This room no longer exists.",
+        "revoked": "This device was removed from your account.",
+        "not_member": "You're no longer a member of this room."
+      },
+      "joinLabel": "Invite code",
+      "join": "Join",
+      "title": "Rooms",
+      "intro": "Private rooms with other families or teams. Messages are end-to-end encrypted: Chalito can't read them.",
+      "none": "You're not in any room yet.",
+      "joinTitle": "Join with a code",
+      "leave": "Leave the room",
+      "leaveConfirm": "Leave the room? You won't see its new messages.",
+      "leaveYes": "Yes, leave",
+      "noKey": "Waiting for the room key: another member shares it with this device.",
+      "noCompanion": "Choose your companion first.",
+      "notFound": "We couldn't find this room, or you're no longer a member.",
+      "reported": "Report sent. Thank you.",
+      "reportedDup": "You'd already reported this.",
+      "error": {
+        "not_member": "You're no longer a member of this room.",
+        "not_found": "Not found.",
+        "rate_limited": "Too many reports in a row; wait a moment.",
+        "bad_code": "That code isn't valid or was already used.",
+        "full": "The room is full.",
+        "no_key": "You don't have the room key yet.",
+        "failed": "That didn't work. Try again.",
+        "ended": "This room has ended for you.",
+        "not_owner": "Only the person who created the room can do this.",
+        "conflict": "The room changed in the meantime. Try again.",
+        "unsupported": "This device can't do that yet."
+      },
+      "memberCount": "{n, plural, one {# member} other {# members}}",
+      "unread": "New",
+      "stage": "The room's companions",
+      "remove": "Remove from room",
+      "removeConfirm": "Remove {member}? They won't see new messages.",
+      "removeYes": "Yes, remove",
+      "types": {
+        "family": "Family",
+        "business": "Business",
+        "project": "Project"
+      },
+      "create": {
+        "title": "New room",
+        "name": "Name",
+        "type": "Type",
+        "submit": "Create room",
+        "error": {
+          "limit": "Your plan doesn't allow more rooms.",
+          "rate_limited": "Too many tries; wait a moment.",
+          "no_devices": "This device isn't ready to create rooms.",
+          "failed": "We couldn't create the room. Try again."
+        }
+      },
+      "invite": {
+        "create": "Invite",
+        "again": "Create another invite",
+        "how": "Have the other person scan the glyph or type this code in Rooms → Join with a code. It works once.",
+        "expires": "Expires {date}"
+      },
+      "rotation": {
+        "why": "Someone left the room. To keep writing, change the key: whoever left can't read anything new.",
+        "rotate": "Rotate the key"
+      },
+      "ownerTitle": "Room settings",
+      "retention": {
+        "ttl": "Messages last",
+        "ttls": {
+          "PT1H": "1 hour",
+          "PT24H": "24 hours",
+          "P7D": "7 days",
+          "P30D": "30 days",
+          "until_dissolved": "Until the room is dissolved"
+        },
+        "keepPromoted": "Keep records someone saves",
+        "save": "Save",
+        "saved": "Saved."
+      },
+      "dissolve": {
+        "button": "Dissolve room",
+        "confirm": "Dissolve the room? Its messages, members and invites are deleted for everyone. This can't be undone.",
+        "yes": "Yes, dissolve"
+      }
+    },
+    "mesa": {
+      "list": "Your Mesas",
+      "listEmpty": "You don't have any Mesas yet.",
+      "title": "Mesas",
+      "intro": "A Mesa brings your companion and the brains you pick together to think something through with you. Only whoever you name answers.",
+      "status": {
+        "open": "Open",
+        "budget_reached": "Reached its token cap",
+        "closed": "Closed"
+      },
+      "new": {
+        "title": "New Mesa",
+        "who": "Who sits at the table?",
+        "companion": "{name} (your companion)",
+        "noCompanion": "You don't have a companion yet; you can seat brains only.",
+        "limit": "Your plan allows {n, plural, one {# brain} other {# brains}} per Mesa.",
+        "limitNone": "Your plan doesn't include brains at the Mesa. With your own key you can still use them.",
+        "limitUnknown": "Your plan sets how many brains fit at a Mesa.",
+        "sessions": "Live sessions as reference (up to {n})",
+        "sessionsNote": "Their card is shared as data. The Mesa never gives them instructions.",
+        "create": "Create Mesa",
+        "errors": {
+          "mesa_brains_limit": "Your plan allows up to {n, plural, one {# brain} other {# brains}} per Mesa.",
+          "mesa_brains_none": "Your plan doesn't include brains at the Mesa.",
+          "bad_participants": "Check who's seated: up to 2 sessions, no repeats.",
+          "network": "No connection. Try again.",
+          "error": "Couldn't create the Mesa. Try again."
+        }
+      },
+      "goal": "Goal",
+      "goalPlaceholder": "What do you want to decide or get done?",
+      "goalSave": "Save goal",
+      "goalMissing": "Write this Mesa's goal (it's kept only on this device).",
+      "feed": "Mesa conversation",
+      "empty": "Nobody has spoken yet. Write something to start.",
+      "you": "You",
+      "unknownSpeaker": "Someone",
+      "sealed": "Can't be read on this device.",
+      "proposals": "Proposals",
+      "objections": "Objections",
+      "byo": "with your key",
+      "recharge": "Recharge",
+      "decide": "Decide",
+      "decisionForwarded": "This didn't come from you, so no decision was opened.",
+      "emotion": {
+        "happy": "happy",
+        "angry": "angry",
+        "sad": "sad",
+        "relaxed": "relaxed",
+        "surprised": "surprised",
+        "excited": "excited",
+        "tired": "tired",
+        "thinking": "thinking",
+        "worried": "worried"
+      },
+      "composer": "Write to the Mesa",
+      "composerHint": "Use @name to talk to someone, or @all.",
+      "mentions": "Mention",
+      "everyone": "all",
+      "send": "Send",
+      "thinking": "Thinking…",
+      "from": {
+        "mcp:claude": "forwarded from {app}",
+        "mcp:chatgpt": "forwarded from {app}",
+        "room": "forwarded from a room"
+      },
+      "inbox": {
+        "title": "From your connected apps ({n})",
+        "note": "Text a connected app sent to your Mesa. It goes in as a quote, never as an instruction.",
+        "bring": "Bring to this Mesa",
+        "from": "From {app}"
+      },
+      "errors": {
+        "budget_reached": "This Mesa reached its token cap.",
+        "closed": "This Mesa is closed.",
+        "not_found": "This Mesa doesn't exist.",
+        "no_clients": "There are no devices to encrypt the answer for.",
+        "duplicate": "That message was already sent.",
+        "network": "No connection. Try again.",
+        "error": "Couldn't send. Try again.",
+        "load": "Couldn't load the Mesa.",
+        "notFound": "We couldn't find this Mesa."
+      },
+      "back": "All Mesas",
+      "keys": {
+        "title": "Your keys",
+        "intro": "Use your own provider keys for the Mesa's brains. What you spend with them isn't charged by Chalito.",
+        "loading": "Loading…",
+        "none": "You haven't added any keys yet.",
+        "provider": "Provider",
+        "key": "Key",
+        "save": "Save key",
+        "remove": "Remove",
+        "cloudOn": "in the cloud",
+        "cloudOff": "only on your devices",
+        "cloud": "Also use it in the cloud, for Mesa turns when your devices aren't open.",
+        "cloudWarning": "For this the key is sent once, unencrypted, to Chalito, which protects it with its key service. If you'd rather it never leave your devices, leave this box unchecked.",
+        "localOnly": "It's encrypted for your devices; Chalito can't read it.",
+        "saved": "Key saved.",
+        "removed": "Key removed.",
+        "error": "Couldn't save. Try again.",
+        "noDevices": "We couldn't find your devices to encrypt the key."
+      },
+      "decision": {
+        "title": "Mesa decision",
+        "from": "{name} asks you to decide",
+        "none": "None",
+        "note": "Your answer is signed on this device.",
+        "sent": "Done. You picked: {option}",
+        "dismissed": "Done. You picked none.",
+        "resolved": "This decision was already resolved.",
+        "error": "Couldn't send your answer. Try again.",
+        "pending": "Sent; the Mesa confirms it in a moment."
+      }
+    }
+  },
+  "integrations": {
+    "anthropic": {
+      "name": "Claude",
+      "agent": "Claude Code",
+      "howTo": "Claude Code connects only with your Anthropic API key. Anthropic's rules don't let us use your Claude subscription."
+    },
+    "openai": {
+      "name": "ChatGPT",
+      "agent": "Codex",
+      "howTo": "Codex works with your OpenAI API key or your ChatGPT plan (Sign in with ChatGPT). The ChatGPT plan is available only to the Chalito team for now.",
+      "ownerOnly": "ChatGPT plan: Chalito team only for now"
+    },
+    "xai": {
+      "name": "Grok",
+      "agent": "Grok Build",
+      "howTo": "Grok Build works with your xAI API key or your Grok login."
+    },
+    "google": {
+      "name": "Gemini",
+      "agent": "Gemini",
+      "howTo": "Use your Google AI Studio API key."
+    },
+    "iHave": "I have {name}"
+  },
+  "deeplinks": {
+    "approval": "Approval {id}",
+    "mesa": "Mesa {id}",
+    "room": "Room {id}",
+    "stub": "This screen is coming soon.",
+    "credits": "Credits"
+  },
+  "pwa": {
+    "description": "Your companion that runs your AI team."
+  },
+  "live": {
+    "testMode": "TEST MODE: simulated data, nothing is real.",
+    "gate": {
+      "loading": "Connecting…",
+      "signed_out": "Sign in with your Chalyb account to see your sessions and approvals.",
+      "signIn": "Sign in with Chalyb",
+      "unpaired": "This browser isn't trusted yet. Approve it from a trusted device or pair it from the desktop app.",
+      "error": "We couldn't connect. Try again in a moment.",
+      "revoked": "This device was removed from your account. Pair it again from a trusted device.",
+      "repair": "Pair again",
+      "link": "Use this browser"
+    },
+    "devMode": {
+      "banner": "Developer mode ACTIVE.",
+      "manage": "Turn it off"
+    },
+    "risk": {
+      "LOW": "Low",
+      "MED": "Medium",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "stepUp": {
+      "title": "Confirm it's you",
+      "body": "This is a {risk}-risk action. Confirm with your fingerprint, face or security key.",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "approval": {
+      "unknownTool": "Action",
+      "expiresIn": "Expires in",
+      "sealed": "The details are encrypted for another device.",
+      "stepUpNeeded": "Approving asks for your fingerprint, face or security key.",
+      "pending": "Waiting for you",
+      "expired": "Expired: denied",
+      "status": {
+        "approved": "Approved",
+        "denied": "Denied",
+        "expired": "Expired: denied",
+        "rejected_invalid": "Rejected: invalid signature"
+      },
+      "approve": "Approve",
+      "deny": "Deny",
+      "sentAllow": "Approval sent.",
+      "sentDeny": "Denial sent.",
+      "error": {
+        "step_up_cancelled": "Cancelled: nothing was sent.",
+        "expired": "Expired: denied",
+        "not_pending": "Already resolved.",
+        "other": "We couldn't send your answer.",
+        "unverified_request": "Can't approve: the request isn't verified."
+      },
+      "openSession": "Open the session",
+      "notFound": "We couldn't find that approval.",
+      "loading": "Loading…",
+      "needsPasskey": "To approve high-risk actions, protect this device with your passkey.",
+      "enrolPasskey": "Create passkey",
+      "truncated": "…(truncated)",
+      "truncatedN": "…(truncated, {n} more characters)",
+      "hiddenChars": "Contains invisible characters that can change how the text looks; they're shown here as ⟦U+…⟧.",
+      "fullInput": "See exactly what will run",
+      "mustExpand": "The summary is cut: open the full content before approving.",
+      "unverified": "Unverified",
+      "unverifiedNote": "Your computer didn't sign this request, or it doesn't match what it signed. It can't be approved; you can deny it."
+    },
+    "inbox": {
+      "title": "Inbox",
+      "notifications": "Alerts",
+      "notification": "{count, plural, one {# pending} other {# pending}}",
+      "ack": "Got it",
+      "pending": "To approve ({count})",
+      "empty": "Nothing pending.",
+      "history": "History"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "empty": "No sessions yet.",
+      "state": {
+        "starting": "Starting",
+        "running": "Working",
+        "waiting_approval": "Waiting for approval",
+        "waiting_input": "Waiting for your answer",
+        "idle": "Paused",
+        "completed": "Done",
+        "failed": "Failed",
+        "interrupted": "Interrupted"
+      },
+      "new": "New session"
+    },
+    "session": {
+      "notFound": "We couldn't find that session.",
+      "loading": "Loading…",
+      "sealed": "The card is encrypted for another device.",
+      "card": {
+        "lastAction": "Last action",
+        "pendingApprovals": "Pending approvals",
+        "filesTouched": "Files touched",
+        "tests": "Tests",
+        "testsValue": "{passed} passed, {failed} failed",
+        "blockers": "Blockers"
+      },
+      "interrupt": "Interrupt",
+      "resume": "Resume",
+      "mode": "Mode",
+      "modes": {
+        "default": "Ask",
+        "plan": "Plan only",
+        "acceptEdits": "Accept edits"
+      },
+      "prompt": "Message",
+      "promptPlaceholder": "Write to your agent…",
+      "send": "Send",
+      "sent": "Sent.",
+      "interrupted": "Interrupt sent.",
+      "resumed": "Resume sent.",
+      "modeSet": "Mode changed.",
+      "answer": "Answer",
+      "answerSent": "Answer sent.",
+      "untrusted": "That computer isn't paired with this device.",
+      "failed": "We couldn't send it."
+    },
+    "timeline": {
+      "label": "Activity",
+      "type": {
+        "session_started": "Session started",
+        "session_state": "State change",
+        "message_user": "You",
+        "message_assistant": "Agent",
+        "tool_started": "Tool",
+        "tool_finished": "Tool finished",
+        "approval_requested": "Asked for approval",
+        "approval_resolved": "Approval resolved",
+        "question_asked": "Question",
+        "usage": "Usage",
+        "card_updated": "Card",
+        "error": "Error"
+      }
+    },
+    "devices": {
+      "title": "Devices",
+      "role": {
+        "agent": "Computer",
+        "client": "Phone or browser"
+      },
+      "online": "Online",
+      "offline": "Offline",
+      "revoked": "Removed",
+      "devModeOn": "Developer mode ACTIVE ({toggles})",
+      "devModeOff": "Turn Developer mode off",
+      "toggleOff": "Turn off {toggle}",
+      "devModeOffSent": "Done: asked to turn it off.",
+      "revoke": "Remove",
+      "revokeConfirm": "Remove {name}? It won't be able to approve anything.",
+      "revokeYes": "Yes, remove",
+      "cancel": "Cancel",
+      "failed": "We couldn't send it.",
+      "add": "Add a device",
+      "notices": {
+        "title": "Security notices",
+        "missingStepUp": "{computer} refused a new device because the approval didn't include your passkey. Approve it again with your passkey.",
+        "refused": "{computer} refused a new device: the approval wasn't valid. Approve it again."
+      },
+      "revokeFailed": "We couldn't revoke it. Nothing changed; try again.",
+      "revokedServer": "{name} was revoked: it can no longer sign in to your account or send anything to your computers.",
+      "revokeAgentOnline": "{agent}: removed it from its list.",
+      "revokeAgentOffline": "{agent}: offline. Its access is already closed on the server, and {agent} will drop it from its list as soon as it reconnects.",
+      "everywhere": {
+        "title": "Sign out of every other device",
+        "body": "If you lost a phone or think someone got into your account: every other phone and browser is cut off at once. Your computers stay paired.",
+        "needsPasskey": "To use this, first create a passkey on this device.",
+        "button": "Sign out everywhere else",
+        "confirm": "Sign out every other phone and browser? We'll ask for your passkey.",
+        "yes": "Yes, sign out",
+        "cancel": "Cancel",
+        "done": "{n, plural, =0 {There were no other devices.} one {Signed out # device.} other {Signed out # devices.}}",
+        "agentOnline": "{agent}: removed them from its list.",
+        "agentOffline": "{agent}: offline; it will remove them as soon as it reconnects.",
+        "agentUntrusted": "{agent}: doesn't trust this device, so it didn't get the notice. Their access is already closed on the server.",
+        "banFailed": "Some sign-outs will take a moment longer.",
+        "error": {
+          "cancelled": "Cancelled: nothing changed.",
+          "no_passkey": "This needs your passkey on this device.",
+          "failed": "That didn't work. Nothing changed; try again."
+        }
+      }
+    },
+    "settings": {
+      "server": "Your settings are saved to your account.",
+      "device": "Sign in to save your settings; for now they're kept on this device.",
+      "error": {
+        "rejected": "Couldn't save: verify your phone and confirm that charges may apply first.",
+        "failed": "We couldn't save that change. Try again.",
+        "phone_not_verified": "Verify your phone first.",
+        "charges_notice_required": "First confirm you understand that charges may apply.",
+        "country_not_supported": "Calls to this country aren't available."
+      },
+      "connectedApps": "Connected apps"
+    },
+    "notification": {
+      "opening": "Opening…",
+      "notFound": "That alert no longer exists or isn't yours."
+    },
+    "passkey": {
+      "title": "Protect your approvals with your passkey",
+      "body": "To approve high or critical risk actions from here, we'll ask for your fingerprint, face or security key. Your computer verifies it.",
+      "create": "Create passkey",
+      "enrolled": "This device has a passkey.",
+      "afterPairing": "Once you pair your computer, we'll ask you to create a passkey on this device.",
+      "cancelled": "You cancelled the passkey; you can try again.",
+      "error": "We couldn't create the passkey. Try again.",
+      "replace": "Change passkey",
+      "replaceRefused": "To change your passkey, confirm with the current one first. Lost it? Add this device again.",
+      "replaced": "Done: your new passkey protects your approvals."
+    },
+    "push": {
+      "title": "Notifications",
+      "hint": "Alerts on this device when something needs you. They only say what kind of alert it is; you see the details when you open it.",
+      "enable": "Turn on alerts on this device",
+      "disable": "Turn off",
+      "on": "Alerts are on for this device.",
+      "denied": "You blocked alerts for this site. Turn them on in your browser's settings.",
+      "unsupported": "This browser can't get alerts here.",
+      "needsPairing": "Link this browser to get alerts on it.",
+      "loading": "Loading…",
+      "failed": "We couldn't turn alerts on. Try again.",
+      "notification": {
+        "title": "Chalito",
+        "body": "Something needs you.",
+        "approval": "An approval is waiting for you.",
+        "expired": "An approval expired: it was denied."
+      }
+    },
+    "newSession": {
+      "title": "New session",
+      "computer": "Computer",
+      "online": "online",
+      "offline": "offline",
+      "offlineNote": "That computer is offline. The session starts when it's back, if that's within a few minutes.",
+      "adapter": "Agent",
+      "workspace": "Workspace",
+      "workspaceHint": "The name of a folder you allowed on that computer. Chalito never sees its paths.",
+      "recent": "Used before",
+      "mode": "Mode",
+      "prompt": "First message",
+      "promptPlaceholder": "What should it do?",
+      "start": "Start session",
+      "waiting": "Sent. Waiting for your computer to start it…",
+      "timeout": "Your computer didn't start it. Check that it's on, that the workspace exists and that the agent is turned on there.",
+      "untrusted": "This computer isn't paired with this device.",
+      "failed": "We couldn't send it.",
+      "noComputers": "You don't have a linked computer yet.",
+      "download": "Download Chalito for your computer"
+    },
+    "account": {
+      "title": "Delete my Chalito account",
+      "explain": "Deletes your Chalito companions, sessions, devices and settings. Your Chalyb account doesn't change.",
+      "start": "Delete my account…",
+      "needsPairing": "To ask for this, link this browser as a device.",
+      "needsPasskey": "To ask for this, this device needs a passkey.",
+      "setUpPasskey": "Create a passkey",
+      "what": {
+        "data": "Your Chalito data is deleted: companions, sessions, devices, rooms and settings.",
+        "grace": "You have 7 days to cancel. After that it can't be undone.",
+        "export": "First we prepare a copy of your data for you to download.",
+        "hub": "Your Chalyb account, plan and credits don't change."
+      },
+      "ack": "I understand this deletes my Chalito account.",
+      "confirm": "Confirm with my passkey",
+      "back": "Back",
+      "scheduled": "Your Chalito account will be deleted on {date}.",
+      "countdown": "{days, plural, one {# day} other {# days}} and {hours, plural, one {# hour} other {# hours}} left to cancel.",
+      "cancel": "Cancel the deletion",
+      "download": "Download my data",
+      "loadFailed": "We couldn't check your account. Try again later.",
+      "note": {
+        "cancelled_step_up": "The passkey wasn't confirmed; nothing was requested.",
+        "passkey_required": "This device needs a passkey to ask for this.",
+        "step_up_failed": "The passkey couldn't be verified. Try again.",
+        "already_scheduled": "It was already scheduled.",
+        "failed": "We couldn't do it. Try again.",
+        "cancelled": "Done: your account won't be deleted.",
+        "export_failed": "We couldn't download your data. Try again."
+      }
+    }
+  },
+  "mcp": {
+    "consent": {
+      "title": "{client} wants to connect to Chalito",
+      "redirect": "Afterwards you'll go back to",
+      "scopes": "Permissions requested",
+      "approve": "Allow",
+      "deny": "Don't allow",
+      "loading": "Loading…",
+      "missing": "The connection request is missing.",
+      "gone": "That request no longer exists or expired. Connect again from the app.",
+      "error": {
+        "not_found": "That request no longer exists.",
+        "no_passkey": "This device has no passkey.",
+        "passkey_failed": "We couldn't confirm with your passkey.",
+        "challenge_expired": "That took too long; try again.",
+        "forbidden": "This device can't approve connections.",
+        "error": "Something went wrong. Try again."
+      },
+      "badRedirect": "The return address isn't safe; we won't send you there.",
+      "needsDevice": "To allow it, open this page on a paired device.",
+      "needsPasskey": "Allowing it asks for your passkey.",
+      "enrolPasskey": "Create passkey"
+    },
+    "connectors": {
+      "title": "Connected apps",
+      "empty": "You have no connected apps.",
+      "loading": "Loading…",
+      "failed": "We couldn't load your connected apps.",
+      "signedOut": "Sign in to see your connected apps.",
+      "lastUsed": "Used {when}",
+      "neverUsed": "Not used yet",
+      "revoke": "Disconnect",
+      "revokeConfirm": "Disconnect {name}? It loses access immediately.",
+      "revokeYes": "Yes, disconnect",
+      "cancel": "Cancel"
+    },
+    "sharing": {
+      "label": "Share card with connected apps",
+      "warning": "The card (goal, state and last action) will be stored unencrypted so your connected apps can read it.",
+      "ack": "I understand it's stored unencrypted.",
+      "confirm": "Share",
+      "cancel": "Cancel",
+      "failed": "We couldn't change it."
+    }
+  },
+  "endorse": {
+    "wait": {
+      "title": "Use this browser",
+      "body": "To see and approve your sessions here, a device you already trust has to approve this browser.",
+      "nameLabel": "Name for this browser",
+      "start": "Show code",
+      "loading": "Connecting…",
+      "signInFirst": "First sign in with your Chalyb account in this browser.",
+      "signIn": "Sign in with Chalyb",
+      "unavailable": "This browser can't be added right now. Try again in a moment.",
+      "waitingTitle": "Waiting for approval",
+      "waitingBody": "On your phone or another trusted browser, open Devices → Add a device and scan this ring or type the code.",
+      "glyphLabel": "Ring to scan from a trusted device",
+      "orType": "or type this code:",
+      "fingerprint": "This browser's fingerprint:",
+      "expiresIn": "Expires in {minutes}:{seconds}",
+      "whereToApprove": "Before approving, check the fingerprint is the same on both devices.",
+      "cancel": "Cancel",
+      "doneTitle": "All set",
+      "doneBody": "This browser is now trusted. To send instructions to a computer, pair it with that computer too.",
+      "doneCta": "Go to the inbox",
+      "error": {
+        "expired": "The code expired. Show a new one.",
+        "cancelled": "Cancelled.",
+        "unavailable": "This browser can't be added right now. Try again in a moment.",
+        "endorsement_mismatch": "The approval isn't for this browser. Try again.",
+        "endorser_not_trusted": "The device that approved is no longer trusted.",
+        "device_exists": "This browser was already registered. Show a new code.",
+        "rejected": "The approval wasn't accepted. Try again.",
+        "failed": "Something went wrong. Try again."
+      },
+      "doneIntroduced": "You can send instructions to {computers} right away: your other device introduced them.",
+      "doneDropped": "{computer}: we couldn't confirm it. Pair it with its ring to send it instructions."
+    },
+    "add": {
+      "title": "Add a device",
+      "body": "On the new device, sign in to your account and open “Use this browser”. Then scan its ring or type its code.",
+      "codeLabel": "Code",
+      "find": "Find",
+      "scan": {
+        "start": "Scan ring",
+        "starting": "Opening the camera…",
+        "scanning": "Point the camera at the ring.",
+        "denied": "No permission to use the camera. Type the code.",
+        "unavailable": "The camera isn't available. Type the code."
+      },
+      "kind": {
+        "phone": "Phone",
+        "web": "Browser"
+      },
+      "compare": "Check this fingerprint matches the one on the new device:",
+      "expiresIn": "Expires in {minutes}:{seconds}",
+      "withPasskey": "We'll ask for your passkey when you approve.",
+      "withoutPasskey": "That device will be able to approve actions just like this one.",
+      "approve": "Approve",
+      "notMine": "Not mine",
+      "done": "Done: {name} is now trusted.",
+      "back": "Back to Devices",
+      "error": {
+        "invalid_code": "That code isn't valid. Check it.",
+        "not_found": "We couldn't find that code. Check it or show a new one.",
+        "expired": "The code expired. Show a new one on the other device.",
+        "wrong_account": "That device belongs to another account.",
+        "same_device": "That's this same device.",
+        "already_endorsed": "That code was already approved.",
+        "step_up": "Your passkey is needed to approve. Try again.",
+        "not_trusted": "This device is no longer trusted.",
+        "tampered": "The details don't match. Don't approve it; show a new code.",
+        "failed": "Something went wrong. Try again.",
+        "passkey_cloned": "Your passkey looks copied, so nothing was approved. Check your devices and create a new passkey."
+      }
+    }
+  },
+  "usage": {
+    "title": "Your usage",
+    "range": "Period",
+    "days": "{n} days",
+    "loading": "Loading…",
+    "error": "We couldn't load your usage.",
+    "retry": "Try again",
+    "intro": "Tokens per day (UTC). Days without usage count as zero.",
+    "empty": "No usage in this period yet.",
+    "tokens": "{n} tokens",
+    "chalito": {
+      "title": "Chalito tokens",
+      "work": "Work",
+      "comms": "Communication",
+      "chartLabel": "Chalito tokens per day, last {days} days: work and communication"
+    },
+    "share": {
+      "title": "Communication",
+      "none": "No Chalito usage in this period.",
+      "value": "{share} of what Chalito used (target: under {target})",
+      "under": "Within target: nearly everything goes to the work.",
+      "over": "Above target: alerts, messages and calls are using more than expected.",
+      "chartLabel": "Communication per day against the {target} target"
+    },
+    "byo": {
+      "title": "Your keys",
+      "body": "Usage with your own provider keys. It uses no Chalito tokens.",
+      "chartLabel": "Tokens with your keys per day, last {days} days"
+    },
+    "table": {
+      "title": "See by day",
+      "day": "Day"
+    }
+  },
+  "store": {
+    "title": "Store",
+    "intro": "Outfits and effects for your companion. They only change how it looks, never what it can do.",
+    "loading": "Loading…",
+    "signIn": "Sign in with your Chalyb account to see the store.",
+    "signInCta": "Sign in with Chalyb",
+    "error": "We couldn't load the store.",
+    "retry": "Try again",
+    "previewLabel": "{name} wearing their items",
+    "noCompanion": "You don't have a companion yet.",
+    "chooseCompanion": "Choose one",
+    "slot": {
+      "head": "Head",
+      "face": "Face",
+      "body": "Body",
+      "back": "Back",
+      "aura": "Aura",
+      "portal_fx": "Portal"
+    },
+    "free": "Free",
+    "owned": "Yours",
+    "price": "{tokens} tokens",
+    "buy": "Buy",
+    "equip": "Wear",
+    "unequip": "Take off",
+    "noTokens": "You don't have enough tokens.",
+    "whyChip": "Why?",
+    "retryBuy": "The purchase didn't go through. Retrying never charges twice.",
+    "failed": "Couldn't buy it. Try again later.",
+    "equipError": {
+      "not_owned": "Buy it first.",
+      "wrong_slot": "That doesn't go there.",
+      "no_companion": "Choose your companion first.",
+      "failed": "Couldn't change it. Try again."
+    },
+    "lookOnly": "Accessories don't change what your companion can do or its limits."
+  },
+  "legal": {
+    "privacy": "Privacy notice",
+    "terms": "Terms of use",
+    "draftTitle": "Draft: pending legal review",
+    "draftBody": "A lawyer hasn't reviewed this text yet and it may change. It isn't the final version.",
+    "onboarding": "By continuing you accept the <terms>Terms of use</terms> and the <privacy>Privacy notice</privacy>."
+  },
+  "credits": {
+    "title": "Credits",
+    "plan": {
+      "title": "Your plan",
+      "loading": "Loading…",
+      "yours": "Your plan: {plan}",
+      "unknown": "We couldn't see your plan.",
+      "signedOut": "Sign in with your Chalyb account to see your plan.",
+      "fromHub": "Your plan and credits come from your Chalyb account."
+    },
+    "how": {
+      "title": "How they work",
+      "tokens": "What Chalito does for you (work and alerts) spends tokens from your Chalyb account.",
+      "byo": "Anything that runs on your own AI keys doesn't spend Chalito tokens.",
+      "basics": "If you run out, the basics keep working: your approvals and alerts.",
+      "recharge": "You recharge on Chalyb and the new tokens work here right away."
+    },
+    "recharge": "Recharge on Chalyb",
+    "usage": "See your usage",
+    "balance": {
+      "title": "Your balance",
+      "loading": "Loading…",
+      "remaining": "{tokens} tokens left",
+      "unlimited": "Unlimited tokens",
+      "monthly": "Included each month",
+      "bonus": "Extra",
+      "used": "Used since {date}",
+      "reserved": "Held for work in progress",
+      "tokens": "{tokens} tokens",
+      "unavailable": "Chalyb didn't answer. Try again in a moment.",
+      "error": "We couldn't see your balance."
+    }
+  }
+}

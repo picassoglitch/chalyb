@@ -25,13 +25,14 @@ import {
 } from '@/lib/tools/bff-core';
 import { clipsLine, liveLine, relativeDay, signalsLine } from '@/lib/tools/status-lines-core';
 
-test('registry: the 3 live tools, each with ≤ 3 tabs that route inside the tool', () => {
+test('registry: the 4 live tools, each with ≤ 3 tabs that route inside the tool', () => {
   assert.deepEqual(
     TOOLS.map((t) => [t.slug, t.route, t.name]),
     [
       ['chalybclip', '/app/clips', 'Clips'],
       ['chalybcrypto', '/app/senales', 'Señales'],
       ['chalybobs', '/app/en-vivo', 'En vivo'],
+      ['chalito', '/app/chalito', 'Chalito'],
     ],
   );
   for (const tool of TOOLS) {
@@ -42,7 +43,7 @@ test('registry: the 3 live tools, each with ≤ 3 tabs that route inside the too
   }
   assert.deepEqual(
     TOOLS.map((t) => t.color),
-    ['#5B4BFF', '#FF9F0A', '#FF375F'],
+    ['#5B4BFF', '#FF9F0A', '#FF375F', '#30D158'],
     'F9: each tool has its own color',
   );
   assert.equal(toolBySlug('chalybcrypto')?.needsRiskAck, true);
@@ -357,7 +358,11 @@ test('healthy answers are recorded (throttled), so one blip does not stay down',
   // single failure starts a new 5-minute clock instead of alerting at once.
   const t0 = '2026-10-03T12:00:00.000Z';
   const blip = nextToolStatus(okStatus(), { ok: false, latencyMs: 8000 }, t0).next;
-  const healed = nextToolStatus(blip, { ok: true, latencyMs: 100 }, '2026-10-03T12:01:00.000Z').next;
+  const healed = nextToolStatus(
+    blip,
+    { ok: true, latencyMs: 100 },
+    '2026-10-03T12:01:00.000Z',
+  ).next;
   assert.equal(healed.downSince, null);
   const later = nextToolStatus(healed, { ok: false, latencyMs: 8000 }, '2026-10-03T13:00:00.000Z');
   assert.equal(later.alertOwner, false);
