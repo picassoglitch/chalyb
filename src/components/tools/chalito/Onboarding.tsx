@@ -11,6 +11,7 @@ import { DEV_BACKEND } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
 import { onboardingActivity, useCompanionPick, useCompanionStep } from "@/lib/chalito/companion";
 import { PasskeyEnroll } from "./PasskeyEnroll";
+import { CreateCharacter } from "./CreateCharacter";
 import { useSettings } from "@/lib/chalito/useSettings";
 import type { AgentOption } from "@/lib/chalito/web/providers";
 
@@ -29,7 +30,9 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const router = useRouter();
   const session = useSession();
   const { phoneVerifier, status } = useChalito();
-  const { values, set, finishOnboarding } = useSettings();
+  const { values, set, finishOnboarding, saveCompanionNow } = useSettings();
+  // Once a photo creation has started, "Saltar" mustn't reset the avatar: a roster change clears the card.
+  const [photoStarted, setPhotoStarted] = useState(false);
   const [i, setI] = useState(0);
   const [billing, setBilling] = useState<BillingMode>("byo");
   const [path, setPath] = useState<"guided" | "expert">("guided");
@@ -98,6 +101,9 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
         <div className="ch-chl ch-chl--tight">
           <p>{t("companion.body")}</p>
           <CompanionPicker value={values.avatar} onChange={(c) => set("avatar", c)} />
+          {/* Photo → own companion. The companion is saved first with the avatar picked so far, and the
+              card is put on it server-side when ready (useWhenReady), so the wizard can carry on. */}
+          <CreateCharacter onboarding={{ ensureCompanion: saveCompanionNow, onStarted: () => setPhotoStarted(true) }} />
         </div>
       ) : null}
 
@@ -208,7 +214,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           <button
             className="ch-btn ch-btn--secondary"
             onClick={() => {
-              set("avatar", DEFAULT_COMPANION);
+              if (!photoStarted) set("avatar", DEFAULT_COMPANION);
               setI(i + 1);
             }}
           >

@@ -11,13 +11,17 @@ import { useCompanionPick } from "@/lib/chalito/companion";
 import { PushOptIn } from "./PushOptIn";
 import { AccountDeletion } from "./AccountDeletion";
 import { BrainKeys } from "./BrainKeys";
+import { CreateCharacter } from "./CreateCharacter";
+import { useRosterPickWithCustom } from "@/lib/chalito/useMyCard";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
   const tw = useTranslations("chalito.live.settings");
   const ti = useTranslations("chalito.integrations");
   const { phoneVerifier } = useChalito();
-  const { values, set, error, persisted } = useSettings();
+  const { values, set: setValue, error, persisted } = useSettings();
+  // "Crea tu personaje": picking a roster companion while wearing one's own character goes back to it.
+  const { set, customCompanion } = useRosterPickWithCustom(setValue);
   const locale = useLocale();
   // A new pick shows on the companion right away.
   const setPick = useCompanionPick((p) => p.setPick);
@@ -47,6 +51,8 @@ export const Settings = () => {
         hubPlansUrl={env.hubUrl || "#"}
         usageHref={getPathname({ href: chalitoPath("/uso") as Parameters<typeof getPathname>[0]["href"], locale })}
         phoneVerifier={phoneVerifier}
+        companionExtra={<CreateCharacter />}
+        customCompanion={customCompanion}
       />
       <BrainKeys />
       <AccountDeletion />

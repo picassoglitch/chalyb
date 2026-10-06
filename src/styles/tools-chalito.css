@@ -496,3 +496,145 @@
   font-size: 16px;
   font-weight: 600;
 }
+
+/* ---------- Companion catalog (220 characters) ---------- */
+/* Category chips: one sideways-scrolling line on phones. */
+.chalyb-app .ch-chl-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+  scrollbar-width: thin;
+}
+.chalyb-app .ch-chl-chips > .ch-chip {
+  flex: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 0;
+}
+/* The picker grid scrolls inside itself (220 tiles). */
+.chalyb-app .ch-chl-pick--scroll {
+  max-height: 28rem;
+  overflow-y: auto;
+  padding: 6px;
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .chalyb-app .ch-chl-pick--scroll {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.chalyb-app .ch-chl-pick__frame {
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+}
+.chalyb-app .ch-chl-pick__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Store: skins ---------- */
+/* Own stacking context so worn items' negative z stays inside the card. */
+.chalyb-app .ch-chl-preview {
+  isolation: isolate;
+}
+/* The card renderer's canvas (skins drawn live) over the drawing. */
+.chalyb-app .ch-chl-preview__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+/* While the renderer loads (or without WebGL): the skin's colours over the drawing. */
+.chalyb-app .ch-chl-preview__tint {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.6;
+  mix-blend-mode: color;
+}
+/* A skin tile: its swatch in the companion's silhouette. */
+.chalyb-app .ch-chl-swatch-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: var(--bg);
+}
+.chalyb-app .ch-chl-swatch-box__fill {
+  position: absolute;
+  inset: 8px;
+}
+
+/* ---------- Crea tu personaje (photo → own companion) ---------- */
+/* Embedded under the picker (Ajustes, onboarding): a dashed accent frame. */
+.chalyb-app .ch-chl-create {
+  border: 1.5px dashed var(--accent);
+}
+/* Round portraits: the current character and the kept ones. */
+.chalyb-app .ch-chl-face {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tint);
+  object-fit: cover;
+  object-position: top;
+}
+.chalyb-app .ch-chl-face--sm {
+  width: 48px;
+  height: 48px;
+}
+.chalyb-app .ch-chl-file {
+  cursor: pointer;
+}
+.chalyb-app .ch-chl-file:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.chalyb-app .ch-chl-photo {
+  display: block;
+  width: 160px;
+  height: 160px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+.chalyb-app .ch-chl-pulse {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: ch-chl-pulse 1.2s ease-in-out infinite;
+}
+@keyframes ch-chl-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chalyb-app .ch-chl-pulse {
+    animation: none;
+  }
+}
+/* The five finished drawings side by side. */
+.chalyb-app .ch-chl-faces {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.chalyb-app .ch-chl-faces > li {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.chalyb-app .ch-chl-faces img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+}
