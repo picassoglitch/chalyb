@@ -138,6 +138,12 @@
   width: 100%;
   padding: 0;
 }
+/* A visually hidden legend stays 1px (the rule above made it a full-width float off-screen,
+   which scrolled Ajustes sideways). */
+.chalyb-app .ch-chl-fieldset > legend.ch-sr {
+  float: none;
+  width: 1px;
+}
 .chalyb-app .ch-chl-check--warn {
   background: var(--warn-tint);
   border-radius: 12px;
