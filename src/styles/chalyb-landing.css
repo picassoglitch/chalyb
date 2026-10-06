@@ -252,6 +252,31 @@
   margin-left: -14px;
   box-shadow: 0 0 0 3px var(--bg);
 }
+.chalyb-app .pub-bc__art {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 1;
+  margin-bottom: 4px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #1c1840;
+}
+.chalyb-app .pub-bc__art img {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+/* A card stretched across its row keeps a banner, not a poster. */
+.chalyb-app .pub-bc--fill .pub-bc__art {
+  max-height: 240px;
+}
+.chalyb-app .pub-bc:hover .pub-bc__art img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chalyb-app .pub-bc__art img {
+    transition: none;
+  }
+}
 .chalyb-app .pub-bc__thumbs {
   display: flex;
   justify-content: center;
@@ -869,12 +894,15 @@
     flex-direction: row;
     gap: 24px;
   }
+  .chalyb-app .pub-bc--clips {
+    align-items: center;
+  }
   .chalyb-app .pub-bc--clips .pub-bc__thumbs {
     align-items: center;
     padding: 0 8px;
   }
   .chalyb-app .pub-bc__thumb img {
-    width: 104px;
+    width: 136px;
   }
   .chalyb-app .pub-bc--fill {
     grid-column: span var(--span, 1);

@@ -17,6 +17,32 @@ import { SectionHead } from './section-head';
 const FIN = new Set<ToolSlug>(['chalybcrypto', 'chalybtrade']);
 const BETS = new Set<ToolSlug>(['chalybpicks']);
 
+// Decorative AI-generated art (public/landing/tool-*.webp) on the cards
+// without screenshots; Clips keeps its three stills.
+const ART: Partial<Record<ToolSlug, string>> = {
+  chalybcrypto: 'senales',
+  chalybobs: 'envivo',
+  chalybbot: 'envivo',
+  chalybpicks: 'pronosticos',
+  chalybtrade: 'inversiones',
+};
+
+function CardArt({ slug }: { slug: ToolSlug }) {
+  const name = ART[slug];
+  if (!name) return null;
+  return (
+    <span className="pub-bc__art" aria-hidden="true">
+      <Image
+        src={`/landing/tool-${name}.webp`}
+        alt=""
+        fill
+        sizes="(max-width: 767px) 100vw, (max-width: 1099px) 50vw, 360px"
+        loading="lazy"
+      />
+    </span>
+  );
+}
+
 type Card =
   | { kind: 'tool'; tool: PublicTool }
   | { kind: 'pair'; tools: [PublicTool, PublicTool] };
@@ -92,6 +118,7 @@ export async function ToolsSection({
             if (c.kind === 'pair') {
               return (
                 <li key="pair" className={`pub-bc${fill.className}`} style={fill.style}>
+                  <CardArt slug={c.tools[0].slug} />
                   <span className="pub-bc__pair">
                     <ToolTile slug={c.tools[0].slug} color={c.tools[0].color} size={60} />
                     <ToolTile slug={c.tools[1].slug} color={c.tools[1].color} size={60} />
@@ -111,6 +138,7 @@ export async function ToolsSection({
                 className={`pub-bc${clips ? ' pub-bc--clips' : ''}${fill.className}`}
                 style={fill.style}
               >
+                {!clips && <CardArt slug={tool.slug} />}
                 <div className="pub-bc__tx">
                   <ToolTile slug={tool.slug} color={tool.color} size={60} />
                   <h3>{tool.name}</h3>
