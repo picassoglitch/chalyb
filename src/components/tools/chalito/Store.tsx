@@ -8,6 +8,7 @@ import { hubLaunchUrl } from "@/lib/chalito/web/hub";
 import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { newPurchaseId, type CompanionLook, type Slot, type StoreItem } from "@/lib/chalito/web/store";
 import { useChalito } from "@/lib/chalito/provider";
+import type { Balance, BalanceApi } from "@/lib/chalito/web/balance";
 
 const ROSTER = "/roster";
 const asset = (path: string) => `${ROSTER}/${path}`;
@@ -99,12 +100,14 @@ const Preview = ({ look, items, label }: { look: CompanionLook; items: StoreItem
 /**
  * /tienda: cosmetics for the companion. They change how it looks, never what it can do. Prices
  * are hub tokens (never money). A buy tap makes one purchaseId and reuses it on retry, so a retry
- * never charges twice; not enough tokens shows an inline chip to /creditos, never a modal.
+ * never charges twice; not enough tokens shows an inline chip to /creditos, never a modal. Every
+ * buy, retries too, asks first with the price and the balance left after (owner decision 2026-10-06).
  */
 export const Store = () => {
   const t = useTranslations("chalito.store");
   const locale = useLocale() as "es" | "en";
-  const { status, store, readCompanion } = useChalito();
+  const { status, store, readCompanion, balance } = useChalito();
+  const [confirm, setConfirm] = useState<{ item: StoreItem; retry: boolean } | null>(null);
   const [items, setItems] = useState<StoreItem[] | "error" | null>(null);
   const [look, setLook] = useState<CompanionLook | null | "error" | undefined>(undefined);
   const [busy, setBusy] = useState<string | null>(null);
@@ -143,6 +146,11 @@ export const Store = () => {
     if (r.reason === "retry") return note(item.id, { kind: "retry" });
     delete pending.current[item.id];
     note(item.id, r.reason === "no_tokens" ? { kind: "no_tokens", chipHref: r.chipHref } : { kind: "failed" });
+  };
+
+  const ask = (item: StoreItem, retry = false) => {
+    note(item.id, null);
+    setConfirm({ item, retry });
   };
 
   const equip = async (item: StoreItem, on: boolean) => {
@@ -252,7 +260,7 @@ export const Store = () => {
                     data-testid="store-buy"
                     className="ch-btn ch-btn--primary ch-btn--compact"
                     disabled={busy !== null}
-                    onClick={() => void buy(item)}
+                    onClick={() => ask(item)}
                   >
                     {t("buy")}
                   </button>
@@ -287,7 +295,7 @@ export const Store = () => {
                     <button
                       className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit"
                       disabled={busy !== null}
-                      onClick={() => void buy(item, true)}
+                      onClick={() => ask(item, true)}
                     >
                       {t("retry")}
                     </button>
@@ -309,6 +317,109 @@ export const Store = () => {
         </ul>
       ) : null}
       <p className="ch-chl-small">{t("lookOnly")}</p>
+      {confirm ? (
+        <ConfirmBuy
+          item={confirm.item}
+          balance={balance}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => {
+            setConfirm(null);
+            void buy(confirm.item, confirm.retry);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+/** "¿Comprar …?" with the price and what's left after; the hub still has the last word. */
+const ConfirmBuy = ({
+  item,
+  balance,
+  onCancel,
+  onConfirm,
+}: {
+  item: StoreItem;
+  balance: BalanceApi | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) => {
+  const t = useTranslations("chalito.store.confirm");
+  const locale = useLocale() as "es" | "en";
+  const n = new Intl.NumberFormat(locale);
+  const [b, setB] = useState<Balance | "loading" | "unavailable" | "error">(balance ? "loading" : "error");
+  const yes = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!balance) return;
+    let alive = true;
+    void balance().then((r) => alive && setB(r));
+    return () => {
+      alive = false;
+    };
+  }, [balance]);
+  useEffect(() => {
+    yes.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCancel();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+  const price = item.priceTokens ?? 0;
+  const known = typeof b === "object" && !b.unlimited ? b : null;
+  return (
+    <div className="ch-chl-scrim" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="store-confirm-title"
+        data-testid="store-confirm"
+        className="ch-card ch-chl-card ch-chl-modal"
+      >
+        <h2 id="store-confirm-title" className="ch-chl-h3">
+          {t("title", { name: item.name[locale] })}
+        </h2>
+        <dl className="ch-chl-dl">
+          <dt>{t("price")}</dt>
+          <dd data-testid="store-confirm-price">{t("tokens", { tokens: n.format(price) })}</dd>
+          {known ? (
+            <>
+              <dt>{t("now")}</dt>
+              <dd>{t("tokens", { tokens: n.format(known.remaining) })}</dd>
+              <dt>{t("after")}</dt>
+              <dd data-testid="store-confirm-after">
+                {t("tokens", { tokens: n.format(Math.max(0, known.remaining - price)) })}
+              </dd>
+            </>
+          ) : null}
+        </dl>
+        {b === "loading" ? (
+          <p aria-live="polite" className="ch-muted">
+            {t("loading")}
+          </p>
+        ) : null}
+        {b === "unavailable" || b === "error" ? <p className="ch-muted">{t("noBalance")}</p> : null}
+        {typeof b === "object" && b.unlimited ? <p className="ch-muted">{t("unlimited")}</p> : null}
+        {known && known.remaining < price ? (
+          <p role="status" data-testid="store-confirm-short" className="ch-chl-warn">
+            {t("short")}{" "}
+            <Link href="/creditos" className="ch-pill ch-pill--acc">
+              {t("recharge")}
+            </Link>
+          </p>
+        ) : null}
+        <div className="ch-chl-row ch-chl-row--end">
+          <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={onCancel}>
+            {t("cancel")}
+          </button>
+          <button
+            ref={yes}
+            data-testid="store-confirm-buy"
+            className="ch-btn ch-btn--primary ch-btn--compact"
+            onClick={onConfirm}
+          >
+            {t("buy", { tokens: n.format(price) })}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

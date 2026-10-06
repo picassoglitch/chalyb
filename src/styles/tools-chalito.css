@@ -496,3 +496,9 @@
   font-size: 16px;
   font-weight: 600;
 }
+/* Inicio's one big next step. */
+.chalyb-app .ch-chl-cta {
+  min-width: min(100%, 320px);
+  min-height: 56px;
+  font-size: 20px;
+}

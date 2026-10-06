@@ -1,5 +1,6 @@
 'use client';
 import { SignInLink } from './SignInLink';
+import { Companion } from './Companion';
 import { useLocale, useTranslations } from 'next-intl';
 import { Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
 import { PRODUCT_NAME, formatCompanionTitle } from '@chalito/brand';
@@ -29,25 +30,43 @@ export const Home = () => {
   const title = settings
     ? formatCompanionTitle(settings.companionName.name, settings.companionName.isRenamed, locale)
     : null;
+  // After onboarding (owner decision 2026-10-06): the companion big, and one obvious next step,
+  // a new session. The sections stay below it.
+  const ready = !!settings && onboarded && session.status !== 'signed_out';
   return (
     <div className="ch-chl">
-      <header className="ch-chl-head">
-        <h2 className="ch-h2">{t('title', { name: title?.title ?? PRODUCT_NAME })}</h2>
-        {title?.credit ? <p className="ch-muted">{title.credit}</p> : null}
-        <p className="ch-sub">{t('subtitle')}</p>
-        {settings ? (
-          <p className="ch-muted" data-testid="home-companion">
-            {t('companion', { name: companionName(settings.avatar, locale) })}
-          </p>
-        ) : null}
-      </header>
+      {ready ? (
+        <section className="ch-chl ch-chl-center" data-testid="home-hero">
+          <Companion hero />
+          <h2 className="ch-h2">{t('title', { name: title?.title ?? PRODUCT_NAME })}</h2>
+          {title?.credit ? <p className="ch-muted">{title.credit}</p> : null}
+          <Link
+            href="/sesiones/nueva"
+            className="ch-btn ch-btn--primary ch-chl-cta"
+            data-testid="home-talk"
+          >
+            {t('talk', { name: settings.companionName.name })}
+          </Link>
+        </section>
+      ) : (
+        <header className="ch-chl-head">
+          <h2 className="ch-h2">{t('title', { name: title?.title ?? PRODUCT_NAME })}</h2>
+          {title?.credit ? <p className="ch-muted">{title.credit}</p> : null}
+          <p className="ch-sub">{t('subtitle')}</p>
+          {settings ? (
+            <p className="ch-muted" data-testid="home-companion">
+              {t('companion', { name: companionName(settings.avatar, locale) })}
+            </p>
+          ) : null}
+        </header>
+      )}
       {session.status === 'signed_out' ? (
         <div className="ch-card ch-chl-card">
           <p>{t('signedOut')}</p>
           <SignInLink className="ch-btn ch-btn--primary">{t('signIn')}</SignInLink>
         </div>
       ) : null}
-      <Group title={t('sections.sectionsTitle')}>
+      <Group title={t(ready ? 'sections.moreTitle' : 'sections.sectionsTitle')}>
         {SECTIONS.map(([href, key, Icon, color]) => (
           <Row
             key={href}
