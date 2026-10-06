@@ -293,7 +293,9 @@ const ComputerRow = ({
         ) : null}
       </p>
       {status?.state === "error" && status.error ? (
-        <p className="text-neutral-600">{t("errorDetail", { error: status.error })}</p>
+        <p className="text-neutral-600">
+          {t.has(`errors.${status.error}`) ? t(`errors.${status.error}`) : t("errorDetail", { error: status.error })}
+        </p>
       ) : null}
       {status?.state === "blocked_by_policy" ? <p className="text-amber-800">{t("blocked", { name })}</p> : null}
       {status?.state === "signing_in" ? <p className="text-neutral-600">{t("signinNote")}</p> : null}

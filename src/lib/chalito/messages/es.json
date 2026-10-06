@@ -1117,6 +1117,17 @@
     "timeout": "Tu computadora no respondió. Revisa que esté encendida y con Chalito abierto, y vuelve a intentar.",
     "sendError": "No pudimos enviar la orden a tu computadora. Vuelve a intentar.",
     "errorDetail": "Detalle: {error}",
-    "blocked": "Por ahora, iniciar sesión con tu plan de {name} no está disponible para tu cuenta. Conéctalo con tu API key."
+    "blocked": "Por ahora, iniciar sesión con tu plan de {name} no está disponible para tu cuenta. Conéctalo con tu API key.",
+    "errors": {
+      "install_failed": "No se pudo instalar. Revisa tu conexión a internet e inténtalo de nuevo.",
+      "install_unconfirmed": "La instalación no se confirmó en esa computadora.",
+      "npm_missing": "Esa computadora necesita Node.js para instalarlo. Instálalo desde nodejs.org y vuelve a intentarlo.",
+      "pin_failed": "Se instaló, pero no pudimos verificarlo. Vuelve a intentarlo.",
+      "signin_failed": "El inicio de sesión no se completó.",
+      "signin_timeout": "El inicio de sesión tardó demasiado. Vuelve a intentarlo desde esa computadora.",
+      "key_invalid": "Esa API key no funcionó. Revisa que esté completa y vigente.",
+      "keychain_failed": "No pudimos guardar la llave en esa computadora.",
+      "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo."
+    }
   }
 }
