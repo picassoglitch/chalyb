@@ -33,7 +33,7 @@ export const PasteKeyForm = ({
   };
 
   return (
-    <form className="ch-col" onSubmit={submit} data-testid={`paste-key-${app.id}`}>
+    <form className="ch-chl ch-chl--tight" onSubmit={submit} data-testid={`paste-key-${app.id}`}>
       <div className={`ch-field${bad ? " ch-field--bad" : ""}`}>
         <label htmlFor={id}>{t("keyLabel", { name: label })}</label>
         <div className="ch-paste">
@@ -64,11 +64,11 @@ export const PasteKeyForm = ({
         )}
       </div>
       {app.apiKey ? <p className="ch-muted">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p> : null}
-      <div className="ch-row">
-        <button type="submit" className="ch-btn ch-btn--primary">
+      <div className="ch-chl-row">
+        <button type="submit" className="ch-btn ch-btn--primary ch-btn--compact">
           {t("send")}
         </button>
-        <button type="button" className="ch-btn ch-btn--secondary" onClick={onCancel}>
+        <button type="button" className="ch-btn ch-btn--secondary ch-btn--compact" onClick={onCancel}>
           {t("cancel")}
         </button>
       </div>
