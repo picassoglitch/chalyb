@@ -1785,10 +1785,6 @@ html body:has(.ch-flow) {
 /* ---------- Clips P3 ---------- */
 .chalyb-app .ch-paste { display: flex; gap: 10px; align-items: center; width: 100%; }
 .chalyb-app .ch-paste .ch-input { flex: 1; min-width: 0; }
-/* Same as PR #88's tools-chalito.css; drop these when this branch rebases onto it. */
-.chalyb-app .ch-chl { display: grid; gap: 22px; min-width: 0; }
-.chalyb-app .ch-chl--tight { gap: 12px; }
-.chalyb-app .ch-chl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .chalyb-app .ch-btn svg { width: 20px; height: 20px; }
 .chalyb-app .ch-adv { width: 100%; padding: 0 20px; text-align: left; }
 .chalyb-app .ch-adv summary { cursor: pointer; min-height: 62px; display: flex; align-items: center; gap: 6px; font-size: 18px; flex-wrap: wrap; }

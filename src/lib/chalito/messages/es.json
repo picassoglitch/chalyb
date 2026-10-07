@@ -123,7 +123,7 @@
       "body": "Solo usamos las formas oficiales de cada proveedor. Tus claves se quedan en tu computadora.",
       "guided": "Guiado",
       "expert": "Experto",
-      "expertBody": "Pega tus API keys en la app de escritorio o con «chalito keys set». Nunca las enviamos a la nube.",
+      "expertBody": "Pega la API key de cada IA aquí: se cifra en este navegador para tu computadora y Chalito no puede leerla. También puedes usar «chalito keys set» en tu computadora.",
       "later": "Puedes conectarlas después en Ajustes → Conecta tus IA."
     },
     "billing": {
@@ -1266,9 +1266,9 @@
     "loadError": "No pudimos leer el estado de tus conexiones.",
     "retry": "Reintentar",
     "refresh": "Actualizar estado",
-    "noComputer": "Para conectar tus IA necesitas Chalito en tu computadora. Instálalo, emparéjalo y vuelve aquí.",
+    "noComputer": "Para pegar tus claves o iniciar sesión en tus IA necesitas la app de escritorio de Chalito. Descárgala, emparéjala y vuelve aquí.",
     "noBrowser": "Este navegador todavía no está emparejado con tu computadora. Instala Chalito en tu computadora y emparéjalo; después podrás conectar tus IA desde aquí.",
-    "download": "Descargar Chalito",
+    "download": "Descarga la app de escritorio",
     "untrusted": "Este navegador aún no puede enviar órdenes a esta computadora. Apruébalo desde ella en Dispositivos.",
     "offline": "Tu computadora parece apagada o sin conexión. Lo que pidas se aplicará si vuelve en los próximos 5 minutos.",
     "computer": "En {name}",
@@ -1290,7 +1290,7 @@
     "version": "Versión {version}",
     "actions": {
       "install": "Instalar",
-      "api_key": "Conectar con API key",
+      "api_key": "Pega tu clave",
       "signin": "Iniciar sesión con tu plan",
       "disconnect": "Desconectar",
       "launch": "Abrir en tu computadora"
@@ -1336,6 +1336,8 @@
       "web": "Se abre en esa computadora, en un perfil de navegador solo para esta IA."
     },
     "ownerOnly": "Iniciar sesión con tu plan: solo equipo de Chalito por ahora.",
-    "keyWhere": "Tu {label} se consigue en {url}"
+    "keyWhere": "Tu {label} se consigue en {url}",
+    "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa.",
+    "keySendAnyway": "Enviar de todos modos"
   }
 }
