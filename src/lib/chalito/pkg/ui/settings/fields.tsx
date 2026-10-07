@@ -1,8 +1,8 @@
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { formatCompanionTitle } from "@chalito/brand";
-import { rosterEntry } from "@chalito/roster";
-import { COMPANIONS, companionName, type CompanionId } from "../companions";
+import { CATEGORIES, rosterEntry, searchRoster, type Category } from "@chalito/roster";
+import { companionName, type CompanionId } from "../companions";
 import { useRosterAsset } from "../roster-assets";
 import { useUiText } from "../text";
 import {
@@ -254,40 +254,123 @@ export const PhoneField = ({
   );
 };
 
-export const CompanionPicker = ({ value, onChange }: { value: CompanionId; onChange: (c: CompanionId) => void }) => {
+/**
+ * The companion picker: 220 free companions in 11 categories (@chalito/roster's catalog). Category
+ * chips scroll sideways on phones, a search finds a name in Spanish or English (it looks in every
+ * category), and the grid's pictures load lazily as they scroll into view. It opens on the chosen
+ * companion's category so the selection is visible.
+ */
+export const CompanionPicker = ({
+  value,
+  onChange,
+  customActive = false,
+}: {
+  value: CompanionId;
+  onChange: (c: CompanionId) => void;
+  /**
+   * The companion wears the person's own custom character (the PWA's "Crea tu personaje"): no roster
+   * companion shows as chosen, and picking any of them (the one underneath too) switches back.
+   */
+  customActive?: boolean;
+}) => {
   const { t, locale } = useUiText();
   const asset = useRosterAsset();
+  const searchId = useId();
+  const [category, setCategory] = useState<Category | null>(() => rosterEntry(value)?.category ?? null);
+  const [query, setQuery] = useState("");
+  const shown = useMemo(() => searchRoster(query, category), [query, category]);
+  const selected = customActive ? undefined : rosterEntry(value);
+  const chosen = (id: string) => !customActive && value === id;
+  const chip = (active: boolean) => `ch-chip ch-chip--sm${active ? " ch-chip--on" : ""}`;
   return (
-    <div role="radiogroup" aria-label={t("avatar.label")} className="ch-chl-pick">
-      {COMPANIONS.map((c) => (
-        <label
-          key={c}
-          className={`ch-card ch-chl-pick__opt${value === c ? " ch-chl-pick__opt--on" : ""}`}
-        >
-          <input
-            type="radio"
-            name="companion"
-            className="ch-sr"
-            value={c}
-            checked={value === c}
-            onChange={() => onChange(c)}
-          />
-          {asset ? (
-            <img
-              src={asset(rosterEntry(c)!.thumbs[128])}
-              alt=""
-              width={64}
-              height={64}
-              loading="lazy"
-              decoding="async"
-              className="ch-chl-pick__img"
-            />
-          ) : (
-            <span aria-hidden className="ch-chl-pick__ph" />
-          )}
-          <span className="ch-chl-pick__name">{companionName(c, locale)}</span>
-        </label>
-      ))}
+    <div className="ch-chl ch-chl--tight" data-testid="companion-picker">
+      <label htmlFor={searchId} className="ch-sr">
+        {t("avatar.search")}
+      </label>
+      <input
+        id={searchId}
+        type="search"
+        className="ch-input"
+        placeholder={t("avatar.searchPlaceholder")}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          // A name search looks in every category.
+          if (e.target.value.trim()) setCategory(null);
+        }}
+      />
+      <div role="group" aria-label={t("avatar.categories")} className="ch-chl-chips" data-testid="companion-categories">
+        <button type="button" aria-pressed={category === null} className={chip(category === null)} onClick={() => setCategory(null)}>
+          {t("avatar.all")}
+        </button>
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={category === c.id}
+            data-category={c.id}
+            className={chip(category === c.id)}
+            onClick={() => {
+              setCategory(c.id);
+              setQuery("");
+            }}
+          >
+            {c.label[locale]}
+          </button>
+        ))}
+      </div>
+      {customActive ? (
+        <p className="ch-chl-small" data-testid="companion-custom" aria-live="polite">
+          {t("avatar.custom")}
+        </p>
+      ) : null}
+      {selected ? (
+        <p className="ch-chl-small" data-testid="companion-selected" aria-live="polite">
+          {t("avatar.selected", { name: companionName(selected.id, locale) })} {selected.blurb[locale]}
+        </p>
+      ) : null}
+      {shown.length ? (
+        <div role="radiogroup" aria-label={t("avatar.label")} className="ch-chl-pick ch-chl-pick--scroll">
+          {shown.map((r) => (
+            <label
+              key={r.id}
+              title={r.blurb[locale]}
+              className={`ch-card ch-chl-pick__opt${chosen(r.id) ? " ch-chl-pick__opt--on" : ""}`}
+            >
+              <input
+                type="radio"
+                name="companion"
+                className="ch-sr"
+                value={r.id}
+                checked={chosen(r.id)}
+                onChange={() => onChange(r.id)}
+              />
+              <span aria-hidden className="ch-chl-pick__ph ch-chl-pick__frame">
+                {asset ? (
+                  <img
+                    src={asset(r.thumbs[128])}
+                    alt=""
+                    width={64}
+                    height={64}
+                    loading="lazy"
+                    decoding="async"
+                    // Art still being generated: a missing picture leaves the plain swatch.
+                    onError={(e) => {
+                      e.currentTarget.style.visibility = "hidden";
+                    }}
+                    className="ch-chl-pick__img"
+                  />
+                ) : null}
+              </span>
+              <span className="ch-chl-pick__name">{companionName(r.id, locale)}</span>
+            </label>
+          ))}
+        </div>
+      ) : (
+        <p className="ch-chl-small" data-testid="companion-empty">
+          {t("avatar.empty")}
+        </p>
+      )}
     </div>
   );
 };

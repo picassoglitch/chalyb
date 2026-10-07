@@ -7,9 +7,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AvatarDriver } from '@chalito/avatar-three/driver';
 import { CreatureBinding } from '@chalito/avatar-three/creature';
-import { EMOTION_DRAWING, DRAWINGS, placeOnCard, rosterEntry } from '@chalito/roster';
+import { EMOTION_DRAWING, DRAWINGS, placeItem, rosterEntry, type CardAnchors } from '@chalito/roster';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
+import { useMyCard } from '@/lib/chalito/useMyCard';
 import {
   COSMETIC_PLACEMENT,
   activityFor,
@@ -24,7 +25,7 @@ import '@/styles/chalito-companion.css';
 interface CardJson {
   width: number;
   height: number;
-  anchors: Record<string, { x: number; y: number; z: number }>;
+  anchors: CardAnchors;
 }
 
 const base = (id: string) => `/roster/assets/${id}`;
@@ -61,7 +62,18 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const entry = rosterEntry(id)!;
   const activity: Activity = step ?? activityFor(path);
   const drawing = EMOTION_DRAWING[activity.emotion];
-  const card = useCard(id);
+  const rosterCard = useCard(id);
+  // The person's own character ("Crea tu personaje"), when the companion wears one; its drawings
+  // come from short-lived signed URLs (refreshed on error, then back to the roster art).
+  const mine = useMyCard();
+  const custom = mine.card;
+  const card: CardJson | null = custom
+    ? { width: custom.manifest.width, height: custom.manifest.height, anchors: (custom.manifest.anchors ?? {}) as CardAnchors }
+    : rosterCard;
+  const layerSrc = (d: string): string =>
+    custom
+      ? (custom.urls[custom.manifest.emotions.src[d] ?? custom.manifest.emotions.src.neutral!] ?? '')
+      : `${base(id)}/layer-${d}.webp`;
   const hidden = !hero && onboarded && activity.key === 'home';
 
   const body = useRef<HTMLDivElement>(null);
@@ -108,14 +120,12 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
 
   const cosmetic = activity.cosmetic && card ? COSMETIC_PLACEMENT[activity.cosmetic] : null;
   const placed =
-    cosmetic && card
-      ? placeOnCard(card.anchors[cosmetic.slot]!, cosmetic, cosmetic.aspect, card.height / card.width)
-      : null;
+    cosmetic && card ? placeItem(card.anchors, cosmetic.slot, cosmetic, cosmetic.aspect, card.height / card.width) : null;
   const aspect = card ? `${card.width} / ${card.height}` : '3 / 4';
   if (hidden) return null;
 
   return (
-    <aside className={hero ? 'chc chc--hero' : 'chc'} aria-label={t('aria', { name: entry.name[locale] })} data-companion={id} data-activity={activity.key}>
+    <aside className={hero ? 'chc chc--hero' : 'chc'} aria-label={t('aria', { name: entry.name[locale] })} data-companion={id} data-custom={custom ? 'true' : undefined} data-activity={activity.key}>
       <p className="chc__bubble" aria-live="polite" key={`${id}-${activity.key}`}>
         {t(`do.${activity.key}`, { name: entry.name[locale] })}
       </p>
@@ -126,7 +136,8 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
           {DRAWINGS.map((d) => (
             <img
               key={d}
-              src={`${base(id)}/layer-${d}.webp`}
+              src={layerSrc(d)}
+              onError={custom ? mine.onError : undefined}
               alt={d === drawing ? entry.name[locale] : ''}
               aria-hidden={d === drawing ? undefined : true}
               className="chc__layer"
