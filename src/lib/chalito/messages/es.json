@@ -841,6 +841,46 @@
         "cancelled": "Listo: tu cuenta ya no se eliminará.",
         "export_failed": "No pudimos descargar tus datos. Inténtalo de nuevo."
       }
+    },
+    "activate": {
+      "title": "Activa Chalito en este navegador",
+      "body": "Es tu primer dispositivo: con un toque creas tu passkey y este navegador queda como de confianza. No necesitas la app de escritorio.",
+      "cta": "Activar",
+      "busy": "Activando…",
+      "hasClients": "Tu cuenta ya tiene un dispositivo de confianza. Aprueba este navegador desde él.",
+      "hasClientsCta": "Usar este navegador",
+      "error": {
+        "device_exists": "Este navegador ya estaba registrado. Recarga la página e inténtalo de nuevo.",
+        "rejected": "No pudimos activar este navegador. Vuelve a intentarlo.",
+        "failed": "Algo falló al activar. Vuelve a intentarlo en un momento.",
+        "has_agents": "Tu cuenta tiene una computadora vinculada. Usa tu código de recuperación para entrar desde este navegador."
+      },
+      "doneTitle": "Listo, este navegador ya es de confianza",
+      "recoveryTitle": "Guarda tu código de recuperación",
+      "recoveryBody": "Es la única forma de recuperar tu cuenta si pierdes este navegador. Guárdalo en un lugar seguro: no lo volveremos a mostrar.",
+      "recoveryLabel": "Código de recuperación",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "passkeyMissing": "No se creó tu passkey. Créala ahora para proteger tus aprobaciones.",
+      "saved": "Ya lo guardé",
+      "continue": "Ir al chat"
+    },
+    "recover": {
+      "title": "Usa tu código de recuperación",
+      "body": "No tienes un navegador o teléfono de confianza, pero tu cuenta tiene una computadora vinculada. Escribe el código de recuperación que guardaste al activar Chalito.",
+      "label": "Código de recuperación",
+      "cta": "Continuar",
+      "busy": "Revisando…",
+      "retry": "Ya pasó el tiempo, continuar",
+      "cooldown": "Por seguridad, podrás entrar el {when}. Avisamos a tus dispositivos; si no fuiste tú, revócalo desde ellos. Vuelve entonces con el mismo código.",
+      "error": {
+        "format": "Ese código no tiene el formato correcto: son 5 grupos separados por guiones.",
+        "bad_code": "Ese código no es correcto.",
+        "no_recovery_code": "Tu cuenta no tiene un código de recuperación. Aprueba este navegador desde un dispositivo de confianza.",
+        "device_exists": "Este navegador ya estaba registrado. Recarga la página e inténtalo de nuevo.",
+        "rejected": "No pudimos recuperar tu cuenta. Vuelve a intentarlo.",
+        "failed": "Algo falló. Vuelve a intentarlo en un momento."
+      }
     }
   },
   "mcp": {
@@ -920,7 +960,8 @@
         "failed": "Algo salió mal. Vuelve a intentarlo."
       },
       "doneIntroduced": "Ya puedes enviar instrucciones a {computers}: tu otro dispositivo te las presentó.",
-      "doneDropped": "{computer}: no pudimos confirmarla. Emparéjala con su anillo para enviarle instrucciones."
+      "doneDropped": "{computer}: no pudimos confirmarla. Emparéjala con su anillo para enviarle instrucciones.",
+      "lostDevice": "¿Perdiste tu dispositivo? Usa tu código de recuperación"
     },
     "add": {
       "title": "Añadir un dispositivo",

@@ -841,6 +841,46 @@
         "cancelled": "Done: your account won't be deleted.",
         "export_failed": "We couldn't download your data. Try again."
       }
+    },
+    "activate": {
+      "title": "Activate Chalito in this browser",
+      "body": "This is your first device: one tap creates your passkey and makes this browser trusted. You don't need the desktop app.",
+      "cta": "Activate",
+      "busy": "Activating…",
+      "hasClients": "Your account already has a trusted device. Approve this browser from it.",
+      "hasClientsCta": "Use this browser",
+      "error": {
+        "device_exists": "This browser was already registered. Reload the page and try again.",
+        "rejected": "We couldn't activate this browser. Try again.",
+        "failed": "Something went wrong while activating. Try again in a moment.",
+        "has_agents": "Your account has a paired computer. Use your recovery code to sign in from this browser."
+      },
+      "doneTitle": "Done, this browser is now trusted",
+      "recoveryTitle": "Save your recovery code",
+      "recoveryBody": "It's the only way to recover your account if you lose this browser. Keep it somewhere safe: we won't show it again.",
+      "recoveryLabel": "Recovery code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "passkeyMissing": "Your passkey wasn't created. Create it now to protect your approvals.",
+      "saved": "I saved it",
+      "continue": "Go to chat"
+    },
+    "recover": {
+      "title": "Use your recovery code",
+      "body": "You don't have a trusted browser or phone, but your account has a paired computer. Enter the recovery code you saved when you activated Chalito.",
+      "label": "Recovery code",
+      "cta": "Continue",
+      "busy": "Checking…",
+      "retry": "The wait is over, continue",
+      "cooldown": "For your security, you can sign in on {when}. We alerted your devices; if this wasn't you, revoke it from them. Come back then with the same code.",
+      "error": {
+        "format": "That code isn't in the right format: it's 5 groups separated by dashes.",
+        "bad_code": "That code isn't correct.",
+        "no_recovery_code": "Your account has no recovery code. Approve this browser from a trusted device.",
+        "device_exists": "This browser was already registered. Reload the page and try again.",
+        "rejected": "We couldn't recover your account. Try again.",
+        "failed": "Something went wrong. Try again in a moment."
+      }
     }
   },
   "mcp": {
@@ -920,7 +960,8 @@
         "failed": "Something went wrong. Try again."
       },
       "doneIntroduced": "You can send instructions to {computers} right away: your other device introduced them.",
-      "doneDropped": "{computer}: we couldn't confirm it. Pair it with its ring to send it instructions."
+      "doneDropped": "{computer}: we couldn't confirm it. Pair it with its ring to send it instructions.",
+      "lostDevice": "Lost your device? Use your recovery code"
     },
     "add": {
       "title": "Add a device",
