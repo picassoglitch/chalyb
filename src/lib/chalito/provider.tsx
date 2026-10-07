@@ -313,7 +313,29 @@ const addDevice = (
   };
 };
 
-export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
+/**
+ * Is this browser's Chalito session someone else's, or no longer valid? Chalito keeps its own
+ * Supabase session (IndexedDB), apart from the hub's cookie session: switching hub accounts, or
+ * a hub sign-out (which ends every session of that person), leaves it behind. RLS reads still
+ * accept the old JWT while the api refuses it, so the screens showed the previous account's plan
+ * and the store failed. A person session is checked with Auth; a device session by its owner.
+ */
+const staleSession = async (auth: unknown, s: Session, hubUserId: string | undefined): Promise<boolean> => {
+  if (hubUserId && ownerOf(s) !== hubUserId) return true;
+  if (!isPersonSession(s)) return false;
+  try {
+    const { data, error } = await (
+      auth as { getUser(): Promise<{ data: { user: { id: string } | null }; error: { status?: number } | null }> }
+    ).getUser();
+    // Only a refusal counts: offline or a 5xx keeps the session.
+    if (error) return error.status === 401 || error.status === 403;
+    return !data.user;
+  } catch {
+    return false;
+  }
+};
+
+export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; hubUserId?: string }) => {
   const [ctx, setCtx] = useState<Ctx>(INITIAL);
   const [platform, setPlatform] = useState<Platform | null>(null);
   const [session, setSession] = useState<SessionState>({ status: "loading" });
@@ -366,6 +388,17 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
     const done = (c: Omit<Ctx, "session">) => alive && setCtx((prev) => ({ ...c, session: prev.session }));
     void (async () => {
       if (session.status === "signed_out") return done({ ...INITIAL, status: "signed_out" });
+      if (await staleSession(platform.db.auth, session.session, hubUserId)) {
+        if (!alive) return;
+        // Another account's device trust must not carry over to this one: it pairs again.
+        if (hubUserId && ownerOf(session.session) !== hubUserId)
+          await (await platform.loadDeviceKeys().catch(() => null))?.forget().catch(() => undefined);
+        // Local scope: this browser only. The auth change lands on signed_out and HubBridge signs in.
+        await (platform.db.auth as unknown as { signOut(o: { scope: "local" }): Promise<unknown> })
+          .signOut({ scope: "local" })
+          .catch(() => undefined);
+        return done({ ...INITIAL, status: "signed_out" });
+      }
       const owner = ownerOf(session.session);
       const token = async () =>
         ((await platform.db.auth.getSession()) as { data: { session: Session | null } }).data.session?.access_token ??
@@ -499,7 +532,7 @@ export const ChalitoProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       alive = false;
     };
-  }, [platform, session]);
+  }, [platform, session, hubUserId]);
 
   // Revoked while connected (the live store saw this device's row revoked): forget its trust too.
   useEffect(() => {

@@ -244,7 +244,13 @@
     },
     "planCredits": {
       "label": "Plan y créditos",
-      "tier": "Nivel: {tier}",
+      "tier": "Plan: {tier}",
+      "names": {
+        "free": "Chalyb Gratis",
+        "pro": "Chalyb Pro",
+        "vip": "Chalyb VIP"
+      },
+      "limits": "{devices, plural, one {# computadora} other {# computadoras}} · {rooms, plural, one {# sala} other {# salas}} de hasta {members} personas",
       "unknown": "Nivel desconocido",
       "trial": "Prueba hasta el {date}",
       "manage": "Administrar en Chalyb",
@@ -1070,6 +1076,7 @@
       "title": "Tu plan",
       "loading": "Cargando…",
       "yours": "Tu plan: {plan}",
+      "limits": "{devices, plural, one {# computadora} other {# computadoras}} · {rooms, plural, one {# sala} other {# salas}} de hasta {members} personas",
       "unknown": "No pudimos ver tu plan.",
       "signedOut": "Entra con tu cuenta de Chalyb para ver tu plan.",
       "fromHub": "Tu plan y tus créditos vienen de tu cuenta de Chalyb."
