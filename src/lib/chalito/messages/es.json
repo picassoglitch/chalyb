@@ -1059,6 +1059,8 @@
     },
     "free": "Gratis",
     "owned": "Ya es tuyo",
+    "includedVip": "Incluido en VIP",
+    "freeWithVip": "Gratis con VIP",
     "price": "{tokens} tokens",
     "buy": "Comprar",
     "equip": "Ponérselo",

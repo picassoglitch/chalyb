@@ -74,12 +74,23 @@ test('Crea tu personaje: age gate, photo checks and signed URLs only from the bu
   assert.equal(parseCreation(card('https://evil.example')), null);
 });
 
+test('the store parser keeps the VIP marks on skins (catalog includedIn / includedInPlan)', () => {
+  const galaxy = { id: 'skin_galaxy', name: { es: 'Galaxia', en: 'Galaxy' }, slot: 'skin', free: false, priceTokens: 10000, skin: 'galaxy', owned: false };
+  const [forOthers] = parseCatalog({ items: [{ ...galaxy, includedIn: ['vip'] }] })!;
+  assert.deepEqual(forOthers, { ...galaxy, vip: true });
+  const [forVip] = parseCatalog({ items: [{ ...galaxy, includedIn: ['vip'], includedInPlan: true, owned: true }] })!;
+  assert.deepEqual(forVip, { ...galaxy, owned: true, vip: true, includedInPlan: true });
+  const [plain] = parseCatalog({ items: [{ ...galaxy, includedIn: 'vip', includedInPlan: 'yes' }] })!;
+  assert.deepEqual(plain, galaxy);
+});
+
 test('the new Chalito copy exists in Spanish and English', () => {
   for (const m of [es, en] as Record<string, Record<string, unknown>>[]) {
     const store = m.store as Record<string, Record<string, string>>;
     for (const g of ['neck', 'head', 'face', 'back', 'effects']) assert.ok(store.groups![g]);
     for (const k of ['accessories', 'skins']) assert.ok(store.tabs![k]);
     for (const s of ['neck', 'skin']) assert.ok(store.slot![s]);
+    for (const k of ['includedVip', 'freeWithVip']) assert.ok((store as unknown as Record<string, string>)[k], k);
     const cc = m.createCharacter as Record<string, Record<string, string>>;
     for (const f of ['rejected', 'refused', 'provider', 'upload_missing', 'timeout', 'expired', 'upload'])
       assert.ok(cc.failure![f], f);
