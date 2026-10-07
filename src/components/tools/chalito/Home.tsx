@@ -2,7 +2,7 @@
 import { SignInLink } from './SignInLink';
 import { Companion } from './Companion';
 import { useLocale, useTranslations } from 'next-intl';
-import { Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
+import { Camera, Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
 import { PRODUCT_NAME, formatCompanionTitle } from '@chalito/brand';
 import { companionName } from '@chalito/ui';
 import { Group, Row } from '@/components/ui/primitives';
@@ -19,6 +19,7 @@ const SECTIONS = [
   ['/salas', 'rooms', Users, '#FF9F0A'],
   ['/m', 'mesas', LayoutGrid, '#5B4BFF'],
   ['/tienda', 'store', ShoppingBag, '#FF375F'],
+  ['/personaje', 'character', Camera, '#BF5AF2'],
 ] as const;
 
 export const Home = () => {

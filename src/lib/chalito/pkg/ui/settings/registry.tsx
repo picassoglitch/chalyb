@@ -11,6 +11,7 @@ import {
   Toggle,
 } from "./fields";
 import { canOptIn, chargesApply, type PhoneVerifier, type SettingsValues } from "./values";
+import { HUB_PLAN_LIMITS, hubPlanOf } from "./plan-limits";
 
 /** Where a settings panel is rendered. Every setting renders in both (brief M5 settings parity). */
 export const SHELLS = ["web", "desktop"] as const;
@@ -30,6 +31,10 @@ export interface SettingContext {
   usageHref?: string;
   /** Sends and checks phone codes (the api in the PWA, a mock in tests). */
   phoneVerifier: PhoneVerifier;
+  /** Shown under the companion picker, e.g. the PWA's "Crea tu personaje" (custom companion from a photo). */
+  companionExtra?: ReactNode;
+  /** The companion wears the person's own custom character (see CompanionPicker). */
+  customCompanion?: boolean;
 }
 
 export interface SettingDef {
@@ -51,9 +56,11 @@ const Labelled = ({ k, children }: { k: string; children: ReactNode }) => {
 const PlanCredits = ({ ctx }: { ctx: SettingContext }) => {
   const { t } = useUiText();
   const { tier, trialEndsAt } = ctx.values.planCredits;
+  const plan = hubPlanOf(tier);
   return (
     <Labelled k="planCredits">
-      <p>{tier ? t("planCredits.tier", { tier }) : t("planCredits.unknown")}</p>
+      <p>{tier ? t("planCredits.tier", { tier: plan ? t(`planCredits.names.${plan}`) : tier }) : t("planCredits.unknown")}</p>
+      {plan ? <p data-testid="plan-limits">{t("planCredits.limits", HUB_PLAN_LIMITS[plan])}</p> : null}
       {trialEndsAt ? <p className="ch-chl-small">{t("planCredits.trial", { date: trialEndsAt })}</p> : null}
       {ctx.usageHref ? (
         <a className="ch-lnk ch-chl-fit" href={ctx.usageHref} data-testid="usage-link">
@@ -154,7 +161,12 @@ export const SETTINGS: readonly SettingDef[] = [
     section: "companion",
     render: (ctx) => (
       <Labelled k="avatar">
-        <CompanionPicker value={ctx.values.avatar} onChange={(v) => ctx.set("avatar", v)} />
+        <CompanionPicker
+          value={ctx.values.avatar}
+          onChange={(v) => ctx.set("avatar", v)}
+          customActive={!!ctx.customCompanion}
+        />
+        {ctx.companionExtra}
       </Labelled>
     ),
   },

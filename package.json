@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test \"tests/*.test.ts\"",
+    "test": "node --experimental-transform-types --import ./tests/ts-resolve.mjs --test \"tests/*.test.ts\"",
     "check:copy": "node scripts/check-hardcoded-copy.mjs",
     "legal:hash": "node --experimental-strip-types --no-warnings --import ./tests/ts-resolve.mjs scripts/hash-legal-docs.mjs",
     "test:legal": "node --experimental-strip-types --no-warnings --import ./tests/ts-resolve.mjs scripts/test-legal.mjs",

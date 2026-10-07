@@ -11,6 +11,7 @@ import {
 import {
   COMMAND_WAIT_MS,
   actionsFor,
+  checkApiKey,
   cleanApiKey,
   indexConnections,
   latestAt,
@@ -200,6 +201,20 @@ test('API keys are checked before they leave the browser', () => {
   assert.equal(cleanApiKey('  sk-abcdef123  '), 'sk-abcdef123');
   assert.equal(cleanApiKey('short'), null);
   assert.equal(cleanApiKey('sk-abc def123'), null);
+});
+
+test('a pasted key must look like its provider\'s before it is sealed', () => {
+  assert.deepEqual(checkApiKey('claude-code', ' sk-ant-api03-abcdef '), { ok: true, key: 'sk-ant-api03-abcdef' });
+  assert.deepEqual(checkApiKey('claude-code', 'sk-proj-abcdef12'), { ok: true, key: 'sk-proj-abcdef12', warn: 'sk-ant-' });
+  assert.deepEqual(checkApiKey('codex', 'sk-proj-abcdef12'), { ok: true, key: 'sk-proj-abcdef12' });
+  // An Anthropic key in the Codex field is the usual mix-up.
+  assert.deepEqual(checkApiKey('codex', 'sk-ant-api03-abcdef'), { ok: true, key: 'sk-ant-api03-abcdef', warn: 'sk-' });
+  assert.equal(checkApiKey('grok', 'xai-abcdef1234').ok, true);
+  assert.deepEqual(checkApiKey('gemini', 'xai-abcdef1234'), { ok: true, key: 'xai-abcdef1234', warn: 'AIza' });
+  assert.equal(checkApiKey('gemini', 'AIzaSyAbcdef123').ok, true);
+  // No fixed shape for other apps: only the basic checks.
+  assert.equal(checkApiKey('aider', 'anything-12345').ok, true);
+  assert.deepEqual(checkApiKey('aider', 'short'), { ok: false, error: 'invalid' });
 });
 
 test('the hub offers all four agents, Gemini included, with the contract gates', () => {

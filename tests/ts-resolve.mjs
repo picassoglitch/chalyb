@@ -6,8 +6,9 @@
 // file exists, and why the tests can run against src/ with no build step and
 // no test-runner dependency.
 //
-// Node strips the TypeScript types itself (--experimental-strip-types, Node
-// 22.6+). Nothing here type-checks: `pnpm build` does that.
+// Node strips the TypeScript types itself (--experimental-transform-types, Node
+// 22.7+; it also handles the parameter properties in client-keys). Nothing
+// here type-checks: `pnpm build` does that.
 
 import { registerHooks } from 'node:module';
 import { existsSync, statSync } from 'node:fs';

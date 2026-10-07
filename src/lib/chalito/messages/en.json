@@ -22,7 +22,8 @@
     "devices": "Devices",
     "store": "Store",
     "rooms": "Rooms",
-    "mesas": "Mesas"
+    "mesas": "Mesas",
+    "character": "Create your character"
   },
   "home": {
     "title": "Hi, I'm {name}",
@@ -39,7 +40,8 @@
       "rooms": "Spaces shared with other people",
       "mesas": "Think something through with your companion and the brains you pick",
       "store": "Clothes and effects for your companion",
-      "moreTitle": "More"
+      "moreTitle": "More",
+      "character": "Your own companion, made from your photo"
     }
   },
   "landing": {
@@ -48,7 +50,7 @@
     "toInbox": "Go to your inbox",
     "roster": {
       "title": "Pick your companion",
-      "body": "Six characters to start with. You can switch whenever you like."
+      "body": "220 free characters in 11 categories; here are six. You can switch any time."
     },
     "tryon": {
       "title": "Dress it your way",
@@ -110,7 +112,7 @@
     },
     "companion": {
       "title": "Choose your companion",
-      "body": "You can change it any time. Soon you'll be able to upload your own image or model."
+      "body": "You can change it any time. You can also create one from your photo."
     },
     "name": {
       "title": "Name it",
@@ -121,7 +123,7 @@
       "body": "We only use each provider's official options. Your keys stay on your computer.",
       "guided": "Guided",
       "expert": "Expert",
-      "expertBody": "Paste your API keys in the desktop app or with \"chalito keys set\". We never send them to the cloud.",
+      "expertBody": "Paste each AI's API key here: it's encrypted in this browser for your computer and Chalito can't read it. You can also use \"chalito keys set\" on your computer.",
       "later": "You can connect them later in Settings → Connect your AIs."
     },
     "billing": {
@@ -212,7 +214,14 @@
       "to": "to"
     },
     "avatar": {
-      "label": "Companion"
+      "label": "Companion",
+      "search": "Search companions",
+      "searchPlaceholder": "Search by name",
+      "categories": "Categories",
+      "all": "All",
+      "selected": "You picked {name}.",
+      "empty": "No one by that name.",
+      "custom": "Your companion is now your own character. Pick someone from the list to switch back to a catalog companion."
     },
     "companionName": {
       "label": "Name",
@@ -235,7 +244,13 @@
     },
     "planCredits": {
       "label": "Plan and credits",
-      "tier": "Tier: {tier}",
+      "tier": "Plan: {tier}",
+      "names": {
+        "free": "Chalyb Free",
+        "pro": "Chalyb Pro",
+        "vip": "Chalyb VIP"
+      },
+      "limits": "{devices, plural, one {# computer} other {# computers}} · {rooms, plural, one {# room} other {# rooms}} of up to {members} people",
       "unknown": "Unknown tier",
       "trial": "Trial until {date}",
       "manage": "Manage on Chalyb",
@@ -826,6 +841,46 @@
         "cancelled": "Done: your account won't be deleted.",
         "export_failed": "We couldn't download your data. Try again."
       }
+    },
+    "activate": {
+      "title": "Activate Chalito in this browser",
+      "body": "This is your first device: one tap creates your passkey and makes this browser trusted. You don't need the desktop app.",
+      "cta": "Activate",
+      "busy": "Activating…",
+      "hasClients": "Your account already has a trusted device. Approve this browser from it.",
+      "hasClientsCta": "Use this browser",
+      "error": {
+        "device_exists": "This browser was already registered. Reload the page and try again.",
+        "rejected": "We couldn't activate this browser. Try again.",
+        "failed": "Something went wrong while activating. Try again in a moment.",
+        "has_agents": "Your account has a paired computer. Use your recovery code to sign in from this browser."
+      },
+      "doneTitle": "Done, this browser is now trusted",
+      "recoveryTitle": "Save your recovery code",
+      "recoveryBody": "It's the only way to recover your account if you lose this browser. Keep it somewhere safe: we won't show it again.",
+      "recoveryLabel": "Recovery code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "passkeyMissing": "Your passkey wasn't created. Create it now to protect your approvals.",
+      "saved": "I saved it",
+      "continue": "Go to chat"
+    },
+    "recover": {
+      "title": "Use your recovery code",
+      "body": "You don't have a trusted browser or phone, but your account has a paired computer. Enter the recovery code you saved when you activated Chalito.",
+      "label": "Recovery code",
+      "cta": "Continue",
+      "busy": "Checking…",
+      "retry": "The wait is over, continue",
+      "cooldown": "For your security, you can sign in on {when}. We alerted your devices; if this wasn't you, revoke it from them. Come back then with the same code.",
+      "error": {
+        "format": "That code isn't in the right format: it's 5 groups separated by dashes.",
+        "bad_code": "That code isn't correct.",
+        "no_recovery_code": "Your account has no recovery code. Approve this browser from a trusted device.",
+        "device_exists": "This browser was already registered. Reload the page and try again.",
+        "rejected": "We couldn't recover your account. Try again.",
+        "failed": "Something went wrong. Try again in a moment."
+      }
     }
   },
   "mcp": {
@@ -905,7 +960,8 @@
         "failed": "Something went wrong. Try again."
       },
       "doneIntroduced": "You can send instructions to {computers} right away: your other device introduced them.",
-      "doneDropped": "{computer}: we couldn't confirm it. Pair it with its ring to send it instructions."
+      "doneDropped": "{computer}: we couldn't confirm it. Pair it with its ring to send it instructions.",
+      "lostDevice": "Lost your device? Use your recovery code"
     },
     "add": {
       "title": "Add a device",
@@ -997,10 +1053,14 @@
       "body": "Body",
       "back": "Back",
       "aura": "Aura",
-      "portal_fx": "Portal"
+      "portal_fx": "Portal",
+      "neck": "Neck",
+      "skin": "Skin"
     },
     "free": "Free",
     "owned": "Yours",
+    "includedVip": "Included with VIP",
+    "freeWithVip": "Free with VIP",
     "price": "{tokens} tokens",
     "buy": "Buy",
     "equip": "Wear",
@@ -1029,7 +1089,22 @@
       "recharge": "Recharge",
       "cancel": "Cancel",
       "buy": "Buy for {tokens} tokens"
-    }
+    },
+    "tabsLabel": "Store sections",
+    "tabs": {
+      "accessories": "Accessories",
+      "skins": "Skins"
+    },
+    "skinsIntro": "An effect over your whole companion, whoever it is. One at a time.",
+    "groups": {
+      "neck": "Neck",
+      "head": "Head",
+      "face": "Face",
+      "back": "Back",
+      "effects": "Effects"
+    },
+    "tryOn": "Try on",
+    "stopTrying": "Stop trying"
   },
   "legal": {
     "privacy": "Privacy notice",
@@ -1044,6 +1119,7 @@
       "title": "Your plan",
       "loading": "Loading…",
       "yours": "Your plan: {plan}",
+      "limits": "{devices, plural, one {# computer} other {# computers}} · {rooms, plural, one {# room} other {# rooms}} of up to {members} people",
       "unknown": "We couldn't see your plan.",
       "signedOut": "Sign in with your Chalyb account to see your plan.",
       "fromHub": "Your plan and credits come from your Chalyb account."
@@ -1098,6 +1174,93 @@
       "notice": "Look at this!"
     }
   },
+  "createCharacter": {
+    "title": "Create your character",
+    "intro": "Upload a photo of yourself and we'll turn it into your own companion, drawn in Chalito's style with all five faces.",
+    "free": "Free the first time",
+    "price": "{tokens} tokens",
+    "privacy": "Your photo is sent to Google (Gemini) only to draw you, and we delete it as soon as that's done, whether it worked or not. Use a photo of just you, facing the camera, in good light.",
+    "choose": "Choose photo",
+    "previewAlt": "The photo you chose",
+    "create": "Create my character",
+    "badType": "Use a PNG, JPEG or WebP photo.",
+    "badSize": "That photo is too big (10 MB max).",
+    "status": {
+      "uploading": "Uploading your photo…",
+      "queued": "In line…",
+      "generating": "Drawing your character… It takes a minute or two.",
+      "succeeded": "Done! Here's your character."
+    },
+    "failure": {
+      "rejected": "That photo won't work. Try another one (PNG, JPEG or WebP, at least 256 px).",
+      "refused": "We couldn't draw that photo. Try a photo of just you, facing the camera.",
+      "provider": "Something went wrong while drawing. Try again.",
+      "upload_missing": "Your photo didn't arrive. Try again.",
+      "timeout": "It took too long. Try again.",
+      "expired": "Your photo didn't arrive in time. Try again.",
+      "upload": "Your photo couldn't be uploaded. Try again."
+    },
+    "notCharged": "You weren't charged.",
+    "noTokens": "You don't have enough tokens.",
+    "whyChip": "Why?",
+    "busy": "You're already creating a character. Wait for it to finish.",
+    "dailyLimit": "You've created several characters today. Come back tomorrow.",
+    "retry": "That didn't go through. Retrying never charges twice.",
+    "use": "Use as my companion",
+    "inUse": "It's your companion now!",
+    "useError": "Couldn't change it. Try again.",
+    "noCompanion": "Choose your companion first.",
+    "again": "Create another",
+    "emotion": {
+      "neutral": "Calm",
+      "happy": "Happy",
+      "sad": "Sad",
+      "surprised": "Surprised",
+      "tired": "Tired"
+    },
+    "current": "Your character",
+    "currentNote": "This is how you look in your rooms, in the store and on your desktop.",
+    "onboardingTitle": "Create your character from your photo (free the first time)",
+    "onboardingWorking": "You can carry on with the next steps: your character will be put on as soon as it's ready.",
+    "consent": {
+      "title": "Before you start",
+      "ownPhoto": "The photo is of me: I'm the person in it.",
+      "age": "How old are you?",
+      "band": {
+        "18_plus": "18 or older",
+        "13_17": "13 to 17",
+        "under_13": "Under 13"
+      },
+      "guardian": "I have permission from my mom, dad or guardian",
+      "under13": "You need to be at least 13 to create a character from your photo. You can pick any companion from the list."
+    },
+    "ageRefused": "You need to be at least 13 to create a character from your photo.",
+    "guardianRequired": "You need permission from your mom, dad or guardian.",
+    "attestationRequired": "Confirm the photo is of you and tell us your age.",
+    "kept": {
+      "title": "Your characters",
+      "worn": "In use",
+      "thumbAlt": "Your character from {date}",
+      "created": "Created {date}"
+    },
+    "delete": {
+      "action": "Delete my character",
+      "confirmTitle": "Delete this character?",
+      "confirmBody": "This is permanent: we delete its drawings and they can't be recovered. It doesn't give back the tokens it cost or the free creation.",
+      "confirmWorn": "It's your companion right now: it will go back to looking like the character from the list you had.",
+      "confirm": "Yes, delete it for good",
+      "cancel": "Cancel",
+      "done": "Done: we deleted your character and its drawings.",
+      "inFlight": "That character is still being drawn. Wait for it to finish before deleting it.",
+      "retry": "Deleting didn't finish. Try again.",
+      "error": "Couldn't delete it. Try again."
+    },
+    "signIn": "Sign in from your Chalyb account to create your character.",
+    "signInCta": "Sign in with Chalyb",
+    "loading": "Loading…",
+    "unavailable": "We couldn't load this section. Try again in a moment.",
+    "reload": "Try again"
+  },
   "connect": {
     "title": "Connect your AIs",
     "body": "Choose how each AI runs on your computer: with your API key or by signing in with your plan. It all happens on your computer; your keys aren't stored in the cloud.",
@@ -1105,9 +1268,9 @@
     "loadError": "We couldn't read the status of your connections.",
     "retry": "Try again",
     "refresh": "Refresh status",
-    "noComputer": "To connect your AIs you need Chalito on your computer. Install it, pair it and come back here.",
+    "noComputer": "To paste your keys or sign in to your AIs you need the Chalito desktop app. Download it, pair it and come back here.",
     "noBrowser": "This browser isn't paired with your computer yet. Install Chalito on your computer and pair it; then you can connect your AIs from here.",
-    "download": "Download Chalito",
+    "download": "Download the desktop app",
     "untrusted": "This browser can't send commands to this computer yet. Approve it from that computer in Devices.",
     "offline": "Your computer seems to be off or offline. What you ask for will apply if it comes back within 5 minutes.",
     "computer": "On {name}",
@@ -1129,7 +1292,7 @@
     "version": "Version {version}",
     "actions": {
       "install": "Install",
-      "api_key": "Connect with API key",
+      "api_key": "Paste your key",
       "signin": "Sign in with your plan",
       "disconnect": "Disconnect",
       "launch": "Open on your computer"
@@ -1175,6 +1338,8 @@
       "web": "It opens on that computer, in a browser profile just for this AI."
     },
     "ownerOnly": "Sign in with your plan: Chalito team only for now.",
-    "keyWhere": "Get your {label} at {url}"
+    "keyWhere": "Get your {label} at {url}",
+    "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
+    "keySendAnyway": "Send anyway"
   }
 }

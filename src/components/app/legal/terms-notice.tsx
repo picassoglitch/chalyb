@@ -20,5 +20,12 @@ export async function TermsNotice({ session }: { session: SessionUser }) {
     changes: v.changes,
     changesHref: localizedPath(`${legalPath(v.doc)}/changes/${versionSlug(v.version)}`, locale),
   };
-  return v.prompt === 'modal' ? <TermsReacceptModal v={view} /> : <TermsNoticeBanner v={view} />;
+  // Keyed by document: after "Aceptar" the next pending one (e.g. Suscripción after Términos)
+  // mounts fresh, instead of inheriting the busy (disabled) button of the one just accepted.
+  const key = `${v.doc}:${v.version}`;
+  return v.prompt === 'modal' ? (
+    <TermsReacceptModal key={key} v={view} />
+  ) : (
+    <TermsNoticeBanner key={key} v={view} />
+  );
 }

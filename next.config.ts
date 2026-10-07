@@ -19,6 +19,9 @@ const TOOL_REDIRECTS: [string, string][] = [
   ['/app/engines/chalito/:rest*', '/app/chalito'],
   // Chalito's api sends MCP consent to <web origin>/oauth/consent?request=… (keeps the query).
   ['/oauth/consent', '/app/chalito/oauth/consent'],
+  // Chalito's Mesas tab lives at /m (and /m/<id>); people type /mesas.
+  ['/app/chalito/mesas', '/app/chalito/m'],
+  ['/app/chalito/mesas/:id', '/app/chalito/m/:id'],
   ['/app/engines/:slug/:rest*', '/app/herramientas'],
   // Señales' first activation moved under /app/senales/empezar.
   ['/app/senales/avisos', '/app/senales/empezar/avisos'],
