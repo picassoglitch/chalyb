@@ -16,7 +16,8 @@ test('each Chalito screen gives the companion something to do, with a line in es
   const keys = new Set(paths.map((p) => activityFor(p).key));
   assert.ok(keys.size >= 14, 'screens should differ');
   assert.equal(activityFor('/sesiones/nueva').key, 'newSession');
-  assert.equal(activityFor('/tienda').cosmetic, 'viking_hat');
+  // Owner decision 2026-10-08: no per-screen props; it wears only what the person put on.
+  for (const p of paths) assert.ok(!('cosmetic' in activityFor(p)), `no prop on ${p}`);
   const steps = ['signIn', 'companion', 'name', 'connect', 'billing', 'phone', 'pair', 'passkey'];
   const all = [...paths.map(activityFor), ...steps.flatMap((s) => [onboardingActivity(s, true), onboardingActivity(s, false)])];
   assert.equal(onboardingActivity('signIn', true).key, 'signedIn');

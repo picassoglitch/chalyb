@@ -66,6 +66,21 @@
   position: absolute;
   object-fit: contain;
 }
+/* A worn skin over the drawing: its colours in the body's silhouette (the store draws the shader). */
+.chc__tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.6;
+  mix-blend-mode: color;
+  pointer-events: none;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
 /* Room for the companion so it never covers the end of a page. */
 .ch-toolshell[data-tool='chalito'] .ch-toolbody {
   padding-bottom: 240px;

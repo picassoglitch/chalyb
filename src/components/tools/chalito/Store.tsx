@@ -21,6 +21,8 @@ import { useChalito } from "@/lib/chalito/provider";
 import type { Balance, BalanceApi } from "@/lib/chalito/web/balance";
 import { Loading } from "./Loading";
 import { useMyCard, type MyCard } from "@/lib/chalito/useMyCard";
+import { SKIN_SWATCH } from "@/lib/chalito/skins";
+import { useWornLook } from "@/lib/chalito/companion";
 
 const ROSTER = "/roster";
 const asset = (path: string) => `${ROSTER}/${path}`;
@@ -50,20 +52,6 @@ type Note =
   | { kind: "failed" }
   | { kind: "equip_failed"; reason: string };
 
-/**
- * A CSS stand-in for each skin (the tile swatch, and the preview while WebGL loads or is missing):
- * the real look is the card renderer's shader, drawn live in the preview.
- */
-const SKIN_SWATCH: Record<SkinEffect, string> = {
-  gold: "linear-gradient(135deg, #6b3d04, #e9a12a 42%, #fff0c0 50%, #e9a12a 58%, #6b3d04)",
-  galaxy:
-    "radial-gradient(circle at 30% 30%, #d14fa0 0, transparent 38%), radial-gradient(circle at 70% 68%, #2c6bd6 0, transparent 42%), #180a3a",
-  neon: "linear-gradient(135deg, #00e5ff, #ff2bd6)",
-  crystal: "linear-gradient(160deg, #e6f7ff, #6fa6d8 50%, #eaf8ff)",
-  holo: "linear-gradient(120deg, #ff9ad5, #ffe48a, #9affc8, #8ad1ff, #d29aff)",
-  shadow: "radial-gradient(circle, #2a1940 55%, #8b3dff)",
-  pixel: "repeating-conic-gradient(#f59e5b 0 25%, #fde3c4 0 50%) 0 0 / 12px 12px",
-};
 
 /** The skin's swatch in the companion's silhouette (its drawing as a mask), or a plain swatch. */
 const SkinSwatch = ({ skin, drawing }: { skin: SkinEffect; drawing: string | null }) => {
@@ -284,6 +272,8 @@ export const Store = () => {
     const [c, l] = await Promise.all([store.catalog(), readCompanion()]);
     setItems(c);
     setLook(l);
+    // The companion on every screen wears the same look.
+    useWornLook.getState().set(l, c);
   }, [store, readCompanion]);
   useEffect(() => void load(), [load]);
 
@@ -330,7 +320,9 @@ export const Store = () => {
       const equipped = { ...l.equipped };
       if (on) equipped[item.slot] = item.id;
       else delete equipped[item.slot];
-      return { ...l, equipped };
+      const next = { ...l, equipped };
+      useWornLook.getState().set(next, null);
+      return next;
     });
   };
 

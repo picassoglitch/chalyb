@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { DEFAULT_COMPANION, rosterEntry, type RosterId } from '@chalito/roster';
 import type { EmotionTag } from '@chalito/protocol';
+import type { CompanionLook, StoreItem } from '@/lib/chalito/web/store';
 
 /**
  * The companion on every Chalito screen: always the character the person picked (Chalito until
- * they pick), doing something that fits the screen. Onboarding and Ajustes push a pick here the
+ * they pick), doing something that fits the screen, wearing only what the person put on in the
+ * store (owner decision 2026-10-08: no per-screen props). Onboarding and Ajustes push a pick here the
  * moment it changes, so the character on screen follows before the setting is saved.
  */
 export const useCompanionPick = create<{ pick: RosterId | null; setPick: (id: string | null | undefined) => void }>(
@@ -17,33 +19,11 @@ export const useCompanionPick = create<{ pick: RosterId | null; setPick: (id: st
 export const companionOrDefault = (id: string | null | undefined): RosterId =>
   id && rosterEntry(id) ? (id as RosterId) : DEFAULT_COMPANION;
 
-export type Cosmetic =
-  | 'viking_hat'
-  | 'flower_crown'
-  | 'round_glasses'
-  | 'star_cape'
-  | 'sparkle_aura'
-  | 'portal_swirl';
-
-/** Where each cosmetic sits on a card (catalog.yaml `card`), its slot and image aspect (h ÷ w). */
-export const COSMETIC_PLACEMENT: Record<
-  Cosmetic,
-  { slot: 'head' | 'face' | 'back' | 'aura' | 'portal_fx'; width: number; pivot: [number, number]; aspect: number }
-> = {
-  viking_hat: { slot: 'head', width: 0.5, pivot: [0.5, 0.95], aspect: 346 / 512 },
-  flower_crown: { slot: 'head', width: 0.44, pivot: [0.5, 0.62], aspect: 474 / 512 },
-  round_glasses: { slot: 'face', width: 0.36, pivot: [0.5, 0.5], aspect: 226 / 512 },
-  star_cape: { slot: 'back', width: 0.72, pivot: [0.5, 0.12], aspect: 450 / 512 },
-  sparkle_aura: { slot: 'aura', width: 1.1, pivot: [0.5, 0.5], aspect: 314 / 512 },
-  portal_swirl: { slot: 'portal_fx', width: 1.0, pivot: [0.5, 0.5], aspect: 384 / 512 },
-};
-
 export interface Activity {
   /** Key under chalito.companion for the line in its bubble. */
   key: string;
   emotion: EmotionTag;
   intensity: number;
-  cosmetic?: Cosmetic;
   sleepy?: boolean;
 }
 
@@ -59,16 +39,16 @@ const ACTIVITIES: [RegExp, Activity][] = [
   [/^\/bandeja(\/|$)/, A('inbox', 'thinking')],
   [/^\/sesiones\/nueva(\/|$)/, A('newSession', 'excited', 1)],
   [/^\/sesiones(\/|$)/, A('sessions', 'happy')],
-  [/^\/dispositivos(\/|$)/, A('devices', 'surprised', 0.7, { cosmetic: 'round_glasses' })],
-  [/^\/vincular(\/|$)/, A('devices', 'surprised', 0.7, { cosmetic: 'round_glasses' })],
-  [/^\/(salas|r)(\/|$)/, A('rooms', 'happy', 0.9, { cosmetic: 'portal_swirl' })],
+  [/^\/dispositivos(\/|$)/, A('devices', 'surprised', 0.7)],
+  [/^\/vincular(\/|$)/, A('devices', 'surprised', 0.7)],
+  [/^\/(salas|r)(\/|$)/, A('rooms', 'happy', 0.9)],
   [/^\/m(\/|$)/, A('mesas', 'relaxed')],
-  [/^\/tienda(\/|$)/, A('store', 'excited', 0.9, { cosmetic: 'viking_hat' })],
-  [/^\/creditos(\/|$)/, A('credits', 'excited', 1, { cosmetic: 'sparkle_aura' })],
-  [/^\/uso(\/|$)/, A('usage', 'thinking', 0.8, { cosmetic: 'round_glasses' })],
+  [/^\/tienda(\/|$)/, A('store', 'excited', 0.9)],
+  [/^\/creditos(\/|$)/, A('credits', 'excited', 1)],
+  [/^\/uso(\/|$)/, A('usage', 'thinking', 0.8)],
   [/^\/conexiones(\/|$)/, A('connections', 'thinking', 0.6)],
-  [/^\/ajustes(\/|$)/, A('settings', 'relaxed', 0.8, { cosmetic: 'flower_crown' })],
-  [/^\/descargar(\/|$)/, A('download', 'excited', 0.8, { cosmetic: 'star_cape' })],
+  [/^\/ajustes(\/|$)/, A('settings', 'relaxed', 0.8)],
+  [/^\/descargar(\/|$)/, A('download', 'excited', 0.8)],
   [/^\/a(\/|$)/, A('approval', 'worried', 0.6)],
   [/^\/(n|oauth)(\/|$)/, A('notice', 'surprised', 0.6)],
 ];
@@ -92,7 +72,7 @@ export const onboardingActivity = (step: string, signedIn: boolean): Activity =>
     case 'name':
       return A('name', 'surprised', 0.8);
     case 'pair':
-      return A('devices', 'surprised', 0.7, { cosmetic: 'round_glasses' });
+      return A('devices', 'surprised', 0.7);
     case 'passkey':
       return A('passkey', 'thinking', 0.7);
     default:
@@ -104,3 +84,18 @@ export const onboardingActivity = (step: string, signedIn: boolean): Activity =>
 export const useCompanionStep = create<{ step: Activity | null; setStep: (a: Activity | null) => void }>(
   (set) => ({ step: null, setStep: (step) => set({ step }) }),
 );
+
+/**
+ * What the companion wears (its equipped cosmetics, and the catalog to draw them), shared by the
+ * companion on every screen and the store: an equip in the store shows on the companion at once.
+ * `items: null` keeps the catalog already loaded.
+ */
+export const useWornLook = create<{
+  look: CompanionLook | null | 'error' | undefined;
+  items: StoreItem[] | 'error' | undefined;
+  set: (look: CompanionLook | null | 'error', items: StoreItem[] | 'error' | null) => void;
+}>((set) => ({
+  look: undefined,
+  items: undefined,
+  set: (look, items) => set((prev) => ({ look, items: items ?? prev.items })),
+}));

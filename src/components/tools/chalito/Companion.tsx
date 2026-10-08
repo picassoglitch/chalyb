@@ -1,6 +1,7 @@
 'use client';
 // The companion on every Chalito screen (owner decision 2026-10-05): the picked character, or
-// Chalito until there's a pick, doing something that fits the screen. Motion comes from the same
+// Chalito until there's a pick, doing something that fits the screen, wearing only what the person
+// put on in the store (owner decision 2026-10-08). Motion comes from the same
 // AvatarDriver the room scene uses (bob, squash, lean, gaze toward the pointer), applied to the
 // card's drawings with CSS instead of three.js.
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -8,15 +9,18 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AvatarDriver } from '@chalito/avatar-three/driver';
 import { CreatureBinding } from '@chalito/avatar-three/creature';
 import { EMOTION_DRAWING, DRAWINGS, placeItem, rosterEntry, type CardAnchors } from '@chalito/roster';
+import { useChalito } from '@/lib/chalito/provider';
+import { isSkin, type AccessoryItem } from '@/lib/chalito/web/store';
+import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
 import { useMyCard } from '@/lib/chalito/useMyCard';
 import {
-  COSMETIC_PLACEMENT,
   activityFor,
   companionOrDefault,
   useCompanionPick,
   useCompanionStep,
+  useWornLook,
   type Activity,
 } from '@/lib/chalito/companion';
 import type { AppLocale } from '@/i18n/locales';
@@ -76,6 +80,27 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
       : `${base(id)}/layer-${d}.webp`;
   const hidden = !hero && onboarded && activity.key === 'home';
 
+  // What it wears: loaded once here (the store keeps it current after an equip).
+  const { store, readCompanion } = useChalito();
+  const look = useWornLook((s) => s.look);
+  const items = useWornLook((s) => s.items);
+  useEffect(() => {
+    if (!store || !readCompanion || useWornLook.getState().look !== undefined) return;
+    let live = true;
+    void Promise.all([readCompanion(), store.catalog()]).then(
+      ([l, c]) => live && useWornLook.getState().look === undefined && useWornLook.getState().set(l, c),
+    );
+    return () => {
+      live = false;
+    };
+  }, [store, readCompanion]);
+  const equipped = look && look !== 'error' ? look.equipped : {};
+  const all = Array.isArray(items) ? items : [];
+  const worn = all.filter((i): i is AccessoryItem => !isSkin(i) && equipped[i.slot] === i.id);
+  const skinItem = all.find((i) => isSkin(i) && equipped.skin === i.id);
+  const skin = skinItem && isSkin(skinItem) ? skinItem.skin : null;
+  const [aspects, setAspects] = useState<Record<string, number>>({});
+
   const body = useRef<HTMLDivElement>(null);
   const driver = useMemo(() => new AvatarDriver({ seed: 7 }), []);
 
@@ -118,9 +143,14 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     };
   }, [driver, hidden]);
 
-  const cosmetic = activity.cosmetic && card ? COSMETIC_PLACEMENT[activity.cosmetic] : null;
-  const placed =
-    cosmetic && card ? placeItem(card.anchors, cosmetic.slot, cosmetic, cosmetic.aspect, card.height / card.width) : null;
+  const placed = card
+    ? worn.map((i) => {
+        const a = aspects[i.id];
+        const p = a ? placeItem(card.anchors, i.slot, i.card, a, card.height / card.width) : null;
+        return { item: i, p };
+      })
+    : [];
+  const drawn = layerSrc(drawing);
   const aspect = card ? `${card.width} / ${card.height}` : '3 / 4';
   if (hidden) return null;
 
@@ -132,7 +162,9 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
       <div className="chc__stage" style={{ aspectRatio: aspect }}>
         <span className="chc__shadow" aria-hidden="true" />
         <div ref={body} className="chc__body" key={id}>
-          {placed && placed.z < 0 ? <Item name={activity.cosmetic!} placed={placed} /> : null}
+          {placed.map(({ item, p }) =>
+            !p || p.z < 0 ? <Item key={item.id} item={item} placed={p} onAspect={setAspects} /> : null,
+          )}
           {DRAWINGS.map((d) => (
             <img
               key={d}
@@ -145,32 +177,59 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
               decoding="async"
             />
           ))}
-          {placed && placed.z >= 0 ? <Item name={activity.cosmetic!} placed={placed} /> : null}
+          {skin ? (
+            <span
+              aria-hidden="true"
+              className="chc__tint"
+              data-skin={skin}
+              style={{
+                background: SKIN_SWATCH[skin],
+                maskImage: `url(${drawn})`,
+                WebkitMaskImage: `url(${drawn})`,
+              }}
+            />
+          ) : null}
+          {placed.map(({ item, p }) =>
+            p && p.z >= 0 ? <Item key={item.id} item={item} placed={p} onAspect={setAspects} /> : null,
+          )}
         </div>
       </div>
     </aside>
   );
 };
 
+// A worn item; until its image has loaded (and its aspect is known) it waits, hidden, to be placed.
 const Item = ({
-  name,
+  item,
   placed,
+  onAspect,
 }: {
-  name: string;
-  placed: { left: number; top: number; width: number; height: number; z: number };
+  item: AccessoryItem;
+  placed: { left: number; top: number; width: number; height: number; z: number } | null;
+  onAspect: (f: (a: Record<string, number>) => Record<string, number>) => void;
 }) => (
   // eslint-disable-next-line @next/next/no-img-element
   <img
-    src={`/roster/cosmetics/${name}.webp`}
+    src={`/roster/${item.art}`}
     alt=""
     aria-hidden="true"
     className="chc__item"
-    style={{
-      left: `${placed.left * 100}%`,
-      top: `${placed.top * 100}%`,
-      width: `${placed.width * 100}%`,
-      height: `${placed.height * 100}%`,
-      zIndex: placed.z < 0 ? 0 : 2,
+    data-item={item.id}
+    decoding="async"
+    onLoad={(e) => {
+      const img = e.currentTarget;
+      if (img.naturalWidth > 0) onAspect((a) => ({ ...a, [item.id]: img.naturalHeight / img.naturalWidth }));
     }}
+    style={
+      placed
+        ? {
+            left: `${placed.left * 100}%`,
+            top: `${placed.top * 100}%`,
+            width: `${placed.width * 100}%`,
+            height: `${placed.height * 100}%`,
+            zIndex: placed.z < 0 ? 0 : 2,
+          }
+        : { visibility: 'hidden', width: '10%' }
+    }
   />
 );
