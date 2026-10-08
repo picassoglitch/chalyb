@@ -95,13 +95,28 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   const admin = createAdminClient();
 
   // What we last knew, to tell a transition from a repeat.
-  const { data: before } = await admin
+  const { data: before, error: beforeErr } = await admin
     .from('subscriptions')
     .select(
       'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at, first_charge_at',
     )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
+  if (beforeErr) {
+    console.error('[mp/subscription] subscriptions read failed', beforeErr);
+    return { ok: false, reason: 'db', retry: true };
+  }
+  // Every checkout writes our row (with its plan_key) right after creating the
+  // preapproval. A notification that beats that write would be gated against
+  // the default monthly price — wrong for an annual or Lealtad plan — and be
+  // stored as amount_mismatch with no retry. Ask Mercado Pago to send it
+  // again instead; by then the row is there (or the checkout cancelled it).
+  if (!before && status === 'authorized') {
+    console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
+      preapprovalId,
+    });
+    return { ok: false, reason: 'db', retry: true };
+  }
   const planKey = (before?.plan_key as PlanKey | null) ?? null;
   const trialEndsAt = (before?.trial_ends_at as string | null) ?? null;
   const inTrial = !!trialEndsAt && Date.now() < Date.parse(trialEndsAt);
