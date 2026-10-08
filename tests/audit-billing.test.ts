@@ -28,3 +28,9 @@ test('syncSubscription asks for a retry when the row is not written yet', () => 
   assert.match(start, /const \{ error: rowErr \} = await admin\.from\('subscriptions'\)\.upsert/);
   assert.match(start, /if \(rowErr\) \{[\s\S]{0,300}cancelPreapproval\(preapprovalId\)/);
 });
+
+test('recordAuthorizedPayment keeps a known ledger status over an unmapped one', () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /status: ledgerStatus\(paymentStatus, previousLedgerStatus\)/);
+  assert.doesNotMatch(s, /\n\s+status: paymentStatus,\n/);
+});
