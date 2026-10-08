@@ -120,6 +120,10 @@
 .chalyb-app .legal-prose .legal-toc ol {
   margin: 0;
 }
+.chalyb-app .legal-prose .legal-toc ol.legal-toc__plain {
+  list-style: none;
+  padding-left: 0;
+}
 .chalyb-app .legal-prose .legal-toc a {
   color: var(--ink);
   text-decoration: none;
