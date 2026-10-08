@@ -84,7 +84,8 @@ export async function LegalDocPage({
   const version = resolveVersion(doc, versionSlugParam);
   // The packs text names the owner's pack prices in force (Ajustes), the
   // same totals the checkout charges. A published version keeps its own.
-  const packs = doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
+  const packs =
+    doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
   const list = version ? renderedBlocks(doc, version, packs) : null;
   if (!version || !list) notFound();
 
