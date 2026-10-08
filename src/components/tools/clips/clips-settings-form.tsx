@@ -181,16 +181,29 @@ export function ClipsAdvancedFields({
     framing: string;
     framingCenter: string;
     framingFollow: string;
+    saveError: string;
   };
 }) {
   const [s, setS] = useState(initial);
+  const [failed, setFailed] = useState(false);
   async function save(patch: Partial<ClipsSettings>) {
+    const prev = s;
     setS((x) => ({ ...x, ...patch }));
-    await fetch('/api/tools/chalybclip/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    }).catch(() => {});
+    setFailed(false);
+    try {
+      const res = await fetch('/api/tools/chalybclip/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const json = (await res.json()) as { ok: boolean; data?: ClipsSettings };
+      if (!json.ok || !json.data) throw new Error(String(res.status));
+      setS(json.data);
+    } catch {
+      // Show what is really saved, and say it didn't save.
+      setS(prev);
+      setFailed(true);
+    }
   }
   return (
     <>
@@ -231,6 +244,11 @@ export function ClipsAdvancedFields({
             <option value="follow">{copy.framingFollow}</option>
           </select>
         </div>
+      )}
+      {failed && (
+        <p className="ch-muted" role="status">
+          {copy.saveError}
+        </p>
       )}
     </>
   );
