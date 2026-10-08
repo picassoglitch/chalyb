@@ -13,7 +13,13 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const session = await getSessionUser();
   if (!session) return NextResponse.json({ ok: false, code: 'SESSION_EXPIRED' }, { status: 401 });
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  // `null`, a number or an array parse fine but aren't an object: reading a
+  // field off `null` threw a TypeError (500). Anything but an object is {}.
+  const raw: unknown = await req.json().catch(() => null);
+  const body = (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}) as Record<
+    string,
+    unknown
+  >;
   if (body.action !== 'accept' && body.action !== 'shown') {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   }
