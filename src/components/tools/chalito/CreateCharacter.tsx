@@ -64,9 +64,10 @@ export interface OnboardingHooks {
  * Before any upload the person confirms the photo is of themselves and their age (13+, and at
  * 13–17 a parent's or guardian's permission); under 13 can't create. The api checks it again.
  *
- * In onboarding (`onboarding`), the companion is saved first with the roster avatar picked so far,
- * and the creation is started with useWhenReady: the server puts the card on the companion the
- * moment it succeeds, so the person can carry on with the next steps while it's drawn.
+ * Every creation is started with useWhenReady: the server puts the card on the companion the moment
+ * it succeeds, so a new character is worn right away even if the person left this page. In
+ * onboarding (`onboarding`), the companion is saved first with the roster avatar picked so far, so
+ * the person can carry on with the next steps while it's drawn.
  *
  * "Tus personajes" lists the characters the person kept, each with "Usar como mi compañero" (when the
  * companion doesn't wear it already) and "Eliminar mi personaje" behind an
@@ -120,7 +121,6 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
 
   // Poll while the job works.
   const working = phase.kind === "working" ? phase.creation.creationId : null;
-  const inOnboarding = onboarding !== undefined;
   useEffect(() => {
     if (!avatar || !working) return;
     let alive = true;
@@ -132,13 +132,13 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
         pending.current = null;
         if (c.status === "succeeded") {
           setPhase({ kind: "done", creation: c, used: false });
-          // Onboarding asked the server to put it on already; saying so again is harmless.
-          if (inOnboarding)
-            void avatar.use(c.creationId).then((r) => {
-              if (r !== "ok") return;
-              setPhase({ kind: "done", creation: c, used: true });
-              void refreshMine();
-            });
+          // The server put it on already (useWhenReady); saying so again is harmless and covers a
+          // companion made after the creation started.
+          void avatar.use(c.creationId).then((r) => {
+            if (r !== "ok") return;
+            setPhase({ kind: "done", creation: c, used: true });
+            void refreshMine();
+          });
         } else setPhase({ kind: "failed", failure: c.failure ?? "expired", charged: false });
         void load();
         return;
@@ -151,7 +151,7 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
       alive = false;
       clearTimeout(timer);
     };
-  }, [avatar, working, load, inOnboarding, refreshMine]);
+  }, [avatar, working, load, refreshMine]);
 
   if (page && status === "signed_out")
     return (
@@ -197,9 +197,7 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
       return setNote({ kind: "retry" });
     }
     pending.current ??= newCreationId();
-    const r = await avatar.start(pending.current, photo.type as PhotoType, attest, {
-      useWhenReady: onboarding !== undefined,
-    });
+    const r = await avatar.start(pending.current, photo.type as PhotoType, attest, { useWhenReady: true });
     if (!r.ok) {
       setBusy(false);
       if (r.reason === "retry") return setNote({ kind: "retry" });
