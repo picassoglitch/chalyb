@@ -41,12 +41,19 @@ export const EndorseWait = () => {
   const start = async () => {
     if (!newDevice) return;
     setStep({ s: "opening" });
-    const w = await newDevice(name.trim() || browserName(navigator.userAgent, locale));
-    if ("error" in w) return setStep({ s: "failed", reason: w.error });
-    current.current = w;
-    setStep({ s: "waiting", w });
-    const r = await w.result;
-    current.current = null;
+    let r: Awaited<Waiting["result"]>;
+    try {
+      const w = await newDevice(name.trim() || browserName(navigator.userAgent, locale));
+      if ("error" in w) return setStep({ s: "failed", reason: w.error });
+      current.current = w;
+      setStep({ s: "waiting", w });
+      r = await w.result;
+    } catch {
+      // Never stuck on "opening"/"waiting" with the button disabled.
+      return setStep({ s: "failed", reason: "failed" });
+    } finally {
+      current.current = null;
+    }
     if (!r.ok) return setStep(r.reason === "cancelled" ? { s: "name" } : { s: "failed", reason: r.reason });
     setStep({ s: "done", introduced: r.introduced });
   };

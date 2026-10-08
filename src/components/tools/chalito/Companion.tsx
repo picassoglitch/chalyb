@@ -14,10 +14,12 @@ import { isSkin, type AccessoryItem } from '@/lib/chalito/web/store';
 import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
+import { useSession } from '@/lib/chalito/web/session';
 import { useMyCard } from '@/lib/chalito/useMyCard';
 import {
   activityFor,
   companionOrDefault,
+  homeHeroShown,
   useCompanionPick,
   useCompanionStep,
   useWornLook,
@@ -78,7 +80,13 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     custom
       ? (custom.urls[custom.manifest.emotions.src[d] ?? custom.manifest.emotions.src.neutral!] ?? '')
       : `${base(id)}/layer-${d}.webp`;
-  const hidden = !hero && onboarded && activity.key === 'home';
+  // Inicio draws the big one instead, on exactly Home's hero condition; otherwise (e.g. signed
+  // out after onboarding) the floating one stays, so Inicio still shows the companion.
+  const session = useSession();
+  const hidden =
+    !hero &&
+    activity.key === 'home' &&
+    homeHeroShown({ settingsLoaded: !!values, onboarded, sessionStatus: session.status });
 
   // What it wears: loaded once here (the store keeps it current after an equip).
   const { store, readCompanion } = useChalito();
@@ -87,8 +95,10 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   useEffect(() => {
     if (!store || !readCompanion || useWornLook.getState().look !== undefined) return;
     let live = true;
-    void Promise.all([readCompanion(), store.catalog()]).then(
+    Promise.all([readCompanion(), store.catalog()]).then(
       ([l, c]) => live && useWornLook.getState().look === undefined && useWornLook.getState().set(l, c),
+      // Unreadable now: it wears nothing until a later mount (or the store) loads it.
+      () => undefined,
     );
     return () => {
       live = false;

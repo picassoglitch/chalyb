@@ -1,5 +1,5 @@
 import { APP_HOME, safeNextPath } from "@chalito/ui";
-import { hubLaunchUrl } from "./hub";
+import { supabase } from "./supabase";
 
 /**
  * The hub's launch route doesn't forward `next` (sign-in remembers only /auth/launch/chalito and
@@ -46,14 +46,6 @@ let launching = false;
  */
 export const SSO_STATE_COOKIE = "chalito_sso_state";
 
-const newState = (): string => {
-  const b = crypto.getRandomValues(new Uint8Array(32));
-  return btoa(String.fromCharCode(...b))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-};
-
 /** Reads and clears the nonce of the sign-in this browser started (null if it started none). */
 export const takeSsoState = (): string | null => {
   const m = document.cookie.match(new RegExp(`(?:^|; )${SSO_STATE_COOKIE}=([A-Za-z0-9_-]{43})(?:;|$)`));
@@ -65,14 +57,21 @@ export const takeSsoState = (): string | null => {
 export const ssoStateMatches = (expected: string | null, received: string | null): boolean =>
   expected !== null && (received === null || received === expected);
 
-/** "Entrar con Chalyb" that comes back to `path` afterwards. */
+/**
+ * "Entrar con Chalyb", inside the hub: the person is already signed in to the hub, and the hub's
+ * launch route for Chalito would land on /app/chalito/auth/sso, which the hub doesn't have (a 404).
+ * So this drops Chalito's own session on this browser (local scope) and HubBridge signs in again in
+ * place, with a fresh launch token, on this same page. `path` stays for callers' sake: the page
+ * doesn't change.
+ */
 export const signInAndReturn = (path: string): void => {
-  const launch = hubLaunchUrl();
-  if (!launch || launching) return;
+  void path;
+  if (launching) return;
   launching = true;
-  rememberNext(path);
-  const state = newState();
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${SSO_STATE_COOKIE}=${state}; Max-Age=${MAX_AGE_S}; Path=/; SameSite=Lax${secure}`;
-  window.location.assign(`${launch}?state=${state}`);
+  void (supabase().auth as unknown as { signOut(o: { scope: "local" }): Promise<unknown> })
+    .signOut({ scope: "local" })
+    .catch(() => undefined)
+    .finally(() => {
+      launching = false;
+    });
 };

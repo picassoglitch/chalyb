@@ -109,9 +109,11 @@ export const Devices = () => {
               <span className="ch-chl-small">{t(`role.${d.role}`)}</span>
               <span
                 data-testid="presence"
-                className={`ch-pill ch-chl-push ${d.revoked ? "ch-pill--dark" : d.online ? "ch-pill--ok" : "ch-pill--gray"}`}
+                data-me={d.deviceId === me || undefined}
+                className={`ch-pill ch-chl-push ${d.revoked ? "ch-pill--dark" : d.online || d.deviceId === me ? "ch-pill--ok" : "ch-pill--gray"}`}
               >
-                {d.revoked ? t("revoked") : d.online ? t("online") : t("offline")}
+                {/* This browser is in use right now; its last_seen_at only moves on a device sign-in. */}
+                {d.revoked ? t("revoked") : d.deviceId === me ? t("thisDevice") : d.online ? t("online") : t("offline")}
               </span>
             </div>
             {d.role === "agent" && !d.revoked ? <SharingToggle scope="device" target={d.deviceId} /> : null}

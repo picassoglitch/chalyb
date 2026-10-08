@@ -11,16 +11,27 @@ import { env } from '@/lib/chalito/web/env';
 
 type Failure = 'no_access' | 'failed' | 'rate_limited';
 
+const MAX_ATTEMPTS = 3;
+
 export const HubBridge = ({ children }: { children: ReactNode }) => {
   const { status } = useChalito();
   const t = useTranslations('chalito.sso');
-  const started = useRef(false);
+  /** A sign-in is running (effects that re-run, or a double render, must not start a second). */
+  const running = useRef(false);
+  /**
+   * Sign-ins this page started. Chalito's session can end again later (a hub account switch, an
+   * expired refresh token, "Entrar con Chalyb" after a revoke): each time it signs in again, up to
+   * a cap, so a session that keeps being refused can't loop.
+   */
+  const attempts = useRef(0);
   const [failed, setFailed] = useState<Failure | null>(null);
 
   useEffect(() => {
-    if (status !== 'signed_out' || started.current) return;
-    started.current = true;
-    void (async () => {
+    if (status !== 'signed_out' || running.current || failed) return;
+    if (attempts.current >= MAX_ATTEMPTS) return setFailed('failed');
+    running.current = true;
+    attempts.current += 1;
+    void (async (): Promise<Failure | null> => {
       const r = await fetch('/api/tools/chalito/sso', {
         method: 'POST',
         credentials: 'same-origin',
@@ -28,16 +39,22 @@ export const HubBridge = ({ children }: { children: ReactNode }) => {
       const body = r
         ? ((await r.json().catch(() => null)) as { ok?: boolean; token?: string } | null)
         : null;
-      if (!r?.ok || !body?.token) return setFailed(r?.status === 403 ? 'no_access' : 'failed');
+      if (!r?.ok || !body?.token) return r?.status === 403 ? 'no_access' : 'failed';
       const done = await completeSso(
         { token: body.token, next: null },
         { apiBase: env.apiBase, fetch: window.fetch.bind(window), auth: supabase().auth },
       );
       // No reload: the provider listens to this same Supabase client, so the new session
       // connects in place (a reload cost a whole second page load on the first visit).
-      if (!done.ok) setFailed(done.reason === 'rate_limited' ? 'rate_limited' : 'failed');
-    })();
-  }, [status]);
+      return done.ok ? null : done.reason === 'rate_limited' ? 'rate_limited' : 'failed';
+    })()
+      // supabase() throws when Chalito isn't configured: say so instead of "Entrando…" forever.
+      .catch((): Failure => 'failed')
+      .then((f) => {
+        running.current = false;
+        if (f) setFailed(f);
+      });
+  }, [status, failed]);
 
   if (failed)
     return (

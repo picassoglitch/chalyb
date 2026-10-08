@@ -1,11 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CompanionNameField, CompanionPicker, DEFAULT_COMPANION, SETTINGS, type SettingContext } from "@chalito/ui";
 import { Link, useRouter } from "@/lib/chalito/navigation";
 // Legal pages are the hub's (Chalito's own site, with its /terminos and /privacidad, is gone).
 import { Link as HubLink } from "@/i18n/routing";
-import { env } from "@/lib/chalito/web/env";
 import { sessionTier, useSession } from "@/lib/chalito/web/session";
 import { DEV_BACKEND } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
@@ -41,6 +40,10 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const [i, setI] = useState(0);
   const [billing, setBilling] = useState<BillingMode>("byo");
   const [path, setPath] = useState<"guided" | "expert">("guided");
+  const [finishing, setFinishing] = useState<"idle" | "busy" | "failed">("idle");
+  const locale = useLocale();
+  // The hub's plans page (env.hubUrl is the hub's home, not its plans).
+  const plansHref = `${locale === "en" ? "/en" : ""}/app/planes`;
   // The companion on screen follows the pick right away and does something for each step.
   const setPick = useCompanionPick((s) => s.setPick);
   const setCompanionStep = useCompanionStep((s) => s.setStep);
@@ -57,7 +60,13 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const step: Step = STEPS[i]!;
   const next = async () => {
     if (i < STEPS.length - 1) return setI(i + 1);
-    await finishOnboarding(values);
+    setFinishing("busy");
+    try {
+      await finishOnboarding(values);
+    } catch {
+      // Not saved: stay here and say so (it used to be an unhandled rejection with no feedback).
+      return setFinishing("failed");
+    }
     router.push("/inicio");
   };
   // The dev/test backend stands in for a signed-in session.
@@ -68,7 +77,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
     set,
     shell: "web",
     providerLabel: (p) => ti(`${p}.name`),
-    hubPlansUrl: env.hubUrl || "#",
+    hubPlansUrl: plansHref,
     phoneVerifier,
   };
 
@@ -158,11 +167,9 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
               </label>
             ))}
           </fieldset>
-          {env.hubUrl ? (
-            <a className="ch-lnk ch-chl-fit" href={env.hubUrl} rel="noopener">
-              {t("billing.manage")}
-            </a>
-          ) : null}
+          <HubLink href="/app/planes" className="ch-lnk ch-chl-fit">
+            {t("billing.manage")}
+          </HubLink>
         </div>
       ) : null}
 
@@ -214,12 +221,17 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
         ) : null}
         <button
           className="ch-btn ch-btn--primary"
-          disabled={step === "signIn" && !signedIn}
+          disabled={(step === "signIn" && !signedIn) || finishing === "busy"}
           onClick={() => void next()}
         >
           {i === STEPS.length - 1 ? tc("finish") : tc("continue")}
         </button>
       </div>
+      {finishing === "failed" ? (
+        <p role="alert" className="ch-err" data-testid="onboarding-finish-failed">
+          {t("finishFailed")}
+        </p>
+      ) : null}
     </div>
   );
 };

@@ -23,6 +23,7 @@ import { Loading } from "./Loading";
 import { useMyCard, type MyCard } from "@/lib/chalito/useMyCard";
 import { SKIN_SWATCH } from "@/lib/chalito/skins";
 import { useWornLook } from "@/lib/chalito/companion";
+import { tokenFormat } from "@/lib/chalito/format";
 
 const ROSTER = "/roster";
 const asset = (path: string) => `${ROSTER}/${path}`;
@@ -269,7 +270,13 @@ export const Store = () => {
 
   const load = useCallback(async () => {
     if (!store || !readCompanion) return;
-    const [c, l] = await Promise.all([store.catalog(), readCompanion()]);
+    // A retry shows the loading state again; a read that throws (network) is an error, not a hang.
+    setItems((i) => (i === "error" ? null : i));
+    setLook((l) => (l === "error" ? undefined : l));
+    const [c, l] = await Promise.all([
+      store.catalog().catch(() => "error" as const),
+      readCompanion().catch(() => "error" as const),
+    ]);
     setItems(c);
     setLook(l);
     // The companion on every screen wears the same look.
@@ -302,10 +309,10 @@ export const Store = () => {
     note(item.id, r.reason === "no_tokens" ? { kind: "no_tokens", chipHref: r.chipHref } : { kind: "failed" });
   };
 
-  const ask = (item: StoreItem, retry = false) => {
-    note(item.id, null);
-    setConfirm({ item, retry });
-  };
+  // The item's note (a retry offer, the no-tokens chip) stays until the buy itself runs, so
+  // cancelling the confirmation doesn't lose the retry (and its purchaseId).
+  const ask = (item: StoreItem, retry = false) => setConfirm({ item, retry });
+  const cancelConfirm = useCallback(() => setConfirm(null), []);
 
   const equip = async (item: StoreItem, on: boolean) => {
     if (!store || !look || look === "error") return;
@@ -347,7 +354,7 @@ export const Store = () => {
       </div>
     );
 
-  const tokens = new Intl.NumberFormat(locale);
+  const tokens = tokenFormat(locale);
   const all = Array.isArray(items) ? items : [];
   const wornSkin = look && look !== "error" ? all.find((i) => isSkin(i) && look.equipped.skin === i.id) : undefined;
   const shownSkin = trying ?? (wornSkin && isSkin(wornSkin) ? wornSkin.skin : null);
@@ -497,7 +504,7 @@ export const Store = () => {
       ) : null}
 
       {items === null ? <Loading label={t("loading")} rows={2} height={200} /> : null}
-      {items === "error" ? (
+      {items === "error" || look === "error" ? (
         <div role="alert" data-testid="store-error" className="ch-card ch-chl-card ch-chl-card--bad ch-chl-bad">
           <p>{t("error")}</p>
           <button className="ch-btn ch-btn--danger ch-btn--compact ch-chl-fit" onClick={() => void load()}>
@@ -554,7 +561,7 @@ export const Store = () => {
         <ConfirmBuy
           item={confirm.item}
           balance={balance}
-          onCancel={() => setConfirm(null)}
+          onCancel={cancelConfirm}
           onConfirm={() => {
             setConfirm(null);
             void buy(confirm.item, confirm.retry);
@@ -579,7 +586,7 @@ const ConfirmBuy = ({
 }) => {
   const t = useTranslations("chalito.store.confirm");
   const locale = useLocale() as "es" | "en";
-  const n = new Intl.NumberFormat(locale);
+  const n = tokenFormat(locale);
   const [b, setB] = useState<Balance | "loading" | "unavailable" | "error">(balance ? "loading" : "error");
   const yes = useRef<HTMLButtonElement>(null);
   useEffect(() => {

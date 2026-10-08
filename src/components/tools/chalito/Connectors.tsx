@@ -13,6 +13,8 @@ export const Connectors = () => {
   const [list, setList] = useState<Connector[] | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [revokeFailed, setRevokeFailed] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!mcp) return;
     const r = await mcp.listConnectors();
@@ -21,8 +23,21 @@ export const Connectors = () => {
   }, [mcp]);
   useEffect(() => void load(), [load]);
 
+  // A refused or failed revoke keeps the app listed, so say so instead of closing silently.
+  const revoke = async (cid: string) => {
+    if (!mcp) return;
+    setBusy(true);
+    setRevokeFailed(null);
+    const r = await mcp.revoke(cid);
+    setBusy(false);
+    if (r !== true && r !== "not_found") return setRevokeFailed(cid);
+    setConfirming(null);
+    await load();
+  };
+
   if (status === "signed_out") return <p>{t("signedOut")}</p>;
-  if (failed)
+  // No api at all (Chalito couldn't start here): a failure, not an endless "Cargando…".
+  if (failed || (!mcp && status === "error"))
     return (
       <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
         {t("failed")}
@@ -54,19 +69,31 @@ export const Connectors = () => {
                 <span>{t("revokeConfirm", { name: c.clientName })}</span>
                 <button
                   className="ch-btn ch-btn--danger ch-btn--compact"
-                  onClick={() => void mcp?.revoke(c.cid).then(() => (setConfirming(null), load()))}
+                  disabled={busy}
+                  onClick={() => void revoke(c.cid)}
                 >
                   {t("revokeYes")}
                 </button>
-                <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => setConfirming(null)}>
+                <button
+                  className="ch-btn ch-btn--secondary ch-btn--compact"
+                  onClick={() => (setConfirming(null), setRevokeFailed(null))}
+                >
                   {t("cancel")}
                 </button>
               </div>
             ) : (
-              <button className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit" onClick={() => setConfirming(c.cid)}>
+              <button
+                className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-fit"
+                onClick={() => (setConfirming(c.cid), setRevokeFailed(null))}
+              >
                 {t("revoke")}
               </button>
             )}
+            {revokeFailed === c.cid ? (
+              <p role="alert" className="ch-err">
+                {t("revokeFailed")}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>

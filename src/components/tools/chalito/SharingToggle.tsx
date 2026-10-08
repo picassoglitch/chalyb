@@ -15,9 +15,14 @@ export const SharingToggle = ({ scope, target }: { scope: "session" | "device"; 
   const [ack, setAck] = useState(false);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
-    void readSharing?.(scope, target)
-      .then(setOn)
+    if (!readSharing) return;
+    let alive = true;
+    readSharing(scope, target)
+      .then((v) => alive && setOn(v))
       .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, [readSharing, scope, target]);
   if (!mcp) return null;
   const send = async (enabled: boolean) => {

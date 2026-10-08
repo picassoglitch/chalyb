@@ -5,6 +5,7 @@ import { ActionError, type EventView, type SessionView } from "@chalito/client";
 import type { RemotePermissionMode } from "@chalito/protocol";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
+import { useLiveSynced } from "@/lib/chalito/useLiveSynced";
 import { adapterNameKey } from "@/lib/chalito/web/adapters";
 import { SharingToggle } from "./SharingToggle";
 import { Loading } from "./Loading";
@@ -23,12 +24,25 @@ const AgentName = ({ adapter }: { adapter: string | undefined }) => {
   ) : null;
 };
 
+/** A session's state label; a state this build doesn't know shows as "starting", not a raw key. */
+const useStateLabel = () => {
+  const t = useTranslations("chalito.live.sessions");
+  return (state: string | undefined) => {
+    const key = `state.${state ?? "starting"}`;
+    return t.has(key) ? t(key) : t("state.starting");
+  };
+};
+
 /** The only modes a remote surface may set (the device policy is still the ceiling). Never bypassPermissions. */
 export const REMOTE_MODES: readonly RemotePermissionMode[] = ["default", "plan", "acceptEdits"];
 
 export const SessionsList = () => {
   const t = useTranslations("chalito.live.sessions");
+  const tl = useTranslations("chalito.live.session");
   const { sessions } = useLive();
+  // "live" comes before the first pull: don't say "no sessions" until it has landed.
+  const synced = useLiveSynced();
+  const stateLabel = useStateLabel();
   return (
     <div className="ch-chl">
       <div className="ch-chl-row ch-chl-row--between">
@@ -37,7 +51,8 @@ export const SessionsList = () => {
           {t("new")}
         </Link>
       </div>
-      {sessions.length === 0 ? (
+      {sessions.length === 0 && !synced ? <Loading label={tl("loading")} /> : null}
+      {sessions.length === 0 && synced ? (
         <Empty
           icon={<MessageCircle />}
           title={t("empty")}
@@ -45,7 +60,8 @@ export const SessionsList = () => {
           action={{ href: "/sesiones/nueva", label: t("new") }}
         />
       ) : null}
-      <ul className="ch-group">
+      {sessions.length ? (
+        <ul className="ch-group">
         {sessions.map((s) => (
           <li key={s.sid} data-testid="session-row">
             <Link
@@ -55,14 +71,15 @@ export const SessionsList = () => {
               <span className="ch-row__tx">
                 <b>{s.card?.goal ?? s.label ?? s.sid}</b>
                 <small>
-                  {s.card?.workspaceLabel ?? s.label} · {t(`state.${s.card?.state ?? s.state ?? "starting"}`)}
+                  {s.card?.workspaceLabel ?? s.label} · {stateLabel(s.card?.state ?? s.state)}
                   <AgentName adapter={s.card?.adapter ?? s.adapter} />
                 </small>
               </span>
             </Link>
           </li>
         ))}
-      </ul>
+        </ul>
+      ) : null}
     </div>
   );
 };
@@ -112,10 +129,12 @@ const QuestionForm = ({
   sid,
   q,
   onSent,
+  onFailed,
 }: {
   sid: string;
   q: { questionId: string; questions: Question[] };
   onSent: () => void;
+  onFailed: () => void;
 }) => {
   const t = useTranslations("chalito.live.session");
   const { client } = useChalito();
@@ -128,7 +147,7 @@ const QuestionForm = ({
         e.preventDefault();
         // The agent clears the open question once it has the answer, unmounting this form;
         // the confirmation lives in the session view.
-        void client?.actions.answer(sid, q.questionId, answers).then(onSent);
+        client?.actions.answer(sid, q.questionId, answers).then(onSent, onFailed);
       }}
     >
       {q.questions.map((qq) => (
@@ -159,15 +178,16 @@ const QuestionForm = ({
 
 export const SessionDetail = ({ sid }: { sid: string }) => {
   const t = useTranslations("chalito.live.session");
-  const ts = useTranslations("chalito.live.sessions");
+  const stateLabel = useStateLabel();
   const live = useLive();
+  const synced = useLiveSynced();
   const { client } = useChalito();
   const [draft, setDraft] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const s: SessionView | undefined = live.sessions.find((x) => x.sid === sid);
   const events = live.events[sid] ?? [];
   if (!s)
-    return live.status === "live" ? (
+    return synced ? (
       <p className="ch-card ch-chl-card">{t("notFound")}</p>
     ) : (
       <Loading label={t("loading")} />
@@ -197,7 +217,7 @@ export const SessionDetail = ({ sid }: { sid: string }) => {
         <h2 className="ch-h2">{card?.goal ?? s.label ?? sid}</h2>
         <p className="ch-muted">
           {card?.workspaceLabel ?? s.label} ·{" "}
-          <span data-testid="session-state">{ts(`state.${card?.state ?? s.state ?? "starting"}`)}</span>
+          <span data-testid="session-state">{stateLabel(card?.state ?? s.state)}</span>
           <AgentName adapter={card?.adapter ?? s.adapter} />
         </p>
       </header>
@@ -231,7 +251,13 @@ export const SessionDetail = ({ sid }: { sid: string }) => {
       )}
       <SharingToggle scope="session" target={sid} />
       {pendingQuestions.map((q) => (
-        <QuestionForm key={q.questionId} sid={sid} q={q} onSent={() => setNote(t("answerSent"))} />
+        <QuestionForm
+          key={q.questionId}
+          sid={sid}
+          q={q}
+          onSent={() => setNote(t("answerSent"))}
+          onFailed={() => setNote(t("failed"))}
+        />
       ))}
       <div className="ch-chl-row">
         <button

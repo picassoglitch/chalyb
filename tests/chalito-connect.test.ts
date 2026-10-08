@@ -276,3 +276,39 @@ test('every catalog app, group, state and action has its copy in es and en', asy
     if (a.apiKey) assert.ok(a.apiKey.label && a.apiKey.docsUrl.startsWith('https://'), a.id);
   }
 });
+
+test('catalog copy: key labels translated, no empty or nested parentheses, every app error has copy', async () => {
+  const { CATALOG } = await import('@/lib/chalito/web/apps-catalog');
+  const { AppErrorCode } = await import('@chalito/protocol');
+  const { appName, keyLabel } = await import('@/lib/chalito/web/connect');
+  for (const m of [es, en] as unknown as { connect: Record<string, Record<string, string> | string> }[]) {
+    const c = m.connect as Record<string, Record<string, string>>;
+    // A next-intl-like translator over chalito.connect, with ICU {name}/{key} filled in.
+    const get = (k: string) => k.split('.').reduce<unknown>((o, p) => (o as Record<string, unknown>)?.[p], c);
+    const t = Object.assign((k: string, v: Record<string, string> = {}) => {
+      const s = get(k);
+      assert.equal(typeof s, 'string', k);
+      return (s as string).replace(/\{(\w+)\}/g, (_, n: string) => v[n] ?? `{${n}}`);
+    }, { has: (k: string) => typeof get(k) === 'string' });
+    for (const code of AppErrorCode.options) assert.ok(c.errors![code], `errors.${code}`);
+    for (const a of CATALOG) {
+      const key = keyLabel(t, a);
+      if (a.apiKey) assert.ok(c.keyLabels![a.id], `keyLabels.${a.id}`);
+      const line =
+        a.group === 'agent' && !key
+          ? t('howTo.agentNoKey', { name: appName(t, a) })
+          : t(`howTo.${a.group}`, { name: appName(t, a), key: key ?? '' });
+      assert.doesNotMatch(line, /\(\s*\)/, `${a.id}: empty ()`);
+      assert.doesNotMatch(line, /\([^)]*\(/, `${a.id}: nested ()`);
+      assert.doesNotMatch(line, /\{\w+\}/, `${a.id}: unfilled placeholder`);
+    }
+  }
+  // Spanish shows Spanish labels, not the catalog's English.
+  const esT = Object.assign((k: string) => k.split('.').reduce<unknown>((o, p) => (o as Record<string, unknown>)?.[p], es.connect) as string, {
+    has: (k: string) => typeof k.split('.').reduce<unknown>((o, p) => (o as Record<string, unknown>)?.[p], es.connect) === 'string',
+  });
+  const windsurf = CATALOG.find((a) => a.id === 'windsurf')!;
+  assert.equal(appName(esT, windsurf), 'Devin Desktop (antes Windsurf)');
+  assert.equal(keyLabel(esT, CATALOG.find((a) => a.id === 'mistral-vibe')!), 'API key de Mistral');
+  assert.equal(keyLabel(esT, CATALOG.find((a) => a.id === 'goose')!), null);
+});

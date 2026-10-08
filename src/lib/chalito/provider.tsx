@@ -302,8 +302,11 @@ const readDirectory = async (db: unknown, owner: string): Promise<DirectoryRow[]
   }));
 };
 
+/** Runs `fn` with the connection held (its sign-out/sign-in churn ignored), then reconnects once. */
+type Hold = <T>(fn: () => Promise<T>) => Promise<T>;
+
 const newDevice =
-  (platform: Platform, owner: string, token: () => Promise<string | null>) =>
+  (platform: Platform, owner: string, token: () => Promise<string | null>, hold: Hold) =>
   async (name: string): Promise<Waiting | { error: WaitError }> => {
     const w = await waitForEndorsement({
       api: platform.api(token),
@@ -323,16 +326,20 @@ const newDevice =
       result: w.result.then(async (r) => {
         if (!r.ok) return r;
         markEndorsed(r.deviceId);
-        try {
-          await ensureSession(platform.db.auth as never, {
-            kind: "device",
-            deviceId: r.deviceId,
-            login: async () => r.customToken,
-          });
-        } catch {
-          return { ok: false, reason: "failed" } as const;
-        }
-        return r;
+        // Held: the switch signs the person's session out first, and a "signed_out" in between
+        // would have HubBridge sign the person back in over this device's sign-in.
+        return hold(async () => {
+          try {
+            await ensureSession(platform.db.auth as never, {
+              kind: "device",
+              deviceId: r.deviceId,
+              login: async () => r.customToken,
+            });
+          } catch {
+            return { ok: false, reason: "failed" } as const;
+          }
+          return r;
+        });
       }),
     };
   };
@@ -439,6 +446,16 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       }
     };
 
+  const hold: Hold = async (fn) => {
+    deviceMode.current = true;
+    try {
+      return await fn();
+    } finally {
+      deviceMode.current = false;
+      setEpoch((e) => e + 1);
+    }
+  };
+
   const enrolDeps = (p: Platform, owner: string, token: () => Promise<string | null>, name: string) => ({
     api: p.api(token),
     save: (k: Parameters<Platform["saveDeviceKeys"]>[0]) => p.saveDeviceKeys(k),
@@ -474,9 +491,14 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       };
     };
     let alive = true;
-    void auth.getSession().then(({ data }) => {
-      if (alive) setSession(data.session ? { status: "signed_in", session: data.session } : { status: "signed_out" });
-    });
+    void auth
+      .getSession()
+      .then(({ data }) => {
+        if (alive) setSession(data.session ? { status: "signed_in", session: data.session } : { status: "signed_out" });
+      })
+      // Unreadable session storage (IndexedDB blocked or broken): signed out, so HubBridge signs in
+      // (or says it couldn't) instead of "Entrando a Chalito…" forever.
+      .catch(() => alive && setSession({ status: "signed_out" }));
     const { data } = auth.onAuthStateChange((_e, s) =>
       setSession(s ? { status: "signed_in", session: s } : { status: "signed_out" }),
     );
@@ -544,7 +566,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
           ...INITIAL,
           ...base,
           status: "unpaired",
-          newDevice: person ? newDevice(platform, owner, token) : null,
+          newDevice: person ? newDevice(platform, owner, token, hold) : null,
           activate: person ? activateWith(platform, owner, token) : null,
           canActivate: person && canActivate(dir),
           recover: person ? recoverWith(platform, owner, token) : null,
@@ -647,12 +669,18 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       } catch (err) {
         if (err instanceof DeviceRevokedError) {
           await keys.forget().catch(() => undefined);
+          deviceMode.current = false;
           return done({ ...INITIAL, ...base, status: "revoked" });
         }
         deviceMode.current = false;
         done({ ...INITIAL, ...base, status: "error" });
       }
-    })();
+    })().catch(() => {
+      // Anything else that threw (the session check, the device keys' storage, the settings store):
+      // an error state the gate can show, never an unhandled rejection stuck on "loading".
+      if (owns) deviceMode.current = false;
+      done({ ...INITIAL, status: "error" });
+    });
     return () => {
       if (!owns) alive = false;
     };
@@ -663,7 +691,11 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
     const client = ctx.client;
     if (!client) return;
     return client.live.subscribe(() => {
-      if (client.live.getSnapshot().status === "revoked") void keysRef.current?.forget().catch(() => undefined);
+      if (client.live.getSnapshot().status !== "revoked") return;
+      void keysRef.current?.forget().catch(() => undefined);
+      // Let the connection run again on the next session change ("Entrar con Chalyb" on /vincular
+      // drops this device's session): otherwise it stays on this dead client.
+      deviceMode.current = false;
     });
   }, [ctx.client]);
 

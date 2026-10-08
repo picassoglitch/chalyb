@@ -104,6 +104,7 @@
   "onboarding": {
     "title": "Primeros pasos",
     "progress": "Paso {step} de {total}",
+    "finishFailed": "No pudimos guardar tu configuración. Inténtalo de nuevo.",
     "signIn": {
       "title": "Entra a tu cuenta",
       "body": "Chalito usa tu cuenta de Chalyb. No necesitas otra contraseña.",
@@ -323,6 +324,7 @@
         "not_found": "No se encontró.",
         "rate_limited": "Demasiados reportes seguidos; espera un momento.",
         "bad_code": "Ese código no es válido o ya se usó.",
+        "already": "Ya estás en esa sala: búscala en tu lista.",
         "full": "La sala está llena.",
         "no_key": "Todavía no tienes la llave de la sala.",
         "failed": "No se pudo. Vuelve a intentarlo.",
@@ -717,6 +719,7 @@
         "missingStepUp": "{computer} rechazó un dispositivo nuevo porque la aprobación no tenía tu llave de acceso. Apruébalo otra vez con la llave de acceso.",
         "refused": "{computer} rechazó un dispositivo nuevo: la aprobación no era válida. Apruébalo otra vez."
       },
+      "thisDevice": "Este dispositivo",
       "revokeFailed": "No pudimos retirarlo. No se cambió nada; vuelve a intentarlo.",
       "revokedServer": "{name} fue retirado: ya no puede entrar a tu cuenta ni enviar nada a tus computadoras.",
       "revokeAgentOnline": "{agent}: lo quitó de su lista.",
@@ -917,7 +920,8 @@
       "revoke": "Desconectar",
       "revokeConfirm": "¿Desconectar {name}? Dejará de tener acceso de inmediato.",
       "revokeYes": "Sí, desconectar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "revokeFailed": "No pudimos desconectarla. Vuelve a intentarlo."
     },
     "sharing": {
       "label": "Compartir tarjeta con apps conectadas",
@@ -1319,7 +1323,11 @@
       "signin_timeout": "El inicio de sesión tardó demasiado. Vuelve a intentarlo desde esa computadora.",
       "key_invalid": "Esa API key no funcionó. Revisa que esté completa y vigente.",
       "keychain_failed": "No pudimos guardar la llave en esa computadora.",
-      "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo."
+      "status_failed": "No pudimos revisar el estado. Vuelve a intentarlo.",
+      "launch_failed": "No se pudo abrir en esa computadora. Vuelve a intentarlo.",
+      "unsupported_platform": "Esta IA no está disponible para el sistema de esa computadora.",
+      "install_unavailable": "No hay un instalador oficial para esa computadora, o le falta la herramienta para instalarlo.",
+      "recipe_disabled": "Esta IA personalizada no está activada en esa computadora, o cambió desde que la activaste."
     },
     "search": "Buscar una IA",
     "noMatch": "Ninguna IA coincide con tu búsqueda.",
@@ -1329,9 +1337,10 @@
       "web": "Sitios web de IA"
     },
     "howTo": {
-      "agent": "Conecta {name} con tu API key ({key}) o con su propio inicio de sesión en tu computadora.",
+      "agent": "Conecta {name} con tu {key} o con su propio inicio de sesión en tu computadora.",
       "desktop": "Chalito abre {name} en tu computadora. Inicias sesión dentro de la app, como siempre.",
-      "web": "Chalito abre {name} en su propio perfil del navegador en tu computadora. Inicias sesión en el sitio real; tu sesión se queda en esa computadora."
+      "web": "Chalito abre {name} en su propio perfil del navegador en tu computadora. Inicias sesión en el sitio real; tu sesión se queda en esa computadora.",
+      "agentNoKey": "Conecta {name} con su propio inicio de sesión en tu computadora."
     },
     "launchNote": {
       "desktop": "Se abre en esa computadora.",
@@ -1340,6 +1349,48 @@
     "ownerOnly": "Iniciar sesión con tu plan: solo equipo de Chalito por ahora.",
     "keyWhere": "Tu {label} se consigue en {url}",
     "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa.",
-    "keySendAnyway": "Enviar de todos modos"
+    "keySendAnyway": "Enviar de todos modos",
+    "keyField": "Tu {label}",
+    "appNames": {
+      "windsurf": "Devin Desktop (antes Windsurf)",
+      "chatgpt-desktop": "ChatGPT (escritorio)",
+      "claude-desktop": "Claude (escritorio)"
+    },
+    "keyLabels": {
+      "aider": "API key de OpenAI (Aider también acepta las de Anthropic, OpenRouter y otras)",
+      "claude-code": "API key de Anthropic",
+      "codex": "API key de OpenAI",
+      "copilot-cli": "token de acceso personal específico de GitHub con el permiso «Copilot Requests»",
+      "cursor-cli": "API key de Cursor",
+      "gemini": "API key de Gemini",
+      "grok": "API key de xAI",
+      "mistral-vibe": "API key de Mistral",
+      "qwen-code": "API key compatible con OpenAI (define también OPENAI_BASE_URL y OPENAI_MODEL)"
+    }
+  },
+  "meta": {
+    "home": "Chalito",
+    "settings": "Ajustes de Chalito",
+    "inbox": "Bandeja · Chalito",
+    "onboarding": "Primeros pasos · Chalito",
+    "connectors": "Apps conectadas · Chalito",
+    "credits": "Créditos · Chalito",
+    "download": "Descargar Chalito",
+    "devices": "Dispositivos · Chalito",
+    "addDevice": "Añadir un dispositivo · Chalito",
+    "mesas": "Mesas · Chalito",
+    "mesa": "Mesa · Chalito",
+    "rooms": "Salas · Chalito",
+    "room": "Sala · Chalito",
+    "sessions": "Sesiones · Chalito",
+    "newSession": "Nueva sesión · Chalito",
+    "session": "Sesión · Chalito",
+    "store": "Tienda · Chalito",
+    "character": "Crea tu personaje · Chalito",
+    "usage": "Uso · Chalito",
+    "link": "Vincular · Chalito",
+    "approval": "Aprobación · Chalito",
+    "notification": "Aviso · Chalito",
+    "consent": "Autorizar app · Chalito"
   }
 }
