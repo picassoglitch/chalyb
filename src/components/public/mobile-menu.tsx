@@ -24,7 +24,9 @@ export function MobileMenu({
 }: {
   links: Item[];
   login: { href: string; label: string };
-  cta: { href: string; label: string };
+  /** `track`: the analytics tag (data-cta); omitted when signed in, where
+   *  the button isn't a trial CTA. */
+  cta: { href: string; label: string; track?: string };
   labels: { open: string; close: string; aria: string };
 }) {
   const [open, setOpen] = useState(false);
@@ -106,7 +108,7 @@ export function MobileMenu({
               href={cta.href as Route}
               className="ch-btn ch-btn--primary ch-btn--xl"
               onClick={() => setOpen(false)}
-              data-cta="menu_trial"
+              data-cta={cta.track}
             >
               {cta.label}
             </Link>
