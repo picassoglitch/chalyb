@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
 import { cancelPreapproval } from '@/lib/payments/subscription-sync';
 import { track } from '@/lib/analytics/track';
+import { notify } from '@/lib/notifications/notify';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import type { SessionUser } from '@/lib/auth/session';
 import { recordConsent, requestContext, UI_VERSION } from './consent';
@@ -139,12 +140,32 @@ export async function cancelForUser(
       details: { cause: 'cancel', mp_preapproval_id: preapprovalId, effective_at: accessUntil ?? '' },
     }).catch(() => {});
   }
-  const consent = await recordConsent({
-    ...base,
-    event_type: 'cancellation_requested',
-    button_label: opts.buttonLabel,
-    details: { folio_cancelacion: folio, access_until: accessUntil },
-  });
+  // Mercado Pago has already stopped charging: a failure to store the
+  // evidence must not turn a done cancellation into an error the customer
+  // reads as "not cancelled". The admin is told to record it by hand.
+  let consentId: string | null = null;
+  try {
+    const consent = await recordConsent({
+      ...base,
+      event_type: 'cancellation_requested',
+      button_label: opts.buttonLabel,
+      details: { folio_cancelacion: folio, access_until: accessUntil },
+    });
+    consentId = consent.consent_id;
+  } catch (err) {
+    console.error(
+      '[billing/cancel] cancellation evidence not stored',
+      { folio, preapprovalId },
+      err,
+    );
+    await notify({
+      severity: 'critical',
+      title: 'Cancelación sin evidencia guardada',
+      body: `Folio ${folio} · suscripción ${preapprovalId} · ya cancelada en Mercado Pago`,
+      href: '/dashboard/dinero',
+      source: 'billing.cancel',
+    });
+  }
 
   const email = target.email;
   let messageId: string | null = null;
@@ -174,7 +195,7 @@ export async function cancelForUser(
     subscription_id: (row.id as string | undefined) ?? null,
     requested_at: now.toISOString(),
     access_until: accessUntil,
-    consent_id: consent.consent_id,
+    consent_id: consentId,
     email_message_id: messageId,
   });
   void track('cancel', {
