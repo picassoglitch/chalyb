@@ -98,8 +98,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ignored: n.topic }, { status: 200 });
   }
   if (!n.dataId) {
+    // No retry can add the id: acknowledge so MP doesn't retry it for days.
     console.error('[mp/webhook] notification without an id', log);
-    return NextResponse.json({ error: 'missing id' }, { status: 400 });
+    return NextResponse.json({ ignored: 'missing id' }, { status: 200 });
   }
 
   const signatureHeader = req.headers.get('x-signature');
