@@ -101,7 +101,7 @@ export async function LegalDocPage({
     return (
       <LegalPage
         title={t(`${MESSAGE_KEY[doc]}.title`)}
-        lastUpdated={t('doc.reviewLine')}
+        meta={t('doc.reviewLine')}
         isAuthenticated={user !== null}
       >
         <p className="legal-callout" role="note">
@@ -129,7 +129,7 @@ export async function LegalDocPage({
   return (
     <LegalPage
       title={title && title.t === 'h' ? inlineText(title.c) : t(`${MESSAGE_KEY[doc]}.title`)}
-      lastUpdated={t('doc.versionLine', { version, fecha: effective })}
+      meta={t('doc.versionLine', { version, fecha: effective })}
       isAuthenticated={user !== null}
     >
       {locale !== 'es' && (

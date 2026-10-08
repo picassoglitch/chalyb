@@ -61,3 +61,15 @@ test('legal prose does not use overflow-wrap:anywhere (broke table words mid-wor
   assert.doesNotMatch(css, /overflow-wrap:\s*anywhere/);
   assert.match(css, /\.legal-prose \.legal-table \{\s*overflow-x: auto;/);
 });
+
+test('"Última actualización" label only precedes an actual date', () => {
+  const page = read('src/components/legal/legal-page.tsx');
+  assert.match(page, /lastUpdated \?/);
+  for (const p of [
+    'src/components/legal/legal-changes-page.tsx',
+    'src/components/legal/legal-doc-page.tsx',
+    'src/app/[locale]/derechos-de-autor/page.tsx',
+  ]) {
+    assert.doesNotMatch(read(p), /lastUpdated=\{t\('(doc\.)?(versionLine|reviewLine)'|lastUpdated=\{t\('policy'\)\}/, p);
+  }
+});
