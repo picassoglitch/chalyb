@@ -2,6 +2,7 @@
 // en TikTok" (TOOLS-SPEC §4.2). Only for an account the person connected.
 
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { isJobHidden } from '@/lib/legal/removals';
 import { toolRoute } from '@/lib/tools/bff-route';
 import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import {
@@ -26,7 +27,7 @@ export const POST = toolRoute(
     if (!platform || !accounts.some((x) => x.platform === platform && x.connected))
       throw new NotFoundError('account');
     const clip = await a.getClip(session.user.id, params.clipId ?? '', signal);
-    if (!clip) throw new NotFoundError('clip');
+    if (!clip || (await isJobHidden(session.user.id, clip.jobId))) throw new NotFoundError('clip');
     return a.publishClip(session.user.id, clip.id, platform, signal);
   },
 );

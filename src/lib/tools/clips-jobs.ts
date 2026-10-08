@@ -8,7 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { track } from '@/lib/analytics/track';
 import { getClipsAdapter } from './adapters/clips';
 import { isContentBlocked } from '@/lib/legal/legal-server';
-import { isJobHidden } from '@/lib/legal/removals';
+import { isJobHidden, withoutHiddenJobs } from '@/lib/legal/removals';
 import { refreshClipJob, submitClipJob, type JobPolicyDeps } from './adapters/run-job';
 import type { ClipJob, ClipsAdapter, CreateClipJobInput } from './adapters/types';
 
@@ -77,7 +77,8 @@ export async function listClipJobs(userId: string, limit = 20): Promise<ClipJob[
   const adapter = getClipsAdapter();
   if (!adapter) return [];
   const deps = policyDeps(adapter);
-  const jobs = await adapter.listJobs(userId, limit);
+  // Removed after a copyright notice: never listed (Uso aceptable §5.2).
+  const jobs = await withoutHiddenJobs(userId, await adapter.listJobs(userId, limit), (j) => j.id);
   return Promise.all(
     jobs.map(async (j) => (j.settled ? j : ((await refreshClipJob(deps, userId, j.id)) ?? j))),
   );
