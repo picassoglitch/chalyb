@@ -57,3 +57,11 @@ test('a failed proration refund reaches the admin list', () => {
     /proration refund failed — refund by hand[\s\S]{0,200}await notify\(\{\s*severity: 'critical'/,
   );
 });
+
+test('webhook: no MP access token asks MP to retry (503), never drops with 200', () => {
+  const s = src('src/app/api/mp/webhook/route.ts');
+  assert.match(
+    s,
+    /if \(!isMercadoPagoConfigured\(\)\) \{[\s\S]{0,500}\{ error: 'mp not configured' \}, \{ status: 503 \}/,
+  );
+});
