@@ -21,7 +21,12 @@ import { subscriptionActiveTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
-import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
+import {
+  authorizedPaymentStatusToChargeStatus,
+  ledgerStatus,
+  paymentStatusToChargeStatus,
+  type ChargeStatus,
+} from './order-charge';
 import { gatePreapproval } from './webhook-verify';
 import {
   PRICING,
@@ -404,12 +409,20 @@ export async function recordAuthorizedPayment(
   // and writing it raw is what made a settled monthly charge read as
   // "processed" — invisible to every `status = 'approved'` filter on
   // /app/billing and in the revenue queries. Normalise before it is stored.
-  const paymentStatus: string = ap.payment?.status
+  const paymentStatus: ChargeStatus = ap.payment?.status
     ? paymentStatusToChargeStatus(ap.payment.status)
     : authorizedPaymentStatusToChargeStatus(ap.status);
   // 'scheduled' means Mercado Pago has not tried the card yet: there is no
   // payment to record, only a date. Everything else has a payment id.
   if (paymentId) {
+    // What the ledger already says about this charge: an unmapped status
+    // never overwrites a known one (same rule as every other ledger writer).
+    const { data: existing } = await admin
+      .from('payments')
+      .select('status')
+      .eq('mp_payment_id', String(paymentId))
+      .maybeSingle();
+    const previousLedgerStatus = (existing?.status as string | null | undefined) ?? null;
     const { error } = await admin.from('payments').upsert(
       {
         user_id: ref.userId,
@@ -420,7 +433,7 @@ export async function recordAuthorizedPayment(
         amount_cents: Math.round((ap.transaction_amount ?? 0) * 100),
         iva_cents: ivaPortion(Math.round((ap.transaction_amount ?? 0) * 100)),
         currency: ap.currency_id ?? 'MXN',
-        status: paymentStatus,
+        status: ledgerStatus(paymentStatus, previousLedgerStatus),
         raw: ap as unknown as Record<string, unknown>,
       },
       { onConflict: 'mp_payment_id' },
