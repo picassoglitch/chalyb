@@ -230,3 +230,19 @@ export const withTimeout = <T>(p: PromiseLike<T>, ms: number): Promise<T> =>
       },
     );
   });
+
+/** The slice of a next-intl translator (`chalito.connect`) the catalog copy needs. */
+export interface ConnectText {
+  (key: string): string;
+  has(key: string): boolean;
+}
+
+/**
+ * The catalog is generated in English (chalito recipes/catalog.json): an app's display name and its
+ * key's label come from `chalito.connect.appNames` / `keyLabels` when translated, else as-is.
+ */
+export const appName = (t: ConnectText, app: Pick<CatalogApp, "id" | "name">): string =>
+  t.has(`appNames.${app.id}`) ? t(`appNames.${app.id}`) : app.name;
+
+export const keyLabel = (t: ConnectText, app: Pick<CatalogApp, "id" | "apiKey">): string | null =>
+  !app.apiKey ? null : t.has(`keyLabels.${app.id}`) ? t(`keyLabels.${app.id}`) : app.apiKey.label;

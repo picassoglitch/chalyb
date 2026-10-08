@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { NotificationRedirect } from '@/components/tools/chalito/NotificationRedirect';
+import { chalitoMetadata } from '@/lib/chalito/meta';
+
+export const generateMetadata = chalitoMetadata('notification');
 
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
 

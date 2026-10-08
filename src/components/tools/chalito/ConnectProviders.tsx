@@ -10,7 +10,9 @@ import {
   POLL_FAST_MS,
   POLL_SLOW_MS,
   actionsFor,
+  appName,
   indexConnections,
+  keyLabel,
   latestAt,
   pendingOutcome,
   signinGate,
@@ -178,12 +180,17 @@ export const ConnectProviders = ({
     for (const c of computers) if (trusted(c.deviceId)) void send(c.deviceId, "*", "status");
   };
 
-  const appLine = (a: CatalogApp) =>
-    LEGACY_COPY[a.id]
-      ? ti(`${LEGACY_COPY[a.id]}.howTo`)
-      : t(`howTo.${a.group}`, { name: a.name, key: a.apiKey?.label ?? "" });
+  const appLine = (a: CatalogApp) => {
+    if (LEGACY_COPY[a.id]) return ti(`${LEGACY_COPY[a.id]}.howTo`);
+    const key = keyLabel(t, a);
+    // An agent without an API key signs in only: no empty "()" for the key.
+    if (a.group === "agent" && !key) return t("howTo.agentNoKey", { name: appName(t, a) });
+    return t(`howTo.${a.group}`, { name: appName(t, a), key: key ?? "" });
+  };
   const q = query.trim().toLowerCase();
-  const shown = q ? apps.filter((a) => `${a.name} ${a.vendor} ${a.id}`.toLowerCase().includes(q)) : apps;
+  const shown = q
+    ? apps.filter((a) => `${a.name} ${appName(t, a)} ${a.vendor} ${a.id}`.toLowerCase().includes(q))
+    : apps;
   const grouped = GROUPS.map((g) => ({ group: g, apps: shown.filter((a) => a.group === g) })).filter(
     (g) => g.apps.length > 0,
   );
@@ -218,7 +225,7 @@ export const ConnectProviders = ({
 
   const howTo = sections((a) => (
     <li key={a.id} className="ch-card ch-chl-card ch-chl-card--sub" data-app={a.id}>
-      <p className="ch-chl-strong">{a.name}</p>
+      <p className="ch-chl-strong">{appName(t, a)}</p>
       <p className="ch-chl-small" data-testid={`howto-${a.id}`}>
         {appLine(a)}
       </p>
@@ -258,7 +265,7 @@ export const ConnectProviders = ({
       {sections((a) => (
         <li key={a.id} className="ch-card ch-chl-card ch-chl-card--sub ch-chl-divided" data-app={a.id}>
           <div>
-            <p className="ch-chl-strong">{a.name}</p>
+            <p className="ch-chl-strong">{appName(t, a)}</p>
             <p className="ch-chl-small" data-testid={`howto-${a.id}`}>
               {appLine(a)}
             </p>
@@ -312,7 +319,7 @@ const ComputerRow = ({
 }) => {
   const t = useTranslations("chalito.connect");
   const ti = useTranslations("chalito.integrations");
-  const name = app.name;
+  const name = appName(t, app);
   const busy = !!pending && !pending.failed;
   const actions = actionsFor(status, app);
   const gate = signinGate(app.planSignin);
@@ -386,7 +393,7 @@ const ComputerRow = ({
           ) : null}
           {actions.includes("launch") ? <p className="ch-muted">{t(`launchNote.${app.group}`)}</p> : null}
           {app.apiKey && actions.includes("api_key") ? (
-            <p className="ch-muted">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p>
+            <p className="ch-muted">{t("keyWhere", { label: keyLabel(t, app) ?? "", url: app.apiKey.docsUrl })}</p>
           ) : null}
           {actions.includes("install") ? <p className="ch-muted">{t("installNote")}</p> : null}
         </>

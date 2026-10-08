@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import { SettingsPanel } from "@chalito/ui";
-import { env } from "@/lib/chalito/web/env";
 import { useChalito } from "@/lib/chalito/provider";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, chalitoPath } from "@/lib/chalito/navigation";
@@ -61,7 +60,8 @@ export const Settings = () => {
         values={values}
         onChange={set}
         providerLabel={(p) => ti(`${p}.name`)}
-        hubPlansUrl={env.hubUrl || "#"}
+        // Inside the hub: its plans page (env.hubUrl alone is the landing page, or "#" when unset).
+        hubPlansUrl={getPathname({ href: "/app/planes" as Parameters<typeof getPathname>[0]["href"], locale })}
         usageHref={getPathname({ href: chalitoPath("/uso") as Parameters<typeof getPathname>[0]["href"], locale })}
         phoneVerifier={phoneVerifier}
         companionExtra={<CreateCharacter />}

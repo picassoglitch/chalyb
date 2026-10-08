@@ -18,6 +18,7 @@ import {
 import { useChalito } from "@/lib/chalito/provider";
 import { useMyCard } from "@/lib/chalito/useMyCard";
 import { SignInLink } from "./SignInLink";
+import { intlLocale, tokenFormat } from "@/lib/chalito/format";
 
 const EMOTIONS = ["neutral", "happy", "sad", "surprised", "tired"] as const;
 const POLL_MS = 3000;
@@ -192,7 +193,7 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
     if (!photo || !attestationOk(attest)) return;
     setBusy(true);
     setNote(null);
-    if (onboarding && !(await onboarding.ensureCompanion())) {
+    if (onboarding && !(await onboarding.ensureCompanion().catch(() => false))) {
       setBusy(false);
       return setNote({ kind: "retry" });
     }
@@ -254,8 +255,8 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
     } else setDeleteNote(r === "in_flight" ? "inFlight" : r);
   };
 
-  const tokens = new Intl.NumberFormat(locale);
-  const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
+  const tokens = tokenFormat(locale);
+  const dates = new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium" });
   const under13 = attest.ageBand === "under_13";
   const card = phase.kind === "done" ? phase.creation.card : undefined;
   const Title = page ? "h2" : "h3";
@@ -457,7 +458,11 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
               accept="image/png,image/jpeg,image/webp"
               className="ch-sr"
               data-testid="create-character-file"
-              onChange={(e) => pick(e.currentTarget.files?.[0] ?? null)}
+              onChange={(e) => {
+                pick(e.currentTarget.files?.[0] ?? null);
+                // Picking the same file again (after a bad pick, or for another character) must fire again.
+                e.currentTarget.value = "";
+              }}
             />
           </label>
           {preview ? (

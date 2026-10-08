@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocale, tokenFormat } from "@/lib/chalito/format";
 import type { Balance } from "@/lib/chalito/web/balance";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito } from "@/lib/chalito/provider";
@@ -17,7 +18,7 @@ export const RECHARGE_PATH = "/app/usage";
  */
 const BalanceCard = () => {
   const t = useTranslations("chalito.credits.balance");
-  const format = useFormatter();
+  const locale = useLocale();
   const { balance } = useChalito();
   const [b, setB] = useState<Balance | "loading" | "unavailable" | "error">("loading");
   useEffect(() => {
@@ -29,7 +30,9 @@ const BalanceCard = () => {
     };
   }, [balance]);
   if (!balance) return null;
-  const n = (v: number) => format.number(v);
+  const tokens = tokenFormat(locale);
+  const n = (v: number) => tokens.format(v);
+  const day = (ms: number) => new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium" }).format(ms);
   return (
     <section className="ch-card ch-chl-card" data-testid="credits-balance">
       <h3 className="ch-ghead">{t("title")}</h3>
@@ -58,7 +61,7 @@ const BalanceCard = () => {
               </>
             ) : null}
             <dt className="ch-muted">
-              {t("used", { date: format.dateTime(b.periodStart, { dateStyle: "medium" }) })}
+              {t("used", { date: day(b.periodStart) })}
             </dt>
             <dd data-testid="balance-used">{t("tokens", { tokens: n(b.monthlyUsed) })}</dd>
             {b.reserved > 0 ? (

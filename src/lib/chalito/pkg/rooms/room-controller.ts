@@ -261,7 +261,7 @@ export const roomList = async (
   return out;
 };
 
-export type JoinError = "bad_code" | "full" | "rate_limited" | "failed";
+export type JoinError = "bad_code" | "full" | "already" | "rate_limited" | "failed";
 
 /** Join with a typed invite code. The room key is wrapped to this device next, by a member. */
 export const joinRoom = async (
@@ -279,6 +279,8 @@ export const joinRoom = async (
     // An unknown, used-up or expired invite: 400/404/410; the owner's plan caps members: 402.
     if (status === 400 || status === 404 || status === 410) return { ok: false, reason: "bad_code" };
     if (status === 402) return { ok: false, reason: "full" };
+    // The database's PT409 "already a member": this companion is in that room already.
+    if (status === 409) return { ok: false, reason: "already" };
     if (status === 429) return { ok: false, reason: "rate_limited" };
     return { ok: false, reason: "failed" };
   }

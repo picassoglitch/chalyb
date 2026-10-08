@@ -104,6 +104,7 @@
   "onboarding": {
     "title": "Get started",
     "progress": "Step {step} of {total}",
+    "finishFailed": "We couldn't save your setup. Try again.",
     "signIn": {
       "title": "Sign in",
       "body": "Chalito uses your Chalyb account. No new password needed.",
@@ -323,6 +324,7 @@
         "not_found": "Not found.",
         "rate_limited": "Too many reports in a row; wait a moment.",
         "bad_code": "That code isn't valid or was already used.",
+        "already": "You're already in that room: find it in your list.",
         "full": "The room is full.",
         "no_key": "You don't have the room key yet.",
         "failed": "That didn't work. Try again.",
@@ -717,6 +719,7 @@
         "missingStepUp": "{computer} refused a new device because the approval didn't include your passkey. Approve it again with your passkey.",
         "refused": "{computer} refused a new device: the approval wasn't valid. Approve it again."
       },
+      "thisDevice": "This device",
       "revokeFailed": "We couldn't revoke it. Nothing changed; try again.",
       "revokedServer": "{name} was revoked: it can no longer sign in to your account or send anything to your computers.",
       "revokeAgentOnline": "{agent}: removed it from its list.",
@@ -917,7 +920,8 @@
       "revoke": "Disconnect",
       "revokeConfirm": "Disconnect {name}? It loses access immediately.",
       "revokeYes": "Yes, disconnect",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "revokeFailed": "We couldn't disconnect it. Try again."
     },
     "sharing": {
       "label": "Share card with connected apps",
@@ -1319,7 +1323,11 @@
       "signin_timeout": "The sign-in took too long. Try again from that computer.",
       "key_invalid": "That API key didn't work. Check it's complete and still valid.",
       "keychain_failed": "We couldn't save the key on that computer.",
-      "status_failed": "We couldn't check the status. Try again."
+      "status_failed": "We couldn't check the status. Try again.",
+      "launch_failed": "It couldn't open on that computer. Try again.",
+      "unsupported_platform": "This AI isn't available for that computer's system.",
+      "install_unavailable": "There's no official installer for that computer, or it's missing the tool to install it.",
+      "recipe_disabled": "This custom AI isn't turned on on that computer, or it changed since you turned it on."
     },
     "search": "Search for an AI",
     "noMatch": "No AI matches your search.",
@@ -1329,9 +1337,10 @@
       "web": "AI websites"
     },
     "howTo": {
-      "agent": "Connect {name} with your API key ({key}) or its own sign-in on your computer.",
+      "agent": "Connect {name} with your {key} or its own sign-in on your computer.",
       "desktop": "Chalito opens {name} on your computer. You sign in inside the app, as usual.",
-      "web": "Chalito opens {name} in its own browser profile on your computer. You sign in on the real site; your session stays on that computer."
+      "web": "Chalito opens {name} in its own browser profile on your computer. You sign in on the real site; your session stays on that computer.",
+      "agentNoKey": "Connect {name} with its own sign-in on your computer."
     },
     "launchNote": {
       "desktop": "It opens on that computer.",
@@ -1340,6 +1349,73 @@
     "ownerOnly": "Sign in with your plan: Chalito team only for now.",
     "keyWhere": "Get your {label} at {url}",
     "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
-    "keySendAnyway": "Send anyway"
+    "keySendAnyway": "Send anyway",
+    "keyField": "Your {label}",
+    "appNames": {
+      "windsurf": "Devin Desktop (formerly Windsurf)",
+      "chatgpt-desktop": "ChatGPT (desktop)",
+      "claude-desktop": "Claude (desktop)"
+    },
+    "keyLabels": {
+      "aider": "OpenAI API key (Aider also accepts Anthropic, OpenRouter and others)",
+      "claude-code": "Anthropic API key",
+      "codex": "OpenAI API key",
+      "copilot-cli": "GitHub fine-grained token with the “Copilot Requests” permission",
+      "cursor-cli": "Cursor API key",
+      "gemini": "Gemini API key",
+      "grok": "xAI API key",
+      "mistral-vibe": "Mistral API key",
+      "qwen-code": "OpenAI-compatible API key (also set OPENAI_BASE_URL and OPENAI_MODEL)"
+    }
+  },
+  "meta": {
+    "home": "Chalito",
+    "settings": "Chalito settings",
+    "inbox": "Inbox · Chalito",
+    "onboarding": "Get started · Chalito",
+    "connectors": "Connected apps · Chalito",
+    "credits": "Credits · Chalito",
+    "download": "Download Chalito",
+    "devices": "Devices · Chalito",
+    "addDevice": "Add a device · Chalito",
+    "mesas": "Mesas · Chalito",
+    "mesa": "Mesa · Chalito",
+    "rooms": "Rooms · Chalito",
+    "room": "Room · Chalito",
+    "sessions": "Sessions · Chalito",
+    "newSession": "New session · Chalito",
+    "session": "Session · Chalito",
+    "store": "Store · Chalito",
+    "character": "Create your character · Chalito",
+    "usage": "Usage · Chalito",
+    "link": "Link · Chalito",
+    "approval": "Approval · Chalito",
+    "notification": "Notice · Chalito",
+    "consent": "Authorize app · Chalito"
+  },
+  "download": {
+    "title": "Download Chalito for your computer",
+    "detected": "We detected {os}.",
+    "choose": "Choose your system",
+    "os": {
+      "windows": "Windows",
+      "macos": "macOS",
+      "linux": "Linux"
+    },
+    "kinds": {
+      "nsis": "Installer (.exe)",
+      "dmg": "Disk image (.dmg, Apple silicon and Intel)",
+      "appimage": "AppImage (any distribution)",
+      "deb": ".deb package (Debian, Ubuntu)",
+      "rpm": ".rpm package (Fedora, openSUSE)"
+    },
+    "version": "Version {version}",
+    "size": "{mb} MB",
+    "checksum": "SHA-256",
+    "unsigned": "This version isn't signed yet. Your system may show a warning when you open it.",
+    "smartscreen": "The first time, Windows may show SmartScreen (\"Windows protected your PC\"): choose \"More info\", then \"Run anyway\".",
+    "mobile": "Chalito for computers is for Windows, macOS and Linux. On your phone, use the web app.",
+    "unavailable": "Downloads aren't available yet.",
+    "loading": "Loading…"
   }
 }

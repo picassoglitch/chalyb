@@ -13,6 +13,7 @@ import {
 } from "@/lib/chalito/web/computer-control";
 import { confirmStepUp } from "./StepUpHost";
 import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
+import { useLiveSynced } from "@/lib/chalito/useLiveSynced";
 import { Loading } from "./Loading";
 import { Inbox as InboxIcon } from "lucide-react";
 import { Empty } from "./Empty";
@@ -295,8 +296,11 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
 
 export const Inbox = () => {
   const t = useTranslations("chalito.live.inbox");
+  const tl = useTranslations("chalito.live.session");
   const { approvals, notifications } = useLive();
   const { client } = useChalito();
+  const synced = useLiveSynced();
+  const [ackFailed, setAckFailed] = useState(false);
   const pending = approvals.filter((a) => a.status === "pending");
   const done = approvals.filter((a) => a.status !== "pending");
   const open = notifications.filter((n) => n.state === "pending");
@@ -317,12 +321,20 @@ export const Inbox = () => {
               <span>{t("notification", { count: Object.values(n.counts).reduce((x, y) => x + y, 0) })}</span>
               <button
                 className="ch-btn ch-btn--secondary ch-btn--compact ch-chl-push"
-                onClick={() => void client?.actions.ackNotification(n.nid)}
+                onClick={() => {
+                  setAckFailed(false);
+                  client?.actions.ackNotification(n.nid).catch(() => setAckFailed(true));
+                }}
               >
                 {t("ack")}
               </button>
             </div>
           ))}
+          {ackFailed ? (
+            <p role="alert" className="ch-err">
+              {tl("failed")}
+            </p>
+          ) : null}
         </section>
       ) : null}
       <section className="ch-chl-list" aria-labelledby="pending-h">
@@ -331,6 +343,8 @@ export const Inbox = () => {
         </h2>
         {pending.length ? (
           pending.map((a) => <ApprovalCard key={a.aid} a={a} />)
+        ) : !synced ? (
+          <Loading label={tl("loading")} rows={1} height={160} />
         ) : (
           <Empty icon={<InboxIcon />} title={t("empty")} body={t("emptyBody")} />
         )}
@@ -352,10 +366,12 @@ export const Inbox = () => {
 /** /a/[id]: one approval, wherever it came from (push, WhatsApp, a call). */
 export const ApprovalDeepLink = ({ aid }: { aid: string }) => {
   const t = useTranslations("chalito.live.approval");
-  const { approvals, status } = useLive();
+  const { approvals } = useLive();
+  // "live" comes before the first pull: "not found" only once it has landed.
+  const synced = useLiveSynced();
   const a = approvals.find((x) => x.aid === aid);
   if (a) return <ApprovalCard a={a} />;
-  return status === "live" ? (
+  return synced ? (
     <p className="ch-card ch-chl-card">{t("notFound")}</p>
   ) : (
     <Loading label={t("loading")} rows={1} height={160} />

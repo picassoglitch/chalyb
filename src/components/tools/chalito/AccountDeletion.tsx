@@ -71,7 +71,8 @@ export const AccountDeletion = () => {
 
   const download = async () => {
     setNote(null);
-    const blob = await account.export();
+    // The body can still fail mid-read (Response.blob rejects): a note, not an unhandled rejection.
+    const blob = await account.export().catch(() => "failed" as const);
     if (blob === "none" || blob === "failed") return setNote("export_failed");
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -119,15 +120,23 @@ export const AccountDeletion = () => {
             >
               {t("start")}
             </button>
-          ) : conn !== "ready" ? (
-            <p role="note">{t("needsPairing")}</p>
-          ) : !passkey.enrolled ? (
-            <p role="note">
-              {t("needsPasskey")}{" "}
-              <Link href="/dispositivos" className="ch-lnk">
-                {t("setUpPasskey")}
-              </Link>
-            </p>
+          ) : conn !== "ready" || !passkey.enrolled ? (
+            // Can't ask from here yet: say why, and keep a way back.
+            <>
+              {conn !== "ready" ? (
+                <p role="note">{t("needsPairing")}</p>
+              ) : (
+                <p role="note">
+                  {t("needsPasskey")}{" "}
+                  <Link href="/dispositivos" className="ch-lnk">
+                    {t("setUpPasskey")}
+                  </Link>
+                </p>
+              )}
+              <button className="ch-btn ch-btn--gray ch-btn--compact ch-chl-fit" onClick={() => setConfirming(false)}>
+                {t("back")}
+              </button>
+            </>
           ) : (
             <div className="ch-card ch-chl-card ch-chl-card--bad">
               <ul className="ch-chl-bullets">

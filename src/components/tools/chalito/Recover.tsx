@@ -26,7 +26,9 @@ export const Recover = () => {
     const clean = cleanRecoveryCode(code);
     if (!clean) return setState({ s: "error", reason: "format" });
     setState({ s: "busy" });
-    const r = await recover(clean, browserName(navigator.userAgent, locale));
+    const r = await recover(clean, browserName(navigator.userAgent, locale)).catch(
+      () => ({ ok: false, reason: "failed" }) as const,
+    );
     if (r.ok) return setState({ s: "idle" }); // the provider shows the new code
     setState(r.reason === "cooldown" ? { s: "cooldown", until: r.until } : { s: "error", reason: r.reason });
   };

@@ -93,6 +93,15 @@
   height: 20px;
   accent-color: var(--accent);
 }
+/* A choice that can't be picked right now (e.g. a Mesa's brains at the plan's cap): the whole row
+   reads as off, not just the browser's faded box, and the line under the list says why. */
+.chalyb-app .ch-chl-check:has(input:disabled) {
+  color: var(--ink3-text);
+  cursor: not-allowed;
+}
+.chalyb-app .ch-chl-check input:disabled {
+  cursor: not-allowed;
+}
 
 /* Native dialogs (step-up confirm, deletion). */
 .chalyb-app .ch-chl-dialog,

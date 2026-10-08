@@ -86,7 +86,7 @@ export const Mesas = () => {
         return {
           kind: "session" as const,
           pid: `session${i + 1}`,
-          name: safeName(s?.label ?? "", `Sesion ${i + 1}`),
+          name: safeName(s?.label ?? "", `Sesión ${i + 1}`),
           sid,
         };
       }),

@@ -2,7 +2,7 @@
 // Chalito's screens use their own paths ("/bandeja", "/r/<id>"). Inside the hub they live under
 // /app/chalito: these wrap the hub's locale-aware navigation and add the prefix, so the copied
 // components keep their hrefs unchanged.
-import type { ComponentProps } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 import type { Route } from 'next';
 import {
   Link as HubLink,
@@ -56,16 +56,21 @@ export const usePathname = (): string => {
   return p.startsWith(`${CHALITO_BASE}/`) ? p.slice(CHALITO_BASE.length) : p;
 };
 
+// Memoized on the hub router (itself stable), so an effect that depends on it (NewSession's
+// "go to the session once it appears") doesn't rerun, and push again, on every render.
 export const useRouter = () => {
   const r = hubUseRouter();
-  return {
-    ...r,
-    push: (href: Href, o?: Parameters<typeof r.push>[1]) =>
-      r.push(resolveHref(href) as Parameters<typeof r.push>[0], o),
-    replace: (href: Href, o?: Parameters<typeof r.replace>[1]) =>
-      r.replace(resolveHref(href) as Parameters<typeof r.replace>[0], o),
-    prefetch: (href: string) => r.prefetch(chalitoPath(href) as Route),
-  };
+  return useMemo(
+    () => ({
+      ...r,
+      push: (href: Href, o?: Parameters<typeof r.push>[1]) =>
+        r.push(resolveHref(href) as Parameters<typeof r.push>[0], o),
+      replace: (href: Href, o?: Parameters<typeof r.replace>[1]) =>
+        r.replace(resolveHref(href) as Parameters<typeof r.replace>[0], o),
+      prefetch: (href: string) => r.prefetch(chalitoPath(href) as Route),
+    }),
+    [r],
+  );
 };
 
 export const redirect = (args: { href: string; locale: string }) =>

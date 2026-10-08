@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { activityFor, companionOrDefault, onboardingActivity } from '../src/lib/chalito/companion';
+import { activityFor, companionOrDefault, homeHeroShown, onboardingActivity } from '../src/lib/chalito/companion';
 import es from '../src/lib/chalito/messages/es.json' with { type: 'json' };
 import en from '../src/lib/chalito/messages/en.json' with { type: 'json' };
 
@@ -25,4 +25,13 @@ test('each Chalito screen gives the companion something to do, with a line in es
     assert.ok((es.companion.do as Record<string, string>)[a.key], `es ${a.key}`);
     assert.ok((en.companion.do as Record<string, string>)[a.key], `en ${a.key}`);
   }
+});
+
+test('Inicio shows exactly one companion: the hero, or the floating one when the hero is off', () => {
+  // Owner decision 2026-10-05: every screen shows the picked companion. Signed out after
+  // onboarding there is no hero, so the floating one must stay (it used to hide on `onboarded`).
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: true, sessionStatus: 'signed_in' }), true);
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: true, sessionStatus: 'signed_out' }), false);
+  assert.equal(homeHeroShown({ settingsLoaded: false, onboarded: true, sessionStatus: 'signed_in' }), false);
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: false, sessionStatus: 'loading' }), false);
 });

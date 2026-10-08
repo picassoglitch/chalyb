@@ -82,7 +82,7 @@ export const OAuthConsent = () => {
   if (state === "missing" || state === "gone" || state === "error")
     return (
       <p role="alert" className="ch-card ch-chl-card ch-chl-card--bad">
-        {t(state)}
+        {t(state === "error" ? "error.error" : state)}
       </p>
     );
   if (!req) return <Loading label={t("loading")} />;

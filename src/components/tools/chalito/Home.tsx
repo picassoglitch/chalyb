@@ -8,6 +8,7 @@ import { companionName } from '@chalito/ui';
 import { Group, Row } from '@/components/ui/primitives';
 import { Link, chalitoPath } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
+import { homeHeroShown } from '@/lib/chalito/companion';
 import { useSession } from '@/lib/chalito/web/session';
 import type { AppLocale } from '@/i18n/locales';
 
@@ -33,7 +34,7 @@ export const Home = () => {
     : null;
   // After onboarding (owner decision 2026-10-06): the companion big, and one obvious next step,
   // a new session. The sections stay below it.
-  const ready = !!settings && onboarded && session.status !== 'signed_out';
+  const ready = homeHeroShown({ settingsLoaded: !!settings, onboarded, sessionStatus: session.status });
   return (
     <div className="ch-chl">
       {ready ? (
@@ -46,7 +47,7 @@ export const Home = () => {
             className="ch-btn ch-btn--primary ch-chl-cta"
             data-testid="home-talk"
           >
-            {t('talk', { name: settings.companionName.name })}
+            {t('talk', { name: settings?.companionName.name ?? PRODUCT_NAME })}
           </Link>
         </section>
       ) : (

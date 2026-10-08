@@ -53,6 +53,14 @@ const ACTIVITIES: [RegExp, Activity][] = [
   [/^\/(n|oauth)(\/|$)/, A('notice', 'surprised', 0.6)],
 ];
 
+/**
+ * Inicio shows the big companion (and its "Hablar con…" button) once settings are loaded, onboarding
+ * is done and the browser isn't signed out. The floating companion steps aside on exactly that
+ * condition, so Inicio always shows one, never two or none.
+ */
+export const homeHeroShown = (o: { settingsLoaded: boolean; onboarded: boolean; sessionStatus: string }): boolean =>
+  o.settingsLoaded && o.onboarded && o.sessionStatus !== "signed_out";
+
 const HOME = A('home', 'happy', 0.9);
 const FALLBACK = A('idle', 'relaxed', 0.7);
 
