@@ -27,6 +27,7 @@ import { listEngines } from '@/lib/data/engines';
 import { getPlatformTokenStats } from '@/lib/usage/platform-stats';
 import { PLATFORM_TIMEZONE, formatMxn } from '@/lib/billing/money';
 import { getMoneyThisMonth, getMoneyToday } from '@/lib/billing/money-data';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Ingresos por engine' };
 
@@ -41,6 +42,7 @@ function formatTokens(n: number): string {
 export default async function RevenuePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const [engines, tokenStats, today, month] = await Promise.all([
     listEngines(),

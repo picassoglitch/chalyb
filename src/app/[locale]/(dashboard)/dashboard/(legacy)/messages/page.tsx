@@ -1,9 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
-import { getSessionUser } from '@/lib/auth/session';
-import { isAdminRole } from '@/lib/billing/tiers';
 import {
   listAdminThreads,
   listThreadMessages,
@@ -18,6 +15,7 @@ import {
 import { MessageThread } from '@/components/messages/message-thread';
 import { AdminReplyComposer } from '@/components/messages/admin-reply-composer';
 import { InquiryActions } from '@/components/messages/inquiry-actions';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Mensajes — Administración' };
 
@@ -97,9 +95,7 @@ export default async function AdminMessagesPage({
   const { t: threadUserId, i: inquiryId } = await searchParams;
   setRequestLocale(locale);
 
-  const session = await getSessionUser();
-  if (!session) redirect('/sign-in?next=/dashboard/messages');
-  if (!isAdminRole(session.role)) redirect('/app');
+  await requireAdminPage();
 
   const [threads, inquiries] = await Promise.all([
     listAdminThreads(),

@@ -1,11 +1,13 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getAutomationCounts } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Automatizaciones' };
 
 export default async function AutomationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const c = await getAutomationCounts();
 
