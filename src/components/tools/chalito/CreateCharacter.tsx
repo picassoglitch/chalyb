@@ -68,7 +68,8 @@ export interface OnboardingHooks {
  * and the creation is started with useWhenReady: the server puts the card on the companion the
  * moment it succeeds, so the person can carry on with the next steps while it's drawn.
  *
- * "Tus personajes" lists the characters the person kept, each with "Eliminar mi personaje" behind an
+ * "Tus personajes" lists the characters the person kept, each with "Usar como mi compañero" (when the
+ * companion doesn't wear it already) and "Eliminar mi personaje" behind an
  * in-page confirmation (permanent; the drawings go; no tokens or free creation back). Deleting the
  * one the companion wears puts its roster avatar back everywhere (the card source is refreshed).
  *
@@ -225,13 +226,14 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
     setPhase({ kind: "working", creation: c === "error" ? r.creation : c });
   };
 
-  const use = async (creation: Creation) => {
+  /** Wear a creation: the one just made (`creation`), or one from "Tus personajes" (id only). */
+  const use = async (creationId: string, creation?: Creation) => {
     setBusy(true);
     setNote(null);
-    const r = await avatar.use(creation.creationId);
+    const r = await avatar.use(creationId);
     setBusy(false);
     if (r === "ok") {
-      setPhase({ kind: "done", creation, used: true });
+      if (creation) setPhase({ kind: "done", creation, used: true });
       // Everywhere the companion is drawn picks the new card up.
       void mine.refresh();
       void load();
@@ -318,7 +320,19 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
                       />
                     ) : null}
                     <span className="ch-chl-small">{t("kept.created", { date })}</span>
-                    {k.worn ? <span className="ch-pill ch-pill--ok">{t("kept.worn")}</span> : null}
+                    {k.worn ? (
+                      <span className="ch-pill ch-pill--ok">{t("kept.worn")}</span>
+                    ) : confirming !== k.creationId ? (
+                      <button
+                        type="button"
+                        className="ch-btn ch-btn--primary ch-btn--compact"
+                        disabled={busy}
+                        data-testid="kept-character-use"
+                        onClick={() => void use(k.creationId)}
+                      >
+                        {t("use")}
+                      </button>
+                    ) : null}
                     {confirming !== k.creationId ? (
                       <button
                         type="button"
@@ -500,7 +514,7 @@ export const CreateCharacter = ({ onboarding, page = false }: { onboarding?: Onb
               className="ch-btn ch-btn--primary ch-chl-fit"
               disabled={busy}
               data-testid="create-character-use"
-              onClick={() => void use(phase.creation)}
+              onClick={() => void use(phase.creation.creationId, phase.creation)}
             >
               {t("use")}
             </button>
