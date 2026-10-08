@@ -183,28 +183,16 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     replyTo: email,
   });
 
-  // The confirmation is best-effort — if it fails we still mark the form as
-  // successful because the lead made it to the inbox (the important half).
-  await sendEmail({
-    to: email,
-    subject: 'Recibimos tu mensaje · Chalyb',
-    html: confirm.html,
-    text: confirm.text,
-  });
-
-  if (!inboxResult.ok && inboxResult.reason !== 'not_configured') {
-    return { ok: false, errorKey: 'sendFailed' };
-  }
-
   // Persist to partner_inquiries so the admin inbox shows it even if the
   // notification email goes to spam / Resend is down. The table holds every
   // pane (client / partner / earn) — the pane column tags origin. We use
   // the service-role client because anon writes are blocked by RLS (only
   // admins read, only this server action writes).
   //
-  // Best-effort: log + ignore failures. Losing the row is bad UX but the
-  // email is the primary delivery channel — don't fail the submission
-  // because a DB blip happened.
+  // This runs BEFORE deciding the result: it used to run only after a
+  // successful inbox email, so the one case it exists for (the email failed)
+  // returned early and lost the lead.
+  let stored = false;
   try {
     const admin = createAdminClient();
     const { error: dbError } = await admin.from('partner_inquiries').insert({
@@ -217,6 +205,8 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
     });
     if (dbError) {
       console.warn('[contact] partner_inquiries insert failed:', dbError.message);
+    } else {
+      stored = true;
     }
   } catch (e) {
     console.warn(
@@ -224,6 +214,27 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
       e instanceof Error ? e.message : String(e),
     );
   }
+
+  // The message reached us if the inbox email went out (or Resend isn't
+  // configured, the dev case) or the row was stored. Only when neither
+  // happened does the visitor see an error (and no confirmation email that
+  // would contradict it).
+  const delivered = inboxResult.ok || inboxResult.reason === 'not_configured';
+  if (!delivered && !stored) {
+    return { ok: false, errorKey: 'sendFailed' };
+  }
+  if (!delivered) {
+    console.error('[contact] inbox email failed; the message is only in partner_inquiries');
+  }
+
+  // The confirmation is best-effort — if it fails we still mark the form as
+  // successful because the lead reached us (the important half).
+  await sendEmail({
+    to: email,
+    subject: 'Recibimos tu mensaje · Chalyb',
+    html: confirm.html,
+    text: confirm.text,
+  });
 
   // If Resend isn't configured (dev), still return ok — the warning in the
   // server log makes it visible. UX wise the user gets the success state.
