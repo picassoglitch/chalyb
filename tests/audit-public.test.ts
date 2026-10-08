@@ -55,3 +55,9 @@ test('legal TOC is not numbered twice when headings carry their own numbers', as
   assert.match(tsx, /legal-toc__plain/);
   assert.match(read('src/styles/chalyb-legal.css'), /\.legal-toc ol\.legal-toc__plain \{\s*list-style: none;/);
 });
+
+test('legal prose does not use overflow-wrap:anywhere (broke table words mid-word on phones)', () => {
+  const css = read('src/styles/chalyb-legal.css');
+  assert.doesNotMatch(css, /overflow-wrap:\s*anywhere/);
+  assert.match(css, /\.legal-prose \.legal-table \{\s*overflow-x: auto;/);
+});

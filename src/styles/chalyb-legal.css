@@ -38,7 +38,11 @@
   color: var(--ink2);
   font-size: 17px;
   line-height: 1.65;
-  overflow-wrap: anywhere;
+  /* break-word, not anywhere: `anywhere` also shrinks the min-content width
+     that tables size their columns from, so on phones the cells broke words
+     mid-word ("vendedo/r", "Versió/n"). break-word still wraps a long URL in
+     running text; a table wider than the screen scrolls inside .legal-table. */
+  overflow-wrap: break-word;
 }
 .chalyb-app .legal-prose h2 {
   color: var(--ink);
@@ -148,6 +152,7 @@
 .chalyb-app .legal-prose th,
 .chalyb-app .legal-prose td {
   text-align: left;
+  hyphens: manual;
   vertical-align: top;
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
