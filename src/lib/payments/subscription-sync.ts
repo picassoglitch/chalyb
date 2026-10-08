@@ -72,6 +72,11 @@ export type SyncOutcome =
   | { ok: true; status: PreapprovalStatus; applied: 'activate' | 'end' | 'none' }
   | { ok: false; reason: 'not_ours' | 'amount_mismatch' | 'db'; retry: boolean };
 
+/** Slack before an approved charge counts as an earlier cycle's: well under
+ *  the shortest billing cycle (a month), well over the gap between the dates
+ *  Mercado Pago reports for one and the same charge. */
+const EARLIER_CYCLE_SLACK_MS = 7 * 86_400_000;
+
 /**
  * Pull the preapproval from Mercado Pago and make our side match it.
  *
@@ -467,16 +472,26 @@ export async function recordAuthorizedPayment(
       ).toISOString();
       const storedAt = (subRow?.last_charge_at as string | null | undefined) ?? null;
       const olderThanStored = !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt);
-      await admin
-        .from('subscriptions')
-        .update({
-          ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
-          grace_ends_at: null,
-          // The next charge needs its own notice.
-          reminder_delivered_at: null,
-          charge_hold_until: null,
-        })
-        .eq('mp_preapproval_id', preapprovalId);
+      // A charge from an EARLIER cycle (a replay, or a notice that arrived
+      // after the next charge was recorded) says nothing about the current
+      // cycle: it must not lift a bounce hold, settle a grace window or
+      // re-arm a reminder that belong to the later charge. A few days of
+      // slack keeps the same charge reported with slightly different dates
+      // (debit_date vs MP's summary) counting as the current one.
+      const earlierCycle =
+        !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt) - EARLIER_CYCLE_SLACK_MS;
+      if (!earlierCycle) {
+        await admin
+          .from('subscriptions')
+          .update({
+            ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
+            grace_ends_at: null,
+            // The next charge needs its own notice.
+            reminder_delivered_at: null,
+            charge_hold_until: null,
+          })
+          .eq('mp_preapproval_id', preapprovalId);
+      }
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
       if (subRow?.plan_key === 'pro_lealtad') {
         await onLealtadCharge({
