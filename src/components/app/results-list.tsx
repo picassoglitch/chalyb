@@ -18,8 +18,10 @@ export function ResultsList({ items, toolNames }: { items: ResultItem[]; toolNam
   const [q, setQ] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const shown = filterResults(items, chip, q);
+  // Pinned zone: the server (UTC) and the browser must print the same time,
+  // or hydration fails.
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+    new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City' }).format(new Date(iso));
 
   async function share(url: string, id: string) {
     const abs = new URL(url, window.location.origin).href;

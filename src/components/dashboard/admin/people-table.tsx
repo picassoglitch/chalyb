@@ -80,6 +80,7 @@ export function PeopleTable({ people }: { people: PersonVM[] }) {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
+          timeZone: 'America/Mexico_City',
         }).format(new Date(iso))
       : '—';
   const money = (c: number) =>
