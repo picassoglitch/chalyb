@@ -25,3 +25,7 @@ test('every place that lists or serves a clip skips jobs removed after a copyrig
     assert.match(src(p), /isJobHidden\(session\.user\.id, clip\.jobId\)/, p);
   }
 });
+
+test('Tus herramientas status lines never call a tool the hub does not run', () => {
+  assert.match(src('src/lib/tools/status-lines.ts'), /if \(!hubRunsTool\(slug\)\) return;/);
+});
