@@ -81,7 +81,7 @@ export function TeamReconcileEngine() {
             top: 'calc(100% + 8px)',
             right: 0,
             zIndex: 50,
-            width: 360,
+            width: 'min(360px, calc(100vw - 32px))',
             padding: 16,
             background: 'var(--cc-panel-2)',
             border: '1px solid var(--cc-line-2)',

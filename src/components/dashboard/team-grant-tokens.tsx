@@ -134,7 +134,7 @@ export function TeamGrantTokens({ userId, userName, bonusBalance }: Props) {
             top: 'calc(100% + 6px)',
             right: 0,
             zIndex: 50,
-            width: 280,
+            width: 'min(280px, calc(100vw - 32px))',
             padding: 14,
             background: 'var(--cc-panel-2)',
             border: '1px solid var(--cc-line-2)',
