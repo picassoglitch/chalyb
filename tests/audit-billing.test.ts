@@ -40,3 +40,12 @@ test('an approved authorized_payment never rolls last_charge_at back', () => {
   assert.match(s, /const olderThanStored = !!storedAt && Date\.parse\(chargeAt\) < Date\.parse\(storedAt\);/);
   assert.match(s, /\.\.\.\(olderThanStored \? \{\} : \{ last_charge_at: chargeAt \}\)/);
 });
+
+test('cancel: missing evidence after MP cancelled still reports the cancellation', () => {
+  const s = src('src/lib/billing/billing-actions.ts');
+  assert.match(
+    s,
+    /let consentId: string \| null = null;\s*try \{\s*const consent = await recordConsent\(\{[\s\S]{0,200}'cancellation_requested'/,
+  );
+  assert.match(s, /consent_id: consentId,/);
+});
