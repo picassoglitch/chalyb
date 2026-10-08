@@ -21,9 +21,12 @@ test('legacy monthly checkout is retired: page redirects, actions refuse', () =>
 test('syncSubscription asks for a retry when the row is not written yet', () => {
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /if \(beforeErr\) \{[\s\S]{0,140}retry: true/);
-  assert.match(s, /if \(!before && status === 'authorized'\) \{[\s\S]{0,200}retry: true/);
-  // The retry check runs before the price gate.
-  assert.ok(s.indexOf("!before && status === 'authorized'") < s.indexOf('gatePreapproval({'));
+  // Whatever the status: a pending notice must not write a row without plan_key.
+  assert.match(s, /if \(!before\) \{[\s\S]{0,200}retry: true/);
+  assert.doesNotMatch(s, /!before && status === 'authorized'/);
+  // The retry check runs before the price gate and before the upsert.
+  assert.ok(s.indexOf('if (!before) {') < s.indexOf('gatePreapproval({'));
+  assert.ok(s.indexOf('if (!before) {') < s.indexOf(".from('subscriptions').upsert("));
   const start = src('src/lib/billing/start-subscription.ts');
   assert.match(start, /const \{ error: rowErr \} = await admin\.from\('subscriptions'\)\.upsert/);
   assert.match(start, /if \(rowErr\) \{[\s\S]{0,300}cancelPreapproval\(preapprovalId\)/);
