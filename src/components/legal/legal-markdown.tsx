@@ -10,6 +10,8 @@ function inlines(c: Inline[]): ReactNode[] {
     switch (n.t) {
       case 'text':
         return n.v;
+      case 'code':
+        return <code key={i}>{n.v}</code>;
       case 'b':
         return <strong key={i}>{inlines(n.c)}</strong>;
       case 'i':
@@ -107,6 +109,10 @@ export function tocEntries(list: Block[]): { id: string; text: string }[] {
 
 export function LegalMarkdown({ blocks: list, tocLabel }: { blocks: Block[]; tocLabel: string }) {
   const toc = tocEntries(list);
+  // Law's section headings carry their own numbers ("1. Datos del vendedor"),
+  // so the <ol>'s markers would number them twice ("1. 1. …"). Hide the
+  // markers when every entry is already numbered; keep them otherwise.
+  const selfNumbered = toc.every((e) => /^\d/.test(e.text));
   return (
     <>
       {toc.length > 2 && (
@@ -114,7 +120,7 @@ export function LegalMarkdown({ blocks: list, tocLabel }: { blocks: Block[]; toc
           <strong style={{ color: 'var(--ink)', display: 'block', marginBottom: 8 }}>
             {tocLabel}
           </strong>
-          <ol>
+          <ol className={selfNumbered ? 'legal-toc__plain' : undefined}>
             {toc.map((e) => (
               <li key={e.id}>
                 <a href={`#${e.id}`}>{e.text}</a>

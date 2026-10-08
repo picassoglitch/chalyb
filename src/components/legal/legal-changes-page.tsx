@@ -34,7 +34,7 @@ export async function LegalChangesPage({ doc, params }: { doc: ReacceptDoc } & P
   return (
     <LegalPage
       title={t('title')}
-      lastUpdated={t('versionLine', { version, fecha })}
+      meta={t('versionLine', { version, fecha })}
       isAuthenticated={user !== null}
     >
       {meta.changes.length ? (

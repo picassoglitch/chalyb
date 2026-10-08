@@ -24,6 +24,7 @@
 // Reference: https://nextjs.org/docs/app/building-your-application/routing/error-handling
 
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 
 export default function AppError({
@@ -33,6 +34,7 @@ export default function AppError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('app.error');
   const isDev = process.env.NODE_ENV !== 'production';
   return (
     <div
@@ -64,7 +66,7 @@ export default function AppError({
       </div>
       <div>
         <h2 style={{ fontSize: 22, fontWeight: 600, margin: 0, marginBottom: 6 }}>
-          Algo se rompió en esta pantalla
+          {t('title')}
         </h2>
         <p
           style={{
@@ -75,8 +77,7 @@ export default function AppError({
             margin: 0,
           }}
         >
-          Un error de servidor cortó la carga. La sesión sigue activa — puedes
-          recargar o irte a otra parte del workspace mientras lo investigamos.
+          {t('body')}
         </p>
       </div>
 
@@ -93,7 +94,7 @@ export default function AppError({
             letterSpacing: '0.04em',
           }}
         >
-          ID del error: <code style={{ color: 'var(--cc-txt-2)' }}>{error.digest}</code>
+          {t('id')} <code style={{ color: 'var(--cc-txt-2)' }}>{error.digest}</code>
         </div>
       )}
 
@@ -133,7 +134,7 @@ export default function AppError({
             cursor: 'pointer',
           }}
         >
-          ↻ Reintentar
+          {t('retry')}
         </button>
         <Link
           href={'/app' as Route}
@@ -148,7 +149,7 @@ export default function AppError({
             textDecoration: 'none',
           }}
         >
-          Volver al inicio
+          {t('home')}
         </Link>
       </div>
     </div>

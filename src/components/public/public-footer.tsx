@@ -10,6 +10,7 @@ import { Logo } from '@/components/ui/primitives';
 import { legalEntity } from '@/lib/billing/legal-entity';
 import { listActiveTools } from '@/lib/tools/public-tools-server';
 import { LEGAL_PAGES } from '@/lib/legal/public-pages';
+import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 import { CookieSettingsButton } from './cookie-banner';
 
 export async function PublicFooter({ onLanding = false }: { onLanding?: boolean }) {
@@ -78,9 +79,7 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
           <p>{t('copy', { year: new Date().getFullYear() })}</p>
           <p>{t('secure')}</p>
           <CookieSettingsButton className="pub-foot__cookies" />
-          <Link href="/" locale="en" hrefLang="en" className="pub-foot__lang" data-foot-target="en">
-            {t('lang')}
-          </Link>
+          <LanguageSwitcher />
         </div>
       </div>
     </footer>

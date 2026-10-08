@@ -28,10 +28,7 @@ export async function reprovisionEngine(engineId: string): Promise<ReprovisionRe
   const result = await retryEngineProvisioning(session.user.id, engineId);
   return result.ok
     ? { ok: true, externalUserId: result.externalUserId }
-    : {
-        ok: false,
-        externalUserId: null,
-        error:
-          'Provisioning falló. Revisa el log del dev server — busca líneas con [engine_subs] para el error exacto.',
-      };
+    : // The detail is in the server log ([engine_subs]); the button shows
+      // its own generic message.
+      { ok: false, externalUserId: null };
 }

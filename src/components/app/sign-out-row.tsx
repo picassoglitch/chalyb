@@ -3,8 +3,7 @@
 // "Cerrar sesión" as a Mi cuenta row.
 
 import { useState } from 'react';
-import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -22,7 +21,8 @@ export function SignOutRow() {
     } catch {
       // Land logged-out regardless; the next request re-reads the session.
     }
-    router.push('/' as Route);
+    // next-intl's router keeps the reader's language (/en, not the Spanish /).
+    router.push('/');
     router.refresh();
   }
 

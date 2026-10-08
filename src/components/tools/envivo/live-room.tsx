@@ -215,7 +215,10 @@ export function LiveRoom({
     return (
       <div className="ch-live" data-state="live">
         <div className="ch-live__bar" role="group" aria-label={t('onLabel')}>
-          <span className="ch-live__on" role="timer" aria-live="polite">
+          {/* The elapsed time is computed from Date.now(): the server's and
+              the browser's second differ, which is expected (the timer
+              re-renders every second). */}
+          <span className="ch-live__on" role="timer" aria-live="polite" suppressHydrationWarning>
             <span className="ch-live__dot" aria-hidden="true" />
             {t('on', { tiempo: formatElapsed(s.liveSince!, now) })}
           </span>

@@ -1,7 +1,7 @@
 // The small Markdown subset Law writes the legal documents in, parsed to a
 // plain tree: headings, paragraphs, block quotes, flat ordered/unordered
-// lists, pipe tables and rules; inline **bold**, *italic*, [links](url) and
-// backslash escapes. No HTML passes through: every character that isn't one
+// lists, pipe tables and rules; inline **bold**, *italic*, `code`,
+// [links](url) and backslash escapes. No HTML passes through: every character that isn't one
 // of those marks is text, so the renderer never needs innerHTML.
 //
 // Pure (no React), so tests and `pnpm test:legal` read the same text the
@@ -9,6 +9,7 @@
 
 export type Inline =
   | { t: 'text'; v: string }
+  | { t: 'code'; v: string }
   | { t: 'b'; c: Inline[] }
   | { t: 'i'; c: Inline[] }
   | { t: 'a'; href: string; c: Inline[] };
@@ -48,6 +49,18 @@ export function parseInline(src: string): Inline[] {
       buf += src.slice(i, i + 2);
       i += 2;
       continue;
+    }
+    if (ch === '`') {
+      // Code span: everything up to the next backtick is literal text (no
+      // emphasis, links or escapes inside), like CommonMark. An unmatched
+      // backtick stays a plain character.
+      const end = src.indexOf('`', i + 1);
+      if (end > i + 1) {
+        flush();
+        out.push({ t: 'code', v: src.slice(i + 1, end) });
+        i = end + 1;
+        continue;
+      }
     }
     if (src.startsWith('**', i)) {
       const end = findClose(src, '**', i + 2);
@@ -177,7 +190,7 @@ export function parseMarkdown(src: string): Block[] {
 }
 
 export function inlineText(c: Inline[]): string {
-  return c.map((n) => (n.t === 'text' ? n.v : inlineText(n.c))).join('');
+  return c.map((n) => (n.t === 'text' || n.t === 'code' ? n.v : inlineText(n.c))).join('');
 }
 
 /** The visible text of a document, one block per line (tests, test:legal). */
@@ -205,7 +218,9 @@ export function blocksText(blocks: Block[]): string {
 /** Map every text node (used to bind amounts to config at render). */
 export function mapText(blocks: Block[], fn: (s: string) => string): Block[] {
   const mi = (c: Inline[]): Inline[] =>
-    c.map((n) => (n.t === 'text' ? { ...n, v: fn(n.v) } : { ...n, c: mi(n.c) }));
+    c.map((n) =>
+      n.t === 'text' ? { ...n, v: fn(n.v) } : n.t === 'code' ? n : { ...n, c: mi(n.c) },
+    );
   return blocks.map((b): Block => {
     switch (b.t) {
       case 'h':

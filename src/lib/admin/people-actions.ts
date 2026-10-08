@@ -163,10 +163,14 @@ export async function resendAccessEmail(userId: string): Promise<PeopleActionRes
   const { data, error } = await createAdminClient().auth.admin.generateLink({
     type: 'magiclink',
     email,
-    options: { redirectTo: `${getAppUrl()}/app` },
   });
-  const link = data?.properties?.action_link;
-  if (error || !link) return { ok: false, code: 'EMAIL_ERROR' };
+  // Not the hosted action_link: Supabase's verify page hands the session back
+  // in a URL #fragment, which no server route sees, so the person landed on
+  // /app signed out. /auth/callback verifies the hash server-side and mints
+  // the cookies, the same way team invites work.
+  const hashed = data?.properties?.hashed_token;
+  if (error || !hashed) return { ok: false, code: 'EMAIL_ERROR' };
+  const link = `${getAppUrl()}/auth/callback?token_hash=${encodeURIComponent(hashed)}&type=magiclink&next=${encodeURIComponent('/app')}`;
   const subject = 'Tu enlace para entrar a Chalyb';
   const body = `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#f4f3ee;">Toca el botón para entrar a tu cuenta. El enlace dura poco y sirve una sola vez.</p>
 <a href="${escapeHtml(link)}" style="display:inline-block;padding:12px 18px;border-radius:10px;background:#e8bb7f;color:#070809;font-weight:700;text-decoration:none;">Entrar a Chalyb</a>`;

@@ -161,6 +161,7 @@ export default async function ClipsSettingsPage({
                 framing: ts('framing'),
                 framingCenter: ts('framingCenter'),
                 framingFollow: ts('framingFollow'),
+                saveError: t('detail.saveError'),
               }}
             />
             {caps.bulkUpload && (

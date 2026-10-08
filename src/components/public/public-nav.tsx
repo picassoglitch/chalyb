@@ -56,7 +56,12 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
         <MobileMenu
           links={links}
           login={{ href: signedIn ? APP_HREF : LOGIN_HREF, label: signedIn ? t('app') : t('login') }}
-          cta={{ href: menuTrialHref, label: tl(trialCtaLabel({ trialFlowEnabled: flow, signedIn })) }}
+          cta={{
+            href: menuTrialHref,
+            label: tl(trialCtaLabel({ trialFlowEnabled: flow, signedIn })),
+            // Same as the desktop CTA: a signed-in click isn't a trial click.
+            track: signedIn ? undefined : 'menu_trial',
+          }}
           labels={{ open: t('menu'), close: t('close'), aria: t('aria') }}
         />
       </div>

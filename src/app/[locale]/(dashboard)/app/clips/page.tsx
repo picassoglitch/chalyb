@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { listClipJobs } from '@/lib/tools/clips-jobs';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
 import { getTokenBalance } from '@/lib/usage/tokens';
@@ -61,7 +62,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const caps = adapter.capabilities();
   const [jobs, clips, accounts, balance] = await Promise.all([
     listClipJobs(userId),
-    adapter.listClips(userId),
+    adapter.listClips(userId).then((all) => withoutHiddenJobs(userId, all, (c) => c.jobId)),
     adapter.accounts(userId),
     // Display only: an unknown balance never blocks the hero (the job
     // submit enforces credits on the server either way).

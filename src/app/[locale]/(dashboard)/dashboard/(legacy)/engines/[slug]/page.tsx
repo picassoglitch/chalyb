@@ -10,10 +10,9 @@
 // SUPER_ADMIN / ADMIN, but we redirect defensively anyway.
 
 import { setRequestLocale } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
-import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getEngineMetrics } from '@/lib/engines/admin-metrics';
 import { ensureAdminEngineAccess, getEngineAccess } from '@/lib/engines/subscriptions';
@@ -26,6 +25,7 @@ import {
   EngineTierSelect,
 } from '@/components/dashboard/engine-admin-controls';
 import { AnthropicSyncButton } from '@/components/dashboard/anthropic-sync-button';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Engine · admin' };
 
@@ -70,10 +70,7 @@ export default async function EngineDetailPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const session = await getSessionUser();
-  if (!session || (session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN')) {
-    redirect('/app');
-  }
+  const session = await requireAdminPage();
 
   const engines = await listEngines();
   const engine = engines.find((e) => e.slug === slug);

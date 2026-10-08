@@ -45,7 +45,9 @@ export function checkEngineBearer(req: Request, slug: string): BearerCheck {
   const envName = engineAdminTokenEnv(slug);
   const expected = process.env[envName];
   if (!expected) {
-    return { ok: false, status: 503, error: `${envName} not configured` };
+    // The env var's name stays in the server log: callers are unauthenticated.
+    console.error(`[engines] ${envName} not configured`);
+    return { ok: false, status: 503, error: 'engine auth not configured' };
   }
   const header = req.headers.get('authorization') ?? '';
   if (!header.toLowerCase().startsWith('bearer ')) {

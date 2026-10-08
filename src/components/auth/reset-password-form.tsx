@@ -56,7 +56,11 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
         await supabase.auth.signOut();
         if (updErr.code === 'same_password') setError(t('errorSamePassword'));
         else if (updErr.code === 'weak_password') setError(t('errorWeakPassword'));
-        else setError(updErr.message || t('errorGeneric'));
+        else {
+          // Supabase's raw text is English-only and internal; log it, show ours.
+          console.error('[reset-password] updateUser failed', updErr);
+          setError(t('errorGeneric'));
+        }
         return;
       }
 
@@ -75,12 +79,7 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
   if (!tokenHash || invalid) {
     return (
       <div className="auth-inbox-success">
-        <div
-          className="auth-inbox-icon"
-          style={{ borderColor: '#e0564f', color: '#e0564f', background: 'rgba(224, 86, 79, 0.12)' }}
-        >
-          !
-        </div>
+        <div className="auth-inbox-icon auth-inbox-icon--bad">!</div>
         <h3 className="auth-inbox-title">{t('invalidTitle')}</h3>
         <p className="auth-inbox-body">{t('invalidBody')}</p>
         <Link href="/forgot-password" className="auth-mode-switch-link">

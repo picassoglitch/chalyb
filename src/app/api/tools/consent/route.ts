@@ -67,10 +67,18 @@ export async function POST(req: Request) {
     // unaccepted (downloads stay allowed).
     if (await termsAcceptancePending(session.user.id))
       return NextResponse.json({ ok: false, code: 'TERMS_PENDING' }, { status: 409 });
-    const account = String(body.account ?? '').slice(0, 120);
+    const requested = String(body.account ?? '').slice(0, 120);
     const ent = await getEntitlements(session);
+    const clips = getClipsAdapter();
+    // The account must be one the person actually connected (the ajustes
+    // page lists those same handles): the evidence never names an account
+    // the client made up.
+    const connected = clips
+      ? (await clips.accounts(session.user.id)).filter((a) => a.connected && a.handle)
+      : [];
+    const account = connected.some((a) => a.handle === requested) ? requested : '';
     const decision = decideAutopublish({
-      supportsConnect: getClipsAdapter()?.capabilities().supportsConnect ?? false,
+      supportsConnect: clips?.capabilities().supportsConnect ?? false,
       account,
       capAllows: TIER_CAPS[ent.plan].clipAutoPublish,
       checked: body.checked,

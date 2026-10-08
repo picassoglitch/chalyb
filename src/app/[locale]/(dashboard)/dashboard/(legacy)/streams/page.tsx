@@ -1,7 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import { getSessionUser } from '@/lib/auth/session';
 import { listObsStreams, timeAgo } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Streams' };
 
@@ -12,10 +11,7 @@ export default async function StreamsPage({ params }: { params: Promise<{ locale
   // Mandatory double-gate (not just the layout's): listObsStreams reads the
   // ChalyOBS tenant tables with the service-role client — RLS can't protect
   // us here, so the page must.
-  const session = await getSessionUser();
-  if (!session || (session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN')) {
-    redirect('/app');
-  }
+  await requireAdminPage();
 
   const streams = await listObsStreams();
   const live = streams.filter((s) => s.isLive);

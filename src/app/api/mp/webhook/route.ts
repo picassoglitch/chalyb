@@ -78,7 +78,12 @@ const ACK_BUDGET_MS = 1500;
 
 export async function POST(req: Request) {
   if (!isMercadoPagoConfigured()) {
-    return NextResponse.json({ error: 'mp not configured' }, { status: 200 });
+    // Without the access token nothing can be fetched back from MP, so the
+    // notification can't be processed. 503 (not 200) so MP keeps retrying
+    // and the payment lands once the token is set — a 200 here dropped it
+    // for good, with no ledger row for the reconcile to find.
+    console.error('[mp/webhook] MERCADOPAGO_ACCESS_TOKEN is not set — asking MP to retry');
+    return NextResponse.json({ error: 'mp not configured' }, { status: 503 });
   }
 
   // Query string first; an empty body (IPN) is not an error.
@@ -93,8 +98,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ignored: n.topic }, { status: 200 });
   }
   if (!n.dataId) {
+    // No retry can add the id: acknowledge so MP doesn't retry it for days.
     console.error('[mp/webhook] notification without an id', log);
-    return NextResponse.json({ error: 'missing id' }, { status: 400 });
+    return NextResponse.json({ ignored: 'missing id' }, { status: 200 });
   }
 
   const signatureHeader = req.headers.get('x-signature');

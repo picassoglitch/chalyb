@@ -1,6 +1,4 @@
 {
-  "src/app/[locale]/(dashboard)/app/error.tsx": 5,
-  "src/app/[locale]/(dashboard)/app/messages/page.tsx": 3,
   "src/app/[locale]/(dashboard)/app/subscription/checkout/page.tsx": 9,
   "src/components/landing/footer.tsx": 2,
   "src/components/landing/nav.tsx": 2,

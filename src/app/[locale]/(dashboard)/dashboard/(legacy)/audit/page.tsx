@@ -1,7 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import { getSessionUser } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Registro de actividad' };
 
@@ -51,10 +50,7 @@ export default async function AuditPage({
   // Role-gate is already done by the parent dashboard layout (redirects
   // non-admins to /app), but double-check here in case someone wires a
   // different layout above this route later.
-  const session = await getSessionUser();
-  if (!session || (session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN')) {
-    redirect('/app');
-  }
+  await requireAdminPage();
 
   const supabase = await createClient();
   const { data: eventsRaw } = await supabase

@@ -46,12 +46,17 @@ async function passwordMatches(email: string, password: string): Promise<boolean
 /** Password checks this user made in the current window. */
 async function recentAttempts(userId: string): Promise<number> {
   const since = new Date(Date.now() - REVEAL_WINDOW_MS).toISOString();
-  const { count } = await createAdminClient()
+  const { count, error } = await createAdminClient()
     .from('audit_events')
     .select('id', { count: 'exact', head: true })
     .eq('action', 'tool.key_reauth')
     .eq('target_user_id', userId)
     .gte('created_at', since);
+  // Fail closed: an unreadable count must not mean unlimited password tries.
+  if (error) {
+    console.error('[stream-key] attempt count failed', error.message);
+    return Number.POSITIVE_INFINITY;
+  }
   return count ?? 0;
 }
 

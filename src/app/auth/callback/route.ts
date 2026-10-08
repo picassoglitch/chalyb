@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { safeNextPath } from '@/lib/auth/safe-next';
+import { localeOfPath, safeNextPath } from '@/lib/auth/safe-next';
 import { recordSignupConsent } from '@/lib/billing/signup-consent';
 
 export async function GET(request: Request) {
@@ -10,13 +10,17 @@ export async function GET(request: Request) {
   // link hands us one. Anything that isn't a same-origin path falls back to
   // /account rather than sending a freshly-authenticated browser off-site.
   const next = safeNextPath(url.searchParams.get('next'), '/account');
+  // The sign-in forms put the reader's locale prefix on `next` (/en/app/…);
+  // the error bounces below go back to the sign-in page in that language.
+  const locale = localeOfPath(next);
+  const signIn = `${url.origin}${locale === 'en' ? '/en' : ''}/sign-in`;
 
   const oauthError = url.searchParams.get('error');
   const oauthErrorDescription = url.searchParams.get('error_description');
   if (oauthError) {
     const msg = oauthErrorDescription ?? oauthError;
     console.error('OAuth provider error:', msg);
-    return NextResponse.redirect(`${url.origin}/sign-in?error=${encodeURIComponent(msg)}`);
+    return NextResponse.redirect(`${signIn}?error=${encodeURIComponent(msg)}`);
   }
 
   // Password recovery does NOT go through here anymore — the reset link lands
@@ -36,20 +40,19 @@ export async function GET(request: Request) {
   // that page hands the session back in a URL fragment, which a server route
   // never sees. Verifying the hash here is the same thing done server-side, and
   // it mints the cookies the same way the OAuth code exchange below does.
-  // ONLY the invite type: recovery is refused above by design, and signup /
-  // magic link keep using the code exchange.
+  // Also the admin's "Reenviar correo de acceso" magic link (people-actions),
+  // for the same reason. Never recovery: it is refused above by design, and
+  // self-serve sign-up keeps using the code exchange.
   const tokenHash = url.searchParams.get('token_hash');
   const otpType = url.searchParams.get('type');
-  if (tokenHash && otpType === 'invite') {
+  if (tokenHash && (otpType === 'invite' || otpType === 'magiclink')) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.verifyOtp({ type: 'invite', token_hash: tokenHash });
+    const { error } = await supabase.auth.verifyOtp({ type: otpType, token_hash: tokenHash });
     if (!error) {
       return NextResponse.redirect(`${url.origin}${next}`);
     }
     console.error('Auth callback invite error:', error.message);
-    return NextResponse.redirect(
-      `${url.origin}/sign-in?error=${encodeURIComponent(error.message)}`,
-    );
+    return NextResponse.redirect(`${signIn}?error=${encodeURIComponent(error.message)}`);
   }
 
   if (code) {
@@ -65,7 +68,7 @@ export async function GET(request: Request) {
         await recordSignupConsent({
           userId: user.id,
           marketing: false,
-          locale: next.startsWith('/en') ? 'en' : 'es',
+          locale,
           timezone: null,
           surface: 'web_signup_google',
         }).catch(() => {});
@@ -73,10 +76,8 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${url.origin}${next}`);
     }
     console.error('Auth callback error:', error.message);
-    return NextResponse.redirect(
-      `${url.origin}/sign-in?error=${encodeURIComponent(error.message)}`,
-    );
+    return NextResponse.redirect(`${signIn}?error=${encodeURIComponent(error.message)}`);
   }
 
-  return NextResponse.redirect(`${url.origin}/sign-in?error=missing_code`);
+  return NextResponse.redirect(`${signIn}?error=missing_code`);
 }

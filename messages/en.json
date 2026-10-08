@@ -864,6 +864,21 @@
         "vip": "VIP plan"
       },
       "yourAccount": "Your account"
+    },
+    "error": {
+      "title": "Something broke on this screen",
+      "body": "A server error stopped the page from loading. You're still signed in — reload, or go somewhere else in the workspace while we look into it.",
+      "id": "Error ID:",
+      "retry": "↻ Try again",
+      "home": "Back to home"
+    },
+    "messages": {
+      "metaTitle": "Messages",
+      "title": "Talk directly with the Chalyb team",
+      "body": "This chat comes straight to us. Write to us with ideas, bugs you found, partnership proposals or anything you'd rather not send by email. Nobody else sees it.",
+      "empty": "No messages yet. Write the first one below — we read everything.",
+      "placeholder": "Tell us what's on your mind. Enter sends · Shift+Enter adds a line.",
+      "send": "Send to the team"
     }
   },
   "account": {

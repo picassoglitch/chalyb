@@ -1,5 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
-import { getSessionUser, isSuperAdminEmail } from '@/lib/auth/session';
+import { isSuperAdminEmail } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TeamRoleSelect } from '@/components/dashboard/team-role-select';
@@ -17,6 +17,7 @@ import {
 } from '@/components/dashboard/partner-engine-select';
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
 import { pendingInvitesFrom, type PendingInvite } from '@/lib/auth/invites';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Equipo y roles' };
 
@@ -36,7 +37,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await getSessionUser();
+  const session = await requireAdminPage();
   const supabase = await createClient();
 
   const { data: profilesRaw } = await supabase

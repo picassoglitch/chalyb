@@ -2,6 +2,7 @@
 // footnote, and the FAQ (PRICING-CARDS-SPEC §5.2). Every claim follows the
 // same flags as the cards: no trial wording unless the trial is offered.
 
+import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PRICING } from '@/config/pricing';
 import type { PlansProps } from '@/lib/billing/plans-props';
@@ -41,13 +42,12 @@ export function PlansView(props: PlansProps) {
           {t('faqTitle')}
         </h2>
         {faq.map((n) => (
-          <details key={n} className="ch-card" style={{ padding: '16px 20px' }}>
-            <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>
+          <details key={n} className="ch-card ch-faq">
+            <summary>
               {t(`faq.q${n}`)}
+              <ChevronDown aria-hidden="true" />
             </summary>
-            <p className="ch-muted" style={{ marginTop: 8 }}>
-              {t(`faq.a${n}`, { dias: PRICING.trial.days })}
-            </p>
+            <p className="ch-muted">{t(`faq.a${n}`, { dias: PRICING.trial.days })}</p>
           </details>
         ))}
       </section>

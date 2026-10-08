@@ -1,8 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
-import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { ENV_LABEL } from '@/lib/data/types';
 import {
@@ -10,6 +8,7 @@ import {
   EngineStatusSelect,
   EngineTierSelect,
 } from '@/components/dashboard/engine-admin-controls';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Engines · administración' };
 
@@ -29,10 +28,7 @@ export default async function AdminEnginesPage({
 
   // Parent dashboard layout already gates non-admins to /app, but double-check here
   // in case this route is ever wired into a different layout.
-  const session = await getSessionUser();
-  if (!session || (session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN')) {
-    redirect('/app');
-  }
+  await requireAdminPage();
 
   const engines = await listEngines();
   const counts = {

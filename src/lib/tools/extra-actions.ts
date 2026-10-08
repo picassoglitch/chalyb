@@ -30,6 +30,9 @@ async function gate<A>(
 
 type Fail = { ok: false; code: string };
 
+/** Server actions are callable with any JSON: never assume a string. */
+const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+
 // ── Asistente ────────────────────────────────────────────────────────
 export async function saveAssistant(input: {
   businessName: string;
@@ -39,8 +42,8 @@ export async function saveAssistant(input: {
   const g = await gate('chalybbot', getAsistente);
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
   const channels = await g.adapter.channels();
-  const businessName = input.businessName.trim().slice(0, 80);
-  const knowledge = input.knowledge.trim().slice(0, 8000);
+  const businessName = str(input.businessName).trim().slice(0, 80);
+  const knowledge = str(input.knowledge).trim().slice(0, 8000);
   if (!businessName || !channels.includes(input.channel) || !knowledge)
     return { ok: false, code: 'INVALID' };
   await g.adapter.saveConfig(g.session.user.id, {
@@ -56,7 +59,7 @@ export async function testAssistant(message: string): Promise<{ ok: true; reply:
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
   const cfg = await g.adapter.getConfig(g.session.user.id);
   if (!cfg) return { ok: false, code: 'INVALID' };
-  const text = message.trim().slice(0, 500);
+  const text = str(message).trim().slice(0, 500);
   if (!text) return { ok: false, code: 'INVALID' };
   const reply = await g.adapter.test(g.session.user.id, text);
   return { ok: true, reply: withSelfIdentification(reply, cfg.businessName, await getLocale()) };
@@ -70,9 +73,9 @@ export async function createProperty(input: {
 }): Promise<{ ok: true; card: PropertyCard } | Fail> {
   const g = await gate('chalybrealtor', getInmuebles);
   if (!g) return { ok: false, code: 'NEEDS_PLAN' };
-  const title = input.title.trim().slice(0, 120);
-  const details = input.details.trim().slice(0, 4000);
-  const photos = input.photos
+  const title = str(input.title).trim().slice(0, 120);
+  const details = str(input.details).trim().slice(0, 4000);
+  const photos = str(input.photos)
     .split(/\s+/)
     .filter((u) => /^https:\/\/\S+$/.test(u))
     .slice(0, 20);
@@ -94,8 +97,8 @@ export async function connectExchange(input: {
   if (input.consentChecked !== true) return { ok: false, code: 'CONSENT_REQUIRED' };
   if (!(await g.adapter.exchanges()).includes(input.exchange))
     return { ok: false, code: 'INVALID' };
-  const apiKey = input.apiKey.trim();
-  const apiSecret = input.apiSecret.trim();
+  const apiKey = str(input.apiKey).trim();
+  const apiSecret = str(input.apiSecret).trim();
   if (apiKey.length < 8 || apiSecret.length < 8) return { ok: false, code: 'INVALID' };
   if (!consentEncryptionReady()) return { ok: false, code: 'TOOL_UNAVAILABLE' };
 
@@ -157,7 +160,8 @@ export async function activateRule(input: {
     .eq('exchange', input.exchange)
     .maybeSingle();
   if (!conn) return { ok: false, code: 'SETUP_NEEDED' };
-  const check = validateRule(input.draft);
+  const draft = input.draft && typeof input.draft === 'object' ? input.draft : {};
+  const check = validateRule(draft);
   if (!check.ok) return { ok: false, code: 'INVALID', errors: check.errors };
 
   const locale = await getLocale();
