@@ -87,3 +87,13 @@ test('/planes FAQ uses the styled disclosure, not the browser default', () => {
   assert.match(css, /\.ch-faq summary \{ list-style: none;/);
   assert.match(css, /\.ch-faq summary::-webkit-details-marker \{ display: none; \}/);
 });
+
+test('contact form stores the lead before deciding the result; confirmation only on success', () => {
+  const src = read('src/lib/contact/contact-actions.ts');
+  const insert = src.indexOf(".from('partner_inquiries').insert(");
+  const fail = src.indexOf("errorKey: 'sendFailed'");
+  const confirm = src.indexOf("subject: 'Recibimos tu mensaje");
+  assert.ok(insert > 0 && fail > insert, 'insert runs before the sendFailed return');
+  assert.ok(confirm > fail, 'confirmation is sent only after the failure return');
+  assert.match(src, /if \(!delivered && !stored\)/);
+});
