@@ -38,7 +38,9 @@ export function validateRule(d: RuleDraft): RuleCheck {
   const max = typeof d.maxAmount === 'number' ? d.maxAmount : Number(d.maxAmount);
   if (!Number.isFinite(max) || max <= 0) errors.push('maxAmount');
   const schedule = typeof d.schedule === 'string' ? d.schedule.trim() : '';
-  if (!schedule) errors.push('schedule');
+  // The form caps it at 80 characters (invest-wizard.tsx); it is stored
+  // in the consent evidence, so the server holds the same limit.
+  if (!schedule || schedule.length > 80) errors.push('schedule');
   if (errors.length) return { ok: false, errors };
   return {
     ok: true,

@@ -89,3 +89,13 @@ test('engine bearer check never names the token env var in its response', async 
     if (prev !== undefined) process.env.CHALYBCLIP_ADMIN_TOKEN = prev;
   }
 });
+
+test('invest rule schedule is capped like the form (80 characters)', async () => {
+  const { validateRule } = await import('@/lib/guardrails/invest');
+  const base = { asset: 'BTC', side: 'buy', condition: 'si baja 5%', maxAmount: 100 };
+  assert.equal(validateRule({ ...base, schedule: 'x'.repeat(80) }).ok, true);
+  assert.deepEqual(validateRule({ ...base, schedule: 'x'.repeat(81) }), {
+    ok: false,
+    errors: ['schedule'],
+  });
+});
