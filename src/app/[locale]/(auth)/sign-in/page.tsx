@@ -4,7 +4,7 @@ import { AuthHomeLink } from '@/components/auth/auth-home-link';
 import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { safeNextPath } from '@/lib/auth/safe-next';
+import { localizeNext, safeNextPath } from '@/lib/auth/safe-next';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
 import { legalPublished, paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
@@ -75,7 +75,7 @@ export default async function SignInPage({
     // as an open redirect.
     // typedRoutes can't statically know what `next` is — cast through
     // Route since we've already validated it's a same-origin path.
-    redirect((next ?? '/account') as Route);
+    redirect(localizeNext(next ?? '/account', locale) as Route);
   }
 
   const upstreamError =

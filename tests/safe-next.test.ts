@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { safeNextPath } from '@/lib/auth/safe-next';
+import { localeOfPath, localizeNext, safeNextPath } from '@/lib/auth/safe-next';
 
 const FALLBACK = '/account';
 
@@ -43,4 +43,22 @@ test('rejects header-splitting and absurd lengths', () => {
 
 test('rejects malformed percent-encoding instead of throwing', () => {
   assert.equal(safeNextPath('/app/%zz', FALLBACK), FALLBACK);
+});
+
+test('localizeNext puts the reader’s prefix back on a locale-free next', () => {
+  assert.equal(localizeNext('/app/billing?x=1', 'en'), '/en/app/billing?x=1');
+  assert.equal(localizeNext('/', 'en'), '/en');
+  assert.equal(localizeNext('/?a=1', 'en'), '/en?a=1');
+  assert.equal(localizeNext('/app', 'es'), '/app');
+  assert.equal(localizeNext('/en/app', 'en'), '/en/app');
+  assert.equal(localizeNext('/english-page', 'en'), '/en/english-page');
+  assert.equal(localizeNext('/auth/launch/x', 'en'), '/auth/launch/x');
+});
+
+test('localeOfPath reads the prefix', () => {
+  assert.equal(localeOfPath('/en/app'), 'en');
+  assert.equal(localeOfPath('/en'), 'en');
+  assert.equal(localeOfPath('/en?x=1'), 'en');
+  assert.equal(localeOfPath('/english'), 'es');
+  assert.equal(localeOfPath('/account'), 'es');
 });
