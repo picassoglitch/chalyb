@@ -79,12 +79,7 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
   if (!tokenHash || invalid) {
     return (
       <div className="auth-inbox-success">
-        <div
-          className="auth-inbox-icon"
-          style={{ borderColor: '#e0564f', color: '#e0564f', background: 'rgba(224, 86, 79, 0.12)' }}
-        >
-          !
-        </div>
+        <div className="auth-inbox-icon auth-inbox-icon--bad">!</div>
         <h3 className="auth-inbox-title">{t('invalidTitle')}</h3>
         <p className="auth-inbox-body">{t('invalidBody')}</p>
         <Link href="/forgot-password" className="auth-mode-switch-link">

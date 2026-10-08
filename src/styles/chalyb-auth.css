@@ -1,0 +1,337 @@
+/* Auth screens (/sign-in, /forgot-password, /reset-password) on the Chalyb
+   2026 design system: the chalyb-tokens palette, the public pages' card and
+   the contact form's fields (chalyb-legal.css: .auth-field, .auth-submit,
+   .auth-error). They used to sit on the legacy dark/gold stylesheet with
+   11–12px mono labels.
+
+   Everything is scoped under .chalyb-app so it outranks the legacy unscoped
+   .auth-* rules in globals.css if that sheet is already on the page (client
+   navigation keeps loaded CSS). */
+
+.chalyb-app.auth-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 64px 16px 48px;
+  cursor: auto;
+}
+@media (max-width: 720px) {
+  .chalyb-app.auth-shell {
+    padding: 28px 16px 32px;
+  }
+}
+
+/* "← Volver a Chalyb" */
+.chalyb-app .auth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  border: 0;
+  backdrop-filter: none;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  text-decoration: none;
+}
+.chalyb-app .auth-status:hover {
+  color: var(--accent);
+}
+
+.chalyb-app .auth-card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--card);
+  border: 0;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: clamp(22px, 5vw, 36px);
+}
+
+/* ---------- Mode tabs (Iniciar sesión / Crear cuenta) ---------- */
+.chalyb-app .auth-email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.chalyb-app .auth-mode-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--bg);
+  margin-bottom: 4px;
+}
+.chalyb-app .auth-mode-tab {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.chalyb-app .auth-mode-tab:hover:not(.active) {
+  color: var(--ink);
+}
+.chalyb-app .auth-mode-tab.active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16, 16, 40, 0.1);
+}
+
+/* ---------- Form extras ---------- */
+.chalyb-app .auth-forgot-link {
+  align-self: flex-end;
+  margin-top: -6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+.chalyb-app .auth-forgot-link:hover {
+  color: var(--accent-d);
+  text-decoration: underline;
+}
+.chalyb-app .auth-hint {
+  font-size: 15px;
+  color: var(--ink3-text);
+  margin-top: 2px;
+}
+.chalyb-app .auth-legal {
+  font-size: 15px;
+  color: var(--ink2);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.chalyb-app .auth-legal a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.chalyb-app .auth-check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: var(--ink2);
+  line-height: 1.45;
+  cursor: pointer;
+}
+.chalyb-app .auth-check input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 0;
+  accent-color: var(--accent);
+}
+.chalyb-app .auth-submit:hover:not(:disabled) {
+  transform: none;
+  filter: none;
+  box-shadow: 0 6px 18px rgba(91, 75, 255, 0.32);
+}
+.chalyb-app .auth-error-upstream {
+  margin-top: 12px;
+}
+.chalyb-app .auth-success {
+  background: var(--ok-tint);
+  border: 0;
+  color: var(--ok-text);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+.chalyb-app .auth-mode-switch {
+  font-size: 15px;
+  color: var(--ink2);
+  text-align: center;
+  margin-top: 4px;
+}
+.chalyb-app .auth-mode-switch-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.chalyb-app .auth-mode-switch-link:hover {
+  color: var(--accent-d);
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ---------- "o continúa con" + Google ---------- */
+.chalyb-app .auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0 18px;
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink3-text);
+}
+.chalyb-app .auth-divider::before,
+.chalyb-app .auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.chalyb-app .auth-google {
+  width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 0;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1.5px #dcdce3;
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: visible;
+  transition: box-shadow 0.2s;
+}
+.chalyb-app .auth-google::before {
+  display: none;
+}
+.chalyb-app .auth-google:hover:not(:disabled) {
+  transform: none;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.chalyb-app .auth-google:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.chalyb-app .auth-google .ag-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.chalyb-app .auth-google .ag-label {
+  flex: 0 1 auto;
+  text-align: center;
+}
+.chalyb-app .auth-google .ag-note {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--ink3-text);
+}
+.chalyb-app .auth-google + .auth-error {
+  margin-top: 12px;
+}
+
+/* ---------- Benefits + closing line ---------- */
+.chalyb-app .auth-benefits {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+}
+.chalyb-app .auth-benefits li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 16px;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+.chalyb-app .ab-tick {
+  color: var(--ok);
+  font-family: inherit;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.chalyb-app .auth-social-proof {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-family: inherit;
+  font-style: normal;
+  font-size: 15px;
+  color: var(--ink3-text);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---------- Titles + "revisa tu correo" states ---------- */
+.chalyb-app .auth-inbox-title {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.chalyb-app h1.auth-inbox-title {
+  margin-bottom: 12px;
+}
+.chalyb-app .auth-inbox-body {
+  font-size: 17px;
+  color: var(--ink2);
+  line-height: 1.55;
+  max-width: 40ch;
+}
+.chalyb-app .auth-inbox-success {
+  text-align: center;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.chalyb-app .auth-inbox-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--tint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+.chalyb-app .auth-inbox-icon--bad {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .auth-inbox-success .auth-inbox-title {
+  font-size: 21px;
+}

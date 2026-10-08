@@ -106,7 +106,7 @@ export default async function SignInPage({
       });
 
   return (
-    <main className="auth-shell">
+    <main className="chalyb-app auth-shell">
       <AuthHomeLink />
 
       <div className="auth-card">
