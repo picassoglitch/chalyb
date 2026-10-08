@@ -34,3 +34,9 @@ test('recordAuthorizedPayment keeps a known ledger status over an unmapped one',
   assert.match(s, /status: ledgerStatus\(paymentStatus, previousLedgerStatus\)/);
   assert.doesNotMatch(s, /\n\s+status: paymentStatus,\n/);
 });
+
+test('an approved authorized_payment never rolls last_charge_at back', () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /const olderThanStored = !!storedAt && Date\.parse\(chargeAt\) < Date\.parse\(storedAt\);/);
+  assert.match(s, /\.\.\.\(olderThanStored \? \{\} : \{ last_charge_at: chargeAt \}\)/);
+});
