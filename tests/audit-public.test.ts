@@ -14,3 +14,13 @@ test('/legal has an index that redirects to the terms (was a 404)', () => {
   assert.match(src, /from '@\/i18n\/routing'/);
   assert.match(src, /redirect\(\{ href: '\/legal\/terms', locale \}\)/);
 });
+
+test('footer language switch links both locales and keeps the page (was one link to /en)', () => {
+  const footer = read('src/components/public/public-footer.tsx');
+  assert.doesNotMatch(footer, /locale="en"/);
+  assert.match(footer, /<LanguageSwitcher \/>/);
+  const sw = read('src/components/i18n/language-switcher.tsx');
+  assert.match(sw, /ORDER\.map/);
+  assert.match(sw, /href=\{pathname as Route\}/);
+  assert.match(sw, /locale=\{target\}/);
+});
