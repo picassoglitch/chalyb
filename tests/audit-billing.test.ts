@@ -65,3 +65,8 @@ test('webhook: no MP access token asks MP to retry (503), never drops with 200',
     /if \(!isMercadoPagoConfigured\(\)\) \{[\s\S]{0,500}\{ error: 'mp not configured' \}, \{ status: 503 \}/,
   );
 });
+
+test('webhook: a handled topic without an id is acknowledged (200), not retried', () => {
+  const s = src('src/app/api/mp/webhook/route.ts');
+  assert.match(s, /\{ ignored: 'missing id' \}, \{ status: 200 \}/);
+});
