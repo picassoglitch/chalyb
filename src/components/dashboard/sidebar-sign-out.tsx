@@ -11,8 +11,7 @@
 // without needing a separate global class.
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Route } from 'next';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
@@ -41,9 +40,8 @@ export function SidebarSignOut({ onBeforeNav }: Props) {
     }
     // Push to the landing then refresh so server components re-evaluate
     // session = null and the nav renders the "Log in / Registrar" button.
-    // The cast is needed because Next typedRoutes wants a known route
-    // literal — '/' resolves to the localized landing through next-intl.
-    router.push('/' as Route);
+    // next-intl's router keeps the reader's language (/en, not the Spanish /).
+    router.push('/');
     router.refresh();
   }
 
