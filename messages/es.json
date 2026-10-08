@@ -864,6 +864,21 @@
         "vip": "Plan VIP"
       },
       "yourAccount": "Tu cuenta"
+    },
+    "error": {
+      "title": "Algo se rompió en esta pantalla",
+      "body": "Un error de servidor cortó la carga. La sesión sigue activa — puedes recargar o irte a otra parte del workspace mientras lo investigamos.",
+      "id": "ID del error:",
+      "retry": "↻ Reintentar",
+      "home": "Volver al inicio"
+    },
+    "messages": {
+      "metaTitle": "Mensajes",
+      "title": "Habla directo con el equipo Chalyb",
+      "body": "Este chat llega directo a nosotros. Escríbenos para ideas, fallas que encontraste, propuestas de colaboración o lo que prefieras no mandar por correo. Nadie más lo ve.",
+      "empty": "Todavía no hay mensajes. Escríbenos el primero aquí abajo — leemos todo.",
+      "placeholder": "Cuéntanos qué tienes en mente. Enter envía · Shift+Enter agrega línea.",
+      "send": "Enviar al equipo"
     }
   },
   "account": {

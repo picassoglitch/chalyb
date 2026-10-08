@@ -1,12 +1,21 @@
-import { setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
 import { listThreadMessages, markThreadReadForUser } from '@/lib/messages/messages-data';
 import { sendMessageFromUser } from '@/lib/messages/messages-actions';
 import { MessageThread } from '@/components/messages/message-thread';
 import { MessageComposer } from '@/components/messages/message-composer';
 
-export const metadata = { title: 'Mensajes' };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'app.messages' });
+  return { title: t('metaTitle') };
+}
 
 // Subscriber-side conversation with the Chalyb admin team.
 //
@@ -28,8 +37,11 @@ export default async function SubscriberMessagesPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations('app.messages');
   const session = await getSessionUser();
-  if (!session) redirect('/sign-in?next=/app/messages');
+  if (!session) {
+    return redirect({ href: { pathname: '/sign-in', query: { next: '/app/messages' } }, locale });
+  }
 
   // Best-effort: clear the unread badge. Pure write (no revalidatePath) so it's
   // safe to call during render — calling a revalidating server action here is
@@ -49,25 +61,23 @@ export default async function SubscriberMessagesPage({
           borderRadius: 'var(--cc-r-l)',
         }}
       >
-        <h3 style={{ fontSize: 14, marginBottom: 4 }}>Habla directo con el equipo Chalyb</h3>
+        <h3 style={{ fontSize: 14, marginBottom: 4 }}>{t('title')}</h3>
         <p style={{ fontSize: 12.5, color: 'var(--cc-txt-3)', lineHeight: 1.5 }}>
-          Este chat llega directo a nosotros. Escríbenos para ideas, fallas que
-          encontraste, propuestas de colaboración o lo que prefieras no mandar por correo.
-          Nadie más lo ve.
+          {t('body')}
         </p>
       </div>
 
       <MessageThread
         messages={messages}
         viewer="USER"
-        emptyMessage="Todavía no hay mensajes. Escríbenos el primero aquí abajo — leemos todo."
+        emptyMessage={t('empty')}
       />
 
       <div style={{ marginTop: 18 }}>
         <MessageComposer
           send={sendMessageFromUser}
-          placeholder="Cuéntanos qué tienes en mente. Enter envía · Shift+Enter agrega línea."
-          buttonLabel="Enviar al equipo"
+          placeholder={t('placeholder')}
+          buttonLabel={t('send')}
         />
       </div>
     </div>
