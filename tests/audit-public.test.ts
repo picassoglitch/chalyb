@@ -79,3 +79,11 @@ test('Pro and VIP savings lines share one style (the accent chip)', () => {
   assert.doesNotMatch(src, /ch-pc__save/);
   assert.equal(src.match(/<span className="ch-pill ch-pill--acc">\s*\{t\('(pro|vip)\.save'/g)?.length, 2);
 });
+
+test('/planes FAQ uses the styled disclosure, not the browser default', () => {
+  const src = read('src/components/app/billing/plans-view.tsx');
+  assert.match(src, /className="ch-card ch-faq"/);
+  const css = read('src/styles/chalyb-tokens.css');
+  assert.match(css, /\.ch-faq summary \{ list-style: none;/);
+  assert.match(css, /\.ch-faq summary::-webkit-details-marker \{ display: none; \}/);
+});
