@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { TAKEDOWN_LIMITS } from '@/lib/legal/takedown-limits';
 
 type Field =
   | 'claimantName'
@@ -103,12 +104,17 @@ export function TakedownForm() {
           {!required && ` (${t('optional')})`}
         </label>
         {LONG.has(k) ? (
-          <textarea {...props} rows={4} maxLength={4000} placeholder={t(`${k}.hint`)} />
+          <textarea
+            {...props}
+            rows={4}
+            maxLength={TAKEDOWN_LIMITS[k]}
+            placeholder={t(`${k}.hint`)}
+          />
         ) : (
           <input
             {...props}
             type="text"
-            maxLength={k === 'contentLocation' ? 2000 : 500}
+            maxLength={TAKEDOWN_LIMITS[k]}
             placeholder={t(`${k}.hint`)}
           />
         )}
