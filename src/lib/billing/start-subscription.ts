@@ -475,7 +475,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     card.expiration_month && card.expiration_year
       ? `${String(card.expiration_month).padStart(2, '0')}/${String(card.expiration_year).slice(-2)}`
       : null;
-  await admin.from('subscriptions').upsert(
+  const { error: rowErr } = await admin.from('subscriptions').upsert(
     {
       user_id: userId,
       tier,
@@ -502,6 +502,19 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     },
     { onConflict: 'mp_preapproval_id' },
   );
+  // Without our row the webhook can't price-check the preapproval (it has no
+  // plan_key) and keeps asking for a retry: same rule as missing evidence —
+  // the preapproval must not survive.
+  if (rowErr) {
+    console.error(
+      '[billing/start] subscriptions row not stored — cancelling the new preapproval',
+      rowErr,
+    );
+    await cancelPreapproval(preapprovalId).catch((e) =>
+      console.error('[billing/start] COULD NOT CANCEL preapproval without a row', preapprovalId, e),
+    );
+    return { ok: false, code: 'MP_ERROR' };
+  }
   if (mode === 'trial') {
     await admin
       .from('profiles')

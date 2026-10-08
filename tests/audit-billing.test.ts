@@ -17,3 +17,14 @@ test('legacy monthly checkout is retired: page redirects, actions refuse', () =>
   assert.match(actions, /const LEGACY_CHECKOUT_RETIRED = true;/);
   assert.match(actions, /if \(LEGACY_CHECKOUT_RETIRED \|\| !paidCheckoutEnabled\(\)\)/);
 });
+
+test('syncSubscription asks for a retry when the row is not written yet', () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /if \(beforeErr\) \{[\s\S]{0,140}retry: true/);
+  assert.match(s, /if \(!before && status === 'authorized'\) \{[\s\S]{0,200}retry: true/);
+  // The retry check runs before the price gate.
+  assert.ok(s.indexOf("!before && status === 'authorized'") < s.indexOf('gatePreapproval({'));
+  const start = src('src/lib/billing/start-subscription.ts');
+  assert.match(start, /const \{ error: rowErr \} = await admin\.from\('subscriptions'\)\.upsert/);
+  assert.match(start, /if \(rowErr\) \{[\s\S]{0,300}cancelPreapproval\(preapprovalId\)/);
+});
