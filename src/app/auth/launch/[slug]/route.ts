@@ -30,7 +30,7 @@ import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 import { reportToolError } from '@/lib/tools/bff';
 import { hasRiskAck } from '@/lib/tools/consents';
-import { RISK_TOOLS, localizedPath, toolHref } from '@/lib/tools/routes';
+import { RISK_TOOLS, launchLocale, localizedPath, toolHref } from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -41,15 +41,19 @@ export async function GET(
   // From a hub tool screen (loadTool) that has no in-hub adapter: a failure
   // must not go back to /app/engines/<slug>, which leads to that same screen.
   const fromHub = request.nextUrl.searchParams.get('via') === 'hub';
+  // /auth/* sits outside the locale tree, so the screen's language rides along
+  // as `lang` (hubLaunchHref); every redirect back into the app keeps it.
+  const lang = request.nextUrl.searchParams.get('lang');
+  const inApp = (path: string) => new URL(localizedPath(path, lang), origin);
   const fallback = (path: string) =>
-    NextResponse.redirect(new URL(fromHub ? '/app/herramientas' : path, origin));
+    NextResponse.redirect(inApp(fromHub ? '/app/herramientas' : path));
   // The engine could not be opened. From a hub tool screen, Tus herramientas
   // says so (with a support code logged to Actividad) instead of landing there
   // silently.
   const launchFailed = async (path: string, userId: string) => {
-    if (!fromHub) return NextResponse.redirect(new URL(path, origin));
+    if (!fromHub) return NextResponse.redirect(inApp(path));
     const { supportCode } = await reportToolError(slug, userId, 'unavailable', true);
-    const to = new URL('/app/herramientas', origin);
+    const to = inApp('/app/herramientas');
     to.searchParams.set('no_abrio', slug);
     to.searchParams.set('codigo', supportCode);
     return NextResponse.redirect(to);
@@ -57,12 +61,13 @@ export async function GET(
 
   const session = await getSessionUser();
   if (!session) {
-    return NextResponse.redirect(
-      new URL(
-        `/sign-in?next=${encodeURIComponent(`/auth/launch/${slug}${fromHub ? '?via=hub' : ''}`)}`,
-        origin,
-      ),
-    );
+    const params = new URLSearchParams();
+    if (fromHub) params.set('via', 'hub');
+    if (launchLocale(lang)) params.set('lang', lang as string);
+    const qs = params.toString();
+    const signIn = inApp('/sign-in');
+    signIn.searchParams.set('next', `/auth/launch/${slug}${qs ? `?${qs}` : ''}`);
+    return NextResponse.redirect(signIn);
   }
 
   // Full-access gate — for cross-engine launches only. ChalyClip is exempt:
@@ -90,7 +95,7 @@ export async function GET(
     .eq('slug', slug)
     .maybeSingle();
   if (!engine) {
-    return NextResponse.redirect(new URL('/app/herramientas', origin));
+    return NextResponse.redirect(inApp('/app/herramientas'));
   }
 
   // Only `active` engines are actually serving. `coming_soon` / `deprecated`
@@ -116,8 +121,7 @@ export async function GET(
   // screen opens the sheet, and accepting it comes back here. Not a failure:
   // no launchFailed, so no "no abrió" banner.
   if (RISK_TOOLS.has(slug) && !(await hasRiskAck(session.user.id, slug))) {
-    const lang = request.nextUrl.searchParams.get('lang');
-    return NextResponse.redirect(new URL(localizedPath(toolHref(slug), lang), origin));
+    return NextResponse.redirect(inApp(toolHref(slug)));
   }
 
   const engineId = engine.id as string;
