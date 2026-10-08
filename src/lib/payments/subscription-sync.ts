@@ -448,10 +448,19 @@ export async function recordAuthorizedPayment(
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
     if (paymentStatus === 'approved') {
+      // Notifications can be replayed (unsigned IPN) or arrive out of order:
+      // last_charge_at only ever moves forward. Writing an older charge's
+      // date would roll it back and could start the unpaid-charge deadline
+      // for someone who has paid.
+      const chargeAt = new Date(
+        ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+      ).toISOString();
+      const storedAt = (subRow?.last_charge_at as string | null | undefined) ?? null;
+      const olderThanStored = !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt);
       await admin
         .from('subscriptions')
         .update({
-          last_charge_at: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+          ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
           grace_ends_at: null,
           // The next charge needs its own notice.
           reminder_delivered_at: null,
