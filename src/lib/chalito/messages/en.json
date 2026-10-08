@@ -240,7 +240,9 @@
         "byo_api_key": "Your API key",
         "byo_subscription_local": "Your plan",
         "byo_mcp_connector": "Connector",
-        "managed": "Chalito energy"
+        "managed": "Chalito energy",
+        "api_key": "Your API key",
+        "signin": "Your sign-in"
       }
     },
     "planCredits": {
