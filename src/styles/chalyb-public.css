@@ -1045,11 +1045,29 @@ body:has(.pub-consent) {
 }
 .chalyb-app .pub-foot__lang {
   justify-self: start;
-  min-height: 44px;
+  /* The options carry 8px of side padding for a bigger tap target; pull
+     the group back so the first label lines up with the footer text. */
+  margin-left: -8px;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   font-size: 15px;
   color: var(--ink2);
+}
+.chalyb-app .pub-foot__lang-opt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--ink2);
+}
+.chalyb-app .pub-foot__lang-sep {
+  color: var(--ink3-text);
+}
+.chalyb-app .pub-foot__lang-opt.is-active {
+  font-weight: 700;
+  color: var(--ink);
 }
 @media (min-width: 1024px) {
   .chalyb-app .pub-nav {
