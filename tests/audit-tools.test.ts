@@ -45,3 +45,8 @@ test('Clips counts as in-hub only in mock mode, matching getClipsAdapter()', asy
     else process.env.TOOL_HUB_MODE_CHALYBCLIP = prev;
   }
 });
+
+test('Señales follow switch shows the coins the server actually saved', () => {
+  const s = src('src/components/tools/senales/follow-switch.tsx');
+  assert.match(s, /setOn\(saved\.includes\(coin\)\)/);
+});
