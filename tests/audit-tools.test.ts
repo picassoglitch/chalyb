@@ -70,3 +70,22 @@ test('stream-key password limit fails closed when the attempt count cannot be re
   const { revealAttemptAllowed } = await import('@/lib/tools/envivo-core');
   assert.equal(revealAttemptAllowed(Number.POSITIVE_INFINITY), false);
 });
+
+test('engine bearer check never names the token env var in its response', async () => {
+  const { checkEngineBearer } = await import('@/lib/engines/bearer');
+  const prev = process.env.CHALYBCLIP_ADMIN_TOKEN;
+  const err = console.error;
+  delete process.env.CHALYBCLIP_ADMIN_TOKEN;
+  console.error = () => {};
+  try {
+    const r = checkEngineBearer(new Request('https://x.test/'), 'chalybclip');
+    assert.equal(r.ok, false);
+    if (!r.ok) {
+      assert.equal(r.status, 503);
+      assert.doesNotMatch(r.error, /ADMIN_TOKEN/);
+    }
+  } finally {
+    console.error = err;
+    if (prev !== undefined) process.env.CHALYBCLIP_ADMIN_TOKEN = prev;
+  }
+});
