@@ -491,11 +491,18 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
   useEffect(() => {
     if (!platform || deviceMode.current || session.status === "loading") return;
     let alive = true;
+    /**
+     * Set once this run starts the device sign-in. From then on session churn (a duplicate initial
+     * event, a token refresh, the device sign-in's own sign-out/sign-in) reruns this effect, which
+     * returns early on deviceMode: if that cancelled this run, nothing would ever leave "loading".
+     */
+    let owns = false;
     const done = (c: Omit<Ctx, "session">) => alive && setCtx((prev) => ({ ...c, session: prev.session }));
     void (async () => {
       if (session.status === "signed_out") return done({ ...INITIAL, status: "signed_out" });
-      if (await staleSession(platform.db.auth, session.session, hubUserId)) {
-        if (!alive) return;
+      const stale = await staleSession(platform.db.auth, session.session, hubUserId);
+      if (!alive) return;
+      if (stale) {
         // Another account's device trust must not carry over to this one: it pairs again.
         if (hubUserId && ownerOf(session.session) !== hubUserId)
           await (await platform.loadDeviceKeys().catch(() => null))?.forget().catch(() => undefined);
@@ -528,6 +535,8 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
         readCompanion: () => readCompanion(platform.db, owner),
       };
       const keys = await platform.loadDeviceKeys();
+      // A newer run took over while this one waited; only one may start the device sign-in.
+      if (!alive || deviceMode.current) return;
       if (!keys) {
         const person = isPersonSession(session.session);
         const dir = person ? await readDirectory(platform.db, owner).catch(() => null) : null;
@@ -544,6 +553,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       }
       keysRef.current = keys;
       deviceMode.current = true;
+      owns = true;
       try {
         const client = await connect({
           url: platform.url,
@@ -644,7 +654,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       }
     })();
     return () => {
-      alive = false;
+      if (!owns) alive = false;
     };
   }, [platform, session, hubUserId, epoch]);
 
