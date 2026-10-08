@@ -73,3 +73,9 @@ test('"Última actualización" label only precedes an actual date', () => {
     assert.doesNotMatch(read(p), /lastUpdated=\{t\('(doc\.)?(versionLine|reviewLine)'|lastUpdated=\{t\('policy'\)\}/, p);
   }
 });
+
+test('Pro and VIP savings lines share one style (the accent chip)', () => {
+  const src = read('src/components/app/billing/plan-cards.tsx');
+  assert.doesNotMatch(src, /ch-pc__save/);
+  assert.equal(src.match(/<span className="ch-pill ch-pill--acc">\s*\{t\('(pro|vip)\.save'/g)?.length, 2);
+});

@@ -1672,7 +1672,6 @@ html body:has(.ch-flow) {
 .chalyb-app .ch-pc__renew { font-size: 17.5px; font-weight: 600; }
 .chalyb-app .ch-pc__vl { display: grid; gap: 12px; align-content: start; justify-items: start; padding: 12px 0 24px; }
 .chalyb-app .ch-pc__ref { font-size: 15.5px; color: var(--ink2); }
-.chalyb-app .ch-pc__save { font-size: 16.5px; font-weight: 600; color: var(--ink2); }
 .chalyb-app .ch-pc__switch {
   padding: 0; border: 0; background: none; font: inherit; font-size: 16.5px; font-weight: 600;
   text-align: left; cursor: pointer;
