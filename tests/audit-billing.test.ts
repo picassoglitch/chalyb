@@ -76,3 +76,8 @@ test('billing cron reports a failed subscriptions query instead of a quiet run',
   assert.match(s, /const \{ data: rows, error: rowsErr \} = await admin/);
   assert.match(s, /if \(rowsErr\) return NextResponse\.json\(\{ ok: false, \.\.\.stats \}, \{ status: 500 \}\);/);
 });
+
+test('settle answers 404 for an unregistered engine, like admit', () => {
+  const s = src('src/app/api/engines/[slug]/usage/settle/route.ts');
+  assert.match(s, /result\.error\?\.startsWith\('engine not registered'\)\) \{\s*return NextResponse\.json\(\{ error: result\.error \}, \{ status: 404 \}\);/);
+});
