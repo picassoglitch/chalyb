@@ -151,7 +151,10 @@ export async function changeUserTier(
         // tier stays as it is — this schedules the end, it does not apply it.
         .update({ tier_ends_at: endsAtIso })
         .eq('id', targetUserId);
-      if (scheduleErr) return { ok: false, error: scheduleErr.message };
+      if (scheduleErr) {
+        console.error('[tier] scheduling the end failed', scheduleErr);
+        return { ok: false, error: 'No se pudo programar el cambio. Intenta de nuevo.' };
+      }
 
       await logAudit({
         action: 'tier.downgrade',
@@ -178,7 +181,8 @@ export async function changeUserTier(
     .select('id, tier'); // .select() returns affected rows so we can verify
 
   if (error) {
-    return { ok: false, error: error.message };
+    console.error('[tier] profile update failed', error);
+    return { ok: false, error: 'No se pudo cambiar el plan. Intenta de nuevo.' };
   }
   if (!data || data.length === 0) {
     // No RLS rejection (admin client bypasses it) — this means the id didn't match.

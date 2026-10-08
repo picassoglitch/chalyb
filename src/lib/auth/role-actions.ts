@@ -72,7 +72,8 @@ export async function changeUserRole(
     .select('id, role');
 
   if (updateErr) {
-    return { ok: false, error: updateErr.message };
+    console.error('[role] profile update failed', updateErr);
+    return { ok: false, error: 'No se pudo cambiar el rol. Intenta de nuevo.' };
   }
   if (!data || data.length === 0) {
     return { ok: false, error: 'No se actualizó nada — revisa que el ID sea correcto.' };
