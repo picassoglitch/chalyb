@@ -46,6 +46,11 @@ export async function POST(
   if (!result.ok && result.error === 'not found') {
     return NextResponse.json({ error: 'unknown reservation' }, { status: 404 });
   }
+  // Same answer as admit for an engine the hub doesn't have: 404, not a 400
+  // the engine contract reads as "your request is malformed".
+  if (!result.ok && result.error?.startsWith('engine not registered')) {
+    return NextResponse.json({ error: result.error }, { status: 404 });
+  }
   // A heartbeat on a closed reservation is 409: the engine should stop.
   if (!result.ok && result.already) {
     return NextResponse.json({ ok: false, status: result.status }, { status: 409 });
