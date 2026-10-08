@@ -29,7 +29,7 @@ export default async function TakedownPage({ params }: { params: Promise<{ local
   const t = await getTranslations({ locale, namespace: 'takedown' });
   const user = await getCurrentUser();
   return (
-    <LegalPage title={t('title')} lastUpdated={t('policy')} isAuthenticated={user !== null}>
+    <LegalPage title={t('title')} meta={t('policy')} isAuthenticated={user !== null}>
       <p>{t('intro')}</p>
       <ul>
         <li>{t('steps.remove')}</li>
