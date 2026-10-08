@@ -50,3 +50,11 @@ test('Señales follow switch shows the coins the server actually saved', () => {
   const s = src('src/components/tools/senales/follow-switch.tsx');
   assert.match(s, /setOn\(saved\.includes\(coin\)\)/);
 });
+
+test('re-provisioning only retries an existing active access row and keeps its source', () => {
+  const s = src('src/lib/engines/subscriptions.ts');
+  const fn = s.slice(s.indexOf('export async function retryEngineProvisioning'));
+  assert.match(fn, /existing\.status !== 'active'/);
+  assert.match(fn, /provisionEngineAccess\(userId, engineId, existing\.source\)/);
+  assert.doesNotMatch(src('src/lib/engines/reprovision-actions.ts'), /dev server/);
+});

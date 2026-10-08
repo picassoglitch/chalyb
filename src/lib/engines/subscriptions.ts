@@ -298,7 +298,12 @@ export async function retryEngineProvisioning(
   userId: string,
   engineId: string,
 ): Promise<{ ok: boolean; externalUserId: string | null }> {
-  await provisionEngineAccess(userId, engineId, 'admin_grant');
+  // Retry only an access row that already exists and is active: this is a
+  // "finish what failed" button, not a way to open access to another engine
+  // (provisionEngineAccess upserts an active row). Keep the row's source.
+  const existing = await getEngineAccess(userId, engineId);
+  if (!existing || existing.status !== 'active') return { ok: false, externalUserId: null };
+  await provisionEngineAccess(userId, engineId, existing.source);
   const row = await getEngineAccess(userId, engineId);
   return {
     ok: Boolean(row?.external_user_id),
