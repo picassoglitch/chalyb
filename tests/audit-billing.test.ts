@@ -70,3 +70,9 @@ test('webhook: a handled topic without an id is acknowledged (200), not retried'
   const s = src('src/app/api/mp/webhook/route.ts');
   assert.match(s, /\{ ignored: 'missing id' \}, \{ status: 200 \}/);
 });
+
+test('billing cron reports a failed subscriptions query instead of a quiet run', () => {
+  const s = src('src/app/api/cron/billing/route.ts');
+  assert.match(s, /const \{ data: rows, error: rowsErr \} = await admin/);
+  assert.match(s, /if \(rowsErr\) return NextResponse\.json\(\{ ok: false, \.\.\.stats \}, \{ status: 500 \}\);/);
+});

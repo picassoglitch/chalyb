@@ -113,13 +113,20 @@ export async function GET(req: Request) {
     errors: 0,
   };
 
-  const { data: rows } = await admin
+  const { data: rows, error: rowsErr } = await admin
     .from('subscriptions')
     .select(
       'id, user_id, status, tier, plan_key, amount_cents, loyalty_step, loyalty_mp_amount_cents, started_at, trial_ends_at, next_charge_at, next_payment_date, grace_ends_at, access_until, card_brand, card_last4, card_exp, cancel_at_period_end, pending_plan_key, pending_effective_at, reminder_due_at, reminder_delivered_at, charge_hold_until, last_charge_at, first_charge_at, mp_preapproval_id, consent_id, updated_at',
     )
     .in('status', ['authorized', 'paused'])
     .limit(1000);
+  // A failed read must not pass for a quiet day with nothing to do: the
+  // notices, holds and tier moves below would silently not run. The other
+  // steps still run; the response is a 500 so the failure shows up.
+  if (rowsErr) {
+    stats.errors += 1;
+    console.error('[cron/billing] subscriptions query failed', rowsErr);
+  }
 
   for (const row of (rows ?? []) as (SubscriptionRow & Record<string, unknown>)[]) {
     const userId = row.user_id as string;
@@ -498,6 +505,7 @@ export async function GET(req: Request) {
     });
 
   console.info('[cron/billing]', stats);
+  if (rowsErr) return NextResponse.json({ ok: false, ...stats }, { status: 500 });
   return NextResponse.json({ ok: true, ...stats });
 }
 
