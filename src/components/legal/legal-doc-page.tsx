@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { legalDraftsAsPublished, legalPublished } from '@/lib/config/flags';
+import { inForce } from '@/lib/legal/in-force';
 import {
   archived,
   currentVersion,
@@ -22,7 +22,6 @@ import {
   parseVersionSlug,
   renderedBlocks,
   renderedSource,
-  versionMeta,
   versionSlug,
   type LegalDoc,
 } from '@/lib/legal/registry';
@@ -53,13 +52,8 @@ function resolveVersion(doc: LegalDoc, slug?: string): string | null {
   return v && archived(doc, v) ? v : null;
 }
 
-/** Whether a version is the text in force (the local e2e override treats
- *  drafts as published). */
-export function inForce(doc: LegalDoc, version = currentVersion(doc)): boolean {
-  return (
-    legalPublished() && (Boolean(versionMeta(doc, version)?.published) || legalDraftsAsPublished())
-  );
-}
+// inForce lives in a plain module so the sitemap (and its tests) can use it.
+export { inForce };
 
 export async function legalDocMetadata(
   doc: LegalDoc,

@@ -26,7 +26,8 @@ test('footer language switch links both locales and keeps the page (was one link
 });
 
 test('legal markdown renders `code` spans instead of showing raw backticks', async () => {
-  const { parseInline, inlineText, parseMarkdown, blocksText } = await import('@/lib/legal/markdown');
+  const { parseInline, inlineText, parseMarkdown, blocksText } =
+    await import('@/lib/legal/markdown');
   assert.deepEqual(parseInline('ver `chalyb.com/quien-vende` hoy'), [
     { t: 'text', v: 'ver ' },
     { t: 'code', v: 'chalyb.com/quien-vende' },
@@ -49,11 +50,17 @@ test('legal TOC is not numbered twice when headings carry their own numbers', as
     const src = renderedSource(doc);
     if (src === null) continue;
     const toc = tocEntries(parseMarkdown(src));
-    assert.ok(toc.every((e) => /^\d/.test(e.text)), `${doc}: ${toc.map((e) => e.text).join(' | ')}`);
+    assert.ok(
+      toc.every((e) => /^\d/.test(e.text)),
+      `${doc}: ${toc.map((e) => e.text).join(' | ')}`,
+    );
   }
   const tsx = read('src/components/legal/legal-markdown.tsx');
   assert.match(tsx, /legal-toc__plain/);
-  assert.match(read('src/styles/chalyb-legal.css'), /\.legal-toc ol\.legal-toc__plain \{\s*list-style: none;/);
+  assert.match(
+    read('src/styles/chalyb-legal.css'),
+    /\.legal-toc ol\.legal-toc__plain \{\s*list-style: none;/,
+  );
 });
 
 test('legal prose does not use overflow-wrap:anywhere (broke table words mid-word on phones)', () => {
@@ -70,14 +77,21 @@ test('"Última actualización" label only precedes an actual date', () => {
     'src/components/legal/legal-doc-page.tsx',
     'src/app/[locale]/derechos-de-autor/page.tsx',
   ]) {
-    assert.doesNotMatch(read(p), /lastUpdated=\{t\('(doc\.)?(versionLine|reviewLine)'|lastUpdated=\{t\('policy'\)\}/, p);
+    assert.doesNotMatch(
+      read(p),
+      /lastUpdated=\{t\('(doc\.)?(versionLine|reviewLine)'|lastUpdated=\{t\('policy'\)\}/,
+      p,
+    );
   }
 });
 
 test('Pro and VIP savings lines share one style (the accent chip)', () => {
   const src = read('src/components/app/billing/plan-cards.tsx');
   assert.doesNotMatch(src, /ch-pc__save/);
-  assert.equal(src.match(/<span className="ch-pill ch-pill--acc">\s*\{t\('(pro|vip)\.save'/g)?.length, 2);
+  assert.equal(
+    src.match(/<span className="ch-pill ch-pill--acc">\s*\{t\('(pro|vip)\.save'/g)?.length,
+    2,
+  );
 });
 
 test('/planes FAQ uses the styled disclosure, not the browser default', () => {
@@ -113,4 +127,24 @@ test('takedown form maxLength matches the server limits (name was 500 vs 300)', 
   assert.doesNotMatch(form, /maxLength=\{(4000|k === 'contentLocation')/);
   assert.equal(form.match(/maxLength=\{TAKEDOWN_LIMITS\[k\]\}/g)?.length, 2);
   assert.doesNotMatch(read('src/lib/legal/takedown-limits.ts'), /node:crypto/);
+});
+
+test('sitemap lists a /legal/* URL only when its document is in force (not noindex)', async () => {
+  const src = read('src/app/sitemap.ts');
+  assert.match(src, /doc === undefined \|\| inForce\(doc\)/);
+  for (const p of [
+    '/legal/terms',
+    '/legal/privacy',
+    '/legal/subscription',
+    '/legal/acceptable-use',
+    '/legal/packs',
+  ])
+    assert.ok(src.includes(`'${p}'`), p);
+  const { inForce } = await import('@/lib/legal/in-force');
+  // LEGAL_PUBLISH off in tests: nothing is "in force", and the sitemap is
+  // just the always-public paths.
+  assert.equal(inForce('paquetes'), false);
+  const { default: sitemap } = await import('@/app/sitemap');
+  const { PUBLIC_PATHS } = await import('@/lib/site');
+  assert.equal(sitemap().length, PUBLIC_PATHS.length);
 });
