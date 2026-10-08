@@ -346,6 +346,13 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
         refundCents,
         err,
       );
+      await notify({
+        severity: 'critical',
+        title: 'Reembolso de prorrateo fallido — reembolsar a mano',
+        body: `Pago ${refundPaymentId} · ${(refundCents / 100).toFixed(2)} MXN · cambio a ${input.planKey}`,
+        href: '/dashboard/dinero',
+        source: 'billing.change',
+      });
     }
   }
   return { ...result, refundCents };

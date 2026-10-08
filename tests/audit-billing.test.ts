@@ -49,3 +49,11 @@ test('cancel: missing evidence after MP cancelled still reports the cancellation
   );
   assert.match(s, /consent_id: consentId,/);
 });
+
+test('a failed proration refund reaches the admin list', () => {
+  const s = src('src/lib/billing/billing-actions.ts');
+  assert.match(
+    s,
+    /proration refund failed — refund by hand[\s\S]{0,200}await notify\(\{\s*severity: 'critical'/,
+  );
+});
