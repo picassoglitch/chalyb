@@ -58,3 +58,8 @@ test('re-provisioning only retries an existing active access row and keeps its s
   assert.match(fn, /provisionEngineAccess\(userId, engineId, existing\.source\)/);
   assert.doesNotMatch(src('src/lib/engines/reprovision-actions.ts'), /dev server/);
 });
+
+test('autopublish consent only records an account the person connected', () => {
+  const s = src('src/app/api/tools/consent/route.ts');
+  assert.match(s, /connected\.some\(\(a\) => a\.handle === requested\)/);
+});
