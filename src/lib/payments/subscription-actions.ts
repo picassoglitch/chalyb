@@ -76,6 +76,8 @@ export interface AuthorizeSubscriptionResult {
   error?: string;
 }
 
+const LEGACY_CHECKOUT_RETIRED = true;
+
 interface PreparedSubscription {
   session: NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
   pricing: NonNullable<(typeof TIER_PRICING)[SubscriptionTier]>;
@@ -109,10 +111,12 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
       },
     };
   }
-  // Sales stay closed until the new paid checkout is live (legal texts
-  // published, seller data set): this legacy monthly path sells nothing
-  // either. Fail closed, before anything is created at Mercado Pago.
-  if (!paidCheckoutEnabled()) {
+  // This legacy monthly path is retired: it never recorded the billing
+  // consent, the chargeback / region blocks or the plan key that the new
+  // checkout (/app/prueba, /app/billing) enforces. It sells nothing, whether
+  // or not paid checkout is on. Fail closed, before anything is created at
+  // Mercado Pago.
+  if (LEGACY_CHECKOUT_RETIRED || !paidCheckoutEnabled()) {
     return {
       ok: false,
       result: { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR },
