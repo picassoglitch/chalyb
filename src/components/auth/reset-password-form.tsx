@@ -56,7 +56,11 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
         await supabase.auth.signOut();
         if (updErr.code === 'same_password') setError(t('errorSamePassword'));
         else if (updErr.code === 'weak_password') setError(t('errorWeakPassword'));
-        else setError(updErr.message || t('errorGeneric'));
+        else {
+          // Supabase's raw text is English-only and internal; log it, show ours.
+          console.error('[reset-password] updateUser failed', updErr);
+          setError(t('errorGeneric'));
+        }
         return;
       }
 

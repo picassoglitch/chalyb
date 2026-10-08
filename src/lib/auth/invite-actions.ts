@@ -73,7 +73,7 @@ export async function inviteTeamMember(input: {
         revalidatePath('/[locale]', 'layout');
         return {
           ok: false,
-          error: `La invitación salió, pero el rol quedó en Viewer (${roleErr.message}). Ajústalo en la tabla.`,
+          error: 'La invitación salió, pero el rol quedó en Viewer. Ajústalo en la tabla.',
         };
       }
     }
