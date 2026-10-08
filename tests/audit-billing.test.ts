@@ -88,3 +88,14 @@ test('settle answers 404 for an unregistered engine, like admit', () => {
   const s = src('src/app/api/engines/[slug]/usage/settle/route.ts');
   assert.match(s, /result\.error\?\.startsWith\('engine not registered'\)\) \{\s*return NextResponse\.json\(\{ error: result\.error \}, \{ status: 404 \}\);/);
 });
+
+test("an earlier cycle's approved charge can't lift the current hold, grace or reminder", () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /const EARLIER_CYCLE_SLACK_MS = 7 \* 86_400_000;/);
+  assert.match(
+    s,
+    /Date\.parse\(chargeAt\) < Date\.parse\(storedAt\) - EARLIER_CYCLE_SLACK_MS/,
+  );
+  // The whole state reset sits behind the guard, hold included.
+  assert.match(s, /if \(!earlierCycle\) \{[\s\S]{0,400}charge_hold_until: null/);
+});
