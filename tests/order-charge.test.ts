@@ -204,3 +204,12 @@ test('an authorized-payment status we do not know is never treated as paid', () 
 test('accredited is the Payments API saying approved', () => {
   assert.equal(paymentStatusToChargeStatus('accredited'), 'approved');
 });
+
+test('card pack key: same token dedupes, a new card after a decline does not', () => {
+  const now = new Date('2026-09-15T12:03:00Z');
+  const base = { userId: 'user-1', packId: 'tokens_500k', mode: 'card' as const, now };
+  const first = orderIdempotencyKey({ ...base, cardToken: 'tok_a' });
+  assert.equal(first, orderIdempotencyKey({ ...base, cardToken: 'tok_a' }));
+  assert.notEqual(first, orderIdempotencyKey({ ...base, cardToken: 'tok_b' }));
+  assert.ok(!first.includes('tok_a'));
+});

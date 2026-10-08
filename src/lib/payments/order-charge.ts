@@ -239,13 +239,19 @@ export function orderIdempotencyKey(input: {
   /** The total charged. A price changed inside the window must not hand
    *  back the order created at the old amount. */
   amountCents?: number;
+  /** The Brick's single-use card token ('card' mode). A retry of the SAME
+   *  submit carries the same token and still dedupes; a new card after a
+   *  decline is a new attempt — without it, Mercado Pago would hand back the
+   *  first (rejected) order for every card tried in the window. */
+  cardToken?: string;
   now?: Date;
   bucketMs?: number;
 }): string {
   const bucketMs = input.bucketMs ?? ORDER_IDEMPOTENCY_BUCKET_MS;
   const bucket = Math.floor((input.now ?? new Date()).getTime() / bucketMs);
   const amount = input.amountCents === undefined ? '' : `|${input.amountCents}`;
-  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}${amount}`;
+  const card = input.cardToken ? `|${sha256Hex(input.cardToken)}` : '';
+  const logical = `pack|${input.userId}|${input.packId}|${input.mode}|${bucket}${amount}${card}`;
   return sha256Hex(logical);
 }
 
