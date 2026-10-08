@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, SearchX } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { CLIP_FORMATS } from '@/lib/tools/adapters/types';
 import { clipNeighbours } from '@/lib/tools/clips-home';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
@@ -78,7 +79,9 @@ export default async function ClipDetailPage({
         <ToolErrorState slug="chalybclip" error={reads.error} savedWork />
       </ToolShell>
     );
-  const [all, settings, accounts] = reads.data;
+  const [listed, settings, accounts] = reads.data;
+  // Removed after a copyright notice: no page, no editor, no publishing.
+  const all = await withoutHiddenJobs(userId, listed, (c) => c.jobId);
   const clip = all.find((c) => c.id === clipId) ?? null;
 
   if (!clip)

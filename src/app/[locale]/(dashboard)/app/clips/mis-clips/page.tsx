@@ -4,6 +4,7 @@ import { Scissors, Search } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { CLIP_FILTERS, filterClips, parseClipFilter } from '@/lib/tools/clips-home';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
@@ -56,7 +57,11 @@ export default async function MisClipsPage({
   const { q = '', f } = await searchParams;
   const filter = parseClipFilter(f);
   const query = q.slice(0, 100);
-  const all = await gate.adapter.listClips(gate.session.user.id);
+  const all = await withoutHiddenJobs(
+    gate.session.user.id,
+    await gate.adapter.listClips(gate.session.user.id),
+    (c) => c.jobId,
+  );
   const shown = filterClips(all, filter, query);
   const now = new Date();
   const href = (next: string) =>
