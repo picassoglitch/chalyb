@@ -63,3 +63,10 @@ test('autopublish consent only records an account the person connected', () => {
   const s = src('src/app/api/tools/consent/route.ts');
   assert.match(s, /connected\.some\(\(a\) => a\.handle === requested\)/);
 });
+
+test('stream-key password limit fails closed when the attempt count cannot be read', async () => {
+  const s = src('src/app/api/tools/chalybobs/stream-key/route.ts');
+  assert.match(s, /if \(error\) \{[\s\S]*?return Number\.POSITIVE_INFINITY;/);
+  const { revealAttemptAllowed } = await import('@/lib/tools/envivo-core');
+  assert.equal(revealAttemptAllowed(Number.POSITIVE_INFINITY), false);
+});
