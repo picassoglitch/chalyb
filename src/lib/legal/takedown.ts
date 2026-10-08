@@ -15,6 +15,7 @@
 //   meses, sin contra-aviso exitoso]"; the defaults follow that example.
 
 import { createHash } from 'node:crypto';
+import { TAKEDOWN_LIMITS } from './takedown-limits';
 
 export interface TakedownInput {
   claimantName: string;
@@ -46,16 +47,9 @@ export function takedownMissing(i: TakedownInput): TakedownField[] {
   return req.filter((k) => !(i[k] ?? '').trim());
 }
 
-export const TAKEDOWN_LIMITS: Record<keyof TakedownInput, number> = {
-  claimantName: 300,
-  claimantContact: 500,
-  contentIdentification: 4000,
-  rightStatement: 4000,
-  contentLocation: 2000,
-  workDescription: 4000,
-  ownershipEvidence: 4000,
-  declaredTruthful: 0,
-};
+// In their own module so the client form can read them without pulling
+// node:crypto into the browser bundle.
+export { TAKEDOWN_LIMITS };
 
 export function takedownTooLong(i: TakedownInput): boolean {
   return (Object.keys(TAKEDOWN_LIMITS) as (keyof TakedownInput)[]).some((k) => {

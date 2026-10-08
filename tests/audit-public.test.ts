@@ -105,3 +105,12 @@ test('legal ARCO/terms routes treat a non-object JSON body (null) as {} instead 
     assert.match(src, /raw && typeof raw === 'object' && !Array\.isArray\(raw\)/, p);
   }
 });
+
+test('takedown form maxLength matches the server limits (name was 500 vs 300)', async () => {
+  const { TAKEDOWN_LIMITS } = await import('@/lib/legal/takedown');
+  assert.equal(TAKEDOWN_LIMITS.claimantName, 300);
+  const form = read('src/components/legal/takedown-form.tsx');
+  assert.doesNotMatch(form, /maxLength=\{(4000|k === 'contentLocation')/);
+  assert.equal(form.match(/maxLength=\{TAKEDOWN_LIMITS\[k\]\}/g)?.length, 2);
+  assert.doesNotMatch(read('src/lib/legal/takedown-limits.ts'), /node:crypto/);
+});
