@@ -97,3 +97,11 @@ test('contact form stores the lead before deciding the result; confirmation only
   assert.ok(confirm > fail, 'confirmation is sent only after the failure return');
   assert.match(src, /if \(!delivered && !stored\)/);
 });
+
+test('legal ARCO/terms routes treat a non-object JSON body (null) as {} instead of crashing', () => {
+  for (const p of ['src/app/api/legal/arco/route.ts', 'src/app/api/legal/terms/route.ts']) {
+    const src = read(p);
+    assert.doesNotMatch(src, /req\.json\(\)\.catch\(\(\) => \(\{\}\)\)\) as Record/, p);
+    assert.match(src, /raw && typeof raw === 'object' && !Array\.isArray\(raw\)/, p);
+  }
+});
