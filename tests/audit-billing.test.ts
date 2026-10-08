@@ -33,6 +33,10 @@ test('recordAuthorizedPayment keeps a known ledger status over an unmapped one',
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /status: ledgerStatus\(paymentStatus, previousLedgerStatus\)/);
   assert.doesNotMatch(s, /\n\s+status: paymentStatus,\n/);
+  // A failed read is not "no row": it retries instead of writing blind.
+  assert.match(s, /const \{ data: existing, error: existingErr \}/);
+  assert.match(s, /if \(existingErr\) \{[\s\S]{0,160}retry: true/);
+  assert.ok(s.indexOf('if (existingErr)') < s.indexOf('ledgerStatus(paymentStatus, previousLedgerStatus)'));
 });
 
 test('an approved authorized_payment never rolls last_charge_at back', () => {

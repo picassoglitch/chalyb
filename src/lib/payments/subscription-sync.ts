@@ -417,11 +417,17 @@ export async function recordAuthorizedPayment(
   if (paymentId) {
     // What the ledger already says about this charge: an unmapped status
     // never overwrites a known one (same rule as every other ledger writer).
-    const { data: existing } = await admin
+    const { data: existing, error: existingErr } = await admin
       .from('payments')
       .select('status')
       .eq('mp_payment_id', String(paymentId))
       .maybeSingle();
+    // Unread is not "no row": treating it as a first write would let an
+    // unmapped status overwrite a known one. Ask Mercado Pago to retry.
+    if (existingErr) {
+      console.error('[mp/subscription] payments read failed', existingErr);
+      return { ok: false, retry: true };
+    }
     const previousLedgerStatus = (existing?.status as string | null | undefined) ?? null;
     const { error } = await admin.from('payments').upsert(
       {
