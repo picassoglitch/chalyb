@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
 import { setRequestLocale } from 'next-intl/server';
 import { getSessionUser, requireUser } from '@/lib/auth/session';
 
@@ -14,5 +14,6 @@ export default async function AccountRedirectPage({
   await requireUser('/account');
   const session = await getSessionUser();
   const isAdmin = session?.role === 'SUPER_ADMIN' || session?.role === 'ADMIN';
-  redirect(isAdmin ? '/dashboard' : '/app');
+  // next-intl's redirect keeps the language: /en/account → /en/app.
+  redirect({ href: isAdmin ? '/dashboard' : '/app', locale });
 }

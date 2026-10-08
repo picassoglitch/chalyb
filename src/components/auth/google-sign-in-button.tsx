@@ -1,7 +1,8 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { localizeNext } from '@/lib/auth/safe-next';
 import { useState } from 'react';
 
 interface Props {
@@ -11,14 +12,17 @@ interface Props {
 
 export function GoogleSignInButton({ next, variant = 'premium' }: Props) {
   const t = useTranslations('auth.signIn');
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
 
   async function handleSignIn() {
     setLoading(true);
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback${
-      next ? `?next=${encodeURIComponent(next)}` : ''
-    }`;
+    // /auth/callback sits outside the locale tree: carry the reader's
+    // prefix in `next` so an English sign-in lands back on /en/….
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      localizeNext(next ?? '/account', locale),
+    )}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo },

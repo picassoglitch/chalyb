@@ -53,3 +53,25 @@ export function safeNextPath(raw: string | null | undefined, fallback: string): 
 
   return raw;
 }
+
+/**
+ * `next` is locale-free by design (the proxy strips the prefix so next-intl
+ * can re-add it). Anything that hands it to a plain browser redirect — the
+ * email form's router, /auth/callback's Location header — has to put the
+ * prefix back, or an English reader lands on the Spanish page. /auth/* are
+ * route handlers outside the locale tree and stay as they are, and a path
+ * that already carries a locale prefix is left alone.
+ */
+export function localizeNext(path: string, locale: string | null | undefined): string {
+  if (!locale || locale === 'es') return path;
+  if (path.startsWith('/auth/')) return path;
+  if (/^\/(es|en)(?=[/?#]|$)/.test(path)) return path;
+  if (path === '/') return `/${locale}`;
+  if (path.startsWith('/?') || path.startsWith('/#')) return `/${locale}${path.slice(1)}`;
+  return `/${locale}${path}`;
+}
+
+/** The locale a (possibly prefixed) path is in — 'en' for /en/…, else 'es'. */
+export function localeOfPath(path: string): 'es' | 'en' {
+  return /^\/en(?=[/?#]|$)/.test(path) ? 'en' : 'es';
+}

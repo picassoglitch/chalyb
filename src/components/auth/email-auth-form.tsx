@@ -7,6 +7,7 @@ import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { recordSignupConsent } from '@/lib/billing/signup-consent';
+import { localizeNext } from '@/lib/auth/safe-next';
 
 type Mode = 'signin' | 'signup';
 
@@ -29,14 +30,15 @@ const ACCOUNT_ROUTE = '/account' as Route;
  *  engine's app. A client-side push would run them as an RSC fetch first
  *  (minting a token and provisioning for nothing) before falling back to a
  *  full load, so they get a full navigation straight away. */
-function useGoNext(next: string | undefined) {
+function useGoNext(next: string | undefined, locale: string) {
   const router = useRouter();
   return () => {
     if (next?.startsWith('/auth/')) {
       window.location.assign(next);
       return;
     }
-    router.push((next ?? ACCOUNT_ROUTE) as Route);
+    // `next` is locale-free (see proxy.ts); put the reader's prefix back.
+    router.push(localizeNext(next ?? ACCOUNT_ROUTE, locale) as Route);
     router.refresh();
   };
 }
@@ -46,7 +48,7 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
   const locale = useLocale();
   const [name, setName] = useState('');
   const [marketing, setMarketing] = useState(false);
-  const goNext = useGoNext(next);
+  const goNext = useGoNext(next, locale);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -102,9 +104,11 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
           password,
           options: {
             data: name.trim() ? { full_name: name.trim() } : undefined,
-            emailRedirectTo: `${window.location.origin}/auth/callback${
-              next ? `?next=${encodeURIComponent(next)}` : ''
-            }`,
+            // The confirmation link lands on /auth/callback, outside the
+            // locale tree: carry the reader's prefix in `next`.
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+              localizeNext(next ?? ACCOUNT_ROUTE, locale),
+            )}`,
           },
         });
         if (err) {
