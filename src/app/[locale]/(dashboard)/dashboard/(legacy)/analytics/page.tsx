@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { formatCompact, formatUsdMicros, getAnalytics } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Analytics' };
 
@@ -35,6 +36,7 @@ export default async function AnalyticsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const a = await getAnalytics();
   const revenue30d = a.revenue30dCents / 100;

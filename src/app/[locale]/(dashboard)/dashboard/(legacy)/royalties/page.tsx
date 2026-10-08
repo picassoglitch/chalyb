@@ -5,6 +5,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getCurrentPeriodAccruals, getPayoutHistory, previousPeriodStartIso } from '@/lib/usage/royalties';
 import { RoyaltyFinalizeButton } from '@/components/dashboard/royalty-finalize-button';
 import { RoyaltyPayoutActions } from '@/components/dashboard/royalty-payout-actions';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Royalties' };
 
@@ -35,6 +36,7 @@ export default async function RoyaltiesPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   // The live view is the open month; the button finalizes the closed one.
   const [summary, closed, history] = await Promise.all([

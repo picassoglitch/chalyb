@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getQueueThroughput, timeAgo } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Movimiento' };
 
@@ -13,6 +14,7 @@ export default async function QueuesPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const engines = await getQueueThroughput();
   const total24h = engines.reduce((s, e) => s + e.events24h, 0);

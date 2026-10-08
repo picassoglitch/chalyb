@@ -1,6 +1,8 @@
-import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
 import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import { getSessionUser, requireUser } from '@/lib/auth/session';
+import { isAdminRole } from '@/lib/billing/tiers';
 import { BfcacheGuard } from '@/components/auth/bfcache-guard';
 import { ProfileSubscriber } from '@/components/workspace/profile-subscriber';
 import './dashboard.css';
@@ -31,8 +33,10 @@ const mono = JetBrains_Mono({
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   await requireUser('/dashboard');
   const session = await getSessionUser();
-  if (session && session.role !== 'SUPER_ADMIN' && session.role !== 'ADMIN') {
-    redirect('/app');
+  // Fail closed: a session read that comes back empty (a transient Supabase
+  // error after requireUser passed) must not render the admin panel.
+  if (!session || !isAdminRole(session.role)) {
+    return redirect({ href: '/app', locale: await getLocale() });
   }
   return (
     <div className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>
@@ -40,7 +44,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Auto-refresh the admin's view when their own profile changes (e.g.
           if another super-admin demotes them, the redirect to /app fires on
           the next render instead of waiting for a manual reload). */}
-      {session?.user.id && <ProfileSubscriber userId={session.user.id} />}
+      <ProfileSubscriber userId={session.user.id} />
       {children}
     </div>
   );

@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { listEngines } from '@/lib/data/engines';
 import type { Engine, EngineState } from '@/lib/data/types';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Infraestructura' };
 
@@ -19,6 +20,7 @@ const STATE_BADGE: Record<EngineState, { label: string; cls: string }> = {
 export default async function InfraPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const engines = await listEngines();
   const active = engines.filter((e) => e.status === 'active');

@@ -320,3 +320,26 @@ test('no sample number on the owner panel without "Ejemplo" (P5-7)', () => {
       assert.match(src, /<ExampleTag>/, `${f}: configured costs need "Ejemplo"`);
   }
 });
+
+test('every legacy admin page checks the admin role itself, and the layout fails closed', () => {
+  // Layouts don't re-render on client navigation, so the role check has to sit
+  // on each page too (several legacy pages read service-role data).
+  const root = fileURLToPath(
+    new URL('../src/app/[locale]/(dashboard)/dashboard/', import.meta.url),
+  );
+  const pages: string[] = [];
+  const walk = (dir: string) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (name === 'page.tsx') pages.push(p);
+    }
+  };
+  walk(join(root, '(legacy)'));
+  assert.ok(pages.length >= 15);
+  for (const p of pages) {
+    assert.match(readFileSync(p, 'utf8'), /await requireAdminPage\(\)/, p);
+  }
+  const layout = readFileSync(join(root, 'layout.tsx'), 'utf8');
+  assert.match(layout, /if \(!session \|\| !isAdminRole\(session\.role\)\)/);
+});
