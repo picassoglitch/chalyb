@@ -116,7 +116,11 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // the default monthly price — wrong for an annual or Lealtad plan — and be
   // stored as amount_mismatch with no retry. Ask Mercado Pago to send it
   // again instead; by then the row is there (or the checkout cancelled it).
-  if (!before && status === 'authorized') {
+  // Any status, not just authorized: a 'pending' notice that got here first
+  // would write a row WITHOUT plan_key, and the authorized one right after
+  // it would find that row and be gated against the monthly price anyway.
+  // Only start-subscription creates rows (the legacy checkout is retired).
+  if (!before) {
     console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
       preapprovalId,
     });
