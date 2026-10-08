@@ -37,3 +37,21 @@ test('legal markdown renders `code` spans instead of showing raw backticks', asy
   assert.equal(inlineText(parseInline('a ` b')), 'a ` b');
   assert.doesNotMatch(blocksText(parseMarkdown('Por ejemplo, `chalyb.com/terminos/v1-0`.')), /`/);
 });
+
+test('legal TOC is not numbered twice when headings carry their own numbers', async () => {
+  const { parseMarkdown, inlineText } = await import('@/lib/legal/markdown');
+  // Same as tocEntries() in legal-markdown.tsx (a .tsx file node can't load).
+  const tocEntries = (list: ReturnType<typeof parseMarkdown>) =>
+    list.flatMap((b) => (b.t === 'h' && b.level === 2 ? [{ text: inlineText(b.c) }] : []));
+  const { renderedSource, LEGAL_DOCS } = await import('@/lib/legal/registry');
+  // Every current legal doc numbers its sections, so the plain list applies.
+  for (const doc of LEGAL_DOCS) {
+    const src = renderedSource(doc);
+    if (src === null) continue;
+    const toc = tocEntries(parseMarkdown(src));
+    assert.ok(toc.every((e) => /^\d/.test(e.text)), `${doc}: ${toc.map((e) => e.text).join(' | ')}`);
+  }
+  const tsx = read('src/components/legal/legal-markdown.tsx');
+  assert.match(tsx, /legal-toc__plain/);
+  assert.match(read('src/styles/chalyb-legal.css'), /\.legal-toc ol\.legal-toc__plain \{\s*list-style: none;/);
+});
