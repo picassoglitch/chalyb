@@ -10,6 +10,8 @@ function inlines(c: Inline[]): ReactNode[] {
     switch (n.t) {
       case 'text':
         return n.v;
+      case 'code':
+        return <code key={i}>{n.v}</code>;
       case 'b':
         return <strong key={i}>{inlines(n.c)}</strong>;
       case 'i':
