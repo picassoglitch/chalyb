@@ -308,12 +308,12 @@ export function PlanCards(props: Props) {
                 </p>
               )}
               {vip.saveCents > 0 && (
-                <p className="ch-pc__save">
+                <span className="ch-pill ch-pill--acc">
                   {t('vip.save', {
                     ahorro: formatMXN(floorToPeso(vip.saveCents)),
                     pct: vip.savePct,
                   })}
-                </p>
+                </span>
               )}
               {vip.switchYear && (
                 <button
