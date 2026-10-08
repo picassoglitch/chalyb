@@ -757,6 +757,49 @@ try {
   check('undeliverable counts as done for completion', !owed.includes(u));
 }
 
+// ── Client writes on messages / user_notifications (0068) ─────────────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  // Supabase grants every API role ALL on public tables by default; mimic
+  // that, then re-apply 0068 the way a fresh project would see it.
+  await db.exec(`grant all on public.messages, public.user_notifications to anon, authenticated`);
+  await db.exec(
+    readFileSync(new URL('0068_lock_client_writes_messages_notices.sql', DIR), 'utf8'),
+  );
+  const policies = (
+    await db.query(
+      `select policyname from pg_policies where schemaname = 'public'
+         and policyname in ('messages_user_mark_read', 'user_notifications_update_own')`,
+    )
+  ).rows;
+  check('client UPDATE policies on messages / notices are gone', policies.length === 0);
+  const writable = [];
+  for (const [t, privs] of [
+    ['messages', ['update', 'delete']],
+    ['user_notifications', ['insert', 'update']],
+  ]) {
+    for (const role of ['anon', 'authenticated']) {
+      for (const priv of privs) {
+        const ok = (
+          await db.query(`select has_table_privilege($1, $2, $3) as ok`, [
+            role,
+            `public.${t}`,
+            priv,
+          ])
+        ).rows[0].ok;
+        if (ok) writable.push(`${role} ${priv} ${t}`);
+      }
+    }
+  }
+  check('clients cannot rewrite messages or notices', writable.length === 0, writable.join(', '));
+}
+
 console.log(
   `${files.length} migrations applied twice${process.exitCode ? ' — WITH FAILURES' : ''}`,
 );
