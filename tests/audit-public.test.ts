@@ -151,7 +151,10 @@ test('sitemap lists a /legal/* URL only when its document is in force (not noind
 
 test('mobile menu CTA carries the trial analytics tag only when signed out', () => {
   assert.doesNotMatch(read('src/components/public/mobile-menu.tsx'), /data-cta="menu_trial"/);
-  assert.match(read('src/components/public/public-nav.tsx'), /track: signedIn \? undefined : 'menu_trial'/);
+  assert.match(
+    read('src/components/public/public-nav.tsx'),
+    /track: signedIn \? undefined : 'menu_trial'/,
+  );
 });
 
 test('/health is noindex', () => {
