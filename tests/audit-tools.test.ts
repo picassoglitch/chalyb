@@ -29,3 +29,8 @@ test('every place that lists or serves a clip skips jobs removed after a copyrig
 test('Tus herramientas status lines never call a tool the hub does not run', () => {
   assert.match(src('src/lib/tools/status-lines.ts'), /if \(!hubRunsTool\(slug\)\) return;/);
 });
+
+test('Señales follow switch shows the coins the server actually saved', () => {
+  const s = src('src/components/tools/senales/follow-switch.tsx');
+  assert.match(s, /setOn\(saved\.includes\(coin\)\)/);
+});
