@@ -29,3 +29,19 @@ test('every place that lists or serves a clip skips jobs removed after a copyrig
 test('Tus herramientas status lines never call a tool the hub does not run', () => {
   assert.match(src('src/lib/tools/status-lines.ts'), /if \(!hubRunsTool\(slug\)\) return;/);
 });
+
+test('Clips counts as in-hub only in mock mode, matching getClipsAdapter()', async () => {
+  const { hubRunsTool } = await import('@/lib/tools/registry');
+  const prev = process.env.TOOL_HUB_MODE_CHALYBCLIP;
+  try {
+    for (const mode of ['on', 'a', 'b', 'off', '']) {
+      process.env.TOOL_HUB_MODE_CHALYBCLIP = mode;
+      assert.equal(hubRunsTool('chalybclip'), false, mode);
+    }
+    process.env.TOOL_HUB_MODE_CHALYBCLIP = 'mock';
+    assert.equal(hubRunsTool('chalybclip'), process.env.VERCEL_ENV !== 'production');
+  } finally {
+    if (prev === undefined) delete process.env.TOOL_HUB_MODE_CHALYBCLIP;
+    else process.env.TOOL_HUB_MODE_CHALYBCLIP = prev;
+  }
+});

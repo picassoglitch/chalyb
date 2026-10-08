@@ -62,12 +62,12 @@ export const getInversiones = () =>
   pick(TOOL_SLUGS.inversiones, 'InversionesAdapter', createMockInversiones);
 
 /**
- * Whether the hub shows this tool's own screens. Clips has a real adapter.
- * For the others, Mode A is a stub until the engine's API is documented
- * (OPS-13), so only the mock runs them in-hub today; otherwise the card
- * leads to the launch page as before.
+ * Whether the hub shows this tool's own screens. Mode A is a stub until the
+ * engine's API is documented (OPS-13) — for Clips, getClipsAdapter() returns
+ * null for anything but the mock — so only the mock runs a tool in-hub today;
+ * otherwise the card leads to the launch page as before.
  */
 export function hubRunsTool(slug: string): boolean {
-  if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
+  if (slug === TOOL_SLUGS.clips) return clipsHubMode() === 'mock';
   return toolHubMode(slug) === 'mock';
 }
