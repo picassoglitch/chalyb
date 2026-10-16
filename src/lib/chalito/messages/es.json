@@ -95,7 +95,9 @@
     "desktop": {
       "title": "Abre Chalito para terminar",
       "body": "Entraste con tu cuenta. Vuelve a la app de escritorio para terminar de entrar.",
-      "open": "Abrir Chalito"
+      "open": "Abrir Chalito",
+      "signedOut": "Tu sesión de Chalyb se cerró. Vuelve a tocar «Iniciar sesión» en la app de escritorio.",
+      "noAccess": "Tu cuenta de Chalyb aún no tiene acceso a Chalito. Revisa tu plan en Chalyb y vuelve a intentarlo desde la app."
     },
     "rateLimited": "Demasiados intentos, espera un momento y vuelve a entrar.",
     "unsolicited": "Este enlace de acceso no se abrió desde Chalito en este navegador, así que no lo usamos. Para entrar, empieza aquí.",
