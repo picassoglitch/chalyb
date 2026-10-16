@@ -85,6 +85,106 @@ export interface SignalPrefs {
   format?: 'short' | 'explained';
 }
 
+// ── Señales · Mercado y Estrategias (parity with the engine's panel) ──
+// General market data, the same for everyone: prices, the order book,
+// derivatives context, news, the engine's strategies and its backtest queue.
+// The user id these take is only who the engine call is made for (auth);
+// it never shapes the data. No accounts, keys, orders or holdings here.
+
+export type MarketVenueId = 'bitunix' | 'lbank' | 'binance';
+
+export interface MarketVenue {
+  id: MarketVenueId;
+  name: string;
+  /** Data-only venue (historical klines, no live book). */
+  dataOnly: boolean;
+}
+
+export interface MarketSymbol {
+  symbol: string;
+  base: string;
+  quote: string;
+}
+
+export interface MarketList {
+  venues: MarketVenue[];
+  venue: MarketVenueId;
+  symbols: MarketSymbol[];
+  /** The venue's list couldn't be read; symbols may be empty. */
+  degraded: boolean;
+}
+
+export interface Candle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
+export interface SeriesPoint {
+  time: number;
+  value: number;
+}
+
+export interface MarketIndicators {
+  candles: Candle[];
+  rsi: SeriesPoint[];
+  macd: { line: SeriesPoint[]; signal: SeriesPoint[]; hist: SeriesPoint[] };
+  adx: SeriesPoint[];
+  volumeDelta: SeriesPoint[];
+}
+
+export interface BookLevel {
+  price: number;
+  size: number;
+  cumulative: number;
+}
+
+export interface OrderBook {
+  pair: string;
+  takenAt: string;
+  bids: BookLevel[];
+  asks: BookLevel[];
+}
+
+export interface DerivativesContext {
+  symbol: string;
+  interval: string;
+  openInterest: SeriesPoint[];
+  funding: SeriesPoint[];
+  liquidations: { time: number; longUsd: number; shortUsd: number }[];
+  longShort: { time: number; longPct: number; shortPct: number }[];
+  heatmap: { price: number; amountUsd: number }[];
+}
+
+export interface NewsItem {
+  publishedAt: string;
+  title: string;
+  url: string;
+  source: string;
+}
+
+export interface EngineStrategy {
+  key: string;
+  name: string;
+  enabled: boolean;
+}
+
+export interface BacktestInput {
+  strategy: string;
+  pair: string;
+  timeframe: string;
+  bars: number;
+}
+
+export interface BacktestQueued extends BacktestInput {
+  jobId: string;
+  status: 'queued';
+  /** Backtests are always labelled optimistic (engine rule). */
+  optimistic: true;
+}
+
 export interface SenalesAdapter {
   capabilities(): ToolCapabilities;
   coins(signal?: AbortSignal): Promise<Coin[]>;
@@ -106,6 +206,31 @@ export interface SenalesAdapter {
   /** DELIVERY: the user's filter. */
   getPrefs(userId: string, signal?: AbortSignal): Promise<SignalPrefs | null>;
   savePrefs(userId: string, prefs: SignalPrefs, signal?: AbortSignal): Promise<void>;
+
+  // Mercado / Estrategias. `userId` authenticates the engine call only.
+  markets(userId: string, venue: MarketVenueId, signal?: AbortSignal): Promise<MarketList>;
+  indicators(
+    userId: string,
+    input: { pair: string; interval: string; bars: number },
+    signal?: AbortSignal,
+  ): Promise<MarketIndicators>;
+  orderBook(userId: string, pair: string, signal?: AbortSignal): Promise<OrderBook>;
+  /** Null when the engine has no derivatives data source configured. */
+  derivatives(
+    userId: string,
+    input: { pair: string; interval: string },
+    signal?: AbortSignal,
+  ): Promise<DerivativesContext | null>;
+  /** Null when the engine has no news source configured. */
+  news(userId: string, coin: string, signal?: AbortSignal): Promise<NewsItem[] | null>;
+  strategies(userId: string, signal?: AbortSignal): Promise<EngineStrategy[]>;
+  /** Hub usage admission runs inside the engine: a refusal throws a
+   *  USAGE_REFUSED error carrying the reason. */
+  queueBacktest(
+    userId: string,
+    input: BacktestInput,
+    signal?: AbortSignal,
+  ): Promise<BacktestQueued>;
 }
 
 // ── En vivo ──────────────────────────────────────────────────────────

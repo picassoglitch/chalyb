@@ -36,7 +36,10 @@ const PROBES: Record<string, () => (() => Promise<unknown>) | null> = {
   },
   chalybcrypto: () => {
     const a = getSenales();
-    return a ? () => a.coins() : null;
+    // The data-only venue: an engine round trip (URL, token, auth) that
+    // touches no third party and no user data. The nil id is only the
+    // token's subject.
+    return a ? () => a.markets('00000000-0000-0000-0000-000000000000', 'binance') : null;
   },
   chalybobs: () => {
     const a = getEnVivo();

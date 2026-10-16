@@ -26,6 +26,7 @@ import {
   type ToolError,
   type ToolErrorReason,
   type ToolResult,
+  usageReasonOf,
 } from './bff-core';
 import { recordToolHealth } from './status';
 
@@ -76,12 +77,14 @@ export async function reportToolError(
   retryable: boolean,
   /** Whether this failure says the tool is down (feeds tool_status). */
   outage = countsAsOutage(reason),
+  usage?: string,
 ): Promise<ToolError> {
   const error: ToolError = { reason, retryable, supportCode: newSupportCode(slug) };
+  if (usage) error.usage = usage;
   await logAudit({
     action: 'tool.error',
     targetUserId: userId,
-    metadata: { tool: slug, reason, supportCode: error.supportCode },
+    metadata: { tool: slug, reason, supportCode: error.supportCode, ...(usage ? { usage } : {}) },
   });
   if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
@@ -127,5 +130,8 @@ export async function runTool<T>(
     }
   }
   const { reason, retryable, outage } = failureEffect(last, opts);
-  return { ok: false, error: await reportToolError(slug, userId, reason, retryable, outage) };
+  return {
+    ok: false,
+    error: await reportToolError(slug, userId, reason, retryable, outage, usageReasonOf(last)),
+  };
 }
