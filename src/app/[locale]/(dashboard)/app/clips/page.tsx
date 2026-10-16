@@ -9,6 +9,7 @@ import { CLASSIC_CONNECT_PLATFORMS } from '@/lib/tools/adapters/types';
 import { listClipJobs } from '@/lib/tools/clips-jobs';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
+import { clipSourceHref } from '@/lib/tools/clips-sources';
 import { getTokenBalance } from '@/lib/usage/tokens';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
@@ -111,7 +112,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
                 {t('home.noCredits.cta')}
               </ButtonLink>
             ) : (
-              <ButtonLink href="/app/clips/nuevo" size="xl">
+              <ButtonLink href={clipSourceHref('enlace')} size="xl">
                 <Scissors aria-hidden="true" />
                 {t('home.hero.cta')}
               </ButtonLink>
@@ -146,7 +147,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
 
       {engineMode && !noCredits && (
         <nav className="ch-ce-starts" aria-label={t('home.startsAria')}>
-          <Link href={'/app/clips/subir' as Route} className="ch-ce-start">
+          <Link href={clipSourceHref('archivo') as Route} className="ch-ce-start">
             <span className="ch-ce-start__ic" aria-hidden="true">
               <Upload />
             </span>
@@ -155,7 +156,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
               <small>{t('home.starts.uploadSub')}</small>
             </span>
           </Link>
-          <Link href={'/app/clips/en-vivo' as Route} className="ch-ce-start">
+          <Link href={clipSourceHref('transmision') as Route} className="ch-ce-start">
             <span className="ch-ce-start__ic" aria-hidden="true">
               <Radio />
             </span>
@@ -164,7 +165,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
               <small>{t('home.starts.liveSub')}</small>
             </span>
           </Link>
-          <Link href={'/app/clips/canales' as Route} className="ch-ce-start">
+          <Link href={clipSourceHref('canal') as Route} className="ch-ce-start">
             <span className="ch-ce-start__ic" aria-hidden="true">
               <Tv />
             </span>

@@ -55,7 +55,7 @@ export const ENGINE_CAPABILITIES: ClipsCapabilities = {
   captionStyles: false,
   customDuration: false,
   watermark: false,
-  // The engine takes uploads (browser → bucket, /app/clips/subir).
+  // The engine takes uploads (browser → bucket, /app/clips/nuevo?fuente=archivo).
   fileUpload: true,
   // Publishing (Zernio) is live over the engine's hub API (clips/publish.ts).
   supportsConnect: true,

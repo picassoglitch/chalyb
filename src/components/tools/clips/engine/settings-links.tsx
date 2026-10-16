@@ -14,6 +14,7 @@ import {
   Tv,
   UserRound,
 } from 'lucide-react';
+import { clipSourceHref } from '@/lib/tools/clips-sources';
 import { Group, Row } from '@/components/ui/primitives';
 
 export async function EngineSettingsLinks({ admin }: { admin: boolean }) {
@@ -40,14 +41,14 @@ export async function EngineSettingsLinks({ admin }: { admin: boolean }) {
           iconColor="#0a84ff"
           title={t('channels')}
           detail={t('channelsSub')}
-          href="/app/clips/canales"
+          href={clipSourceHref('canal')}
         />
         <Row
           icon={<Radio />}
           iconColor="#ff375f"
           title={t('live')}
           detail={t('liveSub')}
-          href="/app/clips/en-vivo"
+          href={clipSourceHref('transmision')}
         />
         <Row
           icon={<Gauge />}

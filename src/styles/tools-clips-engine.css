@@ -72,6 +72,20 @@
   box-shadow: none;
 }
 
+/* Source picker on the one "Hacer clips" page (Enlace · Subir archivo ·
+   Desde tu transmisión · Vigilar un canal): the subnav pills, centered. */
+.chalyb-app .ch-ce-picker {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+.chalyb-app .ch-ce-picker .ch-ce-subnav {
+  justify-content: center;
+}
+.chalyb-app .ch-ce-source {
+  margin-inline: auto;
+}
+
 /* Start options on Clips' home. */
 .chalyb-app .ch-ce-starts {
   display: grid;
