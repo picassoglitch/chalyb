@@ -76,11 +76,19 @@ strings, so every hub version sorts before every Chalito one. Consequences:
   `pnpm test:migrations` (PGlite) applies only the four-digit files. Chalito's
   need `pg_cron` and `realtime.messages`; they're tested in the Chalito repo.
 
-Still open: nexo-ai's ledger also holds 25 `taquito_*` versions (repo
-`picassoglitch/de-taquitos-a-imperio`, applied from its `supabase/migrations`)
-and `20261006090116_lock_chalyclip_public_tables`, which is in no repo. Until
-their files are here too, `db push` from this repo refuses ("remote migration
-versions not found"). Don't `migration repair` them away: they're real.
+**Taquito** (`picassoglitch/de-taquitos-a-imperio`) also writes to nexo-ai.
+Its 14-digit `taquito_*` files are carried here the same way: byte for byte
+from its `main`, only once they match what the ledger recorded.
+`20261006090116_lock_chalyclip_public_tables` was applied directly and was in
+no repo; its file was recovered from the ledger's stored statements (see its
+header).
+
+Still open: four Taquito versions (`20261015004244`, `20261015021851`,
+`20261015023749`, `20261015023902`) were applied without their comments, so
+the files on Taquito's `main` differ from the ledger in comments only. Until
+the owner picks a version and the files are here, `db push` from this repo
+refuses ("remote migration versions not found"). Don't `migration repair` them
+away: they're real.
 
 ## Auth settings that must match
 

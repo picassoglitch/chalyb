@@ -9,11 +9,11 @@ import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { readFileSync, readdirSync } from 'node:fs';
 
 const DIR = new URL('../supabase/migrations/', import.meta.url);
-// The hub's own migrations only (four-digit versions). Chalito's 14-digit
-// timestamp files share this folder so one repo owns nexo-ai's ledger
-// (docs/infra/supabase.md), but they need pg_cron, realtime.messages and their
-// own roles, and they're tested in the Chalito repo (pgTAP on the local
-// Supabase stack), not in PGlite.
+// The hub's own migrations only (four-digit versions). The engines' 14-digit
+// timestamp files (Chalito, Taquito) share this folder so one repo owns
+// nexo-ai's ledger (docs/infra/supabase.md), but they need pg_cron,
+// realtime.messages and their own roles, and they're tested in their own
+// repos, not in PGlite.
 const files = readdirSync(DIR)
   .filter((f) => /^\d{4}_.*\.sql$/.test(f))
   .sort();
