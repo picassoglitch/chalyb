@@ -22,6 +22,11 @@ import {
 import type { TabProps } from './publish-center';
 import { statusKind, type Draft, type HistoryItem } from './types';
 
+/** Auto-publish-on-approve jobs that failed before reaching the network
+ *  (engine `_autopublish_job.py`): Reintentar re-runs the job; there's no
+ *  post to reprocess. */
+const isAutopublishJob = (postId: string) => postId.startsWith('autopub-');
+
 interface FailedPost {
   post_id: string;
   content: string;
@@ -168,39 +173,43 @@ function FailedPanel({
                 <b>{p.content || t('noCaption')}</b>
                 {p.platforms.map((pl, i) => (
                   <span key={i} style={{ whiteSpace: 'normal' }}>
-                    <PlatformList ids={pl.platform ? [pl.platform] : []} />{' '}
+                    <PlatformList
+                      ids={pl.platform && pl.platform !== 'auto' ? [pl.platform] : []}
+                    />{' '}
                     <span className="ch-pub-err">{pl.error || t('error')}</span>
                     {pl.hint && <small> · {pl.hint}</small>}
                   </span>
                 ))}
               </span>
               <span className="ch-pub-row">
-                <button
-                  type="button"
-                  className="ch-btn ch-btn--primary ch-btn--tiny"
-                  title={t('reprocessHint')}
-                  disabled={!!done[p.post_id] || busy !== null}
-                  onClick={async () => {
-                    setBusy(p.post_id);
-                    const r = await publishApi<{
-                      ok: boolean;
-                      results?: { ok: boolean; error?: string }[];
-                    }>(`reprocess/${encodeURIComponent(p.post_id)}`, { method: 'POST' });
-                    setBusy(null);
-                    const first = r.ok ? r.data.results?.[0] : undefined;
-                    if (!r.ok || (first && !first.ok)) {
-                      setMsg({
-                        kind: 'bad',
-                        text: r.ok ? first?.error || t('error') : errText(r.error),
-                      });
-                      return;
-                    }
-                    setDone((d) => ({ ...d, [p.post_id]: 'reprocessed' }));
-                  }}
-                >
-                  <RotateCw aria-hidden="true" />
-                  {done[p.post_id] === 'reprocessed' ? t('reprocessed') : t('reprocess')}
-                </button>
+                {!isAutopublishJob(p.post_id) && (
+                  <button
+                    type="button"
+                    className="ch-btn ch-btn--primary ch-btn--tiny"
+                    title={t('reprocessHint')}
+                    disabled={!!done[p.post_id] || busy !== null}
+                    onClick={async () => {
+                      setBusy(p.post_id);
+                      const r = await publishApi<{
+                        ok: boolean;
+                        results?: { ok: boolean; error?: string }[];
+                      }>(`reprocess/${encodeURIComponent(p.post_id)}`, { method: 'POST' });
+                      setBusy(null);
+                      const first = r.ok ? r.data.results?.[0] : undefined;
+                      if (!r.ok || (first && !first.ok)) {
+                        setMsg({
+                          kind: 'bad',
+                          text: r.ok ? first?.error || t('error') : errText(r.error),
+                        });
+                        return;
+                      }
+                      setDone((d) => ({ ...d, [p.post_id]: 'reprocessed' }));
+                    }}
+                  >
+                    <RotateCw aria-hidden="true" />
+                    {done[p.post_id] === 'reprocessed' ? t('reprocessed') : t('reprocess')}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="ch-btn ch-btn--gray ch-btn--tiny"
