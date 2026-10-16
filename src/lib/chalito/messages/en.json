@@ -1377,6 +1377,9 @@
     "soonTitle": "Coming soon",
     "soonBody": "We're getting Chalito ready for Windows, macOS and Linux. Meanwhile, you can use it here in the browser.",
     "soonAction": "Go to Home",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "errorTitle": "We couldn't load the downloads",
+    "errorBody": "Check your connection and try again.",
+    "retry": "Try again"
   }
 }

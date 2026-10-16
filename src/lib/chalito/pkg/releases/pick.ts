@@ -3,35 +3,52 @@ import type { DetectedPlatform } from "./detect";
 
 type DownloadFile = NonNullable<NonNullable<ReleaseManifest["downloads"]>[DownloadOs]>[number];
 
-/**
- * One channel's manifest through the api (which returns signed, short-lived URLs).
- * Null when there's no release on that channel yet, or the manifest is malformed.
- */
+/** One channel's manifest: there, not published (404), or unknown (network, server, malformed). */
+export type ChannelResult = { status: "ok"; manifest: ReleaseManifest } | { status: "none" } | { status: "error" };
+
+/** One channel's manifest through the api (which returns signed, short-lived URLs). */
+export const fetchChannelResult = async (
+  apiBase: string,
+  channel: Channel,
+  f: typeof fetch = fetch,
+): Promise<ChannelResult> => {
+  try {
+    const res = await f(`${apiBase.replace(/\/+$/, "")}/releases/${channel}/latest.json`, { credentials: "omit" });
+    if (res.status === 404) return { status: "none" };
+    if (!res.ok) return { status: "error" };
+    const m = ReleaseManifest.safeParse(await res.json());
+    return m.success ? { status: "ok", manifest: m.data } : { status: "error" };
+  } catch {
+    return { status: "error" };
+  }
+};
+
+/** The manifest or null (no release, or it couldn't be read). */
 export const fetchChannel = async (
   apiBase: string,
   channel: Channel,
   f: typeof fetch = fetch,
 ): Promise<ReleaseManifest | null> => {
-  try {
-    const res = await f(`${apiBase.replace(/\/+$/, "")}/releases/${channel}/latest.json`, { credentials: "omit" });
-    if (!res.ok) return null;
-    const m = ReleaseManifest.safeParse(await res.json());
-    return m.success ? m.data : null;
-  } catch {
-    return null;
-  }
+  const r = await fetchChannelResult(apiBase, channel, f);
+  return r.status === "ok" ? r.manifest : null;
 };
 
-/** Stable first; until there's a stable release, the beta (ADR 0028: the first releases are beta). */
-export const loadManifest = async (
-  apiBase: string,
-  f: typeof fetch = fetch,
-): Promise<{ manifest: ReleaseManifest; channel: Channel } | null> => {
-  for (const channel of ["stable", "beta"] as const) {
-    const manifest = await fetchChannel(apiBase, channel, f);
-    if (manifest) return { manifest, channel };
-  }
-  return null;
+export type LoadResult =
+  | { status: "ok"; manifest: ReleaseManifest; channel: Channel }
+  | { status: "none" }
+  | { status: "error" };
+
+/**
+ * Stable first; only when stable has no release at all (404), the beta (ADR 0028: the first
+ * releases are beta). A stable that can't be read right now is an error, never a reason to offer
+ * the beta instead: the page shows a retry.
+ */
+export const loadManifest = async (apiBase: string, f: typeof fetch = fetch): Promise<LoadResult> => {
+  const stable = await fetchChannelResult(apiBase, "stable", f);
+  if (stable.status === "ok") return { status: "ok", manifest: stable.manifest, channel: "stable" };
+  if (stable.status === "error") return stable;
+  const beta = await fetchChannelResult(apiBase, "beta", f);
+  return beta.status === "ok" ? { status: "ok", manifest: beta.manifest, channel: "beta" } : beta;
 };
 
 /** The installer offered first for each OS: the one most people on it can just open. */

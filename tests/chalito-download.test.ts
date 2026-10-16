@@ -74,13 +74,13 @@ test('pick: the detected OS gets one main button with its preferred installer; t
   assert.equal(pickDownloads(noMac as unknown as ReleaseManifest, 'macos', null).primary, null);
 });
 
-test('manifest: stable first, then beta; a 404 or a malformed manifest on both means no release', async () => {
+test('manifest: stable first; beta only when stable has no release (404)', async () => {
   const stable = `${API}/releases/stable/latest.json`;
   const beta = `${API}/releases/beta/latest.json`;
 
   const onlyBeta = await loadManifest(API, fakeFetch({ [beta]: { status: 200, body: MANIFEST } }));
-  assert.equal(onlyBeta?.channel, 'beta');
-  assert.equal(onlyBeta?.manifest.version, '0.1.0-beta.1');
+  assert.equal(onlyBeta.status === 'ok' && onlyBeta.channel, 'beta');
+  assert.equal(onlyBeta.status === 'ok' && onlyBeta.manifest.version, '0.1.0-beta.1');
 
   const both = await loadManifest(
     `${API}/`,
@@ -89,18 +89,36 @@ test('manifest: stable first, then beta; a 404 or a malformed manifest on both m
       [beta]: { status: 200, body: MANIFEST },
     }),
   );
-  assert.equal(both?.channel, 'stable');
-  assert.equal(both?.manifest.version, '1.0.0');
+  assert.equal(both.status === 'ok' && both.channel, 'stable');
+  assert.equal(both.status === 'ok' && both.manifest.version, '1.0.0');
 
-  assert.equal(await loadManifest(API, fakeFetch({})), null);
+  // No release on either channel: "Muy pronto".
+  assert.deepEqual(await loadManifest(API, fakeFetch({})), { status: 'none' });
+});
+
+test('manifest: an unreadable stable is an error (retry), never a silent switch to beta', async () => {
+  const stable = `${API}/releases/stable/latest.json`;
+  const beta = `${API}/releases/beta/latest.json`;
+  const calls: string[] = [];
+  const offline = (async (url: string | URL) => {
+    calls.push(String(url));
+    throw new Error('offline');
+  }) as unknown as typeof fetch;
+  assert.deepEqual(await loadManifest(API, offline), { status: 'error' });
+  assert.deepEqual(calls, [stable]);
+
+  for (const answer of [{ status: 500 }, { status: 503 }, { status: 200, body: { version: 'v1' } }])
+    assert.deepEqual(
+      await loadManifest(API, fakeFetch({ [stable]: answer, [beta]: { status: 200, body: MANIFEST } })),
+      { status: 'error' },
+      JSON.stringify(answer),
+    );
+  // Stable has none and beta can't be read: an error too, not "Muy pronto".
+  assert.deepEqual(await loadManifest(API, fakeFetch({ [beta]: { status: 502 } })), { status: 'error' });
   assert.equal(
     await fetchChannel(API, 'beta', fakeFetch({ [beta]: { status: 200, body: { version: 'v1' } } })),
     null,
   );
-  const throws = (async () => {
-    throw new Error('offline');
-  }) as unknown as typeof fetch;
-  assert.equal(await loadManifest(API, throws), null);
 });
 
 /** Every key the page and the panel ask for, including the per-OS and per-kind ones. */
