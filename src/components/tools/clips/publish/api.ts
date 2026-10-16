@@ -33,10 +33,14 @@ export async function publishApi<T>(
 ): Promise<PublishResult<T>> {
   const method = init.method ?? (init.body === undefined ? 'GET' : 'POST');
   const qs = init.query ? `?${new URLSearchParams(init.query).toString()}` : '';
-  if (method !== 'GET') {
+  const write = method !== 'GET';
+  // A write empties the cache when it starts and again when it ends (however
+  // it ends), so a read that overlapped it never keeps a pre-write answer.
+  const settleWrite = () => {
     writes += 1;
     lastRead.clear();
-  }
+  };
+  if (write) settleWrite();
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}${qs}`, {
@@ -46,7 +50,7 @@ export async function publishApi<T>(
       cache: 'no-store',
     });
   } catch {
-    if (method !== 'GET') writes += 1;
+    if (write) settleWrite();
     return {
       ok: false,
       error: {
@@ -59,11 +63,7 @@ export async function publishApi<T>(
       },
     };
   }
-  // Reads that ran while this write was in flight may predate it too.
-  if (method !== 'GET') {
-    writes += 1;
-    lastRead.clear();
-  }
+  if (write) settleWrite();
   const json = (await res.json().catch(() => null)) as {
     ok?: boolean;
     data?: T;
