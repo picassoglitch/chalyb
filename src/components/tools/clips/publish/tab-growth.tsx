@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Pause, Play, Plus, Rocket, Send } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/primitives';
-import { publishApi, usePublishErrorText } from './api';
+import { publishApi, publishRead, usePublishErrorText } from './api';
 import { InlineMsg, PlatformTile, platformName, useConfirm, type Msg } from './common';
 import type { TabProps } from './publish-center';
 
@@ -90,13 +90,13 @@ function GrowthPanels({ ov }: { ov: TabProps['ov'] }) {
   const [bcMsg, setBcMsg] = useState<Msg>(null);
 
   function loadAutos() {
-    return publishApi<{ automations: Automation[] }>('growth/automations.json').then((r) => {
+    return publishRead<{ automations: Automation[] }>('growth/automations.json', (r) => {
       setAutos(r.ok ? (r.data.automations ?? []) : []);
       if (!r.ok) setAutoMsg({ kind: 'bad', text: errText(r.error) });
     });
   }
   function loadSeqs() {
-    return publishApi<{ sequences: Sequence[] }>('growth/sequences.json').then((r) => {
+    return publishRead<{ sequences: Sequence[] }>('growth/sequences.json', (r) => {
       setSeqs(r.ok ? (r.data.sequences ?? []) : []);
       if (!r.ok) setSeqMsg({ kind: 'bad', text: errText(r.error) });
     });
@@ -104,8 +104,8 @@ function GrowthPanels({ ov }: { ov: TabProps['ov'] }) {
   useEffect(() => {
     void loadAutos();
     void loadSeqs();
-    void publishApi<{ history: { post_id: string; content: string | null }[] }>('feed.json').then(
-      (r) => setPosts(r.ok ? (r.data.history ?? []).slice(0, 20) : []),
+    void publishRead<{ history: { post_id: string; content: string | null }[] }>('feed.json', (r) =>
+      setPosts(r.ok ? (r.data.history ?? []).slice(0, 20) : []),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once
   }, []);

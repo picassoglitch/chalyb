@@ -4,13 +4,14 @@
 // reads the engine and renders the one that's picked.
 
 import type { Route } from 'next';
+import type { ReactNode } from 'react';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { CloudOff, UserPlus } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { getLive, getSources, getStart } from '@/lib/tools/adapters/clips/engine-api';
 import { clipSourceHref, type ClipSource } from '@/lib/tools/clips-sources';
 import { Pill, StateBlock } from '@/components/ui/primitives';
-import { ClipsSubnav } from './subnav';
+import { SourceSwitch } from './source-switch';
 import { UploadForm } from './upload-form';
 import { LivePanel } from './live-panel';
 import { SourcesPanel } from './sources-panel';
@@ -20,10 +21,19 @@ type Start = Awaited<ReturnType<typeof getStart>>;
 type Live = Awaited<ReturnType<typeof getLive>>;
 type Sources = Awaited<ReturnType<typeof getSources>>;
 
-/** Enlace · Subir archivo · Desde tu transmisión · Vigilar un canal. Plain
- *  links (?fuente=…), so the back button and shared links keep the pick. */
-export async function SourcePicker({ current }: { current: ClipSource }) {
+/** Enlace · Subir archivo · Desde tu transmisión · Vigilar un canal, over
+ *  the picked source's panel (`children`). Plain links (?fuente=…), so the
+ *  back button and shared links keep the pick; SourceSwitch shows the click
+ *  at once. */
+export async function SourceFrame({
+  current,
+  children,
+}: {
+  current: ClipSource;
+  children: ReactNode;
+}) {
   const t = await getTranslations('clipsEngine.newJob.sources');
+  const tl = await getTranslations('toolShell');
   const items: { source: ClipSource; label: string }[] = [
     { source: 'enlace', label: t('link') },
     { source: 'archivo', label: t('upload') },
@@ -31,13 +41,14 @@ export async function SourcePicker({ current }: { current: ClipSource }) {
     { source: 'canal', label: t('channel') },
   ];
   return (
-    <div className="ch-ce-picker">
-      <ClipsSubnav
-        label={t('aria')}
-        current={clipSourceHref(current)}
-        items={items.map((i) => ({ href: clipSourceHref(i.source), label: i.label }))}
-      />
-    </div>
+    <SourceSwitch
+      label={t('aria')}
+      loadingLabel={tl('loading')}
+      current={clipSourceHref(current)}
+      items={items.map((i) => ({ href: clipSourceHref(i.source), label: i.label }))}
+    >
+      {children}
+    </SourceSwitch>
   );
 }
 

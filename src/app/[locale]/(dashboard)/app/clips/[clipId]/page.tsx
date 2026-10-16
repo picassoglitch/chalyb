@@ -22,6 +22,7 @@ import { CLIP_ID_RE } from '@/lib/tools/adapters/clips/editor-types';
 import { EXPORT_QUALITIES, type ExportQuality } from '@/lib/tools/adapters/clips/editor-types';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
+import { clipJobHref } from '@/lib/tools/clips-job-href';
 import '@/styles/tools-clips.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -122,17 +123,14 @@ export default async function ClipDetailPage({
             <ChevronLeft aria-hidden="true" />
             <span>{td('back')}</span>
           </Link>
-          <Link
-            href={`/app/clips/trabajo/${encodeURIComponent(loaded.data.clip.stream_id)}` as Route}
-            className="ch-lnk"
-          >
+          <Link href={clipJobHref(loaded.data.clip.stream_id) as Route} className="ch-lnk">
             {tj('backStream')}
           </Link>
         </div>
         <ClipEditorScreen
           key={loaded.data.clip.id}
           initial={loaded.data}
-          jobHref={`/app/clips/trabajo/${encodeURIComponent(loaded.data.clip.stream_id)}`}
+          jobHref={clipJobHref(loaded.data.clip.stream_id)}
           exportOnLoad={exportOnLoad}
         />
       </ToolShell>

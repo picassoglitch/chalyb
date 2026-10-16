@@ -10,7 +10,7 @@ import { Link } from '@/i18n/routing';
 import { toolBySlug, type ToolTabKey } from '@/config/tools';
 import { Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
-import { ToolTabsAuto } from './tool-tabs';
+import { ToolTabsAuto, ToolTabsLinks } from './tool-tabs';
 
 export async function ToolShell({
   slug,
@@ -59,23 +59,15 @@ export async function ToolShell({
           />
         )}
         {plan === 'included' && tab !== 'auto' && (
-          <nav
-            className="ch-tooltabs"
-            role="tablist"
-            aria-label={t('tabsAria', { herramienta: tool.name })}
-          >
-            {tool.tabs.map((x) => (
-              <Link
-                key={x.key}
-                href={x.href as Route}
-                role="tab"
-                aria-selected={tab === x.key}
-                aria-current={tab === x.key ? 'page' : undefined}
-              >
-                {t(`tab.${slug}.${x.key}`)}
-              </Link>
-            ))}
-          </nav>
+          <ToolTabsLinks
+            selected={tab}
+            ariaLabel={t('tabsAria', { herramienta: tool.name })}
+            tabs={tool.tabs.map((x) => ({
+              key: x.key,
+              href: x.href,
+              label: t(`tab.${slug}.${x.key}`),
+            }))}
+          />
         )}
       </header>
       <div className="ch-toolbody">{children}</div>

@@ -95,10 +95,18 @@ export function EnVivoStudio({
     if (r.ok && r.data) setS(r.data);
   }, []);
 
+  // Polls only while the tab is visible; coming back re-reads right away.
   useEffect(() => {
-    const id = window.setInterval(() => void refresh(), POLL_MS);
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') void refresh();
+    }, POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [refresh]);
 

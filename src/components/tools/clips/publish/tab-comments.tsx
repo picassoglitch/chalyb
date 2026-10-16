@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { EyeOff, Heart, Reply, Send } from 'lucide-react';
-import { publishApi, usePublishErrorText } from './api';
+import { publishApi, publishRead, usePublishErrorText } from './api';
 import { InlineMsg, PlatformTile, platformName, type Msg } from './common';
 
 interface Comment {
@@ -29,7 +29,7 @@ export function CommentsTab() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    void publishApi<{ comments: Comment[] }>('inbox/comments.json').then((r) => {
+    void publishRead<{ comments: Comment[] }>('inbox/comments.json', (r) => {
       if (r.ok) setItems(r.data.comments ?? []);
       else {
         setErr(errText(r.error));

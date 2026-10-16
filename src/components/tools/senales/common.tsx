@@ -119,40 +119,4 @@ export async function SignalCard({
   );
 }
 
-/** Coin chips: links, so the filter works without JavaScript. They only
- *  filter the list; they never change what a signal says. */
-export async function CoinChips({
-  base,
-  coins,
-  active,
-}: {
-  base: string;
-  coins: Coin[];
-  active: string | null;
-}) {
-  const t = await getTranslations('signalsTool.filter');
-  return (
-    <nav className="ch-coinchips" aria-label={t('aria')}>
-      <Link
-        href={base as Route}
-        className={`ch-chip${active ? '' : ' ch-chip--on'}`}
-        aria-current={active ? undefined : 'true'}
-      >
-        {t('all')}
-      </Link>
-      {coins.map((c) => (
-        <Link
-          key={c.symbol}
-          href={`${base}?moneda=${c.symbol}` as Route}
-          className={`ch-chip${active === c.symbol ? ' ch-chip--on' : ''}`}
-          aria-current={active === c.symbol ? 'true' : undefined}
-        >
-          <span className="ch-coinchips__dot" aria-hidden="true">
-            {c.symbol.slice(0, 1)}
-          </span>
-          {c.name}
-        </Link>
-      ))}
-    </nav>
-  );
-}
+// Coin chips: coin-filter.tsx (CoinChipsLive).

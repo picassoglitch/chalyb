@@ -5,6 +5,7 @@ import 'server-only';
 import type { Entitlements } from '@/lib/billing/entitlement-core';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { getInmuebles, hubRunsTool } from '@/lib/tools/registry';
+import { clipJobHref } from '@/lib/tools/clips-job-href';
 import { clipItem, mergeResults, propertyItem, type ResultItem } from './core';
 import { hiddenJobIds } from '@/lib/legal/removals';
 
@@ -36,5 +37,8 @@ export async function collectResults(
     homes ? safe('inmuebles', () => homes.list(userId)) : Promise.resolve([]),
   ]);
   const visible = jobs.filter((j) => !hidden.has(j.id)).slice(0, limit);
-  return mergeResults(visible.map(clipItem), cards.map(propertyItem)).slice(0, limit);
+  return mergeResults(
+    visible.map((j) => ({ ...clipItem(j), href: clipJobHref(j.id) })),
+    cards.map(propertyItem),
+  ).slice(0, limit);
 }

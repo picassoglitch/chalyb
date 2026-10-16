@@ -12,13 +12,14 @@ import { clipSourceHref, parseClipSource, type ClipSource } from '@/lib/tools/cl
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
 import type { ToolError } from '@/lib/tools/bff-core';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { PasteButton } from '@/components/app/clips/paste-button';
 import {
   ChannelSource,
   LiveSource,
-  SourcePicker,
+  SourceFrame,
   UploadSource,
 } from '@/components/tools/clips/engine/start-sources';
 import '@/styles/tools-clips.css';
@@ -83,8 +84,7 @@ export default async function ClipsStep1Page({
     const g = await loadClipsEngine(locale, here);
     const frame = (body: ReactNode) => (
       <WizardShell {...chrome}>
-        <SourcePicker current={source} />
-        {body}
+        <SourceFrame current={source}>{body}</SourceFrame>
       </WizardShell>
     );
     const failed = (err: ToolError, savedWork?: boolean) =>
@@ -119,8 +119,13 @@ export default async function ClipsStep1Page({
   if (reason) {
     return (
       <WizardShell {...chrome} narrow={!engine}>
-        {engine && <SourcePicker current="enlace" />}
-        <ClipError reason={reason} sourceUrl={link} noCharge />
+        {engine ? (
+          <SourceFrame current="enlace">
+            <ClipError reason={reason} sourceUrl={link} noCharge />
+          </SourceFrame>
+        ) : (
+          <ClipError reason={reason} sourceUrl={link} noCharge />
+        )}
       </WizardShell>
     );
   }
@@ -129,6 +134,58 @@ export default async function ClipsStep1Page({
   // there is no step 2 — the link (and the optional Boost) starts the job.
   const te = await getTranslations('clipsEngine');
 
+  const form = (
+    <form
+      action={engine ? createClipJob : '/app/clips/nuevo/formato'}
+      method={engine ? undefined : 'get'}
+      className="ch-center-col"
+    >
+      <h1 className="ch-h1">
+        <label htmlFor="clip-link">{t('s1.title')}</label>
+      </h1>
+      <p className="ch-sub" id="clip-link-sub">
+        {t('s1.sub')}
+      </p>
+      <div className="ch-paste">
+        <input
+          id="clip-link"
+          name="link"
+          type="url"
+          inputMode="url"
+          required
+          autoComplete="off"
+          defaultValue={link ?? ''}
+          placeholder={t('s1.placeholder')}
+          aria-describedby="clip-link-sub clip-link-works"
+          className="ch-input"
+        />
+        <PasteButton targetId="clip-link" label={t('s1.paste')} />
+      </div>
+      <p id="clip-link-works" className="ch-muted" style={{ fontSize: 17 }}>
+        {t('s1.works', { plataformas: list.format(caps.sources) })}
+      </p>
+      {engine && (
+        <label className="ch-check" style={{ fontSize: 17 }}>
+          <input type="checkbox" name="boost" value="1" />
+          <span>
+            {te('boost.label')} <span className="ch-muted">{te('boost.hint')}</span>
+          </span>
+        </label>
+      )}
+      <SubmitButton className="ch-btn ch-btn--primary ch-btn--xl">
+        {engine ? te('newJob.cta') : t('s1.cta')}
+      </SubmitButton>
+      {engine && (
+        <p className="ch-muted" style={{ fontSize: 16 }}>
+          {te('newJob.other')}{' '}
+          <Link href={clipSourceHref('archivo') as Route} className="ch-lnk">
+            {te('newJob.upload')}
+          </Link>
+        </p>
+      )}
+    </form>
+  );
+
   return (
     <WizardShell
       {...chrome}
@@ -136,56 +193,7 @@ export default async function ClipsStep1Page({
       stepLabel={engine ? undefined : t('step', { n: 1 })}
       narrow={!engine}
     >
-      {engine && <SourcePicker current="enlace" />}
-      <form
-        action={engine ? createClipJob : '/app/clips/nuevo/formato'}
-        method={engine ? undefined : 'get'}
-        className="ch-center-col"
-      >
-        <h1 className="ch-h1">
-          <label htmlFor="clip-link">{t('s1.title')}</label>
-        </h1>
-        <p className="ch-sub" id="clip-link-sub">
-          {t('s1.sub')}
-        </p>
-        <div className="ch-paste">
-          <input
-            id="clip-link"
-            name="link"
-            type="url"
-            inputMode="url"
-            required
-            autoComplete="off"
-            defaultValue={link ?? ''}
-            placeholder={t('s1.placeholder')}
-            aria-describedby="clip-link-sub clip-link-works"
-            className="ch-input"
-          />
-          <PasteButton targetId="clip-link" label={t('s1.paste')} />
-        </div>
-        <p id="clip-link-works" className="ch-muted" style={{ fontSize: 17 }}>
-          {t('s1.works', { plataformas: list.format(caps.sources) })}
-        </p>
-        {engine && (
-          <label className="ch-check" style={{ fontSize: 17 }}>
-            <input type="checkbox" name="boost" value="1" />
-            <span>
-              {te('boost.label')} <span className="ch-muted">{te('boost.hint')}</span>
-            </span>
-          </label>
-        )}
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
-          {engine ? te('newJob.cta') : t('s1.cta')}
-        </button>
-        {engine && (
-          <p className="ch-muted" style={{ fontSize: 16 }}>
-            {te('newJob.other')}{' '}
-            <Link href={clipSourceHref('archivo') as Route} className="ch-lnk">
-              {te('newJob.upload')}
-            </Link>
-          </p>
-        )}
-      </form>
+      {engine ? <SourceFrame current="enlace">{form}</SourceFrame> : form}
     </WizardShell>
   );
 }

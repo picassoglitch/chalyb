@@ -11,6 +11,7 @@
 // would be a second, divergent copy of those rules.
 
 import 'server-only';
+import { cache } from 'react';
 import type { SessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getTokenBalance } from '@/lib/usage/tokens';
@@ -20,7 +21,20 @@ import { loadBilling } from './subscription-store';
 
 export type { Entitlements, ToolAccess, ToolAccessState, SetupStep } from './entitlement-core';
 
-export async function getEntitlements(session: SessionUser): Promise<Entitlements> {
+/** Start the entitlement reads that only need the user id (all memoized per
+ *  request) while the caller is still reading the profile row: by the time
+ *  getEntitlements runs they are in flight or done, which saves one serial
+ *  round of database calls per screen. Errors are left to getEntitlements. */
+export function warmEntitlements(userId: string): void {
+  void listEngines().catch(() => {});
+  void getTokenBalance(userId).catch(() => {});
+  void loadBilling(userId).catch(() => {});
+}
+
+// Memoized per request (React cache) by session: getSessionUser is memoized
+// too, so the layout, the tool gate and a screen that ask again share one
+// answer.
+export const getEntitlements = cache(async (session: SessionUser): Promise<Entitlements> => {
   const [engines, balance, billing] = await Promise.all([
     listEngines().catch(() => []),
     getTokenBalance(session.user.id).catch(() => null),
@@ -57,4 +71,4 @@ export async function getEntitlements(session: SessionUser): Promise<Entitlement
       proIncludesAllTools: proIncludesAllTools(),
     },
   });
-}
+});

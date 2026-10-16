@@ -19,12 +19,28 @@ export type PublishResult<T> = { ok: true; data: T } | { ok: false; error: Publi
 
 const BASE = '/api/tools/chalybclip/publish/';
 
+// The last good answer of each list read (publishRead), for this page view
+// only: switching back to a Publicar tab shows its list at once while it is
+// re-read. Any write (POST) empties it, so nothing shown predates a change
+// made here: a read that was already in flight when a write started doesn't
+// store its answer (`writes` moved on).
+const lastRead = new Map<string, unknown>();
+let writes = 0;
+
 export async function publishApi<T>(
   path: string,
   init: { method?: 'GET' | 'POST'; body?: unknown; query?: Record<string, string> } = {},
 ): Promise<PublishResult<T>> {
   const method = init.method ?? (init.body === undefined ? 'GET' : 'POST');
   const qs = init.query ? `?${new URLSearchParams(init.query).toString()}` : '';
+  const write = method !== 'GET';
+  // A write empties the cache when it starts and again when it ends (however
+  // it ends), so a read that overlapped it never keeps a pre-write answer.
+  const settleWrite = () => {
+    writes += 1;
+    lastRead.clear();
+  };
+  if (write) settleWrite();
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}${qs}`, {
@@ -34,6 +50,7 @@ export async function publishApi<T>(
       cache: 'no-store',
     });
   } catch {
+    if (write) settleWrite();
     return {
       ok: false,
       error: {
@@ -46,6 +63,7 @@ export async function publishApi<T>(
       },
     };
   }
+  if (write) settleWrite();
   const json = (await res.json().catch(() => null)) as {
     ok?: boolean;
     data?: T;
@@ -66,6 +84,24 @@ export async function publishApi<T>(
       supportCode: str(e.supportCode),
     },
   };
+}
+
+/** A list read for a tab: `onResult` gets the last good answer right away
+ *  (when there is one), then the fresh one. The promise settles with the
+ *  fresh one. */
+export function publishRead<T>(
+  path: string,
+  onResult: (r: PublishResult<T>) => void,
+  init: { query?: Record<string, string> } = {},
+): Promise<void> {
+  const key = `${path}?${new URLSearchParams(init.query ?? {}).toString()}`;
+  if (lastRead.has(key)) onResult({ ok: true, data: lastRead.get(key) as T });
+  const startedAt = writes;
+  return publishApi<T>(path, init).then((r) => {
+    if (r.ok && startedAt === writes) lastRead.set(key, r.data);
+    else lastRead.delete(key);
+    onResult(r);
+  });
 }
 
 /** What to tell the person about a failed call. */

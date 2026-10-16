@@ -3,13 +3,15 @@
 
 import 'server-only';
 import { redirect } from '@/i18n/routing';
-import { getSessionUser, type SessionUser } from '@/lib/auth/session';
-import { getEntitlements, type Entitlements } from '@/lib/billing/entitlement';
+import { getCurrentUser, getSessionUser, type SessionUser } from '@/lib/auth/session';
+import { getEntitlements, warmEntitlements, type Entitlements } from '@/lib/billing/entitlement';
 
 export async function requireClipsAccess(
   locale: string,
   next: string,
 ): Promise<{ session: SessionUser; entitlements: Entitlements }> {
+  const user = await getCurrentUser();
+  if (user) warmEntitlements(user.id);
   const session = await getSessionUser();
   if (!session) return redirect({ href: `/sign-in?next=${encodeURIComponent(next)}`, locale });
   const entitlements = await getEntitlements(session);

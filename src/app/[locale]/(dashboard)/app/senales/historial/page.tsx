@@ -8,7 +8,8 @@ import { loadSignalFeed } from '@/lib/tools/signals-feed';
 import { groupByDay, relativeDay, SIGNAL_TZ } from '@/lib/tools/signals-view';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
-import { CoinChips, SignalCard, SignalsDisclaimer } from '@/components/tools/senales/common';
+import { SignalCard, SignalsDisclaimer } from '@/components/tools/senales/common';
+import { CoinChipsLive, CoinVariant } from '@/components/tools/senales/coin-filter';
 import '@/styles/tools-senales.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,10 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SenalesHistorial({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ moneda?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -39,7 +38,16 @@ export default async function SenalesHistorial({
     );
   if (gate.kind !== 'ready' || gate.riskPending) return redirect({ href: '/app/senales', locale });
   const { session, entitlements, adapter } = gate;
-  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  // The feed is content by plan (no user input): it starts with the prefs
+  // read, not after it; only its coin filter waits for the prefs.
+  const prefsAsync = loadSenalesPrefs(adapter, session.user.id);
+  const feedAsync = loadSignalFeed(
+    adapter,
+    planKeyFor(entitlements.plan),
+    session.user.id,
+    prefsAsync.then((r) => (r.ok && r.data ? r.data.coins : [])),
+  );
+  const prefsRes = await prefsAsync;
   if (!prefsRes.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="history">
@@ -50,10 +58,7 @@ export default async function SenalesHistorial({
   const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signalsTool');
-  const [coins, feed] = await Promise.all([
-    adapter.coins(),
-    loadSignalFeed(adapter, planKeyFor(entitlements.plan), session.user.id, prefs.coins),
-  ]);
+  const [coins, feed] = await Promise.all([adapter.coins(), feedAsync]);
   if (!feed.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="history">
@@ -61,10 +66,8 @@ export default async function SenalesHistorial({
         <SignalsDisclaimer />
       </ToolShell>
     );
-  const { moneda } = await searchParams;
-  const active = moneda && prefs.coins.includes(moneda) ? moneda : null;
+  const mine = coins.filter((c) => prefs.coins.includes(c.symbol));
   const now = new Date().getTime();
-  const days = groupByDay(feed.signals.filter((s) => !active || s.coin === active));
   const loc = locale === 'es' ? 'es-MX' : 'en-US';
   const dayTitle = (iso: string) => {
     const rel = relativeDay(iso, now);
@@ -76,39 +79,53 @@ export default async function SenalesHistorial({
       month: 'long',
     }).format(new Date(iso));
   };
+  // One version per chip value (CoinVariant picks it in the browser).
+  const screenFor = (active: string | null) => {
+    const days = groupByDay(feed.signals.filter((s) => !active || s.coin === active));
+    return (
+      <>
+        {days.length === 0 ? (
+          <div className="ch-card ch-state ch-sig-empty">
+            <p>{t('history.empty')}</p>
+          </div>
+        ) : (
+          days.map((d) => (
+            <section key={d.day} className="ch-sig-day" aria-labelledby={`day-${d.day}`}>
+              <h2 id={`day-${d.day}`} className="ch-ghead">
+                {dayTitle(d.items[0]!.at)}
+              </h2>
+              <div className="ch-sig-list">
+                {d.items.map((s) => (
+                  <SignalCard
+                    key={s.id}
+                    signal={s}
+                    coin={coins.find((c) => c.symbol === s.coin)}
+                    now={now}
+                    locale={locale}
+                    primary={false}
+                    isNew={false}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </>
+    );
+  };
+
   return (
     <ToolShell slug="chalybcrypto" tab="history">
-      <CoinChips
+      <CoinChipsLive
         base="/app/senales/historial"
-        coins={coins.filter((c) => prefs.coins.includes(c.symbol))}
-        active={active}
+        coins={mine.map((c) => ({ symbol: c.symbol, name: c.name }))}
       />
-      {days.length === 0 ? (
-        <div className="ch-card ch-state ch-sig-empty">
-          <p>{t('history.empty')}</p>
-        </div>
-      ) : (
-        days.map((d) => (
-          <section key={d.day} className="ch-sig-day" aria-labelledby={`day-${d.day}`}>
-            <h2 id={`day-${d.day}`} className="ch-ghead">
-              {dayTitle(d.items[0]!.at)}
-            </h2>
-            <div className="ch-sig-list">
-              {d.items.map((s) => (
-                <SignalCard
-                  key={s.id}
-                  signal={s}
-                  coin={coins.find((c) => c.symbol === s.coin)}
-                  now={now}
-                  locale={locale}
-                  primary={false}
-                  isNew={false}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
+      <CoinVariant
+        variants={Object.fromEntries([
+          ['', screenFor(null)],
+          ...mine.map((c) => [c.symbol, screenFor(c.symbol)]),
+        ])}
+      />
       <SignalsDisclaimer />
     </ToolShell>
   );

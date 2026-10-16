@@ -10,16 +10,35 @@
 // by the next before it rendered, and the page sat on "creating" past the
 // test's 30 s (clips-flow.spec.ts:29).
 
-import { useEffect, useTransition } from 'react';
+//
+// Only while the tab is visible: a hidden tab doesn't re-render the whole
+// page on the server every few seconds (and doesn't compete with the clicks
+// of the tab the person is using). Coming back re-reads right away.
+
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 export function AutoRefresh({ everyMs = 2000 }: { everyMs?: number }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [hidden, setHidden] = useState(false);
+  const wasHidden = useRef(false);
   useEffect(() => {
+    const sync = () => setHidden(document.visibilityState === 'hidden');
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => document.removeEventListener('visibilitychange', sync);
+  }, []);
+  useEffect(() => {
+    if (hidden) {
+      wasHidden.current = true;
+      return;
+    }
     if (pending) return;
-    const id = window.setTimeout(() => startTransition(() => router.refresh()), everyMs);
+    const delay = wasHidden.current ? 0 : everyMs;
+    wasHidden.current = false;
+    const id = window.setTimeout(() => startTransition(() => router.refresh()), delay);
     return () => window.clearTimeout(id);
-  }, [pending, router, everyMs]);
+  }, [pending, hidden, router, everyMs]);
   return null;
 }

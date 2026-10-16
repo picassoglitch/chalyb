@@ -615,6 +615,71 @@ body {
   }
 }
 
+/* SubmitButton's pending spinner. */
+.chalyb-app .ch-btnspin {
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  vertical-align: -0.125em;
+  animation: ch-spin 0.7s linear infinite;
+}
+@keyframes ch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A tool screen's loading state (ToolLoading): shimmer shaped like the
+   screen, under the real tool header and tabs. */
+.chalyb-app .ch-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.chalyb-app .ch-loading--col {
+  gap: 18px;
+  padding-top: 8px;
+}
+.chalyb-app .ch-loading__pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-loading__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.chalyb-app .ch-loading__grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.chalyb-app .ch-loading__rows {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.chalyb-app .ch-loading__split,
+.chalyb-app .ch-loading__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.chalyb-app .ch-loading__cols {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .chalyb-app .ch-loading__split,
+  .chalyb-app .ch-loading__cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ---------- Avatar / logo / tool icon / example tag ---------- */
 .chalyb-app .ch-avatar {
   width: 44px;

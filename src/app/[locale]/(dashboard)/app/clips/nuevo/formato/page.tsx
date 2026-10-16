@@ -8,6 +8,7 @@ import { CAPTION_STYLES, CLIP_COUNTS, CLIP_FORMATS } from '@/lib/tools/adapters/
 import { MAX_EXTRA_LINKS } from '@/lib/tools/clips-options';
 import { createClipJob } from '@/lib/tools/clips-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Pill } from '@/components/ui/primitives';
 import { Segmented } from '@/components/ui/segmented';
 
@@ -165,9 +166,9 @@ export default async function ClipsStep2Page({
           </details>
         )}
 
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
+        <SubmitButton className="ch-btn ch-btn--primary ch-btn--xl">
           {t('s2.cta')}
-        </button>
+        </SubmitButton>
       </form>
     </WizardShell>
   );
