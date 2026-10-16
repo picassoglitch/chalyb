@@ -3815,7 +3815,14 @@
     "newJob": {
       "cta": "Make my clips",
       "other": "No link?",
-      "upload": "Upload the file"
+      "upload": "Upload the file",
+      "sources": {
+        "aria": "Where your clips come from",
+        "link": "Link",
+        "upload": "Upload a file",
+        "live": "From your stream",
+        "channel": "Watch a channel"
+      }
     },
     "upload": {
       "metaTitle": "Upload a video · Clips",

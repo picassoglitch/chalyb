@@ -1,38 +1,72 @@
 import type { Metadata, Route } from 'next';
+import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { requireClipsAccess } from '@/lib/tools/clips-access';
 import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { engineRead, loadClipsEngine, type ClipsEngineGate } from '@/lib/tools/clips-engine';
+import { getLive, getSources, getStart } from '@/lib/tools/adapters/clips/engine-api';
 import { createClipJob } from '@/lib/tools/clips-actions';
+import { clipSourceHref, parseClipSource, type ClipSource } from '@/lib/tools/clips-sources';
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
+import type { ToolError } from '@/lib/tools/bff-core';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { PasteButton } from '@/components/app/clips/paste-button';
+import {
+  ChannelSource,
+  LiveSource,
+  SourcePicker,
+  UploadSource,
+} from '@/components/tools/clips/engine/start-sources';
+import '@/styles/tools-clips.css';
+import '@/styles/tools-clips-engine.css';
 
-export async function generateMetadata(): Promise<Metadata> {
+type Search = Promise<{ error?: string; link?: string; fuente?: string | string[] }>;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Search;
+}): Promise<Metadata> {
+  const source = getClipsEngineAdapter() ? parseClipSource((await searchParams).fuente) : 'enlace';
+  if (source === 'archivo')
+    return { title: (await getTranslations('clipsEngine.upload'))('metaTitle') };
+  if (source === 'transmision')
+    return { title: (await getTranslations('clipsEngine.live'))('metaTitle') };
+  if (source === 'canal')
+    return { title: (await getTranslations('clipsEngine.sources'))('metaTitle') };
   const t = await getTranslations('clips');
   return { title: t('s1.metaTitle') };
 }
 
-// Clips · Paso 1 (SCR-02): paste a link. With TOOL_HUB_MODE_CHALYBCLIP=off
-// (no engine job API yet) it hands off to the Clips app over SSO (P0-14).
-// Connect / upload alternatives show only when the adapter supports them
-// (none does yet); "Pegar" only where the Clipboard API can read.
+// Hacer clips: every way to start clips on one page. Paso 1 (SCR-02) is the
+// link; with the engine (mode "a") a picker at the top adds "Subir archivo",
+// "Desde tu transmisión" and "Vigilar un canal", each rendered inline here
+// (?fuente=…). The old one-source pages redirect here. With
+// TOOL_HUB_MODE_CHALYBCLIP=off (no engine job API yet) it hands off to the
+// Clips app over SSO (P0-14); without the engine only the link exists.
+// "Pegar" only where the Clipboard API can read.
 
 export default async function ClipsStep1Page({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; link?: string }>;
+  searchParams: Search;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireClipsAccess(locale, '/app/clips/nuevo');
+  const { error, link, fuente } = await searchParams;
+  const engine = !!getClipsEngineAdapter();
+  // Without the engine the link is the only source.
+  const source: ClipSource = engine ? parseClipSource(fuente) : 'enlace';
+  const here = clipSourceHref(source);
+  await requireClipsAccess(locale, here);
   const t = await getTranslations('clips');
   const tc = await getTranslations('clipsTool');
-  const { error, link } = await searchParams;
   const chrome = {
     slug: 'chalybclip',
     toolName: 'Clips',
@@ -45,6 +79,36 @@ export default async function ClipsStep1Page({
   // No engine API yet: Clips' home shows ToolErrorState (never a hand-off).
   if (!getClipsAdapter()) return redirect({ href: '/app/clips', locale });
 
+  if (source !== 'enlace') {
+    const g = await loadClipsEngine(locale, here);
+    const frame = (body: ReactNode) => (
+      <WizardShell {...chrome}>
+        <SourcePicker current={source} />
+        {body}
+      </WizardShell>
+    );
+    const failed = (err: ToolError, savedWork?: boolean) =>
+      frame(<ToolErrorState slug="chalybclip" error={err} savedWork={savedWork} />);
+    if (g.kind !== 'ready') {
+      // Locked / setup / risk: Clips' home explains them.
+      if (g.kind !== 'error') return redirect({ href: '/app/clips', locale });
+      return failed(g.error);
+    }
+    const ready = g as Extract<ClipsEngineGate, { kind: 'ready' }>;
+    if (source === 'archivo') {
+      const res = await engineRead(ready, (e, signal) => getStart(e, signal));
+      return res.ok ? frame(<UploadSource start={res.data} />) : failed(res.error, true);
+    }
+    if (source === 'transmision') {
+      const res = await engineRead(ready, (e, signal) => getLive(e, signal));
+      return res.ok ? frame(<LiveSource live={res.data} />) : failed(res.error, true);
+    }
+    const res = await engineRead(ready, (e, signal) => getSources(e, signal));
+    return res.ok
+      ? frame(<ChannelSource sources={res.data} locale={locale} />)
+      : failed(res.error, true);
+  }
+
   const caps = getClipsAdapter()!.capabilities();
   const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
 
@@ -54,7 +118,8 @@ export default async function ClipsStep1Page({
 
   if (reason) {
     return (
-      <WizardShell {...chrome} narrow>
+      <WizardShell {...chrome} narrow={!engine}>
+        {engine && <SourcePicker current="enlace" />}
         <ClipError reason={reason} sourceUrl={link} noCharge />
       </WizardShell>
     );
@@ -62,7 +127,6 @@ export default async function ClipsStep1Page({
 
   // Mode "a": the engine decides shape and how many clips a video gives, so
   // there is no step 2 — the link (and the optional Boost) starts the job.
-  const engine = !!getClipsEngineAdapter();
   const te = await getTranslations('clipsEngine');
 
   return (
@@ -70,8 +134,9 @@ export default async function ClipsStep1Page({
       {...chrome}
       step={engine ? undefined : 1}
       stepLabel={engine ? undefined : t('step', { n: 1 })}
-      narrow
+      narrow={!engine}
     >
+      {engine && <SourcePicker current="enlace" />}
       <form
         action={engine ? createClipJob : '/app/clips/nuevo/formato'}
         method={engine ? undefined : 'get'}
@@ -115,7 +180,7 @@ export default async function ClipsStep1Page({
         {engine && (
           <p className="ch-muted" style={{ fontSize: 16 }}>
             {te('newJob.other')}{' '}
-            <Link href={'/app/clips/subir' as Route} className="ch-lnk">
+            <Link href={clipSourceHref('archivo') as Route} className="ch-lnk">
               {te('newJob.upload')}
             </Link>
           </p>

@@ -3815,7 +3815,14 @@
     "newJob": {
       "cta": "Hacer mis clips",
       "other": "¿No tienes enlace?",
-      "upload": "Sube el archivo"
+      "upload": "Sube el archivo",
+      "sources": {
+        "aria": "De dónde salen tus clips",
+        "link": "Enlace",
+        "upload": "Subir archivo",
+        "live": "Desde tu transmisión",
+        "channel": "Vigilar un canal"
+      }
     },
     "upload": {
       "metaTitle": "Subir un video · Clips",

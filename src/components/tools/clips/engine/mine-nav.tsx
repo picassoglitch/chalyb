@@ -2,6 +2,7 @@
 // engine keeps the videos the clips came from).
 
 import { getTranslations } from 'next-intl/server';
+import { clipSourceHref } from '@/lib/tools/clips-sources';
 import { ClipsSubnav } from './subnav';
 
 export async function MineNav({
@@ -28,8 +29,8 @@ export async function SettingsNav({ current, admin }: { current: string; admin: 
     { href: '/app/clips/ajustes', label: t('general') },
     { href: '/app/clips/ajustes/estilos', label: t('styles') },
     { href: '/app/clips/ajustes/personas', label: t('personas') },
-    { href: '/app/clips/canales', label: t('channels') },
-    { href: '/app/clips/en-vivo', label: t('live') },
+    { href: clipSourceHref('canal'), label: t('channels') },
+    { href: clipSourceHref('transmision'), label: t('live') },
     { href: '/app/clips/ajustes/calibracion', label: t('calibration') },
   ];
   if (admin)
