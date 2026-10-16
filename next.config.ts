@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { DESKTOP_PAGE_HEADERS, DESKTOP_START_PATH } from './src/lib/chalito/web/desktop-sso';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -168,6 +169,14 @@ const nextConfig: NextConfig = {
         destination: '/:locale/contacto',
         permanent: true,
       },
+    ];
+  },
+  // Chalito's desktop sign-in page carries the app's state in its URL: no cache, no index, no Referer.
+  async headers() {
+    const headers = DESKTOP_PAGE_HEADERS.map((h) => ({ ...h }));
+    return [
+      { source: DESKTOP_START_PATH, headers },
+      { source: `/:locale(en|es)${DESKTOP_START_PATH}`, headers },
     ];
   },
 };

@@ -1,40 +1,29 @@
 import { useEffect, useState } from "react";
-import { DOWNLOAD_OSES, ReleaseManifest, type DownloadOs } from "./manifest";
+import type { Channel, DownloadOs, ReleaseManifest } from "./manifest";
+import { fetchChannel, pickDownloads } from "./pick";
 import { detectPlatform, type DetectedPlatform, type NavigatorLike } from "./detect";
 
 /** `t(key, values)` over this package's messages (es/en), e.g. next-intl's `useTranslations("download")`. */
 export type DownloadText = (key: string, values?: Record<string, string | number>) => string;
 
-/**
- * Fetches the channel manifest through the api (which returns signed, short-lived URLs).
- * Returns null when there's no release yet or the manifest is malformed.
- */
-export const fetchManifest = async (
-  apiBase: string,
-  channel: "stable" | "beta" = "stable",
-  f: typeof fetch = fetch,
-): Promise<ReleaseManifest | null> => {
-  try {
-    const res = await f(`${apiBase.replace(/\/+$/, "")}/releases/${channel}/latest.json`, { credentials: "omit" });
-    if (!res.ok) return null;
-    const m = ReleaseManifest.safeParse(await res.json());
-    return m.success ? m.data : null;
-  } catch {
-    return null;
-  }
-};
+/** One channel's manifest (kept for callers that ask for a specific channel). */
+export const fetchManifest = (apiBase: string, channel: Channel = "stable", f: typeof fetch = fetch) =>
+  fetchChannel(apiBase, channel, f);
 
 /**
- * /descargar: offers the detected OS's installers first, with a manual switch. Shows the
- * version, sizes and SHA-256 checksums, an unsigned warning when the build wasn't signed, and
- * the SmartScreen note for Windows (ADR 0014). `manifest` undefined = still loading.
+ * /descargar: the detected OS's installer as one main button, its other formats under it, and the
+ * other systems below. Shows the version, sizes and SHA-256 checksums, an unsigned warning when
+ * the build wasn't signed, and the SmartScreen steps for an unsigned Windows build (ADR 0014,
+ * ADR 0028 §A). `manifest` undefined = still loading; null = no release yet.
  */
 export const DownloadPanel = ({
   manifest,
+  channel = "stable",
   t,
   navigator: nav = typeof navigator === "undefined" ? undefined : (navigator as NavigatorLike),
 }: {
   manifest: ReleaseManifest | null | undefined;
+  channel?: Channel;
   t: DownloadText;
   navigator?: NavigatorLike;
 }) => {
@@ -45,59 +34,80 @@ export const DownloadPanel = ({
 
   if (manifest === undefined) return <p>{t("loading")}</p>;
   if (manifest === null) return <p role="status">{t("unavailable")}</p>;
-  const desktop = (DOWNLOAD_OSES as readonly string[]).includes(detected) ? (detected as DownloadOs) : null;
-  const os: DownloadOs = chosen ?? desktop ?? "windows";
-  const files = manifest.downloads?.[os] ?? [];
+  const { os, primary, others, otherOses } = pickDownloads(manifest, detected, chosen);
+  const unsigned = Boolean(manifest.unsigned?.[os]);
+  const desktop = detected === os && chosen === null;
 
   return (
     <section data-download-os={os} className="ch-chl">
       <h2 className="ch-h2">{t("title")}</h2>
-      {desktop && <p className="ch-sub">{t("detected", { os: t(`os.${desktop}`) })}</p>}
+      {desktop && <p className="ch-sub">{t("detected", { os: t(`os.${os}`) })}</p>}
       {(detected === "ios" || detected === "android") && (
         <p role="note" className="ch-card ch-chl-card ch-chl-card--warn">
           {t("mobile")}
         </p>
       )}
-      <div role="radiogroup" aria-label={t("choose")} className="ch-chl-row">
-        {DOWNLOAD_OSES.map((o) => (
-          <button
-            key={o}
-            type="button"
-            role="radio"
-            aria-checked={o === os}
-            className={`ch-chip ch-chip--sm${o === os ? " ch-chip--on" : ""}`}
-            onClick={() => setChosen(o)}
-          >
+      {primary ? (
+        <div className="ch-card ch-chl-card" data-kind={primary.kind} data-primary>
+          <a href={primary.url} download={primary.name} rel="noopener" className="ch-btn ch-btn--primary ch-btn--xl">
+            {t("primary", { os: t(`os.${os}`) })}
+          </a>
+          <span className="ch-chl-small">
+            {t(`kinds.${primary.kind}`)} · {primary.name} · {t("size", { mb: (primary.size / 1_048_576).toFixed(1) })}
+          </span>
+          <code className="ch-chl-mono ch-chl-small" title={t("checksum")}>
+            {t("checksum")} {primary.sha256}
+          </code>
+        </div>
+      ) : (
+        <p role="status">{t("unavailable")}</p>
+      )}
+      <p className="ch-chl-small">
+        {t("version", { version: manifest.version })}
+        {channel === "beta" ? ` · ${t("beta")}` : ""}
+      </p>
+      {unsigned && os === "windows" ? (
+        <div role="note" data-unsigned data-smartscreen className="ch-card ch-chl-card ch-chl-card--warn">
+          <p>{t("smartscreen")}</p>
+          <ol className="ch-chl-bullets">
+            <li>{t("smartscreenSteps.one")}</li>
+            <li>{t("smartscreenSteps.two")}</li>
+          </ol>
+        </div>
+      ) : unsigned ? (
+        <p role="note" data-unsigned className="ch-card ch-chl-card ch-chl-card--warn">
+          {t("unsigned")}
+        </p>
+      ) : null}
+      {primary && <p className="ch-chl-small">{t("next")}</p>}
+      {others.length > 0 && (
+        <>
+          <h3 className="ch-chl-h3">{t("others")}</h3>
+          <ul className="ch-chl-list">
+            {others.map((f) => (
+              <li key={f.name} data-kind={f.kind} className="ch-card ch-chl-card">
+                <a href={f.url} download={f.name} rel="noopener" className="ch-btn ch-btn--secondary ch-chl-fit">
+                  {t(`kinds.${f.kind}`)}
+                </a>
+                <span className="ch-chl-small">
+                  {f.name} · {t("size", { mb: (f.size / 1_048_576).toFixed(1) })}
+                </span>
+                <code className="ch-chl-mono ch-chl-small" title={t("checksum")}>
+                  {f.sha256}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="ch-chl-small">{t("otherOs")}</p>
+      <div role="group" aria-label={t("choose")} className="ch-chl-row">
+        {otherOses.map((o) => (
+          <button key={o} type="button" className="ch-chip ch-chip--sm" onClick={() => setChosen(o)}>
             {t(`os.${o}`)}
           </button>
         ))}
       </div>
-      <p className="ch-chl-small">{t("version", { version: manifest.version })}</p>
-      {manifest.unsigned?.[os] && (
-        <p role="note" data-unsigned className="ch-card ch-chl-card ch-chl-card--warn">
-          {t("unsigned")}
-        </p>
-      )}
-      {files.length === 0 ? (
-        <p role="status">{t("unavailable")}</p>
-      ) : (
-        <ul className="ch-chl-list">
-          {files.map((f) => (
-            <li key={f.name} data-kind={f.kind} className="ch-card ch-chl-card">
-              <a href={f.url} download={f.name} rel="noopener" className="ch-btn ch-btn--primary ch-chl-fit">
-                {t(`kinds.${f.kind}`)}
-              </a>
-              <span className="ch-chl-small">
-                {f.name} · {t("size", { mb: (f.size / 1_048_576).toFixed(1) })}
-              </span>
-              <code className="ch-chl-mono ch-chl-small" title={t("checksum")}>
-                {f.sha256}
-              </code>
-            </li>
-          ))}
-        </ul>
-      )}
-      {os === "windows" && <p className="ch-chl-small">{t("smartscreen")}</p>}
     </section>
   );
 };

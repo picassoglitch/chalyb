@@ -95,7 +95,9 @@
     "desktop": {
       "title": "Abre Chalito para terminar",
       "body": "Entraste con tu cuenta. Vuelve a la app de escritorio para terminar de entrar.",
-      "open": "Abrir Chalito"
+      "open": "Abrir Chalito",
+      "signedOut": "Tu sesión de Chalyb se cerró. Vuelve a tocar «Iniciar sesión» en la app de escritorio.",
+      "noAccess": "Tu cuenta de Chalyb aún no tiene acceso a Chalito. Revisa tu plan en Chalyb y vuelve a intentarlo desde la app."
     },
     "rateLimited": "Demasiados intentos, espera un momento y vuelve a entrar.",
     "unsolicited": "Este enlace de acceso no se abrió desde Chalito en este navegador, así que no lo usamos. Para entrar, empieza aquí.",
@@ -1341,6 +1343,46 @@
     "keyWhere": "Tu {label} se consigue en {url}",
     "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa.",
     "keySendAnyway": "Enviar de todos modos"
+  },
+  "download": {
+    "title": "Descarga Chalito para tu computadora",
+    "detected": "Detectamos {os}.",
+    "primary": "Descargar para {os}",
+    "choose": "Elige tu sistema",
+    "otherOs": "¿Usas otro sistema?",
+    "others": "Otros formatos",
+    "os": {
+      "windows": "Windows",
+      "macos": "macOS",
+      "linux": "Linux"
+    },
+    "kinds": {
+      "nsis": "Instalador (.exe)",
+      "dmg": "Imagen de disco (.dmg, Apple Silicon e Intel)",
+      "appimage": "AppImage (cualquier distribución)",
+      "deb": "Paquete .deb (Debian, Ubuntu)",
+      "rpm": "Paquete .rpm (Fedora, openSUSE)"
+    },
+    "version": "Versión {version}",
+    "beta": "Versión beta: puede tener errores. Las actualizaciones llegan solas.",
+    "size": "{mb} MB",
+    "checksum": "SHA-256",
+    "unsigned": "Esta versión aún no está firmada. Tu sistema puede mostrar una advertencia al abrirla.",
+    "smartscreen": "La primera vez, Windows puede mostrar «Windows protegió tu PC». Es normal mientras la beta no está firmada:",
+    "smartscreenSteps": {
+      "one": "Toca «Más información».",
+      "two": "Toca «Ejecutar de todas formas»."
+    },
+    "next": "Después de instalarla, abre Chalito y toca «Iniciar sesión».",
+    "mobile": "Chalito para computadora es para Windows, macOS y Linux. En tu teléfono, usa la app web.",
+    "unavailable": "Aún no hay descarga para este sistema.",
+    "soonTitle": "Muy pronto",
+    "soonBody": "Estamos preparando Chalito para Windows, macOS y Linux. Mientras tanto, puedes usarlo aquí en el navegador.",
+    "soonAction": "Ir a Inicio",
+    "loading": "Cargando…",
+    "errorTitle": "No pudimos cargar las descargas",
+    "errorBody": "Revisa tu conexión y vuelve a intentarlo.",
+    "retry": "Reintentar"
   },
   "approveComputer": {
     "title": "Aprobar computadora",
