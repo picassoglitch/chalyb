@@ -19,8 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Señales · Estrategias: the engine's strategies and its backtest queue
-// (parity with the old panel). A backtest spends credits through the hub's
-// usage admission; refusals are explained on the form.
+// (parity with the old panel). A backtest runs now, returns its OPTIMISTA
+// result and spends credits through the hub's usage admission only when it
+// succeeds; refusals are explained on the form.
 
 export default async function SenalesEstrategias({
   params,
@@ -53,7 +54,11 @@ export default async function SenalesEstrategias({
   const res = await runTool(
     'chalybcrypto',
     session.user.id,
-    (signal) => adapter.strategies(session.user.id, signal),
+    (signal) =>
+      Promise.all([
+        adapter.strategies(session.user.id, signal),
+        adapter.listBacktests(session.user.id, signal),
+      ]),
     { idempotent: true },
   );
   const back = (
@@ -82,7 +87,8 @@ export default async function SenalesEstrategias({
         </Link>
       </div>
       <StrategyLab
-        strategies={res.data}
+        strategies={res.data[0]}
+        initialRuns={res.data[1]}
         initialPair={parsePair(par) ?? DEFAULT_PAIR}
         locale={locale}
       />

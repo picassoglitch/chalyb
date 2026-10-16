@@ -7,10 +7,9 @@
 // chalybcrypto row (the same host the SSO hand-off uses).
 //
 // Signal CONTENT (getSignals/getSignal) takes the plan only (REVISION-LEGAL
-// C1). The engine has no plan-level feed today: its signals are per-user
-// trade setups (entry, stop, take-profit, leverage), which Señales may not
-// show (TOOLS-SPEC §5.4, §8). Until a plan feed exists the feed is empty —
-// the screens show their "no signals yet" state. Owner decision pending.
+// C1): it is the engine's shared feed (/api/hub/v1/feed), one general reading
+// per coin computed from market data, the same for every user. The call is
+// made as the hub's service principal (no user), so no user id can reach it.
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -18,7 +17,7 @@ import { signHubApiToken } from '@/lib/engines/hub-api-token';
 import { ToolRequestError, ToolUsageRefusedError } from '../bff-core';
 import { SENALES_COINS } from '../senales-coins';
 import type {
-  BacktestQueued,
+  BacktestResult,
   DerivativesContext,
   EngineStrategy,
   MarketIndicators,
@@ -27,14 +26,19 @@ import type {
   MarketVenueId,
   NewsItem,
   OrderBook,
+  PricePoint,
   SenalesAdapter,
   SeriesPoint,
+  Signal,
   SignalChannel,
   SignalPrefs,
   ToolCapabilities,
 } from './tools';
 
 const SLUG = 'chalybcrypto';
+/** The token subject for calls that belong to no user (the shared feed, the
+ *  health probe). The engine's feed and market routes never look it up. */
+export const HUB_SERVICE_PRINCIPAL = '00000000-0000-0000-0000-000000000000';
 const CAPS: ToolCapabilities = { supportsConnect: false, likenessOptions: [] };
 /** The engine delivers nothing by WhatsApp or email today: in-app only. */
 const CHANNELS: SignalChannel[] = ['app'];
@@ -102,6 +106,9 @@ export function engineError(status: number, body: unknown): Error {
   if (status === 404) return new EngineHttpError(status, 'NOT_FOUND');
   if (status === 400 || status === 422)
     return new ToolRequestError(`engine refused input (${status})`);
+  // A backtest whose price source didn't answer: not charged, not an outage.
+  if (status === 502 && d.error === 'backtest_data_unavailable')
+    return new EngineHttpError(status, 'NO_DATA', 'backtest_data_unavailable');
   // 401/403 (secret mismatch), 5xx, anything else: the tool is unwell.
   return new EngineHttpError(status, 'ENGINE_ERROR', typeof d.error === 'string' ? d.error : null);
 }
@@ -206,6 +213,74 @@ export function toDerivatives(raw: Record<string, unknown>): DerivativesContext 
   };
 }
 
+const STATES = new Set(['buy', 'sell', 'wait']);
+const CONFIDENCES = new Set(['high', 'medium', 'none']);
+
+/** A feed entry as a hub Signal; null for anything malformed. */
+export function toSignal(r: Record<string, unknown>): Signal | null {
+  const why = (r.why ?? {}) as { short?: unknown; bullets?: unknown };
+  if (typeof r.id !== 'string' || typeof r.coin !== 'string') return null;
+  if (!STATES.has(String(r.state)) || !CONFIDENCES.has(String(r.confidence))) return null;
+  const mxn = r.ref_price_mxn;
+  return {
+    id: r.id,
+    coin: r.coin,
+    state: r.state as Signal['state'],
+    confidence: r.confidence as Signal['confidence'],
+    explanation: typeof r.explanation === 'string' ? r.explanation : '',
+    at: String(r.at ?? ''),
+    ...(typeof mxn === 'number' && Number.isFinite(mxn) ? { refPriceMXN: mxn } : {}),
+    why: {
+      short: typeof why.short === 'string' ? why.short : '',
+      bullets: Array.isArray(why.bullets) ? why.bullets.map(String).slice(0, 3) : [],
+    },
+  };
+}
+
+export function toBacktest(r: Record<string, unknown>): BacktestResult {
+  const m = (r.metrics ?? null) as Record<string, unknown> | null;
+  const a = (r.assumptions ?? null) as Record<string, unknown> | null;
+  const opt = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+  return {
+    jobId: String(r.job_id ?? ''),
+    status: r.status === 'failed' ? 'failed' : 'done',
+    ...(typeof r.error === 'string' ? { error: r.error } : {}),
+    strategy: String(r.strategy ?? ''),
+    pair: String(r.pair ?? ''),
+    timeframe: String(r.timeframe ?? ''),
+    bars: num(r.bars ?? r.bars_requested),
+    barsRequested: num(r.bars_requested),
+    dataSource: typeof r.data_source === 'string' ? r.data_source : undefined,
+    from: typeof r.from === 'string' ? r.from : undefined,
+    to: typeof r.to === 'string' ? r.to : undefined,
+    startingEquity: opt(r.starting_equity),
+    endingEquity: opt(r.ending_equity),
+    netReturnBps: opt(r.net_return_bps),
+    metrics: m
+      ? {
+          sampleSize: num(m.sample_size),
+          winRate: num(m.win_rate),
+          avgWinBps: num(m.avg_win_bps),
+          avgLossBps: num(m.avg_loss_bps),
+          profitFactor: typeof m.profit_factor === 'number' ? m.profit_factor : null,
+          maxDrawdownBps: num(m.max_drawdown_bps),
+          feeDragBps: num(m.fee_drag_bps),
+        }
+      : undefined,
+    assumptions: a
+      ? {
+          riskPerTradeBps: num(a.risk_per_trade_bps),
+          takerBps: num(a.taker_bps),
+          makerBps: num(a.maker_bps),
+          spreadBps: num(a.spread_bps),
+          slippageBps: num(a.slippage_bps),
+        }
+      : undefined,
+    createdAt: typeof r.created_at === 'string' ? r.created_at : undefined,
+    optimistic: true,
+  };
+}
+
 /** The 503 the engine sends on purpose when a data source has no API key
  *  (coinglass_api_key_missing, cryptopanic_api_key_missing). Any other
  *  failure stays a failure. */
@@ -219,9 +294,38 @@ export function createEngineSenales(call = createEngineCaller(engineBase)): Sena
     capabilities: () => CAPS,
     coins: async () => SENALES_COINS,
     channels: async () => CHANNELS,
-    // CONTENT by plan: no plan-level feed in the engine yet (see header).
-    getSignals: async () => [],
-    getSignal: async () => null,
+    // CONTENT by plan: the shared feed, fetched as the service principal.
+    getSignals: async ({ plan, coins, since }, signal) => {
+      const raw = await call<{ signals?: Record<string, unknown>[] }>(
+        HUB_SERVICE_PRINCIPAL,
+        '/feed',
+        {
+          query: { plan, ...(since ? { since } : {}) },
+          signal,
+        },
+      );
+      const all = (raw.signals ?? []).map(toSignal).filter((x): x is Signal => x !== null);
+      return coins?.length ? all.filter((x) => coins.includes(x.coin)) : all;
+    },
+    getSignal: async ({ id, range }, signal) => {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+      const raw = await call<{
+        signal?: Record<string, unknown>;
+        series?: Record<string, unknown>[];
+      }>(HUB_SERVICE_PRINCIPAL, `/feed/${encodeURIComponent(id)}`, {
+        query: { range },
+        signal,
+      }).catch((e) =>
+        e instanceof EngineHttpError && e.code === 'NOT_FOUND' ? null : Promise.reject(e),
+      );
+      const sig = raw?.signal ? toSignal(raw.signal) : null;
+      if (!raw || !sig) return null;
+      const series: PricePoint[] = (raw.series ?? []).map((p) => ({
+        at: String(p.at ?? ''),
+        priceMXN: num(p.price_mxn),
+      }));
+      return { signal: sig, series };
+    },
 
     getPrefs: async (userId, signal) =>
       (await call<SignalPrefs | null>(userId, '/signal-prefs', { signal })) ?? null,
@@ -293,21 +397,15 @@ export function createEngineSenales(call = createEngineCaller(engineBase)): Sena
           enabled: s.enabled !== false,
         }),
       ),
-    queueBacktest: async (userId, input, signal) => {
-      const r = await call<Record<string, unknown>>(userId, '/backtests', {
-        method: 'POST',
-        body: input,
-        signal,
-      });
-      return {
-        jobId: String(r.job_id ?? ''),
-        status: 'queued',
-        strategy: String(r.strategy ?? input.strategy),
-        pair: String(r.pair ?? input.pair),
-        timeframe: String(r.timeframe ?? input.timeframe),
-        bars: num(r.bars ?? input.bars),
-        optimistic: true,
-      } satisfies BacktestQueued;
-    },
+    runBacktest: async (userId, input, signal) =>
+      toBacktest(
+        await call<Record<string, unknown>>(userId, '/backtests', {
+          method: 'POST',
+          body: input,
+          signal,
+        }),
+      ),
+    listBacktests: async (userId, signal) =>
+      (await call<Record<string, unknown>[]>(userId, '/backtests', { signal })).map(toBacktest),
   };
 }

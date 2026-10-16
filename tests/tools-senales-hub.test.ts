@@ -12,6 +12,8 @@ import {
   createEngineSenales,
   engineError,
   notConfigured,
+  toSignal,
+  HUB_SERVICE_PRINCIPAL,
   EngineHttpError,
   validEngineBase,
 } from '@/lib/tools/adapters/senales-engine';
@@ -145,12 +147,80 @@ test('prefs round-trip through the engine (PUT then GET)', async () => {
   assert.equal(seen[1]!.init.method, 'PUT');
 });
 
-test('signal content stays plan-only: the engine adapter never fetches per-user signals', async () => {
-  const { seen, adapter } = fakeEngine(() => ({ status: 200, body: [] }));
-  assert.deepEqual(await adapter.getSignals({ plan: 'PRO' }), []);
-  assert.equal(await adapter.getSignal({ plan: 'PRO', id: 'x', range: '7d' }), null);
-  assert.equal(seen.length, 0);
+test('signal content is the shared feed, fetched as the service principal (never a user)', async () => {
+  process.env.CHALYBCRYPTO_SSO_SECRET = SECRET;
+  const ID = '3f2b8a7e-1c2d-4e5f-8a9b-0c1d2e3f4a5b';
+  const entry = (coin: string, over: Record<string, unknown> = {}) => ({
+    id: coin === 'BTC' ? ID : `${ID.slice(0, -3)}${coin.length}00`,
+    coin,
+    state: 'buy',
+    confidence: 'medium',
+    explanation: '2 de 3 estrategias de Señales coinciden en esta lectura.',
+    at: '2026-10-16T05:00:00+00:00',
+    ref_price_mxn: 1510135.34,
+    why: { short: 'Las lecturas del precio apuntan hacia arriba.', bullets: ['a', 'b', 'c', 'd'] },
+    ...over,
+  });
+  const { seen, adapter } = fakeEngine((url) => {
+    if (url.pathname === '/api/hub/v1/feed')
+      return {
+        status: 200,
+        body: {
+          signals: [
+            entry('BTC'),
+            entry('SOL', { ref_price_mxn: null }),
+            entry('X', { state: 'moon' }),
+          ],
+        },
+      };
+    if (url.pathname === `/api/hub/v1/feed/${ID}`)
+      return {
+        status: 200,
+        body: {
+          signal: entry('BTC'),
+          series: [{ at: '2026-10-16T00:00:00+00:00', price_mxn: 1.5 }],
+        },
+      };
+    return { status: 404, body: { detail: 'feed entry not found' } };
+  });
+  const all = await adapter.getSignals({ plan: 'PRO' });
+  assert.deepEqual(
+    all.map((x) => x.coin),
+    ['BTC', 'SOL'],
+  ); // malformed entries are dropped
+  assert.equal(all[0]!.refPriceMXN, 1510135.34);
+  assert.equal('refPriceMXN' in all[1]!, false); // no rate → no invented price
+  assert.equal(all[0]!.why!.bullets.length, 3);
+  assert.equal(seen[0]!.url.searchParams.get('plan'), 'PRO');
+  const sub = decode(
+    ((seen[0]!.init.headers as Record<string, string>).Authorization ?? '').slice(7),
+  ).claims;
+  assert.equal(sub.user_id, HUB_SERVICE_PRINCIPAL);
+  assert.deepEqual(
+    (await adapter.getSignals({ plan: 'VIP', coins: ['SOL'] })).map((x) => x.coin),
+    ['SOL'],
+  );
+  const one = await adapter.getSignal({ plan: 'PRO', id: ID, range: '1m' });
+  assert.equal(one!.signal.id, ID);
+  assert.deepEqual(one!.series, [{ at: '2026-10-16T00:00:00+00:00', priceMXN: 1.5 }]);
+  assert.equal(seen.at(-1)!.url.searchParams.get('range'), '1m');
+  const before = seen.length;
+  assert.equal(await adapter.getSignal({ plan: 'PRO', id: '../x', range: '7d' }), null);
+  assert.equal(seen.length, before); // a junk id never reaches the engine
+  assert.equal(
+    await adapter.getSignal({
+      plan: 'PRO',
+      id: '00000000-0000-4000-8000-000000000000',
+      range: '7d',
+    }),
+    null,
+  );
   assert.deepEqual(await adapter.channels(), ['app']);
+});
+
+test('feed mapping drops bad states and keeps only 3 bullets', () => {
+  assert.equal(toSignal({ id: 'a', coin: 'BTC', state: 'buy', confidence: 'nope' }), null);
+  assert.equal(toSignal({ coin: 'BTC', state: 'buy', confidence: 'high' }), null);
 });
 
 test('engine wire → hub shapes (markets, indicators, order book, derivatives, news, backtest)', async () => {
@@ -217,17 +287,42 @@ test('engine wire → hub shapes (markets, indicators, order book, derivatives, 
       };
     if (p === '/backtests')
       return {
-        status: 202,
+        status: 200,
         body: {
-          status: 'queued',
           job_id: 'backtest_1',
-          reservation_id: 'r',
-          lane: 'standard',
+          status: 'done',
           strategy: 'fvg_ob',
           pair: 'BTCUSDT',
           timeframe: '5m',
+          bars_requested: 1500,
           bars: 1500,
+          data_source: 'bitunix',
+          from: '2026-10-11T00:00:00+00:00',
+          to: '2026-10-16T00:00:00+00:00',
           optimistic: true,
+          starting_equity: 10000,
+          ending_equity: 10120,
+          net_return_bps: 120,
+          metrics: {
+            sample_size: 12,
+            win_rate: 0.5,
+            avg_win_bps: 40,
+            avg_loss_bps: 30,
+            profit_factor: null,
+            avg_rr: null,
+            max_drawdown_bps: 80,
+            fee_drag_bps: 12,
+          },
+          assumptions: {
+            risk_per_trade_bps: 50,
+            lookback_bars: 300,
+            maker_bps: 2,
+            taker_bps: 6,
+            spread_bps: 1,
+            slippage_bps: 1,
+            funding_per_8h: 0.0001,
+          },
+          created_at: '2026-10-16T05:00:00+00:00',
         },
       };
     return { status: 404, body: { detail: 'Not Found' } };
@@ -251,14 +346,19 @@ test('engine wire → hub shapes (markets, indicators, order book, derivatives, 
     news!.map((n) => n.url),
     ['https://n.example/1'],
   );
-  const bt = await adapter.queueBacktest(USER, {
+  const bt = await adapter.runBacktest(USER, {
     strategy: 'fvg_ob',
     pair: 'BTCUSDT',
     timeframe: '5m',
     bars: 1500,
   });
   assert.equal(bt.jobId, 'backtest_1');
+  assert.equal(bt.status, 'done');
   assert.equal(bt.optimistic, true);
+  assert.equal(bt.netReturnBps, 120);
+  assert.equal(bt.metrics!.profitFactor, null);
+  assert.equal(bt.metrics!.sampleSize, 12);
+  assert.equal(bt.dataSource, 'bitunix');
   // No reservation ids or lanes leak to the screen.
   assert.equal('reservation_id' in bt || 'lane' in bt, false);
 });
@@ -302,6 +402,12 @@ test('engine errors map to BFF reasons; usage refusals keep their reason and are
       failureEffect(markAdapterError(engineError(s, {})), { adapterErrorsOnly: true }).outage,
       true,
     );
+  // A backtest whose price source failed: the person's state, not an outage.
+  const nd = failureEffect(
+    markAdapterError(engineError(502, { detail: { error: 'backtest_data_unavailable' } })),
+    { adapterErrorsOnly: true },
+  );
+  assert.deepEqual(nd, { reason: 'no_data', retryable: false, outage: false });
   // A 402 that isn't a usage refusal is not mistaken for one.
   assert.equal(usageReasonOf(engineError(402, { detail: 'x' })), undefined);
   // Junk reasons never reach the screen.
@@ -413,9 +519,21 @@ test('the mock adapter covers Mercado and Estrategias (mock mode and e2e)', asyn
     ),
   );
   await assert.rejects(
-    a.queueBacktest('u', { strategy: 'fvg_ob', pair: 'BTCUSDT', timeframe: '5m', bars: 5000 }),
+    a.runBacktest('u', { strategy: 'fvg_ob', pair: 'BTCUSDT', timeframe: '5m', bars: 5000 }),
     (e: unknown) => usageReasonOf(e) === 'no_tokens',
   );
+  const done = await a.runBacktest('u', {
+    strategy: 'fvg_ob',
+    pair: 'BTCUSDT',
+    timeframe: '5m',
+    bars: 1500,
+  });
+  assert.equal(done.status, 'done');
+  assert.deepEqual(
+    (await a.listBacktests('u')).map((r) => r.jobId),
+    [done.jobId],
+  );
+  assert.deepEqual(await a.listBacktests('someone-else'), []);
 });
 
 test('Señales still never reads money fields in the new files', () => {

@@ -912,3 +912,54 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Estrategias · results */
+.chalyb-app .ch-lab-hist {
+  grid-column: 1 / -1;
+}
+.chalyb-app .ch-lab-latest {
+  display: grid;
+  gap: 8px;
+}
+.chalyb-app .ch-lab-run {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+}
+.chalyb-app .ch-lab-run__h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-lab-run__h .ch-pill {
+  margin-left: auto;
+}
+.chalyb-app .ch-lab-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+.chalyb-app .ch-lab-stats div {
+  display: grid;
+  gap: 2px;
+}
+.chalyb-app .ch-lab-stats dt {
+  font-size: 13px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-lab-stats dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-lab-up {
+  color: var(--accent);
+}
+.chalyb-app .ch-lab-down {
+  color: var(--warn);
+}

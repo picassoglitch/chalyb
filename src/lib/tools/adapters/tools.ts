@@ -178,10 +178,38 @@ export interface BacktestInput {
   bars: number;
 }
 
-export interface BacktestQueued extends BacktestInput {
+/** One backtest run on past data. Always optimistic (engine rule). */
+export interface BacktestResult extends BacktestInput {
   jobId: string;
-  status: 'queued';
-  /** Backtests are always labelled optimistic (engine rule). */
+  status: 'done' | 'failed';
+  /** Set when status is 'failed' (e.g. 'data_unavailable'). */
+  error?: string;
+  barsRequested: number;
+  /** Where the past candles came from ('binance', 'bitunix'). */
+  dataSource?: string;
+  from?: string;
+  to?: string;
+  startingEquity?: number;
+  endingEquity?: number;
+  /** Net change of the simulated account, in basis points. */
+  netReturnBps?: number;
+  metrics?: {
+    sampleSize: number;
+    winRate: number;
+    avgWinBps: number;
+    avgLossBps: number;
+    profitFactor: number | null;
+    maxDrawdownBps: number;
+    feeDragBps: number;
+  };
+  assumptions?: {
+    riskPerTradeBps: number;
+    takerBps: number;
+    makerBps: number;
+    spreadBps: number;
+    slippageBps: number;
+  };
+  createdAt?: string;
   optimistic: true;
 }
 
@@ -224,13 +252,12 @@ export interface SenalesAdapter {
   /** Null when the engine has no news source configured. */
   news(userId: string, coin: string, signal?: AbortSignal): Promise<NewsItem[] | null>;
   strategies(userId: string, signal?: AbortSignal): Promise<EngineStrategy[]>;
-  /** Hub usage admission runs inside the engine: a refusal throws a
-   *  USAGE_REFUSED error carrying the reason. */
-  queueBacktest(
-    userId: string,
-    input: BacktestInput,
-    signal?: AbortSignal,
-  ): Promise<BacktestQueued>;
+  /** Runs now and returns the result. Hub usage admission runs inside the
+   *  engine: a refusal throws USAGE_REFUSED with the reason; a run that
+   *  fails is not charged. */
+  runBacktest(userId: string, input: BacktestInput, signal?: AbortSignal): Promise<BacktestResult>;
+  /** The person's past runs, newest first. */
+  listBacktests(userId: string, signal?: AbortSignal): Promise<BacktestResult[]>;
 }
 
 // ── En vivo ──────────────────────────────────────────────────────────

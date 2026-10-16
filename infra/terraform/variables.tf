@@ -272,6 +272,22 @@ variable "engines" {
         sso_secret   = "CHALYB_SSO_SECRET"
         database_url = "DATABASE_URL"
       }
+
+      # The Señales shared feed (/app/senales in the hub): one tick over every
+      # coin, writing chalybcrypto.signal_feed, then exit. Same image as the
+      # API (Cloud Build points the job at each new image). A tick reads 8
+      # public Bitunix kline pages and one Bitso FX quote: small and short.
+      jobs = {
+        feed = {
+          command  = ["python"]
+          args     = ["-m", "chalybcrypto_api.feed_job"]
+          cpu      = "1"
+          memory   = "512Mi"
+          timeout  = "300s"
+          schedule = "*/15 * * * *"
+          paused   = false
+        }
+      }
     }
 
     # Chalito's api (picassoglitch/chalito apps/api) reads its own prefixed

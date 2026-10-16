@@ -55,15 +55,17 @@ test.describe('Señales · Mercado y Estrategias as vip', () => {
     await expectNoOverflow(page, info);
   });
 
-  test('Estrategias: queue a backtest, then the out-of-credits state', async ({ page }, info) => {
+  test('Estrategias: run a backtest, see its result, then the out-of-credits state', async ({
+    page,
+  }, info) => {
     await ready(page, '/app/senales/estrategias');
     await expect(page.getByText('EMA/ADX trend').first()).toBeVisible();
-    await expect(page.getByText('OPTIMISTA')).toBeVisible();
-    await page.getByRole('button', { name: 'Poner en fila' }).click();
-    await expect(page.getByText(/quedó en fila/)).toBeVisible();
+    await expect(page.getByText('OPTIMISTA').first()).toBeVisible();
+    await page.getByRole('button', { name: 'Probar', exact: true }).click();
+    await expect(page.getByText(/Resultado neto simulado/)).toBeVisible();
     // The mock refuses 5000 bars as "no_tokens".
     await page.getByLabel('Velas').fill('5000');
-    await page.getByRole('button', { name: 'Poner en fila' }).click();
+    await page.getByRole('button', { name: 'Probar', exact: true }).click();
     await expect(page.getByText('Te quedaste sin créditos para esta prueba.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver mi uso' })).toHaveAttribute(
       'href',

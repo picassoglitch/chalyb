@@ -33,7 +33,7 @@ export function toolRoute<A, T>(
   slug: string,
   adapter: () => A | null,
   handler: (adapter: A, ctx: ToolRouteCtx) => Promise<T>,
-  opts: { idempotent?: boolean } = {},
+  opts: { idempotent?: boolean; timeoutMs?: number } = {},
 ) {
   return async (
     req: Request,

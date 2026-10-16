@@ -13,6 +13,7 @@ export const TOOL_ERROR_REASONS = [
   'bad_request', // the request itself was wrong (body, params): never an outage
   'needs_plan', // the plan doesn't include this action
   'usage_refused', // hub usage admission said no (credits, caps): the person's state
+  'no_data', // a third-party data source the engine reads didn't answer this time
   'unknown',
 ] as const;
 export type ToolErrorReason = (typeof TOOL_ERROR_REASONS)[number];
@@ -158,6 +159,8 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
       return { reason: 'needs_plan', retryable: false };
     case 'USAGE_REFUSED':
       return { reason: 'usage_refused', retryable: false };
+    case 'NO_DATA':
+      return { reason: 'no_data', retryable: false };
     default:
       return { reason: 'unknown', retryable: true };
   }
@@ -176,6 +179,8 @@ export function statusForReason(reason: ToolErrorReason): number {
       return 403;
     case 'usage_refused':
       return 402;
+    case 'no_data':
+      return 424;
     case 'not_implemented':
     case 'unavailable':
     case 'circuit_open':
@@ -197,6 +202,7 @@ export function countsAsOutage(reason: ToolErrorReason): boolean {
     'bad_request',
     'needs_plan',
     'usage_refused',
+    'no_data',
     'circuit_open',
   ].includes(reason);
 }

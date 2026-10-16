@@ -102,6 +102,8 @@ export async function runTool<T>(
     /** Only errors the engine adapter threw (and timeouts) count against
      *  the breaker and health; the BFF routes set this (see bff-route). */
     adapterErrorsOnly?: boolean;
+    /** A longer wait for a call known to take time (a backtest run). */
+    timeoutMs?: number;
   } = {},
 ): Promise<ToolResult<T>> {
   const attempts = 1 + (opts.idempotent ? TOOL_GET_RETRIES : 0);
@@ -117,9 +119,10 @@ export async function runTool<T>(
     try {
       const started = Date.now();
       const ctl = new AbortController();
-      const data = await withTimeout(op(ctl.signal), TOOL_TIMEOUT_MS, ctl);
+      const data = await withTimeout(op(ctl.signal), opts.timeoutMs ?? TOOL_TIMEOUT_MS, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
-      noteHealthy(slug, Date.now() - started);
+      // A long call (timeoutMs) is slow by design: not a health signal.
+      if (!opts.timeoutMs) noteHealthy(slug, Date.now() - started);
       return { ok: true, data };
     } catch (err) {
       last = err;

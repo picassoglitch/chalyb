@@ -2819,10 +2819,8 @@
       "pair": "Par",
       "timeframe": "Temporalidad",
       "bars": "Velas",
-      "submit": "Poner en fila",
-      "sending": "Enviando…",
-      "usesCredits": "Cada prueba usa créditos de tu plan.",
-      "queued": "Listo: la prueba de {estrategia} en {par} ({tf}, {velas} velas) quedó en fila.",
+      "submit": "Probar",
+      "usesCredits": "Cada prueba usa créditos de tu plan. Si falla, no se usan.",
       "usage": {
         "credits": "Te quedaste sin créditos para esta prueba.",
         "busy": "Ya tienes una prueba en curso. Espera a que termine e intenta otra vez.",
@@ -2837,10 +2835,25 @@
       },
       "failed": "No pudimos poner la prueba en fila. Intenta otra vez.",
       "code": "Código: {codigo}.",
-      "histTitle": "En esta visita",
-      "statusQueued": "En fila",
+      "histTitle": "Tus pruebas",
       "barsN": "{n} velas",
-      "histNote": "Aquí ves las que pusiste en fila desde que abriste esta página."
+      "running": "Probando…",
+      "runningNote": "Puede tardar hasta un minuto. No cierres esta página.",
+      "latest": "Resultado",
+      "histEmpty": "Todavía no has hecho pruebas.",
+      "runFailed": "No pudimos leer los precios pasados. No se usaron créditos.",
+      "noData": "No pudimos leer los precios pasados de ese par. No se usaron créditos. Intenta otra vez en un momento.",
+      "timeout": "La prueba está tardando más de lo normal. Si termina, aparecerá en Tus pruebas.",
+      "stat": {
+        "net": "Resultado neto simulado",
+        "trades": "Operaciones simuladas",
+        "winRate": "Acertadas",
+        "factor": "Factor de ganancia",
+        "drawdown": "Caída máxima",
+        "fees": "Costo de comisiones"
+      },
+      "period": "Del {desde} al {hasta}, precios de {fuente}.",
+      "assumptions": "Supone {riesgo} de riesgo por operación y comisiones de {comision} pb."
     }
   },
   "liveTool": {

@@ -5,6 +5,7 @@
 
 import type {
   AsistenteAdapter,
+  BacktestResult,
   Candle,
   AssistantConfig,
   AutomationRule,
@@ -170,9 +171,10 @@ const STEP_S: Record<string, number> = { '1m': 60, '5m': 300, '15m': 900, '30m':
 
 function mockMarket(now: () => number): Pick<
   SenalesAdapter,
-  'markets' | 'indicators' | 'orderBook' | 'derivatives' | 'news' | 'strategies' | 'queueBacktest'
+  'markets' | 'indicators' | 'orderBook' | 'derivatives' | 'news' | 'strategies' | 'runBacktest' | 'listBacktests'
 > {
   const usd = (pair: string) => MOCK_USD[pair.replace(/USDT$/, '')] ?? 1;
+  const runs: { userId: string; run: BacktestResult }[] = [];
   const candles = (pair: string, interval: string, bars: number): Candle[] => {
     const step = STEP_S[interval] ?? 300;
     const end = Math.floor(now() / 1000 / step) * step;
@@ -268,16 +270,39 @@ function mockMarket(now: () => number): Pick<
       { key: 'vwap_rsi_meanrev', name: 'VWAP/RSI mean-reversion', enabled: true },
       { key: 'fvg_ob', name: 'FVG + Order Block', enabled: true },
     ],
-    queueBacktest: async (_u, input) => {
+    runBacktest: async (userId, input) => {
       // 5000 bars: the sample "out of credits" refusal, for e2e.
       if (input.bars === 5000) throw new ToolUsageRefusedError('no_tokens');
-      return {
+      const rnd = seeded(input.strategy + input.pair + input.timeframe + input.bars);
+      const net = Math.round((rnd() - 0.45) * 800);
+      const run: BacktestResult = {
         ...input,
-        jobId: `backtest_mock_${input.pair}_${input.bars}`,
-        status: 'queued',
+        jobId: `backtest_mock_${runs.length + 1}`,
+        status: 'done',
+        barsRequested: input.bars,
+        dataSource: 'binance',
+        from: new Date(now() - input.bars * 300_000).toISOString(),
+        to: new Date(now()).toISOString(),
+        startingEquity: 10_000,
+        endingEquity: 10_000 * (1 + net / 10_000),
+        netReturnBps: net,
+        metrics: {
+          sampleSize: 8 + Math.floor(rnd() * 30),
+          winRate: 0.35 + rnd() * 0.3,
+          avgWinBps: 40 + rnd() * 40,
+          avgLossBps: 30 + rnd() * 30,
+          profitFactor: 0.7 + rnd() * 0.9,
+          maxDrawdownBps: 100 + rnd() * 300,
+          feeDragBps: 10 + rnd() * 20,
+        },
+        assumptions: { riskPerTradeBps: 50, takerBps: 6, makerBps: 2, spreadBps: 1, slippageBps: 1 },
+        createdAt: new Date(now()).toISOString(),
         optimistic: true,
       };
+      runs.unshift({ userId, run });
+      return run;
     },
+    listBacktests: async (userId) => runs.filter((r) => r.userId === userId).map((r) => r.run),
   };
 }
 

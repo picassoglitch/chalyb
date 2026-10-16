@@ -2819,10 +2819,8 @@
       "pair": "Pair",
       "timeframe": "Timeframe",
       "bars": "Candles",
-      "submit": "Queue it",
-      "sending": "Sending…",
-      "usesCredits": "Each test uses credits from your plan.",
-      "queued": "Done: the {estrategia} test on {par} ({tf}, {velas} candles) is queued.",
+      "submit": "Run test",
+      "usesCredits": "Each test uses credits from your plan. If it fails, none are used.",
       "usage": {
         "credits": "You're out of credits for this test.",
         "busy": "You already have a test running. Wait for it to finish and try again.",
@@ -2837,10 +2835,25 @@
       },
       "failed": "We couldn't queue the test. Try again.",
       "code": "Code: {codigo}.",
-      "histTitle": "This visit",
-      "statusQueued": "Queued",
+      "histTitle": "Your tests",
       "barsN": "{n} candles",
-      "histNote": "These are the ones you queued since you opened this page."
+      "running": "Testing…",
+      "runningNote": "It can take up to a minute. Keep this page open.",
+      "latest": "Result",
+      "histEmpty": "You haven't run any tests yet.",
+      "runFailed": "We couldn't read the past prices. No credits were used.",
+      "noData": "We couldn't read that pair's past prices. No credits were used. Try again in a moment.",
+      "timeout": "The test is taking longer than usual. If it finishes, it will show up in Your tests.",
+      "stat": {
+        "net": "Simulated net result",
+        "trades": "Simulated trades",
+        "winRate": "Hit rate",
+        "factor": "Profit factor",
+        "drawdown": "Max drawdown",
+        "fees": "Fee cost"
+      },
+      "period": "From {desde} to {hasta}, {fuente} prices.",
+      "assumptions": "Assumes {riesgo} risk per trade and {comision} bps fees."
     }
   },
   "liveTool": {
