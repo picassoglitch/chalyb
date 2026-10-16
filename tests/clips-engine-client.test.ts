@@ -19,6 +19,8 @@ import {
   engineErrorFrom,
 } from '@/lib/tools/adapters/clips/errors';
 import {
+  breakerAfter,
+  closedBreaker,
   countsAsOutage,
   failureEffect,
   isAdapterError,
@@ -241,4 +243,17 @@ test('media URLs: only signed engine media paths become absolute', async () => {
     'https://clips.example/api/hub/media/thumb/c1?sig=1',
   );
   assert.equal(await engine.mediaUrl('/x'), null);
+});
+
+test('NOT_IMPLEMENTED (a placeholder method) never counts as an outage', async () => {
+  const { NotImplementedError } = await import('@/lib/tools/adapters/tools');
+  const { markAdapterError } = await import('@/lib/tools/bff-core');
+  const err = markAdapterError(new NotImplementedError('ClipsEngineAdapter.getClip'));
+  const effect = failureEffect(err, { adapterErrorsOnly: true });
+  assert.deepEqual(effect, { reason: 'not_implemented', retryable: false, outage: false });
+  assert.equal(countsAsOutage('not_implemented'), false);
+  // runTool only advances the breaker for outages: five in a row stay closed.
+  let b = closedBreaker();
+  for (let i = 0; i < 5; i++) if (effect.outage) b = breakerAfter(b, false, i);
+  assert.equal(b.openedAt, null);
 });

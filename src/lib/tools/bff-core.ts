@@ -210,9 +210,11 @@ export function statusForReason(reason: ToolErrorReason): number {
 }
 
 /** Whether a failure counts against the tool's health (a missing clip or a
- *  missing risk notice is the person's state, not an outage). */
+ *  missing risk notice is the person's state, not an outage; a feature the
+ *  adapter doesn't implement yet is not the engine being down). */
 export function countsAsOutage(reason: ToolErrorReason): boolean {
   return ![
+    'not_implemented',
     'not_found',
     'forbidden',
     'risk_ack_required',
