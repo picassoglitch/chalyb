@@ -171,3 +171,18 @@ export const saveLastCompanion = (
     // Blocked or full: next time it waits for the account instead.
   }
 };
+
+/**
+ * The store's preview and swatches: the companion's roster avatar is already known there (its row),
+ * only whether it wears a custom card isn't. Unknown: the roster avatar when last visit drew a
+ * roster one for this account, else the stand-in, so it never shows the roster art and then swaps.
+ */
+export const storeLookShown = (o: {
+  avatar: string;
+  card: 'unknown' | 'none' | 'custom';
+  last: LastCompanion | null;
+}): CompanionShown => {
+  if (o.card === 'custom') return { kind: 'custom' };
+  if (o.card === 'none' || o.last?.kind === 'roster') return { kind: 'roster', id: companionOrDefault(o.avatar) };
+  return { kind: 'pending' };
+};

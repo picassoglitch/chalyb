@@ -8,6 +8,7 @@ import {
   loadLastCompanion,
   onboardingActivity,
   saveLastCompanion,
+  storeLookShown,
   type LastCompanion,
 } from '../src/lib/chalito/companion';
 import es from '../src/lib/chalito/messages/es.json' with { type: 'json' };
@@ -109,4 +110,30 @@ test('last look is per account, and storage that throws is harmless', () => {
   };
   assert.equal(loadLastCompanion('u1', blocked), null);
   assert.doesNotThrow(() => saveLastCompanion({ owner: 'u1', kind: 'custom' }, blocked));
+});
+
+test('the store preview never shows the roster art and then swaps to the custom card', () => {
+  type S = Parameters<typeof storeLookShown>[0];
+  const kinds = (states: S[]) => {
+    const out: string[] = [];
+    for (const st of states) {
+      const s = storeLookShown(st);
+      const k = s.kind === 'roster' ? s.id : s.kind;
+      if (k !== 'pending' && out.at(-1) !== k) out.push(k);
+    }
+    return out;
+  };
+  const open = (card: 'none' | 'custom', last: LastCompanion | null): S[] => [
+    { avatar: 'luna', card: 'unknown', last },
+    { avatar: 'luna', card: 'unknown', last },
+    { avatar: 'luna', card, last },
+  ];
+  // First visit: the stand-in until the card's answer, then one look.
+  assert.deepEqual(kinds(open('custom', null)), ['custom']);
+  assert.deepEqual(kinds(open('none', null)), ['luna']);
+  assert.equal(storeLookShown({ avatar: 'luna', card: 'unknown', last: null }).kind, 'pending');
+  // Last visit wore the custom card: wait for it, no roster art first.
+  assert.deepEqual(kinds(open('custom', { owner: 'u1', kind: 'custom' })), ['custom']);
+  // Last visit was a roster one: the account's own roster avatar at once (not the cached id).
+  assert.deepEqual(kinds(open('none', { owner: 'u1', kind: 'roster', id: 'bruno' })), ['luna']);
 });
