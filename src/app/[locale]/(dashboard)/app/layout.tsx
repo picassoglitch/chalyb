@@ -5,6 +5,7 @@ import { AppShell } from '@/components/app/app-shell';
 import { planLabelKey } from '@/components/app/shell-routes';
 import { WorkspaceProfileSubscriber } from '@/components/workspace/workspace-profile-subscriber';
 import { effectiveTier, isAdminRole } from '@/lib/billing/tiers';
+import { warmEntitlements } from '@/lib/billing/entitlement';
 import { BillingBanner } from '@/components/app/billing/billing-banner';
 import { TermsNotice } from '@/components/app/legal/terms-notice';
 import { unreadCount } from '@/lib/notifications/user';
@@ -35,6 +36,7 @@ const mono = JetBrains_Mono({
 
 export default async function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser('/app');
+  warmEntitlements(user.id);
   // Both reads are memoized per request (the page's tool gate asks too); the
   // unread count only needs the user id, so it runs alongside the profile.
   const [session, unread] = await Promise.all([

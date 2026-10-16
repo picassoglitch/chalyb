@@ -18,8 +18,8 @@ import 'server-only';
 import type { Route } from 'next';
 import { redirect as redirectPath } from 'next/navigation';
 import { redirect } from '@/i18n/routing';
-import { getSessionUser, type SessionUser } from '@/lib/auth/session';
-import { getEntitlements, type Entitlements } from '@/lib/billing/entitlement';
+import { getCurrentUser, getSessionUser, type SessionUser } from '@/lib/auth/session';
+import { getEntitlements, warmEntitlements, type Entitlements } from '@/lib/billing/entitlement';
 import type { SetupStep } from '@/lib/billing/entitlement-core';
 import { hasRiskAck } from './consents';
 import { hubRunsTool } from './registry';
@@ -46,6 +46,8 @@ export async function loadTool<A>(
   path: string,
   adapter: () => A | null,
 ): Promise<ToolGate<A>> {
+  const user = await getCurrentUser();
+  if (user) warmEntitlements(user.id);
   const session = await getSessionUser();
   if (!session) return redirect({ href: `/sign-in?next=${encodeURIComponent(path)}`, locale });
   // The risk notice check doesn't depend on the plan: both reads at once.
