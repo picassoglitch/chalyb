@@ -9,6 +9,7 @@
 import 'server-only';
 import { NotImplementedError } from '../tools';
 import {
+  CLIP_FORMATS,
   DEFAULT_CLIPS_SETTINGS,
   type ClipDetail,
   type ClipFailureReason,
@@ -146,7 +147,7 @@ export function clipDetailFromEngine(c: EngineClip): ClipDetail {
     // No hook written yet: the moment's place in the video names it.
     title: c.title ?? `${mmss(c.start_s)} – ${mmss(c.end_s)}`,
     sourceDurationSec: c.duration_s,
-    format: 'vertical',
+    format: (CLIP_FORMATS as readonly string[]).includes(c.format) ? c.format : 'vertical',
     captionsOn: true,
     trim: { startS: 0, endS: c.duration_s },
     createdAt: c.created_at,

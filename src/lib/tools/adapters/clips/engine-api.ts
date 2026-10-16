@@ -76,6 +76,8 @@ export interface EngineClip {
   } | null;
   publishability_status: string | null;
   title: string | null;
+  /** The output format saved in the editor (vertical when never chosen). */
+  format: 'vertical' | 'horizontal' | 'square';
   media_url: string | null;
   download_url: string | null;
   thumb_url: string | null;

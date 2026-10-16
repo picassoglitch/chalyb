@@ -111,6 +111,24 @@ test('a stream is a job: same id, settled flag, failure reason from progress', (
   assert.equal(jobFromStream('u1', stream({ vod_url: null })).sourceUrl, '');
 });
 
+const c0 = () => ({
+  id: 'c0',
+  stream_id: 's0',
+  status: 'cut',
+  start_s: 0,
+  end_s: 1,
+  duration_s: 1,
+  created_at: 'x',
+  format: 'vertical' as const,
+  viral_score: null,
+  why: null,
+  publishability_status: null,
+  title: null,
+  media_url: null,
+  download_url: null,
+  thumb_url: null,
+});
+
 test('engine clip without a hook is named by its place in the video', () => {
   const c = clipDetailFromEngine({
     id: 'c1',
@@ -120,6 +138,7 @@ test('engine clip without a hook is named by its place in the video', () => {
     end_s: 95,
     duration_s: 25,
     created_at: 'x',
+    format: 'square',
     viral_score: 60,
     why: null,
     publishability_status: null,
@@ -131,6 +150,8 @@ test('engine clip without a hook is named by its place in the video', () => {
   assert.equal(c.title, '1:10 – 1:35');
   assert.equal(c.previewUrl, 'https://e/api/hub/media/clip/c1');
   assert.equal(c.jobId, 's1');
+  assert.equal(c.format, 'square');
+  assert.equal(clipDetailFromEngine({ ...c0(), format: 'nope' as never }).format, 'vertical');
 });
 
 test('job creation: refusals become reasons, engine trouble is thrown', () => {
