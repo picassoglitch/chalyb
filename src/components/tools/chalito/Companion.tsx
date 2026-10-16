@@ -15,15 +15,12 @@ import { isSkin, type AccessoryItem } from '@/lib/chalito/web/store';
 import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
-import { useMyCard } from '@/lib/chalito/useMyCard';
+import { useOwnCard, useRememberLook } from '@/lib/chalito/useOwnLook';
 import {
-  CARD_WAIT_MS,
   companionOrDefault,
   activityFor,
   companionSettled,
   companionShown,
-  loadLastCompanion,
-  saveLastCompanion,
   useCompanionPick,
   useCompanionStep,
   useWornLook,
@@ -67,39 +64,20 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const { values, onboarded, settled } = useSettings();
   const pick = useCompanionPick((s) => s.pick);
   const step = useCompanionStep((s) => s.step);
-  const { store, readCompanion, status, hubUserId, myCard: cardSource } = useChalito();
+  const { store, readCompanion, status } = useChalito();
 
   // The person's own character ("Crea tu personaje"), when the companion wears one; its drawings
   // come from short-lived signed URLs (refreshed on error, then back to the roster art).
-  const mine = useMyCard();
-  // No answer about the custom card for a while (the api is down): draw the roster one.
-  const [cardWaitOver, setCardWaitOver] = useState(false);
-  useEffect(() => {
-    if (!cardSource || mine.known) return;
-    const t = setTimeout(() => setCardWaitOver(true), CARD_WAIT_MS);
-    return () => clearTimeout(t);
-  }, [cardSource, mine.known]);
-  // Last visit's look on this device, read after hydration (the server renders the stand-in).
-  const [last, setLast] = useState<ReturnType<typeof loadLastCompanion>>(null);
-  useEffect(() => setLast(loadLastCompanion(hubUserId ?? undefined)), [hubUserId]);
+  const { mine, card: cardState, last } = useOwnCard();
   const input = {
     pick,
     status,
     avatar: settled ? (values?.avatar ?? null) : undefined,
-    card: mine.card ? ('custom' as const) : mine.known || cardWaitOver ? ('none' as const) : ('unknown' as const),
+    card: cardState,
     last,
   };
   const shown = companionShown(input);
-  const known = companionSettled(input);
-  const shownId = shown.kind === 'roster' ? shown.id : null;
-  const shownKey = shownId ?? shown.kind;
-  // Remember the account's settled look for next time (never a guess from the cache itself).
-  useEffect(() => {
-    if (!known || !hubUserId || shownKey === 'pending') return;
-    saveLastCompanion(
-      shownId ? { owner: hubUserId, kind: 'roster', id: shownId } : { owner: hubUserId, kind: 'custom' },
-    );
-  }, [known, hubUserId, shownKey, shownId]);
+  const shownKey = useRememberLook(shown, companionSettled(input));
 
   // The roster avatar under a custom card is the account's (for its name); pending draws nothing.
   const id = shown.kind === 'roster' ? shown.id : companionOrDefault(values?.avatar);
