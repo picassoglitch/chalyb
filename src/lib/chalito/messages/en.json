@@ -1370,17 +1370,20 @@
     "declined": "We cancelled that code. No computer was connected.",
     "back": "Go to Devices",
     "error": {
-      "invalid_link": "This link isn't valid. Ask your computer for a new one.",
       "invalid_code": "That code isn't valid. Check it.",
       "not_found": "We couldn't find that computer: the code expired or was used. Ask your computer for a new one.",
       "expired": "The code expired. Ask your computer for a new one.",
       "code_required": "From another network you need the code your computer shows.",
       "wrong_code": "That isn't that computer's code. Check its screen.",
-      "network_mismatch": "You can only approve it from the computer's network.",
       "device_limit": "Your plan already has the most computers it allows. Remove one in Devices or upgrade.",
       "tampered": "The details don't match. Don't approve it, and ask for a new code.",
       "step_up": "Your passkey is needed to approve. Try again.",
-      "failed": "Something went wrong. Try again."
-    }
+      "failed": "Something went wrong. Try again.",
+      "proof_failed": "We couldn't confirm you're on that computer. Type the code it shows on screen."
+    },
+    "sameComputer": "You're on this same computer: you can approve it with one tap.",
+    "notProven": "We couldn't confirm you're on that computer.",
+    "doneFinish": "You approved “{name}”, but this browser has one step left: open Chalito here again to finish setting it up.",
+    "backToApprove": "Back to approving your computer"
   }
 }

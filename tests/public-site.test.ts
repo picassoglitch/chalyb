@@ -329,7 +329,8 @@ test('Vercel Analytics mounts only through the consent gate', () => {
     new URL('../src/components/public/cookie-banner.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(banner, /\{consent\?\.analytics && <Analytics \/>\}/);
+  // Still only after consent; and never with a URL fragment (a Chalito pairing link carries one).
+  assert.match(banner, /\{consent\?\.analytics && <Analytics beforeSend=\{withoutFragment\} \/>\}/);
 });
 
 // ---------- P4-8 · JSON-LD ----------

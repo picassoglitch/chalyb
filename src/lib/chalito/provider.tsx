@@ -42,9 +42,7 @@ import {
   declineComputer,
   findByCode,
   findByLink,
-  type ApproveError,
-  type ComputerTarget,
-  type Found,
+  type ApproveComputerApi,
 } from "@/lib/chalito/web/approve-computer";
 import { fingerprint, fromB64url } from "@chalito/crypto";
 import {
@@ -182,15 +180,6 @@ const localStore = (): Pick<Storage, "getItem" | "setItem"> => {
     return { getItem: () => null, setItem: () => undefined };
   }
 };
-
-export interface ApproveComputerApi {
-  findByLink(codeId: string): Promise<Found>;
-  findByCode(shortCode: string): Promise<Found>;
-  approve(target: ComputerTarget, shortCode?: string): Promise<{ ok: true; name: string } | { ok: false; reason: ApproveError }>;
-  decline(codeId: string): Promise<"ok" | "failed">;
-  /** This browser's verification code: the computer shows it at its "¿Lo aprobaste tú?". */
-  fingerprint(): Promise<string>;
-}
 
 export interface AddDevice {
   resolve(input: { glyph: unknown } | { shortCode: string }): Promise<Resolved>;
@@ -372,11 +361,12 @@ const approveComputerApi = (
   return {
     findByLink: (codeId) => findByLink(api, codeId, Date.now()),
     findByCode: (shortCode) => findByCode(api, shortCode, Date.now()),
-    approve: (target, shortCode) =>
+    approve: (target, o) =>
       approveComputer(api, keys.keys, target, {
         owner,
         now: Date.now(),
-        ...(shortCode !== undefined ? { shortCode } : {}),
+        ...(o.shortCode !== undefined ? { shortCode: o.shortCode } : {}),
+        ...(o.loopbackProof ? { loopbackProof: o.loopbackProof } : {}),
         // With a passkey on this browser, approving asks for it first.
         ...(passkeyRef() ? { userCheck: () => platform.assertPasskey(token) } : {}),
       }),

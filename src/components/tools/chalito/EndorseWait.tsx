@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { GlyphPayload } from "@chalito/protocol";
 import { Link } from "@/lib/chalito/navigation";
 import { browserName, type Introduced, type WaitError, type Waiting } from "@/lib/chalito/web/endorse";
+import { pendingApproval } from "@/lib/chalito/web/approve-computer";
 import { hubLaunchUrl } from "@/lib/chalito/web/hub";
 import { signInAndReturn } from "@/lib/chalito/web/next-cookie";
 import { useChalito, useNow } from "@/lib/chalito/provider";
@@ -24,8 +25,20 @@ type Step =
  * device to vouch for its keys. It shows a short code and the glyph it signed; once a trusted
  * device approves, it enrols and signs in as itself.
  */
+const sessionOrNull = (): Storage | null => {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+};
+
 export const EndorseWait = () => {
   const t = useTranslations("chalito.endorse.wait");
+  const tApprove = useTranslations("chalito.approveComputer");
+  // Endorsed on the way to "Aprobar computadora" (its link stashed in this tab): go back there.
+  const [backToApproval, setBackToApproval] = useState(false);
+  useEffect(() => setBackToApproval(pendingApproval(sessionOrNull(), Date.now())), []);
   const locale = useLocale();
   const { status, newDevice, recover, activation } = useChalito();
   const [name, setName] = useState("");
@@ -74,9 +87,15 @@ export const EndorseWait = () => {
             ))}
           </ul>
         ) : null}
-        <Link href="/bandeja" className="ch-btn ch-btn--primary ch-chl-fit">
-          {t("doneCta")}
-        </Link>
+        {backToApproval ? (
+          <Link href="/computadoras/aprobar" data-testid="endorse-back-to-approve" className="ch-btn ch-btn--primary ch-chl-fit">
+            {tApprove("backToApprove")}
+          </Link>
+        ) : (
+          <Link href="/bandeja" className="ch-btn ch-btn--primary ch-chl-fit">
+            {t("doneCta")}
+          </Link>
+        )}
       </div>
     );
   if (status === "loading") return <Loading label={t("loading")} rows={2} />;

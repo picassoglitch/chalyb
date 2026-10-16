@@ -1370,17 +1370,20 @@
     "declined": "Cancelamos ese código. No se conectó ninguna computadora.",
     "back": "Ir a Dispositivos",
     "error": {
-      "invalid_link": "Este enlace no es válido. Pide uno nuevo desde tu computadora.",
       "invalid_code": "Ese código no es válido. Revísalo.",
       "not_found": "No encontramos esa computadora: el código venció o ya se usó. Pide uno nuevo desde tu computadora.",
       "expired": "El código venció. Pide uno nuevo desde tu computadora.",
       "code_required": "Desde otra red hace falta el código que muestra tu computadora.",
       "wrong_code": "Ese no es el código de esa computadora. Revísalo en su pantalla.",
-      "network_mismatch": "Solo puedes aprobarla desde la misma red que la computadora.",
       "device_limit": "Tu plan ya tiene el máximo de computadoras. Quita una en Dispositivos o mejora tu plan.",
       "tampered": "Los datos no coinciden. No la apruebes y pide un código nuevo.",
       "step_up": "Hace falta tu llave de acceso para aprobar. Vuelve a intentarlo.",
-      "failed": "Algo salió mal. Vuelve a intentarlo."
-    }
+      "failed": "Algo salió mal. Vuelve a intentarlo.",
+      "proof_failed": "No pudimos confirmar que estás en esa computadora. Escribe el código que muestra en pantalla."
+    },
+    "sameComputer": "Estás en esta misma computadora: puedes aprobarla con un toque.",
+    "notProven": "No pudimos confirmar que estés en esa computadora.",
+    "doneFinish": "Aprobaste «{name}», pero falta un paso en este navegador: vuelve a abrir Chalito aquí para terminar de configurarla.",
+    "backToApprove": "Volver a aprobar tu computadora"
   }
 }

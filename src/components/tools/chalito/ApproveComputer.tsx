@@ -1,29 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useNow } from "@/lib/chalito/provider";
-import {
-  clearHandoff,
-  handoffCodeId,
-  type ApproveError,
-  type ComputerTarget,
-} from "@/lib/chalito/web/approve-computer";
+import { ApproveFlow, askLoopback, type Store } from "@/lib/chalito/web/approve-computer";
 import { GlyphScanner } from "./Glyph";
-
-type Step =
-  | { s: "start" }
-  | { s: "input" }
-  | { s: "scanning" }
-  | { s: "busy" }
-  | { s: "confirm"; target: ComputerTarget; at: number }
-  | { s: "approving"; target: ComputerTarget; at: number }
-  | { s: "done"; name: string; fingerprint: string }
-  | { s: "declined" };
 
 const OS: Record<string, string> = { macos: "macOS", windows: "Windows", linux: "Linux" };
 
-const session = (): Pick<Storage, "getItem" | "setItem" | "removeItem"> | null => {
+const session = (): Store | null => {
   try {
     return window.sessionStorage;
   } catch {
@@ -32,99 +17,67 @@ const session = (): Pick<Storage, "getItem" | "setItem" | "removeItem"> | null =
 };
 
 /**
- * "Aprobar computadora" (/computadoras/aprobar, ADR 0028 §3–§4). Opened by the desktop app with
- * `#c=<codeId>`, or with no link: type the short code shown on the computer, or scan its glyph
- * from a phone. Same network: one tap. Another network: a plain warning, the short code typed
- * from the computer (the api refuses the claim without it), and a prominent decline.
+ * "Aprobar computadora" (/computadoras/aprobar, ADR 0028 §3–§4, decision #52). Opened by the
+ * desktop app with `#c=<codeId>&p=<port>`, or with no link: type the short code shown on the
+ * computer, or scan its colour code from a phone. One tap only when the agent on this computer
+ * proves it's here (loopback); otherwise a plain warning, the short code typed from the computer
+ * (the api refuses the claim without it), and a prominent decline. The logic is ApproveFlow
+ * (approve-computer.ts); this only renders it.
  */
 export const ApproveComputer = () => {
   const t = useTranslations("chalito.approveComputer");
   const { approveComputer, passkey } = useChalito();
-  const [step, setStep] = useState<Step>({ s: "start" });
   const [code, setCode] = useState("");
-  const [typed, setTyped] = useState("");
-  const [error, setError] = useState<ApproveError | null>(null);
+  const [scanning, setScanning] = useState(false);
   const now = useNow();
 
-  // The link's code id: from the fragment, or from before a sign-in redirect dropped it.
+  const flow = useMemo(
+    () =>
+      approveComputer
+        ? new ApproveFlow({
+            api: approveComputer,
+            store: session(),
+            location: window.location,
+            history: window.history,
+            loopback: (h, nonce) => askLoopback(window.fetch.bind(window), h, nonce),
+            now: Date.now,
+          })
+        : null,
+    [approveComputer],
+  );
+  const view = useSyncExternalStore(
+    (fn) => flow?.subscribe(fn) ?? (() => undefined),
+    () => flow?.view ?? { s: "loading" as const },
+    () => ({ s: "loading" as const }),
+  );
   useEffect(() => {
-    if (!approveComputer || step.s !== "start") return;
-    const store = session();
-    const codeId = store ? handoffCodeId(store, window.location.hash, Date.now()) : null;
-    if (!codeId) return setStep({ s: "input" });
-    setStep({ s: "busy" });
-    void approveComputer.findByLink(codeId).then((r) => {
-      if (!r.ok) {
-        setError(r.reason);
-        return setStep({ s: "input" });
-      }
-      setStep({ s: "confirm", target: r.target, at: Date.now() });
-    });
-  }, [approveComputer, step.s]);
+    void flow?.start();
+  }, [flow]);
 
-  if (!approveComputer) return null;
+  if (!flow) return null;
 
-  const find = async (input: { shortCode: string } | { glyph: unknown }) => {
-    setError(null);
-    setStep({ s: "busy" });
-    let r;
-    if ("shortCode" in input) {
-      r = await approveComputer.findByCode(input.shortCode);
-      // Typing the code here is already the proof the api wants from another network.
-      if (r.ok) setTyped(input.shortCode);
-    } else {
-      const g = input.glyph as { body?: { codeId?: unknown } } | null;
-      r =
-        typeof g?.body?.codeId === "string"
-          ? await approveComputer.findByLink(g.body.codeId)
-          : ({ ok: false, reason: "invalid_code" } as const);
-    }
-    if (!r.ok) {
-      setError(r.reason);
-      return setStep({ s: "input" });
-    }
-    setStep({ s: "confirm", target: r.target, at: Date.now() });
-  };
+  const errorLine = (error: string | null) =>
+    error ? (
+      <p role="alert" data-testid="approve-error" data-reason={error} className="ch-err">
+        {t(`error.${error}`)}
+      </p>
+    ) : null;
 
-  const approve = async (target: ComputerTarget, at: number) => {
-    setError(null);
-    setStep({ s: "approving", target, at });
-    const needsCode = target.view.approval === "code_required";
-    const r = await approveComputer.approve(target, needsCode ? typed : undefined);
-    if (!r.ok) {
-      setError(r.reason);
-      return setStep(
-        ["step_up", "wrong_code", "code_required"].includes(r.reason) ? { s: "confirm", target, at } : { s: "input" },
-      );
-    }
-    const store = session();
-    if (store) clearHandoff(store);
-    setStep({ s: "done", name: r.name, fingerprint: await approveComputer.fingerprint() });
-  };
-
-  const decline = async (target: ComputerTarget) => {
-    setError(null);
-    const r = await approveComputer.decline(target.codeId);
-    if (r !== "ok") return setError("failed");
-    const store = session();
-    if (store) clearHandoff(store);
-    setStep({ s: "declined" });
-  };
-
-  const errorLine = error ? (
-    <p role="alert" data-testid="approve-error" data-reason={error} className="ch-err">
-      {t(`error.${error}`)}
-    </p>
-  ) : null;
-
-  if (step.s === "done")
+  if (view.s === "loading")
     return (
-      <div className="ch-chl" data-testid="approve-done">
+      <p aria-busy="true" className="ch-muted" data-testid="approve-loading">
+        {t("loading")}
+      </p>
+    );
+
+  if (view.s === "done")
+    return (
+      <div className="ch-chl" data-testid="approve-done" data-trusted={view.trusted}>
         <h2 className="ch-h2">{t("title")}</h2>
-        <p role="status">{t("done", { name: step.name })}</p>
+        <p role="status">{view.trusted ? t("done", { name: view.name }) : t("doneFinish", { name: view.name })}</p>
         <p>{t("doneReverse")}</p>
         <p data-testid="approve-my-fingerprint" className="ch-chl-code">
-          {step.fingerprint}
+          {view.fingerprint}
         </p>
         <Link href="/dispositivos" className="ch-btn ch-btn--secondary ch-chl-fit">
           {t("back")}
@@ -132,7 +85,7 @@ export const ApproveComputer = () => {
       </div>
     );
 
-  if (step.s === "declined")
+  if (view.s === "declined")
     return (
       <div className="ch-chl ch-chl--tight" data-testid="approve-declined">
         <h2 className="ch-h2">{t("title")}</h2>
@@ -143,18 +96,32 @@ export const ApproveComputer = () => {
       </div>
     );
 
-  if (step.s === "confirm" || step.s === "approving") {
-    const { display, view } = step.target;
-    const left = Math.max(0, Math.ceil((display.expiresInMs - (now - step.at)) / 1000));
-    const other = view.approval !== "one_tap";
-    const blocked = view.approval === "blocked";
-    const busy = step.s === "approving";
+  if (view.s === "confirm") {
+    const { display, view: v } = view.target;
+    const left = Math.max(0, Math.ceil((v.expiresAt - now) / 1000));
     return (
-      <div className="ch-chl" data-testid="approve-confirm" data-approval={view.approval}>
+      <div
+        className="ch-chl"
+        data-testid="approve-confirm"
+        data-same-computer={view.sameComputer}
+        data-warn={view.warn}
+        data-blocked={view.blocked}
+      >
         <h2 className="ch-h2">{t("title")}</h2>
-        {other ? (
-          <div role="alert" data-testid="approve-other-network" className="ch-card ch-chl-card ch-chl-card--bad">
-            <p className="ch-chl-strong">{view.city ? t("otherNetworkCity", { city: view.city }) : t("otherNetwork")}</p>
+        {view.sameComputer ? (
+          <p role="status" data-testid="approve-same-computer" className="ch-muted">
+            {t("sameComputer")}
+          </p>
+        ) : null}
+        {view.warn ? (
+          <div role="alert" data-testid="approve-warning" className="ch-card ch-chl-card ch-chl-card--bad">
+            <p className="ch-chl-strong">
+              {v.network === "different"
+                ? v.city
+                  ? t("otherNetworkCity", { city: v.city })
+                  : t("otherNetwork")
+                : t("notProven")}
+            </p>
             <p>{t("phishing")}</p>
           </div>
         ) : null}
@@ -162,16 +129,18 @@ export const ApproveComputer = () => {
           <p className="ch-chl-strong" data-testid="approve-name">
             {display.label}
           </p>
-          <p className="ch-chl-small">{OS[view.platform] ?? view.platform}</p>
+          <p className="ch-chl-small">{OS[v.platform] ?? v.platform}</p>
           <p>{t("compare")}</p>
           <p data-testid="approve-fingerprint" className="ch-chl-code">
             {display.fingerprint}
           </p>
-          <p className="ch-chl-small">
-            {t("expiresIn", { minutes: Math.floor(left / 60), seconds: String(left % 60).padStart(2, "0") })}
+          <p className="ch-chl-small" data-testid="approve-expires">
+            {left === 0
+              ? t("error.expired")
+              : t("expiresIn", { minutes: Math.floor(left / 60), seconds: String(left % 60).padStart(2, "0") })}
           </p>
         </div>
-        {other && !blocked ? (
+        {view.needsCode ? (
           <div className="ch-field">
             <label htmlFor="approve-typed">{t("typeCode")}</label>
             <input
@@ -183,45 +152,38 @@ export const ApproveComputer = () => {
               spellCheck={false}
               maxLength={12}
               placeholder="XXXX-XXXX"
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
+              value={view.typed}
+              onChange={(e) => flow.setTyped(e.target.value)}
             />
           </div>
         ) : null}
-        {!blocked ? (
+        {!view.blocked ? (
           <p className="ch-muted">{passkey.enrolled ? t("withPasskey") : t("withoutPasskey")}</p>
         ) : null}
         <div className="ch-chl-row">
           <button
             data-testid="approve-decline"
-            className={other ? "ch-btn ch-btn--danger" : "ch-btn ch-btn--secondary"}
-            disabled={busy}
-            onClick={() => void decline(step.target)}
+            className={view.warn ? "ch-btn ch-btn--danger" : "ch-btn ch-btn--secondary"}
+            disabled={view.busy}
+            onClick={() => void flow.decline()}
           >
             {t("notInFront")}
           </button>
-          {!blocked ? (
+          {!view.blocked ? (
             <button
               data-testid="approve-approve"
-              className={other ? "ch-btn ch-btn--secondary" : "ch-btn ch-btn--primary"}
-              disabled={busy || left === 0 || (other && typed.trim().length < 8)}
-              onClick={() => void approve(step.target, step.at)}
+              className={view.warn ? "ch-btn ch-btn--secondary" : "ch-btn ch-btn--primary"}
+              disabled={view.busy || left === 0 || (view.needsCode && view.typed.trim().length < 8)}
+              onClick={() => void flow.approve()}
             >
               {t("approve")}
             </button>
           ) : null}
         </div>
-        {errorLine}
+        {errorLine(view.error)}
       </div>
     );
   }
-
-  if (step.s === "start" || (step.s === "busy" && !code))
-    return (
-      <p aria-busy="true" className="ch-muted" data-testid="approve-loading">
-        {t("loading")}
-      </p>
-    );
 
   return (
     <div className="ch-chl" data-testid="approve-input">
@@ -231,7 +193,7 @@ export const ApproveComputer = () => {
         className="ch-chl-row ch-chl-row--bottom"
         onSubmit={(e) => {
           e.preventDefault();
-          void find({ shortCode: code });
+          void flow.findCode(code);
         }}
       >
         <div className="ch-field">
@@ -252,14 +214,17 @@ export const ApproveComputer = () => {
         <button
           data-testid="approve-find"
           className="ch-btn ch-btn--primary"
-          disabled={step.s === "busy" || code.trim().length < 8}
+          disabled={view.busy || code.trim().length < 8}
         >
           {t("find")}
         </button>
       </form>
-      {step.s === "scanning" ? (
+      {scanning ? (
         <GlyphScanner
-          onPayload={(glyph) => void find({ glyph })}
+          onPayload={(glyph) => {
+            setScanning(false);
+            void flow.findGlyph(glyph);
+          }}
           labels={{
             starting: t("scan.starting"),
             scanning: t("scan.scanning"),
@@ -271,13 +236,13 @@ export const ApproveComputer = () => {
         <button
           data-testid="approve-scan"
           className="ch-btn ch-btn--secondary ch-chl-fit"
-          disabled={step.s === "busy"}
-          onClick={() => setStep({ s: "scanning" })}
+          disabled={view.busy}
+          onClick={() => setScanning(true)}
         >
           {t("scan.start")}
         </button>
       )}
-      {errorLine}
+      {errorLine(view.error)}
     </div>
   );
 };
