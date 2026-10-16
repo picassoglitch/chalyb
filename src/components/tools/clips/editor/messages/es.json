@@ -1,0 +1,393 @@
+{
+  "title": "Editor del clip",
+  "backStream": "Ver el trabajo",
+  "status": {
+    "cut": "Por revisar",
+    "ready_for_review": "Por revisar",
+    "approved": "Aprobado",
+    "rejected": "Descartado",
+    "published": "Publicado"
+  },
+  "seconds": "{n} s",
+  "verdict": {
+    "viral": "Este se puede volver viral",
+    "ready": "Listo para publicar",
+    "needsEdit": "Le falta un ajuste",
+    "reject": "Aún no está para publicar solo",
+    "retention": "Retención estimada",
+    "retentionHint": "Qué tan seguro está de que jala: mira hook, subtítulos, cara, zonas seguras, silencios y audio",
+    "readyFor": "Listo para {plataforma}",
+    "heard": "La IA te escuchó decir",
+    "backward": "↶ hacia atrás",
+    "backwardHint": "La frase activó hacia atrás: el clip arranca antes del momento en que lo dijiste",
+    "forward": "↷ hacia adelante",
+    "forwardHint": "La frase activó hacia adelante: el clip sigue después del momento en que lo dijiste",
+    "platformsLabel": "Revisión por app",
+    "platformOk": "{plataforma}: bien",
+    "platformWarn": "{plataforma}: con avisos",
+    "platformBlock": "{plataforma}: con problemas",
+    "trimmedTitle": "Recortamos el clip automáticamente",
+    "trimmedBody": "Límites originales: {inicio} s → {fin} s. Toca Deshacer para regresarlos.",
+    "undo": "Deshacer",
+    "undoing": "Regresando…",
+    "trimReverted": "Listo, regresamos los límites originales.",
+    "trimNoop": "Este clip nunca se recortó, no hay nada que deshacer.",
+    "trimError": "No se pudo deshacer. Intenta de nuevo en un momento.",
+    "autofixTitle": "Corregido automáticamente por la IA",
+    "autofixGain": "+{n}% listo",
+    "autofixReady": "Quedó listo para publicar por sí solo."
+  },
+  "approve": "Aprobar y seguir",
+  "approving": "Aprobando…",
+  "saveDraft": "Guardar borrador",
+  "savingDraft": "Guardando…",
+  "draftSaved": "Borrador guardado",
+  "reject": "Descartar y cerrar",
+  "rejecting": "Descartando…",
+  "rejectedNote": "Descartaste este clip. Puedes volver a aprobarlo cuando quieras.",
+  "approvedNote": "Aprobado. Puedes seguir ajustándolo y volver a aprobarlo.",
+  "publishedNote": "Este clip ya se publicó. Puedes descargarlo; ya no se puede editar.",
+  "queueDone": "Ya revisaste todos los clips de este trabajo.",
+  "actionError": "No pudimos hacerlo. Intenta de nuevo.",
+  "modal": {
+    "title": "Este clip todavía no está al cien",
+    "body": "La IA ya corrigió lo que pudo y le dio {n}% de listo para publicar. Puedes aprobarlo así o seguir editando.",
+    "keepEditing": "Seguir editando",
+    "force": "Aprobar así",
+    "close": "Cerrar"
+  },
+  "growth": {
+    "title": "Growth Score",
+    "outOf": "{n}/100",
+    "impressions": "{min}–{max} vistas"
+  },
+  "preview": {
+    "title": "Vista previa en vivo",
+    "sub": "así se verá el clip final",
+    "fitLegend": "Cómo llena la pantalla",
+    "fit": {
+      "smart_crop": "Recorte inteligente",
+      "blurred_bg": "Fondo borroso",
+      "letterbox": "Barras negras",
+      "dynamic_zoom": "Cinemático"
+    },
+    "fitHint": {
+      "smart_crop": "Recorte 9:16 pegado a ti",
+      "blurred_bg": "Cuadro horizontal completo con fondo borroso",
+      "letterbox": "Cuadro horizontal completo con barras negras",
+      "dynamic_zoom": "Zoom lento con movimiento suave"
+    },
+    "modeLegend": "Qué ver",
+    "mode": {
+      "raw": "Sin nada",
+      "edited": "Editado"
+    },
+    "modeHint": {
+      "raw": "El recorte tal cual, sin overlays",
+      "edited": "Título, subtítulos y banner"
+    },
+    "player": "Vista previa del clip",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "restart": "Reiniciar",
+    "sound": "Activar el sonido (M)",
+    "mute": "Quitar el sonido (M)",
+    "note": "Esto es solo la vista previa. Al descargar o publicar, el título, el banner y los subtítulos se queman en un video nuevo: ese es el que se sube.",
+    "loadingAudio": "cargando audio…",
+    "noAudio": "sin audio",
+    "scrubber": "Posición en el clip",
+    "timeline": "Momentos que detectó la IA",
+    "timelineEmpty": "No encontramos momentos destacados: este clip no tiene transcripción, chat ni señales visuales para revisar.",
+    "seekTo": "{label} en {t}",
+    "seekHint": "Toca para ir a ese momento",
+    "captionsNoTranscript": "todavía no hay transcripción: procesa este stream",
+    "captionsEmpty": "no se detectó voz en este stream: revisa el audio o vuelve a procesarlo",
+    "captionsOld": "la transcripción es vieja (sin tiempos por palabra): vuelve a procesar el stream",
+    "live": "EN VIVO",
+    "liveNow": "EN VIVO",
+    "follow": "Seguir",
+    "captionFallback": "🔥 un momento increíble · lo mejor del stream #fyp",
+    "simTabs": {
+      "following": "Siguiendo",
+      "forYou": "Para ti",
+      "reels": "Reels",
+      "friends": "Amigos",
+      "shorts": "Shorts",
+      "clip": "Clip",
+      "share": "Compartir",
+      "remix": "Remix"
+    },
+    "chat": [
+      {
+        "name": "@stevefan",
+        "msg": "no manches 😂😂"
+      },
+      {
+        "name": "@kx_clipper",
+        "msg": "CLIPÉALO CLIPÉALO"
+      },
+      {
+        "name": "@aldo_fan",
+        "msg": "qué buen stream"
+      }
+    ]
+  },
+  "target": {
+    "title": "¿Dónde lo vas a subir?",
+    "sub": "elige uno y lo demás se acomoda solo para lo que jala ahí",
+    "name": {
+      "tiktok": "TikTok",
+      "reels": "Reels",
+      "shorts": "Shorts",
+      "kick": "Kick",
+      "all": "Todas"
+    },
+    "blurb": {
+      "tiktok": "Te ves completo · fondo borroso · subtítulos abajo del centro",
+      "reels": "Te ves completo · fondo de estrellas · subtítulos abajo del centro",
+      "shorts": "Te ves completo · subtítulos abajo del centro · banner KICK limpio",
+      "kick": "Banner de streamer · pastilla EN VIVO · seguro con barras negras",
+      "all": "Lo más seguro para todas las apps: te ves completo en cualquier feed"
+    },
+    "readyFor": "Listo para <b>{plataforma}</b> · {blurb}"
+  },
+  "style": {
+    "title": "Estilo del clip",
+    "sub": "afina cómo se ven banner, hook y subtítulos",
+    "name": {
+      "repost_page_viral": "Repost viral",
+      "clean_creator": "Creador limpio",
+      "gaming_chaos": "Caos gamer",
+      "documentary": "Documental",
+      "minimal_native": "Nativo mínimo"
+    },
+    "desc": {
+      "repost_page_viral": "Banner negro estilo Kick con logo grande y URL, título blanco arriba y subtítulos palabra por palabra. El look de las páginas de reposts.",
+      "clean_creator": "Solo la URL abajo, subtítulos discretos y sin título arriba. Para que tu cara sea el momento.",
+      "gaming_chaos": "Mucho énfasis, animación al máximo, subtítulos grandes y bloque verde de Kick. Para raids, sustos y jugadas.",
+      "documentary": "Estilo historia. Banner chico abajo, sin título arriba y subtítulos de máquina de escribir.",
+      "minimal_native": "Sin banner ni título. Solo subtítulos, para que se vea grabado con el teléfono."
+    }
+  },
+  "hook": {
+    "title": "Hook viral",
+    "sub": "lo primero que leen: decide si se quedan o pasan",
+    "label": "Título del hook",
+    "placeholder": "ej. Le pidió la revancha después de perder otra vez",
+    "hint": "Si lo dejas vacío, no sale título. Los que más jalan tienen de 6 a 10 palabras con curiosidad, conflicto o estatus.",
+    "tone": "Tono de la IA",
+    "tones": {
+      "default": "Natural: tu voz de siempre",
+      "aggressive": "Agresivo: directo y retador",
+      "gen_z": "Gen Z: jerga de TikTok",
+      "corporate": "Formal: limpio y profesional",
+      "curious": "Curioso: preguntas que enganchan"
+    },
+    "generate": "Generar 5",
+    "generating": "Generando con tono {tono}…",
+    "use": "Toca para usarlo como título del hook",
+    "none": "No salió ningún hook: prueba con otro tono.",
+    "error": "No se pudieron generar. Intenta de nuevo.",
+    "fallback": "La IA no respondió: armamos estos con lo que dijiste en el clip."
+  },
+  "captions": {
+    "title": "Subtítulos",
+    "sub": "quemados palabra por palabra",
+    "burn": "Quemar los subtítulos en el clip",
+    "preset": "Estilo",
+    "presetKit": "Usar el de tu kit de marca ({estilo})",
+    "presets": {
+      "karaoke_pop": "Karaoke: resalta palabra por palabra con rebote",
+      "typewriter": "Máquina de escribir: aparece letra por letra",
+      "bold_block": "Bloque grueso: de 2 a 3 palabras, corte seco",
+      "subtle": "Discreto: una línea abajo, sin animación"
+    },
+    "highlight": "Color de la palabra activa",
+    "position": "Dónde van los subtítulos",
+    "positions": {
+      "auto": "✨ Automático viral",
+      "autoAi": "✨ Automático viral · la IA pone {pos}",
+      "lower_third": "Bajo la cara: debajo de tu cara (recomendado)",
+      "upper_third": "Arriba viral: sobre la cara, look de póster",
+      "centered": "Sigue la cara: a la altura de los ojos",
+      "bottom": "Abajo seguro: justo arriba de los botones de la app"
+    },
+    "aiPos": {
+      "upper_third": "Arriba viral",
+      "centered": "Sigue la cara",
+      "lower_third": "Bajo la cara",
+      "bottom": "Abajo seguro"
+    },
+    "positionHint": "Casi todos lo dejan en Automático viral. La IA elige según la app.",
+    "size": "Tamaño de letra",
+    "sizes": {
+      "small": "S: discreto",
+      "medium": "M: equilibrado (por defecto)",
+      "large": "L: más fuerte",
+      "xl": "XL: llena la pantalla"
+    },
+    "animation": "Animación",
+    "animations": {
+      "pop": "Rebote: la palabra activa pega un brinquito",
+      "slide": "Deslizar: las palabras suben a su lugar",
+      "typewriter": "Máquina de escribir: aparece letra por letra",
+      "fade": "Desvanecer: transición suave entre palabras"
+    }
+  },
+  "brand": {
+    "title": "Tu marca",
+    "sub": "tu URL en el banner, igual que en tu stream",
+    "banner": "Mostrar banner abajo estilo KICK",
+    "platform": "Plataforma",
+    "url": "URL",
+    "urlPlaceholder": "kick.com/tuusuario",
+    "color": "Color del banner",
+    "context": "Mostrar contexto de la app (insignia EN VIVO y chat)",
+    "sim": "Simular la pantalla de la app",
+    "simHint": "Solo es una simulación, nunca se quema. Elige la app donde vas a publicar.",
+    "sims": {
+      "clean": "Sin simulación",
+      "tiktok": "TikTok",
+      "reels": "Instagram Reels",
+      "shorts": "YouTube Shorts",
+      "kick": "Página de clip de Kick"
+    },
+    "safeZone": "App para las zonas seguras",
+    "variant": "Tipo de banner",
+    "variants": {
+      "kick_repost_page": "Repost: barra negra, KICK enorme y URL (por defecto)",
+      "kick_black_bar_classic": "Clásico: franja de color, app a la izquierda y URL a la derecha",
+      "kick_green_block": "Bloque verde: overlay grueso gamer",
+      "kick_minimal_url": "Mínimo: solo la URL, sin caja"
+    },
+    "liveBadge": "Mostrar pastilla EN VIVO (solo en el banner repost)"
+  },
+  "export": {
+    "title": "Descargar",
+    "quality": "Calidad",
+    "qualities": {
+      "1080": "1080p",
+      "2k": "2K",
+      "4k": "4K"
+    },
+    "qualityLocked": "2K y 4K vienen en el plan VIP. Con tu plan se descarga en 1080p.",
+    "download": "Descargar video",
+    "prepare": "Preparar descarga",
+    "rendering": "Preparando tu video… {n}%",
+    "ready": "Tu video está listo",
+    "failed": "No pudimos preparar el video.",
+    "retry": "Intentar de nuevo",
+    "savedFirst": "Guardamos tus cambios antes de preparar el video."
+  },
+  "analysis": {
+    "why": "Por qué la IA eligió este clip",
+    "whySub": "lo que hay detrás del puntaje",
+    "viral": "Potencial viral",
+    "trigger": "Qué lo activó",
+    "visionCheck": "Revisión con la IA de imagen",
+    "face": "Presencia de cara",
+    "faceUnit": "de los segundos del clip",
+    "motion": "Movimiento",
+    "motionUnit": "promedio por segundo",
+    "hook": "Fuerza del hook",
+    "level": "Nivel",
+    "readability": "Qué tan legibles son los subtítulos",
+    "pace": "Ritmo al hablar",
+    "paceUnit": "palabras por segundo",
+    "sweet": "Punto ideal",
+    "noTranscript": "Este clip todavía no tiene transcripción, no se puede medir el ritmo.",
+    "deadAir": "Riesgo de silencios",
+    "talk": "Qué tanto hablas",
+    "riskLevels": "Niveles de riesgo",
+    "riskScale": "< 0.4 = alto · 0.4–0.8 = medio · ≥ 0.8 = bajo",
+    "breakdown": "¿Por qué este clip?",
+    "breakdownSub": "el desglose de lo que detectamos",
+    "motionAvg": "movimiento promedio en todo el clip",
+    "notAnalyzed": "no aplica: no se analizó la imagen",
+    "na": "no aplica",
+    "faceSecs": "de los segundos con una cara detectada",
+    "naTranscript": "no aplica: sin transcripción",
+    "reaction": "Confianza en la reacción",
+    "reactionNote": "revisado por la IA de imagen",
+    "notReviewed": "no se revisó: queda el orden base",
+    "delta": "Cambio tras revisar",
+    "deltaWhy": "Por qué cambió",
+    "outcomes": "Resultados de publicación",
+    "outcomesSub": "números por app",
+    "app": "App",
+    "link": "Enlace",
+    "state": "Estado",
+    "views": "Vistas",
+    "likes": "Likes",
+    "comments": "Comentarios",
+    "measured": "Última revisión",
+    "notMeasured": "aún sin medir",
+    "levels": {
+      "HIGH": "Alto",
+      "MEDIUM": "Medio",
+      "MED": "Medio",
+      "LOW": "Bajo",
+      "DEVELOPING": "En desarrollo",
+      "GOOD": "Buena",
+      "OK": "Regular",
+      "CHECK": "Revísala"
+    }
+  },
+  "autosave": "Tus ajustes de marca se guardan solos para tus próximos clips.",
+  "unsaved": "Tienes cambios sin guardar en este clip.",
+  "errors": {
+    "session": "Tu sesión terminó. Vuelve a entrar para seguir.",
+    "no_credits": "No te alcanzan los tokens para esto. Recarga tu saldo o mejora tu plan.",
+    "rate_limited": "Llegaste a un límite de tu plan. Inténtalo más tarde.",
+    "too_large": "Esto supera el tamaño máximo de tu plan.",
+    "needs_plan": "Tu plan no incluye esto.",
+    "not_found": "No encontramos este clip. Puede que se haya borrado.",
+    "bad_request": "Este clip cambió mientras tanto. Recarga la página e inténtalo de nuevo.",
+    "generic": "Clips no respondió esta vez. Intenta de nuevo en un momento.",
+    "code": "Código {codigo}"
+  },
+  "format": {
+    "title": "Formato",
+    "sub": "vertical para TikTok, Reels y Shorts; horizontal para YouTube; cuadrado para el feed",
+    "name": {
+      "vertical": "Vertical 9:16",
+      "horizontal": "Horizontal 16:9",
+      "square": "Cuadrado 1:1"
+    },
+    "unavailable": "Este clip solo se puede hacer en vertical: ya no tenemos el video completo.",
+    "loading": "Preparando la vista en este formato…"
+  },
+  "trim": {
+    "title": "Recortar",
+    "sub": "arrastra los bordes; se ajustan a las palabras",
+    "start": "Inicio del recorte",
+    "end": "Final del recorte",
+    "range": "Empieza en <b>{inicio}</b> · dura <b>{dura}</b> · termina en <b>{fin}</b>",
+    "limits": "Entre {min} s y {max} s.",
+    "apply": "Aplicar recorte",
+    "applying": "Recortando…",
+    "reset": "Como estaba",
+    "done": "Listo, recortamos el clip. Puedes deshacerlo arriba.",
+    "errors": {
+      "bad_bounds": "El final tiene que ir después del inicio.",
+      "outside_window": "Ese recorte se sale del video que tenemos.",
+      "too_short": "El clip tiene que durar al menos {min} s.",
+      "too_long": "El clip puede durar como máximo {max} s.",
+      "no_footage": "Ya no tenemos el video original para extender este clip."
+    }
+  },
+  "publishState": {
+    "pending": "Publicando automáticamente… (lo ves en Publicar)",
+    "failed": "No se pudo publicar automáticamente. Reintenta desde Publicar.",
+    "post": "Publicación {plataformas}: {estado}",
+    "states": {
+      "pending": "en cola",
+      "scheduled": "programada",
+      "publishing": "publicando",
+      "published": "publicada",
+      "failed": "falló",
+      "draft": "borrador",
+      "partial": "parcial"
+    }
+  }
+}
