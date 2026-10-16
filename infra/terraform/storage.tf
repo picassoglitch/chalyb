@@ -33,5 +33,14 @@ resource "google_storage_bucket" "media" {
     }
   }
 
+  # The hub's Clips upload screen (/app/clips/subir) PUTs the video straight
+  # from the browser to a presigned URL, so the hub's origins need CORS.
+  cors {
+    origin          = ["https://www.${var.domain}", "https://${var.domain}"]
+    method          = ["PUT", "GET", "HEAD"]
+    response_header = ["Content-Type", "Content-Length", "ETag"]
+    max_age_seconds = 3600
+  }
+
   depends_on = [google_project_service.enabled]
 }
