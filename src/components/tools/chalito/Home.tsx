@@ -1,6 +1,7 @@
 'use client';
 import { SignInLink } from './SignInLink';
 import { Companion } from './Companion';
+import { SetupChecklist } from './SetupChecklist';
 import { useLocale, useTranslations } from 'next-intl';
 import { Camera, Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
 import { PRODUCT_NAME, formatCompanionTitle } from '@chalito/brand';
@@ -66,7 +67,10 @@ export const Home = () => {
           <p>{t('signedOut')}</p>
           <SignInLink className="ch-btn ch-btn--primary">{t('signIn')}</SignInLink>
         </div>
-      ) : null}
+      ) : (
+        // First Run D: until the computer, an AI, a folder and a first task are really there.
+        <SetupChecklist />
+      )}
       <Group title={t(ready ? 'sections.moreTitle' : 'sections.sectionsTitle')}>
         {SECTIONS.map(([href, key, Icon, color]) => (
           <Row

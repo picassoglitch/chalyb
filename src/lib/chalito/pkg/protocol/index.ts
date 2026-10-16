@@ -17,3 +17,4 @@ export * from "./billing";
 export * from "./api";
 export * from "./endorse";
 export * from "./screen";
+export * from "./presence";

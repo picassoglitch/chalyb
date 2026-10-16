@@ -71,6 +71,16 @@ export const Devices = () => {
           {t("add")}
         </Link>
       </div>
+      {agents.length === 0 ? (
+        // First Run D: the empty state says what's missing and where to get it.
+        <section className="ch-card ch-chl-card ch-chl ch-chl--tight" data-testid="no-computer">
+          <h3 className="ch-chl-strong">{t("noComputer")}</h3>
+          <p>{t("noComputerBody")}</p>
+          <Link href="/descargar" className="ch-btn ch-btn--primary ch-chl-fit" data-testid="no-computer-download">
+            {t("download")}
+          </Link>
+        </section>
+      ) : null}
       <PasskeyEnroll />
       {refusals.length ? (
         <section
@@ -120,6 +130,7 @@ export const Devices = () => {
                 <p className="ch-chl-strong ch-chl-bad">
                   {t("devModeOn", { toggles: d.devMode.toggles.join(", ") })}
                 </p>
+                <p className="ch-chl-small">{t("devModeWhat")}</p>
                 <div className="ch-chl-row">
                   <button
                     data-testid="devmode-off"

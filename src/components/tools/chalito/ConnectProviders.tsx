@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DeviceView } from "@chalito/client";
-import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
 import { CATALOG, type CatalogApp } from "@/lib/chalito/web/apps-catalog";
 import {
@@ -20,6 +19,7 @@ import {
   type ProviderStatus,
   type StatusIndex,
 } from "@/lib/chalito/web/connect";
+import { SetupChecklist } from "./SetupChecklist";
 import { Loading } from "./Loading";
 import { PasteKeyForm } from "./PasteKeyForm";
 
@@ -235,9 +235,8 @@ export const ConnectProviders = ({
     return (
       <div className="ch-chl" data-testid="connect-no-computer">
         <p>{noClient ? t("noBrowser") : t("noComputer")}</p>
-        <Link href="/descargar" className="ch-btn ch-btn--primary ch-chl-fit">
-          {t("download")}
-        </Link>
+        {/* First Run D: the setup step that's next (approve this browser, or get a computer). */}
+        <SetupChecklist compact />
         {howTo}
       </div>
     );

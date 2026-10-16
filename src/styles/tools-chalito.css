@@ -81,6 +81,48 @@
   gap: 14px;
 }
 
+/* First Run D: the setup checklist ("Pon a trabajar a Chalito"). */
+.chalyb-app .ch-chl-setup {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chalyb-app .ch-chl-setup__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.chalyb-app .ch-chl-setup__mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid var(--border, #d1d1d6);
+  font-size: 13px;
+  line-height: 1;
+}
+.chalyb-app .ch-chl-setup__item--done .ch-chl-setup__mark {
+  border-color: var(--ok);
+  background: var(--ok);
+  color: #fff;
+}
+.chalyb-app .ch-chl-setup__item--done .ch-chl-setup__body {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-chl-setup__item--now .ch-chl-setup__mark {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.chalyb-app .ch-chl-setup__body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
 /* Plain checkbox / radio rows inside forms. */
 .chalyb-app .ch-chl-check {
   display: flex;
