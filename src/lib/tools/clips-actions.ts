@@ -20,6 +20,7 @@ import {
   type ClipFormat,
 } from './adapters/types';
 import { logAudit } from '@/lib/audit/log';
+import { clipJobHref } from '@/lib/tools/clips-job-href';
 
 export async function createClipJob(formData: FormData): Promise<void> {
   const locale = await getLocale();
@@ -80,7 +81,7 @@ export async function createClipJob(formData: FormData): Promise<void> {
     if (r?.ok) started += 1;
   }
   if (started > 0) return redirect({ href: '/app/history', locale });
-  return redirect({ href: `/app/clips/trabajo/${encodeURIComponent(result.jobId)}`, locale });
+  return redirect({ href: clipJobHref(result.jobId), locale });
 }
 
 /** "Intentar otra vez" on a failed row of Clips' home (TOOLS-SPEC §4.1):

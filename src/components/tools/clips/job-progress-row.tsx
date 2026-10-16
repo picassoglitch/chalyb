@@ -10,6 +10,7 @@ import { manualRetryAllowed, type ClipJob } from '@/lib/tools/adapters/types';
 import { jobProgress, thumbFor } from '@/lib/tools/clips-home';
 import { platformName } from '@/lib/tools/clips-copy';
 import { retryClipJob } from '@/lib/tools/clips-actions';
+import { clipJobHref } from '@/lib/tools/clips-job-href';
 import { failureBody } from './failure-copy';
 
 export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge: boolean }) {
@@ -76,10 +77,7 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
           <b>{p.pct}%</b>
         </span>
       </div>
-      <Link
-        href={`/app/clips/trabajo/${encodeURIComponent(job.id)}` as Route}
-        className="ch-btn ch-btn--gray ch-btn--compact"
-      >
+      <Link href={clipJobHref(job.id) as Route} className="ch-btn ch-btn--gray ch-btn--compact">
         {t('see')}
       </Link>
     </li>
