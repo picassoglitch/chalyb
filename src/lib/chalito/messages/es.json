@@ -1426,6 +1426,7 @@
     "sameComputer": "Estás en esta misma computadora: puedes aprobarla con un toque.",
     "notProven": "No pudimos confirmar que estés en esa computadora.",
     "doneFinish": "Aprobaste «{name}», pero falta un paso en este navegador: vuelve a abrir Chalito aquí para terminar de configurarla.",
-    "backToApprove": "Volver a aprobar tu computadora"
+    "backToApprove": "Volver a aprobar tu computadora",
+    "phishingScan": "Aprueba solo si tienes esa computadora enfrente y su código de verificación coincide."
   }
 }

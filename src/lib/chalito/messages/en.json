@@ -1426,6 +1426,7 @@
     "sameComputer": "You're on this same computer: you can approve it with one tap.",
     "notProven": "We couldn't confirm you're on that computer.",
     "doneFinish": "You approved “{name}”, but this browser has one step left: open Chalito here again to finish setting it up.",
-    "backToApprove": "Back to approving your computer"
+    "backToApprove": "Back to approving your computer",
+    "phishingScan": "Only approve it if that computer is in front of you and its verification code matches."
   }
 }

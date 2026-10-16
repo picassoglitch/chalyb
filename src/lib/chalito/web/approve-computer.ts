@@ -7,6 +7,7 @@ import {
   type DeviceClientKeys,
   type PairingDisplay,
 } from "@chalito/client-keys";
+import { fromB64url, verifyEnvelope } from "@chalito/crypto";
 import { normalizeShortCode } from "@chalito/glyph";
 import {
   PAIRING_LOOPBACK_PORTS,
@@ -191,6 +192,28 @@ export const askLoopback = async (
   }
 };
 
+/**
+ * Whether a loopback answer really comes from the computer being approved: signed by the agent
+ * key in its (already verified) glyph, by that agent's device id, for this code and nonce, naming
+ * this page's origin. Any other local process answering on those ports proves nothing, so the
+ * warning and the code prompt stay. (/claim checks it again; this only decides what to show.)
+ */
+export const verifyLoopbackProof = async (
+  proof: PairingLoopbackProof,
+  target: ComputerTarget,
+  o: { nonce: string; origin: string },
+): Promise<boolean> => {
+  const b = proof.body;
+  if (proof.signerDeviceId !== target.display.agentDeviceId) return false;
+  if (b.codeId !== target.codeId || b.nonce !== o.nonce || b.origin !== o.origin) return false;
+  try {
+    const key = await fromB64url(target.glyph.body.issuerPubSign);
+    return (await verifyEnvelope(proof, "chalito.pairing-loopback.v1", new Map([[target.display.agentDeviceId, key]]))).ok;
+  } catch {
+    return false;
+  }
+};
+
 // ---- the api ---------------------------------------------------------------------------
 
 const REASONS: Record<string, ApproveError> = {
@@ -328,8 +351,9 @@ export type ApproveView =
       target: ComputerTarget;
       /** Proven by the agent on this computer: one tap, no warning. */
       sameComputer: boolean;
-      /** Opened from a link but not proven: "Si alguien te mandó este enlace, no lo apruebes." */
+      /** Not proven on this computer: a warning ("link": phishing via the link; "scan": a phone's camera). */
       warn: boolean;
+      warnSource: "link" | "scan" | null;
       /** The short code still has to be typed here. */
       needsCode: boolean;
       blocked: boolean;
@@ -344,7 +368,7 @@ export interface ApproveFlowDeps {
   api: ApproveComputerApi;
   store: Store | null;
   /** The page's location and history (to read and strip the fragment). */
-  location: Pick<Location, "pathname" | "search" | "hash">;
+  location: Pick<Location, "pathname" | "search" | "hash" | "origin">;
   history: Pick<History, "replaceState">;
   loopback: (h: Handoff, nonce: string) => Promise<PairingLoopbackProof | null>;
   now: () => number;
@@ -368,14 +392,19 @@ export class ApproveFlow {
     for (const fn of this.#listeners) fn();
   }
 
-  #confirm(target: ComputerTarget, o: { fromLink: boolean; typed: string; error?: ApproveError | null }) {
+  #confirm(
+    target: ComputerTarget,
+    o: { source: "link" | "scan" | "typed"; typed: string; error?: ApproveError | null },
+  ) {
     const sameComputer = !!this.#proof;
+    const warn = o.source !== "typed" && !sameComputer;
     const blocked = !sameComputer && target.view.approval === "blocked";
     this.#set({
       s: "confirm",
       target,
       sameComputer,
-      warn: o.fromLink && !sameComputer,
+      warn,
+      warnSource: warn ? (o.source as "link" | "scan") : null,
       needsCode: !sameComputer && !target.view.codeTyped && !blocked,
       blocked,
       typed: o.typed,
@@ -400,8 +429,13 @@ export class ApproveFlow {
     const r = await this.d.api.findByLink(h.codeId);
     if (!r.ok) return this.#gone(r.reason);
     const nonce = r.target.view.loopbackNonce;
-    this.#proof = nonce ? await this.d.loopback(h, nonce) : null;
-    this.#confirm(r.target, { fromLink: true, typed: "" });
+    const answer = nonce ? await this.d.loopback(h, nonce) : null;
+    // Same computer only once the answer verifies against this computer's key; else the code.
+    this.#proof =
+      answer && nonce && (await verifyLoopbackProof(answer, r.target, { nonce, origin: this.d.location.origin }))
+        ? answer
+        : null;
+    this.#confirm(r.target, { source: "link", typed: "" });
   }
 
   async findCode(shortCode: string): Promise<void> {
@@ -409,7 +443,7 @@ export class ApproveFlow {
     this.#proof = null;
     const r = await this.d.api.findByCode(shortCode);
     if (!r.ok) return this.#set({ s: "input", busy: false, error: r.reason });
-    this.#confirm(r.target, { fromLink: false, typed: shortCode });
+    this.#confirm(r.target, { source: "typed", typed: shortCode });
   }
 
   /** A phone scanned the computer's glyph: same as the link, but never on the same computer. */
@@ -420,7 +454,7 @@ export class ApproveFlow {
     this.#proof = null;
     const r = await this.d.api.findByLink(g.body.codeId);
     if (!r.ok) return this.#set({ s: "input", busy: false, error: r.reason });
-    this.#confirm(r.target, { fromLink: true, typed: "" });
+    this.#confirm(r.target, { source: "scan", typed: "" });
   }
 
   setTyped(typed: string) {
@@ -445,7 +479,11 @@ export class ApproveFlow {
     if (!r.ok) {
       if (r.reason === "not_found" || r.reason === "expired") return this.#gone(r.reason);
       if (["step_up", "wrong_code", "code_required", "proof_failed", "invalid_code"].includes(r.reason))
-        return this.#confirm(v.target, { fromLink: v.warn || v.sameComputer, typed: v.typed, error: r.reason });
+        return this.#confirm(v.target, {
+          source: v.warnSource ?? (v.sameComputer ? "link" : "typed"),
+          typed: v.typed,
+          error: r.reason,
+        });
       return this.#set({ s: "input", busy: false, error: r.reason });
     }
     clearHandoff(this.d.store);

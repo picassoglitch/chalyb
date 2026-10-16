@@ -28,6 +28,7 @@ import {
   stashHandoff,
   stashedHandoff,
   stripHash,
+  verifyLoopbackProof,
   type ApproveComputerApi,
   type ComputerTarget,
 } from '@/lib/chalito/web/approve-computer';
@@ -107,11 +108,12 @@ const proofFor = async (
   agent: Awaited<ReturnType<typeof computer>>['agent'],
   codeId = CODE,
   nonce = NONCE,
+  o: { origin?: string; signerId?: string } = {},
 ) =>
   (await signEnvelope(
     'chalito.pairing-loopback.v1',
-    { v: 1, codeId, nonce, origin: 'https://www.chalyb.com', issuedAt: Date.now() },
-    agent.deviceId,
+    { v: 1, codeId, nonce, origin: o.origin ?? 'https://www.chalyb.com', issuedAt: Date.now() },
+    o.signerId ?? agent.deviceId,
     agent.sign.secretKey,
   )) as PairingLoopbackProof;
 
@@ -355,7 +357,7 @@ const flowWorld = async (o: {
   find?: (codeId: string) => Promise<unknown>;
   approve?: () => Promise<unknown>;
   decline?: () => Promise<'ok' | 'failed'>;
-  proof?: boolean;
+  proof?: boolean | 'forged' | 'wrong_signer' | 'wrong_origin';
   view?: Parameters<typeof view>[1];
   now?: () => number;
 }) => {
@@ -386,7 +388,19 @@ const flowWorld = async (o: {
     decline: o.decline ?? (async () => 'ok'),
     fingerprint: async () => 'ab12 cd34',
   };
-  const proof = o.proof ? await proofFor(agent) : null;
+  const impostor = await generateDeviceKeys();
+  const proof =
+    o.proof === true
+      ? await proofFor(agent)
+      : o.proof === 'forged'
+        ? // Claims to be this computer, signed by another key.
+          await proofFor(impostor as never, CODE, NONCE, { signerId: agent.deviceId })
+        : o.proof === 'wrong_signer'
+          ? // Validly signed, but by another agent.
+            await proofFor(impostor as never)
+          : o.proof === 'wrong_origin'
+            ? await proofFor(agent, CODE, NONCE, { origin: 'https://evil.example' })
+            : null;
   const asked: unknown[] = [];
   const flow = new ApproveFlow({
     api,
@@ -395,6 +409,7 @@ const flowWorld = async (o: {
       pathname: '/app/chalito/computadoras/aprobar',
       search: '',
       hash: o.hash ?? `#c=${CODE}&p=47810`,
+      origin: 'https://www.chalyb.com',
     },
     history: { replaceState: (_s, _t, url) => void stripped.push(String(url)) },
     loopback: async (h, nonce) => (asked.push([h, nonce]), proof),
@@ -420,6 +435,58 @@ test('flow: link + loopback proof = one tap, no warning, no code; the proof goes
     trusted: true,
   });
   assert.equal(w.store.m.has(HANDOFF_STASH_KEY), false, 'stash cleared after approving');
+});
+
+for (const bad of ['forged', 'wrong_signer', 'wrong_origin'] as const)
+  test(`flow: a loopback answer that doesn't verify (${bad}) keeps the warning and the code`, async () => {
+    const w = await flowWorld({ proof: bad });
+    await w.flow.start();
+    const v = w.flow.view;
+    assert.ok(v.s === 'confirm' && !v.sameComputer && v.warn && v.needsCode, bad);
+    w.flow.setTyped('7K3M-QX9P');
+    await w.flow.approve();
+    assert.deepEqual(
+      w.approvals,
+      [{ shortCode: '7K3M-QX9P' }],
+      'the unverified answer is never sent',
+    );
+  });
+
+test("verifyLoopbackProof: this computer's key and id, this code, nonce and origin", async () => {
+  const { glyph, agent } = await computer();
+  const found = await findByLink(
+    fakeApi(() => view(glyph)),
+    CODE,
+    Date.now(),
+  );
+  assert.ok(found.ok);
+  const o = { nonce: NONCE, origin: 'https://www.chalyb.com' };
+  assert.equal(await verifyLoopbackProof(await proofFor(agent), found.target, o), true);
+  const other = await generateDeviceKeys();
+  assert.equal(await verifyLoopbackProof(await proofFor(other as never), found.target, o), false);
+  assert.equal(
+    await verifyLoopbackProof(
+      await proofFor(other as never, CODE, NONCE, { signerId: agent.deviceId }),
+      found.target,
+      o,
+    ),
+    false,
+  );
+  assert.equal(
+    await verifyLoopbackProof(await proofFor(agent), found.target, {
+      ...o,
+      origin: 'http://localhost:3000',
+    }),
+    false,
+  );
+  assert.equal(
+    await verifyLoopbackProof(await proofFor(agent), found.target, { ...o, nonce: 'M'.repeat(43) }),
+    false,
+  );
+  assert.equal(
+    await verifyLoopbackProof(await proofFor(agent, 'another_code_id_0123456'), found.target, o),
+    false,
+  );
 });
 
 test('flow: link without a proof (other device, blocked loopback) = warning and the typed code', async () => {
@@ -450,6 +517,22 @@ test('flow: a wrong code or a refused proof stays on the screen, asking for the 
   assert.ok(
     v.s === 'confirm' && v.error === 'proof_failed' && v.needsCode && v.warn && !v.sameComputer,
   );
+});
+
+test('flow: a phone that scanned the colour code gets the in-front-of-it warning, not the link one', async () => {
+  const w = await flowWorld({ hash: '' });
+  await w.flow.start();
+  const { glyph } = await computer();
+  await w.flow.findGlyph(glyph);
+  const v = w.flow.view;
+  assert.ok(v.s === 'confirm' && v.warn && v.warnSource === 'scan' && v.needsCode);
+  const link = await flowWorld({ proof: false });
+  await link.flow.start();
+  assert.ok(link.flow.view.s === 'confirm' && link.flow.view.warnSource === 'link');
+  const src = readFileSync('src/components/tools/chalito/ApproveComputer.tsx', 'utf8');
+  assert.match(src, /view\.warnSource === "scan" \? t\("phishingScan"\) : t\("phishing"\)/);
+  assert.match(es.approveComputer.phishingScan, /Aprueba solo si tienes esa computadora enfrente/);
+  assert.doesNotMatch(es.approveComputer.phishingScan, /enlace/);
 });
 
 test('flow: decline cancels and clears the stash', async () => {

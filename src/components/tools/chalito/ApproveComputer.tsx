@@ -122,7 +122,7 @@ export const ApproveComputer = () => {
                   : t("otherNetwork")
                 : t("notProven")}
             </p>
-            <p>{t("phishing")}</p>
+            <p>{view.warnSource === "scan" ? t("phishingScan") : t("phishing")}</p>
           </div>
         ) : null}
         <div className="ch-card ch-chl-card">
