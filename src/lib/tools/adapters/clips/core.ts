@@ -57,7 +57,8 @@ export const ENGINE_CAPABILITIES: ClipsCapabilities = {
   watermark: false,
   // The engine takes uploads (browser → bucket, /app/clips/subir).
   fileUpload: true,
-  supportsConnect: false,
+  // Publishing (Zernio) is live over the engine's hub API (clips/publish.ts).
+  supportsConnect: true,
   // A failed run may already have used tokens (the engine meters what it
   // spent): never promise "no se usaron créditos" for engine jobs.
   confirmsNoChargeOnFailure: false,

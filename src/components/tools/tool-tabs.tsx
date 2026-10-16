@@ -13,7 +13,7 @@ export function ToolTabsAuto({
   ariaLabel,
 }: {
   slug: string;
-  labels: Record<ToolTabKey, string>;
+  labels: Partial<Record<ToolTabKey, string>>;
   ariaLabel: string;
 }) {
   const tool = toolBySlug(slug)!;
