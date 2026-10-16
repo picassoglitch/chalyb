@@ -12,6 +12,11 @@ export const TOOL_ERROR_REASONS = [
   'risk_ack_required',
   'bad_request', // the request itself was wrong (body, params): never an outage
   'needs_plan', // the plan doesn't include this action
+  // Consumption refusals (docs/engines/consumption-contract.md): the
+  // person's state, never an outage. `refusal` carries the engine's reason.
+  'no_credits', // 402: not enough tokens
+  'rate_limited', // 429: a plan cap (minutes, jobs, concurrency)
+  'too_large', // 413: upload size, video length, storage
   'unknown',
 ] as const;
 export type ToolErrorReason = (typeof TOOL_ERROR_REASONS)[number];
@@ -21,6 +26,10 @@ export interface ToolError {
   retryable: boolean;
   /** CLP/SEN/VIV + 4 digits, shown to the person and stored in Actividad. */
   supportCode: string;
+  /** The engine's machine reason for a refusal (minutes_cap, no_tokens,
+   *  upload_too_large, paywall_paid…), so a screen can pick precise copy.
+   *  Never free text. */
+  refusal?: string;
 }
 
 export type ToolResult<T> = { ok: true; data: T } | { ok: false; error: ToolError };
@@ -100,10 +109,15 @@ export function markingAdapter<A extends object>(adapter: A): A {
 export function failureEffect(
   err: unknown,
   opts: { adapterErrorsOnly?: boolean } = {},
-): { reason: ToolErrorReason; retryable: boolean; outage: boolean } {
-  const { reason, retryable } = normalizeToolError(err);
+): { reason: ToolErrorReason; retryable: boolean; outage: boolean; refusal?: string } {
+  const { reason, retryable, refusal } = normalizeToolError(err);
   const fromTool = !opts.adapterErrorsOnly || isAdapterError(err) || reason === 'timeout';
-  return { reason, retryable: retryable && fromTool, outage: countsAsOutage(reason) && fromTool };
+  return {
+    reason,
+    retryable: retryable && fromTool,
+    outage: countsAsOutage(reason) && fromTool,
+    ...(refusal ? { refusal } : {}),
+  };
 }
 
 /** `CLP-0427`. `rand` is a number in [0, 1). */
@@ -120,6 +134,23 @@ export function isSupportCode(s: string): boolean {
 export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'> {
   const code =
     err && typeof err === 'object' && 'code' in err ? String((err as { code: unknown }).code) : '';
+  const base = normalizeCode(code);
+  const refusal = refusalOf(err);
+  return refusal ? { ...base, refusal } : base;
+}
+
+const REFUSAL_RE = /^[a-z][a-z0-9_]{0,47}$/;
+
+/** An adapter error's machine refusal reason, when it carries a safe one. */
+function refusalOf(err: unknown): string | null {
+  const r =
+    err && typeof err === 'object' && 'refusal' in err
+      ? (err as { refusal: unknown }).refusal
+      : null;
+  return typeof r === 'string' && REFUSAL_RE.test(r) ? r : null;
+}
+
+function normalizeCode(code: string): Omit<ToolError, 'supportCode'> {
   switch (code) {
     case 'TOOL_TIMEOUT':
       return { reason: 'timeout', retryable: true };
@@ -137,6 +168,12 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
       return { reason: 'bad_request', retryable: false };
     case 'NEEDS_PLAN':
       return { reason: 'needs_plan', retryable: false };
+    case 'NO_CREDITS':
+      return { reason: 'no_credits', retryable: false };
+    case 'RATE_LIMITED':
+      return { reason: 'rate_limited', retryable: false };
+    case 'TOO_LARGE':
+      return { reason: 'too_large', retryable: false };
     default:
       return { reason: 'unknown', retryable: true };
   }
@@ -153,6 +190,12 @@ export function statusForReason(reason: ToolErrorReason): number {
     case 'risk_ack_required':
     case 'needs_plan':
       return 403;
+    case 'no_credits':
+      return 402;
+    case 'rate_limited':
+      return 429;
+    case 'too_large':
+      return 413;
     case 'not_implemented':
     case 'unavailable':
     case 'circuit_open':
@@ -173,6 +216,9 @@ export function countsAsOutage(reason: ToolErrorReason): boolean {
     'risk_ack_required',
     'bad_request',
     'needs_plan',
+    'no_credits',
+    'rate_limited',
+    'too_large',
     'circuit_open',
   ].includes(reason);
 }

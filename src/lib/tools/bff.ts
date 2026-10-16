@@ -76,12 +76,19 @@ export async function reportToolError(
   retryable: boolean,
   /** Whether this failure says the tool is down (feeds tool_status). */
   outage = countsAsOutage(reason),
+  /** The engine's machine refusal reason, when there is one. */
+  refusal?: string,
 ): Promise<ToolError> {
-  const error: ToolError = { reason, retryable, supportCode: newSupportCode(slug) };
+  const error: ToolError = {
+    reason,
+    retryable,
+    supportCode: newSupportCode(slug),
+    ...(refusal ? { refusal } : {}),
+  };
   await logAudit({
     action: 'tool.error',
     targetUserId: userId,
-    metadata: { tool: slug, reason, supportCode: error.supportCode },
+    metadata: { tool: slug, reason, supportCode: error.supportCode, refusal: refusal ?? null },
   });
   if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
@@ -126,6 +133,9 @@ export async function runTool<T>(
       if (!retryable) break;
     }
   }
-  const { reason, retryable, outage } = failureEffect(last, opts);
-  return { ok: false, error: await reportToolError(slug, userId, reason, retryable, outage) };
+  const { reason, retryable, outage, refusal } = failureEffect(last, opts);
+  return {
+    ok: false,
+    error: await reportToolError(slug, userId, reason, retryable, outage, refusal),
+  };
 }

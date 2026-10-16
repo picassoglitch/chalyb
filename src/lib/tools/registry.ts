@@ -1,6 +1,7 @@
 // Which adapter each tool uses, from its TOOL_HUB_MODE_<SLUG> (flags.ts).
 //   mock → the in-memory adapter (one per server process)
-//   a    → the engine adapter — a stub that throws NOT_IMPLEMENTED until the
+//   a    → the engine adapter: real for Clips (adapters/clips/adapter.ts);
+//          for the others a stub that throws NOT_IMPLEMENTED until the
 //          engine's API is documented in docs/engines (OPS-13)
 //   b/off→ null: the screens hand off to the engine's app over SSO
 
@@ -61,13 +62,17 @@ export const getInmuebles = () =>
 export const getInversiones = () =>
   pick(TOOL_SLUGS.inversiones, 'InversionesAdapter', createMockInversiones);
 
+/** Tools whose Mode A adapter is real (the engine has a hub API). The others'
+ *  Mode A is still the stub above, so it doesn't count as running in-hub. */
+const REAL_MODE_A = new Set<string>([TOOL_SLUGS.clips]);
+
 /**
- * Whether the hub shows this tool's own screens. Clips has a real adapter.
- * For the others, Mode A is a stub until the engine's API is documented
- * (OPS-13), so only the mock runs them in-hub today; otherwise the card
- * leads to the launch page as before.
+ * Whether the hub shows this tool's own screens: the mock, or Mode A for a
+ * tool with a real engine adapter. Otherwise the card leads to the launch
+ * page (SSO hand-off) as before — flipping TOOL_HUB_MODE_<SLUG> between
+ * "a" and "off" is the cutover and the rollback.
  */
 export function hubRunsTool(slug: string): boolean {
-  if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
-  return toolHubMode(slug) === 'mock';
+  const mode = slug === TOOL_SLUGS.clips ? clipsHubMode() : toolHubMode(slug);
+  return mode === 'mock' || (mode === 'a' && REAL_MODE_A.has(slug));
 }
