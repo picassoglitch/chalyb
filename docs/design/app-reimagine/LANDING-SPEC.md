@@ -81,7 +81,7 @@ Captura del sitio actual (2 oct 2026): `/workspace/chalyb-landing/current/` (`de
   |---|---|---|
   | 1 | **Clips** (ocupa 2 columnas; a la derecha 3 miniaturas verticales `Thumb` inclinadas −7°/0°/+7°) | "Pega el enlace de tu stream y recibe clips cortos con subtítulos para TikTok, Reels y Shorts." |
   | 1 | **Señales** | "Te avisamos cuándo es buen momento para comprar o vender cripto." + leyenda ⓘ **"Informativo, no es asesoría financiera."** |
-  | 2 | **En vivo + Asistente** (dos íconos encimados) | "Maneja tu transmisión con botones grandes. Y un Asistente que contesta a tus clientes y seguidores, de día y de noche." |
+  | 2 | **En vivo + Asistente** (dos íconos encimados) | "Transmite una vez y sale en todos tus canales a la vez. Y un Asistente que contesta a tus clientes y seguidores, de día y de noche." |
   | 2 | **Pronósticos** | "Los pronósticos deportivos del día, explicados en simple." + ⓘ **"Informativo, no es asesoría de apuestas."** |
   | 2 | **Inmuebles** | "Publica tus propiedades y atiende a interesados sin perder tiempo." |
   | 3 | **Inversiones** | "Tu exchange sigue las reglas que tú escribes. Nunca podemos retirar tu dinero." + ⓘ **"Informativo, no es asesoría financiera."** |
@@ -110,7 +110,7 @@ Captura del sitio actual (2 oct 2026): `/workspace/chalyb-landing/current/` (`de
 ### 3.6 Para quién · `AudienceGrid` + `TrustStrip` (fondo `--bg`)
 - label **"Para quién"** · `h2` **"Para ti, y para tu mamá también"** · sub **"Si no tienes tiempo de editar, contestar o estar pendiente, Chalyb lo hace por ti."**
 - 4 tarjetas blancas (ícono en cuadro tint 60 px):
-  - **Streamers**: "Clips de cada transmisión y tus escenas de OBS con un toque."
+  - **Streamers**: "Transmite a todos tus canales a la vez y saca clips de cada transmisión."
   - **Creadores**: "Publica todos los días sin pasar horas editando."
   - **Negocios**: "Un Asistente que contesta a tus clientes, de día y de noche."
   - **Tu mamá también** (tarjeta con borde tint y corazón en `#FF375F`): "Botones grandes y palabras simples. Si sabe mandar un WhatsApp, sabe usar Chalyb."

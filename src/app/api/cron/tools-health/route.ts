@@ -13,6 +13,8 @@ import { timingSafeEqual } from 'node:crypto';
 import { TOOLS } from '@/config/tools';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { getEnVivo, getSenales, hubRunsTool } from '@/lib/tools/registry';
+import { engineBase } from '@/lib/tools/adapters/envivo-engine';
+import { toolHubMode } from '@/lib/config/flags';
 import { recordToolHealth } from '@/lib/tools/status';
 import { TOOL_TIMEOUT_MS } from '@/lib/tools/bff-core';
 
@@ -36,11 +38,20 @@ const PROBES: Record<string, () => (() => Promise<unknown>) | null> = {
   },
   chalybcrypto: () => {
     const a = getSenales();
-    return a ? () => a.coins() : null;
+    // The data-only venue: an engine round trip (URL, token, auth) that
+    // touches no third party and no user data. The nil id is only the
+    // token's subject.
+    return a ? () => a.markets('00000000-0000-0000-0000-000000000000', 'binance') : null;
   },
   chalybobs: () => {
     const a = getEnVivo();
-    return a ? async () => a.capabilities() : null;
+    if (!a) return null;
+    if (toolHubMode('chalybobs') !== 'a') return async () => a.capabilities();
+    // The real engine: its hub API answers 401 to a call without a Bearer.
+    return async () => {
+      const r = await fetch(`${await engineBase()}/api/hub/v1/state`, { cache: 'no-store' });
+      if (r.status !== 401) throw new Error(`chalybobs engine ${r.status}`);
+    };
   },
 };
 

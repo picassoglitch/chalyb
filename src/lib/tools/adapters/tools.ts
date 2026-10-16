@@ -13,7 +13,10 @@
 //  - Any option that clones a voice or face declares usesLikeness and sits
 //    behind requireLikenessConsent (BUILD-SPEC §11.6).
 //
-// Pure types, no imports.
+// Types only (plus the error classes); En vivo's platform catalogue lives in
+// envivo-platforms.ts.
+
+import type { BroadcastMeta, OAuthPlatform, PlatformId } from '../envivo-platforms';
 
 export class NotImplementedError extends Error {
   readonly code = 'NOT_IMPLEMENTED';
@@ -85,6 +88,134 @@ export interface SignalPrefs {
   format?: 'short' | 'explained';
 }
 
+// ── Señales · Mercado y Estrategias (parity with the engine's panel) ──
+// General market data, the same for everyone: prices, the order book,
+// derivatives context, news, the engine's strategies and its backtest queue.
+// The user id these take is only who the engine call is made for (auth);
+// it never shapes the data. No accounts, keys, orders or holdings here.
+
+export type MarketVenueId = 'bitunix' | 'lbank' | 'binance';
+
+export interface MarketVenue {
+  id: MarketVenueId;
+  name: string;
+  /** Data-only venue (historical klines, no live book). */
+  dataOnly: boolean;
+}
+
+export interface MarketSymbol {
+  symbol: string;
+  base: string;
+  quote: string;
+}
+
+export interface MarketList {
+  venues: MarketVenue[];
+  venue: MarketVenueId;
+  symbols: MarketSymbol[];
+  /** The venue's list couldn't be read; symbols may be empty. */
+  degraded: boolean;
+}
+
+export interface Candle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
+export interface SeriesPoint {
+  time: number;
+  value: number;
+}
+
+export interface MarketIndicators {
+  candles: Candle[];
+  rsi: SeriesPoint[];
+  macd: { line: SeriesPoint[]; signal: SeriesPoint[]; hist: SeriesPoint[] };
+  adx: SeriesPoint[];
+  volumeDelta: SeriesPoint[];
+}
+
+export interface BookLevel {
+  price: number;
+  size: number;
+  cumulative: number;
+}
+
+export interface OrderBook {
+  pair: string;
+  takenAt: string;
+  bids: BookLevel[];
+  asks: BookLevel[];
+}
+
+export interface DerivativesContext {
+  symbol: string;
+  interval: string;
+  openInterest: SeriesPoint[];
+  funding: SeriesPoint[];
+  liquidations: { time: number; longUsd: number; shortUsd: number }[];
+  longShort: { time: number; longPct: number; shortPct: number }[];
+  heatmap: { price: number; amountUsd: number }[];
+}
+
+export interface NewsItem {
+  publishedAt: string;
+  title: string;
+  url: string;
+  source: string;
+}
+
+export interface EngineStrategy {
+  key: string;
+  name: string;
+  enabled: boolean;
+}
+
+export interface BacktestInput {
+  strategy: string;
+  pair: string;
+  timeframe: string;
+  bars: number;
+}
+
+/** One backtest run on past data. Always optimistic (engine rule). */
+export interface BacktestResult extends BacktestInput {
+  jobId: string;
+  status: 'done' | 'failed';
+  /** Set when status is 'failed' (e.g. 'data_unavailable'). */
+  error?: string;
+  barsRequested: number;
+  /** Where the past candles came from ('binance', 'bitunix'). */
+  dataSource?: string;
+  from?: string;
+  to?: string;
+  startingEquity?: number;
+  endingEquity?: number;
+  /** Net change of the simulated account, in basis points. */
+  netReturnBps?: number;
+  metrics?: {
+    sampleSize: number;
+    winRate: number;
+    avgWinBps: number;
+    avgLossBps: number;
+    profitFactor: number | null;
+    maxDrawdownBps: number;
+    feeDragBps: number;
+  };
+  assumptions?: {
+    riskPerTradeBps: number;
+    takerBps: number;
+    makerBps: number;
+    spreadBps: number;
+    slippageBps: number;
+  };
+  createdAt?: string;
+  optimistic: true;
+}
+
 export interface SenalesAdapter {
   capabilities(): ToolCapabilities;
   coins(signal?: AbortSignal): Promise<Coin[]>;
@@ -106,139 +237,139 @@ export interface SenalesAdapter {
   /** DELIVERY: the user's filter. */
   getPrefs(userId: string, signal?: AbortSignal): Promise<SignalPrefs | null>;
   savePrefs(userId: string, prefs: SignalPrefs, signal?: AbortSignal): Promise<void>;
+
+  // Mercado / Estrategias. `userId` authenticates the engine call only.
+  markets(userId: string, venue: MarketVenueId, signal?: AbortSignal): Promise<MarketList>;
+  indicators(
+    userId: string,
+    input: { pair: string; interval: string; bars: number },
+    signal?: AbortSignal,
+  ): Promise<MarketIndicators>;
+  orderBook(userId: string, pair: string, signal?: AbortSignal): Promise<OrderBook>;
+  /** Null when the engine has no derivatives data source configured. */
+  derivatives(
+    userId: string,
+    input: { pair: string; interval: string },
+    signal?: AbortSignal,
+  ): Promise<DerivativesContext | null>;
+  /** Null when the engine has no news source configured. */
+  news(userId: string, coin: string, signal?: AbortSignal): Promise<NewsItem[] | null>;
+  strategies(userId: string, signal?: AbortSignal): Promise<EngineStrategy[]>;
+  /** Runs now and returns the result. Hub usage admission runs inside the
+   *  engine: a refusal throws USAGE_REFUSED with the reason; a run that
+   *  fails is not charged. */
+  runBacktest(userId: string, input: BacktestInput, signal?: AbortSignal): Promise<BacktestResult>;
+  /** The person's past runs, newest first. */
+  listBacktests(userId: string, signal?: AbortSignal): Promise<BacktestResult[]>;
 }
 
 // ── En vivo ──────────────────────────────────────────────────────────
-// TOOLS-SPEC §1.3 / §6. The engine pairs a small desktop program with a
-// 6-digit code and drives OBS through it (Q6 default). Viewers come from the
-// platforms with the user's connected accounts, null when unknown (Q7).
+// The engine (ChalyOBS) is an RTMP relay: the person pastes our RTMP URL and
+// stream key into OBS (or any encoder), and the relay re-sends the signal to
+// every destination that is on. Shaped on the engine's hub API
+// (/api/hub/v1, ChalyOBS docs) — nothing here exists only in the hub.
 
-export interface LiveScene {
-  id: string;
-  name: string;
-  /** Short description under the name ("Solo tú", "Vuelvo enseguida"). */
-  note?: string;
-}
+export type DestinationStatus =
+  | { kind: 'ok' }
+  | { kind: 'offline' }
+  | { kind: 'expired' }
+  | { kind: 'pending_approval'; platformName: string };
 
-export type LivePlatform = 'youtube' | 'twitch' | 'kick' | 'facebook';
-export const LIVE_PLATFORMS: readonly LivePlatform[] = ['youtube', 'twitch', 'kick', 'facebook'];
-
-export interface LiveStatus {
-  /** A paired computer is online with OBS ready. */
-  obsConnected: boolean;
-  /** At least one computer was ever paired (57 vs "no está conectada"). */
-  paired: boolean;
-  /** Display names of the destinations this stream goes to. */
-  platforms: string[];
-  title: string;
-  scenes: LiveScene[];
-  activeSceneId: string | null;
-  mic: boolean;
-  cam: boolean;
-  clipsAfter: boolean;
-  internet: 'good' | 'slow' | 'offline';
-  /** ISO time the stream started, or null when off air. */
-  liveSince: string | null;
-  /** People watching, or null when the platforms don't tell us (Q7). */
-  viewers: number | null;
-}
-
-export interface LiveDevice {
-  id: string;
-  name: string;
-  os: 'windows' | 'mac' | 'linux';
-  obsReady: boolean;
-  online: boolean;
-  lastSeenAt: string;
-}
-
-export interface PairingCode {
-  /** 6 digits, single use. */
-  code: string;
-  /** 10 minutes after it was issued. */
-  expiresAt: string;
-}
-
-export type LiveQuality = 'auto' | 'high' | 'saver';
-
+/** One place the stream is re-sent to. Keys never travel in this shape:
+ *  only whether there is one. */
 export interface LiveDestination {
-  platform: LivePlatform;
-  connected: boolean;
-  /** "@usuario" on the platform, once connected. */
-  handle: string | null;
-  /** Stream there (the switch). Only a connected destination can be on. */
+  id: string;
+  platformId: PlatformId;
+  channelHandle: string;
+  streamTitle: string;
+  ingestUrl: string;
+  hasStreamKey: boolean;
+  /** Connected with the platform's sign-in (key filled automatically). */
+  oauthConnected: boolean;
   enabled: boolean;
+  status: DestinationStatus | null;
 }
 
-export interface LiveAdvanced {
-  bitrateKbps: number;
-  resolution: '1080p60' | '1080p30' | '720p60' | '720p30';
-  /** Ingest server per platform, "auto" by default. */
-  server: string;
-}
-
-export interface LiveSettings {
+export interface LiveState {
+  title: string;
+  /** The relay is receiving the encoder's signal right now. */
+  isLive: boolean;
+  /** Streams go on to Clips (the engine's "ChalyClip" connection). */
+  clipsEnabled: boolean;
+  /** The plan may turn the Clips connection on (engine isFullAccessTier). */
+  isFullAccess: boolean;
+  broadcastMeta: BroadcastMeta;
+  /** Server field for the encoder. The key is never part of the state. */
+  rtmpUrl: string;
+  previewEnabled: boolean;
+  oauthAvailable: Partial<Record<OAuthPlatform, boolean>>;
   destinations: LiveDestination[];
-  quality: LiveQuality;
-  clipsAfter: boolean;
-  /** "Guardar la grabación": needed for "Hacer clip de este momento". */
-  saveRecording: boolean;
-  advanced: LiveAdvanced;
+}
+
+export interface DestinationPatch {
+  channelHandle?: string;
+  streamTitle?: string;
+  ingestUrl?: string;
+  /** Absent = keep the saved key. */
+  streamKey?: string;
 }
 
 export interface PastStream {
   id: string;
-  title: string;
   startedAt: string;
-  durationSec: number;
-  platforms: string[];
-  /** A link the Clips wizard can read, when the recording was kept. */
-  recordingUrl: string | null;
+  endedAt: string | null;
+  durationSec: number | null;
 }
 
-/** The desktop program, served from our own domain in the same tab. */
-export type LiveDownload = { url: string } | { filename: string; body: string };
+/** A refusal the engine explains (the person's state, never an outage).
+ *  `code` is the BFF's vocabulary (normalizeToolError); `detail` is the
+ *  engine's code ("full_access_required", "not_configured", …). */
+export class EnVivoRefusal extends Error {
+  constructor(
+    readonly code: 'NEEDS_PLAN' | 'NOT_FOUND' | 'BAD_REQUEST' | 'FORBIDDEN',
+    readonly detail: string,
+  ) {
+    super(detail);
+  }
+}
 
 export interface EnVivoAdapter {
   capabilities(): ToolCapabilities;
-  status(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
-  start(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
-  stop(userId: string, signal?: AbortSignal): Promise<LiveStatus>;
-  setScene(userId: string, sceneId: string, signal?: AbortSignal): Promise<LiveStatus>;
-  toggle(
+  state(userId: string, signal?: AbortSignal): Promise<LiveState>;
+  setTitle(userId: string, title: string, signal?: AbortSignal): Promise<void>;
+  setClipsEnabled(userId: string, on: boolean, signal?: AbortSignal): Promise<void>;
+  /** The secret ingest key. Only on "Mostrar"; never logged or cached. */
+  streamKey(userId: string, signal?: AbortSignal): Promise<string>;
+  regenerateKey(userId: string, signal?: AbortSignal): Promise<void>;
+  addDestination(userId: string, platformId: PlatformId, signal?: AbortSignal): Promise<void>;
+  updateDestination(
     userId: string,
-    what: 'mic' | 'cam' | 'clipsAfter',
+    id: string,
+    patch: DestinationPatch,
     signal?: AbortSignal,
-  ): Promise<LiveStatus>;
-  devices(userId: string, signal?: AbortSignal): Promise<LiveDevice[]>;
-  createPairingCode(userId: string, signal?: AbortSignal): Promise<PairingCode>;
-  disconnectDevice(userId: string, deviceId: string, signal?: AbortSignal): Promise<void>;
-  settings(userId: string, signal?: AbortSignal): Promise<LiveSettings>;
-  saveSettings(
-    userId: string,
-    patch: Partial<Omit<LiveSettings, 'destinations'>> & {
-      enabled?: Partial<Record<LivePlatform, boolean>>;
-    },
-    signal?: AbortSignal,
-  ): Promise<LiveSettings>;
-  /** After the platform's OAuth (same tab) comes back. */
-  connectDestination(
-    userId: string,
-    platform: LivePlatform,
-    signal?: AbortSignal,
-  ): Promise<LiveSettings>;
+  ): Promise<void>;
+  toggleDestination(userId: string, id: string, signal?: AbortSignal): Promise<boolean>;
+  removeDestination(userId: string, id: string, signal?: AbortSignal): Promise<void>;
+  /** A destination's saved key, only on "Mostrar". */
+  destinationKey(userId: string, id: string, signal?: AbortSignal): Promise<string>;
+  publishBroadcast(userId: string, meta: BroadcastMeta, signal?: AbortSignal): Promise<void>;
   streams(userId: string, signal?: AbortSignal): Promise<PastStream[]>;
-  /** The secret stream key. Only called when the person asks to see it;
-   *  never logged, never rendered before that. */
-  streamKey(userId: string, platform: LivePlatform, signal?: AbortSignal): Promise<string>;
-  /** A link to the last `windowSec` seconds of the live recording, or null
-   *  when nothing is being recorded. */
-  clipMoment(
+  /** The platform's consent page for a hub-started OAuth (state "hub.…"). */
+  oauthAuthorizeUrl(
     userId: string,
-    windowSec: number,
+    platform: OAuthPlatform,
+    input: { state: string; codeChallenge?: string },
     signal?: AbortSignal,
-  ): Promise<{ sourceUrl: string } | null>;
-  download(os: 'windows' | 'mac', signal?: AbortSignal): Promise<LiveDownload | null>;
+  ): Promise<string>;
+  oauthComplete(
+    userId: string,
+    platform: OAuthPlatform,
+    input: { code: string; codeVerifier?: string },
+    signal?: AbortSignal,
+  ): Promise<void>;
+  /** A short-lived path segment for the preview proxy, or null when the
+   *  adapter has no live video (mock). Carries no stream key. */
+  previewToken(userId: string, signal?: AbortSignal): Promise<string | null>;
 }
 
 // ── Asistente ────────────────────────────────────────────────────────

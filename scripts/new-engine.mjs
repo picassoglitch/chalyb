@@ -77,8 +77,12 @@ const clash = existing.find((f) => claimed.test(readFileSync(join(MIGRATIONS, f)
 if (clash) {
   fail(`slug "${slug}" is already registered in ${clash}`);
 }
+// Number from the hub's own four-digit files only. Chalito's migrations live in
+// the same folder with 14-digit timestamp versions (docs/infra/supabase.md);
+// their first four digits are a year, not a hub number.
+const hubFiles = existing.filter((f) => /^\d{4}_/.test(f));
 const next = String(
-  Math.max(...existing.map((f) => parseInt(f.slice(0, 4), 10)).filter(Number.isFinite)) + 1,
+  Math.max(...hubFiles.map((f) => parseInt(f.slice(0, 4), 10)).filter(Number.isFinite)) + 1,
 ).padStart(4, '0');
 
 const filename = `${next}_register_${slug}_engine.sql`;

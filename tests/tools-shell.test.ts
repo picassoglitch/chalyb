@@ -408,8 +408,11 @@ test('a write whose signal aborts before it completes does not complete', async 
   // An already-aborted signal is refused at once; no signal behaves as before.
   const live = createMockEnVivo();
   const dead = AbortSignal.abort();
-  await assert.rejects(live.start('u-sig', dead), (e: unknown) => e instanceof ToolTimeoutError);
-  assert.equal((await live.status('u-sig')).liveSince, null, 'the stream did not start');
+  await assert.rejects(
+    live.setTitle('u-sig', 'Cambiado', dead),
+    (e: unknown) => e instanceof ToolTimeoutError,
+  );
+  assert.notEqual((await live.state('u-sig')).title, 'Cambiado', 'nothing was saved');
   const clips = mockClips();
   await assert.rejects(
     clips.saveSettings('u-sig', await clips.getSettings('u-sig'), dead),

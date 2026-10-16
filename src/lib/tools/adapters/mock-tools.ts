@@ -5,19 +5,18 @@
 
 import type {
   AsistenteAdapter,
+  BacktestResult,
+  Candle,
   AssistantConfig,
   AutomationRule,
   Coin,
   EnVivoAdapter,
-  LiveDevice,
-  LivePlatform,
-  LiveSettings,
-  PairingCode,
+  LiveDestination,
+  LiveState,
   PastStream,
   Forecast,
   InmueblesAdapter,
   InversionesAdapter,
-  LiveStatus,
   PronosticosAdapter,
   PricePoint,
   PropertyCard,
@@ -27,20 +26,20 @@ import type {
   SignalRange,
   ToolCapabilities,
 } from './tools';
+import { EnVivoRefusal } from './tools';
+import {
+  normalizeBroadcastMeta,
+  PLATFORM_META,
+  type BroadcastMeta,
+  type OAuthPlatform,
+} from '../envivo-platforms';
 import { honorSignal } from './signal';
+import { ToolUsageRefusedError } from '../bff-core';
+import { SENALES_COINS } from '../senales-coins';
 
 const CAPS: ToolCapabilities = { supportsConnect: false, likenessOptions: [] };
 
-const COINS: Coin[] = [
-  { symbol: 'BTC', name: 'Bitcoin' },
-  { symbol: 'ETH', name: 'Ethereum' },
-  { symbol: 'SOL', name: 'Solana' },
-  { symbol: 'XRP', name: 'XRP' },
-  { symbol: 'DOGE', name: 'Dogecoin' },
-  { symbol: 'ADA', name: 'Cardano' },
-  { symbol: 'BNB', name: 'BNB' },
-  { symbol: 'LTC', name: 'Litecoin' },
-];
+const COINS: Coin[] = SENALES_COINS;
 
 /** Sample reference prices (MXN) — engine output stand-ins, not real data. */
 const REF_MXN: Record<string, number> = {
@@ -157,163 +156,311 @@ export function createMockSenales(now = () => Date.now()): SenalesAdapter {
     savePrefs: async (userId, p) => {
       prefs.set(userId, p);
     },
+    ...mockMarket(now),
   });
 }
 
-/** How long after a pairing code is issued the mock "program" types it in. */
-const MOCK_PAIR_AFTER_MS = 3000;
+// ── Mercado / Estrategias sample data (deterministic per pair) ──────────
+function seeded(seed: string) {
+  let h = 0;
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return () => {
+    h = (h * 1_103_515_245 + 12_345) >>> 0;
+    return h / 2 ** 32;
+  };
+}
 
+const MOCK_USD: Record<string, number> = { BTC: 64_200, ETH: 2_540, SOL: 184, XRP: 0.62, DOGE: 0.16, ADA: 0.45, BNB: 590, LTC: 88 };
+const STEP_S: Record<string, number> = { '1m': 60, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600, '4h': 14_400, '1d': 86_400, '1w': 604_800 };
+
+function mockMarket(now: () => number): Pick<
+  SenalesAdapter,
+  'markets' | 'indicators' | 'orderBook' | 'derivatives' | 'news' | 'strategies' | 'runBacktest' | 'listBacktests'
+> {
+  const usd = (pair: string) => MOCK_USD[pair.replace(/USDT$/, '')] ?? 1;
+  const runs: { userId: string; run: BacktestResult }[] = [];
+  const candles = (pair: string, interval: string, bars: number): Candle[] => {
+    const step = STEP_S[interval] ?? 300;
+    const end = Math.floor(now() / 1000 / step) * step;
+    const rnd = seeded(pair + interval);
+    let p = usd(pair);
+    const out: Candle[] = [];
+    for (let i = 0; i < bars; i++) {
+      const open = p;
+      const close = open * (1 + (rnd() - 0.5) * 0.01);
+      const high = Math.max(open, close) * (1 + rnd() * 0.003);
+      const low = Math.min(open, close) * (1 - rnd() * 0.003);
+      out.push({ time: end - (bars - 1 - i) * step, open, high, low, close });
+      p = close;
+    }
+    return out;
+  };
+  return {
+    markets: async (_u, venue) => ({
+      venues: [
+        { id: 'bitunix', name: 'Bitunix', dataOnly: false },
+        { id: 'lbank', name: 'LBank', dataOnly: false },
+        { id: 'binance', name: 'Binance', dataOnly: true },
+      ],
+      venue,
+      symbols:
+        venue === 'bitunix'
+          ? COINS.map((c) => ({ symbol: `${c.symbol}USDT`, base: c.symbol, quote: 'USDT' }))
+          : [],
+      degraded: false,
+    }),
+    indicators: async (_u, { pair, interval, bars }) => {
+      const cs = candles(pair, interval, Math.min(bars, 200));
+      const rnd = seeded(pair + interval + 'ind');
+      const line = (base: number, amp: number) =>
+        cs.slice(26).map((c) => ({ time: c.time, value: base + (rnd() - 0.5) * amp }));
+      return {
+        candles: cs,
+        rsi: line(50, 40),
+        macd: { line: line(0, 20), signal: line(0, 15), hist: line(0, 10) },
+        adx: line(25, 20),
+        volumeDelta: cs.map((c) => ({ time: c.time, value: (c.close - c.open) * 1000 })),
+      };
+    },
+    orderBook: async (_u, pair) => {
+      const mid = usd(pair);
+      const rnd = seeded(pair + Math.floor(now() / 2000));
+      const side = (dir: 1 | -1) => {
+        let cum = 0;
+        return Array.from({ length: 20 }, (_, i) => {
+          const size = Math.round(rnd() * 5000) / 1000 + 0.01;
+          cum += size;
+          return { price: mid * (1 + dir * (i + 1) * 0.0002), size, cumulative: cum };
+        });
+      };
+      return { pair, takenAt: new Date(now()).toISOString(), bids: side(-1), asks: side(1) };
+    },
+    derivatives: async (_u, { pair, interval }) => {
+      const rnd = seeded(pair + 'cg');
+      const t = Math.floor(now() / 3_600_000) * 3600;
+      const ts = Array.from({ length: 48 }, (_, i) => t - (47 - i) * 3600);
+      return {
+        symbol: pair.replace(/USDT$/, ''),
+        interval,
+        openInterest: ts.map((time) => ({ time, value: 8e9 + rnd() * 1e9 })),
+        funding: ts.map((time) => ({ time, value: (rnd() - 0.4) * 0.0002 })),
+        liquidations: ts.map((time) => ({ time, longUsd: rnd() * 4e6, shortUsd: rnd() * 4e6 })),
+        longShort: ts.map((time) => {
+          const l = 45 + rnd() * 10;
+          return { time, longPct: l, shortPct: 100 - l };
+        }),
+        heatmap: Array.from({ length: 8 }, (_, i) => ({
+          price: usd(pair) * (0.96 + i * 0.01),
+          amountUsd: rnd() * 5e7,
+        })),
+      };
+    },
+    news: async (_u, coin) => [
+      {
+        publishedAt: new Date(now() - 40 * 60_000).toISOString(),
+        title: `Muestra: titular sobre ${coin}`,
+        url: 'https://example.com/noticia-1',
+        source: 'Ejemplo',
+      },
+      {
+        publishedAt: new Date(now() - 5 * 3_600_000).toISOString(),
+        title: `Muestra: otro titular sobre ${coin}`,
+        url: 'https://example.com/noticia-2',
+        source: 'Ejemplo',
+      },
+    ],
+    strategies: async () => [
+      { key: 'ema_adx_trend', name: 'EMA/ADX trend', enabled: true },
+      { key: 'vwap_rsi_meanrev', name: 'VWAP/RSI mean-reversion', enabled: true },
+      { key: 'fvg_ob', name: 'FVG + Order Block', enabled: true },
+    ],
+    runBacktest: async (userId, input) => {
+      // 5000 bars: the sample "out of credits" refusal, for e2e.
+      if (input.bars === 5000) throw new ToolUsageRefusedError('no_tokens');
+      const rnd = seeded(input.strategy + input.pair + input.timeframe + input.bars);
+      const net = Math.round((rnd() - 0.45) * 800);
+      const run: BacktestResult = {
+        ...input,
+        jobId: `backtest_mock_${runs.length + 1}`,
+        status: 'done',
+        barsRequested: input.bars,
+        dataSource: 'binance',
+        from: new Date(now() - input.bars * 300_000).toISOString(),
+        to: new Date(now()).toISOString(),
+        startingEquity: 10_000,
+        endingEquity: 10_000 * (1 + net / 10_000),
+        netReturnBps: net,
+        metrics: {
+          sampleSize: 8 + Math.floor(rnd() * 30),
+          winRate: 0.35 + rnd() * 0.3,
+          avgWinBps: 40 + rnd() * 40,
+          avgLossBps: 30 + rnd() * 30,
+          profitFactor: 0.7 + rnd() * 0.9,
+          maxDrawdownBps: 100 + rnd() * 300,
+          feeDragBps: 10 + rnd() * 20,
+        },
+        assumptions: { riskPerTradeBps: 50, takerBps: 6, makerBps: 2, spreadBps: 1, slippageBps: 1 },
+        createdAt: new Date(now()).toISOString(),
+        optimistic: true,
+      };
+      runs.unshift({ userId, run });
+      return run;
+    },
+    listBacktests: async (userId) => runs.filter((r) => r.userId === userId).map((r) => r.run),
+  };
+}
+
+/** In-memory En vivo: the engine's model (RTMP relay + destinations), so
+ *  every screen runs in development and e2e without the engine. "Live"
+ *  never turns on by itself here (no encoder pushes to a mock). */
 export function createMockEnVivo(now = () => Date.now()): EnVivoAdapter {
   interface UserLive {
-    status: Omit<LiveStatus, 'obsConnected' | 'paired' | 'viewers' | 'platforms'>;
-    devices: LiveDevice[];
-    code: (PairingCode & { issuedMs: number }) | null;
-    settings: LiveSettings;
+    title: string;
+    clipsEnabled: boolean;
+    streamKey: string;
+    meta: BroadcastMeta;
+    destinations: (LiveDestination & { key: string })[];
     streams: PastStream[];
+    seq: number;
   }
   const users = new Map<string, UserLive>();
-  const NAMES: Record<LivePlatform, string> = { youtube: 'YouTube', twitch: 'Twitch', kick: 'Kick', facebook: 'Facebook' };
+  const freshKey = () =>
+    `chalyb_live_${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
   const get = (userId: string): UserLive => {
     let u = users.get(userId);
     if (!u) {
+      const startedAt = new Date(now() - 2 * 86_400_000).toISOString();
       u = {
-        status: {
-          title: 'Mi transmisión',
-          scenes: [
-            { id: 'cam', name: 'Cámara', note: 'Solo tú' },
-            { id: 'screen', name: 'Pantalla', note: 'Pantalla y cámara' },
-            { id: 'pause', name: 'Pausa', note: 'Vuelvo enseguida' },
-          ],
-          activeSceneId: 'cam',
-          mic: true,
-          cam: true,
-          clipsAfter: true,
-          internet: 'good',
-          liveSince: null,
-        },
-        devices: [],
-        code: null,
-        settings: {
-          destinations: [
-            { platform: 'youtube', connected: true, handle: '@mi-canal', enabled: true },
-            { platform: 'twitch', connected: true, handle: 'mi-canal', enabled: true },
-            { platform: 'kick', connected: false, handle: null, enabled: false },
-            { platform: 'facebook', connected: false, handle: null, enabled: false },
-          ],
-          quality: 'auto',
-          clipsAfter: true,
-          saveRecording: true,
-          advanced: { bitrateKbps: 6000, resolution: '1080p30', server: 'auto' },
-        },
-        streams: [],
+        title: 'Mi transmisión en vivo',
+        clipsEnabled: false,
+        streamKey: freshKey(),
+        meta: normalizeBroadcastMeta(null, 'Mi transmisión en vivo'),
+        destinations: [],
+        streams: [
+          {
+            id: 'st_1',
+            startedAt,
+            endedAt: new Date(Date.parse(startedAt) + 3_900_000).toISOString(),
+            durationSec: 3900,
+          },
+        ],
+        seq: 0,
       };
       users.set(userId, u);
     }
-    // The mock program "types" an issued code after a few seconds.
-    if (u.code && now() - u.code.issuedMs >= MOCK_PAIR_AFTER_MS && now() < Date.parse(u.code.expiresAt)) {
-      u.devices.push({
-        id: `dev_${u.devices.length + 1}`,
-        name: 'Mi computadora',
-        os: 'windows',
-        obsReady: true,
-        online: true,
-        lastSeenAt: new Date(now()).toISOString(),
-      });
-      u.code = null;
-    }
     return u;
   };
-  const view = (userId: string): LiveStatus => {
+  const find = (userId: string, id: string) => {
+    const d = get(userId).destinations.find((x) => x.id === id);
+    if (!d) throw new EnVivoRefusal('NOT_FOUND', 'not_found');
+    return d;
+  };
+  const view = (userId: string): LiveState => {
     const u = get(userId);
-    const online = u.devices.some((d) => d.online && d.obsReady);
     return {
-      ...u.status,
-      clipsAfter: u.settings.clipsAfter,
-      obsConnected: online,
-      paired: u.devices.length > 0,
-      platforms: u.settings.destinations.filter((d) => d.enabled).map((d) => NAMES[d.platform]),
-      viewers: u.status.liveSince ? 12 : null,
+      title: u.title,
+      isLive: false,
+      clipsEnabled: u.clipsEnabled,
+      isFullAccess: true,
+      broadcastMeta: u.meta,
+      rtmpUrl: 'rtmp://ingest.chalyb.com/live',
+      previewEnabled: false,
+      oauthAvailable: { kick: true, twitch: true, youtube: true },
+      destinations: u.destinations.map(({ key, ...d }) => ({ ...d, hasStreamKey: key.length > 0 })),
     };
   };
-  const patch = (userId: string, p: Partial<UserLive['status']>) => {
+  const connectPlatform = (userId: string, platform: OAuthPlatform) => {
     const u = get(userId);
-    u.status = { ...u.status, ...p };
-    return view(userId);
+    const existing = u.destinations.find((d) => d.platformId === platform);
+    const handle = 'mi_canal';
+    if (existing) {
+      Object.assign(existing, {
+        channelHandle: handle,
+        oauthConnected: true,
+        key: 'oauth_key',
+        status: { kind: 'ok' },
+      });
+      existing.ingestUrl ||= PLATFORM_META[platform].ingestHint;
+    } else {
+      u.destinations.push({
+        id: `d_${++u.seq}`,
+        platformId: platform,
+        channelHandle: handle,
+        streamTitle: u.title,
+        ingestUrl: PLATFORM_META[platform].ingestHint,
+        key: 'oauth_key',
+        hasStreamKey: true,
+        oauthConnected: true,
+        enabled: true,
+        status: { kind: 'ok' },
+      });
+    }
   };
-  return honorSignal({
+  return honorSignal<EnVivoAdapter>({
     capabilities: () => ({ supportsConnect: true, likenessOptions: [] }),
-    status: async (u) => view(u),
-    start: async (u) => patch(u, { liveSince: new Date(now()).toISOString() }),
-    stop: async (userId) => {
-      const u = get(userId);
-      if (u.status.liveSince) {
-        const v = view(userId);
-        u.streams.unshift({
-          id: `st_${u.streams.length + 1}`,
-          title: u.status.title,
-          startedAt: u.status.liveSince,
-          durationSec: Math.max(1, Math.round((now() - Date.parse(u.status.liveSince)) / 1000)),
-          platforms: v.platforms,
-          recordingUrl: u.settings.saveRecording ? `https://www.youtube.com/watch?v=mock${u.streams.length + 1}` : null,
-        });
-      }
-      return patch(userId, { liveSince: null });
+    state: async (u) => view(u),
+    setTitle: async (userId, title) => {
+      get(userId).title = title.trim() || 'Mi transmisión en vivo';
     },
-    setScene: async (u, id) => patch(u, { activeSceneId: id }),
-    toggle: async (userId, what) => {
-      const u = get(userId);
-      if (what === 'clipsAfter') {
-        u.settings = { ...u.settings, clipsAfter: !u.settings.clipsAfter };
-        return view(userId);
-      }
-      return patch(userId, { [what]: !u.status[what] } as Partial<UserLive['status']>);
+    setClipsEnabled: async (userId, on) => {
+      get(userId).clipsEnabled = on;
     },
-    devices: async (u) => get(u).devices,
-    createPairingCode: async (userId) => {
-      const u = get(userId);
-      const code = String(100000 + Math.floor(Math.random() * 900000));
-      const issuedMs = now();
-      u.code = { code, expiresAt: new Date(issuedMs + 10 * 60_000).toISOString(), issuedMs };
-      return { code, expiresAt: u.code.expiresAt };
+    streamKey: async (u) => get(u).streamKey,
+    regenerateKey: async (userId) => {
+      get(userId).streamKey = freshKey();
     },
-    disconnectDevice: async (userId, id) => {
+    addDestination: async (userId, platformId) => {
       const u = get(userId);
-      u.devices = u.devices.filter((d) => d.id !== id);
+      u.destinations.push({
+        id: `d_${++u.seq}`,
+        platformId,
+        channelHandle: '',
+        streamTitle: '',
+        ingestUrl: PLATFORM_META[platformId].ingestHint,
+        key: '',
+        hasStreamKey: false,
+        oauthConnected: false,
+        enabled: false,
+        status: { kind: 'offline' },
+      });
     },
-    settings: async (u) => get(u).settings,
-    saveSettings: async (userId, p) => {
-      const u = get(userId);
-      const { enabled, ...rest } = p;
-      u.settings = {
-        ...u.settings,
-        ...rest,
-        destinations: u.settings.destinations.map((d) =>
-          enabled && d.platform in enabled ? { ...d, enabled: d.connected && !!enabled[d.platform] } : d,
-        ),
-      };
-      return u.settings;
+    updateDestination: async (userId, id, patch) => {
+      const d = find(userId, id);
+      if (patch.channelHandle !== undefined) d.channelHandle = patch.channelHandle;
+      if (patch.streamTitle !== undefined) d.streamTitle = patch.streamTitle;
+      if (patch.ingestUrl !== undefined) d.ingestUrl = patch.ingestUrl;
+      if (patch.streamKey !== undefined) d.key = patch.streamKey;
     },
-    connectDestination: async (userId, platform) => {
+    toggleDestination: async (userId, id) => {
+      const d = find(userId, id);
+      if (!d.enabled && !(d.ingestUrl.trim() && d.key.trim()))
+        throw new EnVivoRefusal('BAD_REQUEST', 'not_configured');
+      d.enabled = !d.enabled;
+      return d.enabled;
+    },
+    removeDestination: async (userId, id) => {
+      find(userId, id);
       const u = get(userId);
-      u.settings = {
-        ...u.settings,
-        destinations: u.settings.destinations.map((d) =>
-          d.platform === platform ? { ...d, connected: true, handle: '@mi-canal', enabled: true } : d,
-        ),
-      };
-      return u.settings;
+      u.destinations = u.destinations.filter((d) => d.id !== id);
+    },
+    destinationKey: async (userId, id) => find(userId, id).key,
+    publishBroadcast: async (userId, meta) => {
+      const u = get(userId);
+      const clean = normalizeBroadcastMeta(meta, u.title);
+      u.meta = clean;
+      u.title = clean.title;
+      for (const d of u.destinations) d.streamTitle = clean.title;
     },
     streams: async (u) => get(u).streams,
-    streamKey: async (_u, platform) => `live_${platform}_mock_0000_1111_2222`,
-    clipMoment: async (userId, windowSec) => {
-      const u = get(userId);
-      if (!u.status.liveSince || !u.settings.saveRecording) return null;
-      return { sourceUrl: `https://www.youtube.com/watch?v=mocklive&t=${windowSec}` };
+    // The mock "platform" signs in at once: its consent page is the hub's own
+    // callback with a fixed code, so the popup flow runs end to end.
+    oauthAuthorizeUrl: async (_u, platform, input) =>
+      `/api/tools/chalybobs/oauth/callback?platform=${platform}&code=mock-code&state=${encodeURIComponent(input.state)}`,
+    oauthComplete: async (userId, platform, input) => {
+      if (input.code !== 'mock-code') throw new EnVivoRefusal('BAD_REQUEST', 'exchange_failed');
+      connectPlatform(userId, platform);
     },
-    download: async (os) => ({
-      filename: `chalyb-en-vivo-${os}.txt`,
-      body: 'Archivo de prueba del programa de En vivo (solo desarrollo).\n',
-    }),
+    previewToken: async () => null,
   });
 }
 

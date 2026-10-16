@@ -3,7 +3,8 @@
 // Chalito until there's a pick, doing something that fits the screen, wearing only what the person
 // put on in the store (owner decision 2026-10-08). Motion comes from the same
 // AvatarDriver the room scene uses (bob, squash, lean, gaze toward the pointer), applied to the
-// card's drawings with CSS instead of three.js.
+// card's drawings with CSS instead of three.js. Until the person's character is known it is a
+// neutral stand-in (or last visit's character, kept on this device): never other characters first.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AvatarDriver } from '@chalito/avatar-three/driver';
@@ -14,10 +15,12 @@ import { isSkin, type AccessoryItem } from '@/lib/chalito/web/store';
 import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
-import { useMyCard } from '@/lib/chalito/useMyCard';
+import { useOwnCard, useRememberLook } from '@/lib/chalito/useOwnLook';
 import {
-  activityFor,
   companionOrDefault,
+  activityFor,
+  companionSettled,
+  companionShown,
   useCompanionPick,
   useCompanionStep,
   useWornLook,
@@ -58,19 +61,31 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const t = useTranslations('chalito.companion');
   const locale = useLocale() as AppLocale;
   const path = usePathname();
-  const { values, onboarded } = useSettings();
+  const { values, onboarded, settled } = useSettings();
   const pick = useCompanionPick((s) => s.pick);
   const step = useCompanionStep((s) => s.step);
+  const { store, readCompanion, status } = useChalito();
 
-  const id = companionOrDefault(pick ?? values?.avatar);
+  // The person's own character ("Crea tu personaje"), when the companion wears one; its drawings
+  // come from short-lived signed URLs (refreshed on error, then back to the roster art).
+  const { mine, card: cardState, last } = useOwnCard();
+  const input = {
+    pick,
+    status,
+    avatar: settled ? (values?.avatar ?? null) : undefined,
+    card: cardState,
+    last,
+  };
+  const shown = companionShown(input);
+  const shownKey = useRememberLook(shown, companionSettled(input));
+
+  // The roster avatar under a custom card is the account's (for its name); pending draws nothing.
+  const id = shown.kind === 'roster' ? shown.id : companionOrDefault(values?.avatar);
   const entry = rosterEntry(id)!;
   const activity: Activity = step ?? activityFor(path);
   const drawing = EMOTION_DRAWING[activity.emotion];
   const rosterCard = useCard(id);
-  // The person's own character ("Crea tu personaje"), when the companion wears one; its drawings
-  // come from short-lived signed URLs (refreshed on error, then back to the roster art).
-  const mine = useMyCard();
-  const custom = mine.card;
+  const custom = shown.kind === 'custom' ? mine.card : null;
   const card: CardJson | null = custom
     ? { width: custom.manifest.width, height: custom.manifest.height, anchors: (custom.manifest.anchors ?? {}) as CardAnchors }
     : rosterCard;
@@ -78,10 +93,11 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     custom
       ? (custom.urls[custom.manifest.emotions.src[d] ?? custom.manifest.emotions.src.neutral!] ?? '')
       : `${base(id)}/layer-${d}.webp`;
-  const hidden = !hero && onboarded && activity.key === 'home';
+  // On Inicio the hero takes over once onboarded; until that's known the floating one waits too.
+  const hidden = !hero && activity.key === 'home' && (onboarded || !settled);
+  const pending = shown.kind === 'pending';
 
   // What it wears: loaded once here (the store keeps it current after an equip).
-  const { store, readCompanion } = useChalito();
   const look = useWornLook((s) => s.look);
   const items = useWornLook((s) => s.items);
   useEffect(() => {
@@ -113,7 +129,7 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   // Bob, squash and lean from the driver; turn toward the pointer.
   useEffect(() => {
     const el = body.current;
-    if (hidden || !el || reducedMotion()) return;
+    if (hidden || pending || !el || reducedMotion()) return;
     type V3 = [number, number, number];
     const tf: { s: V3; p: V3; r: V3 } = { s: [1, 1, 1], p: [0, 0, 0], r: [0, 0, 0] };
     const vec = (k: keyof typeof tf) => ({ set: (x: number, y: number, z: number) => void (tf[k] = [x, y, z]) });
@@ -141,7 +157,8 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
       cancelAnimationFrame(raf);
       window.removeEventListener('pointermove', onMove);
     };
-  }, [driver, hidden]);
+    // The body is remounted per character (key), so rebind when it changes.
+  }, [driver, hidden, pending, shownKey]);
 
   const placed = card
     ? worn.map((i) => {
@@ -153,6 +170,15 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const drawn = layerSrc(drawing);
   const aspect = card ? `${card.width} / ${card.height}` : '3 / 4';
   if (hidden) return null;
+  if (pending)
+    return (
+      <aside className={hero ? 'chc chc--hero chc--pending' : 'chc chc--pending'} aria-hidden="true" data-pending="true">
+        <div className="chc__stage" style={{ aspectRatio: '3 / 4' }}>
+          <span className="chc__shadow" aria-hidden="true" />
+          <span className="chc__ghost" aria-hidden="true" />
+        </div>
+      </aside>
+    );
 
   return (
     <aside className={hero ? 'chc chc--hero' : 'chc'} aria-label={t('aria', { name: entry.name[locale] })} data-companion={id} data-custom={custom ? 'true' : undefined} data-activity={activity.key}>

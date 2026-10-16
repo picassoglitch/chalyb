@@ -19,6 +19,11 @@ export const useSettings = () => {
   const store = unreachable ? null : serverStore;
   const [values, setValues] = useState<SettingsValues | null>(null);
   const [onboarded, setOnboarded] = useState(false);
+  /**
+   * Where `values` were read from: this device (null) or a server store. After signing in, the
+   * device's values linger until the server answers; `settled` tells them apart.
+   */
+  const [from, setFrom] = useState<typeof store | undefined>(undefined);
   const [error, setError] = useState<SaveError>(null);
   const companionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef<SettingsValues | null>(null);
@@ -29,6 +34,7 @@ export const useSettings = () => {
     const r = await store.load();
     setValues(r.values);
     setOnboarded(r.onboarded);
+    setFrom(store);
   }, [store]);
 
   useEffect(() => {
@@ -41,6 +47,7 @@ export const useSettings = () => {
     else {
       setValues(loadSettings());
       setOnboarded(isOnboarded());
+      setFrom(null);
     }
   }, [store, status, reload]);
 
@@ -126,5 +133,7 @@ export const useSettings = () => {
     onboarded,
     finishOnboarding,
     persisted: store ? ("server" as const) : ("device" as const),
+    /** `values` are the current source's: the server's once signed in, not this device's leftovers. */
+    settled: values !== null && from === store,
   };
 };

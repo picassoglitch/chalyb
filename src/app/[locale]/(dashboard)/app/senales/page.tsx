@@ -3,9 +3,11 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect, Link } from '@/i18n/routing';
 import { loadTool, planKeyFor } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
+import { loadSenalesPrefs } from '@/lib/tools/senales-access';
 import { hubLaunchHref } from '@/lib/tools/routes';
 import { loadSignalFeed } from '@/lib/tools/signals-feed';
 import { isNewSignal, latestPerCoin } from '@/lib/tools/signals-view';
+import { pairForCoin } from '@/lib/tools/senales-coins';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -86,7 +88,15 @@ export default async function SenalesHome({
     );
 
   const { session, entitlements, adapter } = gate;
-  const prefs = await adapter.getPrefs(session.user.id);
+  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  if (!prefsRes.ok)
+    return (
+      <ToolShell slug="chalybcrypto" tab="main">
+        <ToolErrorState slug="chalybcrypto" error={prefsRes.error} />
+        <SignalsDisclaimer />
+      </ToolShell>
+    );
+  const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
 
   const t = await getTranslations('signalsTool');
@@ -183,6 +193,28 @@ export default async function SenalesHome({
                 </b>
               </li>
             </ul>
+          </section>
+          <section className="ch-card ch-sig-panel" aria-labelledby="sig-explore">
+            <h2 id="sig-explore" className="ch-sig-h3">
+              {t('explore.title')}
+            </h2>
+            <p className="ch-muted">{t('explore.body')}</p>
+            <div className="ch-sig-explore">
+              <Link
+                href={
+                  `/app/senales/mercado${active ? `?par=${pairForCoin(active)}` : ''}` as Route
+                }
+                className="ch-btn ch-btn--gray ch-btn--compact"
+              >
+                {t('explore.market')}
+              </Link>
+              <Link
+                href={'/app/senales/estrategias' as Route}
+                className="ch-btn ch-btn--gray ch-btn--compact"
+              >
+                {t('explore.lab')}
+              </Link>
+            </div>
           </section>
           <section className="ch-card ch-sig-panel" aria-labelledby="sig-legend">
             <h2 id="sig-legend" className="ch-sig-h3">

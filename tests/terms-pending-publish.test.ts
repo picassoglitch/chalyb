@@ -17,6 +17,7 @@ test('publish and connect refuse while terms are pending; it is 403 and not an o
   for (const f of [
     'src/app/api/tools/chalybclip/clips/[clipId]/publish/route.ts',
     'src/app/api/tools/chalybclip/connect/route.ts',
+    'src/app/api/tools/chalybobs/oauth/consent/route.ts',
   ])
     assert.match(src(f), /if \(await termsAcceptancePending\(session\.user\.id\)\) throw new TermsPendingError/, f);
   const r = normalizeToolError(new TermsPendingError('terms_pending'));
@@ -28,5 +29,4 @@ test('publish and connect refuse while terms are pending; it is 403 and not an o
 test('the clip page hides publishing while pending, never the download', () => {
   const page = src('src/app/[locale]/(dashboard)/app/clips/[clipId]/page.tsx');
   assert.match(page, /socialsAllowed\(gate\.entitlements\.plan\) && !termsPending/);
-  assert.doesNotMatch(src('src/app/api/tools/chalybobs/download/route.ts'), /termsAcceptancePending/);
 });

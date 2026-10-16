@@ -27,6 +27,7 @@ import {
   type ToolError,
   type ToolErrorReason,
   type ToolResult,
+  usageReasonOf,
 } from './bff-core';
 import { recordToolHealth } from './status';
 
@@ -79,17 +80,26 @@ export async function reportToolError(
   outage = countsAsOutage(reason),
   /** The engine's machine refusal reason, when there is one. */
   refusal?: string,
+  /** With 'usage_refused': the admission reason (no_tokens, jobs_cap, …). */
+  usage?: string,
 ): Promise<ToolError> {
   const error: ToolError = {
     reason,
     retryable,
     supportCode: newSupportCode(slug),
     ...(refusal ? { refusal } : {}),
+    ...(usage ? { usage } : {}),
   };
   await logAudit({
     action: 'tool.error',
     targetUserId: userId,
-    metadata: { tool: slug, reason, supportCode: error.supportCode, refusal: refusal ?? null },
+    metadata: {
+      tool: slug,
+      reason,
+      supportCode: error.supportCode,
+      refusal: refusal ?? null,
+      ...(usage ? { usage } : {}),
+    },
   });
   if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
@@ -129,7 +139,8 @@ export async function runTool<T>(
       const timeout = Math.min(opts.timeoutMs ?? TOOL_TIMEOUT_MS, TOOL_SLOW_TIMEOUT_MS);
       const data = await withTimeout(op(ctl.signal), timeout, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
-      noteHealthy(slug, Date.now() - started);
+      // A long call (timeoutMs) is slow by design: not a health signal.
+      if (!opts.timeoutMs) noteHealthy(slug, Date.now() - started);
       return { ok: true, data };
     } catch (err) {
       last = err;
@@ -142,6 +153,14 @@ export async function runTool<T>(
   const { reason, retryable, outage, refusal } = failureEffect(last, opts);
   return {
     ok: false,
-    error: await reportToolError(slug, userId, reason, retryable, outage, refusal),
+    error: await reportToolError(
+      slug,
+      userId,
+      reason,
+      retryable,
+      outage,
+      refusal,
+      usageReasonOf(last),
+    ),
   };
 }

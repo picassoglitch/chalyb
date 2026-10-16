@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Info } from 'lucide-react';
 import { Link, redirect } from '@/i18n/routing';
 import { planKeyFor } from '@/lib/tools/access';
-import { requireSenalesReady } from '@/lib/tools/senales-access';
+import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-access';
 import { signalsFor } from '@/lib/guardrails/signals';
 import { latestPerCoin } from '@/lib/tools/signals-view';
 import { screenSignal } from '@/lib/tools/signals-screen';
@@ -26,7 +26,9 @@ export default async function SenalesListo({ params }: { params: Promise<{ local
     locale,
     '/app/senales/empezar/listo',
   );
-  const prefs = await adapter.getPrefs(session.user.id);
+  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  if (!prefsRes.ok) return redirect({ href: '/app/senales', locale });
+  const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signals');
   const tw = await getTranslations('wizard');
