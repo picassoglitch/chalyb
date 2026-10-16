@@ -6,7 +6,8 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Check, Save } from 'lucide-react';
+import { Check, Lock, Save } from 'lucide-react';
+import { ButtonLink } from '@/components/ui/primitives';
 import { publishApi, usePublishErrorText } from './api';
 import { InlineMsg, PlatformTile, platformName, type Msg } from './common';
 
@@ -34,7 +35,25 @@ interface Rule {
 const bucket = (thr: number | null) =>
   thr === null ? '0.6' : thr <= 0.45 ? '0.3' : thr >= 0.7 ? '0.8' : '0.6';
 
-export function AutopilotTab() {
+export function AutopilotTab({ canAutopilot }: { canAutopilot: boolean }) {
+  const t = useTranslations('clipsPublish.autopilot');
+  if (!canAutopilot)
+    return (
+      <div className="ch-card ch-state">
+        <span className="ch-state__ic" aria-hidden="true">
+          <Lock />
+        </span>
+        <h2 className="ch-h2">{t('locked.title')}</h2>
+        <p className="ch-muted" style={{ maxWidth: 520 }}>
+          {t('locked.body')}
+        </p>
+        <ButtonLink href="/app/planes">{t('locked.cta')}</ButtonLink>
+      </div>
+    );
+  return <AutopilotPanel />;
+}
+
+function AutopilotPanel() {
   const t = useTranslations('clipsPublish.autopilot');
   const tc = useTranslations('consents.autopublish');
   const locale = useLocale();

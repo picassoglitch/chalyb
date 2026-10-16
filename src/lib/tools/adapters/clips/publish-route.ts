@@ -28,6 +28,7 @@ import {
   statusForReason,
 } from '@/lib/tools/bff-core';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
+import { TIER_CAPS } from '@/lib/billing/tiers';
 import { recordToolConsent } from '@/lib/tools/consents';
 import { hubRunsTool } from '@/lib/tools/registry';
 import { getClipsEngineAdapter } from '../clips';
@@ -191,6 +192,13 @@ export function publishHandler(method: 'GET' | 'POST') {
           });
         };
       } else if (op.pattern === 'autopublish/save' && body.enabled === true) {
+        // Auto-publish is VIP (TIER_CAPS.clipAutoPublish; the engine refuses
+        // it below its top tier too).
+        if (!TIER_CAPS[entitlements.plan]?.clipAutoPublish)
+          return json(403, {
+            ok: false,
+            error: { reason: 'needs_plan', retryable: false, refusal: 'paywall_autopilot' },
+          });
         // Turning auto-publish ON needs the responsibility box (aceptacion-ux
         // §7) and current Terms (§8); saving other knobs while it's already on
         // doesn't ask again.

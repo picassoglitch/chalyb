@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { loadPublishOverview, loadPublishTool } from '@/lib/tools/adapters/clips/publish-page';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
+import { TIER_CAPS } from '@/lib/billing/tiers';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -46,7 +47,7 @@ export default async function ClipsPublishPage({
     );
   if (gate.kind !== 'ready')
     return (
-      <ToolShell slug="chalybclip" tab={null}>
+      <ToolShell slug="chalybclip" tab="publish">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
         {gate.kind === 'setup' && (
           <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
@@ -57,7 +58,7 @@ export default async function ClipsPublishPage({
   const t = await getTranslations('clipsPublish');
   const overview = await loadPublishOverview<Overview>(gate.adapter, gate.session.user.id);
   return (
-    <ToolShell slug="chalybclip" tab={null}>
+    <ToolShell slug="chalybclip" tab="publish">
       {!socialsAllowed(gate.entitlements.plan) && (
         <Banner kind="trial" action={{ href: '/app/planes', label: t('needsPlan.cta') }}>
           {t('needsPlan.body')}
@@ -67,7 +68,10 @@ export default async function ClipsPublishPage({
         <PublishCenter
           initial={overview.data}
           initialTab={isPublishTab(tab) ? tab : null}
-          connected={typeof conectado === 'string' && /^[a-z]{1,20}$/.test(conectado) ? conectado : null}
+          canAutopilot={TIER_CAPS[gate.entitlements.plan]?.clipAutoPublish === true}
+          connected={
+            typeof conectado === 'string' && /^[a-z]{1,20}$/.test(conectado) ? conectado : null
+          }
         />
       ) : (
         <ToolErrorState slug="chalybclip" error={overview.error} />

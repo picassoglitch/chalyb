@@ -37,7 +37,8 @@ test('registry: the 4 live tools, each with ≤ 3 tabs that route inside the too
   );
   for (const tool of TOOLS) {
     assert.ok(tool.live);
-    assert.ok(tool.tabs.length <= 3, tool.slug);
+    // Clips has a 4th tab, Publicar (owner decision 2026-10-15).
+    assert.ok(tool.tabs.length <= (tool.slug === 'chalybclip' ? 4 : 3), tool.slug);
     assert.equal(tool.tabs[0]!.href, tool.route);
     for (const tab of tool.tabs) assert.ok(tab.href.startsWith(tool.route), tab.href);
   }
@@ -58,6 +59,9 @@ test('registry: path → tool → tab', () => {
   assert.equal(activeTabFor(clips, '/app/clips/mis-clips'), 'history');
   assert.equal(activeTabFor(clips, '/app/clips/ajustes'), 'settings');
   assert.equal(activeTabFor(clips, '/app/clips/clip_1'), 'main');
+  assert.equal(activeTabFor(clips, '/app/clips/publicar'), 'publish');
+  assert.equal(activeTabFor(clips, '/app/clips/publicar/trabajo/p_1'), 'publish');
+  assert.equal(activeTabFor(clips, '/app/clips/publicar/conectado'), 'publish');
 });
 
 test('support codes: prefix + 4 digits', () => {

@@ -39,7 +39,7 @@ export default async function ClipsPublishJobPage({
     );
   if (gate.kind !== 'ready')
     return (
-      <ToolShell slug="chalybclip" tab={null}>
+      <ToolShell slug="chalybclip" tab="publish">
         {gate.kind === 'error' && <ToolErrorState slug="chalybclip" error={gate.error} />}
         {gate.kind === 'setup' && (
           <SetupState step={gate.step} alternativeHref="/app/clips/nuevo" />
@@ -48,7 +48,7 @@ export default async function ClipsPublishJobPage({
     );
   const t = await getTranslations('clipsPublish.job');
   return (
-    <ToolShell slug="chalybclip" tab={null}>
+    <ToolShell slug="chalybclip" tab="publish">
       <Link className="ch-back" href={'/app/clips/publicar?tab=publicados' as Route}>
         <ChevronLeft aria-hidden="true" />
         {t('back')}

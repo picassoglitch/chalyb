@@ -2536,6 +2536,7 @@
       "chalybclip": {
         "main": "Make clips",
         "history": "My clips",
+        "publish": "Publish",
         "settings": "Settings"
       },
       "chalybcrypto": {
@@ -3339,6 +3340,11 @@
       "autoDoneNone": "No clips were scheduled"
     },
     "autopilot": {
+      "locked": {
+        "title": "Autopilot comes with the VIP plan",
+        "body": "With VIP, every new clip publishes itself to your networks, with its hook, text and signature, at each network's pace. Meanwhile you can publish and schedule your clips by hand.",
+        "cta": "See plans"
+      },
       "title": "Autopilot",
       "tagline": "Publishes on its own, even while you sleep",
       "loading": "Loading…",

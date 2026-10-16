@@ -2536,6 +2536,7 @@
       "chalybclip": {
         "main": "Hacer clips",
         "history": "Mis clips",
+        "publish": "Publicar",
         "settings": "Ajustes"
       },
       "chalybcrypto": {
@@ -3339,6 +3340,11 @@
       "autoDoneNone": "No se programó ningún clip"
     },
     "autopilot": {
+      "locked": {
+        "title": "El piloto automático es del plan VIP",
+        "body": "Con VIP, cada clip nuevo se publica solo en tus redes, con su gancho, su texto y tu firma, respetando el ritmo de cada red. Mientras, puedes publicar y programar tus clips a mano.",
+        "cta": "Ver planes"
+      },
       "title": "Piloto automático",
       "tagline": "Publica solo, hasta mientras duermes",
       "loading": "Cargando…",

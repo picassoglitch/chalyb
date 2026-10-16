@@ -38,6 +38,8 @@ export interface TabProps {
   setFlash: (f: Flash) => void;
   goTab: (t: PublishTab) => void;
   connect: (platform: string) => void;
+  /** The plan includes auto-publish (TIER_CAPS.clipAutoPublish, VIP). */
+  canAutopilot: boolean;
 }
 
 /** Start connecting one platform: the engine hands out the network's
@@ -68,7 +70,9 @@ export function PublishCenter({
   initial,
   initialTab,
   connected,
+  canAutopilot,
 }: {
+  canAutopilot: boolean;
   initial: Overview;
   initialTab: PublishTab | null;
   /** Back from connecting a network (?conectado=<platform>). */
@@ -126,7 +130,14 @@ export function PublishCenter({
       </div>
     );
 
-  const tabProps: TabProps = { ov, refresh, setFlash, goTab, connect: setAskConnect };
+  const tabProps: TabProps = {
+    ov,
+    refresh,
+    setFlash,
+    goTab,
+    connect: setAskConnect,
+    canAutopilot,
+  };
 
   return (
     <div className="ch-pub">
@@ -225,7 +236,7 @@ export function PublishCenter({
             {tab === 'rendimiento' && <PerformanceTab {...tabProps} />}
             {tab === 'calendario' && <CalendarTab />}
             {tab === 'programacion' && <ScheduleTab {...tabProps} />}
-            {tab === 'piloto' && <AutopilotTab />}
+            {tab === 'piloto' && <AutopilotTab canAutopilot={canAutopilot} />}
             {tab === 'comentarios' && <CommentsTab />}
             {tab === 'dms' && <DmsTab />}
             {tab === 'crecimiento' && <GrowthTab {...tabProps} />}

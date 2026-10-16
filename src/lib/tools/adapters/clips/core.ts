@@ -29,7 +29,8 @@ export const ENGINE_CAPABILITIES: ClipsCapabilities = {
   customDuration: false,
   watermark: false,
   fileUpload: false,
-  supportsConnect: false,
+  // Publishing (Zernio) is live over the engine's hub API (clips/publish.ts).
+  supportsConnect: true,
   confirmsNoChargeOnFailure: true,
   editClips: false,
   framing: false,
