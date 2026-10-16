@@ -8,6 +8,7 @@ import { CAPTION_STYLES, CLIP_COUNTS, CLIP_FORMATS } from '@/lib/tools/adapters/
 import { MAX_EXTRA_LINKS } from '@/lib/tools/clips-options';
 import { createClipJob } from '@/lib/tools/clips-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Pill } from '@/components/ui/primitives';
 import { Segmented } from '@/components/ui/segmented';
 
@@ -135,7 +136,11 @@ export default async function ClipsStep2Page({
                   </label>
                   <label className="ch-field">
                     <span>{t('adv.captionLang')}</span>
-                    <select name="captionLang" className="ch-input" defaultValue={locale === 'en' ? 'en' : 'es'}>
+                    <select
+                      name="captionLang"
+                      className="ch-input"
+                      defaultValue={locale === 'en' ? 'en' : 'es'}
+                    >
                       {(['es', 'en'] as const).map((l) => (
                         <option key={l} value={l}>
                           {t(`adv.langs.${l}`)}
@@ -152,11 +157,25 @@ export default async function ClipsStep2Page({
                   </legend>
                   <label className="ch-field">
                     <span>{t('adv.min')}</span>
-                    <input name="minSec" type="number" min={15} max={60} inputMode="numeric" className="ch-input" />
+                    <input
+                      name="minSec"
+                      type="number"
+                      min={15}
+                      max={60}
+                      inputMode="numeric"
+                      className="ch-input"
+                    />
                   </label>
                   <label className="ch-field">
                     <span>{t('adv.max')}</span>
-                    <input name="maxSec" type="number" min={15} max={60} inputMode="numeric" className="ch-input" />
+                    <input
+                      name="maxSec"
+                      type="number"
+                      min={15}
+                      max={60}
+                      inputMode="numeric"
+                      className="ch-input"
+                    />
                   </label>
                 </fieldset>
               )}
@@ -165,9 +184,7 @@ export default async function ClipsStep2Page({
           </details>
         )}
 
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
-          {t('s2.cta')}
-        </button>
+        <SubmitButton className="ch-btn ch-btn--primary ch-btn--xl">{t('s2.cta')}</SubmitButton>
       </form>
     </WizardShell>
   );

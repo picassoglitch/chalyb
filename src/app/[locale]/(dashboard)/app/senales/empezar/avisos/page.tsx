@@ -4,6 +4,7 @@ import { redirect } from '@/i18n/routing';
 import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-access';
 import { saveSignalPrefs } from '@/lib/tools/senales-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { SubmitButton } from '@/components/ui/submit-button';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('signals');
@@ -88,9 +89,9 @@ export default async function SenalesStep2({
             </label>
           </div>
         </details>
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
+        <SubmitButton className="ch-btn ch-btn--primary ch-btn--xl">
           {tw('continue')}
-        </button>
+        </SubmitButton>
       </form>
     </WizardShell>
   );

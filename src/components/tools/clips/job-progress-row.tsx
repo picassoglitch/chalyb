@@ -11,6 +11,7 @@ import { jobProgress, thumbFor } from '@/lib/tools/clips-home';
 import { platformName } from '@/lib/tools/clips-copy';
 import { retryClipJob } from '@/lib/tools/clips-actions';
 import { clipJobHref } from '@/lib/tools/clips-job-href';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { failureBody } from './failure-copy';
 
 export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge: boolean }) {
@@ -37,9 +38,9 @@ export async function JobProgressRow({ job, noCharge }: { job: ClipJob; noCharge
         {manualRetryAllowed(job) && (
           <form action={retryClipJob}>
             <input type="hidden" name="jobId" value={job.id} />
-            <button type="submit" className="ch-btn ch-btn--gray ch-btn--compact">
+            <SubmitButton className="ch-btn ch-btn--gray ch-btn--compact">
               {t('retry')}
-            </button>
+            </SubmitButton>
           </form>
         )}
       </li>

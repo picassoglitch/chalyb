@@ -12,6 +12,7 @@ import { clipSourceHref, parseClipSource, type ClipSource } from '@/lib/tools/cl
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
 import type { ToolError } from '@/lib/tools/bff-core';
 import { WizardShell } from '@/components/ui/wizard-shell';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { PasteButton } from '@/components/app/clips/paste-button';
@@ -174,9 +175,9 @@ export default async function ClipsStep1Page({
             </span>
           </label>
         )}
-        <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
+        <SubmitButton className="ch-btn ch-btn--primary ch-btn--xl">
           {engine ? te('newJob.cta') : t('s1.cta')}
-        </button>
+        </SubmitButton>
         {engine && (
           <p className="ch-muted" style={{ fontSize: 16 }}>
             {te('newJob.other')}{' '}

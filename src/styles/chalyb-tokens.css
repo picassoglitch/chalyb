@@ -615,6 +615,24 @@ body {
   }
 }
 
+/* SubmitButton's pending spinner. */
+.chalyb-app .ch-btnspin {
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  vertical-align: -0.125em;
+  animation: ch-spin 0.7s linear infinite;
+}
+@keyframes ch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* A tool screen's loading state (ToolLoading): shimmer shaped like the
    screen, under the real tool header and tabs. */
 .chalyb-app .ch-loading {
