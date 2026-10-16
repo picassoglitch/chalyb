@@ -22,6 +22,7 @@ import {
   ToolTimeoutError,
   TOOL_GET_RETRIES,
   TOOL_TIMEOUT_MS,
+  TOOL_SLOW_TIMEOUT_MS,
   type BreakerState,
   type ToolError,
   type ToolErrorReason,
@@ -106,6 +107,10 @@ export async function runTool<T>(
     /** Only errors the engine adapter threw (and timeouts) count against
      *  the breaker and health; the BFF routes set this (see bff-route). */
     adapterErrorsOnly?: boolean;
+    /** A longer budget for the few calls that do real work before they
+     *  answer (an AI logo, checking an uploaded file). Capped at
+     *  TOOL_SLOW_TIMEOUT_MS; reads keep the 8 s default. */
+    timeoutMs?: number;
   } = {},
 ): Promise<ToolResult<T>> {
   const attempts = 1 + (opts.idempotent ? TOOL_GET_RETRIES : 0);
@@ -121,7 +126,8 @@ export async function runTool<T>(
     try {
       const started = Date.now();
       const ctl = new AbortController();
-      const data = await withTimeout(op(ctl.signal), TOOL_TIMEOUT_MS, ctl);
+      const timeout = Math.min(opts.timeoutMs ?? TOOL_TIMEOUT_MS, TOOL_SLOW_TIMEOUT_MS);
+      const data = await withTimeout(op(ctl.signal), timeout, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
       noteHealthy(slug, Date.now() - started);
       return { ok: true, data };

@@ -35,6 +35,8 @@ export interface ToolError {
 export type ToolResult<T> = { ok: true; data: T } | { ok: false; error: ToolError };
 
 export const TOOL_TIMEOUT_MS = 8000;
+/** Ceiling for a route that opts into a longer budget (bff.ts timeoutMs). */
+export const TOOL_SLOW_TIMEOUT_MS = 55_000;
 export const TOOL_GET_RETRIES = 2;
 /** Consecutive failures that open the breaker, and how long it stays open. */
 export const BREAKER_THRESHOLD = 5;
