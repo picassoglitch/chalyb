@@ -508,14 +508,14 @@
     "anthropic": {
       "name": "Claude",
       "agent": "Claude Code",
-      "howTo": "Connect Claude Code with your Anthropic API key: we send it encrypted to your computer. Under Anthropic's rules, signing in with your Claude plan is for the Chalito team only for now.",
-      "ownerOnly": "Claude plan: Chalito team only for now"
+      "howTo": "If you already use Claude Code on that computer, open the Chalito app there and tap “Use”. Or paste your Anthropic API key: it's sent encrypted to your computer. Using your Claude plan is coming soon.",
+      "ownerOnly": "Using your Claude plan is coming soon. Meanwhile: Claude Code signed in on your computer (“Use” in the Chalito app) or your Anthropic API key."
     },
     "openai": {
       "name": "ChatGPT",
       "agent": "Codex",
-      "howTo": "Connect Codex with your OpenAI API key or by signing in with ChatGPT on your computer. The ChatGPT plan is for the Chalito team only for now.",
-      "ownerOnly": "ChatGPT plan: Chalito team only for now"
+      "howTo": "If you already use Codex on that computer, open the Chalito app there and tap “Use”. Or paste your OpenAI API key: it's sent encrypted to your computer. Using your ChatGPT plan is coming soon.",
+      "ownerOnly": "Using your ChatGPT plan is coming soon. Meanwhile: Codex signed in on your computer (“Use” in the Chalito app) or your OpenAI API key."
     },
     "xai": {
       "name": "Grok",
@@ -1271,7 +1271,7 @@
   },
   "connect": {
     "title": "Connect your AIs",
-    "body": "Choose how each AI runs on your computer: with your API key or by signing in with your plan. It all happens on your computer; your keys aren't stored in the cloud.",
+    "body": "There are two ways to connect an AI today. 1) If you already use Claude Code, Codex, Gemini or another one on that computer and you're signed in there, open the Chalito app on it, go to “Connected AI” and tap “Use”: Chalito uses it just as it is. 2) Paste your API key: it's encrypted and only your computer can read it. Your keys aren't stored in the cloud.",
     "loading": "Checking your connections…",
     "loadError": "We couldn't read the status of your connections.",
     "retry": "Try again",
@@ -1302,7 +1302,8 @@
       "api_key": "Paste your key",
       "signin": "Sign in with your plan",
       "disconnect": "Disconnect",
-      "launch": "Open on your computer"
+      "launch": "Open on your computer",
+      "signinSoon": "Your plan · Coming soon"
     },
     "installNote": "It installs with the official installer. Your computer will ask you to confirm.",
     "signinNote": "The official sign-in opens in that computer's browser; finish it there.",
@@ -1344,7 +1345,7 @@
       "desktop": "It opens on that computer.",
       "web": "It opens on that computer, in a browser profile just for this AI."
     },
-    "ownerOnly": "Sign in with your plan: Chalito team only for now.",
+    "ownerOnly": "Using your subscription plan is coming soon. Meanwhile, use the AI you already have on your computer (“Use” in the Chalito app) or paste your API key.",
     "keyWhere": "Get your {label} at {url}",
     "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
     "keySendAnyway": "Send anyway"
@@ -1451,7 +1452,7 @@
       "account": "Chalito uses your Chalyb account. No other password needed.",
       "browser": "Approve this browser to see and approve what your AIs do from here.",
       "computer": "Download Chalito, open it on your computer and tap “Connect this computer”. You approve it here, in your browser.",
-      "ai": "In the Chalito app on your computer, open “Connected AI” and tap “Use” next to an AI you already have installed. You can also connect one from here.",
+      "ai": "If you already use Claude Code, Codex or another AI on your computer, open the Chalito app there, go to “Connected AI” and tap “Use”. If not, paste your API key here.",
       "folder": "In the Chalito app on your computer: Settings → This computer → Add a folder. Chalito only works inside the folders you choose.",
       "firstTask": "Ask your AI to summarize your project. It only reads: it changes no files."
     },
