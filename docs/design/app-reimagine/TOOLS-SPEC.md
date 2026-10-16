@@ -57,7 +57,7 @@ Navegador ──► /app/{clips|senales|en-vivo}/**  (React Server Components + 
 ```
 - **Registro de herramientas** (`config/tools.ts`, nombre propuesto; si ya existe un catálogo de engines, se extiende): `{ slug:'chalybclip', route:'clips', name:'Clips', icon:'scissors', color:'#5B4BFF', live:true, tabs:[…] }`, `{ slug:'chalybcrypto', route:'senales', name:'Señales', icon:'trend', color:'#FF9F0A', live:true, needsRiskAck:true }`, `{ slug:'chalybobs', route:'en-vivo', name:'En vivo', icon:'live', color:'#FF375F', live:true }` y el resto (Asistente, Pronósticos, Inmuebles, Inversiones) con `live:false` hasta que funcionen. **Solo `live:true` aparece** en Inicio, Herramientas (61) y "También incluido".
 - **Estado por herramienta** (`tool_status[slug]`: `ok | slow | down`, `incident_active: boolean`, `incident_since`): lo alimenta el health check (`GET /health` de cada motor cada 60 s) y el dueño desde `/dashboard/herramientas` (BUILD-SPEC §9.1). `incident_active=true` solo cuando **ya se alertó a una persona** (alerta entregada o el dueño lo marcó). Es lo que habilita la frase "Ya nos avisaron, lo estamos arreglando" (60).
-- **Tiempo real:** En vivo (estado de transmisión, escenas, espectadores) y el avance de Clips usan **SSE** desde `/api/tools/{slug}/events` (el BFF se suscribe al motor). Polling de 5 s como respaldo.
+- **Tiempo real:** En vivo (estado de transmisión) y el avance de Clips usan **SSE** desde `/api/tools/{slug}/events` (el BFF se suscribe al motor). Polling de 5 s como respaldo.
 - **Código de ayuda:** cada error genera `supportCode` = prefijo (`CLP`, `SEN`, `VIV`) + 4 dígitos, ligado al evento en Actividad (`/dashboard/actividad`). "Hablar con una persona" abre el chat con ese código ya escrito.
 
 ### 1.3 Contrato mínimo por motor (lo que el BFF necesita; adaptar a lo que exista)
@@ -76,7 +76,7 @@ Navegador ──► /app/{clips|senales|en-vivo}/**  (React Server Components + 
 - `GET /coins` · webhook `signal.created` → la app principal hace la entrega (WhatsApp/correo/app) según preferencias guardadas **en la app principal**
 - `GET /health`
 
-**En vivo · `chalybobs`**
+**En vivo · `chalybobs`** *(reemplazado: el motor real es un relay RTMP con su API `/api/hub/v1`, ver §6)*
 - `POST /pairing-codes` → `{ code:'482913', expiresAt }` (10 min, un solo uso)
 - `GET /devices?userId=` → `[{ id, name:'Laptop de María', os, obsReady, online, lastSeenAt }]`
 - `GET /devices/{id}/state` → `{ streaming, startedAt, scenes:[{id,name,thumbUrl}], currentSceneId, mic, cam, network:'good'|'slow'|'offline', destinations:[…] }`
@@ -103,8 +103,8 @@ Rutas en español, como el resto de `/app` (BUILD-SPEC usa `/app/senales`, `/app
 | `/app/senales/historial` | Pestaña "Historial" (misma tarjeta de 54, agrupada por día, con chips por moneda) | (usa 54) |
 | `/app/senales/[signalId]` | Detalle de una señal | **55** |
 | `/app/senales/ajustes` | Ajustes de Señales (monedas, cómo, horario) | **56** |
-| `/app/en-vivo` | Pestaña "Transmitir": sin computadora conectada → 57; conectada y sin transmitir → 22 dentro de `ToolShell`; transmitiendo → 58 | **57**, 22, **58** |
-| `/app/en-vivo/conectar` | Conectar (o volver a conectar) la computadora | **57** |
+| `/app/en-vivo` | Pestaña "Transmitir": vista previa, datos del encoder, canales y títulos (§6.1) | (57 y 58 reemplazadas) |
+| `/app/en-vivo/conectar` | Cómo conectar tu encoder (§6.2) | (57 reemplazada) |
 | `/app/en-vivo/transmisiones` | Pestaña "Mis transmisiones" (tarjetas de 19: Ver grabación / Hacer clips) | (usa 19) |
 | `/app/en-vivo/ajustes` | Ajustes de En vivo | **59** |
 
@@ -145,7 +145,7 @@ En la tarjeta de Inicio (01) "Hacer clips de mi stream" → `/app/clips`; "Recib
 | `VerdictPill` | `buy` "Momento de compra" (acento) · `sell` "Momento de venta" (ámbar `--warn`) · `wait` "Sin señal clara" (gris) | **nunca verde** (BUILD-SPEC §1.1) |
 | `PriceChart` | Línea + área suave, 3 marcas de eje, días abajo, punto "Aquí te avisamos · {hora}" | sin líneas de "objetivo", sin proyecciones |
 | `PairingSteps` | 3 tarjetas: Descargar · Código de 6 dígitos · ¡Listo! | dígitos 46×70, 38 px/700, tabulares |
-| `LiveStatusBar` | "En vivo · 00:12:34" (rojo) · espectadores · destinos · Internet | 1 fila |
+| `LiveStatusBar` | *(no se construye: En vivo muestra "EN VIVO" / "SIN SEÑAL", §6.1)* | — |
 | `GiantButton` | "Iniciar transmisión" (acento) / "Terminar transmisión" (`--bad`) | 100 px, 27–28 px/700, radio 24 (BUILD-SPEC §1.5) |
 | `BigToggle` | Mosaico Micrófono / Cámara con estado escrito ("Encendido" / "Apagada") | ≥ 120 px de alto; apagado = gris |
 | `SceneCard` | Miniatura de escena + ícono + nombre + estado ("En pantalla") | seleccionada con anillo acento |
@@ -243,36 +243,29 @@ En la tarjeta de Inicio (01) "Hacer clips de mi stream" → `/app/clips`; "Recib
 
 ## 6. En vivo (`chalybobs`) · `/app/en-vivo`
 
-### 6.1 Conectar la computadora (primera vez) · `/app/en-vivo` sin dispositivo · mockup **57**
-- **Por qué un programa de ayuda:** controlar OBS desde el navegador requiere dirección, puerto y contraseña de OBS (jerga). Un pequeño programa de escritorio ("programa de En vivo") que se empareja con un código evita todo eso y, si falta OBS, lo instala. *(Confirmar con el dueño cómo se conecta hoy el motor, Q6.)* Alternativa manual (OBS WebSocket: servidor, puerto, contraseña) **solo** en Opciones avanzadas de Ajustes.
-- **Copia:** `live.setup.title` "Conecta tu computadora" · `live.setup.sub` "Solo se hace una vez. Toma unos 2 minutos." · `live.setup.obs` "**¿Qué es OBS?** Es el programa gratis que manda la imagen de tu computadora a YouTube o Twitch. Nosotros lo manejamos por ti."
-  - Paso 1 (activo) "Ahora" · `live.setup.s1.title` "Descarga el programa de En vivo" · "Ábrelo en la computadora donde transmites. Si no tienes OBS, lo instala por ti." · `btn-xl` "Descargar para Windows" (detecta el sistema; en Mac dice "Descargar para Mac") · "¿Tienes Mac? Descargar para Mac" (o "¿Tienes Windows?…")
-  - Paso 2 "Después" · `live.setup.s2.title` "Escribe este código en el programa" · "El programa te lo pide al abrirlo. Así sabemos que es tu computadora." · código de 6 dígitos en 2 grupos de 3 · "Este código sirve por 10 minutos."
-  - Paso 3 "Al final" · `live.setup.s3.title` "¡Listo!" · "Cuando se conecte, aquí verás una palomita verde y ya podrás transmitir."
-  - Pie: girador + `live.setup.wait` "Esperando tu computadora… Esta página se actualiza sola." · [Hablar con una persona] (verde contorno)
-- **Una acción principal:** "Descargar para…". El código se muestra desde el inicio para que la persona lo tenga a la mano.
-- **Estados:** esperando (SSE `device.paired`) · **conectado:** el paso 3 se pone verde con ✓ "¡Listo! Tu computadora está conectada." y a los 2 s pasa a la pantalla de transmitir (22) · **código vencido:** "Este código ya venció." + [Ver un código nuevo] · **descarga no inicia:** enlace "¿No empezó la descarga? Descárgalo otra vez." · **ya tenía otra computadora:** se puede tener varias; aparecen en Ajustes.
-- **Descarga:** archivo firmado (code signing Windows/Mac notarizado) servido desde el mismo dominio, en la **misma** pestaña.
+> **Actualizado 2026-10-15 (decisión del dueño, Q6):** En vivo es lo que el motor hace de verdad: un **relay RTMP**. La persona transmite **una vez** desde su encoder (OBS, vMix, Zoom, su cámara o su teléfono) a nuestro servidor, y el relay manda esa señal a **todos sus canales activos** (YouTube, Twitch, Kick, Facebook, TikTok, Restream, RTMP/SRT propios). No hay programa de escritorio, código de emparejamiento, escenas, micrófono/cámara ni "clip de este momento": esa versión (mockups **57** y **58**, y la parte de dispositivos/calidad/atajos de **59**) queda **reemplazada** y no se construye. El contrato con el motor es `ChalyOBS /api/hub/v1` (Bearer firmado por el hub), no el de §1.3.
 
-### 6.2 Transmitir · `/app/en-vivo` · antes: mockup **22** (dentro de `ToolShell`) · durante: mockup **58**
-- **Antes de empezar (22):** se usa la pantalla aprobada 22 tal cual, pero dentro de `ToolShell` (sin `WizardShell`): `GiantButton` acento "Iniciar transmisión" · "Empieza en 3 segundos. Puedes detenerla cuando quieras." · escenas · controles rápidos · "Antes de empezar" (Internet, Título) · Opciones avanzadas.
-- **Durante (58) – copia:** `LiveStatusBar`: `live.on` "En vivo · {hh:mm:ss}" · "{n} personas viendo" · "{plataformas}" · "Internet {Bueno|Lento|Sin conexión}" · vista previa con etiqueta "EN VIVO" y "Lo que ve tu público" · `live.scenes` "Escenas" · "Toca una para cambiar lo que ve tu público" · escenas predeterminadas "Cámara" ("Solo tú") · "Pantalla" ("En pantalla" cuando está activa) · "Pausa" ("Vuelvo enseguida") · `live.stop` "Terminar transmisión" (`GiantButton` rojo) · "Te preguntamos antes de terminar." · `BigToggle` "Micrófono" "Encendido|Apagado" · "Cámara" "Encendida|Apagada" · `live.clipNow` "Hacer clip de este momento" · "Guarda el último minuto en Clips." · Opciones avanzadas "Calidad, servidores y atajos".
-- **Acción principal:** "Terminar transmisión" (es lo único que puede salir mal si no se encuentra rápido).
-- **Terminar:** hoja `live.stop.confirm.title` "¿Terminar tu transmisión?" · "Tu público dejará de verte." · [Sí, terminar] (`btn-dark`, mismo tamaño) · [Seguir transmitiendo] (`btn-primary`). Después: "Tu transmisión terminó · Duró {duracion}." + [Hacer clips de esta transmisión] (→ Clips con la grabación ya elegida) · [Ver mis transmisiones].
-- **"Hacer clip de este momento" (sinergia del kit):** `POST /api/tools/chalybclip/jobs/from-live` con `{ streamId, atS: ahora, windowS: 60 }` → aviso en pantalla "Listo, guardamos este momento. Lo verás en Clips en unos minutos." → aparece en "En proceso" de 50. Requiere grabación activa ("Guardar la grabación" encendido o VOD de la plataforma); si no, el botón explica "Para hacer clips en vivo, enciende Guardar la grabación en Ajustes." No gasta créditos hasta que el clip esté listo.
-- **Estados:** computadora apagada/desconectada → `SetupState` "Tu computadora no está conectada" · "Abre el programa de En vivo en tu computadora." · [Volver a intentar] · sin destino elegido → "Elige dónde transmitir" [Ir a Ajustes] · internet lento → pill ámbar "Lento" + "Bajamos la calidad para que no se corte." (solo si calidad = Automática) · error al iniciar → "No pudimos iniciar tu transmisión. Revisa que {plataforma} siga conectada." [Intentar otra vez] [Hablar con una persona] · se cae la conexión durante → banda roja "Se perdió la conexión con tu computadora. Tu transmisión puede seguir en OBS." [Volver a conectar] · Gratis → `ToolLockedState` "En vivo viene en Pro".
-- **Pestañas:** `live.tab.stream` "Transmitir" · `live.tab.history` "Mis transmisiones" · `live.tab.settings` "Ajustes".
+### 6.1 Transmitir · `/app/en-vivo`
+- **Arriba:** estado "EN VIVO" (rojo) o "SIN SEÑAL" (lo dice el relay, no un botón) · el título de la transmisión con [Cambiar el título] · una línea: "Recibimos la señal de tu encoder y la mandamos a tus canales activos." / "Cuando tu encoder empiece a transmitir, aquí verás la imagen en unos segundos."
+- **Vista previa** (HLS a través del hub; la clave nunca viaja al navegador). Sin señal, dentro del reproductor va **"Conecta tu encoder"**: Servidor (RTMP URL) [Copia] · Clave de transmisión `••••••••` [Mostrar] [Copia] · URL completa para cámaras de un solo campo · enlace "Cómo conectar OBS, vMix, Zoom o tu cámara". "Mostrar" pide la contraseña (o un inicio de sesión de hace menos de 5 min).
+- **Mandar a Clips** (interruptor): "Cada transmisión llega a Clips para sacar los mejores momentos." Solo planes con acceso completo; los demás ven "Viene en el plan VIP." [Ver planes].
+- **Tus canales:** "{n} de {total} activos" · [Agregar canal] (Kick, Twitch y YouTube con "Con tu cuenta": se conectan con su inicio de sesión, previa hoja `ConnectAccountSheet`; el resto con su clave) · [Actualizar títulos] (título, descripción, categoría, etiquetas, idioma, visibilidad, para niños, 18+; cada campo dice qué canales lo usan) · por canal: nombre, título, "Listo" / "Falta la clave" / "Conectado con tu cuenta", interruptor (solo con dirección y clave), [Editar], [Quitar] (con confirmación) y avisos "Se venció el acceso…" [Volver a conectar].
+- **Estados:** sin canales → "Aún no tienes canales. Agrega tu primera plataforma." · resultado de una conexión → aviso arriba ("{plataforma} quedó conectada…", "Cancelaste la conexión con {plataforma}.", "La conexión tardó demasiado…") · Gratis → `ToolLockedState` "En vivo viene en Pro".
 
-### 6.3 Ajustes de En vivo · `/app/en-vivo/ajustes` · mockup **59**
-- **Copia:** `live.settings.where` "Dónde transmites": YouTube "@{usuario} · conectado" (interruptor = transmitir ahí) · Twitch · Kick "Conectar" · Facebook "Conectar" · "Puedes transmitir en varias a la vez." · `live.settings.device` "Tu computadora": "{nombre}" "OBS listo · {sistema}" "Conectado" (con opción "Desconectar" dentro) · `live.settings.quality` "Calidad": "Automática" pill "Recomendada" "Se ajusta sola a tu internet." (predeterminada) · "Alta" "Para internet muy rápido." · "Ahorro" "Si tu internet es lento o usas datos." · `live.settings.after` "Al terminar": "Hacer clips al terminar" "Te llegan a Clips" (y "Guardar la grabación") · nota con candado `live.settings.keyNote` "Tu clave de transmisión está oculta por seguridad. Solo se ve en Opciones avanzadas."
-- **Opciones avanzadas** (resumen "Bitrate, servidores, atajos y clave de transmisión"): bitrate (kbps), resolución y fps, servidor de ingesta por plataforma, **clave de transmisión** (enmascarada `••••••••`; "Mostrar" pide confirmar la contraseña o volver a iniciar sesión; nunca se registra en logs ni se manda al navegador hasta que se pide), atajos de teclado, conexión manual a OBS WebSocket.
-- Conectar una plataforma usa `ConnectAccountSheet` con el texto de `aceptacion-ux.md` §7 ("Vas a conectar tu cuenta de {plataforma}. Chalyb podrá ver tus videos y **publicar solo cuando tú lo indiques**… [Conectar {plataforma}]") y registra `social_connect` en `consent_events`.
+### 6.2 Conectar · `/app/en-vivo/conectar`
+Guía para pegar los datos en OBS Studio, vMix, Zoom (transmisión personalizada) y cámaras de un solo campo, junto a los mismos datos de "Conecta tu encoder". [Ir a Transmitir].
 
-### 6.4 Aceptación (En vivo)
-- [ ] **Abuela:** conecta su computadora sola en ≤ 2 minutos (descargar → escribir 6 números); inicia, cambia de escena y termina sin leer ayuda; encuentra "Terminar" en < 3 s.
-- [ ] **Pro:** llega a bitrate / clave de transmisión en ≤ 2 toques desde `/app/en-vivo` (Ajustes → Opciones avanzadas).
-- [ ] "Hacer clip de este momento" crea un trabajo visible en `/app/clips` en < 5 s.
-- [ ] La clave de transmisión no aparece en el HTML, en logs ni en respuestas del BFF salvo al pulsar "Mostrar".
+### 6.3 Mis transmisiones · `/app/en-vivo/transmisiones`
+Cada transmisión que recibió el relay: fecha y "Duró {duracion}" (o "En curso").
+
+### 6.4 Ajustes · `/app/en-vivo/ajustes`
+Mandar a Clips · Tu clave de transmisión (Servidor, clave con [Mostrar], URL completa; "Quien la tenga puede transmitir en tu nombre: no la compartas.") · [Generar una clave nueva] con confirmación ("La clave actual deja de funcionar al instante…").
+
+### 6.5 Aceptación (En vivo)
+- [ ] Con un encoder transmitiendo, la vista previa aparece en `/app/en-vivo` y el estado pasa a "EN VIVO".
+- [ ] La clave no aparece en el HTML, en logs ni en respuestas del BFF salvo al pulsar "Mostrar"; ni la vista previa ni ninguna URL del navegador la contienen.
+- [ ] Conectar Kick/Twitch/YouTube vuelve a `/app/en-vivo` en la misma pestaña, con el aviso del resultado.
+- [ ] Un canal sin dirección o sin clave no se puede encender.
 
 ---
 
@@ -280,7 +273,7 @@ En la tarjeta de Inicio (01) "Hacer clips de mi stream" → `/app/clips`; "Recib
 
 ### 7.1 Cuando una herramienta no abre · `ToolErrorState` · mockup **60**
 Reemplaza a la página actual con "Abrir" + "No pudimos abrir {X} en este momento" (F1). Va **dentro** de `ToolShell` (el encabezado y las pestañas siguen).
-- **Copia (genérica, `{Herramienta}` = Clips / Señales / En vivo):** ícono de enchufe (fondo `--warn-tint`) · `tool.error.title` "{Herramienta} no abrió esta vez" · `tool.error.body` "Algo falló de nuestro lado, no es tu culpa. Lo que ya hiciste está guardado." · [Intentar otra vez] (`btn-primary`, único primario) · [Hablar con una persona] (verde contorno) · **solo si `tool_status[slug].incident_active`**: pill ámbar `tool.error.known` "Ya nos avisaron, lo estamos arreglando." · `tool.error.code` "Si nos escribes, menciona este código: **{supportCode}**" · bajo la tarjeta, según la herramienta: Clips "Mientras tanto, tus clips anteriores siguen en [Mis resultados]." · Señales "Mientras tanto, las últimas señales siguen en [Historial]." · En vivo "Si ya estabas transmitiendo, tu transmisión sigue en OBS."
+- **Copia (genérica, `{Herramienta}` = Clips / Señales / En vivo):** ícono de enchufe (fondo `--warn-tint`) · `tool.error.title` "{Herramienta} no abrió esta vez" · `tool.error.body` "Algo falló de nuestro lado, no es tu culpa. Lo que ya hiciste está guardado." · [Intentar otra vez] (`btn-primary`, único primario) · [Hablar con una persona] (verde contorno) · **solo si `tool_status[slug].incident_active`**: pill ámbar `tool.error.known` "Ya nos avisaron, lo estamos arreglando." · `tool.error.code` "Si nos escribes, menciona este código: **{supportCode}**" · bajo la tarjeta, según la herramienta: Clips "Mientras tanto, tus clips anteriores siguen en [Mis resultados]." · Señales "Mientras tanto, las últimas señales siguen en [Historial]." · En vivo "Si ya estabas transmitiendo, tu transmisión sigue: tu encoder manda la señal a tus canales aunque esta pantalla no abra."
 - **Reglas:** "Lo que ya hiciste está guardado" solo si de verdad hay borrador/estado guardado; si no, se omite esa frase. "Intentar otra vez" reintenta en el lugar (sin recargar toda la app) con estado "Intentando…"; después de 3 intentos fallidos el botón principal pasa a ser "Hablar con una persona". Sin `incident_active` **no** se muestra la pill (nunca prometer algo que no es cierto).
 - Cada vez que se muestra: evento en Actividad con `slug`, `reason`, `supportCode`.
 
@@ -319,7 +312,7 @@ Reemplaza a la página actual con "Abrir" + "No pudimos abrir {X} en este moment
 |---|---|---|---|
 | **F1** | Clips: "No pudimos abrir Clips en este momento" al tocar Abrir | El handoff a la app del motor falla: variable de entorno de URL/secretos del motor faltante en producción, token de SSO vencido o rechazado, CORS/cookies de terceros, o el motor caído | (1) Quitar el handoff y el botón "Abrir"; `/app/clips` se pinta nativo (50) llamando al BFF. (2) Health check de `chalybclip` en el despliegue (prueba de humo de BUILD-SPEC §4.1 B3). (3) Si el motor no responde, `ToolErrorState` (60) con `supportCode`. |
 | **F2** | Señales: "Antes de abrir Señales, lee el aviso y acéptalo." sin aviso visible | La revisión del aviso existe, pero el modal nunca se construyó (o se renderiza detrás del banner de cookies / en la otra app) | Hoja 53 en `/app/senales` con texto exacto §6, casilla y `POST /api/consent/risk-ack`; el BFF exige el `risk_ack` vigente. Prueba E2E: cuenta nueva → acepta → ve 54. |
-| **F3** | En vivo abre `about:blank` | Patrón `const w = window.open(''); const url = await getHandoffUrl(); w.location = url` donde la URL llega vacía/undefined o la promesa falla y la ventana nunca navega; o `NEXT_PUBLIC_*_URL` de En vivo vacía | Eliminar `window.open`. `/app/en-vivo` pinta 57/22/58 nativo. Agregar regla de lint/CI: **ningún** `window.open` ni `target="_blank"` en `app/(app)/**` (excepto lista blanca de descargas). |
+| **F3** | En vivo abre `about:blank` | Patrón `const w = window.open(''); const url = await getHandoffUrl(); w.location = url` donde la URL llega vacía/undefined o la promesa falla y la ventana nunca navega; o `NEXT_PUBLIC_*_URL` de En vivo vacía | Eliminar `window.open`. `/app/en-vivo` pinta Transmitir (§6.1) nativo. Agregar regla de lint/CI: **ningún** `window.open` ni `target="_blank"` en `app/(app)/**` (excepto lista blanca de descargas). |
 | **F4** | Copia "{Herramienta} se abre en una pestaña nueva." | Diseño anterior | Borrar la cadena y la llave; prueba de contenido que falle si reaparece "pestaña nueva". |
 | **F5** | La barra lateral no llega al fondo (fondo gris debajo, se ve en las 3 capturas a 1024×~700) | `AppShell` con alto fijo/`min-height` en el `aside` en vez de `height:100vh` + `position:sticky`, o el contenedor no es `display:flex` a alto completo | `aside{position:sticky;top:0;height:100dvh}` y `.app{min-height:100dvh;display:flex}`; captura de regresión a 1024×700 y 1440×900. |
 | **F6** | El banner de cookies tapa el contenido y los botones (Señales, En vivo) | Banner flotante centrado sobre el área de trabajo | Banner fijo abajo, a lo ancho del área de contenido (sin tapar la barra lateral), con espacio reservado (`padding-bottom`) mientras esté visible; nunca encima de un botón primario. Texto y opciones de `aceptacion-ux.md` §9 sin cambios. |
@@ -353,15 +346,15 @@ Reemplaza a la página actual con "Abrir" + "No pudimos abrir {X} en este moment
 | 54 | `mockups/54-senales-home.png` | Inicio de Señales: tarjetas, chips por moneda, Mis avisos, pie legal | `/app/senales` |
 | 55 | `mockups/55-senales-detalle.png` | Detalle de señal: gráfica simple, por qué, recibir avisos | `/app/senales/[signalId]` |
 | 56 | `mockups/56-senales-avisos.png` | Ajustes de Señales: monedas, cómo, horario, aviso | `/app/senales/ajustes` |
-| 57 | `mockups/57-envivo-conectar.png` | Conectar la computadora en 3 pasos con código de 6 dígitos | `/app/en-vivo` (sin dispositivo) |
-| 58 | `mockups/58-envivo-control.png` | Cuarto de control en vivo: Terminar, escenas, micrófono/cámara, clip | `/app/en-vivo` (transmitiendo) |
-| 59 | `mockups/59-envivo-ajustes.png` | Ajustes de En vivo: destinos, calidad, al terminar, avanzadas | `/app/en-vivo/ajustes` |
+| 57 | `mockups/57-envivo-conectar.png` | **Reemplazado (2026-10-15):** programa de escritorio y código de 6 dígitos; no existe en el motor. Ver §6.2 | — |
+| 58 | `mockups/58-envivo-control.png` | **Reemplazado (2026-10-15):** escenas, micrófono/cámara y clip en vivo; no existen en el motor. Ver §6.1 | — |
+| 59 | `mockups/59-envivo-ajustes.png` | Ajustes de En vivo (solo vale la idea de la clave oculta; destinos viven en Transmitir, sin calidad ni dispositivos). Ver §6.4 | `/app/en-vivo/ajustes` |
 | 60 | `mockups/60-tool-no-abre.png` | Herramienta que no abre (genérico) | cualquier herramienta |
 | 61 | `mockups/61-herramientas.png` | Tus herramientas: 3 tarjetas + "También incluido" | `/app/herramientas` |
 | 62 | `mockups/62-overview-herramientas.png` | Hoja de contacto 50–61 | — |
-Reutilizadas: 02–06 (asistente de Clips), 20–21 (primera activación de Señales), 22 (En vivo antes de transmitir, ahora dentro de `ToolShell`), 19 (tarjetas de historial), 23 (estado Gratis), 24 (vacío / falta un paso).
+Reutilizadas: 02–06 (asistente de Clips), 20–21 (primera activación de Señales), 19 (tarjetas de historial), 23 (estado Gratis), 24 (vacío / falta un paso).
 
-**Orden sugerido:** F5–F9 (1 PR chico) → `config/tools.ts` + `ToolShell` + redirecciones + `ToolErrorState` (las 3 rutas dejan de abrir pestañas el mismo día, aunque sea mostrando 60) → Señales 53 (desbloquea F2) → Clips 50/51/52 → En vivo 57/58/59 → 61.
+**Orden sugerido:** F5–F9 (1 PR chico) → `config/tools.ts` + `ToolShell` + redirecciones + `ToolErrorState` (las 3 rutas dejan de abrir pestañas el mismo día, aunque sea mostrando 60) → Señales 53 (desbloquea F2) → Clips 50/51/52 → En vivo §6 → 61.
 
 ---
 
@@ -373,8 +366,8 @@ Reutilizadas: 02–06 (asistente de Clips), 20–21 (primera activación de Señ
 | Q3 | ¿El abogado acepta los 3 puntos del aviso (53) como resumen *además* del texto completo? ¿O quiere solo el texto? | El texto §6 es obligatorio; los puntos son adicionales | Puntos + texto completo |
 | Q4 | ¿Cambiamos en toda la app "Buen momento para comprar/vender" / "Mejor espera" (19, 21, 26) por "Momento de compra" / "Momento de venta" / "Sin señal clara" (54–55)? | Consistencia; la nueva forma es menos valorativa (más "información", menos "consejo") | Usar la nueva en 53–56 y proponer el cambio global tras visto bueno legal |
 | Q5 | ¿"Precio de referencia" en MXN, USD o ambos? ¿De qué fuente y con qué retraso? | Exactitud y transparencia | MXN, con fuente y hora en el detalle |
-| Q6 | ¿Cómo se conecta hoy `chalybobs` con OBS (programa propio, OBS WebSocket directo, otro)? ¿Existe ya un programa de escritorio firmado para Windows/Mac? | 57 asume un programa de ayuda con código de emparejamiento | Programa de ayuda; manual en avanzadas |
-| Q7 | ¿Se puede leer "personas viendo" de YouTube/Twitch con los permisos que ya pedimos? | 58 muestra espectadores | Ocultar el dato si no hay permiso |
+| Q6 | ¿Cómo se conecta hoy `chalybobs` con OBS (programa propio, OBS WebSocket directo, otro)? ¿Existe ya un programa de escritorio firmado para Windows/Mac? | 57 asume un programa de ayuda con código de emparejamiento | **Respondida (2026-10-15):** no hay programa ni control de OBS; el motor es un relay RTMP. Ver §6 |
+| Q7 | ¿Se puede leer "personas viendo" de YouTube/Twitch con los permisos que ya pedimos? | 58 muestra espectadores | **Sin efecto:** 58 quedó reemplazada; En vivo no muestra espectadores |
 | Q8 | ¿Se permiten clips de streams de terceros (no del usuario)? | Derechos de autor / Uso aceptable | Solo contenido propio o con permiso (texto ya aprobado) |
 | Q9 | ¿Qué herramientas además de las 3 están listas para `live:true`? | "También incluido" (61) y la 4ª tarjeta de Inicio | Ninguna |
 | Q10 | ¿Quién recibe las alertas de herramienta caída y en cuánto tiempo responde? | Solo así es verdad "Ya nos avisaron, lo estamos arreglando" | Pill apagada hasta tener alerta real |

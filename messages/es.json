@@ -64,8 +64,8 @@
       "desc": {
         "chalybclip": "Pega el enlace de tu stream y recibe clips cortos con subtítulos para TikTok, Reels y Shorts.",
         "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
-        "liveBot": "Maneja tu transmisión con botones grandes. Y un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
-        "chalybobs": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
+        "liveBot": "Transmite una vez y sale en todos tus canales a la vez. Y un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
+        "chalybobs": "Transmite una vez desde OBS o tu cámara y sale en YouTube, Twitch, Kick y más a la vez.",
         "chalybbot": "Un Asistente que contesta a tus clientes y seguidores, de día y de noche.",
         "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
         "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
@@ -119,7 +119,7 @@
       "title": "Para ti, y para tu mamá también",
       "sub": "Si no tienes tiempo de editar, contestar o estar pendiente, Chalyb lo hace por ti.",
       "streamers": "Streamers",
-      "streamersP": "Clips de cada transmisión y tus escenas de OBS con un toque.",
+      "streamersP": "Transmite a todos tus canales a la vez y saca clips de cada transmisión.",
       "creators": "Creadores",
       "creatorsP": "Publica todos los días sin pasar horas editando.",
       "business": "Negocios",
@@ -456,11 +456,11 @@
         ]
       },
       "chalybobs": {
-        "tagline": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
+        "tagline": "Transmite una vez desde OBS o tu cámara y sale en YouTube, Twitch, Kick y más a la vez.",
         "bullets": [
-          "Escenas y overlays dinámicos",
-          "Automatización del stream",
-          "Funciona con Clips"
+          "Una transmisión, todos tus canales",
+          "Vista previa y títulos en un solo lugar",
+          "Opcional: tus transmisiones llegan a Clips"
         ]
       }
     },
@@ -650,9 +650,9 @@
         "short": "Te avisamos cuándo comprar o vender."
       },
       "envivo": {
-        "title": "Manejar mi transmisión",
-        "body": "Controla tus escenas de OBS desde un solo lugar.",
-        "short": "Controla OBS desde tu celular."
+        "title": "Transmitir a todos mis canales",
+        "body": "Transmite una vez y sale en YouTube, Twitch, Kick y más.",
+        "short": "Una transmisión, todos tus canales."
       },
       "mas": {
         "label": "Y mucho más",
@@ -709,8 +709,8 @@
       "body": "Así podemos traer tus streams y hacer tus clips solos. Toma 30 segundos."
     },
     "obs": {
-      "title": "Te falta conectar OBS",
-      "body": "Así puedes manejar tus escenas desde aquí. Toma 30 segundos."
+      "title": "Te falta conectar tu encoder",
+      "body": "Pega la dirección y la clave en OBS o en tu cámara, y tu señal sale en todos tus canales."
     },
     "whatsapp": {
       "title": "Te falta conectar WhatsApp",
@@ -1464,7 +1464,7 @@
     "tagline": {
       "chalybclip": "Convierte tu stream en clips cortos para TikTok, Reels y Shorts.",
       "chalybcrypto": "Te avisamos cuándo es buen momento para comprar o vender cripto.",
-      "chalybobs": "Maneja tu transmisión y tus escenas de OBS con botones grandes.",
+      "chalybobs": "Transmite una vez desde OBS o tu cámara y sale en todos tus canales a la vez.",
       "chalybbot": "Un bot que contesta a tus clientes y seguidores, de día y de noche.",
       "chalybpicks": "Los pronósticos deportivos del día, explicados en simple.",
       "chalybrealtor": "Publica tus propiedades y atiende a interesados sin perder tiempo.",
@@ -2566,7 +2566,7 @@
       "meanwhile": {
         "chalybclip": "Mientras tanto, tus clips anteriores siguen en",
         "chalybcrypto": "Mientras tanto, las últimas señales siguen en",
-        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue en OBS.",
+        "chalybobs": "Si ya estabas transmitiendo, tu transmisión sigue: tu encoder manda la señal a tus canales aunque esta pantalla no abra.",
         "chalito": "Mientras tanto, tus agentes no hacen nada que necesite tu aprobación."
       },
       "meanwhileLink": {

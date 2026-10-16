@@ -64,8 +64,8 @@
       "desc": {
         "chalybclip": "Paste your stream’s link and get short subtitled clips for TikTok, Reels and Shorts.",
         "chalybcrypto": "We let you know when it’s a good time to buy or sell crypto.",
-        "liveBot": "Run your stream with big buttons. And an Assistant that answers your customers and followers, day and night.",
-        "chalybobs": "Run your stream and your OBS scenes with big buttons.",
+        "liveBot": "Stream once and go out to all your channels at the same time. And an Assistant that answers your customers and followers, day and night.",
+        "chalybobs": "Stream once from OBS or your camera and go out to YouTube, Twitch, Kick and more at the same time.",
         "chalybbot": "An Assistant that answers your customers and followers, day and night.",
         "chalybpicks": "Today’s sports picks, explained simply.",
         "chalybrealtor": "List your properties and handle leads without wasting time.",
@@ -119,7 +119,7 @@
       "title": "For you, and for your mom too",
       "sub": "If you don’t have time to edit, answer or keep watch, Chalyb does it for you.",
       "streamers": "Streamers",
-      "streamersP": "Clips from every stream and your OBS scenes in one tap.",
+      "streamersP": "Stream to all your channels at once and get clips from every stream.",
       "creators": "Creators",
       "creatorsP": "Post every day without hours of editing.",
       "business": "Businesses",
@@ -456,11 +456,11 @@
         ]
       },
       "chalybobs": {
-        "tagline": "Run your stream and your OBS scenes with big buttons.",
+        "tagline": "Stream once from OBS or your camera and go out to YouTube, Twitch, Kick and more at the same time.",
         "bullets": [
-          "Dynamic scenes and overlays",
-          "Stream automation",
-          "Works with Clips"
+          "One stream, all your channels",
+          "Preview and titles in one place",
+          "Optional: your streams go to Clips"
         ]
       }
     },
@@ -650,9 +650,9 @@
         "short": "We tell you when to buy or sell."
       },
       "envivo": {
-        "title": "Run my stream",
-        "body": "Control your OBS scenes from one place.",
-        "short": "Control OBS from your phone."
+        "title": "Stream to all my channels",
+        "body": "Stream once and go out on YouTube, Twitch, Kick and more.",
+        "short": "One stream, all your channels."
       },
       "mas": {
         "label": "And much more",
@@ -709,8 +709,8 @@
       "body": "That way we can bring in your streams and make your clips for you. It takes 30 seconds."
     },
     "obs": {
-      "title": "Connect OBS first",
-      "body": "That way you can run your scenes from here. It takes 30 seconds."
+      "title": "Connect your encoder first",
+      "body": "Paste the address and the key into OBS or your camera, and your signal goes out to all your channels."
     },
     "whatsapp": {
       "title": "Connect WhatsApp first",
@@ -1464,7 +1464,7 @@
     "tagline": {
       "chalybclip": "Turn your stream into short clips for TikTok, Reels and Shorts.",
       "chalybcrypto": "We tell you when it’s a good moment to buy or sell crypto.",
-      "chalybobs": "Run your stream and your OBS scenes with big buttons.",
+      "chalybobs": "Stream once from OBS or your camera and go out to all your channels at the same time.",
       "chalybbot": "A bot that answers your customers and followers, day and night.",
       "chalybpicks": "Today’s sports forecasts, explained simply.",
       "chalybrealtor": "List your properties and handle interested buyers without wasting time.",
@@ -2566,7 +2566,7 @@
       "meanwhile": {
         "chalybclip": "Meanwhile, your earlier clips are still in",
         "chalybcrypto": "Meanwhile, the latest signals are still in",
-        "chalybobs": "If you were already live, your stream keeps going in OBS.",
+        "chalybobs": "If you were already live, your stream keeps going: your encoder sends the signal to your channels even if this screen won't open.",
         "chalito": "Meanwhile, your agents won't do anything that needs your approval."
       },
       "meanwhileLink": {
