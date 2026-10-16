@@ -449,7 +449,11 @@
       },
       "chalybcrypto": {
         "tagline": "We tell you when it is a good moment to buy or sell crypto.",
-        "bullets": ["Backtested strategies", "Real-time alerts", "Emotion-free execution"]
+        "bullets": [
+          "Backtested strategies",
+          "Real-time alerts",
+          "Emotion-free execution"
+        ]
       },
       "chalybobs": {
         "tagline": "Stream once from OBS or your camera and go out to YouTube, Twitch, Kick and more at the same time.",

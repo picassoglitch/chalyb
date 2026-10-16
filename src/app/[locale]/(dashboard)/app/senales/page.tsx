@@ -70,7 +70,9 @@ export default async function SenalesHome({ params }: { params: Promise<{ locale
         <RiskAck
           slug="chalybcrypto"
           locale={locale}
-          afterAcceptHref={gate.kind === 'risk' ? hubLaunchHref('chalybcrypto', locale) : undefined}
+          afterAcceptHref={
+            gate.kind === 'risk' ? hubLaunchHref('chalybcrypto', locale) : undefined
+          }
         />
       </ToolShell>
     );
