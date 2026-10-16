@@ -1,0 +1,1078 @@
+/* Clip editor (/app/clips/[clipId], engine mode). Chalyb design system:
+   tokens from chalyb-tokens.css, ch- primitives, ch-ce__ for this screen.
+   The 9:16 preview itself lives in preview.css (it draws the video). */
+
+.chalyb-app .ch-ce {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.chalyb-app .ch-ce__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  font-size: 16px;
+}
+.chalyb-app .ch-ce__stream {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-ce__status--cut,
+.chalyb-app .ch-ce__status--ready_for_review {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__status--approved,
+.chalyb-app .ch-ce__status--published {
+  background: var(--ok-tint);
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__status--rejected {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__h3 {
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.chalyb-app .ch-ce__grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-ce__left {
+  position: sticky;
+  top: 16px;
+}
+.chalyb-app .ch-ce__right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-ce__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-ce__left {
+    position: static;
+  }
+}
+
+/* ---------- Preview card ---------- */
+.chalyb-app .ch-ce__pv {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chalyb-app .ch-ce__pv-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chalyb-app .ch-ce__pv-head .ch-muted {
+  font-size: 15px;
+}
+.chalyb-app .ch-ce__pv .cepv {
+  width: 100%;
+  max-width: 344px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+}
+.chalyb-app .ch-ce__toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__toggles fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.chalyb-app .ch-ce__seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #ebebf0;
+}
+.chalyb-app .ch-ce__seg label {
+  position: relative;
+  flex: 1 1 auto;
+}
+.chalyb-app .ch-ce__seg input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.chalyb-app .ch-ce__seg span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink2);
+  white-space: nowrap;
+}
+.chalyb-app .ch-ce__seg input:checked + span {
+  background: #fff;
+  color: var(--ink);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+.chalyb-app .ch-ce__seg input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-ce__pbtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce__pbtns svg,
+.chalyb-app .ch-ce__actions svg,
+.chalyb-app .ch-ce__approve svg,
+.chalyb-app .ch-ce__dl svg,
+.chalyb-app .ch-ce__gen svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-ce__note-sm {
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.chalyb-app .cepv-caption__empty {
+  opacity: 0.55;
+  font-size: 0.48em;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  max-width: 90%;
+  line-height: 1.3;
+  display: inline-block;
+}
+
+/* ---------- Waveform, scrubber, timeline ---------- */
+.chalyb-app .ch-ce__scrub {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__wave {
+  width: 100%;
+  height: 44px;
+  cursor: pointer;
+  border-radius: 10px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce__wave rect {
+  fill: #c9c4ff;
+}
+.chalyb-app .ch-ce__wave rect.is-played {
+  fill: var(--accent);
+}
+.chalyb-app .ch-ce__wave-head {
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+.chalyb-app .ch-ce__wave-empty {
+  font-size: 7px;
+  fill: var(--ink3-text);
+}
+.chalyb-app .ch-ce__bar {
+  position: relative;
+  height: 22px;
+  cursor: pointer;
+  touch-action: none;
+}
+.chalyb-app .ch-ce__bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+}
+.chalyb-app .ch-ce__bar-fill {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.chalyb-app .ch-ce__bar-handle {
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 2px 6px rgba(16, 16, 40, 0.2);
+}
+.chalyb-app .ch-ce__times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-ce__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__rail {
+  position: relative;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce__mark {
+  position: absolute;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px #fff;
+}
+.chalyb-app .ch-ce__mark--voice_trigger {
+  background: #1fa855;
+}
+.chalyb-app .ch-ce__mark--audio_peak {
+  background: #3478f6;
+}
+.chalyb-app .ch-ce__mark--reaction {
+  background: #ff9f0a;
+}
+.chalyb-app .ch-ce__mark--scene_cut {
+  background: #8e5bff;
+}
+.chalyb-app .ch-ce__mark--chat_heat {
+  background: #12b886;
+}
+.chalyb-app .ch-ce__mark--face_emotion {
+  background: #ff375f;
+}
+.chalyb-app .ch-ce__mark--motion_peak,
+.chalyb-app .ch-ce__mark--viral_moment {
+  background: #5b4bff;
+}
+.chalyb-app .ch-ce__mark--dead_air,
+.chalyb-app .ch-ce__mark--ai_cut {
+  background: #8e8e96;
+}
+.chalyb-app .ch-ce__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 210px;
+  overflow: auto;
+}
+.chalyb-app .ch-ce__legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 15px;
+}
+.chalyb-app .ch-ce__legend-row:hover {
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce__legend-ts {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink2);
+  min-width: 36px;
+}
+.chalyb-app .ch-ce__legend-dot {
+  position: static;
+  width: 10px;
+  height: 10px;
+  margin: 0;
+  border-radius: 50%;
+  flex: none;
+}
+.chalyb-app .ch-ce__timeline-empty {
+  font-size: 15px;
+}
+
+/* ---------- Verdict ---------- */
+.chalyb-app .ch-ce__verdict {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow:
+    0 0 0 2px var(--ok-tint),
+    var(--shadow);
+}
+.chalyb-app .ch-ce__verdict--needs_edit {
+  box-shadow:
+    0 0 0 2px var(--warn-line),
+    var(--shadow);
+}
+.chalyb-app .ch-ce__verdict--reject {
+  box-shadow:
+    0 0 0 2px var(--bad-line),
+    var(--shadow);
+}
+.chalyb-app .ch-ce__verdict-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce__verdict-head {
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.chalyb-app .ch-ce__retention {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 14px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce__retention b {
+  font-size: 34px;
+  line-height: 1;
+  color: var(--ok-text);
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-ce__verdict--needs_edit .ch-ce__retention b {
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__verdict--reject .ch-ce__retention b {
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__target-pill {
+  align-self: flex-start;
+}
+.chalyb-app .ch-ce__trigger {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--ok-tint);
+  font-size: 16px;
+}
+.chalyb-app .ch-ce__snippet {
+  font-size: 15px;
+  margin-top: 4px;
+  font-style: italic;
+}
+.chalyb-app .ch-ce__intel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 16px;
+}
+.chalyb-app .ch-ce__plats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__plat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--ok-tint);
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__plat.is-warn {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__plat.is-block {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 15.5px;
+}
+.chalyb-app .ch-ce__note > svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 1px;
+}
+.chalyb-app .ch-ce__note--warn {
+  background: var(--warn-tint);
+  box-shadow: inset 0 0 0 1.5px var(--warn-line);
+}
+.chalyb-app .ch-ce__note--warn > svg {
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__note--ok {
+  background: var(--ok-tint);
+}
+.chalyb-app .ch-ce__note--ok > svg,
+.chalyb-app .ch-ce__ok-tx {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__note-tx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chalyb-app .ch-ce__note-tx li {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce__note-tx li svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ok-text);
+  flex: none;
+  margin-top: 3px;
+}
+.chalyb-app .ch-ce__gain {
+  margin-left: 8px;
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__note .ch-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-ce__flash {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 15.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.chalyb-app .ch-ce__flash--ok {
+  background: var(--ok-tint);
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__flash--gray {
+  background: #eeeef2;
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce__flash--bad {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__flash .ch-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.chalyb-app .ch-ce__code,
+.chalyb-app .ch-ce__err-detail {
+  color: var(--ink2);
+  font-size: 14px;
+}
+.chalyb-app .ch-ce__approve {
+  align-self: stretch;
+}
+.chalyb-app .ch-ce__approve--needs_edit {
+  background: var(--warn);
+  box-shadow: none;
+}
+.chalyb-app .ch-ce__approve--reject {
+  background: var(--ink);
+  box-shadow: none;
+}
+
+/* ---------- Growth ---------- */
+.chalyb-app .ch-ce__growth {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-ce__growth header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.chalyb-app .ch-ce__growth-plats li {
+  display: grid;
+  grid-template-columns: 1fr auto 1.2fr 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15.5px;
+}
+.chalyb-app .ch-ce__growth-plats li:last-child {
+  border-bottom: 0;
+}
+.chalyb-app .ch-ce__growth-plats li.is-skip {
+  opacity: 0.55;
+}
+.chalyb-app .ch-ce__band {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.chalyb-app .ch-ce__band--excellent,
+.chalyb-app .ch-ce__band--very-good {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__band--good {
+  color: var(--accent);
+}
+.chalyb-app .ch-ce__band--weak {
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__band--skip {
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__recs li {
+  display: flex;
+  gap: 8px;
+  font-size: 15.5px;
+}
+.chalyb-app .ch-ce__recs svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ok-text);
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- Control panels (accordion) ---------- */
+.chalyb-app .ch-ce__panel {
+  padding: 0;
+  overflow: hidden;
+}
+.chalyb-app .ch-ce__panel-h {
+  font-size: inherit;
+}
+.chalyb-app .ch-ce__panel-h > button,
+.chalyb-app .ch-ce__panel-h--static {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 20px;
+  text-align: left;
+}
+.chalyb-app .ch-ce__step {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex: none;
+}
+.chalyb-app .ch-ce__panel-t {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chalyb-app .ch-ce__panel-t b {
+  font-size: 18px;
+  font-weight: 650;
+}
+.chalyb-app .ch-ce__panel-t .ch-muted {
+  font-size: 15px;
+  font-weight: 400;
+}
+.chalyb-app .ch-ce__chev {
+  width: 22px;
+  height: 22px;
+  color: var(--ink3);
+  transition: transform 0.15s ease;
+  flex: none;
+}
+.chalyb-app .ch-ce__panel.is-open .ch-ce__chev {
+  transform: rotate(180deg);
+}
+.chalyb-app .ch-ce__panel-body {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.chalyb-app .ch-ce__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chalyb-app .ch-ce__field label {
+  font-size: 16px;
+  font-weight: 600;
+}
+.chalyb-app .ch-ce__field .ch-select {
+  width: 100%;
+}
+.chalyb-app .ch-ce__hint {
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.chalyb-app .ch-ce__why {
+  font-size: 14.5px;
+  color: var(--accent);
+}
+.chalyb-app .ch-ce__textarea {
+  min-height: 84px;
+  padding: 14px 18px;
+  line-height: 1.35;
+  resize: vertical;
+}
+.chalyb-app .ch-ce__textarea.is-flash {
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 5px rgba(91, 75, 255, 0.12);
+}
+.chalyb-app .ch-ce__mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 17px;
+}
+.chalyb-app .ch-ce__color {
+  width: 72px;
+  height: 44px;
+  padding: 2px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #dcdce3;
+  cursor: pointer;
+}
+.chalyb-app .ch-ce__check {
+  color: var(--ink);
+  font-size: 16.5px;
+}
+.chalyb-app .ch-ce__chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.chalyb-app .ch-ce__chip {
+  min-height: 52px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e1e1e8;
+  font-size: 16px;
+}
+.chalyb-app .ch-ce__chip.is-on {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-ce__chip.is-flash {
+  animation: ch-ce-flash 0.6s ease-out 1;
+}
+@keyframes ch-ce-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(91, 75, 255, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(91, 75, 255, 0);
+  }
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-ce__chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.chalyb-app .ch-ce__blurb {
+  font-size: 15px;
+}
+.chalyb-app .ch-ce__styles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.chalyb-app .ch-ce__style {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  text-align: left;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e1e1e8;
+}
+.chalyb-app .ch-ce__style .ch-muted {
+  font-size: 14px;
+  line-height: 1.35;
+}
+.chalyb-app .ch-ce__style.is-on {
+  background: var(--tint2);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.chalyb-app .ch-ce__hookgen {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce__hookgen .ch-ce__field {
+  flex: 1 1 220px;
+}
+.chalyb-app .ch-ce__gen {
+  min-height: 52px;
+}
+.chalyb-app .ch-ce__hooks ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__hook {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--tint2);
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.chalyb-app .ch-ce__hook:hover {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.chalyb-app .ch-ce__hook svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- Export ---------- */
+.chalyb-app .ch-ce__export {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chalyb-app .ch-ce__qual {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.chalyb-app .ch-ce__qual input:disabled + span {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.chalyb-app .ch-ce__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__progress .ch-progress {
+  max-width: none;
+}
+.chalyb-app .ch-ce__dl {
+  align-self: flex-start;
+}
+
+/* ---------- Actions ---------- */
+.chalyb-app .ch-ce__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-ce__actions .ch-btn {
+  width: 100%;
+}
+
+/* ---------- Analysis ---------- */
+.chalyb-app .ch-ce__analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chalyb-app .ch-ce__details {
+  padding: 0 20px;
+}
+.chalyb-app .ch-ce__details summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce__details summary svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+.chalyb-app .ch-ce__details[open] {
+  padding-bottom: 18px;
+}
+.chalyb-app .ch-ce__scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+.chalyb-app .ch-ce__score {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce__score h4 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.chalyb-app .ch-ce__score-big {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+.chalyb-app .ch-ce__score-big small {
+  font-size: 16px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce__score .ch-progress {
+  max-width: none;
+}
+.chalyb-app .ch-ce__score-why {
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.chalyb-app .ch-ce__ev {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14.5px;
+}
+.chalyb-app .ch-ce__ev-k {
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce__ev-v {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-ce__lvl {
+  align-self: flex-start;
+  background: var(--tint);
+  color: var(--accent);
+}
+.chalyb-app .ch-ce__lvl--high,
+.chalyb-app .ch-ce__lvl--good,
+.chalyb-app .ch-ce__lvl--risk-low {
+  background: var(--ok-tint);
+  color: var(--ok-text);
+}
+.chalyb-app .ch-ce__lvl--developing,
+.chalyb-app .ch-ce__lvl--check,
+.chalyb-app .ch-ce__lvl--risk-high {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-ce__lvl--medium,
+.chalyb-app .ch-ce__lvl--ok,
+.chalyb-app .ch-ce__lvl--risk-med {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.chalyb-app .ch-ce__table th[scope='row'] {
+  font-weight: 600;
+  text-align: left;
+  width: 38%;
+}
+.chalyb-app .ch-ce__table code {
+  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--tint2);
+}
+
+/* ---------- Issues sheet ---------- */
+.chalyb-app .ch-ce__issues,
+.ch-ce__issues {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ch-ce__issues ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ch-ce__issues li {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.ch-ce__issues li.is-block {
+  background: var(--bad-tint, #ffedee);
+}
+.ch-ce__issues li.is-warn {
+  background: var(--warn-tint, #fff3df);
+}
+.ch-ce__issues-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ---------- Formats + trim ---------- */
+.chalyb-app .ch-ce__pv .cepv[data-format='horizontal'],
+.chalyb-app .ch-ce__pv .cepv[data-format='square'] {
+  max-width: none;
+}
+.chalyb-app .ch-ce__formats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.chalyb-app .ch-ce__fmt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__fmt:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.chalyb-app .ch-ce__fmt-shape {
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  flex: none;
+}
+.chalyb-app .ch-ce__fmt-shape--vertical {
+  width: 11px;
+  height: 18px;
+}
+.chalyb-app .ch-ce__fmt-shape--horizontal {
+  width: 20px;
+  height: 12px;
+}
+.chalyb-app .ch-ce__fmt-shape--square {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-ce__formats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-ce__trim {
+  margin-top: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-ce__trim-track {
+  position: relative;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--tint2);
+  touch-action: none;
+}
+.chalyb-app .ch-ce__trim-word {
+  position: absolute;
+  top: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: #c9c4ff;
+}
+.chalyb-app .ch-ce__trim-dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(245, 245, 247, 0.78);
+  border-radius: 12px;
+}
+.chalyb-app .ch-ce__trim-sel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 3px var(--accent);
+  pointer-events: none;
+}
+.chalyb-app .ch-ce__trim-h {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 20px;
+  margin-left: -10px;
+  border-radius: 8px;
+  background: var(--accent);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.chalyb-app .ch-ce__trim-h::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 2px;
+  background: #fff;
+}
+.chalyb-app .ch-ce__posts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 15px;
+}

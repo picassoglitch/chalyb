@@ -3,7 +3,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Scissors, Search } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
-import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { runTool } from '@/lib/tools/bff';
+import { MineNav } from '@/components/tools/clips/engine/mine-nav';
 import { CLIP_FILTERS, filterClips, parseClipFilter } from '@/lib/tools/clips-home';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
@@ -12,6 +14,7 @@ import { ClipCard } from '@/components/tools/clips/clip-card';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
 import '@/styles/tools-clips.css';
+import '@/styles/tools-clips-engine.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clipsTool');
@@ -56,7 +59,20 @@ export default async function MisClipsPage({
   const { q = '', f } = await searchParams;
   const filter = parseClipFilter(f);
   const query = q.slice(0, 100);
-  const all = await gate.adapter.listClips(gate.session.user.id);
+  const loaded = await runTool(
+    'chalybclip',
+    gate.session.user.id,
+    (signal) => gate.adapter.listClips(gate.session.user.id, undefined, signal),
+    { idempotent: true, adapterErrorsOnly: true },
+  );
+  if (!loaded.ok)
+    return (
+      <ToolShell slug="chalybclip" tab="history">
+        <ToolErrorState slug="chalybclip" error={loaded.error} savedWork />
+      </ToolShell>
+    );
+  const all = loaded.data;
+  const engineMode = !!getClipsEngineAdapter();
   const shown = filterClips(all, filter, query);
   const now = new Date();
   const href = (next: string) =>
@@ -64,6 +80,7 @@ export default async function MisClipsPage({
 
   return (
     <ToolShell slug="chalybclip" tab="history">
+      {engineMode && <MineNav current="/app/clips/mis-clips" />}
       {all.length === 0 ? (
         <section className="ch-card ch-state" aria-labelledby="mine-empty">
           <span className="ch-state__ic" aria-hidden="true">

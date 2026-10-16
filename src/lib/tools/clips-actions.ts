@@ -51,12 +51,16 @@ export async function createClipJob(formData: FormData): Promise<void> {
     : 6;
 
   const options = parseClipOptions((k) => formData.get(k));
+  // Mode "a" only: the engine's dedicated fast lane (charged extra by the
+  // engine, except VIP). Other adapters ignore it.
+  const boost = formData.get('boost') === '1' ? true : undefined;
   const result = await submitClips({
     userId: session.user.id,
     sourceUrl: first!,
     format,
     count,
     options,
+    ...(boost ? { boost } : {}),
   });
   if (!result) return redirect({ href: '/app/clips', locale });
   if (!result.ok) return redirect({ href: `/app/clips/nuevo?error=${result.reason}`, locale });

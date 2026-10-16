@@ -1,0 +1,701 @@
+/* Centro de publicación (Clips → Publicar). Built on the Chalyb 2026 tokens
+   (src/styles/chalyb-tokens.css): cards, chips, pills and buttons come from
+   there; this file only lays out the screens that are denser than the
+   mockups (tables of posts, a month calendar, an inbox). Scoped under
+   .chalyb-app like everything else. */
+
+.chalyb-app .ch-pub {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.chalyb-app .ch-pub__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-pub__head .ch-muted {
+  font-size: 17px;
+  margin-top: 4px;
+}
+
+/* stats strip */
+.chalyb-app .ch-pub-stats {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 699px) {
+  .chalyb-app .ch-pub-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.chalyb-app .ch-pub-stat {
+  display: grid;
+  gap: 2px;
+  padding: 16px 18px;
+  text-align: left;
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+button.ch-pub-stat {
+  cursor: pointer;
+}
+.chalyb-app button.ch-pub-stat:hover {
+  box-shadow:
+    inset 0 0 0 2px var(--tint),
+    var(--shadow);
+}
+.chalyb-app .ch-pub-stat b {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-pub-stat span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-stat--ok b {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-pub-stat--bad b {
+  color: var(--bad);
+}
+.chalyb-app .ch-pub-stat--acc b {
+  color: var(--accent);
+}
+
+/* accounts */
+.chalyb-app .ch-pub-accts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+}
+.chalyb-app .ch-pub-accts__end {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.chalyb-app .ch-pub-acct {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px 0 6px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e1e1e8;
+  color: var(--ink);
+  border: 0;
+  font-family: inherit;
+}
+.chalyb-app .ch-pub-acct--on {
+  background: var(--ok-tint);
+  box-shadow: inset 0 0 0 1.5px #bfe8cf;
+}
+.chalyb-app button.ch-pub-acct {
+  cursor: pointer;
+  padding-right: 14px;
+}
+.chalyb-app button.ch-pub-acct:hover:not([disabled]) {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.chalyb-app button.ch-pub-acct[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.chalyb-app .ch-pub-acct__x {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-acct__x:hover {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.chalyb-app .ch-pub-acct__x svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* platform letter tile */
+.chalyb-app .ch-pub-plat {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: #8e8e96;
+}
+.chalyb-app .ch-pub-plat--sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.chalyb-app .ch-pub-plat--tiktok {
+  background: #111;
+}
+.chalyb-app .ch-pub-plat--instagram {
+  background: linear-gradient(135deg, #f58529, #dd2a7b 55%, #8134af);
+}
+.chalyb-app .ch-pub-plat--youtube {
+  background: #e62117;
+}
+.chalyb-app .ch-pub-plat--twitter,
+.chalyb-app .ch-pub-plat--x,
+.chalyb-app .ch-pub-plat--threads {
+  background: #1d1d1f;
+}
+.chalyb-app .ch-pub-plat--linkedin {
+  background: #0a66c2;
+}
+.chalyb-app .ch-pub-plat--facebook {
+  background: #1877f2;
+}
+.chalyb-app .ch-pub-plat--pinterest {
+  background: #e60023;
+}
+.chalyb-app .ch-pub-plat--bluesky {
+  background: #1185fe;
+}
+.chalyb-app .ch-pub-plat--discord {
+  background: #5865f2;
+}
+.chalyb-app .ch-pub-plat--telegram {
+  background: #229ed9;
+}
+
+/* tabs */
+.chalyb-app .ch-pub-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+}
+.chalyb-app .ch-pub-tabs button {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-tabs button:hover {
+  background: #ebebf0;
+}
+.chalyb-app .ch-pub-tabs button[aria-selected='true'] {
+  background: var(--ink);
+  color: #fff;
+}
+.chalyb-app .ch-pub-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* sections inside a tab */
+.chalyb-app .ch-pub-sec {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  min-width: 0;
+}
+.chalyb-app .ch-pub-sec > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-pub-sec > header h2,
+.chalyb-app .ch-pub-sec > header h3 {
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.chalyb-app .ch-pub-sec > header .ch-pub__push {
+  margin-left: auto;
+}
+.chalyb-app .ch-pub-sec p.ch-muted,
+.chalyb-app .ch-pub-hint {
+  font-size: 15px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-stack {
+  display: grid;
+  gap: 16px;
+}
+.chalyb-app .ch-pub-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-pub-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* compact controls */
+.chalyb-app .ch-pub .ch-btn--compact {
+  min-height: 44px;
+  font-size: 16px;
+  padding: 0 16px;
+}
+.chalyb-app .ch-pub .ch-btn--tiny {
+  min-height: 36px;
+  font-size: 14px;
+  padding: 0 12px;
+  border-radius: 10px;
+  gap: 6px;
+}
+.chalyb-app .ch-pub .ch-btn--tiny svg {
+  width: 16px;
+  height: 16px;
+}
+.chalyb-app .ch-pub .ch-input {
+  min-height: 48px;
+  font-size: 17px;
+  border-radius: 13px;
+  padding: 0 14px;
+}
+.chalyb-app .ch-pub textarea.ch-input {
+  padding: 12px 14px;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 84px;
+}
+.chalyb-app .ch-pub .ch-select {
+  min-height: 48px;
+  font-size: 16px;
+}
+.chalyb-app .ch-pub-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.chalyb-app .ch-pub-field > span {
+  font-size: 15px;
+  font-weight: 600;
+}
+.chalyb-app .ch-pub-field > small {
+  font-size: 14px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-fields {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.chalyb-app .ch-pub-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-check input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-pub details > summary {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.chalyb-app .ch-pub details[open] > summary {
+  margin-bottom: 12px;
+}
+
+/* platform toggle chips */
+.chalyb-app .ch-pub-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chalyb-app .ch-pub-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px 0 6px;
+  border-radius: 999px;
+  border: 0;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #e1e1e8;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-pub-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.chalyb-app .ch-pub-chip--icon {
+  padding: 0 6px;
+}
+
+/* clip rows */
+.chalyb-app .ch-pub-clips {
+  display: grid;
+  gap: 10px;
+}
+.chalyb-app .ch-pub-clip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.chalyb-app .ch-pub-clip--open {
+  box-shadow:
+    0 0 0 2px var(--accent),
+    var(--shadow-lg);
+}
+.chalyb-app .ch-pub-clip__pick {
+  display: contents;
+}
+.chalyb-app .ch-pub-clip__tx {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-clip__tx b {
+  font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-pub-clip__tx small {
+  font-size: 14px;
+  color: var(--ink2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-pub-clip__act {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.chalyb-app .ch-pub-clip__panel {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+@media (max-width: 699px) {
+  .chalyb-app .ch-pub-clip {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .chalyb-app .ch-pub-clip__act {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+.chalyb-app .ch-pub-thumb {
+  position: relative;
+  width: 48px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #e8e6ff, #f4f4f7);
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--ink3);
+}
+.chalyb-app .ch-pub-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.chalyb-app .ch-pub-thumb svg {
+  width: 20px;
+  height: 20px;
+}
+.chalyb-app .ch-pub-thumb__dur {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* lists of posts */
+.chalyb-app .ch-pub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.chalyb-app .ch-pub-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-pub-item:last-child {
+  border-bottom: 0;
+}
+.chalyb-app .ch-pub-item__tx {
+  flex: 1;
+  min-width: 160px;
+  display: grid;
+  gap: 2px;
+}
+.chalyb-app .ch-pub-item__tx b,
+.chalyb-app .ch-pub-item__tx span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-pub-item__tx small {
+  font-size: 14px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-item--dim {
+  opacity: 0.5;
+}
+.chalyb-app .ch-pub-item--link {
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-err {
+  font-size: 14px;
+  color: var(--bad);
+}
+.chalyb-app .ch-pub-plats {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* inline status line */
+.chalyb-app .ch-pub-msg {
+  font-size: 15px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-msg--ok {
+  color: var(--ok-text);
+}
+.chalyb-app .ch-pub-msg--bad {
+  color: var(--bad);
+}
+
+/* tables */
+.chalyb-app .ch-pub .ch-table {
+  font-size: 15px;
+}
+.chalyb-app .ch-pub .ch-table td {
+  padding: 10px 14px;
+}
+.chalyb-app .ch-pub .ch-table th {
+  padding: 10px 14px;
+}
+.chalyb-app .ch-pub-ellipsis {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* calendar */
+.chalyb-app .ch-pub-cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.chalyb-app .ch-pub-cal__dow {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.chalyb-app .ch-pub-day {
+  min-height: 72px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 0;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+.chalyb-app button.ch-pub-day {
+  cursor: pointer;
+}
+.chalyb-app button.ch-pub-day:hover {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.chalyb-app .ch-pub-day--past {
+  opacity: 0.6;
+}
+.chalyb-app .ch-pub-day--today {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.chalyb-app .ch-pub-day--sel {
+  background: var(--tint);
+}
+.chalyb-app .ch-pub-day--heat1 {
+  background: var(--tint2);
+}
+.chalyb-app .ch-pub-day--heat2 {
+  background: var(--tint);
+}
+.chalyb-app .ch-pub-day__n {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chalyb-app .ch-pub-day__c {
+  color: var(--accent);
+}
+.chalyb-app .ch-pub-day__ext {
+  color: #c2185b;
+}
+.chalyb-app .ch-pub-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--ink2);
+  align-items: center;
+}
+.chalyb-app .ch-pub-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.chalyb-app .ch-pub-dot--hub {
+  background: var(--ok);
+}
+.chalyb-app .ch-pub-dot--scheduled {
+  background: var(--accent);
+}
+.chalyb-app .ch-pub-dot--external {
+  background: #c2185b;
+}
+@media (max-width: 699px) {
+  .chalyb-app .ch-pub-day {
+    min-height: 54px;
+    padding: 4px;
+  }
+  .chalyb-app .ch-pub-day .ch-pub-plats {
+    display: none;
+  }
+}
+
+/* inbox */
+.chalyb-app .ch-pub-inbox {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 360px;
+}
+@media (max-width: 799px) {
+  .chalyb-app .ch-pub-inbox {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-pub-convs {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.chalyb-app .ch-pub-conv {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.chalyb-app .ch-pub-conv:hover,
+.chalyb-app .ch-pub-conv[aria-current='true'] {
+  background: var(--tint2);
+}
+.chalyb-app .ch-pub-thread {
+  display: grid;
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+/* rules table inputs */
+.chalyb-app .ch-pub-num {
+  width: 84px;
+}

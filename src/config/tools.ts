@@ -4,7 +4,7 @@
 // visible route and name do. Only `live: true` tools show in Inicio, Tus
 // herramientas (61) and "También incluido" (§7.2, Q9: none beyond the 3).
 
-export type ToolTabKey = 'main' | 'history' | 'settings';
+export type ToolTabKey = 'main' | 'history' | 'publish' | 'settings';
 
 export interface ToolDef {
   slug: string;
@@ -17,7 +17,8 @@ export interface ToolDef {
   live: boolean;
   /** Prefix of the support code shown when the tool fails (§1.2). */
   supportPrefix: string;
-  /** At most 3 tabs, each with its own route (§3 ToolTabs). */
+  /** At most 3 tabs, each with its own route (§3 ToolTabs); Clips has a 4th,
+   *  Publicar (owner decision 2026-10-15). */
   tabs: { key: ToolTabKey; href: string }[];
   /** Asks for the risk notice (aceptacion-ux §6) before first use. */
   needsRiskAck?: boolean;
@@ -34,6 +35,7 @@ export const TOOLS: readonly ToolDef[] = [
     tabs: [
       { key: 'main', href: '/app/clips' },
       { key: 'history', href: '/app/clips/mis-clips' },
+      { key: 'publish', href: '/app/clips/publicar' },
       { key: 'settings', href: '/app/clips/ajustes' },
     ],
   },

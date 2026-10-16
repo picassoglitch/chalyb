@@ -22,6 +22,7 @@ import {
   ToolTimeoutError,
   TOOL_GET_RETRIES,
   TOOL_TIMEOUT_MS,
+  TOOL_SLOW_TIMEOUT_MS,
   type BreakerState,
   type ToolError,
   type ToolErrorReason,
@@ -77,14 +78,28 @@ export async function reportToolError(
   retryable: boolean,
   /** Whether this failure says the tool is down (feeds tool_status). */
   outage = countsAsOutage(reason),
+  /** The engine's machine refusal reason, when there is one. */
+  refusal?: string,
+  /** With 'usage_refused': the admission reason (no_tokens, jobs_cap, …). */
   usage?: string,
 ): Promise<ToolError> {
-  const error: ToolError = { reason, retryable, supportCode: newSupportCode(slug) };
-  if (usage) error.usage = usage;
+  const error: ToolError = {
+    reason,
+    retryable,
+    supportCode: newSupportCode(slug),
+    ...(refusal ? { refusal } : {}),
+    ...(usage ? { usage } : {}),
+  };
   await logAudit({
     action: 'tool.error',
     targetUserId: userId,
-    metadata: { tool: slug, reason, supportCode: error.supportCode, ...(usage ? { usage } : {}) },
+    metadata: {
+      tool: slug,
+      reason,
+      supportCode: error.supportCode,
+      refusal: refusal ?? null,
+      ...(usage ? { usage } : {}),
+    },
   });
   if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
@@ -102,7 +117,9 @@ export async function runTool<T>(
     /** Only errors the engine adapter threw (and timeouts) count against
      *  the breaker and health; the BFF routes set this (see bff-route). */
     adapterErrorsOnly?: boolean;
-    /** A longer wait for a call known to take time (a backtest run). */
+    /** A longer budget for the few calls that do real work before they
+     *  answer (an AI logo, checking an uploaded file). Capped at
+     *  TOOL_SLOW_TIMEOUT_MS; reads keep the 8 s default. */
     timeoutMs?: number;
   } = {},
 ): Promise<ToolResult<T>> {
@@ -119,7 +136,8 @@ export async function runTool<T>(
     try {
       const started = Date.now();
       const ctl = new AbortController();
-      const data = await withTimeout(op(ctl.signal), opts.timeoutMs ?? TOOL_TIMEOUT_MS, ctl);
+      const timeout = Math.min(opts.timeoutMs ?? TOOL_TIMEOUT_MS, TOOL_SLOW_TIMEOUT_MS);
+      const data = await withTimeout(op(ctl.signal), timeout, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
       // A long call (timeoutMs) is slow by design: not a health signal.
       if (!opts.timeoutMs) noteHealthy(slug, Date.now() - started);
@@ -132,9 +150,17 @@ export async function runTool<T>(
       if (!retryable) break;
     }
   }
-  const { reason, retryable, outage } = failureEffect(last, opts);
+  const { reason, retryable, outage, refusal } = failureEffect(last, opts);
   return {
     ok: false,
-    error: await reportToolError(slug, userId, reason, retryable, outage, usageReasonOf(last)),
+    error: await reportToolError(
+      slug,
+      userId,
+      reason,
+      retryable,
+      outage,
+      refusal,
+      usageReasonOf(last),
+    ),
   };
 }

@@ -1,9 +1,11 @@
 import type { Metadata, Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Scissors } from 'lucide-react';
+import { Radio, Scissors, Tv, Upload } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
-import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { runTool } from '@/lib/tools/bff';
+import { CLASSIC_CONNECT_PLATFORMS } from '@/lib/tools/adapters/types';
 import { listClipJobs } from '@/lib/tools/clips-jobs';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
@@ -19,6 +21,7 @@ import { AutoRefresh } from '@/components/app/clips/auto-refresh';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
 import '@/styles/tools-clips.css';
+import '@/styles/tools-clips-engine.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clipsTool');
@@ -59,14 +62,25 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const { adapter, session } = gate;
   const userId = session.user.id;
   const caps = adapter.capabilities();
-  const [jobs, clips, accounts, balance] = await Promise.all([
-    listClipJobs(userId),
-    adapter.listClips(userId),
-    adapter.accounts(userId),
-    // Display only: an unknown balance never blocks the hero (the job
-    // submit enforces credits on the server either way).
-    getTokenBalance(userId).catch(() => null),
-  ]);
+  // The engine (mode "a") can fail like any network call: the tool error
+  // state, never a crashed page.
+  const loaded = await runTool(
+    'chalybclip',
+    userId,
+    () => Promise.all([listClipJobs(userId), adapter.listClips(userId), adapter.accounts(userId)]),
+    { idempotent: true, adapterErrorsOnly: true },
+  );
+  if (!loaded.ok)
+    return (
+      <ToolShell slug="chalybclip" tab="main">
+        <ToolErrorState slug="chalybclip" error={loaded.error} savedWork />
+      </ToolShell>
+    );
+  const [jobs, clips, accounts] = loaded.data;
+  // Display only: an unknown balance never blocks the hero (the job
+  // submit enforces credits on the server either way).
+  const balance = await getTokenBalance(userId).catch(() => null);
+  const engineMode = !!getClipsEngineAdapter();
   const noCredits = !!balance && !balance.unlimited && balance.remaining <= 0;
   const t = await getTranslations('clipsTool');
   const list = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
@@ -74,7 +88,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const working = rows.some((j) => j.state !== 'failed');
   const acctRows = accountRows(
     accounts,
-    ['youtube', 'twitch', 'tiktok'],
+    [...(caps.connectPlatforms ?? CLASSIC_CONNECT_PLATFORMS)],
     caps.supportsConnect && socialsAllowed(gate.entitlements.plan),
   );
   const firstTime = jobs.length === 0 && clips.length === 0;
@@ -129,6 +143,38 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
           </section>
         )}
       </div>
+
+      {engineMode && !noCredits && (
+        <nav className="ch-ce-starts" aria-label={t('home.startsAria')}>
+          <Link href={'/app/clips/subir' as Route} className="ch-ce-start">
+            <span className="ch-ce-start__ic" aria-hidden="true">
+              <Upload />
+            </span>
+            <span className="ch-ce-start__tx">
+              <b>{t('home.starts.upload')}</b>
+              <small>{t('home.starts.uploadSub')}</small>
+            </span>
+          </Link>
+          <Link href={'/app/clips/en-vivo' as Route} className="ch-ce-start">
+            <span className="ch-ce-start__ic" aria-hidden="true">
+              <Radio />
+            </span>
+            <span className="ch-ce-start__tx">
+              <b>{t('home.starts.live')}</b>
+              <small>{t('home.starts.liveSub')}</small>
+            </span>
+          </Link>
+          <Link href={'/app/clips/canales' as Route} className="ch-ce-start">
+            <span className="ch-ce-start__ic" aria-hidden="true">
+              <Tv />
+            </span>
+            <span className="ch-ce-start__tx">
+              <b>{t('home.starts.channels')}</b>
+              <small>{t('home.starts.channelsSub')}</small>
+            </span>
+          </Link>
+        </nav>
+      )}
 
       {rows.length > 0 && (
         <section aria-labelledby="clips-proc" className="ch-clipsec">

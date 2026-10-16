@@ -11,6 +11,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       ...(await import(`../../messages/${locale}.json`)).default,
       // Chalito's screens (/app/chalito): its own catalog, under `chalito`.
       chalito: (await import(`../lib/chalito/messages/${locale}.json`)).default,
+      // The Clips editor (/app/clips/[clipId]): its own catalog, under `clipsEditor`.
+      clipsEditor: (await import(`../components/tools/clips/editor/messages/${locale}.json`))
+        .default,
     },
   };
 });

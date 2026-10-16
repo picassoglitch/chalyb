@@ -45,6 +45,14 @@ export async function ClipError({
       title = t('blocked.title');
       body = t('blocked.body');
       break;
+    case 'plan_limit':
+      body = t('planLimit');
+      primary = { href: '/app/billing', label: t('seePlan') };
+      break;
+    case 'no_persona':
+      body = t('noPersona');
+      primary = { href: '/app/clips/ajustes/personas', label: t('makePersona') };
+      break;
     case 'platform_down':
       body = t('platform', { plataforma: platformName(sourceUrl) ?? t('platformFallback') });
       break;

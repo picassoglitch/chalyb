@@ -21,6 +21,10 @@ export async function failureBody(
       return t('tooLong');
     case 'no_credits':
       return t('noCredits', { fecha: creditsRenewDate(new Date(), locale) });
+    case 'plan_limit':
+      return t('planLimit');
+    case 'no_persona':
+      return t('noPersona');
     case 'platform_down':
       return t('platform', { plataforma: platformName(sourceUrl) ?? t('platformFallback') });
     default:

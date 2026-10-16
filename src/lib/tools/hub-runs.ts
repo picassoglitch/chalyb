@@ -3,8 +3,9 @@
 
 import type { ToolHubMode } from '@/lib/config/flags';
 
-/** Señales (ChalyCrypto /api/hub/v1) and En vivo (ChalyOBS /api/hub/v1). */
-export const REAL_ADAPTER_SLUGS: readonly string[] = ['chalybcrypto', 'chalybobs'];
+/** Clips (ChalyClip), Señales (ChalyCrypto) and En vivo (ChalyOBS), each
+ *  over the engine's /api/hub/v1. */
+export const REAL_ADAPTER_SLUGS: readonly string[] = ['chalybclip', 'chalybcrypto', 'chalybobs'];
 
 /** Mock always runs in-hub; mode a only where a real adapter exists. */
 export function runsInHub(slug: string, mode: ToolHubMode): boolean {

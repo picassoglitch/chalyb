@@ -444,7 +444,8 @@ test('mode "a" runs Señales (and En vivo) in the hub with engine adapters; off 
   // The registry uses exactly this decision and Señales' engine adapter in mode a
   // (checked in source: importing the registry pulls En vivo's server-only deps).
   const reg = readFileSync('src/lib/tools/registry.ts', 'utf8');
-  assert.match(reg, /return runsInHub\(slug, toolHubMode\(slug\)\)/);
+  assert.match(reg, /return runsInHub\(slug, mode\)/);
+  assert.match(reg, /slug === TOOL_SLUGS\.clips \? clipsHubMode\(\) : toolHubMode\(slug\)/);
   assert.match(
     reg,
     /pick\(\s*TOOL_SLUGS\.senales,\s*'SenalesAdapter',\s*createMockSenales,\s*createEngineSenales,?\s*\)/,

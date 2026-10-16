@@ -71,6 +71,9 @@ test('Señales never reads balances, positions or a risk profile', () => {
   ]) {
     const src = read(f).replace(/export const PERSONAL_FINANCE_FIELDS[^\n]*\n/, '');
     if (f.endsWith('signals.ts')) continue;
+    // The Clips editor's contract talks video layout (captions_position,
+    // Content-Disposition), never money; it isn't part of Señales.
+    if (f.startsWith('src/lib/tools/adapters/clips/editor')) continue;
     assert.doesNotMatch(src.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''), PERSONAL_FINANCE_FIELDS, f);
   }
   for (const sql of files('supabase/migrations', /^004\d.*\.sql$/)) {

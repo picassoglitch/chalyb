@@ -45,7 +45,8 @@ export async function submitClipJob(
 ): Promise<CreateClipJobResult> {
   let result = await deps.adapter.createJob(input);
   let attempts = 1;
-  while (!result.ok && isRetryable(result.reason) && attempts <= MAX_AUTO_RETRIES) {
+  const autoRetry = deps.adapter.capabilities().autoRetry !== false;
+  while (autoRetry && !result.ok && isRetryable(result.reason) && attempts <= MAX_AUTO_RETRIES) {
     result = await deps.adapter.createJob(input);
     attempts += 1;
   }
@@ -68,7 +69,12 @@ export async function refreshClipJob(
   const job = await deps.adapter.getJob(userId, jobId);
   if (!job) return null;
 
-  if (job.state === 'failed' && isRetryable(job.reason) && job.attempts <= MAX_AUTO_RETRIES) {
+  if (
+    deps.adapter.capabilities().autoRetry !== false &&
+    job.state === 'failed' &&
+    isRetryable(job.reason) &&
+    job.attempts <= MAX_AUTO_RETRIES
+  ) {
     await deps.adapter.retryJob(userId, jobId);
     return (await deps.adapter.getJob(userId, jobId)) ?? job;
   }

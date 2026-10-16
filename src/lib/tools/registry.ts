@@ -1,6 +1,7 @@
 // Which adapter each tool uses, from its TOOL_HUB_MODE_<SLUG> (flags.ts).
 //   mock → the in-memory adapter (one per server process)
-//   a    → the engine adapter: Señales (adapters/senales-engine.ts → ChalyCrypto
+//   a    → the engine adapter: Clips (adapters/clips/adapter.ts → ChalyClip
+//          /api/hub/v1), Señales (adapters/senales-engine.ts → ChalyCrypto
 //          /api/hub/v1) and En vivo (adapters/envivo-engine.ts → ChalyOBS
 //          /api/hub/v1) are real; the others are still a stub that throws
 //          NOT_IMPLEMENTED until their engine's API exists (OPS-13)
@@ -79,14 +80,12 @@ export const getInversiones = () =>
   pick(TOOL_SLUGS.inversiones, 'InversionesAdapter', createMockInversiones);
 
 /**
- * Whether the hub shows this tool's own screens. Clips has a real adapter.
- * Señales and En vivo run in-hub in mode "a" (engine adapters) or mock. For the
- * others, Mode A is a stub until the engine's API is documented (OPS-13),
- * so only the mock runs them in-hub today; otherwise the card leads to the
- * launch page as before. "off" is always the SSO hand-off (the rollback).
+ * Whether the hub shows this tool's own screens: the mock, or Mode A for a
+ * tool with a real engine adapter (hub-runs.ts). Otherwise the card leads to
+ * the launch page (SSO hand-off) as before — flipping TOOL_HUB_MODE_<SLUG>
+ * between "a" and "off" is the cutover and the rollback.
  */
 export function hubRunsTool(slug: string): boolean {
-  if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
-  // Señales' and En vivo's mode a are real engine adapters, not stubs.
-  return runsInHub(slug, toolHubMode(slug));
+  const mode = slug === TOOL_SLUGS.clips ? clipsHubMode() : toolHubMode(slug);
+  return runsInHub(slug, mode);
 }

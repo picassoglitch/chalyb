@@ -26,6 +26,11 @@ export const CLIP_FAILURE_REASONS = [
   // Hub-side: the source was removed after a copyright notice and can't be
   // uploaded again (Uso aceptable §5.2.3). Refused before the engine sees it.
   'content_blocked',
+  // Engine refusals (consumption contract): a plan cap (minutes, jobs,
+  // running at once) or a feature outside the plan.
+  'plan_limit',
+  // The engine needs a persona to write captions; none exists yet.
+  'no_persona',
   'unknown',
 ] as const;
 export type ClipFailureReason = (typeof CLIP_FAILURE_REASONS)[number];
@@ -112,7 +117,17 @@ export interface ClipsCapabilities {
   framing: boolean;
   /** "Acceso API" (keys for the professional plan). */
   apiAccess: boolean;
+  /** Whether the hub may resubmit a transient failure on its own
+   *  (run-job.ts). Absent = yes. The engine adapter says no: every run is
+   *  admitted and billed by the engine, which has its own recovery. */
+  autoRetry?: boolean;
+  /** The networks the person can connect and publish to, in display
+   *  order. Absent = the hub's classic list (YouTube, Twitch, TikTok). */
+  connectPlatforms?: readonly SocialPlatform[];
 }
+
+/** The rows Clips' home and Ajustes show when the adapter doesn't say. */
+export const CLASSIC_CONNECT_PLATFORMS: readonly SocialPlatform[] = ['youtube', 'twitch', 'tiktok'];
 
 // ── Clips inside the app (WS-11, TOOLS-SPEC §1.3 / §4) ─────────────────
 export const CAPTION_PRESETS = ['clasico', 'amarillo', 'fondo'] as const;
@@ -184,6 +199,8 @@ export interface CreateClipJobInput {
   format: ClipFormat;
   count: ClipCount;
   options?: ClipJobOptions;
+  /** The engine's dedicated fast lane (mode "a"); others ignore it. */
+  boost?: boolean;
 }
 
 export type CreateClipJobResult =

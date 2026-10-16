@@ -55,11 +55,7 @@ export async function ToolShell({
           <ToolTabsAuto
             slug={slug}
             ariaLabel={t('tabsAria', { herramienta: tool.name })}
-            labels={{
-              main: t(`tab.${slug}.main`),
-              history: t(`tab.${slug}.history`),
-              settings: t(`tab.${slug}.settings`),
-            }}
+            labels={Object.fromEntries(tool.tabs.map((x) => [x.key, t(`tab.${slug}.${x.key}`)]))}
           />
         )}
         {plan === 'included' && tab !== 'auto' && (
