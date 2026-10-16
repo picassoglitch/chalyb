@@ -231,7 +231,7 @@ test('the hub offers all four agents, Gemini included, with the contract gates',
 });
 
 test('connect copy exists in es and en for every state, action and provider', () => {
-  for (const m of [es, en]) {
+  for (const [locale, m] of [['es', es], ['en', en]] as const) {
     const c = m.connect as unknown as Record<string, Record<string, string>>;
     for (const s of [
       'unknown',
@@ -244,7 +244,11 @@ test('connect copy exists in es and en for every state, action and provider', ()
       'blocked_by_policy',
     ])
       assert.ok(c.state?.[s], s);
-    for (const a of ['install', 'api_key', 'signin', 'disconnect']) assert.ok(c.actions?.[a], a);
+    for (const a of ['install', 'api_key', 'signin', 'disconnect', 'signinSoon']) assert.ok(c.actions?.[a], a);
+    // Plan sign-in is team-only for now: the copy points people at the two ways that work today.
+    const body = c.body as unknown as string;
+    assert.match(body, locale === 'es' ? /«Usar»/ : /“Use”/, `${locale} body names the desktop's Use button`);
+    assert.match(body, /API key/, `${locale} body mentions the API key`);
     const ints = m.integrations as unknown as Record<string, Record<string, string>>;
     for (const o of agentOptions()) {
       const p = ints[o.provider] ?? {};

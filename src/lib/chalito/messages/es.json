@@ -508,14 +508,14 @@
     "anthropic": {
       "name": "Claude",
       "agent": "Claude Code",
-      "howTo": "Conecta Claude Code con tu API key de Anthropic: la enviamos cifrada a tu computadora. Por las reglas de Anthropic, iniciar sesión con tu plan de Claude es solo para el equipo de Chalito por ahora.",
-      "ownerOnly": "Plan de Claude: solo equipo de Chalito por ahora"
+      "howTo": "Si ya usas Claude Code en esa computadora, abre la app de Chalito ahí y toca «Usar». O pega tu API key de Anthropic: se envía cifrada a tu computadora. Usar tu plan de Claude llega pronto.",
+      "ownerOnly": "Usar tu plan de Claude llega pronto. Mientras tanto: Claude Code con tu sesión iniciada en tu computadora («Usar» en la app de Chalito) o tu API key de Anthropic."
     },
     "openai": {
       "name": "ChatGPT",
       "agent": "Codex",
-      "howTo": "Conecta Codex con tu API key de OpenAI o iniciando sesión con ChatGPT en tu computadora. El plan de ChatGPT es solo para el equipo de Chalito por ahora.",
-      "ownerOnly": "Plan de ChatGPT: solo equipo de Chalito por ahora"
+      "howTo": "Si ya usas Codex en esa computadora, abre la app de Chalito ahí y toca «Usar». O pega tu API key de OpenAI: se envía cifrada a tu computadora. Usar tu plan de ChatGPT llega pronto.",
+      "ownerOnly": "Usar tu plan de ChatGPT llega pronto. Mientras tanto: Codex con tu sesión iniciada en tu computadora («Usar» en la app de Chalito) o tu API key de OpenAI."
     },
     "xai": {
       "name": "Grok",
@@ -1271,7 +1271,7 @@
   },
   "connect": {
     "title": "Conecta tus IA",
-    "body": "Elige cómo usa cada IA tu computadora: con tu API key o iniciando sesión con tu plan. Todo pasa en tu computadora; tus claves no se guardan en la nube.",
+    "body": "Hoy hay dos formas de conectar una IA. 1) Si ya usas Claude Code, Codex, Gemini u otra en esa computadora con tu sesión iniciada, abre la app de Chalito ahí, entra a «IA conectadas» y toca «Usar»: Chalito la usa tal como ya está. 2) Pega tu API key: se cifra y solo tu computadora puede leerla. Tus claves no se guardan en la nube.",
     "loading": "Revisando tus conexiones…",
     "loadError": "No pudimos leer el estado de tus conexiones.",
     "retry": "Reintentar",
@@ -1302,7 +1302,8 @@
       "api_key": "Pega tu clave",
       "signin": "Iniciar sesión con tu plan",
       "disconnect": "Desconectar",
-      "launch": "Abrir en tu computadora"
+      "launch": "Abrir en tu computadora",
+      "signinSoon": "Tu plan · Próximamente"
     },
     "installNote": "Se instala con el instalador oficial. Tu computadora te pedirá confirmar.",
     "signinNote": "El inicio de sesión oficial se abre en el navegador de esa computadora; termínalo ahí.",
@@ -1344,7 +1345,7 @@
       "desktop": "Se abre en esa computadora.",
       "web": "Se abre en esa computadora, en un perfil de navegador solo para esta IA."
     },
-    "ownerOnly": "Iniciar sesión con tu plan: solo equipo de Chalito por ahora.",
+    "ownerOnly": "Usar tu plan de suscripción llega pronto. Mientras tanto, usa la IA que ya tienes en tu computadora («Usar» en la app de Chalito) o pega tu API key.",
     "keyWhere": "Tu {label} se consigue en {url}",
     "keyShape": "Las claves de {name} suelen empezar con «{prefix}». Revisa que copiaste la clave correcta y completa.",
     "keySendAnyway": "Enviar de todos modos"
@@ -1451,7 +1452,7 @@
       "account": "Chalito usa tu cuenta de Chalyb. No necesitas otra contraseña.",
       "browser": "Aprueba este navegador para ver y aprobar lo que hacen tus IA desde aquí.",
       "computer": "Descarga Chalito, ábrelo en tu computadora y toca «Conectar esta computadora». Lo apruebas aquí, en tu navegador.",
-      "ai": "En la app de Chalito de tu computadora, abre «IA conectadas» y toca «Usar» junto a una IA que ya tengas instalada. También puedes conectar una desde aquí.",
+      "ai": "Si ya usas Claude Code, Codex u otra IA en tu computadora, abre la app de Chalito ahí, entra a «IA conectadas» y toca «Usar». Si no, pega tu API key desde aquí.",
       "folder": "En la app de Chalito de tu computadora: Ajustes → Esta computadora → Agregar una carpeta. Chalito solo trabaja dentro de las carpetas que elijas.",
       "firstTask": "Pídele a tu IA que resuma tu proyecto. Solo lee: no cambia ningún archivo."
     },

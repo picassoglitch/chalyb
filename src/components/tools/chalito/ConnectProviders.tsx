@@ -367,16 +367,21 @@ const ComputerRow = ({
           ) : null}
           {actions.length ? (
             <div className="ch-chl-row">
-              {actions.map((a) => (
-                <button
-                  key={a}
-                  className={`ch-btn ch-btn--compact ${a === "disconnect" ? "ch-btn--secondary" : "ch-btn--primary"}`}
-                  data-action={a}
-                  onClick={() => (a === "api_key" ? onForm({ text: "", invalid: false }) : onAction(a))}
-                >
-                  {t(`actions.${a}`)}
-                </button>
-              ))}
+              {actions.map((a) => {
+                // Plan sign-in is team-only for now; the computer decides, so it stays clickable for the team.
+                const soon = a === "signin" && gate === "owner_only";
+                return (
+                  <button
+                    key={a}
+                    className={`ch-btn ch-btn--compact ${a === "disconnect" || soon ? "ch-btn--secondary" : "ch-btn--primary"}`}
+                    data-action={a}
+                    data-soon={soon ? "" : undefined}
+                    onClick={() => (a === "api_key" ? onForm({ text: "", invalid: false }) : onAction(a))}
+                  >
+                    {soon ? t("actions.signinSoon") : t(`actions.${a}`)}
+                  </button>
+                );
+              })}
             </div>
           ) : null}
           {actions.includes("signin") ? <p className="ch-muted">{t("signinNote")}</p> : null}
