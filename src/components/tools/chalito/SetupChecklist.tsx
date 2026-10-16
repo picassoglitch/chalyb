@@ -4,11 +4,15 @@ import { useTranslations } from 'next-intl';
 import type { SetupStep } from '@chalito/ui/setup';
 import { Link } from '@/lib/chalito/navigation';
 import { useChalito, useLive } from '@/lib/chalito/provider';
-import { SETUP_RESYNC_MS, setupState } from '@/lib/chalito/web/setup';
+import { setupState } from '@/lib/chalito/web/setup';
+import { pollSetup } from '@/lib/chalito/web/setup-poll';
 import { SignInLink } from './SignInLink';
 
-/** The live state the checklist reads, for any screen that wants to know if setup is done. */
-export const useSetup = () => {
+/**
+ * The live state the checklist reads, for any screen that wants to know if setup is done. Only a
+ * checklist on screen polls (`poll`), through the page's one shared timer.
+ */
+export const useSetup = ({ poll = false }: { poll?: boolean } = {}) => {
   const { status, session, needsRecovery, client } = useChalito();
   const live = useLive();
   const state = setupState({
@@ -19,15 +23,11 @@ export const useSetup = () => {
     sessions: live.sessions,
   });
   // A computer's setup report doesn't fan out to every phone (presence-only), so re-read while
-  // something is left; a pull costs one query per table.
+  // something is left; paused while the tab is hidden (setup-poll.ts).
   useEffect(() => {
-    if (!client || state.complete) return;
-    const timer = setInterval(
-      () => void client.live.resync().catch(() => undefined),
-      SETUP_RESYNC_MS,
-    );
-    return () => clearInterval(timer);
-  }, [client, state.complete]);
+    if (!poll || !client || state.complete) return;
+    return pollSetup(client.live, () => client.live.resync());
+  }, [poll, client, state.complete]);
   return state;
 };
 
@@ -48,7 +48,7 @@ const ACTIONS: Partial<
  */
 export const SetupChecklist = ({ compact = false }: { compact?: boolean }) => {
   const t = useTranslations('chalito.setup');
-  const state = useSetup();
+  const state = useSetup({ poll: true });
   if (state.complete) return null;
   return (
     <section

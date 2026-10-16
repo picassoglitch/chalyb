@@ -146,8 +146,7 @@
     "pair": {
       "title": "Conecta tu computadora",
       "body": "Descarga Chalito, ábrelo en tu computadora y toca «Conectar esta computadora». Lo apruebas aquí, en tu navegador. No necesitas la terminal.",
-      "download": "Ir a Descargar",
-      "later": "Puedes hacerlo después."
+      "download": "Ir a Descargar"
     },
     "done": {
       "title": "¡Listo!",
@@ -814,7 +813,6 @@
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
       "failed": "No pudimos enviarlo.",
       "noComputers": "Aún no tienes una computadora vinculada.",
-      "download": "Descargar Chalito para tu computadora",
       "connect": "Conectar",
       "connectAdapter": "Conectar {name}",
       "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes.",
@@ -1280,7 +1278,6 @@
     "refresh": "Actualizar estado",
     "noComputer": "Para pegar tus claves o iniciar sesión en tus IA necesitas la app de escritorio de Chalito. Descárgala, emparéjala y vuelve aquí.",
     "noBrowser": "Este navegador todavía no está emparejado con tu computadora. Instala Chalito en tu computadora y emparéjalo; después podrás conectar tus IA desde aquí.",
-    "download": "Descarga la app de escritorio",
     "untrusted": "Este navegador aún no puede enviar órdenes a esta computadora. Apruébalo desde ella en Dispositivos.",
     "offline": "Tu computadora parece apagada o sin conexión. Lo que pidas se aplicará si vuelve en los próximos 5 minutos.",
     "computer": "En {name}",

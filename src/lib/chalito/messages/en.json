@@ -146,8 +146,7 @@
     "pair": {
       "title": "Connect your computer",
       "body": "Download Chalito, open it on your computer and tap “Connect this computer”. You approve it here, in your browser. No terminal needed.",
-      "download": "Go to Download",
-      "later": "You can do this later."
+      "download": "Go to Download"
     },
     "done": {
       "title": "All set!",
@@ -814,7 +813,6 @@
       "untrusted": "This computer isn't paired with this device.",
       "failed": "We couldn't send it.",
       "noComputers": "You don't have a linked computer yet.",
-      "download": "Download Chalito for your computer",
       "connect": "Connect",
       "connectAdapter": "Connect {name}",
       "adapterHint": "To use Grok Build or Gemini CLI, connect them on this computer first, in Settings.",
@@ -1280,7 +1278,6 @@
     "refresh": "Refresh status",
     "noComputer": "To paste your keys or sign in to your AIs you need the Chalito desktop app. Download it, pair it and come back here.",
     "noBrowser": "This browser isn't paired with your computer yet. Install Chalito on your computer and pair it; then you can connect your AIs from here.",
-    "download": "Download the desktop app",
     "untrusted": "This browser can't send commands to this computer yet. Approve it from that computer in Devices.",
     "offline": "Your computer seems to be off or offline. What you ask for will apply if it comes back within 5 minutes.",
     "computer": "On {name}",

@@ -49,7 +49,8 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const onStep = STEPS[i]!;
   // First Run D: "pair" and "connect" can only be put off ("Hacerlo más tarde"), never marked done;
   // Inicio keeps the checklist until the computer and an AI are really there.
-  const setup = useSetup();
+  // Polls only on those two steps; it shares the page's one timer with any checklist on screen.
+  const setup = useSetup({ poll: onStep === "pair" || onStep === "connect" });
   const stepDone = (id: "computer" | "ai") => setup.steps.find((x) => x.id === id)?.done === true;
   const signedInNow = session.status === "signed_in" || (DEV_BACKEND && status === "ready");
   useEffect(() => setPick(pickNow), [setPick, pickNow]);
