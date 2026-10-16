@@ -8,14 +8,14 @@ import { useChalito } from '@/lib/chalito/provider';
 import { completeSso } from '@/lib/chalito/web/sso';
 import { supabase } from '@/lib/chalito/web/supabase';
 import { env } from '@/lib/chalito/web/env';
-
-type Failure = 'no_access' | 'failed' | 'rate_limited';
+import { ssoFailureView, type SsoFailure } from '@/lib/chalito/web/plan-gate';
+import { ButtonLink } from '@/components/ui/primitives';
 
 export const HubBridge = ({ children }: { children: ReactNode }) => {
   const { status } = useChalito();
   const t = useTranslations('chalito.sso');
   const started = useRef(false);
-  const [failed, setFailed] = useState<Failure | null>(null);
+  const [failed, setFailed] = useState<SsoFailure | null>(null);
 
   useEffect(() => {
     if (status !== 'signed_out' || started.current) return;
@@ -39,16 +39,24 @@ export const HubBridge = ({ children }: { children: ReactNode }) => {
     })();
   }, [status]);
 
-  if (failed)
+  if (failed) {
+    const view = ssoFailureView(failed);
     return (
-      <p
+      <div
         role="alert"
         data-testid="chalito-sso-failed"
+        data-reason={failed}
         className="ch-card ch-chl-card ch-chl-card--bad"
       >
-        {t(failed === 'rate_limited' ? 'rateLimited' : 'failed')}
-      </p>
+        <p>{t(view.key)}</p>
+        {view.plansHref && (
+          <ButtonLink href={view.plansHref} size="compact">
+            {t('seePlans')}
+          </ButtonLink>
+        )}
+      </div>
     );
+  }
   if (status === 'loading' || status === 'signed_out')
     return (
       <p aria-busy="true" className="ch-muted">

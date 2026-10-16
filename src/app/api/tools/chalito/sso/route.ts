@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getEngineLaunchUrl } from '@/lib/engines/launch-actions';
+import { ssoFailureStatus } from '@/lib/chalito/web/plan-gate';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,7 +33,10 @@ export async function POST() {
 
   const launch = await getEngineLaunchUrl(engine.id as string);
   if (!launch.ok)
-    return NextResponse.json({ ok: false, code: launch.code }, { status: 403, headers: noStore });
+    return NextResponse.json(
+      { ok: false, code: launch.code },
+      { status: ssoFailureStatus(launch.code), headers: noStore },
+    );
 
   const token = new URL(launch.url).searchParams.get('token');
   if (!token)

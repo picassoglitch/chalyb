@@ -11,8 +11,8 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { effectiveTier as computeEffectiveTier } from '@/lib/billing/tiers';
-import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
+import { loadBilling } from '@/lib/billing/subscription-store';
+import { engineTierFromProfile } from './engine-tier';
 import { getIntegration } from './integrations/registry';
 
 type SubscriptionSource =
@@ -91,7 +91,7 @@ export async function provisionEngineAccess(
       .maybeSingle(),
     admin
       .from('profiles')
-      .select('email, full_name, role, tier')
+      .select('email, full_name, role, tier, tier_ends_at')
       .eq('id', userId)
       .maybeSingle(),
   ]);
@@ -120,9 +120,10 @@ export async function provisionEngineAccess(
   // Effective tier — admin override applied. Admins land as VIP on the
   // engine even if their stored profiles.tier is FREE (which it usually is for
   // env-locked admins: we never billed them).
-  const role = (profile.role as UserRole | undefined) ?? 'VIEWER';
-  const storedTier = (profile.tier as SubscriptionTier | undefined) ?? 'FREE';
-  const tier = computeEffectiveTier(role, storedTier);
+  // The effective plan the hub's screens use: a lapsed profile tier is FREE (tier_ends_at), an
+  // active subscription grant (payment grace) still counts, admins are VIP.
+  const billing = await loadBilling(userId).catch(() => null);
+  const tier = engineTierFromProfile(profile, billing);
 
   // Build a partial Engine object — integration only needs a handful of fields.
   const engineForIntegration = {

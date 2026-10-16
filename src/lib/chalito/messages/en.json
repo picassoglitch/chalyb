@@ -90,6 +90,8 @@
   "sso": {
     "working": "Signing you in to Chalito…",
     "failed": "We couldn't open your session. Sign in again from Chalyb.",
+    "noAccess": "Chalito is part of the Pro and VIP plans: run your AI team from anywhere.",
+    "seePlans": "See plans",
     "missingToken": "The sign-in link is missing. Sign in from Chalyb.",
     "retry": "Back to Chalyb",
     "desktop": {

@@ -12,10 +12,9 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { effectiveTier } from '@/lib/billing/tiers';
-import { tierAfterExpiry } from '@/lib/billing/subscription-period';
-import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
+import { loadBilling } from '@/lib/billing/subscription-store';
 import { provisionEngineAccess } from './subscriptions';
+import { engineTierFromProfile } from './engine-tier';
 
 export interface EngineIdentity {
   userId: string;
@@ -96,18 +95,14 @@ export async function resolveEngineIdentity(
     tenantId = res.externalUserId;
   }
 
+  const billing = await loadBilling(userId).catch(() => null);
   const id: EngineIdentity = {
     userId,
     email: profile.email as string,
     tenantId,
-    // Same tier the session sees: a lapsed paid plan is FREE, admins are VIP.
-    tier: effectiveTier(
-      (profile.role as UserRole | undefined) ?? 'VIEWER',
-      tierAfterExpiry(
-        (profile.tier as SubscriptionTier | undefined) ?? 'FREE',
-        profile.tier_ends_at as string | null,
-      ),
-    ).toLowerCase(),
+    // The effective plan the hub's screens use: a lapsed profile tier is FREE, but an active
+    // subscription grant (payment grace) still counts; admins are VIP.
+    tier: engineTierFromProfile(profile, billing).toLowerCase(),
     baseUrl,
   };
   cache().set(key, { at: Date.now(), id });
