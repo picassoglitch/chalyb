@@ -90,6 +90,8 @@
   "sso": {
     "working": "Entrando a Chalito…",
     "failed": "No pudimos abrir tu sesión. Vuelve a entrar desde Chalyb.",
+    "noAccess": "Chalito es parte de los planes Pro y VIP: dirige a tu equipo de IA desde cualquier lugar.",
+    "seePlans": "Ver planes",
     "missingToken": "Falta el enlace de acceso. Entra desde Chalyb.",
     "retry": "Volver a Chalyb",
     "desktop": {
