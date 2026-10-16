@@ -21,8 +21,8 @@ const clip = (id: string, rest = '') => `/clips/${seg(id)}${rest}`;
 
 export function editorApi(engine: ClipsEngine) {
   return {
-    load: (id: string, signal?: AbortSignal) =>
-      engine.get<EditorPayload>(clip(id, '/editor'), { signal }),
+    load: (id: string, signal?: AbortSignal, lang: 'es' | 'en' = 'es') =>
+      engine.get<EditorPayload>(clip(id, '/editor'), { signal, query: { lang } }),
     saveOverlay: (id: string, form: Partial<EditorForm>, signal?: AbortSignal) =>
       engine.put<{ ok: boolean; status: string }>(clip(id, '/overlay'), form, { signal }),
     finalize: (id: string, form: Partial<EditorForm>, signal?: AbortSignal) =>
@@ -45,8 +45,14 @@ export function editorApi(engine: ClipsEngine) {
       engine.get<CaptionsFeed>(clip(id, '/captions'), { signal }),
     waveform: (id: string, signal?: AbortSignal) =>
       engine.get<number[]>(clip(id, '/waveform'), { signal }),
-    intelligence: (id: string, signal?: AbortSignal) =>
-      engine.get<IntelligenceFeed>(clip(id, '/intelligence'), { signal }),
+    intelligence: (id: string, signal?: AbortSignal, lang: 'es' | 'en' = 'es') =>
+      engine.get<IntelligenceFeed>(clip(id, '/intelligence'), { signal, query: { lang } }),
+    trim: (id: string, body: { start_s: number; end_s: number }, signal?: AbortSignal) =>
+      engine.post<{ ok: boolean; outcome: string; start_s: number; end_s: number }>(
+        clip(id, '/trim'),
+        body,
+        { signal },
+      ),
     growth: (id: string, signal?: AbortSignal) =>
       engine.get<GrowthFeed>(clip(id, '/growth'), { signal }),
     render: (id: string, quality: ExportQuality, signal?: AbortSignal) =>
@@ -61,8 +67,12 @@ export function editorApi(engine: ClipsEngine) {
     /** Absolute URL for a signed engine media path, else null. */
     mediaUrl: (path: string | null | undefined) => engine.mediaUrl(path),
     /** The editor payload with its media links made absolute. */
-    async loadAbsolute(id: string, signal?: AbortSignal): Promise<EditorPayload> {
-      const p = await engine.get<EditorPayload>(clip(id, '/editor'), { signal });
+    async loadAbsolute(
+      id: string,
+      signal?: AbortSignal,
+      lang: 'es' | 'en' = 'es',
+    ): Promise<EditorPayload> {
+      const p = await engine.get<EditorPayload>(clip(id, '/editor'), { signal, query: { lang } });
       return withAbsoluteMedia(p, (x) => engine.mediaUrl(x));
     },
     /** A render status with its download link made absolute. */
@@ -81,6 +91,13 @@ export async function withAbsoluteMedia(
   const media = p.media ?? { preview: null, thumbnail: null };
   return {
     ...p,
-    media: { preview: await abs(media.preview), thumbnail: await abs(media.thumbnail) },
+    media: {
+      preview: await abs(media.preview),
+      thumbnail: await abs(media.thumbnail),
+      formats: {
+        horizontal: await abs(media.formats?.horizontal),
+        square: await abs(media.formats?.square),
+      },
+    },
   };
 }

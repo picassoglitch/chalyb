@@ -969,3 +969,110 @@
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+
+/* ---------- Formats + trim ---------- */
+.chalyb-app .ch-ce__pv .cepv[data-format='horizontal'],
+.chalyb-app .ch-ce__pv .cepv[data-format='square'] {
+  max-width: none;
+}
+.chalyb-app .ch-ce__formats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.chalyb-app .ch-ce__fmt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.chalyb-app .ch-ce__fmt:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.chalyb-app .ch-ce__fmt-shape {
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  flex: none;
+}
+.chalyb-app .ch-ce__fmt-shape--vertical {
+  width: 11px;
+  height: 18px;
+}
+.chalyb-app .ch-ce__fmt-shape--horizontal {
+  width: 20px;
+  height: 12px;
+}
+.chalyb-app .ch-ce__fmt-shape--square {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-ce__formats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.chalyb-app .ch-ce__trim {
+  margin-top: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chalyb-app .ch-ce__trim-track {
+  position: relative;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--tint2);
+  touch-action: none;
+}
+.chalyb-app .ch-ce__trim-word {
+  position: absolute;
+  top: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: #c9c4ff;
+}
+.chalyb-app .ch-ce__trim-dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(245, 245, 247, 0.78);
+  border-radius: 12px;
+}
+.chalyb-app .ch-ce__trim-sel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 3px var(--accent);
+  pointer-events: none;
+}
+.chalyb-app .ch-ce__trim-h {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 20px;
+  margin-left: -10px;
+  border-radius: 8px;
+  background: var(--accent);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.chalyb-app .ch-ce__trim-h::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 2px;
+  background: #fff;
+}
+.chalyb-app .ch-ce__posts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 15px;
+}

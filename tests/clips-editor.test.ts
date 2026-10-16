@@ -26,9 +26,15 @@ import {
   PREF_FIELDS,
   simPlatform,
   activeLine,
+  snapToWord,
+  clampSelection,
 } from '@/components/tools/clips/editor/presets';
 
-import { PREF_FIELD_NAMES } from '@/lib/tools/adapters/clips/editor-types';
+import {
+  PREF_FIELD_NAMES,
+  parseLang,
+  parseTrimBody,
+} from '@/lib/tools/adapters/clips/editor-types';
 
 const FORM: EditorForm = {
   target_platform: 'all',
@@ -243,7 +249,7 @@ test('editor API hits the engine routes with the right verbs', async () => {
   await api.renderRetry('clp_1', '4k');
   const seen = calls.map((c) => `${c.init.method} ${c.url.replace('https://clips.example', '')}`);
   assert.deepEqual(seen, [
-    'GET /api/hub/v1/clips/clp_1/editor',
+    'GET /api/hub/v1/clips/clp_1/editor?lang=es',
     'PUT /api/hub/v1/clips/clp_1/overlay',
     'POST /api/hub/v1/clips/clp_1/finalize',
     'POST /api/hub/v1/clips/clp_1/reject',
@@ -356,7 +362,7 @@ test('patchClip saves title and captions onto the overlay', async () => {
   const bodies: unknown[] = [];
   const { engine } = engineWith((url, init) => {
     if (init.method === 'PUT') bodies.push(JSON.parse(String(init.body)));
-    return json(200, url.endsWith('/editor') ? PAYLOAD : { ok: true, status: 'cut' });
+    return json(200, url.includes('/editor') ? PAYLOAD : { ok: true, status: 'cut' });
   });
   const d = await editorMethods(() => engine).patchClip('u1', 'clp_1', {
     title: 'Nuevo',
@@ -368,4 +374,64 @@ test('patchClip saves title and captions onto the overlay', async () => {
   assert.equal(sent.title_text, 'Nuevo');
   assert.equal(sent.captions_enabled, true);
   assert.equal(sent.banner_variant, FORM.banner_variant); // the rest unchanged
+});
+
+// ── manual trim + formats (2026-10-15) ──────────────────────────────────
+
+test('trim handles snap to words and stay inside the window and limits', () => {
+  const starts = [10.2, 11.0, 12.5];
+  assert.equal(snapToWord(10.4, starts), 10.2);
+  assert.equal(snapToWord(11.7, starts), 11.7); // nothing within 0.35 s
+  assert.equal(snapToWord(12.3, starts), 12.5);
+  // start can't pass end - min, end can't exceed start + max or the window
+  assert.deepEqual(clampSelection([18, 20], [0, 30], 5, 60, 0), [15, 20]);
+  assert.deepEqual(clampSelection([0, 90], [0, 30], 5, 60, 1), [0, 30]);
+  assert.deepEqual(clampSelection([0, 70], [0, 100], 5, 60, 1), [0, 60]);
+  assert.deepEqual(clampSelection([-3, 9], [2, 30], 5, 60, 0), [2, 9]);
+});
+
+test('trim body, lang and format cleaners', () => {
+  assert.deepEqual(parseTrimBody({ start_s: 1.5, end_s: 9 }), { start_s: 1.5, end_s: 9 });
+  assert.equal(parseTrimBody({ start_s: '1', end_s: 9 }), null);
+  assert.equal(parseTrimBody({ start_s: 1, end_s: Infinity }), null);
+  assert.equal(parseLang('en'), 'en');
+  assert.equal(parseLang('fr'), 'es');
+  assert.equal(parseLang(null), 'es');
+  assert.equal(
+    (parseOverlayBody({ format: 'square' }) as Record<string, unknown>).format,
+    'square',
+  );
+  assert.equal('format' in parseOverlayBody({ format: 'diagonal' }), false);
+});
+
+test('trim and lang reach the engine', async () => {
+  const { engine, calls } = engineWith(() => json(200, {}));
+  const api = editorApi(engine);
+  await api.trim('clp_1', { start_s: 2, end_s: 9 });
+  await api.load('clp_1', undefined, 'en');
+  await api.intelligence('clp_1');
+  assert.equal(calls[0]!.init.method, 'POST');
+  assert.ok(calls[0]!.url.endsWith('/api/hub/v1/clips/clp_1/trim'));
+  assert.deepEqual(JSON.parse(String(calls[0]!.init.body)), { start_s: 2, end_s: 9 });
+  assert.ok(calls[1]!.url.endsWith('/clips/clp_1/editor?lang=en'));
+  assert.ok(calls[2]!.url.endsWith('/clips/clp_1/intelligence?lang=es'));
+});
+
+test('format preview links become absolute too', async () => {
+  const { engine } = engineWith(() =>
+    json(200, {
+      clip: { id: 'clp_1' },
+      media: {
+        preview: null,
+        thumbnail: null,
+        formats: { horizontal: '/api/hub/media/fmt/clp_1?f=horizontal&sig=1', square: '/nope' },
+      },
+    }),
+  );
+  const p = await editorApi(engine).loadAbsolute('clp_1');
+  assert.equal(
+    p.media.formats?.horizontal,
+    'https://clips.example/api/hub/media/fmt/clp_1?f=horizontal&sig=1',
+  );
+  assert.equal(p.media.formats?.square, null);
 });

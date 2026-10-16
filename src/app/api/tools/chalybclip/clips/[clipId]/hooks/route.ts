@@ -6,9 +6,9 @@ import { parseHooksBody } from '@/lib/tools/adapters/clips/editor-types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 90;
+export const maxDuration = 60;
 
 export const POST = editorRoute(
   (api, id, { body, signal }) => api.hooks(id, parseHooksBody(body), signal),
-  { timeoutMs: 80_000 },
+  { timeoutMs: 55_000 },
 );

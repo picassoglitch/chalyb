@@ -8,7 +8,13 @@
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowUpRight, ChevronDown, Sparkles } from 'lucide-react';
-import type { EditorForm, EditorPayload, HookIdeas } from '@/lib/tools/adapters/clips/editor-types';
+import {
+  CLIP_FORMAT_IDS,
+  type ClipFormatId,
+  type EditorForm,
+  type EditorPayload,
+  type HookIdeas,
+} from '@/lib/tools/adapters/clips/editor-types';
 import { Markup } from '@/components/ui/markup';
 import {
   BANNER_PLATFORMS,
@@ -483,5 +489,50 @@ export function Controls({
         </Check>
       </Panel>
     </>
+  );
+}
+
+export function FormatPicker({
+  value,
+  available,
+  onPick,
+}: {
+  value: ClipFormatId;
+  available: ClipFormatId[];
+  onPick: (f: ClipFormatId) => void;
+}) {
+  const t = useTranslations('clipsEditor.format');
+  const locked = CLIP_FORMAT_IDS.some((f) => !available.includes(f));
+  return (
+    <section className="ch-card ch-ce__panel is-open" aria-labelledby="ce-format">
+      <h3 className="ch-ce__panel-h ch-ce__panel-h--static" id="ce-format">
+        <span className="ch-ce__step" aria-hidden="true">
+          ▭
+        </span>
+        <span className="ch-ce__panel-t">
+          <b>{t('title')}</b>
+          <span className="ch-muted">{t('sub')}</span>
+        </span>
+      </h3>
+      <div className="ch-ce__panel-body">
+        <div className="ch-ce__formats" role="radiogroup" aria-labelledby="ce-format">
+          {CLIP_FORMAT_IDS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              role="radio"
+              aria-checked={value === f}
+              disabled={!available.includes(f)}
+              className={`ch-ce__chip ch-ce__fmt${value === f ? ' is-on' : ''}`}
+              onClick={() => onPick(f)}
+            >
+              <i className={`ch-ce__fmt-shape ch-ce__fmt-shape--${f}`} aria-hidden="true" />
+              <b>{t(`name.${f}`)}</b>
+            </button>
+          ))}
+        </div>
+        {locked ? <p className="ch-muted ch-ce__hint">{t('unavailable')}</p> : null}
+      </div>
+    </section>
   );
 }

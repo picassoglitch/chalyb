@@ -345,5 +345,49 @@
     "bad_request": "This clip changed in the meantime. Reload the page and try again.",
     "generic": "Clips didn't answer this time. Try again in a moment.",
     "code": "Code {codigo}"
+  },
+  "format": {
+    "title": "Format",
+    "sub": "vertical for TikTok, Reels and Shorts; horizontal for YouTube; square for the feed",
+    "name": {
+      "vertical": "Vertical 9:16",
+      "horizontal": "Horizontal 16:9",
+      "square": "Square 1:1"
+    },
+    "unavailable": "This clip can only be made vertical: we no longer have the full video.",
+    "loading": "Preparing the preview in this format…"
+  },
+  "trim": {
+    "title": "Trim",
+    "sub": "drag the edges; they snap to words",
+    "start": "Trim start",
+    "end": "Trim end",
+    "range": "Starts at <b>{inicio}</b> · lasts <b>{dura}</b> · ends at <b>{fin}</b>",
+    "limits": "Between {min} s and {max} s.",
+    "apply": "Apply trim",
+    "applying": "Trimming…",
+    "reset": "As it was",
+    "done": "Done, we trimmed the clip. You can undo it above.",
+    "errors": {
+      "bad_bounds": "The end has to come after the start.",
+      "outside_window": "That trim goes outside the video we have.",
+      "too_short": "The clip has to last at least {min} s.",
+      "too_long": "The clip can last at most {max} s.",
+      "no_footage": "We no longer have the original video to extend this clip."
+    }
+  },
+  "publishState": {
+    "pending": "Publishing automatically… (see it in Publish)",
+    "failed": "Automatic publishing failed. Retry from Publish.",
+    "post": "Post {plataformas}: {estado}",
+    "states": {
+      "pending": "queued",
+      "scheduled": "scheduled",
+      "publishing": "publishing",
+      "published": "published",
+      "failed": "failed",
+      "draft": "draft",
+      "partial": "partial"
+    }
   }
 }

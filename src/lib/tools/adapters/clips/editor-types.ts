@@ -35,6 +35,9 @@ export interface EditorForm {
   comments_fake_likes: number;
 }
 
+export const CLIP_FORMAT_IDS = ['vertical', 'horizontal', 'square'] as const;
+export type ClipFormatId = (typeof CLIP_FORMAT_IDS)[number];
+
 export type ClipStatus = 'cut' | 'ready_for_review' | 'approved' | 'rejected' | 'published';
 export type VerdictStatus = 'publish_ready' | 'needs_edit' | 'reject';
 
@@ -123,7 +126,27 @@ export interface EditorPayload {
   /** Short-lived signed links to the engine (ChalyClip api/hub_media.py).
    *  From the engine they're paths; the BFF makes them absolute URLs the
    *  browser loads directly (video bytes never go through the hub). */
-  media: { preview: string | null; thumbnail: string | null };
+  media: {
+    preview: string | null;
+    thumbnail: string | null;
+    /** Base video of the 16:9 / 1:1 formats (made on first load). */
+    formats?: Partial<Record<'horizontal' | 'square', string | null>>;
+  };
+  /** Where a manual trim may go (stream seconds), the length limits and the
+   *  word timings in that window (for snapping). */
+  trim: {
+    window: [number, number];
+    start_s: number;
+    end_s: number;
+    min_s: number;
+    max_s: number;
+    source_available: boolean;
+    words: [number, number][];
+  };
+  formats: { current: ClipFormatId; available: ClipFormatId[] };
+  /** Publishing as the editor shows it: the auto-publish-on-approve job
+   *  (pending/failed) and the posts made. */
+  publish_state: { auto: string | null; posts: { status: string; platforms: string[] }[] };
   can_finalize: boolean;
   can_reject: boolean;
   next_clip_id: string | null;
@@ -283,6 +306,8 @@ export function parseOverlayBody(body: unknown): Partial<EditorForm> {
   const lead = b.captions_lead_ms;
   if (typeof lead === 'number' && Number.isFinite(lead))
     out.captions_lead_ms = Math.max(0, Math.min(500, Math.round(lead)));
+  if (typeof b.format === 'string' && (CLIP_FORMAT_IDS as readonly string[]).includes(b.format))
+    (out as Record<string, unknown>).format = b.format;
   const likes = b.comments_fake_likes;
   if (typeof likes === 'number' && Number.isFinite(likes))
     out.comments_fake_likes = Math.max(0, Math.min(999_999, Math.round(likes)));
@@ -327,6 +352,22 @@ export function parsePref(
   if (typeof v === 'string')
     return { field: field as (typeof PREF_FIELD_NAMES)[number], value: v.slice(0, 300) };
   return null;
+}
+
+/** Manual trim body: two finite numbers (stream seconds); the engine
+ *  validates bounds and length. */
+export function parseTrimBody(body: unknown): { start_s: number; end_s: number } | null {
+  const b = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
+  const s = b.start_s;
+  const e = b.end_s;
+  if (typeof s !== 'number' || typeof e !== 'number' || !Number.isFinite(s) || !Number.isFinite(e))
+    return null;
+  return { start_s: s, end_s: e };
+}
+
+/** The AI text language the engine should answer in. */
+export function parseLang(raw: string | null): 'es' | 'en' {
+  return raw === 'en' ? 'en' : 'es';
 }
 
 export const HOOK_TONE_IDS = ['default', 'aggressive', 'gen_z', 'corporate', 'curious'] as const;

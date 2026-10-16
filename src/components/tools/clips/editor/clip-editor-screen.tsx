@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Route } from 'next';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CircleCheck, RotateCcw, Save, Trash2, Play, Pause } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
 import { Sheet } from '@/components/ui/sheet';
@@ -20,6 +20,7 @@ import type {
   CaptionsFeed,
   EditorForm,
   EditorPayload,
+  ClipFormatId,
   ExportQuality,
   FinalizeResult,
   GrowthFeed,
@@ -28,7 +29,8 @@ import type {
 } from '@/lib/tools/adapters/clips/editor-types';
 import { call, clipPath, EditorCallError } from './api';
 import { Analysis } from './analysis';
-import { Controls, TargetPicker, type Section } from './controls';
+import { Controls, FormatPicker, TargetPicker, type Section } from './controls';
+import { TrimEditor } from './trim-editor';
 import { ErrorLine } from './error-line';
 import { ExportPanel } from './export-panel';
 import {
@@ -84,6 +86,7 @@ export function ClipEditorScreen({
   exportOnLoad: ExportQuality | null;
 }) {
   const t = useTranslations('clipsEditor');
+  const lang = useLocale() === 'en' ? 'en' : 'es';
   const router = useRouter();
   const id = initial.clip.id;
   const [payload, setPayload] = useState(initial);
@@ -149,7 +152,7 @@ export function ClipEditorScreen({
       if (retried) return;
       retried = true;
       const at = v.currentTime;
-      void call<EditorPayload>(clipPath(initial.clip.id, 'editor'))
+      void call<EditorPayload>(clipPath(initial.clip.id, `editor?lang=${lang}`))
         .then((p) => {
           if (!p.media.preview) return;
           setMediaSrc(p.media.preview);
@@ -167,7 +170,7 @@ export function ClipEditorScreen({
       v.removeEventListener('error', onError);
       window.clearInterval(tick);
     };
-  }, [initial.clip.duration_s, initial.clip.id]);
+  }, [initial.clip.duration_s, initial.clip.id, lang]);
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -222,10 +225,13 @@ export function ClipEditorScreen({
       diagnostics: null,
     });
     void get<number[]>('waveform', (p) => setPeaks(Array.isArray(p) ? p : []), []);
-    void get<IntelligenceFeed>('intelligence', setIntel, { markers: [], duration_s: 0 });
+    void get<IntelligenceFeed>(`intelligence?lang=${lang}`, setIntel, {
+      markers: [],
+      duration_s: 0,
+    });
     void get<GrowthFeed>('growth', setGrowth, { scored: false });
     return () => ctl.abort();
-  }, [id]);
+  }, [id, lang]);
 
   // ── brand-kit auto-save (debounced per field, best effort) ──────────
   const savePref = useCallback((field: string, value: unknown) => {
@@ -320,14 +326,17 @@ export function ClipEditorScreen({
 
   // ── server actions ──────────────────────────────────────────────────
   const reload = useCallback(async () => {
-    const p = await call<EditorPayload>(clipPath(id, 'editor'));
+    const p = await call<EditorPayload>(clipPath(id, `editor?lang=${lang}`));
     setPayload(p);
     return p;
-  }, [id]);
+  }, [id, lang]);
 
+  // Output format: per clip, saved with the overlay (not a brand setting).
+  const [format, setFormat] = useState<ClipFormatId>(initial.formats.current);
+  const [savedFormat, setSavedFormat] = useState<ClipFormatId>(initial.formats.current);
   const overlayBody = useMemo(
-    () => ({ ...form, fit_mode: fitMode, preview_mode: previewMode }),
-    [form, fitMode, previewMode],
+    () => ({ ...form, fit_mode: fitMode, preview_mode: previewMode, format }),
+    [form, fitMode, previewMode, format],
   );
 
   const saveDraft = useCallback(async (): Promise<boolean> => {
@@ -336,6 +345,7 @@ export function ClipEditorScreen({
     try {
       await call(clipPath(id, 'overlay'), { method: 'PUT', body: overlayBody });
       setSaved(form);
+      setSavedFormat(format);
       await reload().catch(() => {});
       setNotice(t('draftSaved'));
       return true;
@@ -345,9 +355,9 @@ export function ClipEditorScreen({
     } finally {
       setBusy(null);
     }
-  }, [form, id, overlayBody, reload, t]);
+  }, [form, format, id, overlayBody, reload, t]);
 
-  const dirty = !sameForm(form, saved) || !payload.clip.has_overlay;
+  const dirty = !sameForm(form, saved) || format !== savedFormat || !payload.clip.has_overlay;
   const beforeRender = useCallback(async () => {
     if (!dirty || payload.clip.status === 'published') return true;
     const ok = await saveDraft();
@@ -365,6 +375,7 @@ export function ClipEditorScreen({
         body: overlayBody,
       });
       setSaved(form);
+      setSavedFormat(format);
       if (r.next_clip_id) {
         router.push(`/app/clips/${encodeURIComponent(r.next_clip_id)}` as Route);
         return;
@@ -386,7 +397,7 @@ export function ClipEditorScreen({
     } finally {
       setBusy(null);
     }
-  }, [form, id, overlayBody, reload, router, t]);
+  }, [form, format, id, overlayBody, reload, router, t]);
 
   const approve = () => {
     const pub = payload.publishability;
@@ -407,6 +418,41 @@ export function ClipEditorScreen({
     }
   };
 
+  /** The cut changed (trim / Deshacer): reload the media and its feeds. */
+  const reloadMedia = () => {
+    videoRef.current?.load();
+    setPeaks(null);
+    void call<number[]>(clipPath(id, 'waveform'))
+      .then(setPeaks)
+      .catch(() => setPeaks([]));
+    void call<CaptionsFeed>(clipPath(id, 'captions'))
+      .then(setCaptions)
+      .catch(() => {});
+    void call<IntelligenceFeed>(clipPath(id, `intelligence?lang=${lang}`))
+      .then(setIntel)
+      .catch(() => {});
+  };
+
+  const [trimBusy, setTrimBusy] = useState(false);
+  const [trimError, setTrimError] = useState<string | null>(null);
+  const applyTrim = async (startS: number, endS: number) => {
+    setTrimBusy(true);
+    setTrimError(null);
+    setTrimFlash(null);
+    try {
+      await call(clipPath(id, 'trim'), { method: 'POST', body: { start_s: startS, end_s: endS } });
+      await reload().catch(() => {});
+      reloadMedia();
+      setNotice(t('trim.done'));
+    } catch (err) {
+      const e = err instanceof EditorCallError ? err : new EditorCallError(0, null);
+      if (e.error?.reason === 'bad_request' && e.error.refusal) setTrimError(e.error.refusal);
+      else setError(e);
+    } finally {
+      setTrimBusy(false);
+    }
+  };
+
   const revertTrim = async () => {
     setBusy('revert');
     setTrimFlash(null);
@@ -419,18 +465,7 @@ export function ClipEditorScreen({
       );
       setTrimFlash(r.outcome);
       await reload().catch(() => {});
-      // The cut changed: reload the media and its feeds.
-      videoRef.current?.load();
-      setPeaks(null);
-      void call<number[]>(clipPath(id, 'waveform'))
-        .then(setPeaks)
-        .catch(() => setPeaks([]));
-      void call<CaptionsFeed>(clipPath(id, 'captions'))
-        .then(setCaptions)
-        .catch(() => {});
-      void call<IntelligenceFeed>(clipPath(id, 'intelligence'))
-        .then(setIntel)
-        .catch(() => {});
+      reloadMedia();
     } catch {
       setTrimFlash('error');
     } finally {
@@ -505,7 +540,7 @@ export function ClipEditorScreen({
               <span className="ch-muted">{t('preview.sub')}</span>
             </header>
             <div className="ch-ce__toggles">
-              <fieldset>
+              <fieldset hidden={format !== 'vertical'}>
                 <legend className="ch-sr">{t('preview.fitLegend')}</legend>
                 <div className="ch-ce__seg">
                   {FIT_MODES.map((m) => (
@@ -547,12 +582,12 @@ export function ClipEditorScreen({
               </fieldset>
             </div>
             <Preview
-              src={mediaSrc}
+              src={format === 'vertical' ? mediaSrc : (payload.media.formats?.[format] ?? null)}
+              format={format}
               form={form}
-              fitMode={fitMode}
+              fitMode={format === 'vertical' ? fitMode : 'smart_crop'}
               previewMode={previewMode}
               faceZone={payload.face_zone}
-              defaultHandle={payload.default_handle}
               captions={captions}
               zoneSpecs={payload.choices.zone_specs}
               videoRef={videoRef}
@@ -591,6 +626,15 @@ export function ClipEditorScreen({
             </div>
             <p className="ch-muted ch-ce__note-sm">{t('preview.note')}</p>
           </section>
+          {editable ? (
+            <TrimEditor
+              key={`${payload.trim.start_s}-${payload.trim.end_s}`}
+              trim={payload.trim}
+              busy={trimBusy}
+              onApply={(a, b) => void applyTrim(a, b)}
+              error={trimError}
+            />
+          ) : null}
         </div>
 
         <div className="ch-ce__right">
@@ -606,6 +650,14 @@ export function ClipEditorScreen({
 
           {editable ? (
             <>
+              <FormatPicker
+                value={format}
+                available={payload.formats.available}
+                onPick={(f) => {
+                  setFormat(f);
+                  setNotice(null);
+                }}
+              />
               <TargetPicker value={form.target_platform} onPick={pickTarget} flash={flash} />
               <Controls
                 form={form}

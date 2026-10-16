@@ -345,5 +345,49 @@
     "bad_request": "Este clip cambió mientras tanto. Recarga la página e inténtalo de nuevo.",
     "generic": "Clips no respondió esta vez. Intenta de nuevo en un momento.",
     "code": "Código {codigo}"
+  },
+  "format": {
+    "title": "Formato",
+    "sub": "vertical para TikTok, Reels y Shorts; horizontal para YouTube; cuadrado para el feed",
+    "name": {
+      "vertical": "Vertical 9:16",
+      "horizontal": "Horizontal 16:9",
+      "square": "Cuadrado 1:1"
+    },
+    "unavailable": "Este clip solo se puede hacer en vertical: ya no tenemos el video completo.",
+    "loading": "Preparando la vista en este formato…"
+  },
+  "trim": {
+    "title": "Recortar",
+    "sub": "arrastra los bordes; se ajustan a las palabras",
+    "start": "Inicio del recorte",
+    "end": "Final del recorte",
+    "range": "Empieza en <b>{inicio}</b> · dura <b>{dura}</b> · termina en <b>{fin}</b>",
+    "limits": "Entre {min} s y {max} s.",
+    "apply": "Aplicar recorte",
+    "applying": "Recortando…",
+    "reset": "Como estaba",
+    "done": "Listo, recortamos el clip. Puedes deshacerlo arriba.",
+    "errors": {
+      "bad_bounds": "El final tiene que ir después del inicio.",
+      "outside_window": "Ese recorte se sale del video que tenemos.",
+      "too_short": "El clip tiene que durar al menos {min} s.",
+      "too_long": "El clip puede durar como máximo {max} s.",
+      "no_footage": "Ya no tenemos el video original para extender este clip."
+    }
+  },
+  "publishState": {
+    "pending": "Publicando automáticamente… (lo ves en Publicar)",
+    "failed": "No se pudo publicar automáticamente. Reintenta desde Publicar.",
+    "post": "Publicación {plataformas}: {estado}",
+    "states": {
+      "pending": "en cola",
+      "scheduled": "programada",
+      "publishing": "publicando",
+      "published": "publicada",
+      "failed": "falló",
+      "draft": "borrador",
+      "partial": "parcial"
+    }
   }
 }

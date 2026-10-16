@@ -302,3 +302,39 @@ export function activeLine(lines: CaptionLine[], t: number): number {
   }
   return -1;
 }
+
+/** `s` moved to the nearest word boundary within `tolS` seconds, when the
+ *  transcript has one there; otherwise `s` as is. */
+export function snapToWord(s: number, points: number[], tolS = 0.35): number {
+  let best = s;
+  let dist = tolS;
+  for (const p of points) {
+    const d = Math.abs(p - s);
+    if (d <= dist) {
+      best = p;
+      dist = d;
+    }
+  }
+  return best;
+}
+
+/** Keep a trim selection inside the window and within [minS, maxS] long,
+ *  moving only the handle that was dragged (`which`: 0 start, 1 end). */
+export function clampSelection(
+  sel: [number, number],
+  window: [number, number],
+  minS: number,
+  maxS: number,
+  which: 0 | 1,
+): [number, number] {
+  const [lo, hi] = window;
+  let [a, b] = [Math.max(lo, Math.min(hi, sel[0])), Math.max(lo, Math.min(hi, sel[1]))];
+  if (which === 0) {
+    a = Math.min(a, b - minS);
+    a = Math.max(a, b - maxS, lo);
+  } else {
+    b = Math.max(b, a + minS);
+    b = Math.min(b, a + maxS, hi);
+  }
+  return [Math.round(a * 1000) / 1000, Math.round(b * 1000) / 1000];
+}

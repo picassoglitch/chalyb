@@ -1,8 +1,9 @@
 /* Clip editor preview — ported 1:1 from the Clips engine so the editor
    shows what the export renders (ChalyClip clip_detail.html +
-   _overlay_styles.html). Sizes are container-relative (cqw/cqh) on the
-   9:16 frame. Class prefix cepv- (clip editor preview); do not restyle
-   these to the app theme: they draw the published video. */
+   _overlay_styles.html). Sizes are container-relative on the frame; the
+   overlay unit --u is 1cqw on 9:16 and height-relative on 16:9 / 1:1,
+   same as the export. Class prefix cepv- (clip editor preview); do not
+   restyle these to the app theme: they draw the published video. */
 
 /* ----- Preview frame + fit modes (old editor, Slice K.4/K.7) ----- */
 .cepv {
@@ -102,6 +103,10 @@
 
 /* ----- Overlays: the export spec (_overlay_styles.html, what the render burns) ----- */
 
+.cepv {
+  --u: min(1cqw, calc(0.5625 * 1cqh));
+}
+
 .cepv-title {
   position: absolute;
   top: 18%;
@@ -113,15 +118,15 @@
   font-family: 'Inter', sans-serif;
   font-weight: 800;
 
-  font-size: 3.269cqw;
+  font-size: calc(3.269 * var(--u));
   line-height: 1.22;
 
-  padding: 1.082cqh 2.692cqw;
+  padding: 1.082cqh calc(2.692 * var(--u));
 
-  border-radius: 2.308cqw;
+  border-radius: calc(2.308 * var(--u));
   text-align: center;
   box-shadow:
-    0 0.325cqh 1.923cqw rgba(0, 0, 0, 0.55),
+    0 0.325cqh calc(1.923 * var(--u)) rgba(0, 0, 0, 0.55),
     0 0.108cqh 0 rgba(0, 0, 0, 0.18) inset;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -153,11 +158,11 @@
 @keyframes cepv-face-flash {
   0% {
     box-shadow:
-      0 0 0 0.385cqw rgba(200, 255, 92, 0.85),
-      0 0.325cqh 1.923cqw rgba(0, 0, 0, 0.55);
+      0 0 0 calc(0.385 * var(--u)) rgba(200, 255, 92, 0.85),
+      0 0.325cqh calc(1.923 * var(--u)) rgba(0, 0, 0, 0.55);
   }
   100% {
-    box-shadow: 0 0.325cqh 1.923cqw rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0.325cqh calc(1.923 * var(--u)) rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -170,12 +175,12 @@
   font-family: 'Inter', sans-serif;
   font-weight: 800;
 
-  font-size: 2.115cqw;
+  font-size: calc(2.115 * var(--u));
   letter-spacing: 0.02em;
   line-height: 1.15;
-  padding: 0.433cqh 1.923cqw;
+  padding: 0.433cqh calc(1.923 * var(--u));
   border-radius: 999px;
-  box-shadow: 0 0.216cqh 1.154cqw rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0.216cqh calc(1.154 * var(--u)) rgba(0, 0, 0, 0.35);
   pointer-events: none;
   white-space: nowrap;
   overflow: hidden;
@@ -188,24 +193,24 @@
 .cepv-top-hook--white_rounded {
   background: rgba(255, 255, 255, 0.72);
   color: #000;
-  backdrop-filter: blur(0.769cqw);
+  backdrop-filter: blur(calc(0.769 * var(--u)));
 }
 .cepv-top-hook--black_solid {
   background: rgba(0, 0, 0, 0.62);
   color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(0.769cqw);
+  backdrop-filter: blur(calc(0.769 * var(--u)));
 }
 .cepv-top-hook--subtle {
   background: rgba(255, 255, 255, 0.55);
   color: #111;
-  backdrop-filter: blur(1.154cqw);
+  backdrop-filter: blur(calc(1.154 * var(--u)));
 }
 
 .cepv-banner {
   position: absolute;
 
-  left: 7.4cqw;
-  right: 7.4cqw;
+  left: calc(7.4 * var(--u));
+  right: calc(7.4 * var(--u));
   bottom: 21.875cqh;
 
   height: 4.113cqh;
@@ -241,10 +246,10 @@
   background: #e62b20;
   color: #fff;
   font-weight: 800;
-  font-size: 1.731cqw;
+  font-size: calc(1.731 * var(--u));
   letter-spacing: 0.04em;
-  padding: 0.216cqh 1.154cqw;
-  border-radius: 0.577cqw;
+  padding: 0.216cqh calc(1.154 * var(--u));
+  border-radius: calc(0.577 * var(--u));
   margin-left: 0;
 }
 
@@ -253,14 +258,14 @@
 
   bottom: 28.125cqh;
   transform: none;
-  left: 7.4cqw;
-  right: 7.4cqw;
+  left: calc(7.4 * var(--u));
+  right: calc(7.4 * var(--u));
   background: #000;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   color: #fff;
 
-  padding: 0 1.538cqw 0 30.769cqw;
+  padding: 0 calc(1.538 * var(--u)) 0 calc(30.769 * var(--u));
 
   height: 6.25cqh;
   min-height: 6.25cqh;
@@ -277,10 +282,10 @@
 }
 .cepv-banner--kick_repost_page .cepv-banner__platform {
   position: absolute;
-  left: 1.538cqw;
+  left: calc(1.538 * var(--u));
   top: 50%;
   transform: translateY(-62%);
-  width: 26.923cqw;
+  width: calc(26.923 * var(--u));
   height: 4.762cqh;
   color: transparent;
   font-size: 0;
@@ -293,20 +298,20 @@
   background-position: left center;
   background-size: contain;
   image-rendering: auto;
-  filter: drop-shadow(0.385cqw 0 0 #000) drop-shadow(-0.385cqw 0 0 #000)
+  filter: drop-shadow(calc(0.385 * var(--u)) 0 0 #000) drop-shadow(calc(-0.385 * var(--u)) 0 0 #000)
     drop-shadow(0 0.216cqh 0 #000) drop-shadow(0 -0.216cqh 0 #000)
-    drop-shadow(0 0.325cqh 0.769cqw rgba(0, 0, 0, 0.55));
+    drop-shadow(0 0.325cqh calc(0.769 * var(--u)) rgba(0, 0, 0, 0.55));
 }
 .cepv-banner--kick_repost_page .cepv-banner__url {
   position: relative;
   color: #fff;
   font-family: 'Inter Tight', 'Inter', sans-serif;
-  font-size: 2.115cqw;
+  font-size: calc(2.115 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.038cqw;
+  letter-spacing: calc(0.038 * var(--u));
   line-height: 1;
   text-transform: uppercase;
-  text-shadow: 0 0.108cqh 0.192cqw rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0.108cqh calc(0.192 * var(--u)) rgba(0, 0, 0, 0.9);
   flex: none;
   overflow: visible;
   white-space: nowrap;
@@ -331,18 +336,18 @@
 .cepv-banner--kick_green_block .cepv-banner__platform {
   background: var(--pv-banner-color, #53fc18);
   color: #000;
-  padding: 0 3.077cqw;
+  padding: 0 calc(3.077 * var(--u));
   height: 100%;
   display: inline-flex;
   align-items: center;
   font-weight: 900;
-  font-size: 3.077cqw;
+  font-size: calc(3.077 * var(--u));
   letter-spacing: 0.02em;
 }
 .cepv-banner--kick_green_block .cepv-banner__url {
-  padding: 0 2.308cqw;
+  padding: 0 calc(2.308 * var(--u));
   color: #fff;
-  font-size: 2.308cqw;
+  font-size: calc(2.308 * var(--u));
   font-weight: 700;
   flex: 1;
   text-align: center;
@@ -362,24 +367,24 @@
 .cepv-banner--kick_minimal_url .cepv-banner__url {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  padding: 0.433cqh 1.538cqw;
-  font-size: 1.923cqw;
-  border-radius: 0.769cqw;
+  padding: 0.433cqh calc(1.538 * var(--u));
+  font-size: calc(1.923 * var(--u));
+  border-radius: calc(0.769 * var(--u));
 }
 
 .cepv-banner--platform_band {
   background: var(--pv-banner-color, #111);
   color: #fff;
 
-  padding: 0 1.538cqw 0 11cqw;
+  padding: 0 calc(1.538 * var(--u)) 0 calc(11 * var(--u));
   justify-content: center;
 }
 .cepv-banner--platform_band .cepv-banner__platform {
   position: absolute;
-  left: 2.2cqw;
+  left: calc(2.2 * var(--u));
   top: 50%;
   transform: translateY(-50%);
-  width: 6cqw;
+  width: calc(6 * var(--u));
   height: 62%;
   color: transparent;
   font-size: 0;
@@ -387,27 +392,24 @@
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
-  filter: drop-shadow(0 0.216cqh 0.385cqw rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 0.216cqh calc(0.385 * var(--u)) rgba(0, 0, 0, 0.5));
 }
 .cepv-banner--platform_band[data-platform='youtube'] .cepv-banner__platform {
-  background-image: url('/tools/clips/glyph-youtube.png');
 }
 .cepv-banner--platform_band[data-platform='twitch'] .cepv-banner__platform {
-  background-image: url('/tools/clips/glyph-twitch.png');
 }
 .cepv-banner--platform_band[data-platform='x'] .cepv-banner__platform,
 .cepv-banner--platform_band[data-platform='twitter'] .cepv-banner__platform {
-  background-image: url('/tools/clips/glyph-x.png');
 }
 .cepv-banner--platform_band .cepv-banner__url {
   color: #fff;
   font-weight: 800;
-  font-size: 2.115cqw;
+  font-size: calc(2.115 * var(--u));
   letter-spacing: 0.02em;
   opacity: 1;
   text-align: center;
   white-space: nowrap;
-  text-shadow: 0 0.108cqh 0.192cqw rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0.108cqh calc(0.192 * var(--u)) rgba(0, 0, 0, 0.6);
 }
 .cepv-banner--platform_band .cepv-banner__live-pill {
   display: none !important;
@@ -423,13 +425,13 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: #fff;
-  -webkit-text-stroke: 0.481cqw #000;
+  -webkit-text-stroke: calc(0.481 * var(--u)) #000;
   paint-order: stroke fill;
   text-shadow:
-    0 0.325cqh 1.538cqw rgba(0, 0, 0, 0.85),
+    0 0.325cqh calc(1.538 * var(--u)) rgba(0, 0, 0, 0.85),
     0 0.108cqh 0 rgba(0, 0, 0, 0.6);
 
-  font-size: calc(4.231cqw * var(--pv-caption-scale, 1));
+  font-size: calc(calc(4.231 * var(--u)) * var(--pv-caption-scale, 1));
   line-height: 1.05;
   pointer-events: none;
   z-index: 3;
@@ -469,7 +471,7 @@
 .cepv-caption__word[data-emphasis='shout'].is-active {
   font-size: 1.35em;
   color: #ff3b30;
-  -webkit-text-stroke-width: 0.673cqw;
+  -webkit-text-stroke-width: calc(0.673 * var(--u));
   transform: scale(1.25);
 }
 .cepv-caption__word[data-emphasis='reaction'].is-active {
@@ -494,7 +496,7 @@
 }
 .cepv-caption[data-animation='typewriter'] .cepv-caption__word.is-active {
   animation: none;
-  border-right: 0.385cqw solid var(--pv-highlight, #ffd700);
+  border-right: calc(0.385 * var(--u)) solid var(--pv-highlight, #ffd700);
 }
 .cepv-caption[data-animation='fade'] .cepv-caption__word.is-active {
   animation: cepv-caption-fade 0.25s ease-in;
@@ -526,11 +528,11 @@
   pointer-events: none;
   font-family: 'Archivo Black', 'Inter', sans-serif;
   font-weight: 900;
-  font-size: 3.2cqw;
+  font-size: calc(3.2 * var(--u));
   line-height: 1;
   letter-spacing: 0.04em;
   color: rgba(200, 255, 92, 0.78);
-  text-shadow: 0.385cqw 0.216cqh 0 rgba(0, 0, 0, 0.55);
+  text-shadow: calc(0.385 * var(--u)) 0.216cqh 0 rgba(0, 0, 0, 0.55);
   user-select: none;
 }
 
@@ -1183,4 +1185,55 @@
   50% {
     opacity: 0.45;
   }
+}
+
+/* ----- Formats: 16:9 and 1:1 (chalybclip.clip.formats) ----- */
+/* ---------- 16:9 and 1:1 layouts (chalybclip.clip.formats) ----------
+     No phone UI covers these frames, so the banner drops near the bottom
+     edge, and on 16:9 the boxes stay centered instead of spanning the
+     whole width. 9:16 is untouched. */
+.cepv[data-format='horizontal'] .cepv-title {
+  left: 20%;
+  right: 20%;
+  top: 8%;
+}
+.cepv[data-format='horizontal'] .cepv-top-hook {
+  left: 26%;
+  right: 26%;
+  top: 3%;
+}
+.cepv[data-format='horizontal'] .cepv-banner,
+.cepv[data-format='horizontal'] .cepv-banner--kick_repost_page {
+  left: 22%;
+  right: 22%;
+  bottom: 6cqh;
+}
+.cepv[data-format='horizontal'] .cepv-banner--kick_minimal_url {
+  bottom: 3cqh;
+}
+.cepv[data-format='square'] .cepv-title {
+  top: 14%;
+}
+.cepv[data-format='square'] .cepv-top-hook {
+  top: 7%;
+}
+.cepv[data-format='square'] .cepv-banner,
+.cepv[data-format='square'] .cepv-banner--kick_repost_page {
+  bottom: 10cqh;
+}
+.cepv[data-format='square'] .cepv-banner--kick_minimal_url {
+  bottom: 3cqh;
+}
+
+.cepv[data-format='horizontal'] {
+  aspect-ratio: 16 / 9;
+}
+.cepv[data-format='square'] {
+  aspect-ratio: 1 / 1;
+}
+/* Phone-feed teaching layers only make sense on 9:16. */
+.cepv:not([data-format='vertical']) .cepv-zones,
+.cepv:not([data-format='vertical']) .cepv-platform-sim,
+.cepv:not([data-format='vertical']) .cepv-safezones {
+  display: none !important;
 }

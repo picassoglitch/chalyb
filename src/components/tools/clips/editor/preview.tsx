@@ -186,11 +186,11 @@ function SimChrome({
 
 export function Preview({
   src,
+  format,
   form,
   fitMode,
   previewMode,
   faceZone,
-  defaultHandle,
   captions,
   zoneSpecs,
   videoRef,
@@ -200,11 +200,12 @@ export function Preview({
 }: {
   /** Signed engine link to the cut (no overlays). */
   src: string | null;
+  /** vertical | horizontal | square: the frame's aspect and overlay layout. */
+  format: string;
   form: EditorForm;
   fitMode: string;
   previewMode: string;
   faceZone: string | null;
-  defaultHandle: string;
   captions: CaptionsFeed | null;
   zoneSpecs: Record<string, ZoneSpec[]>;
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -245,10 +246,11 @@ export function Preview({
   return (
     <div
       className="cepv"
+      data-format={format}
       data-preview-mode={previewMode}
       data-fit-mode={fitMode}
       data-zone-profile={form.target_platform || 'all'}
-      data-face-zone={faceZone ?? undefined}
+      data-face-zone={format === 'vertical' ? (faceZone ?? undefined) : undefined}
       data-paused={playback.paused ? 'true' : 'false'}
       style={style}
     >
@@ -396,7 +398,7 @@ export function Preview({
             {(form.banner_platform || 'kick').toUpperCase()}
           </span>
           <span className="cepv-banner__url">
-            {formatKickUrl(form.banner_url || defaultHandle.replace('@', ''))}
+            {formatKickUrl(form.banner_url)}
           </span>
           {form.banner_live_badge ? (
             <span className="cepv-banner__live-pill">{t('liveNow')}</span>

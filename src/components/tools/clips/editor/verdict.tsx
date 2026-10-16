@@ -171,7 +171,38 @@ export function Verdict({
       ) : null}
 
       {approveButton}
+      <PublishState state={payload.publish_state} />
     </section>
+  );
+}
+
+function PublishState({ state }: { state: EditorPayload['publish_state'] | undefined }) {
+  const t = useTranslations('clipsEditor.publishState');
+  if (!state) return null;
+  return (
+    <>
+      {state.auto === 'pending' ? (
+        <p className="ch-ce__flash ch-ce__flash--gray" role="status">
+          {t('pending')}
+        </p>
+      ) : state.auto === 'failed' ? (
+        <p className="ch-ce__flash ch-ce__flash--bad" role="status">
+          {t('failed')}
+        </p>
+      ) : null}
+      {state.posts.length > 0 ? (
+        <ul className="ch-ce__posts">
+          {state.posts.map((p, i) => (
+            <li key={i} className="ch-muted">
+              {t('post', {
+                plataformas: p.platforms.join(', ') || '—',
+                estado: t.has(`states.${p.status}`) ? t(`states.${p.status}`) : p.status,
+              })}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </>
   );
 }
 
