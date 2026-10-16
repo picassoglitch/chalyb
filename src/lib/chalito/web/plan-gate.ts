@@ -21,3 +21,9 @@ export const ssoFailureView = (
   failure === 'no_access'
     ? { key: 'noAccess', plansHref: '/app/planes' }
     : { key: failure === 'rate_limited' ? 'rateLimited' : 'failed', plansHref: null };
+
+/** HTTP status for a refused launch at /api/tools/chalito/sso. Only "this plan doesn't include
+ *  Chalito" (NEEDS_PLAN) is a 403, which HubBridge shows as "Chalito es parte de Pro y VIP";
+ *  provisioning errors, an unavailable tool or anything else is a 503 with the generic retry, so
+ *  a paying user never sees "Ver planes" for a server problem. */
+export const ssoFailureStatus = (code: string): number => (code === 'NEEDS_PLAN' ? 403 : 503);

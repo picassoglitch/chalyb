@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chalitoGate, ssoFailureView } from '@/lib/chalito/web/plan-gate';
+import { chalitoGate, ssoFailureStatus, ssoFailureView } from '@/lib/chalito/web/plan-gate';
 import es from '../src/lib/chalito/messages/es.json' with { type: 'json' };
 import en from '../src/lib/chalito/messages/en.json' with { type: 'json' };
 
@@ -31,4 +31,10 @@ test('the no-access copy exists in es and en', () => {
     assert.ok(m.sso.noAccess && m.sso.seePlans);
     assert.match(m.sso.noAccess, /Pro/);
   }
+});
+
+test('only NEEDS_PLAN is a 403 ("Ver planes"); server problems are a 503 with the generic retry', () => {
+  assert.equal(ssoFailureStatus('NEEDS_PLAN'), 403);
+  for (const code of ['TOOL_UNAVAILABLE', 'SETUP_NEEDED', 'RISK_ACK_REQUIRED', 'ENGINE_NOT_CONFIGURED', 'PROVISION_FAILED'])
+    assert.equal(ssoFailureStatus(code), 503, code);
 });

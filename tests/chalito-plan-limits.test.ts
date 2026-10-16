@@ -5,7 +5,7 @@ import { HUB_PLAN_LIMITS, hubPlanOf } from '../src/lib/chalito/pkg/ui/settings/p
 
 test('plan limits: the owner-decided caps per Chalyb tier (plans.yaml mirror)', () => {
   assert.deepEqual(HUB_PLAN_LIMITS, {
-    free: { devices: 1, rooms: 1, members: 4 },
+    free: { devices: 0, rooms: 0, members: 0 }, // no Chalito on Gratis (owner decision #53)
     pro: { devices: 5, rooms: 5, members: 8 },
     vip: { devices: 10, rooms: 10, members: 20 },
   });

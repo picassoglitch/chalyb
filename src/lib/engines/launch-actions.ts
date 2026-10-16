@@ -10,11 +10,11 @@
 
 import { getSessionUser } from '@/lib/auth/session';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { effectiveTier } from '@/lib/billing/tiers';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { logAudit } from '@/lib/audit/log';
 import type { Engine } from '@/lib/data/types';
 import { getIntegration } from './integrations/registry';
+import { engineTierFor } from './engine-tier';
 import { provisionEngineAccess } from './subscriptions';
 import { runLaunch, type LaunchResult, type LaunchLogEvent } from './launch-flow';
 import { hasRiskAck } from '@/lib/tools/consents';
@@ -122,8 +122,8 @@ export async function getEngineLaunchUrl(engineId: string): Promise<LaunchResult
       const result = await integration.buildLaunchUrl({
         userId,
         email: session.user.email ?? '',
-        // Admins present as VIP to the engine, whatever profiles.tier says.
-        effectiveTier: effectiveTier(session.role, session.tier),
+        // The effective plan (profile or subscription grant, admins as VIP), as engines take it.
+        effectiveTier: engineTierFor(entitlements.plan),
         externalUserId,
         credentials: (row?.external_credentials as Record<string, unknown> | null) ?? null,
         engine,
