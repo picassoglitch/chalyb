@@ -244,3 +244,11 @@ test('BFF input parsing refuses junk before the engine sees it', () => {
   assert.throws(() => parseKit({ name: 'k', content_timezone: 'a b' }));
   assert.equal(parseKit({ name: 'k' }).show_chalybclip_outro, true);
 });
+
+test('engine mode lists exactly the networks publishing can connect', async () => {
+  const { createEngineClipsAdapter } = await import('@/lib/tools/adapters/clips/adapter');
+  const { CONNECT_PLATFORMS } = await import('@/lib/tools/adapters/clips/publish');
+  const caps = createEngineClipsAdapter(() => ({}) as never).capabilities();
+  assert.deepEqual(caps.connectPlatforms, CONNECT_PLATFORMS);
+  assert.equal(caps.autoRetry, false);
+});

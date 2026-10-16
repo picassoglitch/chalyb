@@ -12,7 +12,7 @@ import type { ClipsAdapter } from '../types';
 import { clipsEngine, type ClipsEngine } from './client';
 import { coreMethods } from './core';
 import { editorMethods } from './editor';
-import { publishMethods } from './publish';
+import { CONNECT_PLATFORMS, publishMethods } from './publish';
 
 export interface ClipsEngineAdapter extends ClipsAdapter {
   /** The engine client acting as `userId`, for endpoints outside the
@@ -23,10 +23,13 @@ export interface ClipsEngineAdapter extends ClipsAdapter {
 export function createEngineClipsAdapter(
   engine: (userId: string) => ClipsEngine = (userId) => clipsEngine(userId),
 ): ClipsEngineAdapter {
+  const core = coreMethods(engine);
   return {
-    ...coreMethods(engine),
+    ...core,
     ...editorMethods(engine),
     ...publishMethods(engine),
+    // The publishing workstream owns which networks can be connected.
+    capabilities: () => ({ ...core.capabilities(), connectPlatforms: CONNECT_PLATFORMS }),
     engine,
   };
 }

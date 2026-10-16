@@ -6,6 +6,7 @@ import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
 import { getMe } from '@/lib/tools/adapters/clips/engine-api';
 import { runTool } from '@/lib/tools/bff';
+import { CLASSIC_CONNECT_PLATFORMS } from '@/lib/tools/adapters/types';
 import { EngineSettingsLinks } from '@/components/tools/clips/engine/settings-links';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
@@ -84,7 +85,11 @@ export default async function ClipsSettingsPage({
     adapter.accounts(session.user.id),
   ]);
   const socials = caps.supportsConnect && socialsAllowed(entitlements.plan);
-  const rows = accountRows(accounts, ['youtube', 'twitch', 'tiktok'], socials);
+  const rows = accountRows(
+    accounts,
+    [...(caps.connectPlatforms ?? CLASSIC_CONNECT_PLATFORMS)],
+    socials,
+  );
   const connected = accounts.filter((a) => a.connected && a.handle).map((a) => a.handle!);
   const autopublish =
     caps.supportsConnect && connected.length > 0 && TIER_CAPS[entitlements.plan].clipAutoPublish;

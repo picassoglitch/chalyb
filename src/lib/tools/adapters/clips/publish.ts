@@ -11,10 +11,14 @@
 
 import 'server-only';
 import { NotImplementedError } from '../tools';
-import type { ClipsAdapter } from '../types';
+import type { ClipsAdapter, SocialPlatform } from '../types';
 import type { ClipsEngine } from './client';
 
 export type PublishMethods = Pick<ClipsAdapter, 'accounts' | 'connectUrl' | 'publishClip'>;
+
+/** The networks publishing connects to (capabilities.connectPlatforms):
+ *  Clips' home and Ajustes list exactly these. None until publishing lands. */
+export const CONNECT_PLATFORMS: readonly SocialPlatform[] = [];
 
 export function publishMethods(_engine: (userId: string) => ClipsEngine): PublishMethods {
   return {

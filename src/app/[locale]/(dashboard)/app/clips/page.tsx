@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
 import { runTool } from '@/lib/tools/bff';
+import { CLASSIC_CONNECT_PLATFORMS } from '@/lib/tools/adapters/types';
 import { listClipJobs } from '@/lib/tools/clips-jobs';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
@@ -87,7 +88,7 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const working = rows.some((j) => j.state !== 'failed');
   const acctRows = accountRows(
     accounts,
-    ['youtube', 'twitch', 'tiktok'],
+    [...(caps.connectPlatforms ?? CLASSIC_CONNECT_PLATFORMS)],
     caps.supportsConnect && socialsAllowed(gate.entitlements.plan),
   );
   const firstTime = jobs.length === 0 && clips.length === 0;

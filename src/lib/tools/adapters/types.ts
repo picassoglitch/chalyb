@@ -121,7 +121,13 @@ export interface ClipsCapabilities {
    *  (run-job.ts). Absent = yes. The engine adapter says no: every run is
    *  admitted and billed by the engine, which has its own recovery. */
   autoRetry?: boolean;
+  /** The networks the person can connect and publish to, in display
+   *  order. Absent = the hub's classic list (YouTube, Twitch, TikTok). */
+  connectPlatforms?: readonly SocialPlatform[];
 }
+
+/** The rows Clips' home and Ajustes show when the adapter doesn't say. */
+export const CLASSIC_CONNECT_PLATFORMS: readonly SocialPlatform[] = ['youtube', 'twitch', 'tiktok'];
 
 // ── Clips inside the app (WS-11, TOOLS-SPEC §1.3 / §4) ─────────────────
 export const CAPTION_PRESETS = ['clasico', 'amarillo', 'fondo'] as const;
