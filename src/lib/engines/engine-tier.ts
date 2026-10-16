@@ -5,6 +5,7 @@
 // (tenants.tier), so the partner tier presents as pro.
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
 import { effectiveTier } from '@/lib/billing/tiers';
+import { tierAfterExpiry } from '@/lib/billing/subscription-period';
 
 const RANK: Record<SubscriptionTier, number> = { FREE: 0, PRO: 1, PARTNER: 1, VIP: 2 };
 
@@ -26,4 +27,26 @@ export function engineTierOf(input: {
   const stored = effectiveTier(input.role, input.storedTier);
   const granted = input.grantsTier ?? 'FREE';
   return engineTierFor(RANK[granted] > RANK[stored] ? granted : stored);
+}
+
+/** From a profiles row (role, tier, tier_ends_at) plus the billing snapshot: a lapsed profile tier
+ *  counts as FREE (as getSessionUser does), an active subscription grant still counts (grace). */
+export function engineTierFromProfile(
+  profile: { role?: unknown; tier?: unknown; tier_ends_at?: unknown },
+  billing: {
+    primary?: { grantsTier?: 'FREE' | 'PRO' | 'VIP' } | null;
+    restriction?: { paidSuspended?: boolean };
+  } | null,
+  now: Date = new Date(),
+): EngineTier {
+  return engineTierOf({
+    role: (profile.role as UserRole | undefined) ?? 'VIEWER',
+    storedTier: tierAfterExpiry(
+      (profile.tier as SubscriptionTier | undefined) ?? 'FREE',
+      (profile.tier_ends_at as string | null | undefined) ?? null,
+      now,
+    ),
+    grantsTier: billing?.primary?.grantsTier ?? null,
+    paidSuspended: billing?.restriction?.paidSuspended ?? false,
+  });
 }

@@ -13,10 +13,8 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { loadBilling } from '@/lib/billing/subscription-store';
-import { tierAfterExpiry } from '@/lib/billing/subscription-period';
-import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
 import { provisionEngineAccess } from './subscriptions';
-import { engineTierOf } from './engine-tier';
+import { engineTierFromProfile } from './engine-tier';
 
 export interface EngineIdentity {
   userId: string;
@@ -104,15 +102,7 @@ export async function resolveEngineIdentity(
     tenantId,
     // The effective plan the hub's screens use: a lapsed profile tier is FREE, but an active
     // subscription grant (payment grace) still counts; admins are VIP.
-    tier: engineTierOf({
-      role: (profile.role as UserRole | undefined) ?? 'VIEWER',
-      storedTier: tierAfterExpiry(
-        (profile.tier as SubscriptionTier | undefined) ?? 'FREE',
-        profile.tier_ends_at as string | null,
-      ),
-      grantsTier: billing?.primary?.grantsTier ?? null,
-      paidSuspended: billing?.restriction.paidSuspended ?? false,
-    }).toLowerCase(),
+    tier: engineTierFromProfile(profile, billing).toLowerCase(),
     baseUrl,
   };
   cache().set(key, { at: Date.now(), id });
