@@ -1,0 +1,503 @@
+/* Clips screens backed by the engine (mode "a"): start options, upload,
+   videos, a video's page, live, channels, styles, personas, admin pages.
+   Scoped to the app; builds on chalyb-tokens.css and tools-clips.css. */
+
+.chalyb-app .ch-ce-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.chalyb-app .ch-ce-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce-head .ch-h2 {
+  margin: 0;
+}
+.chalyb-app .ch-ce-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.chalyb-app .ch-ce-card {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.chalyb-app .ch-ce-card .ch-h3 {
+  font-size: 20px;
+  font-weight: 650;
+  margin: 0;
+}
+.chalyb-app .ch-ce-note {
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-ce-err {
+  font-size: 16px;
+  color: var(--bad);
+  font-weight: 600;
+}
+.chalyb-app .ch-ce-ok {
+  font-size: 16px;
+  color: var(--ok-text);
+  font-weight: 600;
+}
+
+/* Sub-navigation inside a tab (Clips | Videos, Ajustes sections). */
+.chalyb-app .ch-ce-subnav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce-subnav a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.chalyb-app .ch-ce-subnav a[aria-current='page'] {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Start options on Clips' home. */
+.chalyb-app .ch-ce-starts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.chalyb-app .ch-ce-start {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 20px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+.chalyb-app .ch-ce-start:hover {
+  box-shadow: var(--shadow-lg);
+}
+.chalyb-app .ch-ce-start:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-ce-start__ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: #fff;
+  background: var(--accent);
+}
+.chalyb-app .ch-ce-start__tx {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chalyb-app .ch-ce-start__tx small {
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+
+/* Forms. */
+.chalyb-app .ch-ce-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.chalyb-app .ch-ce-grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+.chalyb-app .ch-ce-grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+.chalyb-app .ch-ce-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.chalyb-app .ch-ce-field small {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-ce-field .ch-input {
+  min-height: 52px;
+  font-size: 17px;
+}
+.chalyb-app .ch-ce-field textarea.ch-input {
+  min-height: 140px;
+  padding: 14px 20px;
+  line-height: 1.4;
+  resize: vertical;
+}
+.chalyb-app .ch-ce-check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 16px;
+}
+.chalyb-app .ch-ce-check input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.chalyb-app .ch-ce-check small {
+  display: block;
+  font-size: 14px;
+  color: var(--ink3-text);
+}
+
+/* Upload. */
+.chalyb-app .ch-ce-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 34px 20px;
+  border-radius: 18px;
+  border: 2px dashed #c9c6f5;
+  background: var(--tint2);
+  text-align: center;
+  cursor: pointer;
+}
+.chalyb-app .ch-ce-drop:focus-within,
+.chalyb-app .ch-ce-drop[data-over='true'] {
+  border-color: var(--accent);
+  background: var(--tint);
+}
+.chalyb-app .ch-ce-drop svg {
+  width: 34px;
+  height: 34px;
+  color: var(--accent);
+}
+.chalyb-app .ch-ce-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.chalyb-app .ch-ce-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+
+/* Videos list. */
+.chalyb-app .ch-ce-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chalyb-app .ch-ce-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  min-height: 76px;
+}
+.chalyb-app .ch-ce-row:last-child {
+  border-bottom: 0;
+}
+.chalyb-app a.ch-ce-row:hover {
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce-row__thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  flex: none;
+  background-size: cover;
+  background-position: center;
+}
+.chalyb-app .ch-ce-row__tx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chalyb-app .ch-ce-row__tx b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chalyb-app .ch-ce-row__tx small {
+  font-size: 15px;
+  color: var(--ink3-text);
+}
+
+/* A video's page. */
+.chalyb-app .ch-ce-video {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 22px;
+  align-items: start;
+}
+.chalyb-app .ch-ce-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.chalyb-app .ch-ce-kpi {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--tint2);
+}
+.chalyb-app .ch-ce-kpi b {
+  display: block;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-ce-kpi small {
+  font-size: 14px;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-ce-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chalyb-app .ch-ce-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 17px;
+}
+.chalyb-app .ch-ce-step__dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--line);
+  color: #fff;
+}
+.chalyb-app .ch-ce-step__dot svg {
+  width: 16px;
+  height: 16px;
+}
+.chalyb-app .ch-ce-step[data-s='done'] .ch-ce-step__dot {
+  background: var(--ok);
+}
+.chalyb-app .ch-ce-step[data-s='running'] .ch-ce-step__dot {
+  background: var(--accent);
+  animation: ch-ce-pulse 1.4s ease-in-out infinite;
+}
+.chalyb-app .ch-ce-step[data-s='failed'] .ch-ce-step__dot {
+  background: var(--bad);
+}
+.chalyb-app .ch-ce-step[data-s='abandoned'] .ch-ce-step__dot {
+  background: var(--warn);
+}
+.chalyb-app .ch-ce-step__time {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--ink3-text);
+  font-variant-numeric: tabular-nums;
+}
+@keyframes ch-ce-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chalyb-app .ch-ce-step[data-s='running'] .ch-ce-step__dot {
+    animation: none;
+  }
+}
+.chalyb-app .ch-ce-timeline {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.chalyb-app .ch-ce-timeline span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.8;
+}
+.chalyb-app .ch-ce-clips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.chalyb-app .ch-ce-clip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 10px 14px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.chalyb-app .ch-ce-clip--best {
+  box-shadow:
+    0 0 0 3px var(--accent),
+    var(--shadow);
+}
+.chalyb-app .ch-ce-clip video {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  max-height: 360px;
+  border-radius: 12px;
+  background: #111;
+  object-fit: contain;
+}
+.chalyb-app .ch-ce-clip__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 15px;
+}
+.chalyb-app .ch-ce-clip__signals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: var(--ink2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chalyb-app .ch-ce-source video {
+  width: 100%;
+  max-height: 320px;
+  border-radius: 14px;
+  background: #111;
+}
+
+/* Live. */
+.chalyb-app .ch-ce-ro {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.chalyb-app .ch-ce-ro code {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--tint2);
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+/* Tables (admin pages, calibration). */
+.chalyb-app .ch-ce-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.chalyb-app .ch-ce-table th,
+.chalyb-app .ch-ce-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.chalyb-app .ch-ce-table th {
+  font-size: 14px;
+  color: var(--ink3-text);
+  font-weight: 600;
+}
+.chalyb-app .ch-ce-table td.ch-ce-num,
+.chalyb-app .ch-ce-table th.ch-ce-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.chalyb-app .ch-ce-tablewrap {
+  overflow-x: auto;
+}
+
+/* Brand kit logo. */
+.chalyb-app .ch-ce-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  background: var(--tint2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.chalyb-app .ch-ce-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.chalyb-app .ch-ce-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 1099px) {
+  .chalyb-app .ch-ce-video {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-ce-clips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-ce-starts,
+  .chalyb-app .ch-ce-grid2,
+  .chalyb-app .ch-ce-grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-ce-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 599px) {
+  .chalyb-app .ch-ce-clips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chalyb-app .ch-ce-card {
+    padding: 18px 16px;
+  }
+}

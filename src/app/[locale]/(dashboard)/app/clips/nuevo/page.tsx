@@ -1,8 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Route } from 'next';
+import { Link } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { requireClipsAccess } from '@/lib/tools/clips-access';
-import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { createClipJob } from '@/lib/tools/clips-actions';
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { ClipError } from '@/components/app/clips/clip-error';
@@ -58,9 +60,23 @@ export default async function ClipsStep1Page({
     );
   }
 
+  // Mode "a": the engine decides shape and how many clips a video gives, so
+  // there is no step 2 — the link (and the optional Boost) starts the job.
+  const engine = !!getClipsEngineAdapter();
+  const te = await getTranslations('clipsEngine');
+
   return (
-    <WizardShell {...chrome} step={1} stepLabel={t('step', { n: 1 })} narrow>
-      <form action="/app/clips/nuevo/formato" method="get" className="ch-center-col">
+    <WizardShell
+      {...chrome}
+      step={engine ? undefined : 1}
+      stepLabel={engine ? undefined : t('step', { n: 1 })}
+      narrow
+    >
+      <form
+        action={engine ? createClipJob : '/app/clips/nuevo/formato'}
+        method={engine ? undefined : 'get'}
+        className="ch-center-col"
+      >
         <h1 className="ch-h1">
           <label htmlFor="clip-link">{t('s1.title')}</label>
         </h1>
@@ -85,9 +101,25 @@ export default async function ClipsStep1Page({
         <p id="clip-link-works" className="ch-muted" style={{ fontSize: 17 }}>
           {t('s1.works', { plataformas: list.format(caps.sources) })}
         </p>
+        {engine && (
+          <label className="ch-check" style={{ fontSize: 17 }}>
+            <input type="checkbox" name="boost" value="1" />
+            <span>
+              {te('boost.label')} <span className="ch-muted">{te('boost.hint')}</span>
+            </span>
+          </label>
+        )}
         <button type="submit" className="ch-btn ch-btn--primary ch-btn--xl">
-          {t('s1.cta')}
+          {engine ? te('newJob.cta') : t('s1.cta')}
         </button>
+        {engine && (
+          <p className="ch-muted" style={{ fontSize: 16 }}>
+            {te('newJob.other')}{' '}
+            <Link href={'/app/clips/subir' as Route} className="ch-lnk">
+              {te('newJob.upload')}
+            </Link>
+          </p>
+        )}
       </form>
     </WizardShell>
   );

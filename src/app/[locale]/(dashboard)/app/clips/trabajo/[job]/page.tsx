@@ -13,6 +13,7 @@ import { ButtonLink } from '@/components/ui/primitives';
 import { ClipError } from '@/components/app/clips/clip-error';
 import { AutoRefresh } from '@/components/app/clips/auto-refresh';
 import { ShareButton } from '@/components/app/clips/share-button';
+import { getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clips');
@@ -45,6 +46,11 @@ export default async function ClipJobPage({
 }) {
   const { locale, job: jobId } = await params;
   setRequestLocale(locale);
+
+  // Mode "a": a job is an engine video, shown with the tool's tabs at
+  // /app/clips/videos/[id] (this route is the focus-layout wizard).
+  if (getClipsEngineAdapter())
+    return redirect({ href: `/app/clips/videos/${encodeURIComponent(jobId)}`, locale });
   const { session } = await requireClipsAccess(locale, `/app/clips/trabajo/${jobId}`);
   if (!getClipsAdapter()) return redirect({ href: '/app/clips', locale });
 

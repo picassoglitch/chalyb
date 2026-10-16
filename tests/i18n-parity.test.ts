@@ -32,6 +32,26 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  // Clips (engine screens): product words that read the same in English
+  // ("Boost", "Persona(s)", "Clip", "Video", Buffer/TikTok), file formats and
+  // number-only labels.
+  'clipsEngine.boost.label',
+  'clipsEngine.videos.clips',
+  'clipsEngine.upload.formats',
+  'clipsEngine.nav.personas',
+  'clipsEngine.videos.source.other',
+  'clipsEngine.video.kpi.clips',
+  'clipsEngine.video.kpi.minutes',
+  'clipsEngine.video.clipsTitle',
+  'clipsEngine.video.score',
+  'clipsEngine.video.actions.persona',
+  'clipsEngine.sources.persona',
+  'clipsEngine.personas.metaTitle',
+  'clipsEngine.personas.title',
+  'clipsEngine.calibration.platform.tiktok',
+  'clipsEngine.calibration.platform.buffer',
+  'clipsEngine.calibration.col.clip',
+  'clipsEngine.settings.personas',
   // "Legal" is the same word in both languages.
   'admin.more.legal',
   'admin.legal.title',

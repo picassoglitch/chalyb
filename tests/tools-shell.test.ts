@@ -421,7 +421,9 @@ test('every route passes the timeout signal to the adapter', () => {
   for (const f of routes) {
     const src = readFileSync(f, 'utf8');
     if (!src.includes('toolRoute(')) continue;
-    for (const m of src.matchAll(/\ba\.(?!capabilities)([a-zA-Z]+)\(/g)) {
+    // `a.engine(userId)` only builds the Clips engine client (no I/O); the
+    // calls made with it take the signal and are checked below.
+    for (const m of src.matchAll(/\ba\.(?!capabilities|engine\()([a-zA-Z]+)\(/g)) {
       // The call's own arguments, up to its matching parenthesis.
       let depth = 1;
       let i = m.index! + m[0].length;
@@ -431,6 +433,12 @@ test('every route passes the timeout signal to the adapter', () => {
       }
       const args = src.slice(m.index! + m[0].length, i - 1);
       assert.match(args, /\bsignal\b/, `${f}: a.${m[1]}(…) without the signal`);
+    }
+    // Engine-client calls in a route: the last argument is the signal.
+    if (src.includes('a.engine(')) {
+      const handlers = src.split('toolRoute(').slice(1);
+      for (const h of handlers)
+        assert.match(h, /\(\s*e,[^;]*\bsignal,?\s*\)/, `${f}: an engine call without the signal`);
     }
   }
 });

@@ -3,7 +3,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Check } from 'lucide-react';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { loadTool } from '@/lib/tools/access';
-import { getClipsAdapter } from '@/lib/tools/adapters/clips';
+import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { getMe } from '@/lib/tools/adapters/clips/engine-api';
+import { runTool } from '@/lib/tools/bff';
+import { EngineSettingsLinks } from '@/components/tools/clips/engine/settings-links';
 import { socialsAllowed } from '@/lib/tools/clips-bff';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
@@ -18,6 +21,7 @@ import { AutopublishForm } from '@/components/tools/clips/autopublish-form';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
 import '@/styles/tools-clips.css';
+import '@/styles/tools-clips-engine.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('clipsTool');
@@ -64,6 +68,17 @@ export default async function ClipsSettingsPage({
   const tca = await getTranslations('consents.autopublish');
   const { adapter, session, entitlements } = gate;
   const caps = adapter.capabilities();
+  // Mode "a": the engine's own settings replace the simple form below (it
+  // has no engine counterpart). Admin rows only for engine admins.
+  const engineAdapter = getClipsEngineAdapter();
+  const engineAdmin = engineAdapter
+    ? await runTool(
+        'chalybclip',
+        session.user.id,
+        (signal) => getMe(engineAdapter.engine(session.user.id), signal),
+        { idempotent: true, adapterErrorsOnly: true },
+      ).then((r) => r.ok && r.data.is_admin)
+    : false;
   const [settings, accounts] = await Promise.all([
     adapter.getSettings(session.user.id),
     adapter.accounts(session.user.id),
@@ -102,29 +117,33 @@ export default async function ClipsSettingsPage({
               </div>
             </section>
           )}
-          <ClipsSettingsForm
-            initial={settings}
-            watermark={caps.watermark}
-            copy={{
-              captions: ts('captions'),
-              captionsOn: ts('captionsOn'),
-              captionLang: ts('captionLang'),
-              langs: { es: t('langs.es'), en: t('langs.en') },
-              style: ts('style'),
-              styleHint: ts('styleHint'),
-              presets: {
-                clasico: t('presets.clasico'),
-                amarillo: t('presets.amarillo'),
-                fondo: t('presets.fondo'),
-              },
-              sample: t('presets.sample'),
-              brand: ts('brand'),
-              watermark: ts('watermark'),
-              watermarkSub: ts('watermarkSub'),
-              saving: t('detail.saving'),
-              saveError: t('detail.saveError'),
-            }}
-          />
+          {engineAdapter ? (
+            <EngineSettingsLinks admin={engineAdmin} />
+          ) : (
+            <ClipsSettingsForm
+              initial={settings}
+              watermark={caps.watermark}
+              copy={{
+                captions: ts('captions'),
+                captionsOn: ts('captionsOn'),
+                captionLang: ts('captionLang'),
+                langs: { es: t('langs.es'), en: t('langs.en') },
+                style: ts('style'),
+                styleHint: ts('styleHint'),
+                presets: {
+                  clasico: t('presets.clasico'),
+                  amarillo: t('presets.amarillo'),
+                  fondo: t('presets.fondo'),
+                },
+                sample: t('presets.sample'),
+                brand: ts('brand'),
+                watermark: ts('watermark'),
+                watermarkSub: ts('watermarkSub'),
+                saving: t('detail.saving'),
+                saveError: t('detail.saveError'),
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -178,10 +197,12 @@ export default async function ClipsSettingsPage({
         </AdvancedOptions>
       )}
 
-      <p className="ch-muted ch-setnote">
-        <Check aria-hidden="true" />
-        {ts('autosave')}
-      </p>
+      {!engineAdapter && (
+        <p className="ch-muted ch-setnote">
+          <Check aria-hidden="true" />
+          {ts('autosave')}
+        </p>
+      )}
     </ToolShell>
   );
 }

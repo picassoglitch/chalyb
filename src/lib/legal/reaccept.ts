@@ -119,15 +119,20 @@ const CLIP_NON_ID_SEGMENTS = new Set([
   'trabajo',
   'mis-clips',
   'conectar',
+  // Clips engine screens (mode "a"): lists and settings, not a clip.
+  'videos',
+  'subir',
+  'canales',
+  'en-vivo',
 ]);
 
 /** Where clips download: a job (/app/clips/<id>, WS-11's
- *  /app/clips/trabajo/<id>), one clip (/app/clips/<clipId>) and the list
- *  of my clips (/app/clips/mis-clips). An id is 6+ letters, digits, "_" or
+ *  /app/clips/trabajo/<id>, mode "a"'s /app/clips/videos/<id>), one clip
+ *  (/app/clips/<clipId>) and the list of my clips (/app/clips/mis-clips). An id is 6+ letters, digits, "_" or
  *  "-" and never one of CLIP_NON_ID_SEGMENTS. */
 function clipDownloadPage(p: string): boolean {
   if (p === '/app/clips/mis-clips') return true;
-  const m = /^\/app\/clips\/(?:trabajo\/)?([^/]+)$/.exec(p);
+  const m = /^\/app\/clips\/(?:trabajo\/|videos\/)?([^/]+)$/.exec(p);
   return !!m && /^[A-Za-z0-9_-]{6,}$/.test(m[1]!) && !CLIP_NON_ID_SEGMENTS.has(m[1]!);
 }
 

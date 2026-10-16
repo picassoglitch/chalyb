@@ -815,7 +815,10 @@
       "blocked": {
         "title": "We can’t use that video",
         "body": "That content was removed after a copyright notice and can’t be uploaded again. If you think this is a mistake, talk to a person."
-      }
+      },
+      "planLimit": "You hit a limit of your plan (minutes, videos or jobs at once). It renews next cycle, or you can upgrade your plan.",
+      "noPersona": "Before making clips you need a persona, so we know which language and tone to write in.",
+      "makePersona": "Create a persona"
     },
     "adv": {
       "title": "Advanced options",
@@ -2925,6 +2928,15 @@
       "empty": {
         "title": "You don't have clips yet",
         "body": "Make your first one in 1 minute. Just paste your stream's link."
+      },
+      "startsAria": "Other ways to start",
+      "starts": {
+        "upload": "Upload a file",
+        "uploadSub": "A video you already have",
+        "live": "From your stream",
+        "liveSub": "Clips of what you stream",
+        "channels": "Watch a channel",
+        "channelsSub": "Every new video comes in on its own"
       }
     },
     "card": {
@@ -3089,5 +3101,477 @@
     "approvedToast": "Extra credits added.",
     "pending": "<b>Payment under review.</b> Mercado Pago hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
     "pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved."
+  },
+  "clipsEngine": {
+    "errors": {
+      "generic": "Something failed on our side. Try again.",
+      "code": "If you write to us, mention this code: {codigo}.",
+      "session": "Your session ended. Sign in again.",
+      "no_credits": "You don't have enough credits. Top up or upgrade your plan.",
+      "rate_limited": "You hit a limit of your plan (minutes, videos or jobs at once). Wait or upgrade your plan.",
+      "too_large": "The video is bigger or longer than your plan allows.",
+      "needs_plan": "Your plan doesn't include this.",
+      "not_found": "It no longer exists. Reload the page.",
+      "bad_request": "Check the details and try again.",
+      "forbidden": "You can't do this right now. If your account is paused, reactivate it from your plan.",
+      "timeout": "It took too long. Try again."
+    },
+    "boost": {
+      "label": "Boost",
+      "hint": "Dedicated machine, faster. Costs extra credits, except on VIP."
+    },
+    "newJob": {
+      "cta": "Make my clips",
+      "other": "No link?",
+      "upload": "Upload the file"
+    },
+    "upload": {
+      "metaTitle": "Upload a video · Clips",
+      "title": "Upload a video",
+      "sub": "A VOD you already recorded or a video from your phone. We'll give you the clips.",
+      "drop": "Drop your video here or tap to choose it",
+      "dropHint": "From your computer or your phone",
+      "formats": "MP4 · MOV · MKV · WebM",
+      "chosen": "Ready: {nombre}",
+      "start": "Upload and make clips",
+      "uploading": "Uploading",
+      "checking": "Checking your video…",
+      "cancel": "Cancel",
+      "cancelled": "You cancelled the upload.",
+      "keepOpen": "Keep this tab open until it finishes.",
+      "tooBig": "That file is bigger than what can be uploaded.",
+      "badType": "Upload an MP4, MOV, MKV or WebM video.",
+      "putFailed": "The file couldn't be uploaded. Check your connection and try again.",
+      "off": {
+        "title": "Uploading files isn't available right now",
+        "body": "Meanwhile, paste your video's link.",
+        "cta": "Paste a link"
+      },
+      "noPersona": {
+        "title": "Create a persona first",
+        "body": "So we know which language and tone to write your clips in.",
+        "cta": "Create a persona"
+      }
+    },
+    "nav": {
+      "mineAria": "What to show",
+      "clips": "My clips",
+      "videos": "My videos",
+      "settingsAria": "Settings sections",
+      "general": "Overview",
+      "styles": "Styles",
+      "personas": "Personas",
+      "channels": "Channels",
+      "live": "Live",
+      "calibration": "AI accuracy",
+      "llmCalls": "AI usage",
+      "llmSettings": "AI setup",
+      "site": "Site"
+    },
+    "videos": {
+      "metaTitle": "My videos · Clips",
+      "listAria": "Your videos",
+      "clips": "{n, plural, one {# clip} other {# clips}}",
+      "empty": {
+        "title": "No videos yet",
+        "body": "Paste a link, upload a file or go live and you'll see each video with its clips here.",
+        "cta": "Make new clips"
+      },
+      "status": {
+        "complete": "Ready",
+        "running": "Working",
+        "pending": "Queued",
+        "failed": "Couldn't finish"
+      },
+      "source": {
+        "youtube": "YouTube",
+        "twitch": "Twitch",
+        "kick": "Kick",
+        "upload": "Uploaded file",
+        "live": "Live",
+        "other": "Video"
+      }
+    },
+    "video": {
+      "back": "My videos",
+      "untitled": "Your video",
+      "status": {
+        "complete": "Ready",
+        "running": "Working on your clips",
+        "pending": "Queued",
+        "failed": "Couldn't finish"
+      },
+      "done": {
+        "title": "Your clips are ready",
+        "none": "We finished, but found no moments for clips"
+      },
+      "kpi": {
+        "clips": "clips",
+        "ready": "approved",
+        "moments": "moments found",
+        "minutes": "{n} min",
+        "saved": "of editing saved (approx.)"
+      },
+      "best": "Your best clip scores {n}/100",
+      "platforms": "Great for",
+      "progress": {
+        "done": "Done, your clips are made!",
+        "abandoned": "The process stopped halfway",
+        "failed": "Something went wrong",
+        "working": "Working on your clips…",
+        "counts": "{m, plural, one {# moment worth it} other {# moments worth it}} · {c, plural, one {# clip} other {# clips}}",
+        "long": "Your video is long, so this step takes longer than usual. We're still working: you don't need to do anything."
+      },
+      "steps": {
+        "ingest": "Receiving your video",
+        "analyze_video": "Looking at the picture",
+        "diarize": "Analyzing the voices",
+        "transcribe": "Writing down what's said",
+        "detect": "Finding the best moments",
+        "cut": "Cutting and adding captions"
+      },
+      "stepStatus": {
+        "pending": "pending",
+        "running": "in progress",
+        "done": "done",
+        "failed": "failed",
+        "abandoned": "stopped halfway"
+      },
+      "step": {
+        "elapsed": "{t} so far",
+        "skipped": "skipped"
+      },
+      "failure": {
+        "persona": "The persona we write your clips with is missing. Pick one and run it again.",
+        "source": "We couldn't open the video: the link may be private, the platform asked to sign in, or the file is gone.",
+        "too_long": "The video is longer than your plan allows.",
+        "other": "The process stopped. You can run it again; if it happens again, write to us."
+      },
+      "adminError": "Detail (admins only):",
+      "clipsTitle": "{n, plural, one {# clip} other {# clips}}",
+      "clipN": "Clip #{n}",
+      "topPick": "Top pick",
+      "clipStatus": {
+        "cut": "To review",
+        "ready_for_review": "To review",
+        "approved": "Approved",
+        "published": "Published",
+        "rejected": "Discarded"
+      },
+      "score": "{n}/100",
+      "why": "Why we picked it",
+      "reason": {
+        "voice": "You said a clip phrase",
+        "audio": "The energy spiked: laughter, shouting or emphasis",
+        "chat": "Your chat reacted right then",
+        "visual": "Something happened on screen",
+        "viral": "The AI saw a viral shape in it",
+        "other": "The AI flagged it as a highlight"
+      },
+      "said": "Heard: “{frase}”",
+      "speaker": "Speaking: {nombre}",
+      "confirmed": "Confirmed by a second AI pass",
+      "edit": "Edit",
+      "download": "Download",
+      "actionsTitle": "Actions",
+      "cost": {
+        "title": "What it used",
+        "used": "{n} credits",
+        "base": "Base processing",
+        "none": "Nothing charged for this video yet.",
+        "estimate": "Estimate per run: up to {n} credits",
+        "unlimited": "Your plan has no credit limit",
+        "runs": "{n, plural, one {# more run with your balance} other {# more runs with your balance}}",
+        "usd": "Real cost (admins only): ${n} USD",
+        "runsNone": "Your balance doesn't cover another run"
+      },
+      "source": {
+        "title": "Original video",
+        "gone": "The original video was freed up: your clips don't need it.",
+        "link": "See the original"
+      },
+      "actions": {
+        "approveAll": "Approve all",
+        "approved": "Approved {n}.",
+        "download": "Download the approved ones",
+        "preparing": "Preparing the download…",
+        "rerunTitle": "Run it again",
+        "persona": "Persona",
+        "rerunGo": "Run it again",
+        "delete": "Delete video",
+        "deleteConfirm": "Delete this video and all its clips? This can't be undone.",
+        "deleteYes": "Yes, delete",
+        "deleteNo": "No, keep it",
+        "working": "One moment…"
+      }
+    },
+    "live": {
+      "metaTitle": "Live · Clips",
+      "title": "Clips from your live streams",
+      "sub": "We record your stream while you're live and send you the clips when it ends.",
+      "obsTitle": "For OBS or Streamlabs",
+      "obsHelp": "Paste the server and key into your streaming app. We record from the moment you connect and make the clips when you stop.",
+      "notConfigured": "Streaming straight to Clips isn't available right now. Use Live.",
+      "envivoTitle": "With Live",
+      "envivoBody": "Stream to several platforms from Live; with the connection on, each stream arrives here and becomes clips when it ends.",
+      "envivoVip": "The Live ↔ Clips connection is part of the VIP plan.",
+      "envivoOpen": "Go to Live",
+      "recent": "Your streams",
+      "recentEmpty": "No streams yet. As soon as you go live, they show up here.",
+      "untitled": "Live stream",
+      "onAir": "Live",
+      "ended": "Ended",
+      "server": "Server",
+      "key": "Stream key",
+      "show": "Show",
+      "hide": "Hide",
+      "copy": "Copy",
+      "copied": "Copied",
+      "noKey": "You don't have a key yet.",
+      "makeKey": "Create my key",
+      "rotate": "Change the key",
+      "rotateConfirm": "Change your key? The current one stops working and you'll need to paste the new one into OBS.",
+      "rotateYes": "Yes, change it",
+      "rotateNo": "Keep it",
+      "rotated": "Done, you have a new key.",
+      "working": "One moment…",
+      "connection": "Connection with Live",
+      "connectionOn": "On: your streams become clips.",
+      "connectionOff": "Off: turn it on to receive your streams here."
+    },
+    "sources": {
+      "metaTitle": "Channels · Clips",
+      "title": "Channels we watch",
+      "sub": "Every new video from these channels comes in on its own and goes through the whole process.",
+      "noPersona": {
+        "title": "Create a persona first",
+        "body": "Videos that come in on their own need one to write the clips.",
+        "cta": "Create a persona"
+      },
+      "addTitle": "Connect a channel",
+      "url": "Channel link",
+      "urlPh": "https://www.youtube.com/@yourchannel/videos",
+      "platform": "Platform",
+      "platformAuto": "We'll detect it",
+      "persona": "Persona",
+      "max": "Max videos per check",
+      "label": "Name (optional)",
+      "labelPh": "My main YouTube",
+      "language": "Language (optional)",
+      "languagePh": "en",
+      "cadence": "How often we check",
+      "cadences": {
+        "1": "Once a day",
+        "2": "Every 12 hours",
+        "4": "Every 6 hours",
+        "6": "Every 4 hours",
+        "12": "Every 2 hours",
+        "24": "Every hour"
+      },
+      "add": "Connect channel",
+      "added": "Channel connected. We'll check it as often as you chose.",
+      "already": "You're already watching that channel.",
+      "listTitle": "Your channels",
+      "empty": "You aren't watching any channel yet.",
+      "watching": "Watching",
+      "paused": "Paused",
+      "seen": "{n} seen",
+      "lastPoll": "last check:",
+      "never": "never",
+      "pollNow": "Check now",
+      "scanning": "Checking the channel. New videos show up in My videos when they finish.",
+      "remove": "Stop watching",
+      "removeConfirm": "Stop watching this channel? The clips we already made stay.",
+      "working": "One moment…"
+    },
+    "personas": {
+      "metaTitle": "Personas · Clips",
+      "title": "Personas",
+      "sub": "Who your clips sound like: the language, extra languages and the tone we write in.",
+      "listTitle": "Your personas",
+      "empty": "You have no personas yet.",
+      "newTitle": "New persona",
+      "editTitle": "Edit persona",
+      "id": "Identifier",
+      "idHint": "Letters, numbers, dash and underscore. It doesn't change later.",
+      "name": "Name",
+      "language": "Main language",
+      "targets": "Version languages",
+      "targetsHint": "Comma-separated, e.g. es, en",
+      "prompt": "How it writes (voice instruction)",
+      "tags": "Tags",
+      "tagsHint": "Comma-separated, e.g. gaming, humor",
+      "create": "Create persona",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "saved": "Saved.",
+      "exists": "That identifier is already taken. Pick another one.",
+      "working": "Saving…"
+    },
+    "styles": {
+      "metaTitle": "Styles · Clips",
+      "metaEdit": "Style · Clips",
+      "title": "Your styles",
+      "sub": "Your accounts, your captions and the phrases that cut clips. One is your default style.",
+      "new": "Create style",
+      "empty": {
+        "title": "No styles yet",
+        "body": "A style brings together your socials, your captions and the phrases that trigger clips so your clips come out with your stamp."
+      },
+      "phrases": "+{a} forward · +{b} backward",
+      "default": "Default",
+      "back": "Your styles",
+      "editTitle": "Style: {nombre}",
+      "newTitle": "New style"
+    },
+    "kit": {
+      "identity": "Your identity",
+      "name": "Name",
+      "namePh": "Your name or your channel's",
+      "makeDefaultNew": "Make this my default style",
+      "accounts": "Your accounts",
+      "captions": "Captions",
+      "captionsHint": "They go on every clip made with this style.",
+      "presets": {
+        "karaoke_pop": "Karaoke: word by word, with a bounce",
+        "typewriter": "Typewriter: letter by letter",
+        "bold_block": "Blocks: 2 or 3 words at once",
+        "subtle": "Subtle: one line at the bottom, no animation"
+      },
+      "phrases": "Your phrases to cut clips",
+      "phrasesHint": "We listen to the audio. When you say one of these phrases, we cut a clip from that moment. They add to the ones your account already has (like “clip that”).",
+      "forward": "Forward",
+      "forwardHint": "Takes the next 30 seconds. For what you see coming.",
+      "backward": "Backward",
+      "backwardHint": "Takes the 60 seconds before. For what just happened.",
+      "onePerLine": "One phrase per line",
+      "safe": "Safe publishing",
+      "safeOn": "Publish only at safe times",
+      "safeHint": "We space out your clips so platforms don't flag them as spam and hold the ones that fall in quiet hours.",
+      "timezone": "Your time zone:",
+      "howOften": "How often do you publish?",
+      "safety": {
+        "recommended": "Recommended: the safest",
+        "cautious": "More careful: fewer posts, more spaced",
+        "active": "More active: more posts, more often"
+      },
+      "outro": "Clips end card",
+      "outroOn": "Add the Clips end card to my clips",
+      "outroFree": "On the Free plan the Clips end card goes on all your clips. Upgrade to remove it.",
+      "logo": "Your logo",
+      "logoHint": "We make it with AI from this style's name and colors.",
+      "logoStyle": "How you want it",
+      "logoStylePh": "Minimal monogram",
+      "logoGo": "Make my logo",
+      "logoWorking": "Making your logo…",
+      "logoAlt": "This style's logo",
+      "logoSaveFirst": "Save the style first; then you can make your logo.",
+      "create": "Create style",
+      "save": "Save changes",
+      "saved": "Saved.",
+      "makeDefault": "Make it my default style",
+      "isDefault": "Your default style",
+      "remove": "Delete",
+      "removeConfirm": "Delete this style? Whatever used it moves to your default style.",
+      "working": "Saving…",
+      "logoFailed": "We couldn't make your logo this time. Try again in a moment."
+    },
+    "calibration": {
+      "metaTitle": "AI accuracy · Clips",
+      "title": "How accurate is your AI?",
+      "sub": "How well the score the AI gives a clip matches the views it really gets, over the last 30 days.",
+      "verdict": {
+        "none": "Not enough data yet: at least 3 measured clips needed",
+        "good": "Very good: it spots what works",
+        "mid": "So-so: more data needed",
+        "bad": "Not there yet"
+      },
+      "platform": {
+        "youtube": "YouTube",
+        "tiktok": "TikTok",
+        "instagram": "Instagram",
+        "buffer": "Buffer"
+      },
+      "paired": "{n} measured",
+      "perClip": "{plataforma}: how each clip did",
+      "col": {
+        "clip": "Clip",
+        "score": "AI score",
+        "views": "Views",
+        "likes": "Likes",
+        "when": "Last measured"
+      }
+    },
+    "admin": {
+      "calls": {
+        "metaTitle": "AI usage · Clips",
+        "title": "AI usage",
+        "sub": "Every AI call with its real cost. Admins only.",
+        "today": "today",
+        "mtd": "this month · {n} calls",
+        "eom": "end-of-month projection",
+        "budget": "daily budget",
+        "last": "Last {n} calls · {total}",
+        "col": {
+          "when": "When",
+          "purpose": "Purpose",
+          "model": "Model",
+          "in": "Input",
+          "out": "Output",
+          "cost": "Cost",
+          "status": "Status"
+        }
+      },
+      "llm": {
+        "metaTitle": "AI setup · Clips",
+        "title": "How the AI works",
+        "sub": "From Clips' configuration (config/llm.yaml). View only; changing it means editing the file and restarting.",
+        "providers": "Who generates the content",
+        "routing": "Which model does what",
+        "col": {
+          "service": "Service",
+          "standard": "Standard model",
+          "premium": "Premium model",
+          "timeout": "Timeout",
+          "purpose": "Purpose",
+          "quality": "Quality",
+          "primary": "Primary",
+          "fallbacks": "Fallbacks"
+        }
+      },
+      "site": {
+        "metaTitle": "Site · Clips",
+        "title": "Prices on the Clips public page",
+        "sub": "The price text the Clips page shows. Admins only.",
+        "es": "Price (Spanish)",
+        "en": "Price (English)",
+        "hint": "Empty goes back to the page's default text.",
+        "save": "Save",
+        "saved": "Saved.",
+        "working": "Saving…"
+      }
+    },
+    "settings": {
+      "groupClips": "How your clips are made",
+      "styles": "Styles",
+      "stylesSub": "Your accounts, captions, clip phrases and logo",
+      "personas": "Personas",
+      "personasSub": "The language and tone we write in",
+      "channels": "Channels",
+      "channelsSub": "Channels we watch to bring in every new video",
+      "live": "Live",
+      "liveSub": "Server and key for OBS, and your streams",
+      "calibration": "AI accuracy",
+      "calibrationSub": "How well the AI spots the clips that work",
+      "groupAdmin": "Administration",
+      "llmCalls": "AI usage",
+      "llmCallsSub": "Every call and its cost",
+      "llmSettings": "AI setup",
+      "llmSettingsSub": "Which model does what",
+      "site": "Site",
+      "siteSub": "Public page prices",
+      "balanceNote": "Your credits are in Your plan; each video shows what it used."
+    }
   }
 }
