@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Archive, Send } from 'lucide-react';
-import { publishApi, usePublishErrorText } from './api';
+import { publishApi, publishRead, usePublishErrorText } from './api';
 import { InlineMsg, PlatformTile, type Msg } from './common';
 
 interface Conversation {
@@ -31,7 +31,7 @@ export function DmsTab() {
   const [notice, setNotice] = useState<string | null>(null);
 
   function load() {
-    return publishApi<{ conversations: Conversation[] }>('inbox/conversations.json').then((r) => {
+    return publishRead<{ conversations: Conversation[] }>('inbox/conversations.json', (r) => {
       if (r.ok) setConvs(r.data.conversations ?? []);
       else {
         setErr(errText(r.error));

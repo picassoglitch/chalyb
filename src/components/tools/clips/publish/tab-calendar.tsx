@@ -9,7 +9,7 @@ import type { Route } from 'next';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { publishApi, usePublishErrorText } from './api';
+import { publishRead, usePublishErrorText } from './api';
 import { PlatformList, parseWhen } from './common';
 
 interface Entry {
@@ -44,18 +44,20 @@ export function CalendarTab() {
     let live = true;
     const from = ymd(new Date(ref.getFullYear(), ref.getMonth(), 0));
     const to = ymd(new Date(ref.getFullYear(), ref.getMonth() + 1, 1));
-    void publishApi<{ entries: Entry[] }>('calendar.json', {
-      query: { date_from: from, date_to: to },
-    }).then((r) => {
-      if (!live) return;
-      if (r.ok) {
-        setEntries(r.data.entries ?? []);
-        setErr(null);
-      } else {
-        setEntries([]);
-        setErr(errText(r.error));
-      }
-    });
+    void publishRead<{ entries: Entry[] }>(
+      'calendar.json',
+      (r) => {
+        if (!live) return;
+        if (r.ok) {
+          setEntries(r.data.entries ?? []);
+          setErr(null);
+        } else {
+          setEntries([]);
+          setErr(errText(r.error));
+        }
+      },
+      { query: { date_from: from, date_to: to } },
+    );
     return () => {
       live = false;
     };
@@ -67,9 +69,11 @@ export function CalendarTab() {
     from.setDate(from.getDate() - 1);
     const to = new Date();
     to.setDate(to.getDate() + 8);
-    void publishApi<{ entries: Entry[] }>('calendar.json', {
-      query: { date_from: ymd(from), date_to: ymd(to) },
-    }).then((r) => setAgenda(r.ok ? (r.data.entries ?? []) : []));
+    void publishRead<{ entries: Entry[] }>(
+      'calendar.json',
+      (r) => setAgenda(r.ok ? (r.data.entries ?? []) : []),
+      { query: { date_from: ymd(from), date_to: ymd(to) } },
+    );
   }, []);
 
   const byDay = useMemo(() => {

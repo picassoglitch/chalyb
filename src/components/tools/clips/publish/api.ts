@@ -19,12 +19,19 @@ export type PublishResult<T> = { ok: true; data: T } | { ok: false; error: Publi
 
 const BASE = '/api/tools/chalybclip/publish/';
 
+// The last good answer of each list read (publishRead), for this page view
+// only: switching back to a Publicar tab shows its list at once while it is
+// re-read. Any write (POST) empties it, so nothing shown predates a change
+// made here.
+const lastRead = new Map<string, unknown>();
+
 export async function publishApi<T>(
   path: string,
   init: { method?: 'GET' | 'POST'; body?: unknown; query?: Record<string, string> } = {},
 ): Promise<PublishResult<T>> {
   const method = init.method ?? (init.body === undefined ? 'GET' : 'POST');
   const qs = init.query ? `?${new URLSearchParams(init.query).toString()}` : '';
+  if (method !== 'GET') lastRead.clear();
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}${qs}`, {
@@ -69,6 +76,23 @@ export async function publishApi<T>(
 }
 
 /** What to tell the person about a failed call. */
+/** A list read for a tab: `onResult` gets the last good answer right away
+ *  (when there is one), then the fresh one. The promise settles with the
+ *  fresh one. */
+export function publishRead<T>(
+  path: string,
+  onResult: (r: PublishResult<T>) => void,
+  init: { query?: Record<string, string> } = {},
+): Promise<void> {
+  const key = `${path}?${new URLSearchParams(init.query ?? {}).toString()}`;
+  if (lastRead.has(key)) onResult({ ok: true, data: lastRead.get(key) as T });
+  return publishApi<T>(path, init).then((r) => {
+    if (r.ok) lastRead.set(key, r.data);
+    else lastRead.delete(key);
+    onResult(r);
+  });
+}
+
 export function usePublishErrorText(): (e: PublishApiError) => string {
   const t = useTranslations('clipsPublish.errors');
   return (e) => {
