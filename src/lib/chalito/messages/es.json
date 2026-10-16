@@ -1379,6 +1379,9 @@
     "soonTitle": "Muy pronto",
     "soonBody": "Estamos preparando Chalito para Windows, macOS y Linux. Mientras tanto, puedes usarlo aquí en el navegador.",
     "soonAction": "Ir a Inicio",
-    "loading": "Cargando…"
+    "loading": "Cargando…",
+    "errorTitle": "No pudimos cargar las descargas",
+    "errorBody": "Revisa tu conexión y vuelve a intentarlo.",
+    "retry": "Reintentar"
   }
 }
