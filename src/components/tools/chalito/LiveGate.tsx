@@ -11,7 +11,14 @@ import { Recover } from "./Recover";
  * Live screens need a signed-in, paired, connected device; otherwise say what's missing. Inside
  * the hub the sign-in itself is HubBridge's (the layout), so there is no sign-in button here.
  */
-export const LiveGate = ({ children }: { children: ReactNode }) => {
+export const LiveGate = ({
+  children,
+  stayAfterActivation = false,
+}: {
+  children: ReactNode;
+  /** After "Activar", continue on this screen instead of going to the chat (Aprobar computadora). */
+  stayAfterActivation?: boolean;
+}) => {
   const t = useTranslations("chalito.live.gate");
   const { status, newDevice, activate, canActivate, recover, needsRecovery, activation } = useChalito();
   const live = useLive();
@@ -27,7 +34,7 @@ export const LiveGate = ({ children }: { children: ReactNode }) => {
       </div>
     );
   // Just activated: the recovery code comes first, whatever the connection is doing.
-  if (activation) return <ActivationDone />;
+  if (activation) return <ActivationDone stay={stayAfterActivation} />;
   if (status === "ready") return <>{children}</>;
   if (status === "loading")
     return (

@@ -8,6 +8,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { Analytics } from '@vercel/analytics/next';
+import { withoutFragment } from '@/lib/analytics-url';
 import { Link } from '@/i18n/routing';
 import {
   ALL,
@@ -79,7 +80,7 @@ export function CookieConsent() {
 
   return (
     <>
-      {consent?.analytics && <Analytics />}
+      {consent?.analytics && <Analytics beforeSend={withoutFragment} />}
       {open && (
         <div className="chalyb-app pub-consent">
           <section

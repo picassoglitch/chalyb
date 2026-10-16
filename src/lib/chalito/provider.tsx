@@ -38,6 +38,14 @@ import {
 } from "@/lib/chalito/web/endorse";
 import { markEndorsed, passkeyRef } from "@/lib/chalito/web/keys";
 import {
+  approveComputer,
+  declineComputer,
+  findByCode,
+  findByLink,
+  type ApproveComputerApi,
+} from "@/lib/chalito/web/approve-computer";
+import { fingerprint, fromB64url } from "@chalito/crypto";
+import {
   activateFirstClient,
   canActivate,
   needsRecovery,
@@ -107,6 +115,8 @@ interface Ctx {
   hubUserId: string | null;
   /** "Añadir un dispositivo": a trusted (ready) browser endorses another one. Null otherwise. */
   addDevice: AddDevice | null;
+  /** "Aprobar computadora" (ADR 0028 §3): a trusted (ready) browser pairs a computer. Null otherwise. */
+  approveComputer: ApproveComputerApi | null;
   /** Token usage (/uso), read as this device; null until paired. */
   usage: UsageApi | null;
   /**
@@ -232,6 +242,7 @@ const INITIAL: Ctx = {
   finishActivation: () => undefined,
   hubUserId: null,
   addDevice: null,
+  approveComputer: null,
   usage: null,
   store: null,
   avatar: null,
@@ -339,6 +350,30 @@ const newDevice =
       }),
     };
   };
+
+const approveComputerApi = (
+  platform: Platform,
+  keys: DeviceKeys,
+  owner: string,
+  token: () => Promise<string | null>,
+): ApproveComputerApi => {
+  const api = platform.api(token);
+  return {
+    findByLink: (codeId) => findByLink(api, codeId, Date.now()),
+    findByCode: (shortCode) => findByCode(api, shortCode, Date.now()),
+    approve: (target, o) =>
+      approveComputer(api, keys.keys, target, {
+        owner,
+        now: Date.now(),
+        ...(o.shortCode !== undefined ? { shortCode: o.shortCode } : {}),
+        ...(o.loopbackProof ? { loopbackProof: o.loopbackProof } : {}),
+        // With a passkey on this browser, approving asks for it first.
+        ...(passkeyRef() ? { userCheck: () => platform.assertPasskey(token) } : {}),
+      }),
+    decline: (codeId) => declineComputer(api, codeId),
+    fingerprint: async () => fingerprint(await fromB64url(keys.identity.pubSign)),
+  };
+};
 
 const addDevice = (
   platform: Platform,
@@ -596,6 +631,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
           assertPasskey: () => platform.assertPasskey(token),
           newDevice: null,
           addDevice: addDevice(platform, keys, owner, token),
+          approveComputer: approveComputerApi(platform, keys, owner, token),
           rooms: {
             db: platform.db,
             api: platform.api(token),

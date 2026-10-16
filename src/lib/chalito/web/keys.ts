@@ -13,7 +13,7 @@ import type { GlyphPayload, IntroducedAgent } from "@chalito/protocol";
 import { unwrapKeyring } from "@chalito/rooms";
 
 export interface DeviceKeys {
-  keys: ClientKeys & Pick<DeviceClientKeys, "sign" | "deviceId" | "trustedAgents">;
+  keys: ClientKeys & Pick<DeviceClientKeys, "sign" | "deviceId" | "trustedAgents" | "trustAgentFromGlyph">;
   /** WebAuthn step-up for HIGH and CRITICAL decisions (assertion bound to the decision, D-019). */
   stepUp: StepUpProvider;
   /** Opens this device's sealed copies of a room key (epoch → key); the secret key never leaves here. */

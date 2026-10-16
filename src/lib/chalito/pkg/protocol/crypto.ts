@@ -46,6 +46,10 @@ export const SigningContext = z.enum([
   "chalito.room-key-wrap.v1",
   "chalito.device-register.v1",
   "chalito.pairing-claim.v1",
+  /** ADR 0028 §4: the unpaired agent's loopback proof that the approving browser is on this computer. */
+  "chalito.pairing-loopback.v1",
+  /** ADR 0028 §3: the unpaired agent withdraws its own code ("Cancelar" / "No fui yo" in the panel). */
+  "chalito.pairing-withdraw.v1",
   "chalito.trusted-list.v1",
   "chalito.devmode-state.v1",
   "chalito.devmode-liability.v1",
@@ -56,6 +60,12 @@ export const SigningContext = z.enum([
   "chalito.recipe-catalog.v1",
   /** Remote screen (screen.ts): the agent's WebRTC offer / ICE, inside the sealed screen.signal event. */
   "chalito.screen-signal.v1",
+  /** ADR 0022 §3: one agent's relay to another over a link (`RelayedCommand`, relayedBy agent-link). */
+  "chalito.link.v1",
+  /** The agent's local links file (~/.chalito/links.json), signed with its own key. */
+  "chalito.links-file.v1",
+  /** LAN direct path (lan.ts, ADR 0022 §5): each side's signature over the handshake transcript. */
+  "chalito.lan-handshake.v1",
 ]);
 export type SigningContext = z.infer<typeof SigningContext>;
 

@@ -1383,5 +1383,50 @@
     "errorTitle": "No pudimos cargar las descargas",
     "errorBody": "Revisa tu conexión y vuelve a intentarlo.",
     "retry": "Reintentar"
+  },
+  "approveComputer": {
+    "title": "Aprobar computadora",
+    "loading": "Buscando la computadora…",
+    "body": "Escribe el código que muestra Chalito en tu computadora, o escanea su código de colores con la cámara.",
+    "codeLabel": "Código",
+    "find": "Buscar",
+    "scan": {
+      "start": "Escanear código de colores",
+      "starting": "Abriendo la cámara…",
+      "scanning": "Apunta la cámara al código de colores de tu computadora.",
+      "denied": "No hay permiso para usar la cámara. Escribe el código.",
+      "unavailable": "La cámara no está disponible. Escribe el código."
+    },
+    "compare": "Código de verificación. Debe coincidir con lo que ves en tu computadora:",
+    "expiresIn": "Vence en {minutes}:{seconds}",
+    "otherNetwork": "Esta computadora está en otra red.",
+    "otherNetworkCity": "Esta computadora está en otra red (cerca de {city}).",
+    "phishing": "Si alguien te mandó este enlace, no lo apruebes. Si es tu computadora, escribe el código que muestra en pantalla.",
+    "typeCode": "Código que muestra tu computadora",
+    "withPasskey": "Al aprobar, te pediremos tu llave de acceso (huella o Face ID).",
+    "withoutPasskey": "Esta computadora podrá recibir tus tareas en cuanto confirmes en ella.",
+    "approve": "Aprobar",
+    "notInFront": "No estoy frente a esa computadora",
+    "done": "Listo: aprobaste «{name}».",
+    "doneReverse": "Ahora, en tu computadora, elige «Sí, fui yo». Debe mostrar este código de verificación:",
+    "declined": "Cancelamos ese código. No se conectó ninguna computadora.",
+    "back": "Ir a Dispositivos",
+    "error": {
+      "invalid_code": "Ese código no es válido. Revísalo.",
+      "not_found": "No encontramos esa computadora: el código venció o ya se usó. Pide uno nuevo desde tu computadora.",
+      "expired": "El código venció. Pide uno nuevo desde tu computadora.",
+      "code_required": "Desde otra red hace falta el código que muestra tu computadora.",
+      "wrong_code": "Ese no es el código de esa computadora. Revísalo en su pantalla.",
+      "device_limit": "Tu plan ya tiene el máximo de computadoras. Quita una en Dispositivos o mejora tu plan.",
+      "tampered": "Los datos no coinciden. No la apruebes y pide un código nuevo.",
+      "step_up": "Hace falta tu llave de acceso para aprobar. Vuelve a intentarlo.",
+      "failed": "Algo salió mal. Vuelve a intentarlo.",
+      "proof_failed": "No pudimos confirmar que estás en esa computadora. Escribe el código que muestra en pantalla."
+    },
+    "sameComputer": "Estás en esta misma computadora: puedes aprobarla con un toque.",
+    "notProven": "No pudimos confirmar que estés en esa computadora.",
+    "doneFinish": "Aprobaste «{name}», pero falta un paso en este navegador: vuelve a abrir Chalito aquí para terminar de configurarla.",
+    "backToApprove": "Volver a aprobar tu computadora",
+    "phishingScan": "Aprueba solo si tienes esa computadora enfrente y su código de verificación coincide."
   }
 }
