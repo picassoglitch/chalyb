@@ -22,8 +22,10 @@ const BASE = '/api/tools/chalybclip/publish/';
 // The last good answer of each list read (publishRead), for this page view
 // only: switching back to a Publicar tab shows its list at once while it is
 // re-read. Any write (POST) empties it, so nothing shown predates a change
-// made here.
+// made here: a read that was already in flight when a write started doesn't
+// store its answer (`writes` moved on).
 const lastRead = new Map<string, unknown>();
+let writes = 0;
 
 export async function publishApi<T>(
   path: string,
@@ -31,7 +33,10 @@ export async function publishApi<T>(
 ): Promise<PublishResult<T>> {
   const method = init.method ?? (init.body === undefined ? 'GET' : 'POST');
   const qs = init.query ? `?${new URLSearchParams(init.query).toString()}` : '';
-  if (method !== 'GET') lastRead.clear();
+  if (method !== 'GET') {
+    writes += 1;
+    lastRead.clear();
+  }
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}${qs}`, {
@@ -41,6 +46,7 @@ export async function publishApi<T>(
       cache: 'no-store',
     });
   } catch {
+    if (method !== 'GET') writes += 1;
     return {
       ok: false,
       error: {
@@ -52,6 +58,11 @@ export async function publishApi<T>(
         supportCode: null,
       },
     };
+  }
+  // Reads that ran while this write was in flight may predate it too.
+  if (method !== 'GET') {
+    writes += 1;
+    lastRead.clear();
   }
   const json = (await res.json().catch(() => null)) as {
     ok?: boolean;
@@ -75,7 +86,6 @@ export async function publishApi<T>(
   };
 }
 
-/** What to tell the person about a failed call. */
 /** A list read for a tab: `onResult` gets the last good answer right away
  *  (when there is one), then the fresh one. The promise settles with the
  *  fresh one. */
@@ -86,13 +96,15 @@ export function publishRead<T>(
 ): Promise<void> {
   const key = `${path}?${new URLSearchParams(init.query ?? {}).toString()}`;
   if (lastRead.has(key)) onResult({ ok: true, data: lastRead.get(key) as T });
+  const startedAt = writes;
   return publishApi<T>(path, init).then((r) => {
-    if (r.ok) lastRead.set(key, r.data);
+    if (r.ok && startedAt === writes) lastRead.set(key, r.data);
     else lastRead.delete(key);
     onResult(r);
   });
 }
 
+/** What to tell the person about a failed call. */
 export function usePublishErrorText(): (e: PublishApiError) => string {
   const t = useTranslations('clipsPublish.errors');
   return (e) => {
