@@ -94,7 +94,7 @@ export default async function ClipDetailPage({
     const loaded = await runTool(
       'chalybclip',
       userId,
-      (signal) => editorApi(engine.engine(userId)).load(clipId, signal),
+      (signal) => editorApi(engine.engine(userId)).loadAbsolute(clipId, signal),
       { idempotent: true },
     );
     if (!loaded.ok)

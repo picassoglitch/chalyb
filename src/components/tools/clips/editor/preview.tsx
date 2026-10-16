@@ -185,7 +185,7 @@ function SimChrome({
 }
 
 export function Preview({
-  clipId,
+  src,
   form,
   fitMode,
   previewMode,
@@ -198,7 +198,8 @@ export function Preview({
   onTogglePlay,
   onToggleMute,
 }: {
-  clipId: string;
+  /** Signed engine link to the cut (no overlays). */
+  src: string | null;
   form: EditorForm;
   fitMode: string;
   previewMode: string;
@@ -253,7 +254,7 @@ export function Preview({
     >
       <video
         ref={videoRef}
-        src={`/api/tools/chalybclip/clips/${encodeURIComponent(clipId)}/media`}
+        src={src ?? undefined}
         preload="metadata"
         muted
         playsInline

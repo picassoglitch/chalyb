@@ -8,7 +8,13 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export const GET = editorRoute(
-  (api, id, { req, signal }) =>
-    api.renderStatus(id, parseQuality(new URL(req.url).searchParams.get('quality')), signal),
+  async (api, id, { req, signal }) =>
+    api.absolute(
+      await api.renderStatus(
+        id,
+        parseQuality(new URL(req.url).searchParams.get('quality')),
+        signal,
+      ),
+    ),
   { idempotent: true },
 );

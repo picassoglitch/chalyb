@@ -1,15 +1,15 @@
-// GET /api/tools/chalybclip/clips/{clipId}/media — streamed from the engine
-// (Range-aware), so the browser never calls it directly.
+// GET /api/tools/chalybclip/clips/{clipId}/media — a stable hub URL for the
+// clip's video: redirects to a fresh short-lived signed engine link (the
+// browser loads the bytes from the engine, never through the hub).
 
-import { clipBytes } from '@/lib/tools/adapters/clips/editor-bytes';
+import { clipMediaRedirect } from '@/lib/tools/adapters/clips/editor-bytes';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 300;
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ clipId: string }> },
 ): Promise<Response> {
-  return clipBytes(req, (await params).clipId, 'media');
+  return clipMediaRedirect(req, (await params).clipId, 'media');
 }

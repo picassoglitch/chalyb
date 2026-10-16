@@ -14,7 +14,6 @@ import {
   parsePref,
   parseQuality,
   CLIP_ID_RE,
-  safeRedirect,
   type EditorForm,
   type EditorPayload,
 } from '@/lib/tools/adapters/clips/editor-types';
@@ -195,18 +194,10 @@ test('prefs, hooks and quality cleaners', () => {
   assert.equal(parseQuality(null), '1080');
 });
 
-test('clip ids and media redirects are checked', () => {
+test('clip ids are checked', () => {
   assert.ok(CLIP_ID_RE.test('clp_01JABCDEF'));
   for (const bad of ['', '../x', 'a/b', 'clp x', 'a'.repeat(81), '%2e%2e'])
     assert.equal(CLIP_ID_RE.test(bad), false, bad);
-  assert.equal(
-    safeRedirect('https://storage.googleapis.com/b/k?X-Goog-Signature=1'),
-    'https://storage.googleapis.com/b/k?X-Goog-Signature=1',
-  );
-  assert.equal(safeRedirect('http://169.254.169.254/'), null);
-  assert.equal(safeRedirect('file:///etc/passwd'), null);
-  assert.equal(safeRedirect('/dashboard/clips/x'), null);
-  assert.equal(safeRedirect(null), null);
 });
 
 // ── engine calls ──────────────────────────────────────────────────────
@@ -267,18 +258,46 @@ test('editor API hits the engine routes with the right verbs', async () => {
   assert.equal((calls[0]!.init.headers as Record<string, string>).Authorization, 'Bearer tok');
 });
 
-test('byte routes forward Range and never follow redirects themselves', async () => {
-  const { engine, calls } = engineWith(
-    () => new Response(null, { status: 302, headers: { location: 'https://bucket/x' } }),
+test('media paths from the engine become absolute links, nothing else does', async () => {
+  const { engine } = engineWith(() =>
+    json(200, {
+      clip: { id: 'clp_1' },
+      media: {
+        preview: '/api/hub/media/clip/clp_1?t=ten_1&exp=9&sig=a',
+        thumbnail: 'https://evil.example/x.jpg',
+      },
+    }),
   );
-  const res = await editorApi(engine).bytes('clp_1', 'media', { range: 'bytes=0-99' });
-  assert.equal(res.status, 302);
-  const h = calls[0]!.init.headers as Record<string, string>;
-  assert.equal(h.Range, 'bytes=0-99');
-  assert.equal(h.Authorization, 'Bearer tok');
-  assert.equal(calls[0]!.init.redirect, 'manual');
-  await editorApi(engine).bytes('clp_1', 'download', { quality: '4k' });
-  assert.ok(calls[1]!.url.endsWith('/clips/clp_1/download?quality=4k'));
+  const api = editorApi(engine);
+  const p = await api.loadAbsolute('clp_1');
+  assert.equal(
+    p.media.preview,
+    'https://clips.example/api/hub/media/clip/clp_1?t=ten_1&exp=9&sig=a',
+  );
+  assert.equal(p.media.thumbnail, null);
+  const s = await api.absolute({
+    state: 'ready',
+    progress_pct: 100,
+    error: null,
+    quality: '1080',
+    download: '/api/hub/media/render/clp_1?q=1080&t=ten_1&exp=9&sig=b',
+  });
+  assert.equal(
+    s.download,
+    'https://clips.example/api/hub/media/render/clp_1?q=1080&t=ten_1&exp=9&sig=b',
+  );
+  assert.equal(
+    (
+      await api.absolute({
+        state: 'idle',
+        progress_pct: 0,
+        error: null,
+        quality: '1080',
+        download: null,
+      })
+    ).download,
+    null,
+  );
 });
 
 test('ids are encoded into one path segment', async () => {

@@ -13,7 +13,7 @@ import {
   type ExportQuality,
   type RenderStatus,
 } from '@/lib/tools/adapters/clips/editor-types';
-import { BFF, call, clipPath, EditorCallError } from './api';
+import { call, clipPath, EditorCallError } from './api';
 import { ErrorLine } from './error-line';
 
 const POLL_MS = 1500;
@@ -43,13 +43,11 @@ export function ExportPanel({
   const started = useRef(false);
   useEffect(() => () => alive.current?.abort(), []);
 
-  const download = useCallback(
-    (q: ExportQuality) => {
-      // Same tab: the BFF answers Content-Disposition: attachment.
-      window.location.assign(`${BFF}/${clipPath(clipId, `download?quality=${q}`)}`);
-    },
-    [clipId],
-  );
+  const download = useCallback((s: RenderStatus) => {
+    // Same tab: a short-lived signed engine link answering with
+    // Content-Disposition: attachment (the page stays).
+    if (s.download) window.location.assign(s.download);
+  }, []);
 
   /** Wait for a render in flight, polling its status. */
   const waitFor = useCallback(
@@ -82,7 +80,7 @@ export function ExportPanel({
         });
         setStatus(s);
         if (s.state === 'rendering') s = (await waitFor(q, ctl.signal)) ?? s;
-        if (s.state === 'ready' && !ctl.signal.aborted) download(q);
+        if (s.state === 'ready' && !ctl.signal.aborted) download(s);
       } catch (err) {
         if (!(err instanceof Error && err.name === 'AbortError'))
           setError(err instanceof EditorCallError ? err : new EditorCallError(0, null));
@@ -172,7 +170,7 @@ export function ExportPanel({
         <button
           type="button"
           className="ch-btn ch-btn--primary ch-ce__dl"
-          onClick={() => (status?.state === 'ready' ? download(quality) : start(quality))}
+          onClick={() => start(quality)}
         >
           <Download aria-hidden="true" />
           {t('download')}

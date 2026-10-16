@@ -87,6 +87,9 @@ export function ClipEditorScreen({
   const router = useRouter();
   const id = initial.clip.id;
   const [payload, setPayload] = useState(initial);
+  // The signed video link, kept stable so a reload doesn't restart playback;
+  // swapped for a fresh one if it stops working (expired).
+  const [mediaSrc, setMediaSrc] = useState(initial.media.preview);
   const [form, setForm] = useState<EditorForm>(initial.form);
   const [saved, setSaved] = useState<EditorForm>(initial.form);
   // The latest form, so an update can diff against it without side
@@ -140,15 +143,31 @@ export function ClipEditorScreen({
       'volumechange',
     ];
     events.forEach((e) => v.addEventListener(e, sync));
+    // An expired signed link: get a fresh one and carry on where we were.
+    let retried = false;
+    const onError = () => {
+      if (retried) return;
+      retried = true;
+      const at = v.currentTime;
+      void call<EditorPayload>(clipPath(initial.clip.id, 'editor'))
+        .then((p) => {
+          if (!p.media.preview) return;
+          setMediaSrc(p.media.preview);
+          v.addEventListener('loadedmetadata', () => (v.currentTime = at), { once: true });
+        })
+        .catch(() => {});
+    };
+    v.addEventListener('error', onError);
     // timeupdate is ~4/s: too coarse for word-level captions.
     const tick = window.setInterval(() => {
       if (!v.paused) sync();
     }, 60);
     return () => {
       events.forEach((e) => v.removeEventListener(e, sync));
+      v.removeEventListener('error', onError);
       window.clearInterval(tick);
     };
-  }, [initial.clip.duration_s]);
+  }, [initial.clip.duration_s, initial.clip.id]);
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -528,7 +547,7 @@ export function ClipEditorScreen({
               </fieldset>
             </div>
             <Preview
-              clipId={id}
+              src={mediaSrc}
               form={form}
               fitMode={fitMode}
               previewMode={previewMode}

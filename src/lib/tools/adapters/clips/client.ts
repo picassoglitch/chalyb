@@ -32,9 +32,6 @@ export interface EngineCallOpts {
   signal?: AbortSignal;
   /** Return the raw Response (redirects not followed) instead of JSON. */
   raw?: boolean;
-  /** Extra request headers (e.g. Range for media). Never overrides
-   *  Authorization, Accept or Content-Type. */
-  headers?: Record<string, string>;
 }
 
 export interface ClipsEngine {
@@ -115,7 +112,6 @@ export function clipsEngine(userId: string, deps: ClipsEngineDeps = defaultDeps(
       tier: id.tier,
     });
     const headers: Record<string, string> = {
-      ...opts.headers,
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     };

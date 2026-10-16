@@ -6,6 +6,6 @@ import { editorRoute } from '@/lib/tools/adapters/clips/editor-route';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export const GET = editorRoute((api, id, { signal }) => api.load(id, signal), {
+export const GET = editorRoute((api, id, { signal }) => api.loadAbsolute(id, signal), {
   idempotent: true,
 });

@@ -8,6 +8,8 @@ import { parseQuality } from '@/lib/tools/adapters/clips/editor-types';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export const POST = editorRoute((api, id, { req, signal }) =>
-  api.render(id, parseQuality(new URL(req.url).searchParams.get('quality')), signal),
+export const POST = editorRoute(async (api, id, { req, signal }) =>
+  api.absolute(
+    await api.render(id, parseQuality(new URL(req.url).searchParams.get('quality')), signal),
+  ),
 );

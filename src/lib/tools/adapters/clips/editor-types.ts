@@ -120,6 +120,10 @@ export interface EditorPayload {
     render_state: string;
     created_at: string;
   };
+  /** Short-lived signed links to the engine (ChalyClip api/hub_media.py).
+   *  From the engine they're paths; the BFF makes them absolute URLs the
+   *  browser loads directly (video bytes never go through the hub). */
+  media: { preview: string | null; thumbnail: string | null };
   can_finalize: boolean;
   can_reject: boolean;
   next_clip_id: string | null;
@@ -204,6 +208,8 @@ export interface RenderStatus {
   progress_pct: number;
   error: string | null;
   quality: string;
+  /** When ready: the signed download link (absolute once through the BFF). */
+  download: string | null;
 }
 
 export interface HookIdeas {
@@ -337,14 +343,3 @@ export function parseHooksBody(body: unknown): { tone: string; n: number } {
 
 /** Engine clip ids are ULID-ish (clp_…); anything else is not a clip. */
 export const CLIP_ID_RE = /^[A-Za-z0-9_-]{1,80}$/;
-
-/** Only a bucket's HTTPS URL may come back as a media redirect. */
-export function safeRedirect(location: string | null): string | null {
-  if (!location) return null;
-  try {
-    const u = new URL(location);
-    return u.protocol === 'https:' ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
