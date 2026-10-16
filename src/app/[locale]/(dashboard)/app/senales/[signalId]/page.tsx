@@ -62,13 +62,28 @@ export default async function SenalDetalle({
   const td = await getTranslations('signalsTool.detailPage');
   const { rango } = await searchParams;
   const range: SignalRange = rango === '1d' || rango === '1m' ? rango : '7d';
-  const res = await runTool(
-    'chalybcrypto',
-    session.user.id,
-    (signal) =>
-      adapter.getSignal({ plan: planKeyFor(entitlements.plan), id: signalId, range }, signal),
-    { idempotent: true },
-  );
+  // The signal and the person's coins/prefs/channels don't depend on each
+  // other: both reads at once.
+  const [res, extra] = await Promise.all([
+    runTool(
+      'chalybcrypto',
+      session.user.id,
+      (signal) =>
+        adapter.getSignal({ plan: planKeyFor(entitlements.plan), id: signalId, range }, signal),
+      { idempotent: true },
+    ),
+    runTool(
+      'chalybcrypto',
+      session.user.id,
+      (signal) =>
+        Promise.all([
+          adapter.coins(signal),
+          adapter.getPrefs(session.user.id, signal),
+          adapter.channels(signal),
+        ]),
+      { idempotent: true },
+    ),
+  ]);
   const back = (
     <Link href={'/app/senales' as Route} className="ch-back">
       <ChevronLeft aria-hidden="true" />
@@ -98,17 +113,6 @@ export default async function SenalDetalle({
     );
 
   const signal = screenSignal(res.data.signal);
-  const extra = await runTool(
-    'chalybcrypto',
-    session.user.id,
-    (signal) =>
-      Promise.all([
-        adapter.coins(signal),
-        adapter.getPrefs(session.user.id, signal),
-        adapter.channels(signal),
-      ]),
-    { idempotent: true },
-  );
   if (!extra.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="main">

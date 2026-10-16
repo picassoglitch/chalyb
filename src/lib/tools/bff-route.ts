@@ -41,7 +41,12 @@ export function toolRoute<A, T>(
   ): Promise<Response> => {
     const session = await getSessionUser();
     if (!session) return NextResponse.json({ ok: false, code: 'SESSION_EXPIRED' }, { status: 401 });
-    const entitlements = await getEntitlements(session);
+    // The plan and the risk notice are independent reads: both at once (the
+    // answers are still checked in the same order below).
+    const [entitlements, riskOk] = await Promise.all([
+      getEntitlements(session),
+      toolBySlug(slug)?.needsRiskAck ? hasRiskAck(session.user.id, slug) : true,
+    ]);
     if (entitlements.tools[slug]?.state !== 'included')
       return NextResponse.json({ ok: false, code: 'NOT_INCLUDED' }, { status: 403 });
     const a = hubRunsTool(slug) ? adapter() : null;
@@ -49,7 +54,7 @@ export function toolRoute<A, T>(
       const error = await reportToolError(slug, session.user.id, 'unavailable', true);
       return NextResponse.json({ ok: false, error }, { status: 503 });
     }
-    if (toolBySlug(slug)?.needsRiskAck && !(await hasRiskAck(session.user.id, slug)))
+    if (!riskOk)
       return NextResponse.json({ ok: false, code: 'RISK_ACK_REQUIRED' }, { status: 403 });
     const params = (await route?.params) ?? {};
     const body =

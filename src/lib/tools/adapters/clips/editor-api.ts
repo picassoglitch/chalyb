@@ -89,15 +89,11 @@ export async function withAbsoluteMedia(
   abs: (path: string | null | undefined) => Promise<string | null>,
 ): Promise<EditorPayload> {
   const media = p.media ?? { preview: null, thumbnail: null };
-  return {
-    ...p,
-    media: {
-      preview: await abs(media.preview),
-      thumbnail: await abs(media.thumbnail),
-      formats: {
-        horizontal: await abs(media.formats?.horizontal),
-        square: await abs(media.formats?.square),
-      },
-    },
-  };
+  const [preview, thumbnail, horizontal, square] = await Promise.all([
+    abs(media.preview),
+    abs(media.thumbnail),
+    abs(media.formats?.horizontal),
+    abs(media.formats?.square),
+  ]);
+  return { ...p, media: { preview, thumbnail, formats: { horizontal, square } } };
 }

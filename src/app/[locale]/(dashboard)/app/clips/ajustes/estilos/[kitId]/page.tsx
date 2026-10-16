@@ -46,8 +46,12 @@ export default async function ClipsStylePage({
   const g = await loadClipsEngine(locale, `/app/clips/ajustes/estilos/${kitId}`);
   if (g.kind !== 'ready') return <ClipsGateView gate={g} tab="settings" />;
   const res = await engineRead(g, async (e, signal) => {
-    const list = await listKits(e, signal);
-    return { list, kit: isNew ? null : (await getKit(e, kitId, signal)).kit };
+    // The list and the kit are independent reads: both at once.
+    const [list, one] = await Promise.all([
+      listKits(e, signal),
+      isNew ? null : getKit(e, kitId, signal),
+    ]);
+    return { list, kit: one ? one.kit : null };
   });
   if (!res.ok) {
     if (res.error.reason === 'not_found') notFound();
