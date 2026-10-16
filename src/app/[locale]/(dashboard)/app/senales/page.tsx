@@ -14,12 +14,8 @@ import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-sta
 import { RiskAck } from '@/components/tools/risk-ack';
 import { SetupState } from '@/components/ui/setup-state';
 import { Skeleton } from '@/components/ui/primitives';
-import {
-  CoinChips,
-  SignalCard,
-  SignalsDisclaimer,
-  VerdictPill,
-} from '@/components/tools/senales/common';
+import { SignalCard, SignalsDisclaimer, VerdictPill } from '@/components/tools/senales/common';
+import { CoinChipsLive, CoinVariant } from '@/components/tools/senales/coin-filter';
 import '@/styles/tools-senales.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,13 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // activation. Cards are the plan's signals, filtered by the person's coins
 // and the chip; the legal strip is always on screen.
 
-export default async function SenalesHome({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ moneda?: string }>;
-}) {
+export default async function SenalesHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const gate = await loadTool(locale, 'chalybcrypto', '/app/senales', getSenales);
@@ -120,10 +110,8 @@ export default async function SenalesHome({
       </ToolShell>
     );
 
-  const { moneda } = await searchParams;
-  const active = moneda && prefs.coins.includes(moneda) ? moneda : null;
   const mine = coins.filter((c) => prefs.coins.includes(c.symbol));
-  const list = latestPerCoin(feed.signals).filter((s) => !active || s.coin === active);
+  const latest = latestPerCoin(feed.signals);
   const now = new Date().getTime();
   const hour = (hhmm: string) =>
     new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', {
@@ -132,17 +120,10 @@ export default async function SenalesHome({
       timeZone: 'UTC',
     }).format(new Date(`1970-01-01T${hhmm}:00Z`));
 
-  return (
-    <ToolShell slug="chalybcrypto" tab="main">
-      <CoinChips base="/app/senales" coins={mine} active={active} />
-      {feed.stale && (
-        <div className="ch-sig-partial" role="status">
-          <p>{t('partial')}</p>
-          <Link href={'/app/senales' as Route} className="ch-btn ch-btn--gray ch-btn--compact">
-            {t('retry')}
-          </Link>
-        </div>
-      )}
+  // One version per chip value (CoinVariant picks it in the browser).
+  const screenFor = (active: string | null) => {
+    const list = latest.filter((s) => !active || s.coin === active);
+    return (
       <div className="ch-sig-layout">
         <section aria-labelledby="sig-list" className="ch-sig-list">
           <h2 id="sig-list" className="ch-sr">
@@ -238,6 +219,29 @@ export default async function SenalesHome({
           </section>
         </aside>
       </div>
+    );
+  };
+
+  return (
+    <ToolShell slug="chalybcrypto" tab="main">
+      <CoinChipsLive
+        base="/app/senales"
+        coins={mine.map((c) => ({ symbol: c.symbol, name: c.name }))}
+      />
+      {feed.stale && (
+        <div className="ch-sig-partial" role="status">
+          <p>{t('partial')}</p>
+          <Link href={'/app/senales' as Route} className="ch-btn ch-btn--gray ch-btn--compact">
+            {t('retry')}
+          </Link>
+        </div>
+      )}
+      <CoinVariant
+        variants={Object.fromEntries([
+          ['', screenFor(null)],
+          ...mine.map((c) => [c.symbol, screenFor(c.symbol)]),
+        ])}
+      />
       <SignalsDisclaimer />
     </ToolShell>
   );
