@@ -15,6 +15,7 @@ import { CreateCharacter } from "./CreateCharacter";
 import { ConnectProviders } from "./ConnectProviders";
 import { CATALOG } from "@/lib/chalito/web/apps-catalog";
 import { useSettings } from "@/lib/chalito/useSettings";
+import { useSetup } from "./SetupChecklist";
 import type { AgentOption } from "@/lib/chalito/web/providers";
 
 // One entry per coding agent in providers.yaml (AgentOption lives with agentOptions() in providers.ts).
@@ -46,6 +47,11 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   const setCompanionStep = useCompanionStep((s) => s.setStep);
   const pickNow = values?.avatar;
   const onStep = STEPS[i]!;
+  // First Run D: "pair" and "connect" can only be put off ("Hacerlo más tarde"), never marked done;
+  // Inicio keeps the checklist until the computer and an AI are really there.
+  // Polls only on those two steps; it shares the page's one timer with any checklist on screen.
+  const setup = useSetup({ poll: onStep === "pair" || onStep === "connect" });
+  const stepDone = (id: "computer" | "ai") => setup.steps.find((x) => x.id === id)?.done === true;
   const signedInNow = session.status === "signed_in" || (DEV_BACKEND && status === "ready");
   useEffect(() => setPick(pickNow), [setPick, pickNow]);
   useEffect(() => {
@@ -55,6 +61,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
   if (!values) return <p>{tc("loading")}</p>;
 
   const step: Step = STEPS[i]!;
+  const deferred = (step === "pair" && !stepDone("computer")) || (step === "connect" && !stepDone("ai"));
   const next = async () => {
     if (i < STEPS.length - 1) return setI(i + 1);
     await finishOnboarding(values);
@@ -142,7 +149,9 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
               <ConnectProviders apps={KEY_APPS} />
             </div>
           )}
-          <p className="ch-chl-small">{t("connect.later")}</p>
+          <p className="ch-chl-small">
+            {t("connect.later")} {t("laterNote")}
+          </p>
         </div>
       ) : null}
 
@@ -191,7 +200,7 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           <Link href="/descargar" className="ch-btn ch-btn--secondary ch-chl-fit">
             {t("pair.download")}
           </Link>
-          <p className="ch-chl-small">{t("pair.later")}</p>
+          <p className="ch-chl-small">{t("laterNote")}</p>
         </div>
       ) : null}
 
@@ -216,8 +225,9 @@ export const Onboarding = ({ agents }: { agents: AgentOption[] }) => {
           className="ch-btn ch-btn--primary"
           disabled={step === "signIn" && !signedIn}
           onClick={() => void next()}
+          data-testid="onboarding-next"
         >
-          {i === STEPS.length - 1 ? tc("finish") : tc("continue")}
+          {deferred ? t("later") : i === STEPS.length - 1 ? tc("finish") : tc("continue")}
         </button>
       </div>
     </div>

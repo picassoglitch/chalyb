@@ -145,9 +145,8 @@
     },
     "pair": {
       "title": "Conecta tu computadora",
-      "body": "Instala Chalito en tu computadora y emparéjala con el glifo de Chalito.",
-      "download": "Ir a Descargar",
-      "later": "Puedes hacerlo después."
+      "body": "Descarga Chalito, ábrelo en tu computadora y toca «Conectar esta computadora». Lo apruebas aquí, en tu navegador. No necesitas la terminal.",
+      "download": "Ir a Descargar"
     },
     "done": {
       "title": "¡Listo!",
@@ -155,8 +154,10 @@
     },
     "passkey": {
       "title": "Protege tus aprobaciones",
-      "body": "Las acciones de riesgo alto piden tu passkey."
-    }
+      "body": "Las acciones de riesgo alto piden tu llave de acceso: tu huella, tu rostro o el bloqueo de tu dispositivo."
+    },
+    "later": "Hacerlo más tarde",
+    "laterNote": "Te lo recordaremos en Inicio hasta que esté listo."
   },
   "settings": {
     "title": "Ajustes",
@@ -359,7 +360,7 @@
       "invite": {
         "create": "Invitar",
         "again": "Crear otra invitación",
-        "how": "Que la otra persona escanee el glifo o escriba este código en Salas → Unirse con código. Sirve una vez.",
+        "how": "Que la otra persona escanee el código de colores o escriba este código en Salas → Unirse con código. Sirve una vez.",
         "expires": "Vence el {date}"
       },
       "rotation": {
@@ -544,14 +545,14 @@
       "loading": "Conectando…",
       "signed_out": "Entra con tu cuenta de Chalyb para ver tus sesiones y aprobaciones.",
       "signIn": "Entrar con Chalyb",
-      "unpaired": "Este navegador aún no es de confianza. Apruébalo desde un dispositivo de confianza o emparéjalo desde la app de escritorio.",
+      "unpaired": "Este navegador aún no está aprobado. Apruébalo desde un dispositivo aprobado o emparéjalo desde la app de escritorio.",
       "error": "No pudimos conectar. Vuelve a intentarlo en un momento.",
-      "revoked": "Este dispositivo fue retirado de tu cuenta. Vuelve a emparejarlo desde un dispositivo de confianza.",
+      "revoked": "Este dispositivo fue retirado de tu cuenta. Vuelve a emparejarlo desde un dispositivo aprobado.",
       "repair": "Emparejar de nuevo",
       "link": "Usar este navegador"
     },
     "devMode": {
-      "banner": "Modo desarrollador ACTIVO.",
+      "banner": "Modo desarrollador ACTIVO: tus IA pueden hacer más cosas sin preguntarte.",
       "manage": "Apagarlo"
     },
     "risk": {
@@ -600,8 +601,8 @@
       "openSession": "Ver la sesión",
       "notFound": "No encontramos esa aprobación.",
       "loading": "Cargando…",
-      "needsPasskey": "Para aprobar acciones de riesgo alto, protege este dispositivo con tu passkey.",
-      "enrolPasskey": "Crear passkey",
+      "needsPasskey": "Para aprobar acciones de riesgo alto, protege este dispositivo con tu llave de acceso.",
+      "enrolPasskey": "Crear llave de acceso",
       "truncated": "…(truncado)",
       "truncatedN": "…(truncado, faltan {n} caracteres)",
       "hiddenChars": "Contiene caracteres invisibles que pueden cambiar cómo se ve el texto; aquí se muestran como ⟦U+…⟧.",
@@ -615,8 +616,8 @@
         "body": "Esta sesión pide ver la pantalla y usar el mouse y el teclado de {computer}. Si apruebas, la IA podrá hacerlo durante esta sesión.",
         "session": "Sesión: {session} · Agente: {agent}",
         "stop": "Puedes detenerla cuando quieras con el botón en pantalla o con Ctrl+Alt+Esc en esa computadora.",
-        "once": "Se pide una vez por sesión, siempre con tu passkey. Nunca se aprueba sola.",
-        "invalid": "Esta solicitud de control no pide tu passkey como debe. No se puede aprobar; puedes denegarla.",
+        "once": "Se pide una vez por sesión, siempre con tu llave de acceso. Nunca se aprueba sola.",
+        "invalid": "Esta solicitud de control no pide tu llave de acceso como debe. No se puede aprobar; puedes denegarla.",
         "approve": "Aprobar control"
       }
     },
@@ -741,7 +742,11 @@
           "no_passkey": "Hace falta tu llave de acceso en este dispositivo.",
           "failed": "No se pudo. No se cambió nada; vuelve a intentarlo."
         }
-      }
+      },
+      "noComputer": "Aún no conectas una computadora",
+      "noComputerBody": "Chalito trabaja en tu computadora. Descárgalo, ábrelo y toca «Conectar esta computadora»; lo apruebas aquí.",
+      "download": "Descargar Chalito",
+      "devModeWhat": "Con el modo desarrollador, tus IA hacen más cosas sin preguntarte. Solo se enciende en la computadora; aquí puedes apagarlo."
     },
     "settings": {
       "server": "Tus ajustes se guardan en tu cuenta.",
@@ -760,13 +765,13 @@
       "notFound": "Ese aviso ya no existe o no es tuyo."
     },
     "passkey": {
-      "title": "Protege tus aprobaciones con tu passkey",
+      "title": "Protege tus aprobaciones con tu llave de acceso",
       "body": "Para aprobar acciones de riesgo alto o crítico desde aquí te pediremos tu huella, rostro o llave de seguridad. Tu computadora lo verifica.",
-      "create": "Crear passkey",
-      "enrolled": "Este dispositivo ya tiene passkey.",
-      "afterPairing": "Cuando emparejes tu computadora te pediremos crear una passkey en este dispositivo.",
-      "cancelled": "Cancelaste la passkey; puedes intentarlo de nuevo.",
-      "error": "No pudimos crear la passkey. Inténtalo de nuevo.",
+      "create": "Crear llave de acceso",
+      "enrolled": "Este dispositivo ya tiene llave de acceso.",
+      "afterPairing": "Cuando emparejes tu computadora te pediremos crear una llave de acceso en este dispositivo.",
+      "cancelled": "Cancelaste la llave de acceso; puedes intentarlo de nuevo.",
+      "error": "No pudimos crear la llave de acceso. Inténtalo de nuevo.",
       "replace": "Cambiar llave de acceso",
       "replaceRefused": "Para cambiar tu llave de acceso, confirma primero con la actual. ¿La perdiste? Vuelve a agregar este dispositivo.",
       "replaced": "Listo: tu nueva llave de acceso protege tus aprobaciones."
@@ -808,18 +813,19 @@
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
       "failed": "No pudimos enviarlo.",
       "noComputers": "Aún no tienes una computadora vinculada.",
-      "download": "Descargar Chalito para tu computadora",
       "connect": "Conectar",
       "connectAdapter": "Conectar {name}",
-      "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes."
+      "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes.",
+      "firstTask": "Tu primera tarea: tu IA lee el proyecto y te lo resume. En modo plan solo lee; no cambia ningún archivo. Revisa y toca «Iniciar sesión».",
+      "firstTaskPrompt": "Resume este proyecto en 5 líneas: qué es, cómo está organizado y por dónde empezarías. No cambies ningún archivo."
     },
     "account": {
       "title": "Eliminar mi cuenta de Chalito",
       "explain": "Borra tus compañeros, sesiones, dispositivos y ajustes de Chalito. Tu cuenta de Chalyb no cambia.",
       "start": "Eliminar mi cuenta…",
       "needsPairing": "Para pedirlo, vincula este navegador como dispositivo.",
-      "needsPasskey": "Para pedirlo, este dispositivo necesita una passkey.",
-      "setUpPasskey": "Crear passkey",
+      "needsPasskey": "Para pedirlo, este dispositivo necesita una llave de acceso.",
+      "setUpPasskey": "Crear llave de acceso",
       "what": {
         "data": "Se borran tus datos de Chalito: compañeros, sesiones, dispositivos, salas y ajustes.",
         "grace": "Tienes 7 días para cancelarlo. Después no se puede deshacer.",
@@ -827,7 +833,7 @@
         "hub": "Tu cuenta de Chalyb, tu plan y tus créditos no cambian."
       },
       "ack": "Entiendo que esto borra mi cuenta de Chalito.",
-      "confirm": "Confirmar con mi passkey",
+      "confirm": "Confirmar con mi llave de acceso",
       "back": "Volver",
       "scheduled": "Tu cuenta de Chalito se eliminará el {date}.",
       "countdown": "Quedan {days, plural, one {# día} other {# días}} y {hours, plural, one {# hora} other {# horas}} para cancelarlo.",
@@ -835,9 +841,9 @@
       "download": "Descargar mis datos",
       "loadFailed": "No pudimos ver el estado de tu cuenta. Inténtalo más tarde.",
       "note": {
-        "cancelled_step_up": "No se confirmó con la passkey; no se pidió nada.",
-        "passkey_required": "Este dispositivo necesita una passkey para pedirlo.",
-        "step_up_failed": "La passkey no se pudo verificar. Inténtalo de nuevo.",
+        "cancelled_step_up": "No se confirmó con la llave de acceso; no se pidió nada.",
+        "passkey_required": "Este dispositivo necesita una llave de acceso para pedirlo.",
+        "step_up_failed": "La llave de acceso no se pudo verificar. Inténtalo de nuevo.",
         "already_scheduled": "Ya estaba programada.",
         "failed": "No pudimos hacerlo. Inténtalo de nuevo.",
         "cancelled": "Listo: tu cuenta ya no se eliminará.",
@@ -846,10 +852,10 @@
     },
     "activate": {
       "title": "Activa Chalito en este navegador",
-      "body": "Es tu primer dispositivo: con un toque creas tu passkey y este navegador queda como de confianza. No necesitas la app de escritorio.",
+      "body": "Es tu primer dispositivo: con un toque creas tu llave de acceso y este navegador queda aprobado. No necesitas la app de escritorio.",
       "cta": "Activar",
       "busy": "Activando…",
-      "hasClients": "Tu cuenta ya tiene un dispositivo de confianza. Aprueba este navegador desde él.",
+      "hasClients": "Tu cuenta ya tiene un dispositivo aprobado. Aprueba este navegador desde él.",
       "hasClientsCta": "Usar este navegador",
       "error": {
         "device_exists": "Este navegador ya estaba registrado. Recarga la página e inténtalo de nuevo.",
@@ -857,19 +863,19 @@
         "failed": "Algo falló al activar. Vuelve a intentarlo en un momento.",
         "has_agents": "Tu cuenta tiene una computadora vinculada. Usa tu código de recuperación para entrar desde este navegador."
       },
-      "doneTitle": "Listo, este navegador ya es de confianza",
+      "doneTitle": "Listo, este navegador ya está aprobado",
       "recoveryTitle": "Guarda tu código de recuperación",
       "recoveryBody": "Es la única forma de recuperar tu cuenta si pierdes este navegador. Guárdalo en un lugar seguro: no lo volveremos a mostrar.",
       "recoveryLabel": "Código de recuperación",
       "copy": "Copiar",
       "copied": "Copiado",
-      "passkeyMissing": "No se creó tu passkey. Créala ahora para proteger tus aprobaciones.",
+      "passkeyMissing": "No se creó tu llave de acceso. Créala ahora para proteger tus aprobaciones.",
       "saved": "Ya lo guardé",
       "continue": "Ir al chat"
     },
     "recover": {
       "title": "Usa tu código de recuperación",
-      "body": "No tienes un navegador o teléfono de confianza, pero tu cuenta tiene una computadora vinculada. Escribe el código de recuperación que guardaste al activar Chalito.",
+      "body": "No tienes un navegador o teléfono aprobado, pero tu cuenta tiene una computadora vinculada. Escribe el código de recuperación que guardaste al activar Chalito.",
       "label": "Código de recuperación",
       "cta": "Continuar",
       "busy": "Revisando…",
@@ -878,7 +884,7 @@
       "error": {
         "format": "Ese código no tiene el formato correcto: son 5 grupos separados por guiones.",
         "bad_code": "Ese código no es correcto.",
-        "no_recovery_code": "Tu cuenta no tiene un código de recuperación. Aprueba este navegador desde un dispositivo de confianza.",
+        "no_recovery_code": "Tu cuenta no tiene un código de recuperación. Aprueba este navegador desde un dispositivo aprobado.",
         "device_exists": "Este navegador ya estaba registrado. Recarga la página e inténtalo de nuevo.",
         "rejected": "No pudimos recuperar tu cuenta. Vuelve a intentarlo.",
         "failed": "Algo falló. Vuelve a intentarlo en un momento."
@@ -897,16 +903,16 @@
       "gone": "Esa solicitud ya no existe o venció. Vuelve a conectar desde la app.",
       "error": {
         "not_found": "Esa solicitud ya no existe.",
-        "no_passkey": "Este dispositivo no tiene passkey.",
-        "passkey_failed": "No se pudo confirmar con tu passkey.",
+        "no_passkey": "Este dispositivo no tiene llave de acceso.",
+        "passkey_failed": "No se pudo confirmar con tu llave de acceso.",
         "challenge_expired": "Tardaste demasiado; inténtalo de nuevo.",
         "forbidden": "Este dispositivo no puede aprobar conexiones.",
         "error": "Algo falló. Inténtalo de nuevo."
       },
       "badRedirect": "La dirección de regreso no es segura; no te enviamos ahí.",
       "needsDevice": "Para permitirlo, abre esta página en un dispositivo emparejado.",
-      "needsPasskey": "Permitirlo pide tu passkey.",
-      "enrolPasskey": "Crear passkey"
+      "needsPasskey": "Permitirlo pide tu llave de acceso.",
+      "enrolPasskey": "Crear llave de acceso"
     },
     "connectors": {
       "title": "Apps conectadas",
@@ -941,39 +947,39 @@
       "signIn": "Entrar con Chalyb",
       "unavailable": "No se puede añadir este navegador ahora. Vuelve a intentarlo en un momento.",
       "waitingTitle": "Esperando aprobación",
-      "waitingBody": "En tu teléfono u otro navegador de confianza, abre Dispositivos → Añadir un dispositivo y escanea este anillo o escribe el código.",
-      "glyphLabel": "Anillo para escanear desde un dispositivo de confianza",
+      "waitingBody": "En tu teléfono u otro navegador aprobado, abre Dispositivos → Añadir un dispositivo y escanea este código de colores o escribe el código.",
+      "glyphLabel": "Código de colores para escanear desde un dispositivo aprobado",
       "orType": "o escribe este código:",
-      "fingerprint": "Huella de este navegador:",
+      "fingerprint": "Código de verificación de este navegador:",
       "expiresIn": "Vence en {minutes}:{seconds}",
-      "whereToApprove": "Antes de aprobar, comprueba que la huella sea la misma en los dos dispositivos.",
+      "whereToApprove": "Antes de aprobar, comprueba que el código de verificación sea el mismo en los dos dispositivos.",
       "cancel": "Cancelar",
       "doneTitle": "Listo",
-      "doneBody": "Este navegador ya es de confianza. Para enviar instrucciones a una computadora, emparéjalo también con ella.",
+      "doneBody": "Este navegador ya está aprobado. Para enviar instrucciones a una computadora, emparéjalo también con ella.",
       "doneCta": "Ir a la bandeja",
       "error": {
         "expired": "El código venció. Muestra uno nuevo.",
         "cancelled": "Se canceló.",
         "unavailable": "No se puede añadir este navegador ahora. Vuelve a intentarlo en un momento.",
         "endorsement_mismatch": "La aprobación no corresponde a este navegador. Vuelve a intentarlo.",
-        "endorser_not_trusted": "El dispositivo que aprobó ya no es de confianza.",
+        "endorser_not_trusted": "El dispositivo que aprobó ya no está aprobado.",
         "device_exists": "Este navegador ya estaba registrado. Muestra un código nuevo.",
         "rejected": "No se aceptó la aprobación. Vuelve a intentarlo.",
         "failed": "Algo salió mal. Vuelve a intentarlo."
       },
       "doneIntroduced": "Ya puedes enviar instrucciones a {computers}: tu otro dispositivo te las presentó.",
-      "doneDropped": "{computer}: no pudimos confirmarla. Emparéjala con su anillo para enviarle instrucciones.",
+      "doneDropped": "{computer}: no pudimos confirmarla. Emparéjala con su código de colores para enviarle instrucciones.",
       "lostDevice": "¿Perdiste tu dispositivo? Usa tu código de recuperación"
     },
     "add": {
       "title": "Añadir un dispositivo",
-      "body": "En el dispositivo nuevo, entra con tu cuenta y abre «Usar este navegador». Luego escanea su anillo o escribe su código.",
+      "body": "En el dispositivo nuevo, entra con tu cuenta y abre «Usar este navegador». Luego escanea su código de colores o escribe su código.",
       "codeLabel": "Código",
       "find": "Buscar",
       "scan": {
-        "start": "Escanear anillo",
+        "start": "Escanear código de colores",
         "starting": "Abriendo la cámara…",
-        "scanning": "Apunta la cámara al anillo.",
+        "scanning": "Apunta la cámara al código de colores.",
         "denied": "No hay permiso para usar la cámara. Escribe el código.",
         "unavailable": "La cámara no está disponible. Escribe el código."
       },
@@ -981,13 +987,13 @@
         "phone": "Teléfono",
         "web": "Navegador"
       },
-      "compare": "Comprueba que esta huella sea la misma que muestra el dispositivo nuevo:",
+      "compare": "Comprueba que este código de verificación sea el mismo que muestra el dispositivo nuevo:",
       "expiresIn": "Vence en {minutes}:{seconds}",
-      "withPasskey": "Al aprobar, te pediremos tu passkey.",
+      "withPasskey": "Al aprobar, te pediremos tu llave de acceso.",
       "withoutPasskey": "Ese dispositivo podrá aprobar acciones igual que este.",
       "approve": "Aprobar",
       "notMine": "No es mío",
-      "done": "Listo: {name} ya es de confianza.",
+      "done": "Listo: {name} ya está aprobado.",
       "back": "Volver a Dispositivos",
       "error": {
         "invalid_code": "Ese código no es válido. Revísalo.",
@@ -996,11 +1002,11 @@
         "wrong_account": "Ese dispositivo es de otra cuenta.",
         "same_device": "Es este mismo dispositivo.",
         "already_endorsed": "Ese código ya se aprobó.",
-        "step_up": "Hace falta tu passkey para aprobar. Vuelve a intentarlo.",
-        "not_trusted": "Este dispositivo ya no es de confianza.",
+        "step_up": "Hace falta tu llave de acceso para aprobar. Vuelve a intentarlo.",
+        "not_trusted": "Este dispositivo ya no está aprobado.",
         "tampered": "Los datos no coinciden. No lo apruebes y muestra un código nuevo.",
         "failed": "Algo salió mal. Vuelve a intentarlo.",
-        "passkey_cloned": "Tu passkey parece copiada: no se aprobó. Revisa tus dispositivos y crea una passkey nueva."
+        "passkey_cloned": "Tu llave de acceso parece copiada: no se aprobó. Revisa tus dispositivos y crea una llave de acceso nueva."
       }
     }
   },
@@ -1272,7 +1278,6 @@
     "refresh": "Actualizar estado",
     "noComputer": "Para pegar tus claves o iniciar sesión en tus IA necesitas la app de escritorio de Chalito. Descárgala, emparéjala y vuelve aquí.",
     "noBrowser": "Este navegador todavía no está emparejado con tu computadora. Instala Chalito en tu computadora y emparéjalo; después podrás conectar tus IA desde aquí.",
-    "download": "Descarga la app de escritorio",
     "untrusted": "Este navegador aún no puede enviar órdenes a esta computadora. Apruébalo desde ella en Dispositivos.",
     "offline": "Tu computadora parece apagada o sin conexión. Lo que pidas se aplicará si vuelve en los próximos 5 minutos.",
     "computer": "En {name}",
@@ -1428,5 +1433,34 @@
     "doneFinish": "Aprobaste «{name}», pero falta un paso en este navegador: vuelve a abrir Chalito aquí para terminar de configurarla.",
     "backToApprove": "Volver a aprobar tu computadora",
     "phishingScan": "Aprueba solo si tienes esa computadora enfrente y su código de verificación coincide."
+  },
+  "setup": {
+    "title": "Pon a trabajar a Chalito",
+    "progress": "{done} de {total} listos",
+    "done": "listo",
+    "todo": "pendiente",
+    "step": {
+      "account": "Tu cuenta de Chalyb",
+      "browser": "Este navegador, aprobado",
+      "computer": "Una computadora conectada",
+      "ai": "Una IA lista en tu computadora",
+      "folder": "Una carpeta para trabajar",
+      "firstTask": "Tu primera tarea"
+    },
+    "hint": {
+      "account": "Chalito usa tu cuenta de Chalyb. No necesitas otra contraseña.",
+      "browser": "Aprueba este navegador para ver y aprobar lo que hacen tus IA desde aquí.",
+      "computer": "Descarga Chalito, ábrelo en tu computadora y toca «Conectar esta computadora». Lo apruebas aquí, en tu navegador.",
+      "ai": "En la app de Chalito de tu computadora, abre «IA conectadas» y toca «Usar» junto a una IA que ya tengas instalada. También puedes conectar una desde aquí.",
+      "folder": "En la app de Chalito de tu computadora: Ajustes → Esta computadora → Agregar una carpeta. Chalito solo trabaja dentro de las carpetas que elijas.",
+      "firstTask": "Pídele a tu IA que resuma tu proyecto. Solo lee: no cambia ningún archivo."
+    },
+    "action": {
+      "account": "Entrar con Chalyb",
+      "browser": "Aprobar este navegador",
+      "computer": "Descargar Chalito",
+      "ai": "Conecta tus IA",
+      "firstTask": "Probar la primera tarea"
+    }
   }
 }

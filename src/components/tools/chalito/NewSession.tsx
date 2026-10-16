@@ -7,7 +7,9 @@ import { Link, useRouter } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
 import { adapterNameKey, adaptersFor, keepAdapter, startTarget } from "@/lib/chalito/web/adapters";
 import { LOAD_TIMEOUT_MS, indexConnections, withTimeout, type StatusIndex } from "@/lib/chalito/web/connect";
+import { firstTaskTarget } from "@/lib/chalito/web/setup";
 import { REMOTE_MODES } from "./Sessions";
+import { SetupChecklist } from "./SetupChecklist";
 
 export { START_ADAPTERS } from "@/lib/chalito/web/adapters";
 /** The computer may refuse silently (unknown workspace, adapter off): stop waiting after this. */
@@ -41,6 +43,24 @@ export const NewSession = () => {
   /** What each computer reported per provider (chalito.connections): Grok and Gemini need "connected". */
   const [connections, setConnections] = useState<StatusIndex>({});
 
+  /** First Run D: opened as the ready-made first task (`?first=1`), from the setup checklist. */
+  const [first, setFirst] = useState(false);
+  const prefilled = useRef(false);
+  useEffect(() => {
+    setFirst(new URLSearchParams(window.location.search).get("first") === "1");
+  }, []);
+  const firstTarget = useMemo(() => (first ? firstTaskTarget(live.devices) : null), [first, live.devices]);
+  useEffect(() => {
+    if (!firstTarget || prefilled.current) return;
+    prefilled.current = true;
+    setAgent(firstTarget.agentDeviceId);
+    setAdapter(firstTarget.appId);
+    setWorkspace(firstTarget.workspaceLabel);
+    // Plan mode only reads: the first task changes nothing on the computer.
+    setMode("plan");
+    setPrompt(t("firstTaskPrompt"));
+  }, [firstTarget, t]);
+
   const target = agent || computers[0]?.deviceId || "";
   const options = useMemo(() => adaptersFor(connections, target), [connections, target]);
   const chosen = keepAdapter(adapter, options);
@@ -61,14 +81,16 @@ export const NewSession = () => {
   const labels = useMemo(
     () =>
       [
-        ...new Set(
-          live.sessions
+        ...new Set([
+          ...live.sessions
             .filter((s) => s.agentDeviceId === target)
             .map((s) => s.card?.workspaceLabel ?? s.label)
             .filter((l): l is string => !!l),
-        ),
+          // The folders the computer reported (First Run D): labels only, never paths.
+          ...(computers.find((c) => c.deviceId === target)?.setup?.labels ?? []),
+        ]),
       ].sort(),
-    [live.sessions, target],
+    [live.sessions, target, computers],
   );
 
   useEffect(() => {
@@ -88,9 +110,8 @@ export const NewSession = () => {
       <div className="ch-chl ch-chl--tight">
         <h2 className="ch-h2">{t("title")}</h2>
         <p data-testid="no-computers">{t("noComputers")}</p>
-        <Link href="/descargar" className="ch-lnk ch-chl-fit">
-          {t("download")}
-        </Link>
+        {/* First Run D: the next setup step instead of a dead end. */}
+        <SetupChecklist compact />
       </div>
     );
 
@@ -122,6 +143,11 @@ export const NewSession = () => {
   return (
     <form onSubmit={(e) => void submit(e)} className="ch-chl ch-chl--narrow" data-testid="new-session">
       <h2 className="ch-h2">{t("title")}</h2>
+      {firstTarget ? (
+        <p role="note" className="ch-card ch-chl-card ch-chl-card--ok" data-testid="first-task">
+          {t("firstTask")}
+        </p>
+      ) : null}
       <div className="ch-field">
         <label htmlFor="ns-computer">{t("computer")}</label>
         <select
