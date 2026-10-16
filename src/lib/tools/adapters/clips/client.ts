@@ -42,6 +42,20 @@ export interface ClipsEngine {
   put<T>(path: string, body?: unknown, opts?: Omit<EngineCallOpts, 'body'>): Promise<T>;
   patch<T>(path: string, body?: unknown, opts?: Omit<EngineCallOpts, 'body'>): Promise<T>;
   del<T>(path: string, opts?: Omit<EngineCallOpts, 'body'>): Promise<T>;
+  /** Absolute URL for a signed media path the engine returned
+   *  (`/api/hub/media/...`, see ChalyClip api/hub_media.py). The browser
+   *  loads it directly (video/img/download): media never goes through the
+   *  hub. Anything else → null. */
+  mediaUrl(path: string | null | undefined): Promise<string | null>;
+}
+
+export const MEDIA_PATH_PREFIX = '/api/hub/media/';
+
+/** `${baseUrl}${path}` for an engine media path, else null. Pure. */
+export function absoluteMediaUrl(baseUrl: string, path: string | null | undefined): string | null {
+  if (typeof path !== 'string' || !path.startsWith(MEDIA_PATH_PREFIX) || path.includes('..'))
+    return null;
+  return `${baseUrl}${path}`;
 }
 
 /** Dependencies, injectable for tests. */
@@ -143,5 +157,9 @@ export function clipsEngine(userId: string, deps: ClipsEngineDeps = defaultDeps(
     put: (path, body, opts) => request('PUT', path, { ...opts, body }),
     patch: (path, body, opts) => request('PATCH', path, { ...opts, body }),
     del: (path, opts) => request('DELETE', path, opts),
+    mediaUrl: async (path) => {
+      if (!absoluteMediaUrl('', path)) return null;
+      return absoluteMediaUrl((await deps.identity(userId)).baseUrl, path);
+    },
   };
 }

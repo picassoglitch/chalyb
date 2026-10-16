@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { mintEngineApiToken } from '@/lib/engines/integrations/api-token';
 import {
+  absoluteMediaUrl,
   buildEngineUrl,
   clipsEngine,
   seg,
@@ -220,4 +221,24 @@ test('refusal reasons: person state, never an outage; right HTTP status', () => 
   assert.equal(e.refusal, null);
   assert.equal(codeForStatus(418), 'bad_request');
   assert.equal(codeForStatus(502), 'internal');
+});
+
+test('media URLs: only signed engine media paths become absolute', async () => {
+  assert.equal(
+    absoluteMediaUrl('https://e.test', '/api/hub/media/clip/c1?t=x&exp=1&sig=s'),
+    'https://e.test/api/hub/media/clip/c1?t=x&exp=1&sig=s',
+  );
+  assert.equal(absoluteMediaUrl('https://e.test', '/dashboard/x'), null);
+  assert.equal(absoluteMediaUrl('https://e.test', 'https://evil.test/x'), null);
+  assert.equal(absoluteMediaUrl('https://e.test', '/api/hub/media/../v1/me'), null);
+  assert.equal(absoluteMediaUrl('https://e.test', null), null);
+  const engine = clipsEngine(
+    'u1',
+    fakeDeps(() => json(200, {})),
+  );
+  assert.equal(
+    await engine.mediaUrl('/api/hub/media/thumb/c1?sig=1'),
+    'https://clips.example/api/hub/media/thumb/c1?sig=1',
+  );
+  assert.equal(await engine.mediaUrl('/x'), null);
 });
