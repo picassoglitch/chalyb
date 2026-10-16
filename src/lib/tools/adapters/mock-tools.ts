@@ -5,6 +5,8 @@
 
 import type {
   AsistenteAdapter,
+  BacktestResult,
+  Candle,
   AssistantConfig,
   AutomationRule,
   Coin,
@@ -32,19 +34,12 @@ import {
   type OAuthPlatform,
 } from '../envivo-platforms';
 import { honorSignal } from './signal';
+import { ToolUsageRefusedError } from '../bff-core';
+import { SENALES_COINS } from '../senales-coins';
 
 const CAPS: ToolCapabilities = { supportsConnect: false, likenessOptions: [] };
 
-const COINS: Coin[] = [
-  { symbol: 'BTC', name: 'Bitcoin' },
-  { symbol: 'ETH', name: 'Ethereum' },
-  { symbol: 'SOL', name: 'Solana' },
-  { symbol: 'XRP', name: 'XRP' },
-  { symbol: 'DOGE', name: 'Dogecoin' },
-  { symbol: 'ADA', name: 'Cardano' },
-  { symbol: 'BNB', name: 'BNB' },
-  { symbol: 'LTC', name: 'Litecoin' },
-];
+const COINS: Coin[] = SENALES_COINS;
 
 /** Sample reference prices (MXN) — engine output stand-ins, not real data. */
 const REF_MXN: Record<string, number> = {
@@ -161,7 +156,158 @@ export function createMockSenales(now = () => Date.now()): SenalesAdapter {
     savePrefs: async (userId, p) => {
       prefs.set(userId, p);
     },
+    ...mockMarket(now),
   });
+}
+
+// ── Mercado / Estrategias sample data (deterministic per pair) ──────────
+function seeded(seed: string) {
+  let h = 0;
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return () => {
+    h = (h * 1_103_515_245 + 12_345) >>> 0;
+    return h / 2 ** 32;
+  };
+}
+
+const MOCK_USD: Record<string, number> = { BTC: 64_200, ETH: 2_540, SOL: 184, XRP: 0.62, DOGE: 0.16, ADA: 0.45, BNB: 590, LTC: 88 };
+const STEP_S: Record<string, number> = { '1m': 60, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600, '4h': 14_400, '1d': 86_400, '1w': 604_800 };
+
+function mockMarket(now: () => number): Pick<
+  SenalesAdapter,
+  'markets' | 'indicators' | 'orderBook' | 'derivatives' | 'news' | 'strategies' | 'runBacktest' | 'listBacktests'
+> {
+  const usd = (pair: string) => MOCK_USD[pair.replace(/USDT$/, '')] ?? 1;
+  const runs: { userId: string; run: BacktestResult }[] = [];
+  const candles = (pair: string, interval: string, bars: number): Candle[] => {
+    const step = STEP_S[interval] ?? 300;
+    const end = Math.floor(now() / 1000 / step) * step;
+    const rnd = seeded(pair + interval);
+    let p = usd(pair);
+    const out: Candle[] = [];
+    for (let i = 0; i < bars; i++) {
+      const open = p;
+      const close = open * (1 + (rnd() - 0.5) * 0.01);
+      const high = Math.max(open, close) * (1 + rnd() * 0.003);
+      const low = Math.min(open, close) * (1 - rnd() * 0.003);
+      out.push({ time: end - (bars - 1 - i) * step, open, high, low, close });
+      p = close;
+    }
+    return out;
+  };
+  return {
+    markets: async (_u, venue) => ({
+      venues: [
+        { id: 'bitunix', name: 'Bitunix', dataOnly: false },
+        { id: 'lbank', name: 'LBank', dataOnly: false },
+        { id: 'binance', name: 'Binance', dataOnly: true },
+      ],
+      venue,
+      symbols:
+        venue === 'bitunix'
+          ? COINS.map((c) => ({ symbol: `${c.symbol}USDT`, base: c.symbol, quote: 'USDT' }))
+          : [],
+      degraded: false,
+    }),
+    indicators: async (_u, { pair, interval, bars }) => {
+      const cs = candles(pair, interval, Math.min(bars, 200));
+      const rnd = seeded(pair + interval + 'ind');
+      const line = (base: number, amp: number) =>
+        cs.slice(26).map((c) => ({ time: c.time, value: base + (rnd() - 0.5) * amp }));
+      return {
+        candles: cs,
+        rsi: line(50, 40),
+        macd: { line: line(0, 20), signal: line(0, 15), hist: line(0, 10) },
+        adx: line(25, 20),
+        volumeDelta: cs.map((c) => ({ time: c.time, value: (c.close - c.open) * 1000 })),
+      };
+    },
+    orderBook: async (_u, pair) => {
+      const mid = usd(pair);
+      const rnd = seeded(pair + Math.floor(now() / 2000));
+      const side = (dir: 1 | -1) => {
+        let cum = 0;
+        return Array.from({ length: 20 }, (_, i) => {
+          const size = Math.round(rnd() * 5000) / 1000 + 0.01;
+          cum += size;
+          return { price: mid * (1 + dir * (i + 1) * 0.0002), size, cumulative: cum };
+        });
+      };
+      return { pair, takenAt: new Date(now()).toISOString(), bids: side(-1), asks: side(1) };
+    },
+    derivatives: async (_u, { pair, interval }) => {
+      const rnd = seeded(pair + 'cg');
+      const t = Math.floor(now() / 3_600_000) * 3600;
+      const ts = Array.from({ length: 48 }, (_, i) => t - (47 - i) * 3600);
+      return {
+        symbol: pair.replace(/USDT$/, ''),
+        interval,
+        openInterest: ts.map((time) => ({ time, value: 8e9 + rnd() * 1e9 })),
+        funding: ts.map((time) => ({ time, value: (rnd() - 0.4) * 0.0002 })),
+        liquidations: ts.map((time) => ({ time, longUsd: rnd() * 4e6, shortUsd: rnd() * 4e6 })),
+        longShort: ts.map((time) => {
+          const l = 45 + rnd() * 10;
+          return { time, longPct: l, shortPct: 100 - l };
+        }),
+        heatmap: Array.from({ length: 8 }, (_, i) => ({
+          price: usd(pair) * (0.96 + i * 0.01),
+          amountUsd: rnd() * 5e7,
+        })),
+      };
+    },
+    news: async (_u, coin) => [
+      {
+        publishedAt: new Date(now() - 40 * 60_000).toISOString(),
+        title: `Muestra: titular sobre ${coin}`,
+        url: 'https://example.com/noticia-1',
+        source: 'Ejemplo',
+      },
+      {
+        publishedAt: new Date(now() - 5 * 3_600_000).toISOString(),
+        title: `Muestra: otro titular sobre ${coin}`,
+        url: 'https://example.com/noticia-2',
+        source: 'Ejemplo',
+      },
+    ],
+    strategies: async () => [
+      { key: 'ema_adx_trend', name: 'EMA/ADX trend', enabled: true },
+      { key: 'vwap_rsi_meanrev', name: 'VWAP/RSI mean-reversion', enabled: true },
+      { key: 'fvg_ob', name: 'FVG + Order Block', enabled: true },
+    ],
+    runBacktest: async (userId, input) => {
+      // 5000 bars: the sample "out of credits" refusal, for e2e.
+      if (input.bars === 5000) throw new ToolUsageRefusedError('no_tokens');
+      const rnd = seeded(input.strategy + input.pair + input.timeframe + input.bars);
+      const net = Math.round((rnd() - 0.45) * 800);
+      const run: BacktestResult = {
+        ...input,
+        jobId: `backtest_mock_${runs.length + 1}`,
+        status: 'done',
+        barsRequested: input.bars,
+        dataSource: 'binance',
+        from: new Date(now() - input.bars * 300_000).toISOString(),
+        to: new Date(now()).toISOString(),
+        startingEquity: 10_000,
+        endingEquity: 10_000 * (1 + net / 10_000),
+        netReturnBps: net,
+        metrics: {
+          sampleSize: 8 + Math.floor(rnd() * 30),
+          winRate: 0.35 + rnd() * 0.3,
+          avgWinBps: 40 + rnd() * 40,
+          avgLossBps: 30 + rnd() * 30,
+          profitFactor: 0.7 + rnd() * 0.9,
+          maxDrawdownBps: 100 + rnd() * 300,
+          feeDragBps: 10 + rnd() * 20,
+        },
+        assumptions: { riskPerTradeBps: 50, takerBps: 6, makerBps: 2, spreadBps: 1, slippageBps: 1 },
+        createdAt: new Date(now()).toISOString(),
+        optimistic: true,
+      };
+      runs.unshift({ userId, run });
+      return run;
+    },
+    listBacktests: async (userId) => runs.filter((r) => r.userId === userId).map((r) => r.run),
+  };
 }
 
 /** In-memory En vivo: the engine's model (RTMP relay + destinations), so

@@ -12,6 +12,8 @@ export const TOOL_ERROR_REASONS = [
   'risk_ack_required',
   'bad_request', // the request itself was wrong (body, params): never an outage
   'needs_plan', // the plan doesn't include this action
+  'usage_refused', // hub usage admission said no (credits, caps): the person's state
+  'no_data', // a third-party data source the engine reads didn't answer this time
   'unknown',
 ] as const;
 export type ToolErrorReason = (typeof TOOL_ERROR_REASONS)[number];
@@ -21,6 +23,8 @@ export interface ToolError {
   retryable: boolean;
   /** CLP/SEN/VIV + 4 digits, shown to the person and stored in Actividad. */
   supportCode: string;
+  /** With 'usage_refused': the admission reason (no_tokens, jobs_cap, …). */
+  usage?: string;
 }
 
 export type ToolResult<T> = { ok: true; data: T } | { ok: false; error: ToolError };
@@ -41,6 +45,22 @@ export class ToolCircuitOpenError extends Error {
 }
 export class ToolRequestError extends Error {
   readonly code = 'BAD_REQUEST';
+}
+/** The engine's hub admission refused the job (402/429/413). */
+export class ToolUsageRefusedError extends Error {
+  readonly code = 'USAGE_REFUSED';
+  constructor(readonly usage: string) {
+    super(`usage refused: ${usage}`);
+  }
+}
+
+/** The admission reason carried by a USAGE_REFUSED error, if any. */
+export function usageReasonOf(err: unknown): string | undefined {
+  if (!err || typeof err !== 'object') return undefined;
+  const e = err as { code?: unknown; usage?: unknown };
+  return e.code === 'USAGE_REFUSED' && typeof e.usage === 'string' && /^[a-z_]{1,40}$/.test(e.usage)
+    ? e.usage
+    : undefined;
 }
 
 /** A JSON request body as a plain object. `null`, arrays, primitives and
@@ -137,6 +157,10 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
       return { reason: 'bad_request', retryable: false };
     case 'NEEDS_PLAN':
       return { reason: 'needs_plan', retryable: false };
+    case 'USAGE_REFUSED':
+      return { reason: 'usage_refused', retryable: false };
+    case 'NO_DATA':
+      return { reason: 'no_data', retryable: false };
     default:
       return { reason: 'unknown', retryable: true };
   }
@@ -153,6 +177,10 @@ export function statusForReason(reason: ToolErrorReason): number {
     case 'risk_ack_required':
     case 'needs_plan':
       return 403;
+    case 'usage_refused':
+      return 402;
+    case 'no_data':
+      return 424;
     case 'not_implemented':
     case 'unavailable':
     case 'circuit_open':
@@ -173,6 +201,8 @@ export function countsAsOutage(reason: ToolErrorReason): boolean {
     'risk_ack_required',
     'bad_request',
     'needs_plan',
+    'usage_refused',
+    'no_data',
     'circuit_open',
   ].includes(reason);
 }

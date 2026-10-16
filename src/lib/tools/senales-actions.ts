@@ -9,6 +9,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { getSenales, hubRunsTool } from './registry';
 import { hasRiskAck } from './consents';
+import { runTool } from './bff';
 import type { SignalChannel } from './adapters/tools';
 
 export async function saveSignalPrefs(formData: FormData): Promise<void> {
@@ -37,11 +38,17 @@ export async function saveSignalPrefs(formData: FormData): Promise<void> {
       href: `/app/senales/empezar/avisos?coins=${coins.join(',')}&error=channels`,
       locale,
     });
-  await adapter.savePrefs(session.user.id, {
+  const prefs = {
     coins,
     channels,
-    timeframe: formData.get('timeframe') === 'week' ? 'week' : 'day',
+    timeframe: formData.get('timeframe') === 'week' ? ('week' as const) : ('day' as const),
     quietHours: formData.get('quiet') === 'on',
-  });
+  };
+  // Mode "a" saves in the engine: through the BFF, and a failure lands on
+  // /app/senales, which shows the tool's error state.
+  const saved = await runTool('chalybcrypto', session.user.id, (signal) =>
+    adapter.savePrefs(session.user.id, prefs, signal),
+  );
+  if (!saved.ok) return redirect({ href: '/app/senales', locale });
   return redirect({ href: '/app/senales/empezar/listo', locale });
 }

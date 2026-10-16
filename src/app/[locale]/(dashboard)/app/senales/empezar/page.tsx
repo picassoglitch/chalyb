@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { requireSenalesReady } from '@/lib/tools/senales-access';
+import { redirect } from '@/i18n/routing';
+import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-access';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { CoinPicker } from '@/components/app/tools/coin-picker';
 
@@ -17,7 +18,13 @@ export default async function SenalesStep1({ params }: { params: Promise<{ local
   setRequestLocale(locale);
   const { session, adapter } = await requireSenalesReady(locale, '/app/senales/empezar');
   const tw = await getTranslations('wizard');
-  const [coins, prefs] = await Promise.all([adapter.coins(), adapter.getPrefs(session.user.id)]);
+  const [coins, prefsRes] = await Promise.all([
+    adapter.coins(),
+    loadSenalesPrefs(adapter, session.user.id),
+  ]);
+  // The engine didn't answer: Señales explains it (ToolErrorState).
+  if (!prefsRes.ok) return redirect({ href: '/app/senales', locale });
+  const prefs = prefsRes.data;
   return (
     <WizardShell
       slug="chalybcrypto"

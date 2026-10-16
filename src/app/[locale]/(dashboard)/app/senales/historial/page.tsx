@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { loadTool, planKeyFor } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
+import { loadSenalesPrefs } from '@/lib/tools/senales-access';
 import { loadSignalFeed } from '@/lib/tools/signals-feed';
 import { groupByDay, relativeDay, SIGNAL_TZ } from '@/lib/tools/signals-view';
 import { ToolShell } from '@/components/tools/tool-shell';
@@ -38,7 +39,15 @@ export default async function SenalesHistorial({
     );
   if (gate.kind !== 'ready' || gate.riskPending) return redirect({ href: '/app/senales', locale });
   const { session, entitlements, adapter } = gate;
-  const prefs = await adapter.getPrefs(session.user.id);
+  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  if (!prefsRes.ok)
+    return (
+      <ToolShell slug="chalybcrypto" tab="history">
+        <ToolErrorState slug="chalybcrypto" error={prefsRes.error} />
+        <SignalsDisclaimer />
+      </ToolShell>
+    );
+  const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signalsTool');
   const [coins, feed] = await Promise.all([

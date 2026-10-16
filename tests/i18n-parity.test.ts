@@ -32,6 +32,19 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  // Señales · Mercado: indicator names, timeframes and tickers are the same
+  // in both languages.
+  'signalsTool.market.searchPlaceholder',
+  'signalsTool.market.tf.1m',
+  'signalsTool.market.tf.5m',
+  'signalsTool.market.tf.15m',
+  'signalsTool.market.tf.30m',
+  'signalsTool.market.tf.1h',
+  'signalsTool.market.tf.4h',
+  'signalsTool.market.rsi',
+  'signalsTool.market.macd',
+  'signalsTool.market.adx',
+  'signalsTool.market.ratioValue',
   // En vivo: menu paths inside English-only platform apps, and game names.
   'liveTool.edit.hint.twitch',
   'liveTool.edit.hint.kick',

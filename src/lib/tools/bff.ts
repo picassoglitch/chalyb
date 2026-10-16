@@ -26,6 +26,7 @@ import {
   type ToolError,
   type ToolErrorReason,
   type ToolResult,
+  usageReasonOf,
 } from './bff-core';
 import { recordToolHealth } from './status';
 
@@ -76,12 +77,14 @@ export async function reportToolError(
   retryable: boolean,
   /** Whether this failure says the tool is down (feeds tool_status). */
   outage = countsAsOutage(reason),
+  usage?: string,
 ): Promise<ToolError> {
   const error: ToolError = { reason, retryable, supportCode: newSupportCode(slug) };
+  if (usage) error.usage = usage;
   await logAudit({
     action: 'tool.error',
     targetUserId: userId,
-    metadata: { tool: slug, reason, supportCode: error.supportCode },
+    metadata: { tool: slug, reason, supportCode: error.supportCode, ...(usage ? { usage } : {}) },
   });
   if (outage && reason !== 'unavailable')
     await recordToolHealth(slug, { ok: false, latencyMs: TOOL_TIMEOUT_MS, reason }).catch(() => {});
@@ -99,6 +102,8 @@ export async function runTool<T>(
     /** Only errors the engine adapter threw (and timeouts) count against
      *  the breaker and health; the BFF routes set this (see bff-route). */
     adapterErrorsOnly?: boolean;
+    /** A longer wait for a call known to take time (a backtest run). */
+    timeoutMs?: number;
   } = {},
 ): Promise<ToolResult<T>> {
   const attempts = 1 + (opts.idempotent ? TOOL_GET_RETRIES : 0);
@@ -114,9 +119,10 @@ export async function runTool<T>(
     try {
       const started = Date.now();
       const ctl = new AbortController();
-      const data = await withTimeout(op(ctl.signal), TOOL_TIMEOUT_MS, ctl);
+      const data = await withTimeout(op(ctl.signal), opts.timeoutMs ?? TOOL_TIMEOUT_MS, ctl);
       breakers().set(slug, breakerAfter(b, true, Date.now()));
-      noteHealthy(slug, Date.now() - started);
+      // A long call (timeoutMs) is slow by design: not a health signal.
+      if (!opts.timeoutMs) noteHealthy(slug, Date.now() - started);
       return { ok: true, data };
     } catch (err) {
       last = err;
@@ -127,5 +133,8 @@ export async function runTool<T>(
     }
   }
   const { reason, retryable, outage } = failureEffect(last, opts);
-  return { ok: false, error: await reportToolError(slug, userId, reason, retryable, outage) };
+  return {
+    ok: false,
+    error: await reportToolError(slug, userId, reason, retryable, outage, usageReasonOf(last)),
+  };
 }

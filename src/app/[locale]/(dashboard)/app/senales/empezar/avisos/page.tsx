@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
-import { requireSenalesReady } from '@/lib/tools/senales-access';
+import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-access';
 import { saveSignalPrefs } from '@/lib/tools/senales-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
 
@@ -27,10 +27,12 @@ export default async function SenalesStep2({
   if (!coins) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signals');
   const tw = await getTranslations('wizard');
-  const [channels, prefs] = await Promise.all([
+  const [channels, prefsRes] = await Promise.all([
     adapter.channels(),
-    adapter.getPrefs(session.user.id),
+    loadSenalesPrefs(adapter, session.user.id),
   ]);
+  if (!prefsRes.ok) return redirect({ href: '/app/senales', locale });
+  const prefs = prefsRes.data;
   const chosen = new Set(prefs?.channels ?? ['app']);
   return (
     <WizardShell

@@ -1,8 +1,9 @@
 // Which adapter each tool uses, from its TOOL_HUB_MODE_<SLUG> (flags.ts).
 //   mock → the in-memory adapter (one per server process)
-//   a    → the engine adapter — a stub that throws NOT_IMPLEMENTED until the
-//          engine's API is documented in docs/engines (OPS-13); En vivo's is
-//          real (adapters/envivo-engine.ts → ChalyOBS /api/hub/v1)
+//   a    → the engine adapter: Señales (adapters/senales-engine.ts → ChalyCrypto
+//          /api/hub/v1) and En vivo (adapters/envivo-engine.ts → ChalyOBS
+//          /api/hub/v1) are real; the others are still a stub that throws
+//          NOT_IMPLEMENTED until their engine's API exists (OPS-13)
 //   b/off→ null: the screens hand off to the engine's app over SSO
 
 import 'server-only';
@@ -17,6 +18,8 @@ import {
   createMockPronosticos,
   createMockSenales,
 } from './adapters/mock-tools';
+import { createEngineSenales } from './adapters/senales-engine';
+import { runsInHub } from './hub-runs';
 
 export const TOOL_SLUGS = {
   clips: 'chalybclip',
@@ -45,14 +48,20 @@ function stub<T extends object>(name: string): T {
   });
 }
 
-function pick<T extends object>(slug: string, name: string, make: () => T): T | null {
+function pick<T extends object>(
+  slug: string,
+  name: string,
+  make: () => T,
+  real?: () => T,
+): T | null {
   const mode: ToolHubMode = toolHubMode(slug);
   if (mode === 'mock') return mock(slug, make);
-  if (mode === 'a') return stub<T>(name);
+  if (mode === 'a') return real ? real() : stub<T>(name);
   return null;
 }
 
-export const getSenales = () => pick(TOOL_SLUGS.senales, 'SenalesAdapter', createMockSenales);
+export const getSenales = () =>
+  pick(TOOL_SLUGS.senales, 'SenalesAdapter', createMockSenales, createEngineSenales);
 /** En vivo has a real engine adapter: mode a talks to ChalyOBS's hub API. */
 export const getEnVivo = (): EnVivoAdapter | null => {
   const mode = toolHubMode(TOOL_SLUGS.envivo);
@@ -71,13 +80,13 @@ export const getInversiones = () =>
 
 /**
  * Whether the hub shows this tool's own screens. Clips has a real adapter.
- * For the others, Mode A is a stub until the engine's API is documented
- * (OPS-13), so only the mock runs them in-hub today; otherwise the card
- * leads to the launch page as before.
+ * Señales and En vivo run in-hub in mode "a" (engine adapters) or mock. For the
+ * others, Mode A is a stub until the engine's API is documented (OPS-13),
+ * so only the mock runs them in-hub today; otherwise the card leads to the
+ * launch page as before. "off" is always the SSO hand-off (the rollback).
  */
 export function hubRunsTool(slug: string): boolean {
   if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
-  // En vivo's mode a is a real engine adapter (ChalyOBS /api/hub/v1), not a stub.
-  if (slug === TOOL_SLUGS.envivo) return ['a', 'mock'].includes(toolHubMode(slug));
-  return toolHubMode(slug) === 'mock';
+  // Señales' and En vivo's mode a are real engine adapters, not stubs.
+  return runsInHub(slug, toolHubMode(slug));
 }

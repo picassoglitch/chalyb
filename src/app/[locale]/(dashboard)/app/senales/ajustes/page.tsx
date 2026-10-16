@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { loadTool } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
+import { loadSenalesPrefs } from '@/lib/tools/senales-access';
 import { riskAckAt } from '@/lib/tools/consents';
 import { DEFAULT_PREFS } from '@/lib/tools/signals-prefs';
 import { maskEmail, SIGNAL_TZ } from '@/lib/tools/signals-view';
@@ -33,12 +34,19 @@ export default async function SenalesAjustes({ params }: { params: Promise<{ loc
     );
   if (gate.kind !== 'ready' || gate.riskPending) return redirect({ href: '/app/senales', locale });
   const { session, adapter } = gate;
-  const [coins, channels, prefs, ackAt] = await Promise.all([
+  const [coins, channels, prefsRes, ackAt] = await Promise.all([
     adapter.coins(),
     adapter.channels(),
-    adapter.getPrefs(session.user.id),
+    loadSenalesPrefs(adapter, session.user.id),
     riskAckAt(session.user.id, 'chalybcrypto').catch(() => null),
   ]);
+  if (!prefsRes.ok)
+    return (
+      <ToolShell slug="chalybcrypto" tab="settings">
+        <ToolErrorState slug="chalybcrypto" error={prefsRes.error} />
+      </ToolShell>
+    );
+  const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signalsTool.settings');
   const tc = await getTranslations('consents.risk');

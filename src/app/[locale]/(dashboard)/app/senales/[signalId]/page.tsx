@@ -6,6 +6,7 @@ import { loadTool, planKeyFor } from '@/lib/tools/access';
 import { getSenales } from '@/lib/tools/registry';
 import { runTool } from '@/lib/tools/bff';
 import { screenSignal } from '@/lib/tools/signals-screen';
+import { pairForCoin } from '@/lib/tools/senales-coins';
 import { formatRefPrice, isOldSignal, SIGNAL_TZ } from '@/lib/tools/signals-view';
 import type { SignalRange } from '@/lib/tools/adapters/tools';
 import { RiskAck } from '@/components/tools/risk-ack';
@@ -213,6 +214,12 @@ export default async function SenalDetalle({
             errorLabel={t('settings.error')}
           />
           <p className="ch-sig-same">{td('same')}</p>
+          <Link
+            href={`/app/senales/mercado?par=${pairForCoin(signal.coin)}` as Route}
+            className="ch-lnk"
+          >
+            {td('market', { moneda: name })}
+          </Link>
         </div>
       </div>
       <SignalsDisclaimer />
