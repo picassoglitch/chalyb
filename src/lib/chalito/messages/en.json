@@ -1341,5 +1341,42 @@
     "keyWhere": "Get your {label} at {url}",
     "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
     "keySendAnyway": "Send anyway"
+  },
+  "download": {
+    "title": "Download Chalito for your computer",
+    "detected": "We detected {os}.",
+    "primary": "Download for {os}",
+    "choose": "Choose your system",
+    "otherOs": "Using another system?",
+    "others": "Other formats",
+    "os": {
+      "windows": "Windows",
+      "macos": "macOS",
+      "linux": "Linux"
+    },
+    "kinds": {
+      "nsis": "Installer (.exe)",
+      "dmg": "Disk image (.dmg, Apple silicon and Intel)",
+      "appimage": "AppImage (any distribution)",
+      "deb": ".deb package (Debian, Ubuntu)",
+      "rpm": ".rpm package (Fedora, openSUSE)"
+    },
+    "version": "Version {version}",
+    "beta": "Beta version: it may have bugs. Updates arrive on their own.",
+    "size": "{mb} MB",
+    "checksum": "SHA-256",
+    "unsigned": "This version isn't signed yet. Your system may show a warning when you open it.",
+    "smartscreen": "The first time, Windows may show \"Windows protected your PC\". That's expected while the beta is unsigned:",
+    "smartscreenSteps": {
+      "one": "Tap \"More info\".",
+      "two": "Tap \"Run anyway\"."
+    },
+    "next": "After installing, open Chalito and tap \"Sign in\".",
+    "mobile": "Chalito for computers is for Windows, macOS and Linux. On your phone, use the web app.",
+    "unavailable": "There's no download for this system yet.",
+    "soonTitle": "Coming soon",
+    "soonBody": "We're getting Chalito ready for Windows, macOS and Linux. Meanwhile, you can use it here in the browser.",
+    "soonAction": "Go to Home",
+    "loading": "Loading…"
   }
 }
