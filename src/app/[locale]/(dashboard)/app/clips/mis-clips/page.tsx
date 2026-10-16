@@ -1,16 +1,15 @@
-import type { Metadata, Route } from 'next';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Scissors, Search } from 'lucide-react';
-import { Link } from '@/i18n/routing';
+import { Scissors } from 'lucide-react';
 import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
 import { runTool } from '@/lib/tools/bff';
 import { MineNav } from '@/components/tools/clips/engine/mine-nav';
-import { CLIP_FILTERS, filterClips, parseClipFilter } from '@/lib/tools/clips-home';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
 import { ClipCard } from '@/components/tools/clips/clip-card';
+import { MineBrowser } from '@/components/tools/clips/mine-browser';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
 import '@/styles/tools-clips.css';
@@ -22,16 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Mis clips (TOOLS-SPEC §2): every finished clip, with a search box and
-// Todos / Vertical / Horizontal / Cuadrado. Plain links and a GET form, so
-// it works without JavaScript and every filter has its own URL.
+// Todos / Vertical / Horizontal / Cuadrado. Every filter has its own URL
+// (?f=…&q=…); MineBrowser applies it in the browser from the clips already
+// here, and without JavaScript the links and the GET form still work.
 
-export default async function MisClipsPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; f?: string }>;
-}) {
+export default async function MisClipsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const gate = await loadTool(locale, 'chalybclip', '/app/clips/mis-clips', getClipsAdapter);
@@ -56,9 +50,6 @@ export default async function MisClipsPage({
     );
 
   const t = await getTranslations('clipsTool');
-  const { q = '', f } = await searchParams;
-  const filter = parseClipFilter(f);
-  const query = q.slice(0, 100);
   const loaded = await runTool(
     'chalybclip',
     gate.session.user.id,
@@ -73,10 +64,7 @@ export default async function MisClipsPage({
     );
   const all = loaded.data;
   const engineMode = !!getClipsEngineAdapter();
-  const shown = filterClips(all, filter, query);
   const now = new Date();
-  const href = (next: string) =>
-    `/app/clips/mis-clips?${new URLSearchParams({ ...(query ? { q: query } : {}), ...(next !== 'all' ? { f: next } : {}) })}`;
 
   return (
     <ToolShell slug="chalybclip" tab="history">
@@ -95,52 +83,15 @@ export default async function MisClipsPage({
           </ButtonLink>
         </section>
       ) : (
-        <>
-          <div className="ch-minebar">
-            <form
-              action="/app/clips/mis-clips"
-              method="get"
-              role="search"
-              className="ch-minesearch"
-            >
-              <Search aria-hidden="true" />
-              <input
-                type="search"
-                name="q"
-                defaultValue={query}
-                maxLength={100}
-                className="ch-input"
-                aria-label={t('mine.search')}
-                placeholder={t('mine.search')}
-              />
-              {filter !== 'all' && <input type="hidden" name="f" value={filter} />}
-            </form>
-            <nav className="ch-chips" aria-label={t('mine.filters')}>
-              {CLIP_FILTERS.map((x) => (
-                <Link
-                  key={x}
-                  href={href(x) as Route}
-                  className={`ch-chip${filter === x ? ' ch-chip--on' : ''}`}
-                  aria-current={filter === x ? 'true' : undefined}
-                >
-                  {x === 'all' ? t('mine.all') : t(`format.${x}`)}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <p className="ch-muted" aria-live="polite">
-            {t('mine.count', { n: shown.length })}
-          </p>
-          {shown.length === 0 ? (
-            <p className="ch-muted">{t('mine.none')}</p>
-          ) : (
-            <ul className="ch-clipgrid">
-              {shown.map((c) => (
-                <ClipCard key={c.id} clip={c} now={now} />
-              ))}
-            </ul>
-          )}
-        </>
+        <MineBrowser
+          action="/app/clips/mis-clips"
+          items={all.map((c) => ({
+            id: c.id,
+            format: c.format,
+            title: c.title,
+            card: <ClipCard clip={c} now={now} />,
+          }))}
+        />
       )}
     </ToolShell>
   );

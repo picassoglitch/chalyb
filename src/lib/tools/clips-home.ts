@@ -50,7 +50,24 @@ export function parseClipFilter(raw: string | undefined): ClipFilter {
   return (CLIP_FILTERS as string[]).includes(raw ?? '') ? (raw as ClipFilter) : 'all';
 }
 
-export function filterClips(clips: ClipDetail[], filter: ClipFilter, q: string): ClipDetail[] {
+/** Longest search Mis clips honours. */
+export const CLIP_QUERY_MAX = 100;
+
+/** Mis clips' query string for a filter and a search ('' for neither). */
+export function mineSearch(filter: ClipFilter, q: string): string {
+  const qs = new URLSearchParams({
+    ...(q ? { q } : {}),
+    ...(filter !== 'all' ? { f: filter } : {}),
+  });
+  const s = qs.toString();
+  return s ? `?${s}` : '';
+}
+
+export function filterClips<T extends Pick<ClipDetail, 'format' | 'title'>>(
+  clips: T[],
+  filter: ClipFilter,
+  q: string,
+): T[] {
   const needle = q.trim().toLowerCase();
   return clips.filter(
     (c) =>
