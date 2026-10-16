@@ -45,6 +45,43 @@ pnpm db:push
 Filenames are Supabase's applied-migration ledger. Never rename one, and never
 squash them: this database has a real history.
 
+### Engine migrations land here too (Chalito)
+
+nexo-ai has one ledger (`supabase_migrations.schema_migrations`), and
+`supabase db push` refuses when the database holds versions this folder
+doesn't. So this repo is the **only writer**: every migration applied to
+nexo-ai, the hub's or an engine's, has its file here.
+
+**Chalito** (`picassoglitch/chalito`) writes and tests its migrations in its
+own repo (pgTAP and the rehearsal on the local stack), and they reach nexo-ai
+**only through a PR to this repo**:
+
+- Copy `supabase/migrations/2026*.sql` from Chalito's `main` **byte for byte**,
+  same filenames. Never edit a copy here; a fix is a new Chalito migration.
+- Show the checksums in the PR: `sha256sum supabase/migrations/2026*.sql` on
+  both sides must be identical.
+- Never run `supabase db push` from the Chalito repo against nexo-ai.
+
+Version formats are mixed: the hub's files are four digits (`0001`…), Chalito's
+are 14-digit timestamps (`20261004000100`…). The CLI orders versions as
+strings, so every hub version sorts before every Chalito one. Consequences:
+
+- A new four-digit hub migration (`0068`) sorts *before* versions already
+  applied, so it needs `supabase db push --include-all`. Safe here: Chalito's
+  migrations only create the `chalito` and `chalito_private` schemas, their
+  roles, `chalito-*` cron jobs and `realtime.messages` policies for `chalito:*`
+  topics, and touch no hub table. Better: name new hub migrations with
+  `pnpm db:new` (timestamped), and plain `db push` works again.
+- `scripts/new-engine.mjs` numbers from the four-digit files only, and
+  `pnpm test:migrations` (PGlite) applies only the four-digit files. Chalito's
+  need `pg_cron` and `realtime.messages`; they're tested in the Chalito repo.
+
+Still open: nexo-ai's ledger also holds 25 `taquito_*` versions (repo
+`picassoglitch/de-taquitos-a-imperio`, applied from its `supabase/migrations`)
+and `20261006090116_lock_chalyclip_public_tables`, which is in no repo. Until
+their files are here too, `db push` from this repo refuses ("remote migration
+versions not found"). Don't `migration repair` them away: they're real.
+
 ## Auth settings that must match
 
 In the dashboard, under Authentication:
