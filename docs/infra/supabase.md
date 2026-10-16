@@ -83,12 +83,10 @@ from its `main`, only once they match what the ledger recorded.
 no repo; its file was recovered from the ledger's stored statements (see its
 header).
 
-Still open: four Taquito versions (`20261015004244`, `20261015021851`,
-`20261015023749`, `20261015023902`) were applied without their comments, so
-the files on Taquito's `main` differ from the ledger in comments only. Until
-the owner picks a version and the files are here, `db push` from this repo
-refuses ("remote migration versions not found"). Don't `migration repair` them
-away: they're real.
+Four Taquito versions (`20261015004244`, `20261015021851`, `20261015023749`,
+`20261015023902`) were applied without their comments. Their files here are
+Taquito's `main` as is: the repo is the source of truth, and the SQL is
+identical to what ran (comments don't change the schema).
 
 ## Auth settings that must match
 
