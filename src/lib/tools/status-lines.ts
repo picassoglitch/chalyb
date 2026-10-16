@@ -59,11 +59,14 @@ export async function toolStatusLines(
       if (slug === 'chalybobs') {
         const a = getEnVivo();
         if (!a) return;
-        const r = await runTool(slug, userId, (signal) => a.status(userId, signal), {
+        const r = await runTool(slug, userId, (signal) => a.state(userId, signal), {
           idempotent: true,
         });
         if (!r.ok) return;
-        out[slug] = liveLine({ connected: r.data.obsConnected, live: r.data.liveSince !== null });
+        out[slug] = liveLine({
+          connected: r.data.destinations.some((d) => d.enabled),
+          live: r.data.isLive,
+        });
       }
     }),
   );

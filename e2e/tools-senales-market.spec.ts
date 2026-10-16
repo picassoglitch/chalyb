@@ -62,7 +62,7 @@ test.describe('Señales · Mercado y Estrategias as vip', () => {
     await expect(page.getByText('EMA/ADX trend').first()).toBeVisible();
     await expect(page.getByText('OPTIMISTA').first()).toBeVisible();
     await page.getByRole('button', { name: 'Probar', exact: true }).click();
-    await expect(page.getByText(/Resultado neto simulado/)).toBeVisible();
+    await expect(page.locator('.ch-lab-latest').getByText(/Resultado neto simulado/)).toBeVisible();
     // The mock refuses 5000 bars as "no_tokens".
     await page.getByLabel('Velas').fill('5000');
     await page.getByRole('button', { name: 'Probar', exact: true }).click();

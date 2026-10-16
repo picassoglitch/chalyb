@@ -39,7 +39,8 @@ import {
   extent,
   scale,
 } from '@/lib/tools/senales-market-core';
-import { hubRunsTool, getSenales } from '@/lib/tools/registry';
+import { runsInHub } from '@/lib/tools/hub-runs';
+import { toolHubMode } from '@/lib/config/flags';
 import { PERSONAL_FINANCE_FIELDS } from '@/lib/guardrails/signals';
 
 const SECRET = 'test-shared-sso-secret-must-be-long-enough-32b';
@@ -423,23 +424,31 @@ test('the backtest refusal flows from the adapter error into the BFF route answe
 });
 
 // ── registry ──────────────────────────────────────────────────────────
-test('mode "a" runs Señales in the hub with the engine adapter; off hands off; others stay stubs', () => {
+test('mode "a" runs Señales (and En vivo) in the hub with engine adapters; off hands off; others stay stubs', () => {
   const env = process.env as Record<string, string | undefined>;
   const prev = { ...env };
   env.NODE_ENV = 'development';
+  const hub = (slug: string) => runsInHub(slug, toolHubMode(slug));
   env.TOOL_HUB_MODE_CHALYBCRYPTO = 'a';
   env.TOOL_HUB_MODE_CHALYBOBS = 'a';
-  assert.equal(hubRunsTool('chalybcrypto'), true);
-  assert.equal(hubRunsTool('chalybobs'), false); // still a stub
-  const a = getSenales()!;
-  assert.equal(typeof a.markets, 'function');
+  env.TOOL_HUB_MODE_CHALYBBOT = 'a';
+  assert.equal(hub('chalybcrypto'), true);
+  assert.equal(hub('chalybobs'), true); // En vivo's engine adapter
+  assert.equal(hub('chalybbot'), false); // still a stub
   env.TOOL_HUB_MODE_CHALYBCRYPTO = 'off';
-  assert.equal(hubRunsTool('chalybcrypto'), false);
-  assert.equal(getSenales(), null);
+  assert.equal(hub('chalybcrypto'), false);
   env.TOOL_HUB_MODE_CHALYBCRYPTO = 'on';
-  assert.equal(hubRunsTool('chalybcrypto'), true);
+  assert.equal(hub('chalybcrypto'), true);
   for (const k of Object.keys(env)) if (!(k in prev)) delete env[k];
   Object.assign(env, prev);
+  // The registry uses exactly this decision and Señales' engine adapter in mode a
+  // (checked in source: importing the registry pulls En vivo's server-only deps).
+  const reg = readFileSync('src/lib/tools/registry.ts', 'utf8');
+  assert.match(reg, /return runsInHub\(slug, toolHubMode\(slug\)\)/);
+  assert.match(
+    reg,
+    /pick\(\s*TOOL_SLUGS\.senales,\s*'SenalesAdapter',\s*createMockSenales,\s*createEngineSenales,?\s*\)/,
+  );
 });
 
 // ── Mercado / Estrategias rules ───────────────────────────────────────
