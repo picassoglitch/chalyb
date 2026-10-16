@@ -32,7 +32,8 @@ export type AuditAction =
   | 'clips.job_retry' // the person pressed "Intentar otra vez" on a failed job (capped at 3)
   | 'tool.incident' // the owner opened or closed a tool incident from /dashboard/herramientas
   | 'tool.key_reauth' // a password check before revealing an En vivo stream key; metadata {ok}
-  | 'tool.key_reveal' // an En vivo stream key was shown; metadata {platform, via}
+  | 'tool.key_reveal' // an En vivo stream key was shown; metadata {target, via}
+  | 'tool.key_regenerate' // a new En vivo ingest key was made (the old one stopped working)
   | 'tool.error' // a tool screen showed ToolErrorState (WS-11, TOOLS-SPEC §7.1); metadata {tool, reason, supportCode}
   // Owner panel (P5). Engine and settings actions have no subscriber: the
   // admin is both actor and target, like engine.status before them.

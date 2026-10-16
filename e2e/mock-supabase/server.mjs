@@ -133,6 +133,12 @@ tables.profiles.push({
   selected_engine_id: null, chalybclip_trial_started_at: null, welcome_gift_claimed_at: null, token_bonus_balance: 0, locale: 'es',
   pro_trial_started_at: null, pro_trial_ends_at: null, created_at: iso(-9 * DAY),
 });
+// En vivo (TOOL_HUB_MODE_CHALYBOBS=a against a local engine): the engine
+// tenants of the paying accounts, as /auth/launch provisions them.
+tables.engine_subscriptions = ['pro', 'vip', 'trial'].map((k) => ({
+  id: `es-obs-${k}`, user_id: `u-${k}`, engine_id: 'e-obs', status: 'active', source: 'manual',
+  external_user_id: `00000000-0000-4000-8000-0000000000${k === 'pro' ? '01' : k === 'vip' ? '02' : '03'}`,
+}));
 // Cerrar mi cuenta files an ARCO cancellation request and reads it back.
 tables.arco_requests = [];
 const WRITABLE = new Set([

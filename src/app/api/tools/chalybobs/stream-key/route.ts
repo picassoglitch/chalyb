@@ -1,5 +1,7 @@
-// POST /api/tools/chalybobs/stream-key — "Mostrar" the stream key (§6.3,
-// §6.4). The key never reaches the browser before this call, and this call
+// POST /api/tools/chalybobs/stream-key {target?, password?} — "Mostrar" a
+// stream key (§6.3, §6.4): the ingest key the encoder uses (target "ingest",
+// the default) or a destination's saved key (target = its id). The key
+// never reaches the browser before this call, and this call
 // needs the person to prove it's them: their password again, or THIS session
 // signed in within the last 5 minutes (people who use a link or Google).
 // Password checks are limited to 5 per user per 15 minutes; every check and
@@ -13,7 +15,7 @@ import { getEntitlements } from '@/lib/billing/entitlement';
 import { getEnVivo, hubRunsTool } from '@/lib/tools/registry';
 import { runTool } from '@/lib/tools/bff';
 import { statusForReason } from '@/lib/tools/bff-core';
-import { LIVE_PLATFORMS, type LivePlatform } from '@/lib/tools/adapters/tools';
+import { parseDestinationId } from '@/lib/tools/envivo-bff';
 import {
   recentSignIn,
   REVEAL_WINDOW_MS,
@@ -70,12 +72,17 @@ export async function POST(req: Request) {
   if (ent.tools.chalybobs?.state !== 'included' || !adapter)
     return NextResponse.json({ ok: false, code: 'NOT_INCLUDED' }, { status: 403 });
   const body = asJsonObject(await req.json().catch(() => null)) as {
-    platform?: string;
+    target?: unknown;
     password?: string;
   };
-  const platform = String(body.platform ?? '') as LivePlatform;
-  if (!LIVE_PLATFORMS.includes(platform))
-    return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
+  let target: 'ingest' | { id: string } = 'ingest';
+  if (body.target !== undefined && body.target !== 'ingest') {
+    try {
+      target = { id: parseDestinationId(body.target) };
+    } catch {
+      return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
+    }
+  }
   const userId = session.user.id;
   let via: 'recent_session' | 'password' | null = recentSignIn(
     await thisSessionAuthTime(),
@@ -104,7 +111,9 @@ export async function POST(req: Request) {
       { status: 403, headers: NO_STORE },
     );
   const res = await runTool('chalybobs', session.user.id, (signal) =>
-    adapter.streamKey(session.user.id, platform, signal),
+    target === 'ingest'
+      ? adapter.streamKey(session.user.id, signal)
+      : adapter.destinationKey(session.user.id, target.id, signal),
   );
   if (!res.ok)
     return NextResponse.json(
@@ -115,7 +124,7 @@ export async function POST(req: Request) {
     action: 'tool.key_reveal',
     actorId: userId,
     targetUserId: userId,
-    metadata: { tool: 'chalybobs', platform, via },
+    metadata: { tool: 'chalybobs', target: target === 'ingest' ? 'ingest' : 'destination', via },
   });
   return NextResponse.json({ ok: true, data: { key: res.data } }, { headers: NO_STORE });
 }

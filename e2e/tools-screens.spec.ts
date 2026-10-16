@@ -46,7 +46,9 @@ test.describe('pro', () => {
   test('Clips', async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto('/app/clips/nuevo');
-    await page.getByLabel(/Pega el enlace/).fill('https://www.youtube.com/watch?v=torneo-del-sabado');
+    await page
+      .getByLabel(/Pega el enlace/)
+      .fill('https://www.youtube.com/watch?v=torneo-del-sabado');
     await page.getByRole('button', { name: 'Continuar' }).click();
     await page.getByRole('button', { name: 'Crear mis clips' }).click();
     await expect(page.getByRole('heading', { name: /Tus clips están listos/ })).toBeVisible({
@@ -98,35 +100,13 @@ test.describe('pro', () => {
   });
 
   test('En vivo', async ({ page }) => {
-    test.setTimeout(120_000);
-    await page.goto('/app/en-vivo');
-    const setup = page.getByRole('heading', { name: 'Conecta tu computadora' });
-    await setup.waitFor({ timeout: 5_000 }).catch(() => {});
-    if (await setup.isVisible().catch(() => false)) {
-      await snap(page, '57-envivo-conectar');
-      await expect(page.getByText('¡Listo! Tu computadora está conectada.')).toBeVisible({
-        timeout: 20_000,
-      });
-    }
-    await expect(page.getByRole('button', { name: /Iniciar transmisión|Terminar transmisión/ })).toBeVisible({
-      timeout: 20_000,
-    });
-    const stop = page.getByRole('button', { name: /Terminar transmisión/ });
-    if (await stop.isVisible().catch(() => false)) {
-      await stop.click();
-      await page.getByRole('button', { name: 'Sí, terminar' }).click();
-      await page.goto('/app/en-vivo');
-    }
-    await expect(page.getByRole('button', { name: /Iniciar transmisión/ })).toBeVisible();
-    await snap(page, '22-envivo-antes');
-    await page.getByRole('button', { name: /Iniciar transmisión/ }).click();
-    await expect(page.getByRole('timer')).toBeVisible({ timeout: 20_000 });
-    await snap(page, '58-envivo-control');
-    await page.getByRole('button', { name: /Terminar transmisión/ }).click();
-    await page.getByRole('button', { name: 'Sí, terminar' }).click();
+    await open(page, '/app/en-vivo', 'Conecta tu encoder');
+    await snap(page, '22-envivo-transmitir');
+    await open(page, '/app/en-vivo/conectar', 'OBS Studio');
+    await snap(page, '57-envivo-conectar');
     await open(page, '/app/en-vivo/transmisiones');
     await snap(page, '58b-envivo-transmisiones');
-    await open(page, '/app/en-vivo/ajustes', 'Dónde transmites');
+    await open(page, '/app/en-vivo/ajustes', 'Tu clave de transmisión');
     await snap(page, '59-envivo-ajustes');
   });
 
