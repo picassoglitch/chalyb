@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PUBLISH_OPS, matchPublishOp, pickQuery } from '@/lib/tools/adapters/clips/publish-ops';
 import {
+  CONNECT_PLATFORMS,
   publishMethods,
   publishReturnUrl,
   safeClipsPath,
@@ -233,4 +234,17 @@ test('status helpers', () => {
   assert.equal(statusKind('cancelled'), 'gray');
   assert.equal(isPublishTab('piloto'), true);
   assert.equal(isPublishTab('admin'), false);
+});
+
+test('CONNECT_PLATFORMS is the list the adapter methods honour', async () => {
+  assert.deepEqual([...CONNECT_PLATFORMS], ['youtube', 'tiktok', 'facebook']);
+  const m = publishMethods(() =>
+    fakeEngine({ 'POST /publish/connect': { ok: true, auth_url: 'https://zernio.com/x' } }),
+  );
+  for (const p of ['youtube', 'twitch', 'tiktok', 'kick', 'facebook'] as const)
+    assert.equal(
+      (await m.connectUrl('u1', p, '/app/clips/ajustes')) !== null,
+      CONNECT_PLATFORMS.includes(p),
+      p,
+    );
 });

@@ -16,8 +16,11 @@ import { seg, type ClipsEngine } from './client';
 
 export type PublishMethods = Pick<ClipsAdapter, 'accounts' | 'connectUrl' | 'publishClip'>;
 
-/** Hub platforms Zernio connects and publishes to (Twitch and Kick: no). */
-const ZERNIO_PLATFORMS: ReadonlySet<SocialPlatform> = new Set(['youtube', 'tiktok', 'facebook']);
+/** Hub platforms Zernio connects and publishes to (Twitch and Kick: no), in
+ *  display order. Screens that list connectable networks (Ajustes, home) read
+ *  this; accounts/connectUrl/publishClip below are gated by the same list. */
+export const CONNECT_PLATFORMS: readonly SocialPlatform[] = ['youtube', 'tiktok', 'facebook'];
+const ZERNIO_PLATFORMS: ReadonlySet<SocialPlatform> = new Set(CONNECT_PLATFORMS);
 
 interface AccountsJson {
   ok: boolean;
