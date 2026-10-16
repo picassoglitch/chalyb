@@ -117,6 +117,13 @@ export function ClipEditorScreen({
   const colorTouched = useRef(false);
   const prefTimers = useRef(new Map<string, number>());
 
+  // "Aprobar y seguir" opens the next clip: warm its route now so the
+  // switch paints at once.
+  const nextClipId = payload.next_clip_id;
+  useEffect(() => {
+    if (nextClipId) router.prefetch(`/app/clips/${encodeURIComponent(nextClipId)}` as Route);
+  }, [nextClipId, router]);
+
   // ── playback ────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [pb, setPb] = useState<Playback>({
