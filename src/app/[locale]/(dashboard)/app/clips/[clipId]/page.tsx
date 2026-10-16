@@ -15,6 +15,11 @@ import { ClipEditor } from '@/components/tools/clips/clip-editor';
 import { PublishButton } from '@/components/tools/clips/publish-button';
 import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { ConnectAccount } from '@/components/tools/clips/connect-account';
+import { ClipEditorScreen } from '@/components/tools/clips/editor/clip-editor-screen';
+import { getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
+import { editorApi } from '@/lib/tools/adapters/clips/editor-api';
+import { CLIP_ID_RE } from '@/lib/tools/adapters/clips/editor-types';
+import { EXPORT_QUALITIES, type ExportQuality } from '@/lib/tools/adapters/clips/editor-types';
 import { ButtonLink } from '@/components/ui/primitives';
 import { SetupState } from '@/components/ui/setup-state';
 import '@/styles/tools-clips.css';
@@ -27,11 +32,17 @@ export async function generateMetadata(): Promise<Metadata> {
 // Detalle del clip (TOOLS-SPEC §4.2, mockup 51), under the "Mis clips" tab.
 // "Publicar en TikTok" shows only when TikTok is connected, or when the
 // engine can connect it (then it opens ConnectAccountSheet and comes back).
+//
+// With the real engine (TOOL_HUB_MODE_CHALYBCLIP=a) this is the full clip
+// editor, rebuilt from the engine's /dashboard/clips/{id}: see
+// components/tools/clips/editor/clip-editor-screen.tsx.
 
 export default async function ClipDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; clipId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, clipId } = await params;
   setRequestLocale(locale);
@@ -61,6 +72,67 @@ export default async function ClipDetailPage({
   const td = await getTranslations('clipsTool.detail');
   const userId = gate.session.user.id;
   const { adapter } = gate;
+
+  const engine = getClipsEngineAdapter();
+  if (engine) {
+    const notFound = (
+      <ToolShell slug="chalybclip" tab="history">
+        <section className="ch-card ch-state" aria-labelledby="clip-404">
+          <span className="ch-state__ic" aria-hidden="true">
+            <SearchX />
+          </span>
+          <h2 id="clip-404" className="ch-h2">
+            {td('notFound.title')}
+          </h2>
+          <ButtonLink href="/app/clips/mis-clips" size="xl">
+            {td('notFound.cta')}
+          </ButtonLink>
+        </section>
+      </ToolShell>
+    );
+    if (!CLIP_ID_RE.test(clipId)) return notFound;
+    const loaded = await runTool(
+      'chalybclip',
+      userId,
+      (signal) => editorApi(engine.engine(userId)).load(clipId, signal),
+      { idempotent: true },
+    );
+    if (!loaded.ok)
+      return loaded.error.reason === 'not_found' ? (
+        notFound
+      ) : (
+        <ToolShell slug="chalybclip" tab="history">
+          <ToolErrorState slug="chalybclip" error={loaded.error} savedWork />
+        </ToolShell>
+      );
+    const sp = await searchParams;
+    const exp = typeof sp.export === 'string' ? sp.export : null;
+    const exportOnLoad =
+      exp && (EXPORT_QUALITIES as readonly string[]).includes(exp) ? (exp as ExportQuality) : null;
+    const tj = await getTranslations('clipsEditor');
+    return (
+      <ToolShell slug="chalybclip" tab="history">
+        <div className="ch-clipnav">
+          <Link href={'/app/clips/mis-clips' as Route} className="ch-back">
+            <ChevronLeft aria-hidden="true" />
+            <span>{td('back')}</span>
+          </Link>
+          <Link
+            href={`/app/clips/trabajo/${encodeURIComponent(loaded.data.clip.stream_id)}` as Route}
+            className="ch-lnk"
+          >
+            {tj('backStream')}
+          </Link>
+        </div>
+        <ClipEditorScreen
+          key={loaded.data.clip.id}
+          initial={loaded.data}
+          jobHref={`/app/clips/trabajo/${encodeURIComponent(loaded.data.clip.stream_id)}`}
+          exportOnLoad={exportOnLoad}
+        />
+      </ToolShell>
+    );
+  }
   const reads = await runTool(
     'chalybclip',
     userId,

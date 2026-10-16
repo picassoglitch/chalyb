@@ -1,0 +1,349 @@
+{
+  "title": "Clip editor",
+  "backStream": "See the job",
+  "status": {
+    "cut": "To review",
+    "ready_for_review": "To review",
+    "approved": "Approved",
+    "rejected": "Discarded",
+    "published": "Published"
+  },
+  "seconds": "{n} s",
+  "verdict": {
+    "viral": "This one can go viral",
+    "ready": "Ready to publish",
+    "needsEdit": "It needs one tweak",
+    "reject": "Not ready to publish on its own",
+    "retention": "Estimated retention",
+    "retentionHint": "How sure it is this works: checks the hook, captions, face, safe zones, silences and audio",
+    "readyFor": "Ready for {plataforma}",
+    "heard": "The AI heard you say",
+    "backward": "↶ backward",
+    "backwardHint": "The phrase triggered backward: the clip starts before the moment you said it",
+    "forward": "↷ forward",
+    "forwardHint": "The phrase triggered forward: the clip continues after the moment you said it",
+    "platformsLabel": "Check per app",
+    "platformOk": "{plataforma}: good",
+    "platformWarn": "{plataforma}: with notes",
+    "platformBlock": "{plataforma}: with problems",
+    "trimmedTitle": "We trimmed the clip automatically",
+    "trimmedBody": "Original bounds: {inicio} s → {fin} s. Tap Undo to bring them back.",
+    "undo": "Undo",
+    "undoing": "Restoring…",
+    "trimReverted": "Done, we restored the original bounds.",
+    "trimNoop": "This clip was never trimmed, there's nothing to undo.",
+    "trimError": "We couldn't undo it. Try again in a moment.",
+    "autofixTitle": "Fixed automatically by the AI",
+    "autofixGain": "+{n}% ready",
+    "autofixReady": "It's ready to publish on its own."
+  },
+  "approve": "Approve and continue",
+  "approving": "Approving…",
+  "saveDraft": "Save draft",
+  "savingDraft": "Saving…",
+  "draftSaved": "Draft saved",
+  "reject": "Discard and close",
+  "rejecting": "Discarding…",
+  "rejectedNote": "You discarded this clip. You can approve it again whenever you want.",
+  "approvedNote": "Approved. You can keep adjusting it and approve it again.",
+  "publishedNote": "This clip was already published. You can download it; it can't be edited anymore.",
+  "queueDone": "You reviewed every clip from this job.",
+  "actionError": "We couldn't do that. Try again.",
+  "modal": {
+    "title": "This clip isn't 100% yet",
+    "body": "The AI already fixed what it could and rated it {n}% ready to publish. You can approve it as is or keep editing.",
+    "keepEditing": "Keep editing",
+    "force": "Approve as is",
+    "close": "Close"
+  },
+  "growth": {
+    "title": "Growth Score",
+    "outOf": "{n}/100",
+    "impressions": "{min}–{max} views"
+  },
+  "preview": {
+    "title": "Live preview",
+    "sub": "this is how the final clip will look",
+    "fitLegend": "How it fills the screen",
+    "fit": {
+      "smart_crop": "Smart crop",
+      "blurred_bg": "Blurred background",
+      "letterbox": "Black bars",
+      "dynamic_zoom": "Cinematic"
+    },
+    "fitHint": {
+      "smart_crop": "9:16 crop that follows you",
+      "blurred_bg": "Full horizontal frame on a blurred background",
+      "letterbox": "Full horizontal frame with black bars",
+      "dynamic_zoom": "Slow zoom with gentle movement"
+    },
+    "modeLegend": "What to see",
+    "mode": {
+      "raw": "Plain",
+      "edited": "Edited"
+    },
+    "modeHint": {
+      "raw": "The cut as is, no overlays",
+      "edited": "Title, captions and banner"
+    },
+    "player": "Clip preview",
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "Restart",
+    "sound": "Turn sound on (M)",
+    "mute": "Mute (M)",
+    "note": "This is only the preview. When you download or publish, the title, banner and captions are burned into a new video: that's the one that gets uploaded.",
+    "loadingAudio": "loading audio…",
+    "noAudio": "no audio",
+    "scrubber": "Position in the clip",
+    "timeline": "Moments the AI found",
+    "timelineEmpty": "We didn't find highlights: this clip has no transcript, chat or visual signals to review.",
+    "seekTo": "{label} at {t}",
+    "seekHint": "Tap to jump to that moment",
+    "captionsNoTranscript": "no transcript yet: process this stream",
+    "captionsEmpty": "no voice detected in this stream: check the audio or process it again",
+    "captionsOld": "the transcript is old (no per-word timing): process the stream again",
+    "live": "LIVE",
+    "liveNow": "LIVE NOW",
+    "follow": "Follow",
+    "captionFallback": "🔥 unreal moment · live stream highlight #fyp",
+    "simTabs": {
+      "following": "Following",
+      "forYou": "For You",
+      "reels": "Reels",
+      "friends": "Friends",
+      "shorts": "Shorts",
+      "clip": "Clip",
+      "share": "Share",
+      "remix": "Remix"
+    },
+    "chat": [
+      {
+        "name": "@stevefan",
+        "msg": "no way 😂😂"
+      },
+      {
+        "name": "@kx_clipper",
+        "msg": "CLIP IT CLIP IT"
+      },
+      {
+        "name": "@aldo_fan",
+        "msg": "w stream fr"
+      }
+    ]
+  },
+  "target": {
+    "title": "Where will you post it?",
+    "sub": "pick one and everything else adjusts to what works there",
+    "name": {
+      "tiktok": "TikTok",
+      "reels": "Reels",
+      "shorts": "Shorts",
+      "kick": "Kick",
+      "all": "All"
+    },
+    "blurb": {
+      "tiktok": "Full subject · blurred backdrop · captions lower-middle",
+      "reels": "Full subject · starfield backdrop · captions lower-middle",
+      "shorts": "Full subject · lower-middle captions · clean KICK banner",
+      "kick": "Native streamer banner · LIVE pill · letterbox-safe",
+      "all": "Safest cross-platform export: full subject on every feed"
+    },
+    "readyFor": "Ready for <b>{plataforma}</b> · {blurb}"
+  },
+  "style": {
+    "title": "Clip style",
+    "sub": "fine-tune how the banner, hook and captions look",
+    "name": {
+      "repost_page_viral": "Viral repost",
+      "clean_creator": "Clean creator",
+      "gaming_chaos": "Gaming chaos",
+      "documentary": "Documentary",
+      "minimal_native": "Minimal native"
+    },
+    "desc": {
+      "repost_page_viral": "Kick-style black banner with a big logo and URL, white headline up top and word-by-word captions. The repost-page look.",
+      "clean_creator": "Just the URL at the bottom, subtle captions and no top headline. Your face is the moment.",
+      "gaming_chaos": "Heavy emphasis, max animation, big captions and a green Kick block. For raids, jumpscares and big plays.",
+      "documentary": "Story style. Small bottom banner, no top headline and typewriter captions.",
+      "minimal_native": "No banner, no headline. Captions only, so it looks recorded on a phone."
+    }
+  },
+  "hook": {
+    "title": "Viral hook",
+    "sub": "the first thing people read: it decides if they stay or scroll",
+    "label": "Hook title",
+    "placeholder": "e.g. He asked for a rematch after losing again",
+    "hint": "Leave it empty for no title. The ones that work best have 6 to 10 words with curiosity, conflict or status.",
+    "tone": "AI tone",
+    "tones": {
+      "default": "Natural: your usual voice",
+      "aggressive": "Aggressive: direct and bold",
+      "gen_z": "Gen Z: TikTok slang",
+      "corporate": "Formal: clean and professional",
+      "curious": "Curious: questions that hook"
+    },
+    "generate": "Generate 5",
+    "generating": "Generating with a {tono} tone…",
+    "use": "Tap to use it as the hook title",
+    "none": "No hook came out: try another tone.",
+    "error": "We couldn't generate them. Try again.",
+    "fallback": "The AI didn't answer: we built these from what you said in the clip."
+  },
+  "captions": {
+    "title": "Captions",
+    "sub": "burned in word by word",
+    "burn": "Burn the captions into the clip",
+    "preset": "Style",
+    "presetKit": "Use your brand kit's ({estilo})",
+    "presets": {
+      "karaoke_pop": "Karaoke: highlights word by word with a bounce",
+      "typewriter": "Typewriter: appears letter by letter",
+      "bold_block": "Bold block: 2 to 3 words, hard cut",
+      "subtle": "Subtle: one line at the bottom, no animation"
+    },
+    "highlight": "Active word color",
+    "position": "Where the captions go",
+    "positions": {
+      "auto": "✨ Viral auto",
+      "autoAi": "✨ Viral auto · the AI picks {pos}",
+      "lower_third": "Under the face: below your face (recommended)",
+      "upper_third": "Viral top: over the face, poster look",
+      "centered": "Follow the face: at eye level",
+      "bottom": "Safe bottom: just above the app's buttons"
+    },
+    "aiPos": {
+      "upper_third": "Viral top",
+      "centered": "Follow the face",
+      "lower_third": "Under the face",
+      "bottom": "Safe bottom"
+    },
+    "positionHint": "Most people leave it on Viral auto. The AI picks per app.",
+    "size": "Font size",
+    "sizes": {
+      "small": "S: subtle",
+      "medium": "M: balanced (default)",
+      "large": "L: stronger",
+      "xl": "XL: fills the screen"
+    },
+    "animation": "Animation",
+    "animations": {
+      "pop": "Bounce: the active word pops",
+      "slide": "Slide: words rise into place",
+      "typewriter": "Typewriter: appears letter by letter",
+      "fade": "Fade: smooth transition between words"
+    }
+  },
+  "brand": {
+    "title": "Your brand",
+    "sub": "your URL on the banner, just like on your stream",
+    "banner": "Show a KICK-style banner at the bottom",
+    "platform": "Platform",
+    "url": "URL",
+    "urlPlaceholder": "kick.com/yourname",
+    "color": "Banner color",
+    "context": "Show app context (LIVE badge and chat)",
+    "sim": "Simulate the app screen",
+    "simHint": "It's only a simulation, never burned in. Pick the app where you'll post.",
+    "sims": {
+      "clean": "No simulation",
+      "tiktok": "TikTok",
+      "reels": "Instagram Reels",
+      "shorts": "YouTube Shorts",
+      "kick": "Kick clip page"
+    },
+    "safeZone": "App for the safe zones",
+    "variant": "Banner type",
+    "variants": {
+      "kick_repost_page": "Repost: black bar, huge KICK and URL (default)",
+      "kick_black_bar_classic": "Classic: color strip, app on the left and URL on the right",
+      "kick_green_block": "Green block: thick gamer overlay",
+      "kick_minimal_url": "Minimal: just the URL, no box"
+    },
+    "liveBadge": "Show the LIVE pill (repost banner only)"
+  },
+  "export": {
+    "title": "Download",
+    "quality": "Quality",
+    "qualities": {
+      "1080": "1080p",
+      "2k": "2K",
+      "4k": "4K"
+    },
+    "qualityLocked": "2K and 4K come with the VIP plan. On your plan it downloads in 1080p.",
+    "download": "Download video",
+    "prepare": "Prepare download",
+    "rendering": "Preparing your video… {n}%",
+    "ready": "Your video is ready",
+    "failed": "We couldn't prepare the video.",
+    "retry": "Try again",
+    "savedFirst": "We saved your changes before preparing the video."
+  },
+  "analysis": {
+    "why": "Why the AI picked this clip",
+    "whySub": "what's behind the score",
+    "viral": "Viral potential",
+    "trigger": "What triggered it",
+    "visionCheck": "Image AI review",
+    "face": "Face presence",
+    "faceUnit": "of the clip's seconds",
+    "motion": "Motion",
+    "motionUnit": "average per second",
+    "hook": "Hook strength",
+    "level": "Level",
+    "readability": "How readable the captions are",
+    "pace": "Speaking pace",
+    "paceUnit": "words per second",
+    "sweet": "Sweet spot",
+    "noTranscript": "This clip has no transcript yet, so the pace can't be measured.",
+    "deadAir": "Silence risk",
+    "talk": "How much you talk",
+    "riskLevels": "Risk levels",
+    "riskScale": "< 0.4 = high · 0.4–0.8 = medium · ≥ 0.8 = low",
+    "breakdown": "Why this clip?",
+    "breakdownSub": "the breakdown of what we detected",
+    "motionAvg": "average motion across the clip",
+    "notAnalyzed": "n/a: the image wasn't analyzed",
+    "na": "n/a",
+    "faceSecs": "of the seconds with a face detected",
+    "naTranscript": "n/a: no transcript",
+    "reaction": "Reaction confidence",
+    "reactionNote": "reviewed by the image AI",
+    "notReviewed": "not reviewed: base order kept",
+    "delta": "Change after review",
+    "deltaWhy": "Why it changed",
+    "outcomes": "Publishing results",
+    "outcomesSub": "numbers per app",
+    "app": "App",
+    "link": "Link",
+    "state": "Status",
+    "views": "Views",
+    "likes": "Likes",
+    "comments": "Comments",
+    "measured": "Last checked",
+    "notMeasured": "not measured yet",
+    "levels": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "MED": "Medium",
+      "LOW": "Low",
+      "DEVELOPING": "Developing",
+      "GOOD": "Good",
+      "OK": "Fair",
+      "CHECK": "Check it"
+    }
+  },
+  "autosave": "Your brand settings save on their own for your next clips.",
+  "unsaved": "You have unsaved changes on this clip.",
+  "errors": {
+    "session": "Your session ended. Sign in again to continue.",
+    "no_credits": "You don't have enough tokens for this. Top up or upgrade your plan.",
+    "rate_limited": "You reached a limit of your plan. Try again later.",
+    "too_large": "This is over your plan's maximum size.",
+    "needs_plan": "Your plan doesn't include this.",
+    "not_found": "We couldn't find this clip. It may have been deleted.",
+    "bad_request": "This clip changed in the meantime. Reload the page and try again.",
+    "generic": "Clips didn't answer this time. Try again in a moment.",
+    "code": "Code {codigo}"
+  }
+}
