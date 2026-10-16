@@ -24,6 +24,7 @@
 // endpoint which writes via service role).
 
 import 'server-only';
+import { cache } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TIER_CAPS, effectiveTier, isAdminRole } from '@/lib/billing/tiers';
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
@@ -118,7 +119,7 @@ export function composeBalance(
   };
 }
 
-export async function getTokenBalance(userId: string): Promise<TokenBalance> {
+async function readTokenBalance(userId: string): Promise<TokenBalance> {
   const admin = createAdminClient();
   const [subject, { data, error }] = await Promise.all([
     getBalanceSubject(userId),
@@ -147,6 +148,11 @@ export async function getTokenBalance(userId: string): Promise<TokenBalance> {
     },
   );
 }
+
+/** Memoized per request (React cache): the entitlements and a tool screen
+ *  both read it during one render. A pass-through in server actions and
+ *  route handlers, so admission and charging always read fresh. */
+export const getTokenBalance = cache(readTokenBalance);
 
 /** Has this user run out of plan + pack credits? */
 export async function isOverQuota(userId: string): Promise<boolean> {

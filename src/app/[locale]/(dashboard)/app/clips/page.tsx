@@ -65,12 +65,19 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
   const caps = adapter.capabilities();
   // The engine (mode "a") can fail like any network call: the tool error
   // state, never a crashed page.
-  const loaded = await runTool(
-    'chalybclip',
-    userId,
-    () => Promise.all([listClipJobs(userId), adapter.listClips(userId), adapter.accounts(userId)]),
-    { idempotent: true, adapterErrorsOnly: true },
-  );
+  // Display only: an unknown balance never blocks the hero (the job
+  // submit enforces credits on the server either way). Read alongside the
+  // engine, not after it (memoized: the gate's entitlements already read it).
+  const [loaded, balance] = await Promise.all([
+    runTool(
+      'chalybclip',
+      userId,
+      () =>
+        Promise.all([listClipJobs(userId), adapter.listClips(userId), adapter.accounts(userId)]),
+      { idempotent: true, adapterErrorsOnly: true },
+    ),
+    getTokenBalance(userId).catch(() => null),
+  ]);
   if (!loaded.ok)
     return (
       <ToolShell slug="chalybclip" tab="main">
@@ -78,9 +85,6 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
       </ToolShell>
     );
   const [jobs, clips, accounts] = loaded.data;
-  // Display only: an unknown balance never blocks the hero (the job
-  // submit enforces credits on the server either way).
-  const balance = await getTokenBalance(userId).catch(() => null);
   const engineMode = !!getClipsEngineAdapter();
   const noCredits = !!balance && !balance.unlimited && balance.remaining <= 0;
   const t = await getTranslations('clipsTool');

@@ -34,8 +34,13 @@ const mono = JetBrains_Mono({
 });
 
 export default async function WorkspaceLayout({ children }: { children: React.ReactNode }) {
-  await requireUser('/app');
-  const session = await getSessionUser();
+  const user = await requireUser('/app');
+  // Both reads are memoized per request (the page's tool gate asks too); the
+  // unread count only needs the user id, so it runs alongside the profile.
+  const [session, unread] = await Promise.all([
+    getSessionUser(),
+    unreadCount(user.id).catch(() => 0),
+  ]);
   const meta = session?.user.user_metadata ?? {};
   const fullName =
     (typeof meta.full_name === 'string' && meta.full_name) ||
@@ -46,7 +51,6 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   const role = session?.role ?? 'VIEWER';
   // The user card shows the EFFECTIVE plan: admins read as VIP.
   const plan = effectiveTier(role, session?.tier ?? 'FREE');
-  const unread = session ? await unreadCount(session.user.id).catch(() => 0) : 0;
 
   return (
     <div className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>

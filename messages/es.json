@@ -2530,6 +2530,7 @@
     }
   },
   "toolShell": {
+    "loading": "Cargando…",
     "crumb": "Inicio",
     "included": "Incluido en tu plan",
     "inProTry": "Incluido en Pro · Pruébalo gratis",

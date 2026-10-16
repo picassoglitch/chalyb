@@ -1,6 +1,7 @@
 // Reading a user's billing from our copy of Mercado Pago's state.
 
 import 'server-only';
+import { cache } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deriveBillingState, type BillingState, type SubscriptionRow } from './billing-state';
 import { restrictionState, type RestrictionRow, type RestrictionState } from './disputes';
@@ -45,7 +46,7 @@ export async function accountRestrictions(userId: string): Promise<RestrictionSt
 
 const RANK = { FREE: 0, PRO: 1, VIP: 2 } as const;
 
-export async function loadBilling(userId: string, nowMs = Date.now()): Promise<BillingSnapshot> {
+async function readBilling(userId: string, nowMs = Date.now()): Promise<BillingSnapshot> {
   const admin = createAdminClient();
   const [{ data: rows }, { data: profile }, restriction, { data: charged }] = await Promise.all([
     admin
@@ -96,3 +97,8 @@ export async function loadBilling(userId: string, nowMs = Date.now()): Promise<B
     restriction,
   };
 }
+
+/** Memoized per request (React cache): the entitlements and the billing
+ *  banner both read it during one render. A pass-through in server actions
+ *  and route handlers. */
+export const loadBilling = cache(readBilling);

@@ -72,15 +72,16 @@ export default async function ClipsSettingsPage({
   // Mode "a": the engine's own settings replace the simple form below (it
   // has no engine counterpart). Admin rows only for engine admins.
   const engineAdapter = getClipsEngineAdapter();
-  const engineAdmin = engineAdapter
-    ? await runTool(
-        'chalybclip',
-        session.user.id,
-        (signal) => getMe(engineAdapter.engine(session.user.id), signal),
-        { idempotent: true, adapterErrorsOnly: true },
-      ).then((r) => r.ok && r.data.is_admin)
-    : false;
-  const [settings, accounts] = await Promise.all([
+  // Independent reads: all at once.
+  const [engineAdmin, settings, accounts] = await Promise.all([
+    engineAdapter
+      ? runTool(
+          'chalybclip',
+          session.user.id,
+          (signal) => getMe(engineAdapter.engine(session.user.id), signal),
+          { idempotent: true, adapterErrorsOnly: true },
+        ).then((r) => r.ok && r.data.is_admin)
+      : false,
     adapter.getSettings(session.user.id),
     adapter.accounts(session.user.id),
   ]);

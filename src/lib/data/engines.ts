@@ -3,6 +3,7 @@
 //
 // Was named bots.ts before migration 0010 — see types.ts for naming rationale.
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { engineDisplayName } from '@/lib/engines/display-names';
 import {
@@ -14,7 +15,7 @@ import {
   type EngineStatus,
   STATE_TO_CODE,
 } from './types';
-import type { SubscriptionTier } from '@/lib/auth/session';
+import { getCurrentUser, type SubscriptionTier } from '@/lib/auth/session';
 
 const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -119,27 +120,32 @@ function rowToEngine(
   };
 }
 
-export async function listEngines(): Promise<Engine[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+// Memoized per request (React cache): the entitlements, the home tiles and
+// Tus herramientas all list the engines during one render.
+export const listEngines = cache(async (): Promise<Engine[]> => {
+  // The signed-in user comes from the request's (memoized) session read: one
+  // Supabase Auth round trip per request, not one per caller.
+  const [user, supabase] = await Promise.all([getCurrentUser(), createClient()]);
   if (!user) return [];
 
   // Engines + their 1:1 health + 1:1 persona via foreign-table embed.
   // `owner_user_id` joins to profiles below (one extra round-trip — keeps
   // this query schema-flat instead of doing a cross-schema FK embed against
   // auth.users which PostgREST won't follow).
-  const { data, error } = await supabase
-    .from('engines')
-    .select(
-      'id, slug, name, icon, category, type, env, region, node, description, featured, status, tier_required, external_url, integration_mode, admin_api_base, requires_provisioning, owner_user_id, partner_royalty_per_million_tokens_cents, cost_per_million_tokens_cents, fixed_monthly_cost_cents, engine_health(state, health, latency_ms, revenue_cents), engine_personas(persona, tone, goals, focus, learning_state, engagement_score)',
-    )
-    .eq('org_id', DEMO_ORG_ID)
-    // Active engines first, then coming-soon, then deprecated.
-    .order('status', { ascending: true })
-    .order('featured', { ascending: false })
-    .order('name');
+  // The engines and this user's favorites don't depend on each other.
+  const [{ data, error }, { data: favRows }] = await Promise.all([
+    supabase
+      .from('engines')
+      .select(
+        'id, slug, name, icon, category, type, env, region, node, description, featured, status, tier_required, external_url, integration_mode, admin_api_base, requires_provisioning, owner_user_id, partner_royalty_per_million_tokens_cents, cost_per_million_tokens_cents, fixed_monthly_cost_cents, engine_health(state, health, latency_ms, revenue_cents), engine_personas(persona, tone, goals, focus, learning_state, engagement_score)',
+      )
+      .eq('org_id', DEMO_ORG_ID)
+      // Active engines first, then coming-soon, then deprecated.
+      .order('status', { ascending: true })
+      .order('featured', { ascending: false })
+      .order('name'),
+    supabase.from('favorites').select('engine_id').eq('user_id', user.id),
+  ]);
 
   if (error) {
     // Friendly hint when migration 0010 hasn't run yet.
@@ -156,10 +162,6 @@ export async function listEngines(): Promise<Engine[]> {
     return [];
   }
 
-  const { data: favRows } = await supabase
-    .from('favorites')
-    .select('engine_id')
-    .eq('user_id', user.id);
   const favIds = new Set((favRows ?? []).map((r) => r.engine_id as string));
 
   // Hydrate owner display data for any engines that have an owner_user_id.
@@ -186,7 +188,7 @@ export async function listEngines(): Promise<Engine[]> {
   }
 
   return (data as EngineRow[]).map((r) => rowToEngine(r, favIds, ownersById));
-}
+});
 
 export async function getEngine(engineId: string): Promise<Engine | null> {
   const all = await listEngines();

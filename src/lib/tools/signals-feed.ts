@@ -22,7 +22,10 @@ export async function loadSignalFeed(
   adapter: SenalesAdapter,
   plan: PlanTierKey,
   userId: string,
-  coins: string[],
+  /** The person's coins. May be a promise: the screens start the feed
+   *  (content by plan, no user input) alongside the prefs read, and only the
+   *  filter waits for the coins. */
+  coins: string[] | Promise<string[]>,
 ): Promise<FeedResult> {
   const res = await runTool(
     'chalybcrypto',
@@ -32,8 +35,9 @@ export async function loadSignalFeed(
       idempotent: true,
     },
   );
+  const mine = await coins;
   const filter = (all: Signal[]) =>
-    (coins.length ? all.filter((s) => coins.includes(s.coin)) : all).map(screenSignal);
+    (mine.length ? all.filter((s) => mine.includes(s.coin)) : all).map(screenSignal);
   if (res.ok) {
     cache().set(plan, res.data);
     return { ok: true, signals: filter(res.data), stale: false };

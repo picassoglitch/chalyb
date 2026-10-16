@@ -1,20 +1,13 @@
-// Señales loading (TOOLS-SPEC §5.2): skeletons for 3 cards; the legal strip
-// paints right away.
+// Señales loading (TOOLS-SPEC §5.2): skeletons for the cards; the legal strip paints right away.
+// The tool header, tabs and legal strip paint on the click; the content
+// shimmers until the screen is ready (ToolLoading).
 
-import { Skeleton } from '@/components/ui/primitives';
-import { ToolShell } from '@/components/tools/tool-shell';
+import { ToolLoading } from '@/components/tools/tool-loading';
 import { SignalsDisclaimer } from '@/components/tools/senales/common';
 import '@/styles/tools-senales.css';
 
-export default function SenalesLoading() {
+export default function Loading() {
   return (
-    <ToolShell slug="chalybcrypto" tab="main">
-      <div className="ch-sig-skel" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} height={150} />
-        ))}
-      </div>
-      <SignalsDisclaimer />
-    </ToolShell>
+    <ToolLoading slug="chalybcrypto" tab="main" shape="signals" after={<SignalsDisclaimer />} />
   );
 }

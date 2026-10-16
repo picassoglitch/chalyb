@@ -39,7 +39,16 @@ export default async function SenalesHistorial({
     );
   if (gate.kind !== 'ready' || gate.riskPending) return redirect({ href: '/app/senales', locale });
   const { session, entitlements, adapter } = gate;
-  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  // The feed is content by plan (no user input): it starts with the prefs
+  // read, not after it; only its coin filter waits for the prefs.
+  const prefsAsync = loadSenalesPrefs(adapter, session.user.id);
+  const feedAsync = loadSignalFeed(
+    adapter,
+    planKeyFor(entitlements.plan),
+    session.user.id,
+    prefsAsync.then((r) => (r.ok && r.data ? r.data.coins : [])),
+  );
+  const prefsRes = await prefsAsync;
   if (!prefsRes.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="history">
@@ -50,10 +59,7 @@ export default async function SenalesHistorial({
   const prefs = prefsRes.data;
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
   const t = await getTranslations('signalsTool');
-  const [coins, feed] = await Promise.all([
-    adapter.coins(),
-    loadSignalFeed(adapter, planKeyFor(entitlements.plan), session.user.id, prefs.coins),
-  ]);
+  const [coins, feed] = await Promise.all([adapter.coins(), feedAsync]);
   if (!feed.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="history">

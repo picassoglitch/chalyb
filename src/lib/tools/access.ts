@@ -48,7 +48,11 @@ export async function loadTool<A>(
 ): Promise<ToolGate<A>> {
   const session = await getSessionUser();
   if (!session) return redirect({ href: `/sign-in?next=${encodeURIComponent(path)}`, locale });
-  const entitlements = await getEntitlements(session);
+  // The risk notice check doesn't depend on the plan: both reads at once.
+  const [entitlements, riskAck] = await Promise.all([
+    getEntitlements(session),
+    hasRiskAck(session.user.id, slug),
+  ]);
   const access = entitlements.tools[slug];
   if (!access) return redirect({ href: '/app/herramientas', locale });
   if (access.state === 'trial_offer') return { kind: 'locked', session, entitlements };
@@ -59,7 +63,7 @@ export async function loadTool<A>(
   // The launch refuses a risk tool whose notice isn't accepted, so the sheet
   // has to open here first; accepting it navigates (full load) to the hand-off.
   if (!hubRunsTool(slug)) {
-    if (!(await hasRiskAck(session.user.id, slug))) return { kind: 'risk', session, entitlements };
+    if (!riskAck) return { kind: 'risk', session, entitlements };
     redirectPath(hubLaunchHref(slug, locale) as Route);
   }
   const a = adapter();
@@ -75,7 +79,7 @@ export async function loadTool<A>(
     session,
     entitlements,
     adapter: a,
-    riskPending: !(await hasRiskAck(session.user.id, slug)),
+    riskPending: !riskAck,
   };
 }
 

@@ -80,15 +80,22 @@ export default async function SenalesHome({
         <RiskAck
           slug="chalybcrypto"
           locale={locale}
-          afterAcceptHref={
-            gate.kind === 'risk' ? hubLaunchHref('chalybcrypto', locale) : undefined
-          }
+          afterAcceptHref={gate.kind === 'risk' ? hubLaunchHref('chalybcrypto', locale) : undefined}
         />
       </ToolShell>
     );
 
   const { session, entitlements, adapter } = gate;
-  const prefsRes = await loadSenalesPrefs(adapter, session.user.id);
+  // The feed is content by plan (no user input): it starts with the prefs
+  // read, not after it; only its coin filter waits for the prefs.
+  const prefsAsync = loadSenalesPrefs(adapter, session.user.id);
+  const feedAsync = loadSignalFeed(
+    adapter,
+    planKeyFor(entitlements.plan),
+    session.user.id,
+    prefsAsync.then((r) => (r.ok && r.data ? r.data.coins : [])),
+  );
+  const prefsRes = await prefsAsync;
   if (!prefsRes.ok)
     return (
       <ToolShell slug="chalybcrypto" tab="main">
@@ -100,9 +107,10 @@ export default async function SenalesHome({
   if (!prefs) return redirect({ href: '/app/senales/empezar', locale });
 
   const t = await getTranslations('signalsTool');
-  const [coins, feed] = await Promise.all([
+  const [coins, feed, channels] = await Promise.all([
     adapter.coins(),
-    loadSignalFeed(adapter, planKeyFor(entitlements.plan), session.user.id, prefs.coins),
+    feedAsync,
+    adapter.channels(),
   ]);
   if (!feed.ok)
     return (
@@ -123,7 +131,6 @@ export default async function SenalesHome({
       minute: '2-digit',
       timeZone: 'UTC',
     }).format(new Date(`1970-01-01T${hhmm}:00Z`));
-  const channels = await adapter.channels();
 
   return (
     <ToolShell slug="chalybcrypto" tab="main">
@@ -201,9 +208,7 @@ export default async function SenalesHome({
             <p className="ch-muted">{t('explore.body')}</p>
             <div className="ch-sig-explore">
               <Link
-                href={
-                  `/app/senales/mercado${active ? `?par=${pairForCoin(active)}` : ''}` as Route
-                }
+                href={`/app/senales/mercado${active ? `?par=${pairForCoin(active)}` : ''}` as Route}
                 className="ch-btn ch-btn--gray ch-btn--compact"
               >
                 {t('explore.market')}

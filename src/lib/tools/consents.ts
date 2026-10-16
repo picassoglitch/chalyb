@@ -7,6 +7,7 @@
 // The checks run on the server: a URL or a direct API call can't skip them.
 
 import 'server-only';
+import { cache } from 'react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { SessionUser } from '@/lib/auth/session';
 import { legalDocument, legalDocuments } from '@/lib/legal/documents';
@@ -37,10 +38,12 @@ async function hasEvent(
   return !!data;
 }
 
-export async function hasRiskAck(userId: string, slug: string): Promise<boolean> {
+/** Memoized per request (React cache); a pass-through in the server action
+ *  that records the acceptance, so the check right after it reads fresh. */
+export const hasRiskAck = cache(async (userId: string, slug: string): Promise<boolean> => {
   if (!RISK_TOOLS.has(slug)) return true;
   return hasEvent(userId, 'risk_ack_accepted', { tool: slug, version: riskVersion() });
-}
+});
 
 /** When this user accepted the current risk notice for a tool, or null
  *  ("Lo aceptaste el {fecha}", TOOLS-SPEC §5.4). */

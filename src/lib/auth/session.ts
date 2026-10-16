@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { getLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
@@ -71,20 +72,26 @@ async function expirePaidTier(userId: string): Promise<void> {
   }
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+// Both reads are memoized per request (React cache): the app layout, the
+// page's tool gate, the entitlements and the engine adapters all ask for the
+// session during one render, and each ask used to be its own round trip to
+// Supabase Auth (+ the profile row). Outside a server render (route
+// handlers, server actions) cache() is a pass-through, so writes there always
+// read fresh.
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
 /**
  * Reads the authenticated user + their stored role/tier/org/selected-bot from `profiles`.
  * SUPER_ADMIN_EMAILS allowlist forces role to SUPER_ADMIN regardless of stored value
  * — this is the durable backstop documented in the build spec.
  */
-export async function getSessionUser(): Promise<SessionUser | null> {
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const user = await getCurrentUser();
   if (!user) return null;
   const supabase = await createClient();
@@ -131,7 +138,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     chalybclipTrialStartedAt: (profile?.chalybclip_trial_started_at as string | null) ?? null,
     welcomeGiftClaimedAt: (profile?.welcome_gift_claimed_at as string | null) ?? null,
   };
-}
+});
 
 /**
  * Sends an unauthenticated visitor to /sign-in with `?next=` pointing at the
