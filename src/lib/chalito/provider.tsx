@@ -103,6 +103,8 @@ interface Ctx {
   activation: Activation | null;
   /** The person saved the recovery code: forget it. */
   finishActivation: () => void;
+  /** The person signed in to the hub (the layout reads it on the server); null outside the hub. */
+  hubUserId: string | null;
   /** "Añadir un dispositivo": a trusted (ready) browser endorses another one. Null otherwise. */
   addDevice: AddDevice | null;
   /** Token usage (/uso), read as this device; null until paired. */
@@ -228,6 +230,7 @@ const INITIAL: Ctx = {
   needsRecovery: false,
   activation: null,
   finishActivation: () => undefined,
+  hubUserId: null,
   addDevice: null,
   usage: null,
   store: null,
@@ -667,7 +670,10 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
     });
   }, [ctx.client]);
 
-  const value = useMemo(() => ({ ...ctx, activation, finishActivation }), [ctx, activation, finishActivation]);
+  const value = useMemo(
+    () => ({ ...ctx, activation, finishActivation, hubUserId: hubUserId ?? null }),
+    [ctx, activation, finishActivation, hubUserId],
+  );
   return <Chalito.Provider value={value}>{children}</Chalito.Provider>;
 };
 

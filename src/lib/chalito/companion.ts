@@ -99,3 +99,75 @@ export const useWornLook = create<{
   items: undefined,
   set: (look, items) => set((prev) => ({ look, items: items ?? prev.items })),
 }));
+
+/**
+ * What the companion shows: the neutral stand-in until the person's character is known, then that
+ * character, once. It never shows Chalito (or this device's leftover settings) on the way to the
+ * real one: before this, signing in drew the default, then the device's pick, then the account's,
+ * then the custom card, each for a moment.
+ */
+export type CompanionShown = { kind: 'pending' } | { kind: 'roster'; id: RosterId } | { kind: 'custom' };
+
+/** What this browser showed last for an account (a per-device convenience, never authoritative). */
+export type LastCompanion = { owner: string; kind: 'roster'; id: RosterId } | { owner: string; kind: 'custom' };
+
+/** How long the companion waits for the custom card's answer before drawing the roster avatar. */
+export const CARD_WAIT_MS = 5000;
+
+export const companionShown = (o: {
+  /** A pick made on this screen just now (onboarding, Ajustes): it shows at once. */
+  pick: RosterId | null;
+  /** The connection's status: until it's signed in (the hub bridge signs in), nothing is known. */
+  status: string;
+  /** The account's roster avatar, once the settings are the account's own (useSettings `settled`). */
+  avatar: string | null | undefined;
+  /** The custom card: unknown until the api answers (or CARD_WAIT_MS passes), then drawable or not. */
+  card: 'unknown' | 'none' | 'custom';
+  /** This browser's last look for this same account. */
+  last: LastCompanion | null;
+}): CompanionShown => {
+  if (o.card === 'custom') return { kind: 'custom' };
+  if (o.pick) return { kind: 'roster', id: o.pick };
+  const signedIn = o.status !== 'loading' && o.status !== 'signed_out';
+  if (signedIn && o.avatar !== undefined && o.card === 'none')
+    return { kind: 'roster', id: companionOrDefault(o.avatar) };
+  // Not known yet: a returning person sees last time's roster character straight away.
+  return o.last?.kind === 'roster' ? { kind: 'roster', id: o.last.id } : { kind: 'pending' };
+};
+
+/** Whether `shown` is the account's settled look (worth remembering), not a guess from the cache. */
+export const companionSettled = (o: Parameters<typeof companionShown>[0]): boolean =>
+  o.card === 'custom' ||
+  (o.status !== 'loading' && o.status !== 'signed_out' && o.avatar !== undefined && o.card === 'none');
+
+const LAST_KEY = 'chalito.companion.last';
+
+export const loadLastCompanion = (
+  owner: string | undefined,
+  storage: () => Pick<Storage, 'getItem'> = () => window.localStorage,
+): LastCompanion | null => {
+  if (!owner) return null;
+  try {
+    type Stored = Partial<{ owner: unknown; kind: unknown; id: unknown }> | null;
+    const v = JSON.parse(storage().getItem(LAST_KEY) ?? 'null') as Stored;
+    // Another account's look on a shared browser is never shown.
+    if (!v || v.owner !== owner) return null;
+    if (v.kind === 'custom') return { owner, kind: 'custom' };
+    if (v.kind === 'roster' && typeof v.id === 'string' && rosterEntry(v.id))
+      return { owner, kind: 'roster', id: v.id as RosterId };
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+export const saveLastCompanion = (
+  v: LastCompanion,
+  storage: () => Pick<Storage, 'setItem'> = () => window.localStorage,
+): void => {
+  try {
+    storage().setItem(LAST_KEY, JSON.stringify(v));
+  } catch {
+    // Blocked or full: next time it waits for the account instead.
+  }
+};
