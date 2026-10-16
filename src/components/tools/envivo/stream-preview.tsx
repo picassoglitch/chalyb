@@ -47,6 +47,7 @@ export function StreamPreview({
     let fatal = 0;
     let hadSignal = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let detach: (() => void) | null = null;
     const live = () => {
       if (cancelled) return;
       hadSignal = true;
@@ -63,15 +64,31 @@ export function StreamPreview({
 
     void import('hls.js').then(({ default: HlsCtor }) => {
       if (cancelled) return;
-      // Safari / iOS play HLS natively.
+      // Safari / iOS play HLS natively. An error there says nothing about
+      // why, so ask the proxy: a refused (expired) address gets renewed.
       if (!HlsCtor.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.addEventListener('playing', live);
-        video.addEventListener('error', () => {
+        const onError = () => {
           if (cancelled) return;
           setState(hadSignal ? 'reconnecting' : 'connecting');
-          timer = setTimeout(() => !cancelled && video.load(), 3000);
-        });
+          void fetch(url, { cache: 'no-store' })
+            .then((r) => {
+              if (cancelled) return;
+              if (r.status === 401 || r.status === 403) renew();
+              else timer = setTimeout(() => !cancelled && video.load(), 3000);
+            })
+            .catch(() => {
+              if (!cancelled) timer = setTimeout(() => !cancelled && video.load(), 3000);
+            });
+        };
+        video.addEventListener('playing', live);
+        video.addEventListener('error', onError);
+        detach = () => {
+          video.removeEventListener('playing', live);
+          video.removeEventListener('error', onError);
+          video.removeAttribute('src');
+          video.load();
+        };
+        video.src = url;
         video.play().catch(() => {});
         return;
       }
@@ -119,6 +136,7 @@ export function StreamPreview({
       cancelled = true;
       if (timer) clearTimeout(timer);
       hls?.destroy();
+      detach?.();
     };
   }, [url, attempt]);
 

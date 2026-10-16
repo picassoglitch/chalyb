@@ -9,10 +9,12 @@ import { getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { getEnVivo, hubRunsTool } from '@/lib/tools/registry';
 import { runTool } from '@/lib/tools/bff';
+import { localizedPath } from '@/lib/tools/routes';
 import {
   OAUTH_COOKIE,
   decodePending,
   backToStudio,
+  studioLang,
   pendingMatches,
   pkceChallenge,
 } from '@/lib/tools/envivo-bff';
@@ -21,17 +23,24 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: Request): Promise<Response> {
-  const platform = new URL(req.url).searchParams.get('platform') ?? '';
+  const q = new URL(req.url).searchParams;
+  const platform = q.get('platform') ?? '';
+  const lang = studioLang(q.get('lang'));
   const fail = (error: string) =>
     NextResponse.redirect(
       backToStudio(
         { error: `${/^(kick|twitch|youtube)$/.test(platform) ? platform : 'platform'}_${error}` },
         req.url,
+        lang,
       ),
       303,
     );
   const session = await getSessionUser();
-  if (!session) return NextResponse.redirect(new URL('/sign-in?next=/app/en-vivo', req.url));
+  if (!session) {
+    const signIn = new URL(localizedPath('/sign-in', lang), req.url);
+    signIn.searchParams.set('next', localizedPath('/app/en-vivo', lang));
+    return NextResponse.redirect(signIn);
+  }
   const ent = await getEntitlements(session);
   const adapter = hubRunsTool('chalybobs') ? getEnVivo() : null;
   if (ent.tools.chalybobs?.state !== 'included' || !adapter) return fail('unavailable');

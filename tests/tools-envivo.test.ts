@@ -203,13 +203,18 @@ test('OAuth: the pending cookie binds person, platform, state and expiry', () =>
   assert.equal(decodePending(Buffer.from('{"userId":"u1"}').toString('base64url')), null);
 });
 
-test('OAuth: the result goes back to Transmitir on this origin only', () => {
+test('OAuth: the result goes back to Transmitir on this origin, in the screen language', () => {
   const u = backToStudio({ error: 'kick_denied' }, 'https://www.chalyb.com/api/x');
   assert.equal(u.href, 'https://www.chalyb.com/app/en-vivo?connect_error=kick_denied');
   assert.equal(
-    backToStudio({ connected: 'twitch' }, 'https://www.chalyb.com/').href,
-    'https://www.chalyb.com/app/en-vivo?connected=twitch',
+    backToStudio({ connected: 'twitch' }, 'https://www.chalyb.com/', 'en').href,
+    'https://www.chalyb.com/en/app/en-vivo?connected=twitch',
   );
+  assert.equal(backToStudio({ connected: 'kick' }, 'https://x.mx/', 'xx').pathname, '/app/en-vivo');
+  const p = newOAuthPending('u1', 'kick', 1, 'en');
+  assert.equal(decodePending(encodePending(p))?.lang, 'en');
+  const legacy = Buffer.from(JSON.stringify({ ...p, lang: 'fr' })).toString('base64url');
+  assert.equal(decodePending(legacy)?.lang, 'es');
 });
 
 test('composer: untrusted meta is normalized and capped; targets follow platform support', () => {

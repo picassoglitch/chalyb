@@ -46,7 +46,7 @@ export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body,
     locale,
     disclosureText: t.markup('body', { plataforma: name, b: (c) => c }),
   });
-  const pending = newOAuthPending(session.user.id, platform, Math.floor(Date.now() / 1000));
+  const pending = newOAuthPending(session.user.id, platform, Math.floor(Date.now() / 1000), locale);
   (await cookies()).set({
     name: OAUTH_COOKIE,
     value: encodePending(pending),
@@ -56,5 +56,5 @@ export const POST = toolRoute('chalybobs', getEnVivo, async (a, { session, body,
     path: OAUTH_COOKIE_PATH,
     maxAge: OAUTH_TTL_S,
   });
-  return { start: `${OAUTH_COOKIE_PATH}/start?platform=${platform}` };
+  return { start: `${OAUTH_COOKIE_PATH}/start?platform=${platform}&lang=${locale}` };
 });

@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { Route } from 'next';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Pencil, Plus, Radio, Scissors, TriangleAlert, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Sheet } from '@/components/ui/sheet';
@@ -77,6 +77,7 @@ export function EnVivoStudio({
   const tc = useTranslations('liveTool.channels');
   const tn = useTranslations('liveTool.notice');
   const noticeText = useNoticeText();
+  const locale = useLocale();
   const [s, setS] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<'action' | 'plan' | null>(null);
@@ -122,7 +123,7 @@ export function EnVivoStudio({
     const r = await fetch('/api/tools/chalybobs/oauth/consent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform: p, locale: document.documentElement.lang || 'es' }),
+      body: JSON.stringify({ platform: p, locale }),
     })
       .then((x) => x.json() as Promise<{ ok: boolean; data?: { start: string } }>)
       .catch(() => ({ ok: false }) as { ok: boolean; data?: { start: string } });

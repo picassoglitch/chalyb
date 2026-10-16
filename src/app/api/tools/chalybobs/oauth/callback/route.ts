@@ -32,7 +32,7 @@ export async function GET(req: Request): Promise<Response> {
   const pending = decodePending(jar.get(OAUTH_COOKIE)?.value);
 
   const finish = (o: OAuthOutcome) => {
-    const res = NextResponse.redirect(backToStudio(o, req.url), 303);
+    const res = NextResponse.redirect(backToStudio(o, req.url, pending?.lang ?? null), 303);
     // One-shot: a used or failed sign-in can never be replayed.
     res.cookies.set({ name: OAUTH_COOKIE, value: '', path: OAUTH_COOKIE_PATH, maxAge: 0 });
     return res;

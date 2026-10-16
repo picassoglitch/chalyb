@@ -25,6 +25,7 @@ import {
   type PlatformId,
 } from './envivo-platforms';
 import type { DestinationPatch } from './adapters/tools';
+import { launchLocale, localizedPath } from './routes';
 
 export class EnVivoBadRequest extends Error {
   readonly code = 'BAD_REQUEST';
@@ -74,18 +75,26 @@ export interface OAuthPending {
   platform: OAuthPlatform;
   state: string;
   verifier: string;
+  /** The screen's language, so the way back keeps it (/en prefix). */
+  lang: 'es' | 'en';
   /** Unix seconds. */
   exp: number;
+}
+
+export function studioLang(raw: unknown): 'es' | 'en' {
+  return raw === 'en' ? 'en' : 'es';
 }
 
 export function newOAuthPending(
   userId: string,
   platform: OAuthPlatform,
   nowS: number,
+  lang: 'es' | 'en' = 'es',
 ): OAuthPending {
   return {
     userId,
     platform,
+    lang,
     state: `hub.${randomBytes(24).toString('base64url')}`,
     verifier: randomBytes(32).toString('base64url'),
     exp: nowS + OAUTH_TTL_S,
@@ -112,7 +121,7 @@ export function decodePending(raw: string | undefined | null): OAuthPending | nu
       typeof p.exp !== 'number'
     )
       return null;
-    return p as OAuthPending;
+    return { ...(p as OAuthPending), lang: studioLang(p.lang) };
   } catch {
     return null;
   }
@@ -142,9 +151,9 @@ export function outcomeQuery(o: OAuthOutcome): string {
     : `connect_error=${encodeURIComponent(o.error)}`;
 }
 
-/** Back to Transmitir with the result for its notice. */
-export function backToStudio(o: OAuthOutcome, base: string): URL {
-  return new URL(`/app/en-vivo?${outcomeQuery(o)}`, base);
+/** Back to Transmitir, in the screen's language, with the result. */
+export function backToStudio(o: OAuthOutcome, base: string, lang: string | null = null): URL {
+  return new URL(`${localizedPath('/app/en-vivo', launchLocale(lang))}?${outcomeQuery(o)}`, base);
 }
 
 export { isOAuthPlatform };
