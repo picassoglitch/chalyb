@@ -95,7 +95,9 @@
     "desktop": {
       "title": "Open Chalito to finish",
       "body": "You're signed in. Go back to the desktop app to finish signing in.",
-      "open": "Open Chalito"
+      "open": "Open Chalito",
+      "signedOut": "Your Chalyb session ended. Tap \"Sign in\" in the desktop app again.",
+      "noAccess": "Your Chalyb account doesn't have access to Chalito yet. Check your plan on Chalyb, then try again from the app."
     },
     "rateLimited": "Too many attempts. Wait a moment, then sign in again.",
     "unsolicited": "This sign-in link wasn't started from Chalito in this browser, so we didn't use it. To sign in, start here.",

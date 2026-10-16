@@ -9,9 +9,20 @@ export const DESKTOP_MAX_AGE_S = 600;
 const STATE = /^[A-Za-z0-9_-]{43}$/;
 const LOOPBACK = /^http:\/\/127\.0\.0\.1:(\d{1,5})\/auth\/sso$/;
 
-/** Exactly `chalito://auth/sso`, or `http://127.0.0.1:<1024–65535>/auth/sso`. Anything else is refused. */
-export const validDesktopRedirect = (r: string | null): string | null => {
+/**
+ * The loopback redirect is only for `tauri dev` (its debug-only listener): local dev and Vercel
+ * previews accept it, production never does. An installed app always uses chalito://auth/sso.
+ */
+export const loopbackAllowed = (env: Record<string, string | undefined> = process.env): boolean =>
+  env.VERCEL_ENV === "preview" || (env.VERCEL_ENV !== "production" && env.NODE_ENV === "development");
+
+/**
+ * Exactly `chalito://auth/sso`, or (dev/preview only) `http://127.0.0.1:<1024–65535>/auth/sso`.
+ * Anything else is refused.
+ */
+export const validDesktopRedirect = (r: string | null, allowLoopback = loopbackAllowed()): string | null => {
   if (r === "chalito://auth/sso") return r;
+  if (!allowLoopback) return null;
   const m = r ? LOOPBACK.exec(r) : null;
   if (!m) return null;
   const port = Number(m[1]);
@@ -53,6 +64,16 @@ export const handoffUrl = (h: DesktopHandoff, token: string, next: string | null
  */
 export const DESKTOP_START_PATH = "/app/chalito/auth/desktop";
 
+/**
+ * Response headers for that page (next.config.ts): its URL carries the app's state, so it's never
+ * cached, never indexed and never sent on as a Referer (the original route's headers).
+ */
+export const DESKTOP_PAGE_HEADERS = [
+  { key: "Referrer-Policy", value: "no-referrer" },
+  { key: "X-Robots-Tag", value: "noindex, nofollow" },
+  { key: "Cache-Control", value: "no-store" },
+] as const;
+
 /** This page's own path with the app's state and redirect, used as the sign-in `next`. */
 export const desktopStartPath = (h: DesktopHandoff): string => {
   const q = new URLSearchParams({ state: h.state, redirect_uri: h.redirect });
@@ -60,9 +81,12 @@ export const desktopStartPath = (h: DesktopHandoff): string => {
 };
 
 /** The desktop's query (`client=desktop&state=…&redirect_uri=…`), validated; null if anything is off. */
-export const handoffFromQuery = (q: { state?: unknown; redirect_uri?: unknown }): DesktopHandoff | null => {
+export const handoffFromQuery = (
+  q: { state?: unknown; redirect_uri?: unknown },
+  allowLoopback = loopbackAllowed(),
+): DesktopHandoff | null => {
   const state = validDesktopState(typeof q.state === "string" ? q.state : null);
-  const redirect = validDesktopRedirect(typeof q.redirect_uri === "string" ? q.redirect_uri : null);
+  const redirect = validDesktopRedirect(typeof q.redirect_uri === "string" ? q.redirect_uri : null, allowLoopback);
   return state && redirect ? { state, redirect } : null;
 };
 
