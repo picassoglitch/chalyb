@@ -9,15 +9,12 @@ import type {
   AutomationRule,
   Coin,
   EnVivoAdapter,
-  LiveDevice,
-  LivePlatform,
-  LiveSettings,
-  PairingCode,
+  LiveDestination,
+  LiveState,
   PastStream,
   Forecast,
   InmueblesAdapter,
   InversionesAdapter,
-  LiveStatus,
   PronosticosAdapter,
   PricePoint,
   PropertyCard,
@@ -27,6 +24,13 @@ import type {
   SignalRange,
   ToolCapabilities,
 } from './tools';
+import { EnVivoRefusal } from './tools';
+import {
+  normalizeBroadcastMeta,
+  PLATFORM_META,
+  type BroadcastMeta,
+  type OAuthPlatform,
+} from '../envivo-platforms';
 import { honorSignal } from './signal';
 
 const CAPS: ToolCapabilities = { supportsConnect: false, likenessOptions: [] };
@@ -160,160 +164,157 @@ export function createMockSenales(now = () => Date.now()): SenalesAdapter {
   });
 }
 
-/** How long after a pairing code is issued the mock "program" types it in. */
-const MOCK_PAIR_AFTER_MS = 3000;
-
+/** In-memory En vivo: the engine's model (RTMP relay + destinations), so
+ *  every screen runs in development and e2e without the engine. "Live"
+ *  never turns on by itself here (no encoder pushes to a mock). */
 export function createMockEnVivo(now = () => Date.now()): EnVivoAdapter {
   interface UserLive {
-    status: Omit<LiveStatus, 'obsConnected' | 'paired' | 'viewers' | 'platforms'>;
-    devices: LiveDevice[];
-    code: (PairingCode & { issuedMs: number }) | null;
-    settings: LiveSettings;
+    title: string;
+    clipsEnabled: boolean;
+    streamKey: string;
+    meta: BroadcastMeta;
+    destinations: (LiveDestination & { key: string })[];
     streams: PastStream[];
+    seq: number;
   }
   const users = new Map<string, UserLive>();
-  const NAMES: Record<LivePlatform, string> = { youtube: 'YouTube', twitch: 'Twitch', kick: 'Kick', facebook: 'Facebook' };
+  const freshKey = () =>
+    `chalyb_live_${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
   const get = (userId: string): UserLive => {
     let u = users.get(userId);
     if (!u) {
+      const startedAt = new Date(now() - 2 * 86_400_000).toISOString();
       u = {
-        status: {
-          title: 'Mi transmisión',
-          scenes: [
-            { id: 'cam', name: 'Cámara', note: 'Solo tú' },
-            { id: 'screen', name: 'Pantalla', note: 'Pantalla y cámara' },
-            { id: 'pause', name: 'Pausa', note: 'Vuelvo enseguida' },
-          ],
-          activeSceneId: 'cam',
-          mic: true,
-          cam: true,
-          clipsAfter: true,
-          internet: 'good',
-          liveSince: null,
-        },
-        devices: [],
-        code: null,
-        settings: {
-          destinations: [
-            { platform: 'youtube', connected: true, handle: '@mi-canal', enabled: true },
-            { platform: 'twitch', connected: true, handle: 'mi-canal', enabled: true },
-            { platform: 'kick', connected: false, handle: null, enabled: false },
-            { platform: 'facebook', connected: false, handle: null, enabled: false },
-          ],
-          quality: 'auto',
-          clipsAfter: true,
-          saveRecording: true,
-          advanced: { bitrateKbps: 6000, resolution: '1080p30', server: 'auto' },
-        },
-        streams: [],
+        title: 'Mi transmisión en vivo',
+        clipsEnabled: false,
+        streamKey: freshKey(),
+        meta: normalizeBroadcastMeta(null, 'Mi transmisión en vivo'),
+        destinations: [],
+        streams: [
+          {
+            id: 'st_1',
+            startedAt,
+            endedAt: new Date(Date.parse(startedAt) + 3_900_000).toISOString(),
+            durationSec: 3900,
+          },
+        ],
+        seq: 0,
       };
       users.set(userId, u);
     }
-    // The mock program "types" an issued code after a few seconds.
-    if (u.code && now() - u.code.issuedMs >= MOCK_PAIR_AFTER_MS && now() < Date.parse(u.code.expiresAt)) {
-      u.devices.push({
-        id: `dev_${u.devices.length + 1}`,
-        name: 'Mi computadora',
-        os: 'windows',
-        obsReady: true,
-        online: true,
-        lastSeenAt: new Date(now()).toISOString(),
-      });
-      u.code = null;
-    }
     return u;
   };
-  const view = (userId: string): LiveStatus => {
+  const find = (userId: string, id: string) => {
+    const d = get(userId).destinations.find((x) => x.id === id);
+    if (!d) throw new EnVivoRefusal('NOT_FOUND', 'not_found');
+    return d;
+  };
+  const view = (userId: string): LiveState => {
     const u = get(userId);
-    const online = u.devices.some((d) => d.online && d.obsReady);
     return {
-      ...u.status,
-      clipsAfter: u.settings.clipsAfter,
-      obsConnected: online,
-      paired: u.devices.length > 0,
-      platforms: u.settings.destinations.filter((d) => d.enabled).map((d) => NAMES[d.platform]),
-      viewers: u.status.liveSince ? 12 : null,
+      title: u.title,
+      isLive: false,
+      clipsEnabled: u.clipsEnabled,
+      isFullAccess: true,
+      broadcastMeta: u.meta,
+      rtmpUrl: 'rtmp://ingest.chalyb.com/live',
+      previewEnabled: false,
+      oauthAvailable: { kick: true, twitch: true, youtube: true },
+      destinations: u.destinations.map(({ key, ...d }) => ({ ...d, hasStreamKey: key.length > 0 })),
     };
   };
-  const patch = (userId: string, p: Partial<UserLive['status']>) => {
+  const connectPlatform = (userId: string, platform: OAuthPlatform) => {
     const u = get(userId);
-    u.status = { ...u.status, ...p };
-    return view(userId);
+    const existing = u.destinations.find((d) => d.platformId === platform);
+    const handle = 'mi_canal';
+    if (existing) {
+      Object.assign(existing, {
+        channelHandle: handle,
+        oauthConnected: true,
+        key: 'oauth_key',
+        status: { kind: 'ok' },
+      });
+      existing.ingestUrl ||= PLATFORM_META[platform].ingestHint;
+    } else {
+      u.destinations.push({
+        id: `d_${++u.seq}`,
+        platformId: platform,
+        channelHandle: handle,
+        streamTitle: u.title,
+        ingestUrl: PLATFORM_META[platform].ingestHint,
+        key: 'oauth_key',
+        hasStreamKey: true,
+        oauthConnected: true,
+        enabled: true,
+        status: { kind: 'ok' },
+      });
+    }
   };
-  return honorSignal({
+  return honorSignal<EnVivoAdapter>({
     capabilities: () => ({ supportsConnect: true, likenessOptions: [] }),
-    status: async (u) => view(u),
-    start: async (u) => patch(u, { liveSince: new Date(now()).toISOString() }),
-    stop: async (userId) => {
-      const u = get(userId);
-      if (u.status.liveSince) {
-        const v = view(userId);
-        u.streams.unshift({
-          id: `st_${u.streams.length + 1}`,
-          title: u.status.title,
-          startedAt: u.status.liveSince,
-          durationSec: Math.max(1, Math.round((now() - Date.parse(u.status.liveSince)) / 1000)),
-          platforms: v.platforms,
-          recordingUrl: u.settings.saveRecording ? `https://www.youtube.com/watch?v=mock${u.streams.length + 1}` : null,
-        });
-      }
-      return patch(userId, { liveSince: null });
+    state: async (u) => view(u),
+    setTitle: async (userId, title) => {
+      get(userId).title = title.trim() || 'Mi transmisión en vivo';
     },
-    setScene: async (u, id) => patch(u, { activeSceneId: id }),
-    toggle: async (userId, what) => {
-      const u = get(userId);
-      if (what === 'clipsAfter') {
-        u.settings = { ...u.settings, clipsAfter: !u.settings.clipsAfter };
-        return view(userId);
-      }
-      return patch(userId, { [what]: !u.status[what] } as Partial<UserLive['status']>);
+    setClipsEnabled: async (userId, on) => {
+      get(userId).clipsEnabled = on;
     },
-    devices: async (u) => get(u).devices,
-    createPairingCode: async (userId) => {
-      const u = get(userId);
-      const code = String(100000 + Math.floor(Math.random() * 900000));
-      const issuedMs = now();
-      u.code = { code, expiresAt: new Date(issuedMs + 10 * 60_000).toISOString(), issuedMs };
-      return { code, expiresAt: u.code.expiresAt };
+    streamKey: async (u) => get(u).streamKey,
+    regenerateKey: async (userId) => {
+      get(userId).streamKey = freshKey();
     },
-    disconnectDevice: async (userId, id) => {
+    addDestination: async (userId, platformId) => {
       const u = get(userId);
-      u.devices = u.devices.filter((d) => d.id !== id);
+      u.destinations.push({
+        id: `d_${++u.seq}`,
+        platformId,
+        channelHandle: '',
+        streamTitle: '',
+        ingestUrl: PLATFORM_META[platformId].ingestHint,
+        key: '',
+        hasStreamKey: false,
+        oauthConnected: false,
+        enabled: false,
+        status: { kind: 'offline' },
+      });
     },
-    settings: async (u) => get(u).settings,
-    saveSettings: async (userId, p) => {
-      const u = get(userId);
-      const { enabled, ...rest } = p;
-      u.settings = {
-        ...u.settings,
-        ...rest,
-        destinations: u.settings.destinations.map((d) =>
-          enabled && d.platform in enabled ? { ...d, enabled: d.connected && !!enabled[d.platform] } : d,
-        ),
-      };
-      return u.settings;
+    updateDestination: async (userId, id, patch) => {
+      const d = find(userId, id);
+      if (patch.channelHandle !== undefined) d.channelHandle = patch.channelHandle;
+      if (patch.streamTitle !== undefined) d.streamTitle = patch.streamTitle;
+      if (patch.ingestUrl !== undefined) d.ingestUrl = patch.ingestUrl;
+      if (patch.streamKey !== undefined) d.key = patch.streamKey;
     },
-    connectDestination: async (userId, platform) => {
+    toggleDestination: async (userId, id) => {
+      const d = find(userId, id);
+      if (!d.enabled && !(d.ingestUrl.trim() && d.key.trim()))
+        throw new EnVivoRefusal('BAD_REQUEST', 'not_configured');
+      d.enabled = !d.enabled;
+      return d.enabled;
+    },
+    removeDestination: async (userId, id) => {
+      find(userId, id);
       const u = get(userId);
-      u.settings = {
-        ...u.settings,
-        destinations: u.settings.destinations.map((d) =>
-          d.platform === platform ? { ...d, connected: true, handle: '@mi-canal', enabled: true } : d,
-        ),
-      };
-      return u.settings;
+      u.destinations = u.destinations.filter((d) => d.id !== id);
+    },
+    destinationKey: async (userId, id) => find(userId, id).key,
+    publishBroadcast: async (userId, meta) => {
+      const u = get(userId);
+      const clean = normalizeBroadcastMeta(meta, u.title);
+      u.meta = clean;
+      u.title = clean.title;
+      for (const d of u.destinations) d.streamTitle = clean.title;
     },
     streams: async (u) => get(u).streams,
-    streamKey: async (_u, platform) => `live_${platform}_mock_0000_1111_2222`,
-    clipMoment: async (userId, windowSec) => {
-      const u = get(userId);
-      if (!u.status.liveSince || !u.settings.saveRecording) return null;
-      return { sourceUrl: `https://www.youtube.com/watch?v=mocklive&t=${windowSec}` };
+    // The mock "platform" signs in at once: its consent page is the hub's own
+    // callback with a fixed code, so the popup flow runs end to end.
+    oauthAuthorizeUrl: async (_u, platform, input) =>
+      `/api/tools/chalybobs/oauth/callback?platform=${platform}&code=mock-code&state=${encodeURIComponent(input.state)}`,
+    oauthComplete: async (userId, platform, input) => {
+      if (input.code !== 'mock-code') throw new EnVivoRefusal('BAD_REQUEST', 'exchange_failed');
+      connectPlatform(userId, platform);
     },
-    download: async (os) => ({
-      filename: `chalyb-en-vivo-${os}.txt`,
-      body: 'Archivo de prueba del programa de En vivo (solo desarrollo).\n',
-    }),
+    previewToken: async () => null,
   });
 }
 

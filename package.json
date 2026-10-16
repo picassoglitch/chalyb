@@ -29,6 +29,7 @@
     "@supabase/supabase-js": "^2.105.4",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
+    "hls.js": "1.6.16",
     "libphonenumber-js": "^1.13.14",
     "libsodium-wrappers": "^0.8.4",
     "lucide-react": "^1.16.0",

@@ -46,8 +46,8 @@ export async function enVivoGate(
   // En vivo isn't a risk tool, so loadTool never answers 'risk' for it.
   if (gate.kind === 'risk') return redirect({ href: '/app/herramientas', locale });
   if (gate.kind === 'setup') {
-    // OBS missing is En vivo's own first step: the screen shows Conectar (57)
-    // when the tool has no paired computer. Any other step is named.
+    // OBS missing is En vivo's own first step: Transmitir shows the encoder
+    // data and the guide right away. Any other step is named.
     const adapter = getEnVivo();
     if (gate.step === 'obs' && adapter)
       return { ready: { session: gate.session, entitlements: gate.entitlements, adapter } };

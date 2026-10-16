@@ -1,11 +1,10 @@
-import type { Metadata, Route } from 'next';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Play, Radio, Scissors } from 'lucide-react';
-import { Link } from '@/i18n/routing';
+import { Radio } from 'lucide-react';
 import { runTool } from '@/lib/tools/bff';
 import { formatDuration } from '@/lib/tools/envivo-core';
 import { ToolShell } from '@/components/tools/tool-shell';
-import { StateBlock } from '@/components/ui/primitives';
+import { Pill, StateBlock } from '@/components/ui/primitives';
 import { EnVivoError, SLUG, enVivoGate } from '@/components/tools/envivo/en-vivo-gate';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,8 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('metaStreams') };
 }
 
-// Mis transmisiones (TOOLS-SPEC §2; cards like mockup 19): watch the
-// recording (same tab) or make clips from it.
+// Mis transmisiones: every stream the relay received (engine
+// chalybobs_streams), newest first, with when and how long.
 
 export default async function EnVivoTransmisionesPage({
   params,
@@ -56,30 +55,15 @@ export default async function EnVivoTransmisionesPage({
                 <Radio />
               </span>
               <div className="ch-ev-stream__tx">
-                <b>{st.title}</b>
-                <span className="ch-muted">
-                  {date.format(new Date(st.startedAt))} ·{' '}
-                  {t('duration', { duracion: formatDuration(st.durationSec) })}
-                </span>
-                <span className="ch-muted">{st.platforms.join(' · ')}</span>
-              </div>
-              <div className="ch-ev-stream__btns">
-                {st.recordingUrl ? (
-                  <>
-                    <a href={st.recordingUrl} className="ch-btn ch-btn--gray ch-btn--compact">
-                      <Play aria-hidden="true" />
-                      {t('watch')}
-                    </a>
-                    <Link
-                      href={`/app/clips/nuevo?link=${encodeURIComponent(st.recordingUrl)}` as Route}
-                      className="ch-btn ch-btn--secondary ch-btn--compact"
-                    >
-                      <Scissors aria-hidden="true" />
-                      {t('clips')}
-                    </Link>
-                  </>
+                <b>{date.format(new Date(st.startedAt))}</b>
+                {st.endedAt === null ? (
+                  <Pill kind="bad">{t('ongoing')}</Pill>
                 ) : (
-                  <span className="ch-muted">{t('noRecording')}</span>
+                  st.durationSec !== null && (
+                    <span className="ch-muted">
+                      {t('duration', { duracion: formatDuration(st.durationSec) })}
+                    </span>
+                  )
                 )}
               </div>
             </li>

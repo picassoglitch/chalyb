@@ -1,12 +1,14 @@
 // Which adapter each tool uses, from its TOOL_HUB_MODE_<SLUG> (flags.ts).
 //   mock → the in-memory adapter (one per server process)
 //   a    → the engine adapter — a stub that throws NOT_IMPLEMENTED until the
-//          engine's API is documented in docs/engines (OPS-13)
+//          engine's API is documented in docs/engines (OPS-13); En vivo's is
+//          real (adapters/envivo-engine.ts → ChalyOBS /api/hub/v1)
 //   b/off→ null: the screens hand off to the engine's app over SSO
 
 import 'server-only';
 import { clipsHubMode, toolHubMode, type ToolHubMode } from '@/lib/config/flags';
-import { NotImplementedError } from './adapters/tools';
+import { NotImplementedError, type EnVivoAdapter } from './adapters/tools';
+import { createEngineEnVivo } from './adapters/envivo-engine';
 import {
   createMockAsistente,
   createMockEnVivo,
@@ -51,7 +53,13 @@ function pick<T extends object>(slug: string, name: string, make: () => T): T | 
 }
 
 export const getSenales = () => pick(TOOL_SLUGS.senales, 'SenalesAdapter', createMockSenales);
-export const getEnVivo = () => pick(TOOL_SLUGS.envivo, 'EnVivoAdapter', createMockEnVivo);
+/** En vivo has a real engine adapter: mode a talks to ChalyOBS's hub API. */
+export const getEnVivo = (): EnVivoAdapter | null => {
+  const mode = toolHubMode(TOOL_SLUGS.envivo);
+  if (mode === 'mock') return mock(TOOL_SLUGS.envivo, createMockEnVivo);
+  if (mode === 'a') return createEngineEnVivo();
+  return null;
+};
 export const getAsistente = () =>
   pick(TOOL_SLUGS.asistente, 'AsistenteAdapter', createMockAsistente);
 export const getPronosticos = () =>
@@ -69,5 +77,7 @@ export const getInversiones = () =>
  */
 export function hubRunsTool(slug: string): boolean {
   if (slug === TOOL_SLUGS.clips) return clipsHubMode() !== 'off';
+  // En vivo's mode a is a real engine adapter (ChalyOBS /api/hub/v1), not a stub.
+  if (slug === TOOL_SLUGS.envivo) return ['a', 'mock'].includes(toolHubMode(slug));
   return toolHubMode(slug) === 'mock';
 }

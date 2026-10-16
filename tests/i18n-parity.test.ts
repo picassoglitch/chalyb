@@ -32,6 +32,11 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  // En vivo: menu paths inside English-only platform apps, and game names.
+  'liveTool.edit.hint.twitch',
+  'liveTool.edit.hint.kick',
+  'liveTool.edit.hint.restream',
+  'liveTool.composer.ph.category',
   // "Legal" is the same word in both languages.
   'admin.more.legal',
   'admin.legal.title',

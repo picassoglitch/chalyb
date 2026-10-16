@@ -1,8 +1,11 @@
-// En vivo inside the app (WS-11, TOOLS-SPEC §6, mockups 57–59) against the
-// mock adapters (E2E_TOOLS_MODE=mock). The mock "program" types a pairing
-// code ~3 s after it's issued; the page polls every 5 s. State lives in the
-// server process for the whole run, so each step accepts either side of the
-// one-time pairing.
+// En vivo inside the app (TOOLS-SPEC §6, rebuilt on the engine's model: an
+// RTMP relay that re-sends the encoder's signal to the person's channels)
+// against the mock adapter (E2E_TOOLS_MODE=mock). The mock keeps its state in
+// the server process for the whole run, so each step tolerates what an
+// earlier step (or the other viewport) left behind.
+//
+// The same flows against the real engine (TOOL_HUB_MODE_CHALYBOBS=a) are
+// driven by hand: see the hub PR.
 
 import { test, expect, type Page } from '@playwright/test';
 import { asRole } from './utils/roles';
@@ -12,168 +15,146 @@ import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
 const MOCK = process.env.E2E_TOOLS_MODE === 'mock';
 
-/** From /app/en-vivo to the live room, pairing the computer if needed. */
-async function ensurePaired(page: Page) {
-  await page.goto('/app/en-vivo');
-  const setup = page.getByRole('heading', { name: 'Conecta tu computadora' });
-  if (await setup.isVisible().catch(() => false)) {
-    await expect(page.getByText('Este código sirve por 10 minutos.')).toBeVisible();
-    await expect(
-      page.getByText('Esperando tu computadora… Esta página se actualiza sola.'),
-    ).toBeVisible();
-    await expect(page.getByText('¡Listo! Tu computadora está conectada.')).toBeVisible({
-      timeout: 15_000,
-    });
+/** "Mostrar" → the password sheet when the sign-in isn't recent. */
+async function reveal(page: Page, button: ReturnType<Page['getByRole']>) {
+  await button.click();
+  const reauth = page.getByRole('dialog', { name: 'Confirma que eres tú' });
+  await reauth.waitFor({ timeout: 5_000 }).catch(() => {});
+  if (await reauth.isVisible().catch(() => false)) {
+    await reauth.getByLabel('Tu contraseña').fill(process.env.E2E_VIP_PASSWORD ?? '');
+    await reauth.getByRole('button', { name: 'Mostrar la clave' }).click();
   }
-  await expect(page.getByText('OBS conectado').or(page.getByText(/^En vivo · /))).toBeVisible({
-    timeout: 15_000,
-  });
 }
 
-test.describe('as pro', () => {
-  asRole('pro');
+test.describe('as vip', () => {
+  asRole('vip');
   test.beforeEach(async ({ page }) => {
     await page.goto('/app');
     await dismissCookies(page);
   });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set (server must run the tools in mock mode)');
 
-  test('connect → go live → end with the confirm, all in one tab', async ({
+  test('Transmitir: encoder data, key only on "Mostrar", channels, titles — one tab', async ({
     page,
     context,
   }, info) => {
     await page.goto('/app/en-vivo');
-    // The tool's own header and tabs, inside the app (ToolShell).
     await expect(page.getByRole('heading', { level: 1, name: 'En vivo' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Transmitir' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    const setup = page.getByRole('heading', { name: 'Conecta tu computadora' });
-    if (await setup.isVisible().catch(() => false)) {
-      // One primary: the download, same tab (an attachment, no new page).
-      const dl = page.getByRole('link', { name: /Descargar para (Windows|Mac)/ }).first();
-      await expect(dl).toHaveAttribute('href', /\/api\/tools\/chalybobs\/download\?os=/);
-      await expect(dl).not.toHaveAttribute('target', '_blank');
-      await expect(page.getByLabel(/Tu código: \d{3} \d{3}/)).toBeVisible();
-      await expectNoOverflow(page, info);
+    await expect(page.getByRole('heading', { name: 'Conecta tu encoder' })).toBeVisible();
+    await expect(page.getByLabel('Servidor (RTMP URL)')).toHaveValue(/^rtmp:\/\//);
+    const keyField = page.getByLabel('Clave de transmisión', { exact: true });
+    await expect(keyField).toHaveValue('••••••••');
+    expect(await page.content()).not.toMatch(/chalyb_live_[0-9a-f]{32}/);
+    await reveal(page, page.getByRole('button', { name: 'Mostrar' }).first());
+    await expect(keyField).toHaveValue(/^chalyb_live_[0-9a-f]{32}$/);
+
+    // A manual channel: needs its key before it can go on.
+    const add = page.getByRole('button', { name: 'Agregar canal' });
+    if (
+      !(await page
+        .getByText('Restream', { exact: true })
+        .isVisible()
+        .catch(() => false))
+    ) {
+      await add.click();
+      await page.getByRole('button', { name: 'Restream' }).click();
     }
-    await ensurePaired(page);
+    const row = page.locator('.ch-ev-dest', { hasText: 'Restream' }).first();
+    await row.getByRole('button', { name: 'Editar' }).click();
+    const edit = page.getByRole('dialog', { name: 'Configurar Restream' });
+    await edit.getByPlaceholder('Pega aquí la clave de la plataforma').fill('re_live_123');
+    await edit.getByRole('button', { name: 'Guardar' }).click();
+    await expect(edit).toBeHidden();
+    const sw = row.getByRole('switch');
+    const was = await sw.getAttribute('aria-checked');
+    await sw.click();
+    await expect(sw).not.toHaveAttribute('aria-checked', was ?? '');
+    expect(await page.content()).not.toContain('re_live_123');
 
-    const stop = page.getByRole('button', { name: /Terminar transmisión/ });
-    if (await stop.isVisible().catch(() => false)) {
-      await stop.click();
-      await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    }
-    await page.getByRole('button', { name: /Iniciar transmisión/ }).click();
-    await expect(stop).toBeVisible();
-    await expect(page.getByRole('timer')).toContainText(/En vivo · \d{2}:\d{2}:\d{2}/);
-    // Exactly one primary while live: "Terminar transmisión".
-    await expect(
-      page.locator('.ch-main .ch-btn--primary:visible, .ch-main .ch-giant:visible'),
-    ).toHaveCount(1);
-
-    await page.getByRole('button', { name: /Pantalla/ }).click();
-    await expect(page.getByRole('button', { name: /Pantalla/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    const mic = page.getByRole('button', { name: /Micrófono/ });
-    const before = await mic.getAttribute('aria-pressed');
-    await mic.click();
-    await expect(mic).not.toHaveAttribute('aria-pressed', before ?? '');
-
-    await page.getByRole('button', { name: /Hacer clip de este momento/ }).click();
-    await expect(
-      page.getByText('Listo, guardamos este momento. Lo verás en Clips en unos minutos.'),
-    ).toBeVisible();
+    // "Actualizar títulos" shows which channel takes each field.
+    await page.getByRole('button', { name: 'Actualizar títulos' }).click();
+    const composer = page.getByRole('dialog', { name: 'Actualizar títulos' });
+    await composer.getByLabel('Título').fill('Torneo del sábado');
+    await composer.getByRole('button', { name: 'Publicar' }).click();
+    await expect(composer).toBeHidden();
+    await expect(page.getByRole('heading', { name: 'Torneo del sábado' })).toBeVisible();
 
     await expectNoLeaks(page);
     await expectNoOverflow(page, info);
     await expectAccessible(page);
-
-    await stop.click();
-    const dialog = page.getByRole('dialog', { name: '¿Terminar tu transmisión?' });
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: 'Seguir transmitiendo' }).click();
-    await expect(stop).toBeVisible();
-    await stop.click();
-    await page.getByRole('button', { name: 'Sí, terminar' }).click();
-    await expect(page.getByText(/Tu transmisión terminó · Duró /)).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Hacer clips de esta transmisión' })).toBeVisible();
-
-    await page.getByRole('link', { name: 'Ver mis transmisiones' }).click();
-    await expect(page).toHaveURL(/\/app\/en-vivo\/transmisiones$/);
-    await expect(page.getByRole('link', { name: 'Hacer clips' }).first()).toBeVisible();
     expect(context.pages()).toHaveLength(1);
   });
 
-  test('Ajustes: the stream key is not in the page until "Mostrar"', async ({
+  test('platform sign-in: consent text first, then back here in the same tab', async ({
     page,
     context,
-  }, info) => {
-    await ensurePaired(page);
-    const key = 'live_youtube_mock_0000_1111_2222';
+  }) => {
+    await page.goto('/app/en-vivo');
+    // Connected rows show the platform handle; the mock signs in as mi_canal.
+    const kickRow = page.locator('.ch-ev-dest', { hasText: 'Conectado con tu cuenta' });
+    if (!(await kickRow.isVisible().catch(() => false))) {
+      await page.getByRole('button', { name: 'Agregar canal' }).click();
+      await page.getByRole('button', { name: /Kick/ }).click();
+      const sheet = page.getByRole('dialog', { name: 'Conectar Kick' });
+      await expect(sheet).toContainText('publicar solo cuando tú lo indiques');
+      await sheet.getByRole('button', { name: 'Conectar Kick' }).click();
+      await expect(page).toHaveURL(/\/app\/en-vivo\?connected=kick$/);
+      await expect(page.getByText(/Kick quedó conectada/)).toBeVisible();
+    }
+    await expect(kickRow.getByText('Conectado con tu cuenta')).toBeVisible();
+    // A forged return without the sign-in cookie changes nothing.
+    await page.goto(
+      '/api/tools/chalybobs/oauth/callback?platform=kick&code=mock-code&state=hub.forgedforgedforged',
+    );
+    await expect(page).toHaveURL(/connect_error=kick_state_mismatch/);
+    expect(context.pages()).toHaveLength(1);
+  });
+
+  test('Ajustes: Clips connection and a new key behind a confirmation', async ({ page }, info) => {
     await page.goto('/app/en-vivo/ajustes');
     await expect(page.getByRole('tab', { name: 'Ajustes' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    await expect(page.getByText('Dónde transmites')).toBeVisible();
-    await expect(page.getByText('Automática')).toBeVisible();
-    await expect(page.getByText('Recomendada')).toBeVisible();
+    const clips = page.getByRole('switch', { name: 'Mandar a Clips' });
+    const was = await clips.getAttribute('aria-checked');
+    await clips.click();
+    await expect(clips).not.toHaveAttribute('aria-checked', was ?? '');
+    await page.getByRole('button', { name: 'Generar una clave nueva' }).click();
+    await page
+      .getByRole('dialog', { name: '¿Generar una clave nueva?' })
+      .getByRole('button', { name: 'Sí, generar' })
+      .click();
     await expect(
-      page.getByText(
-        'Tu clave de transmisión está oculta por seguridad. Solo se ve en Opciones avanzadas.',
-      ),
+      page.getByText('Listo: tu clave nueva ya funciona. Pégala en tu encoder.'),
     ).toBeVisible();
-    expect(await page.content()).not.toContain(key);
-
-    // Connecting shows aceptacion-ux §7 before anything happens.
-    const kick = page.locator('.ch-row', { hasText: 'Kick' });
-    if (
-      await kick
-        .getByRole('button', { name: 'Conectar' })
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await kick.getByRole('button', { name: 'Conectar' }).click();
-      const sheet = page.getByRole('dialog', { name: 'Conectar Kick' });
-      await expect(sheet).toContainText('publicar solo cuando tú lo indiques');
-      await sheet.getByRole('button', { name: 'Conectar Kick' }).click();
-      await expect(kick.getByRole('switch')).toBeVisible();
-    }
-
-    await page.getByRole('button', { name: /Opciones avanzadas/ }).click();
-    const field = page.getByLabel('Clave de transmisión de YouTube');
-    await expect(field).toHaveValue('••••••••');
-    expect(await page.content()).not.toContain(key);
-    await field.locator('xpath=..').getByRole('button', { name: 'Mostrar' }).click();
-    const reauth = page.getByRole('dialog', { name: 'Confirma que eres tú' });
-    // Recent sign-in skips the password step; otherwise the dialog opens.
-    await reauth.waitFor({ timeout: 5_000 }).catch(() => {});
-    if (await reauth.isVisible().catch(() => false)) {
-      await reauth.getByLabel('Tu contraseña').fill(process.env.E2E_PRO_PASSWORD ?? '');
-      await reauth.getByRole('button', { name: 'Mostrar la clave' }).click();
-    }
-    await expect(field).toHaveValue(key);
+    await expect(page.getByLabel('Clave de transmisión', { exact: true })).toHaveValue('••••••••');
     await expectNoOverflow(page, info);
-    expect(context.pages()).toHaveLength(1);
+  });
+
+  test('Mis transmisiones and the encoder guide', async ({ page }) => {
+    await page.goto('/app/en-vivo/transmisiones');
+    await expect(page.getByRole('heading', { name: 'Mis transmisiones' })).toBeVisible();
+    await expect(page.getByText(/Duró /).first()).toBeVisible();
+    await page.goto('/app/en-vivo/conectar');
+    await expect(page.getByText(/OBS Studio:/)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ir a Transmitir' })).toBeVisible();
   });
 
   test('junk request bodies are 400s and never lock the tool for everyone', async ({ page }) => {
-    // Review fix 1: a JSON null body used to throw inside the handler, count
-    // as an outage and open the breaker after 5 tries (stop_stream → 503).
     for (let i = 0; i < 7; i++) {
-      const r = await page.request.post('/api/tools/chalybobs/command', {
+      const r = await page.request.post('/api/tools/chalybobs/destinations', {
         data: 'null',
         headers: { 'content-type': 'application/json' },
       });
       expect(r.status(), `try ${i + 1}`).toBe(400);
     }
-    const status = await page.request.get('/api/tools/chalybobs/status');
-    expect(status.status()).toBe(200);
-    for (const path of ['/api/tools/chalybobs/stream-key', '/api/tools/consent']) {
+    expect((await page.request.get('/api/tools/chalybobs/state')).status()).toBe(200);
+    for (const path of ['/api/tools/chalybobs/stream-key', '/api/tools/chalybobs/broadcast']) {
       const r = await page.request.post(path, {
         data: 'null',
         headers: { 'content-type': 'application/json' },
@@ -199,15 +180,13 @@ test.describe('as free', () => {
   });
   test.skip(!MOCK, 'E2E_TOOLS_MODE=mock not set');
 
-  test('En vivo viene en Pro: locked inside the app, no stream controls', async ({
-    page,
-  }, info) => {
+  test('En vivo viene en Pro: locked inside the app, no stream data', async ({ page }, info) => {
     await page.goto('/app/en-vivo');
     await expect(page.getByRole('heading', { level: 1, name: 'En vivo' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'En vivo viene en Pro' })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Iniciar transmisión/ })).toHaveCount(0);
+    await expect(page.getByLabel('Servidor (RTMP URL)')).toHaveCount(0);
     await expect(page.getByRole('tab')).toHaveCount(0);
-    const api = await page.request.get('/api/tools/chalybobs/status');
+    const api = await page.request.get('/api/tools/chalybobs/state');
     expect(api.status()).toBe(403);
     await expectNoOverflow(page, info);
   });
