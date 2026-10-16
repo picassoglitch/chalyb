@@ -69,7 +69,8 @@ export const Activate = () => {
  * passkey again if its prompt was cancelled. "Ir al chat" opens the Mesas, which run on Energía
  * de Chalito with no computer needed.
  */
-export const ActivationDone = () => {
+/** `stay`: continue on the current screen (it was waiting behind the activation) instead of the chat. */
+export const ActivationDone = ({ stay = false }: { stay?: boolean } = {}) => {
   const t = useTranslations("chalito.live.activate");
   const { activation, finishActivation, status } = useChalito();
   const router = useRouter();
@@ -133,7 +134,7 @@ export const ActivationDone = () => {
         disabled={!saved}
         onClick={() => {
           finishActivation();
-          router.push("/m");
+          if (!stay) router.push("/m");
         }}
       >
         {t("continue")}

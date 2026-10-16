@@ -5,6 +5,7 @@ import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { safeNextPath } from '@/lib/auth/safe-next';
+import { HandoffStash } from '@/components/tools/chalito/HandoffStash';
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
 import { EmailAuthForm } from '@/components/auth/email-auth-form';
 import { legalPublished, paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
@@ -107,6 +108,7 @@ export default async function SignInPage({
 
   return (
     <main className="auth-shell">
+      <HandoffStash />
       <AuthHomeLink />
 
       <div className="auth-card">

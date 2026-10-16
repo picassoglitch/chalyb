@@ -1341,5 +1341,46 @@
     "keyWhere": "Get your {label} at {url}",
     "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
     "keySendAnyway": "Send anyway"
+  },
+  "approveComputer": {
+    "title": "Approve computer",
+    "loading": "Looking for the computer…",
+    "body": "Type the code Chalito shows on your computer, or scan its colour code with the camera.",
+    "codeLabel": "Code",
+    "find": "Find",
+    "scan": {
+      "start": "Scan colour code",
+      "starting": "Opening the camera…",
+      "scanning": "Point the camera at your computer's colour code.",
+      "denied": "No permission to use the camera. Type the code.",
+      "unavailable": "The camera isn't available. Type the code."
+    },
+    "compare": "Verification code. It must match what you see on your computer:",
+    "expiresIn": "Expires in {minutes}:{seconds}",
+    "otherNetwork": "This computer is on another network.",
+    "otherNetworkCity": "This computer is on another network (near {city}).",
+    "phishing": "If someone sent you this link, don't approve it. If it's your computer, type the code it shows on screen.",
+    "typeCode": "Code your computer shows",
+    "withPasskey": "We'll ask for your passkey (fingerprint or Face ID) when you approve.",
+    "withoutPasskey": "This computer can take your tasks as soon as you confirm on it.",
+    "approve": "Approve",
+    "notInFront": "I'm not in front of that computer",
+    "done": "Done: you approved “{name}”.",
+    "doneReverse": "Now, on your computer, choose “Yes, it was me”. It must show this verification code:",
+    "declined": "We cancelled that code. No computer was connected.",
+    "back": "Go to Devices",
+    "error": {
+      "invalid_link": "This link isn't valid. Ask your computer for a new one.",
+      "invalid_code": "That code isn't valid. Check it.",
+      "not_found": "We couldn't find that computer: the code expired or was used. Ask your computer for a new one.",
+      "expired": "The code expired. Ask your computer for a new one.",
+      "code_required": "From another network you need the code your computer shows.",
+      "wrong_code": "That isn't that computer's code. Check its screen.",
+      "network_mismatch": "You can only approve it from the computer's network.",
+      "device_limit": "Your plan already has the most computers it allows. Remove one in Devices or upgrade.",
+      "tampered": "The details don't match. Don't approve it, and ask for a new code.",
+      "step_up": "Your passkey is needed to approve. Try again.",
+      "failed": "Something went wrong. Try again."
+    }
   }
 }
