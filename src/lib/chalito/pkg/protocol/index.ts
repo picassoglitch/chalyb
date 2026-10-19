@@ -18,3 +18,4 @@ export * from "./api";
 export * from "./endorse";
 export * from "./screen";
 export * from "./presence";
+export * from "./coord";

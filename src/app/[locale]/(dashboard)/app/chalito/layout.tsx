@@ -7,6 +7,7 @@ import { TestModeBanner } from '@/components/tools/chalito/TestModeBanner';
 import { DevModeBanner } from '@/components/tools/chalito/DevModeBanner';
 import { StepUpHost } from '@/components/tools/chalito/StepUpHost';
 import { Companion } from '@/components/tools/chalito/Companion';
+import { ApprovalPopup } from '@/components/tools/chalito/Coordinator';
 import '@/styles/tools-chalito.css';
 import { getCurrentUser, getSessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
@@ -16,7 +17,8 @@ import { chalitoGate } from '@/lib/chalito/web/plan-gate';
 // Chalito inside the app (owner decision 2026-10-05): the hub's tool shell (its 3 tabs; the other
 // sections are rows on Chalito's Inicio, owner decision 2026-10-06), Chalito's provider
 // (this browser's device keys and session), and the hub→Chalito sign-in bridge. UiBridge hands
-// next-intl to @chalito/ui; StepUpHost is the HIGH/CRITICAL approval confirm dialog. Companion is
+// next-intl to @chalito/ui; StepUpHost is the HIGH/CRITICAL approval confirm dialog; ApprovalPopup
+// shows the newest pending approval on every screen (coordinator mode, ADR 0025 §6). Companion is
 // the picked character on every screen, outside HubBridge so it's there while signing in too.
 // hubUserId: Chalito's own browser session must belong to the person signed in to the hub.
 // Chalito is Pro and VIP only (owner decision 2026-10-16): a plan without it gets the shared
@@ -38,6 +40,7 @@ export default async function ChalitoLayout({ children }: { children: ReactNode 
           <DevModeBanner />
           <HubBridge>
             {children}
+            <ApprovalPopup />
           </HubBridge>
           <StepUpHost />
           <Companion />

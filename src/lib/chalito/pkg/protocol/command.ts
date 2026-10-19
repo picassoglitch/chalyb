@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CoordCommands } from "./coord";
 import {
   AdapterKind,
   DeviceId,
@@ -167,6 +168,10 @@ export const CommandPayload = z.discriminatedUnion("type", [
   /** The browser's WebRTC answer / ICE candidate, sealed to the device (`ScreenSignal`). */
   z.object({ type: z.literal("screen.signal"), sid: SessionId, signalCt: SealedEnvelope }),
   // ---- end SCREEN ---------------------------------------------------------------------------
+
+  // ---- COORDINATOR (ADR 0025 §6; chalito apps/agent/src/coord/coordinator.ts) -----------------
+  // Client-signed only; `coord.approve` and `coord.merge` also carry the signer's passkey.
+  ...CoordCommands,
 ]);
 export type CommandPayload = z.infer<typeof CommandPayload>;
 

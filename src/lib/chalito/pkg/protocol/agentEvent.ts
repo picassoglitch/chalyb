@@ -253,6 +253,18 @@ export const CommandRejectReason = z.enum([
   "duplicate_answer",
   // ---- end SCREEN ----
   "internal",
+  /** Coordinator mode (ADR 0025 §6): off on that computer (`chalito coordinator enable`). */
+  "coordinator_off",
+  "unknown_plan",
+  "plan_not_waiting",
+  "plan_not_ready",
+  "base_moved",
+  "base_dirty",
+  "not_a_git_repo",
+  "detached_head",
+  "unknown_base",
+  /** A coord.approve / coord.merge for a plan that changed since the owner saw it (digest mismatch). */
+  "plan_changed",
 ]);
 export type CommandRejectReason = z.infer<typeof CommandRejectReason>;
 

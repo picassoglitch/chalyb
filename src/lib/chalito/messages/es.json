@@ -23,7 +23,8 @@
     "store": "Tienda",
     "rooms": "Salas",
     "mesas": "Mesas",
-    "character": "Crea tu personaje"
+    "character": "Crea tu personaje",
+    "team": "Equipo"
   },
   "home": {
     "title": "Hola, soy {name}",
@@ -41,7 +42,8 @@
       "mesas": "Piensa algo con tu compañero y los cerebros que elijas",
       "store": "Ropa y efectos para tu compañero",
       "moreTitle": "Más",
-      "character": "Tu propio compañero, hecho con tu foto"
+      "character": "Tu propio compañero, hecho con tu foto",
+      "team": "Una meta, varios agentes trabajando por ti"
     }
   },
   "landing": {
@@ -1494,6 +1496,112 @@
       "computer": "Descargar Chalito",
       "ai": "Conecta tus IA",
       "firstTask": "Probar la primera tarea"
+    }
+  },
+  "coord": {
+    "title": "Equipo de agentes",
+    "intro": "Dale una meta a Chalito: reparte el trabajo entre los agentes de tu computadora, responde por ti lo de rutina y te pregunta lo demás.",
+    "row": {
+      "title": "Equipo",
+      "body": "Una meta, varios agentes trabajando por ti"
+    },
+    "goal": {
+      "title": "¿Qué hacemos?",
+      "label": "La meta",
+      "placeholder": "Ej.: agrega pagos con tarjeta al checkout y sus pruebas",
+      "computer": "Computadora",
+      "offline": "(apagada)",
+      "workspace": "Proyecto",
+      "workspaceHint": "El nombre de la carpeta como la agregaste en Chalito.",
+      "app": "Agente",
+      "agents": "Agentes a la vez",
+      "minutes": "Tiempo máximo",
+      "minutesN": "{n} min",
+      "send": "Planear",
+      "sending": "Enviando…",
+      "sent": "Listo: {computer} está armando el plan. Aparece abajo en un momento.",
+      "noComputers": "Aún no tienes una computadora conectada.",
+      "connectComputer": "Conectar una computadora",
+      "problem": {
+        "no_computer": "Elige una computadora.",
+        "no_workspace": "Escribe el proyecto.",
+        "no_goal": "Cuéntale a Chalito la meta.",
+        "goal_too_long": "La meta es demasiado larga.",
+        "app": "Ese agente no está listo en esa computadora.",
+        "limits": "Revisa los límites."
+      },
+      "error": "No se pudo enviar. Revisa que la computadora esté conectada y con el modo coordinador activado."
+    },
+    "plans": {
+      "title": "Tus planes",
+      "empty": "Todavía no hay planes.",
+      "emptyBody": "Escribe una meta arriba y Chalito la reparte."
+    },
+    "plan": {
+      "base": "Sale de {base} · {workspace}",
+      "progress": "{done} de {total} tareas listas",
+      "failedN": "{n} con problemas",
+      "agentText": "Lo que escribieron los agentes:",
+      "approve": "Aprobar y empezar",
+      "approveHint": "Con tu llave de acceso. Desde aquí Chalito responde por ti lo de rutina.",
+      "merge": "Fusionar en {base}",
+      "mergeHint": "Con tu llave de acceso. Se sube {base} tal como quedó la integración.",
+      "stop": "Detener todo",
+      "stopHint": "Detiene a todos los agentes del plan. Las ramas se quedan para revisarlas.",
+      "busy": "Un momento…",
+      "sent": "Enviado.",
+      "openSession": "Ver sesión",
+      "reviewRounds": "Revisiones: {n}",
+      "integration": "Integración",
+      "status": {
+        "planning": "Planeando",
+        "awaiting_approval": "Espera tu aprobación",
+        "running": "Trabajando",
+        "integrating": "Integrando",
+        "ready_to_merge": "Listo para fusionar",
+        "merged": "Fusionado",
+        "stopped": "Detenido",
+        "failed": "No se terminó"
+      },
+      "task": {
+        "pending": "En espera",
+        "running": "Trabajando",
+        "reviewing": "En revisión",
+        "changes_requested": "Corrigiendo",
+        "approved": "Lista",
+        "failed": "Con problemas",
+        "stopped": "Detenida"
+      },
+      "error": {
+        "passkey_required": "Necesitas tu llave de acceso para esto.",
+        "untrusted_agent": "Esta computadora no está vinculada con este dispositivo.",
+        "other": "No se pudo enviar. Inténtalo de nuevo."
+      },
+      "enrolPasskey": "Crear llave de acceso"
+    },
+    "approval": {
+      "always": "Siempre así",
+      "alwaysHint": "Desde ahora Chalito aprueba solo esto: {rule}. Puedes quitarlo en Ajustes.",
+      "alwaysSaved": "Recordado.",
+      "alwaysFailed": "Se aprobó, pero no se pudo recordar.",
+      "reply": "Responder",
+      "replyLabel": "Tu respuesta para el agente",
+      "replyPlaceholder": "Ej.: no toques la base de datos, usa los datos de prueba",
+      "replySend": "Rechazar y responder",
+      "replySent": "Le respondiste al agente.",
+      "popupTitle": "Un agente te pregunta",
+      "later": "Luego",
+      "inbox": "Ver todas"
+    },
+    "rules": {
+      "title": "Respuestas recordadas",
+      "body": "Lo que Chalito aprueba por ti porque dijiste «Siempre así». Solo cosas de riesgo medio; lo arriesgado siempre te pregunta.",
+      "empty": "No hay respuestas recordadas.",
+      "otherDevice": "Recordada en otro dispositivo",
+      "expires": "Vence el {date}",
+      "forget": "Olvidar",
+      "forgetting": "Olvidando…",
+      "error": "No se pudo. Inténtalo de nuevo."
     }
   }
 }

@@ -15,6 +15,7 @@ import { CreateCharacter } from "./CreateCharacter";
 import { useRosterPickWithCustom } from "@/lib/chalito/useMyCard";
 import { ConnectProviders } from "./ConnectProviders";
 import { Loading } from "./Loading";
+import { CoordRules } from "./Coordinator";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
@@ -67,6 +68,7 @@ export const Settings = () => {
         companionExtra={<CreateCharacter />}
         customCompanion={customCompanion}
       />
+      <CoordRules />
       <BrainKeys />
       <AccountDeletion />
     </div>

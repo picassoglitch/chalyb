@@ -23,7 +23,8 @@
     "store": "Store",
     "rooms": "Rooms",
     "mesas": "Mesas",
-    "character": "Create your character"
+    "character": "Create your character",
+    "team": "Team"
   },
   "home": {
     "title": "Hi, I'm {name}",
@@ -41,7 +42,8 @@
       "mesas": "Think something through with your companion and the brains you pick",
       "store": "Clothes and effects for your companion",
       "moreTitle": "More",
-      "character": "Your own companion, made from your photo"
+      "character": "Your own companion, made from your photo",
+      "team": "One goal, several agents working for you"
     }
   },
   "landing": {
@@ -1494,6 +1496,112 @@
       "computer": "Download Chalito",
       "ai": "Connect your AIs",
       "firstTask": "Try the first task"
+    }
+  },
+  "coord": {
+    "title": "Agent team",
+    "intro": "Give Chalito a goal: it splits the work among the agents on your computer, answers the routine questions for you and asks you the rest.",
+    "row": {
+      "title": "Team",
+      "body": "One goal, several agents working for you"
+    },
+    "goal": {
+      "title": "What are we doing?",
+      "label": "The goal",
+      "placeholder": "E.g.: add card payments to checkout, with tests",
+      "computer": "Computer",
+      "offline": "(off)",
+      "workspace": "Project",
+      "workspaceHint": "The folder's name as you added it in Chalito.",
+      "app": "Agent",
+      "agents": "Agents at once",
+      "minutes": "Time limit",
+      "minutesN": "{n} min",
+      "send": "Plan it",
+      "sending": "Sending…",
+      "sent": "Done: {computer} is making the plan. It shows below in a moment.",
+      "noComputers": "You don't have a connected computer yet.",
+      "connectComputer": "Connect a computer",
+      "problem": {
+        "no_computer": "Pick a computer.",
+        "no_workspace": "Type the project.",
+        "no_goal": "Tell Chalito the goal.",
+        "goal_too_long": "The goal is too long.",
+        "app": "That agent isn't ready on that computer.",
+        "limits": "Check the limits."
+      },
+      "error": "Couldn't send it. Check that the computer is connected and has coordinator mode on."
+    },
+    "plans": {
+      "title": "Your plans",
+      "empty": "No plans yet.",
+      "emptyBody": "Type a goal above and Chalito splits it."
+    },
+    "plan": {
+      "base": "From {base} · {workspace}",
+      "progress": "{done} of {total} tasks done",
+      "failedN": "{n} with problems",
+      "agentText": "What the agents wrote:",
+      "approve": "Approve and start",
+      "approveHint": "With your passkey. From here on Chalito answers the routine questions for you.",
+      "merge": "Merge into {base}",
+      "mergeHint": "With your passkey. {base} is pushed as the integration left it.",
+      "stop": "Stop everything",
+      "stopHint": "Stops every agent of the plan. The branches stay for you to look at.",
+      "busy": "One moment…",
+      "sent": "Sent.",
+      "openSession": "Open session",
+      "reviewRounds": "Reviews: {n}",
+      "integration": "Integration",
+      "status": {
+        "planning": "Planning",
+        "awaiting_approval": "Waiting for your approval",
+        "running": "Working",
+        "integrating": "Integrating",
+        "ready_to_merge": "Ready to merge",
+        "merged": "Merged",
+        "stopped": "Stopped",
+        "failed": "Didn't finish"
+      },
+      "task": {
+        "pending": "Waiting",
+        "running": "Working",
+        "reviewing": "In review",
+        "changes_requested": "Fixing",
+        "approved": "Done",
+        "failed": "Has problems",
+        "stopped": "Stopped"
+      },
+      "error": {
+        "passkey_required": "You need your passkey for this.",
+        "untrusted_agent": "That computer isn't paired with this device.",
+        "other": "Couldn't send it. Try again."
+      },
+      "enrolPasskey": "Create a passkey"
+    },
+    "approval": {
+      "always": "Always like this",
+      "alwaysHint": "From now on Chalito approves just this on its own: {rule}. You can remove it in Settings.",
+      "alwaysSaved": "Remembered.",
+      "alwaysFailed": "Approved, but it couldn't be remembered.",
+      "reply": "Reply",
+      "replyLabel": "Your reply to the agent",
+      "replyPlaceholder": "E.g.: don't touch the database, use the test data",
+      "replySend": "Deny and reply",
+      "replySent": "You replied to the agent.",
+      "popupTitle": "An agent is asking you",
+      "later": "Later",
+      "inbox": "See all"
+    },
+    "rules": {
+      "title": "Remembered answers",
+      "body": "What Chalito approves for you because you said “Always like this”. Medium-risk things only; risky ones always ask you.",
+      "empty": "No remembered answers.",
+      "otherDevice": "Remembered on another device",
+      "expires": "Expires {date}",
+      "forget": "Forget",
+      "forgetting": "Forgetting…",
+      "error": "Couldn't do it. Try again."
     }
   }
 }
