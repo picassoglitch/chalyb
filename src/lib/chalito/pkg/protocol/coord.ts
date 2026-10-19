@@ -32,8 +32,8 @@ export const DEFAULT_AUTO_KINDS: readonly AutoKind[] = AutoKind.options;
 /**
  * "Siempre así" (ADR 0025 §6): a remembered answer. It matches the same kind of request, in the
  * same workspace label, on any of the owner's computers:
- * - `command`: one simple shell command with the same program and subcommand (up to two words
- *   after the program, before any option: `supabase db push` is "db push"; "" when there is none);
+ * - `command`: exactly the same simple shell command: every word, options included (security
+ *   review: `supabase db push` never covers `supabase db push --force`);
  * - `web`: a fetch from the same domain.
  * Only MED prompts can be remembered; HIGH and CRITICAL always ask.
  */
@@ -42,8 +42,8 @@ export const RuleMatch = z.discriminatedUnion("kind", [
     .object({
       kind: z.literal("command"),
       workspaceLabel: z.string().min(1).max(80),
-      program: z.string().min(1).max(64),
-      sub: z.string().max(129),
+      /** The exact words of the command, in order. */
+      argv: z.array(z.string().min(1).max(256)).min(1).max(32),
     })
     .strict(),
   z
@@ -66,10 +66,11 @@ const hasControl = (s: string) => [...s].some((c) => c.charCodeAt(0) < 0x20 || c
  * cover, not secrecy).
  */
 export const ruleMatchText = (m: RuleMatch): string | null => {
+  // The word count goes first, so ["a b"] and ["a", "b"] never read the same.
   const parts =
     m.kind === "command"
-      ? ["chalito.coordrule.match.v1", "command", m.workspaceLabel, m.program, m.sub]
-      : ["chalito.coordrule.match.v1", "web", m.workspaceLabel, m.domain.toLowerCase()];
+      ? ["chalito.coordrule.match.v2", "command", m.workspaceLabel, String(m.argv.length), ...m.argv]
+      : ["chalito.coordrule.match.v2", "web", m.workspaceLabel, m.domain.toLowerCase()];
   return parts.some(hasControl) ? null : parts.join("\n");
 };
 
@@ -117,10 +118,45 @@ export type CoordRuleRevoke = z.infer<typeof CoordRuleRevoke>;
 const PLAIN_WORD = /^[A-Za-z0-9._/@%+=:,-]+$/;
 
 /**
+ * "Siempre así" for commands is an ALLOWLIST (security review): only these programs, and for each
+ * only these leading words, can be remembered; everything else always asks. Package-manager
+ * scripts only by their explicit test/lint/build/typecheck/format names (never `pnpm <script>`
+ * shorthands, `exec`, `dlx` or `run <anything>`), git only to read or commit. The rule still binds
+ * the exact words, options included.
+ */
+const SCRIPTS = ["test", "lint", "build", "typecheck", "format"];
+const REMEMBERABLE: Record<string, readonly (readonly string[])[]> = {
+  npm: [["test"], ...SCRIPTS.map((x) => ["run", x])],
+  pnpm: [...SCRIPTS.map((x) => [x]), ...SCRIPTS.map((x) => ["run", x])],
+  yarn: [...SCRIPTS.map((x) => [x]), ...SCRIPTS.map((x) => ["run", x])],
+  pytest: [[]],
+  cargo: [["test"], ["check"], ["clippy"], ["fmt"], ["build"]],
+  go: [["test"], ["vet"], ["build"], ["fmt"]],
+  eslint: [[]],
+  prettier: [[]],
+  stylelint: [[]],
+  biome: [["check"], ["lint"], ["format"]],
+  tsc: [[]],
+  vitest: [["run"]],
+  jest: [[]],
+  ruff: [["check"], ["format"]],
+  black: [[]],
+  mypy: [[]],
+  rustfmt: [[]],
+  gofmt: [[]],
+  git: [["status"], ["diff"], ["log"], ["show"], ["add"], ["commit"]],
+};
+
+const rememberable = (argv: readonly string[]): boolean => {
+  const prefixes = REMEMBERABLE[argv[0]!];
+  return !!prefixes?.some((pre) => pre.every((w, i) => argv[i + 1] === w));
+};
+
+/**
  * The remembered-rule match for a prompt, or null when it can't be remembered. Shared by the hub
  * (to sign "Siempre así") and the agent (to check a rule), so both read a request the same way:
- * - `Bash`: one simple command of plain words (anything with quotes, `$`, globs, pipes, `;`, `&&`,
- *   redirections or a leading `VAR=` is never remembered);
+ * - `Bash`: one simple command of plain words, from the allowlist above (anything with quotes, `$`,
+ *   globs, pipes, `;`, `&&`, redirections, a path or a program not listed is never remembered);
  * - `WebFetch`: the URL's host.
  * The agent applies a rule only to a MED prompt; this function doesn't know the risk.
  */
@@ -129,13 +165,12 @@ export const rememberMatchFor = (a: { toolName: string; input: unknown; workspac
   let m: RuleMatch | null = null;
   if (a.toolName === "Bash" && typeof input.command === "string") {
     const words = input.command.trim().split(/[ \t]+/);
-    const [program, ...args] = words;
-    if (!program || !words.every((w) => PLAIN_WORD.test(w)) || program.includes("=")) return null;
-    // Up to two leading words that aren't options ("db push", "pr create"), so `supabase db push`
-    // and `supabase db reset` are different rules.
-    const firstOption = args.findIndex((w) => w.startsWith("-"));
-    const sub = (firstOption === -1 ? args : args.slice(0, firstOption)).slice(0, 2).join(" ");
-    m = { kind: "command", workspaceLabel: a.workspaceLabel, program, sub };
+    const [program] = words;
+    if (!program || !words.every((w) => PLAIN_WORD.test(w))) return null;
+    // Programs by name only (a path runs whatever that file holds), compared without case.
+    const argv = [program.toLowerCase(), ...words.slice(1)];
+    if (/[/\\]/.test(program) || !rememberable(argv)) return null;
+    m = { kind: "command", workspaceLabel: a.workspaceLabel, argv };
   } else if (a.toolName === "WebFetch" && typeof input.url === "string") {
     let host: string;
     try {

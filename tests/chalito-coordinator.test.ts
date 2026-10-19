@@ -69,7 +69,7 @@ const approval = (over: Partial<ApprovalView> = {}): ApprovalView =>
     rev: 1,
     verified: true,
     detailsHash: 'a'.repeat(64),
-    details: { toolName: 'Bash', input: { command: 'supabase db push' }, workspaceLabel: 'taquito' },
+    details: { toolName: 'Bash', input: { command: 'pnpm format' }, workspaceLabel: 'taquito' },
     ...over,
   }) as ApprovalView;
 
@@ -147,13 +147,16 @@ test('plan card: taps by status (approve and merge only when they apply; stop wh
 test('Siempre así: only a verified MED prompt from a plan’s own coordinator, label from the signed details (D-075: never HIGH)', () => {
   assert.equal(isCoordOrigin('agent:coord_pabcdefgh'), true);
   for (const o of ['client:dev_p', 'agent:other', 'agent:coord_x']) assert.equal(isCoordOrigin(o), false, o);
-  assert.deepEqual(rememberable(approval()), { kind: 'command', workspaceLabel: 'taquito', program: 'supabase', sub: 'db push' });
+  assert.deepEqual(rememberable(approval()), { kind: 'command', workspaceLabel: 'taquito', argv: ['pnpm', 'format'] });
+  // Security review: exact command, allowlisted programs only (wrappers and other programs always ask).
+  for (const command of ['supabase db push', 'npx foo --x', 'pnpm dev', 'make deploy'])
+    assert.equal(rememberable(approval({ details: { toolName: 'Bash', input: { command }, workspaceLabel: 'taquito' } })), null, command);
   assert.equal(rememberable(approval({ risk: 'HIGH' })), null);
   assert.equal(rememberable(approval({ verified: false })), null);
   assert.equal(rememberable(approval({ origin: 'client:dev_p' })), null);
   assert.equal(rememberable(approval({ kind: 'computer_control' })), null);
   // Security review: no label in the signed details, nothing to remember (a plaintext column never counts).
-  assert.equal(rememberable(approval({ details: { toolName: 'Bash', input: { command: 'supabase db push' } } })), null);
+  assert.equal(rememberable(approval({ details: { toolName: 'Bash', input: { command: 'pnpm format' } } })), null);
   assert.equal(rememberable(approval({ details: { toolName: 'Bash', input: { command: 'a && b' }, workspaceLabel: 'taquito' } })), null);
 });
 
