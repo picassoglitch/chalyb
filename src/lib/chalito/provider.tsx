@@ -111,6 +111,8 @@ interface Ctx {
   activation: Activation | null;
   /** The person saved the recovery code: forget it. */
   finishActivation: () => void;
+  /** Reads the account's devices again ("Empezar de cero" just retired them: "Activar" applies). */
+  recheck: () => void;
   /** The person signed in to the hub (the layout reads it on the server); null outside the hub. */
   hubUserId: string | null;
   /** "Añadir un dispositivo": a trusted (ready) browser endorses another one. Null otherwise. */
@@ -240,6 +242,7 @@ const INITIAL: Ctx = {
   needsRecovery: false,
   activation: null,
   finishActivation: () => undefined,
+  recheck: () => undefined,
   hubUserId: null,
   addDevice: null,
   approveComputer: null,
@@ -435,6 +438,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
   const [epoch, setEpoch] = useState(0);
   const [activation, setActivation] = useState<Activation | null>(null);
   const finishActivation = useCallback(() => setActivation(null), []);
+  const recheck = useCallback(() => setEpoch((e) => e + 1), []);
 
   /**
    * "Activar" (/v1/devices/first) and recovery (/v1/recovery/complete). Each holds the connection
@@ -707,8 +711,8 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
   }, [ctx.client]);
 
   const value = useMemo(
-    () => ({ ...ctx, activation, finishActivation, hubUserId: hubUserId ?? null }),
-    [ctx, activation, finishActivation, hubUserId],
+    () => ({ ...ctx, activation, finishActivation, recheck, hubUserId: hubUserId ?? null }),
+    [ctx, activation, finishActivation, recheck, hubUserId],
   );
   return <Chalito.Provider value={value}>{children}</Chalito.Provider>;
 };

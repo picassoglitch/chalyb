@@ -971,7 +971,11 @@
       },
       "doneIntroduced": "You can send instructions to {computers} right away: your other device introduced them.",
       "doneDropped": "{computer}: we couldn't confirm it. Pair it with its color code to send it instructions.",
-      "lostDevice": "Lost your device? Use your recovery code"
+      "lostDevice": "Lost your device? Use your recovery code",
+      "noDevice": "I don't have that device",
+      "noDeviceTitle": "Don't have that device?",
+      "useRecovery": "Use my recovery code",
+      "startOver": "Start over"
     },
     "add": {
       "title": "Add a device",
@@ -1009,6 +1013,32 @@
         "tampered": "The details don't match. Don't approve it; show a new code.",
         "failed": "Something went wrong. Try again.",
         "passkey_cloned": "Your passkey looks copied, so nothing was approved. Check your devices and create a new passkey."
+      }
+    },
+    "reset": {
+      "title": "Start over",
+      "body": "We'll email a code to your Chalyb address. Once you confirm it, we retire all your Chalito devices (phones, browsers and computers) and you activate this browser in one tap.",
+      "warning": "Your earlier chats are encrypted with those devices' keys, so you won't be able to see them here. Your computers will need to be paired again.",
+      "send": "Email me a code",
+      "sending": "Sending…",
+      "sent": "We emailed you a 6-digit code. It expires in 10 minutes.",
+      "resend": "Send another code",
+      "label": "Code from the email",
+      "confirm": "Retire my devices and start over",
+      "confirming": "Retiring…",
+      "done": "Done. You can now activate Chalito in this browser.",
+      "doneCta": "Activate this browser",
+      "back": "Back",
+      "error": {
+        "format": "Type the 6 digits from the email.",
+        "bad_code": "That code isn't right. Check the latest email.",
+        "expired": "The code expired. Ask for a new one.",
+        "too_many": "Too many tries with that code. Ask for a new one.",
+        "none": "That code no longer works. Ask for a new one.",
+        "rate_limited": "We've sent several codes already. Wait a while and try again.",
+        "no_email": "Your account has no email. Write to us and we'll help.",
+        "send_failed": "We couldn't send the email. Try again in a moment.",
+        "failed": "Something went wrong retiring your devices. Ask for a new code and try again."
       }
     }
   },

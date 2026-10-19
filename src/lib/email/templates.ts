@@ -431,3 +431,42 @@ Como el dinero volvió a tu cuenta, lo que ese pago había comprado ya no está 
     text,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// CHALITO — "Empezar de cero" code (src/lib/chalito/reset.ts)
+// ─────────────────────────────────────────────────────────────────────
+export function chalitoResetCodeTemplate(opts: { code: string }): { html: string; text: string } {
+  const body = `
+    <h1 style="margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:-0.015em;color:${INK_PRIMARY};">
+      Tu código para empezar de cero en Chalito
+    </h1>
+    <p style="margin:0 0 24px;font-size:14px;color:${INK_DIM};line-height:1.55;">
+      Escríbelo en Chalito para retirar todos tus dispositivos y activar el navegador que estás usando. Vence en 10 minutos.
+    </p>
+
+    <div style="padding:18px;background:${BG_DARK};border:1px solid ${LINE};border-radius:8px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:32px;letter-spacing:0.3em;font-weight:700;color:${BRAND_ACCENT};font-family:'SF Mono',Menlo,Consolas,monospace;">${escapeHtml(opts.code)}</div>
+    </div>
+
+    <p style="margin:0;font-size:14px;color:${INK_PRIMARY};line-height:1.55;">
+      Tus chats anteriores están cifrados con las llaves de esos dispositivos, así que no podrás verlos desde el nuevo.
+    </p>
+
+    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${LINE};font-size:12px;color:${INK_FAINT};line-height:1.55;">
+      Si tú no lo pediste, no compartas este código con nadie y cambia la contraseña de tu cuenta de Chalyb. Sin el código nadie puede retirar tus dispositivos.
+    </p>
+  `;
+
+  const text = `Tu código para empezar de cero en Chalito: ${opts.code}
+
+Escríbelo en Chalito para retirar todos tus dispositivos y activar el navegador que estás usando. Vence en 10 minutos.
+
+Tus chats anteriores están cifrados con las llaves de esos dispositivos, así que no podrás verlos desde el nuevo.
+
+Si tú no lo pediste, no compartas este código con nadie y cambia la contraseña de tu cuenta de Chalyb.`;
+
+  return {
+    html: wrap({ title: 'Tu código de Chalito', preview: `Tu código: ${opts.code}`, body }),
+    text,
+  };
+}

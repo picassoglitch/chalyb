@@ -14,30 +14,39 @@ import { ButtonLink } from '@/components/ui/primitives';
 export const HubBridge = ({ children }: { children: ReactNode }) => {
   const { status } = useChalito();
   const t = useTranslations('chalito.sso');
-  const started = useRef(false);
+  /** Sign-ins this page load: a session dropped later (e.g. by another account's) signs in again. */
+  const attempts = useRef(0);
+  const running = useRef(false);
   const [failed, setFailed] = useState<SsoFailure | null>(null);
 
   useEffect(() => {
-    if (status !== 'signed_out' || started.current) return;
-    started.current = true;
+    if (status !== 'signed_out' || running.current || failed) return;
+    // A few at most, so a session that keeps dropping ends on the error instead of looping.
+    if (attempts.current >= 3) return setFailed('failed');
+    attempts.current += 1;
+    running.current = true;
     void (async () => {
-      const r = await fetch('/api/tools/chalito/sso', {
-        method: 'POST',
-        credentials: 'same-origin',
-      }).catch(() => null);
-      const body = r
-        ? ((await r.json().catch(() => null)) as { ok?: boolean; token?: string } | null)
-        : null;
-      if (!r?.ok || !body?.token) return setFailed(r?.status === 403 ? 'no_access' : 'failed');
-      const done = await completeSso(
-        { token: body.token, next: null },
-        { apiBase: env.apiBase, fetch: window.fetch.bind(window), auth: supabase().auth },
-      );
-      // No reload: the provider listens to this same Supabase client, so the new session
-      // connects in place (a reload cost a whole second page load on the first visit).
-      if (!done.ok) setFailed(done.reason === 'rate_limited' ? 'rate_limited' : 'failed');
+      try {
+        const r = await fetch('/api/tools/chalito/sso', {
+          method: 'POST',
+          credentials: 'same-origin',
+        }).catch(() => null);
+        const body = r
+          ? ((await r.json().catch(() => null)) as { ok?: boolean; token?: string } | null)
+          : null;
+        if (!r?.ok || !body?.token) return setFailed(r?.status === 403 ? 'no_access' : 'failed');
+        const done = await completeSso(
+          { token: body.token, next: null },
+          { apiBase: env.apiBase, fetch: window.fetch.bind(window), auth: supabase().auth },
+        );
+        // No reload: the provider listens to this same Supabase client, so the new session
+        // connects in place (a reload cost a whole second page load on the first visit).
+        if (!done.ok) setFailed(done.reason === 'rate_limited' ? 'rate_limited' : 'failed');
+      } finally {
+        running.current = false;
+      }
     })();
-  }, [status]);
+  }, [status, failed]);
 
   if (failed) {
     const view = ssoFailureView(failed);

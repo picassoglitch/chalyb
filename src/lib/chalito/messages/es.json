@@ -971,7 +971,11 @@
       },
       "doneIntroduced": "Ya puedes enviar instrucciones a {computers}: tu otro dispositivo te las presentó.",
       "doneDropped": "{computer}: no pudimos confirmarla. Emparéjala con su código de colores para enviarle instrucciones.",
-      "lostDevice": "¿Perdiste tu dispositivo? Usa tu código de recuperación"
+      "lostDevice": "¿Perdiste tu dispositivo? Usa tu código de recuperación",
+      "noDevice": "No tengo ese dispositivo",
+      "noDeviceTitle": "¿No tienes ese dispositivo?",
+      "useRecovery": "Usar mi código de recuperación",
+      "startOver": "Empezar de cero"
     },
     "add": {
       "title": "Añadir un dispositivo",
@@ -1009,6 +1013,32 @@
         "tampered": "Los datos no coinciden. No lo apruebes y muestra un código nuevo.",
         "failed": "Algo salió mal. Vuelve a intentarlo.",
         "passkey_cloned": "Tu llave de acceso parece copiada: no se aprobó. Revisa tus dispositivos y crea una llave de acceso nueva."
+      }
+    },
+    "reset": {
+      "title": "Empezar de cero",
+      "body": "Te enviamos un código a tu correo de Chalyb. Al confirmarlo, retiramos todos tus dispositivos de Chalito (teléfonos, navegadores y computadoras) y activas este navegador con un toque.",
+      "warning": "Tus chats anteriores están cifrados con las llaves de esos dispositivos, así que no podrás verlos desde aquí. Tus computadoras tendrán que vincularse otra vez.",
+      "send": "Enviar código a mi correo",
+      "sending": "Enviando…",
+      "sent": "Te enviamos un código de 6 dígitos a tu correo. Vence en 10 minutos.",
+      "resend": "Enviar otro código",
+      "label": "Código del correo",
+      "confirm": "Retirar mis dispositivos y empezar",
+      "confirming": "Retirando…",
+      "done": "Listo. Ya puedes activar Chalito en este navegador.",
+      "doneCta": "Activar este navegador",
+      "back": "Volver",
+      "error": {
+        "format": "Escribe los 6 dígitos del correo.",
+        "bad_code": "Ese código no es correcto. Revisa el correo más reciente.",
+        "expired": "El código venció. Pide uno nuevo.",
+        "too_many": "Demasiados intentos con ese código. Pide uno nuevo.",
+        "none": "Ese código ya no sirve. Pide uno nuevo.",
+        "rate_limited": "Ya enviamos varios códigos. Espera un rato e inténtalo de nuevo.",
+        "no_email": "Tu cuenta no tiene un correo. Escríbenos para ayudarte.",
+        "send_failed": "No pudimos enviar el correo. Inténtalo en un momento.",
+        "failed": "Algo falló al retirar tus dispositivos. Pide un código nuevo e inténtalo otra vez."
       }
     }
   },
