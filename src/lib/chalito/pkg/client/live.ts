@@ -1,5 +1,12 @@
 import { canonicalize, fromB64url, sha256, utf8, verifyEnvelope } from "@chalito/crypto";
-import { DeviceSetup, SealedApprovalPayload, type SealedEnvelope, type SessionCard } from "@chalito/protocol";
+import {
+  SignedCoordPlan,
+  type CoordPlanState,
+  DeviceSetup,
+  SealedApprovalPayload,
+  type SealedEnvelope,
+  type SessionCard,
+} from "@chalito/protocol";
 import type { ClientKeys } from "./keys";
 import { deviceTopic, must, type SupaChannel, type SupaClient } from "./supa";
 
@@ -88,6 +95,12 @@ export interface SessionView {
   updatedAt: number;
   /** The latest Session Card, opened (AAD card:<sid>), or null. */
   card: SessionCard | null;
+  /**
+   * Coordinator mode (ADR 0025 §6): the plan this session coordinates, opened (AAD coord:<sid>),
+   * signed by the agent that wrote the row with a key this device trusts (security review), and
+   * checked against the schema; null otherwise. Text in it comes from agents: show it as data.
+   */
+  coord: CoordPlanState | null;
   rev: number;
 }
 
@@ -454,6 +467,20 @@ export class LiveStore {
     };
   }
 
+  /** A plan the agent signed (`chalito.coordplan.v1`), against this client's own trust in that agent. */
+  async #verifyPlan(opened: unknown, agentDeviceId: string, planId: unknown): Promise<CoordPlanState | null> {
+    const p = SignedCoordPlan.safeParse(opened);
+    if (!p.success || p.data.signerDeviceId !== agentDeviceId || p.data.body.planId !== planId) return null;
+    const pubSign = this.keys.trustedAgentSignKey?.(agentDeviceId);
+    if (!pubSign) return null;
+    const sig = await verifyEnvelope(
+      p.data,
+      "chalito.coordplan.v1",
+      new Map([[agentDeviceId, await fromB64url(pubSign)]]),
+    );
+    return sig.ok ? p.data.body : null;
+  }
+
   /** ADR 0019: the agent's signed request, against this client's own trust in that agent. */
   async #verifyApproval(opened: unknown, row: { aid: string; requestId: string; agentDeviceId: string }) {
     const p = SealedApprovalPayload.safeParse(opened);
@@ -479,6 +506,12 @@ export class LiveStore {
     const sid = String(r.sid);
     const doc = (r.doc ?? {}) as Row;
     const card = await this.#open<SessionCard>((doc.card as Row | undefined)?.ct, `card:${sid}`);
+    const coordDoc = doc.coord as Row | undefined;
+    const coord = await this.#verifyPlan(
+      await this.#open<unknown>(coordDoc?.ct, `coord:${sid}`),
+      String(r.device_id),
+      coordDoc?.planId,
+    );
     return {
       sid,
       agentDeviceId: String(r.device_id),
@@ -488,6 +521,7 @@ export class LiveStore {
       permissionMode: doc.permissionMode as string | undefined,
       updatedAt: ms(r.updated_at ?? doc.updatedAt),
       card,
+      coord,
       rev: num(r.rev),
     };
   }

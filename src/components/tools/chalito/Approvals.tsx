@@ -12,6 +12,8 @@ import {
   needsStepUp,
 } from "@/lib/chalito/web/computer-control";
 import { confirmStepUp } from "./StepUpHost";
+import { isCoordOrigin, rememberable } from "@/lib/chalito/web/coord";
+import { describeRule } from "@chalito/client";
 import { useChalito, useLive, useNow } from "@/lib/chalito/provider";
 import { Loading } from "./Loading";
 import { Inbox as InboxIcon } from "lucide-react";
@@ -97,6 +99,7 @@ export const ApprovalCard = ({ a }: { a: ApprovalView }) =>
 const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
   const t = useTranslations("chalito.live.approval");
   const tc = useTranslations("chalito.live.approval.computer");
+  const tk = useTranslations("chalito.coord.approval");
   const ti = useTranslations("chalito.integrations");
   const { client, passkey } = useChalito();
   const { devices } = useLive();
@@ -125,6 +128,12 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
   const mustExpand = !!text?.truncated && !expanded;
   // ADR 0019 (R-H1): only a request the agent signed can be allowed; denying always works.
   const unverified = !a.verified;
+  // Coordinator helpers (ADR 0025 §6): "Siempre así" (MED only, D-075) and a reply to the agent.
+  const match = rememberable(a);
+  const [remember, setRemember] = useState(false);
+  const fromHelper = isCoordOrigin(a.origin);
+  const [replying, setReplying] = useState(false);
+  const [reply, setReply] = useState("");
 
   const decide = async (allow: boolean) => {
     if (!client) return;
@@ -138,6 +147,15 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
     try {
       await client.actions.decide(a.aid, allow);
       setNote(t(allow ? "sentAllow" : "sentDeny"));
+      if (allow && remember && match) {
+        const details = a.details as { toolName: string; input?: unknown };
+        await client.coordRules
+          .remember({ toolName: details.toolName, input: details.input, workspaceLabel: match.workspaceLabel, risk: a.risk })
+          .then(
+            () => setNote(`${t("sentAllow")} ${tk("alwaysSaved")}`),
+            () => setNote(tk("alwaysFailed")),
+          );
+      }
     } catch (err) {
       const code = err instanceof ActionError ? err.code : "error";
       setNote(
@@ -259,6 +277,54 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
               {t("mustExpand")}
             </p>
           ) : null}
+          {match && !unverified ? (
+            <label className="ch-chl-row ch-chl-small" data-testid="approval-always">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              <span>
+                <span className="ch-chl-strong">{tk("always")}</span>
+                {remember ? ` — ${tk("alwaysHint", { rule: describeRule(match) })}` : null}
+              </span>
+            </label>
+          ) : null}
+          {fromHelper && replying ? (
+            <form
+              className="ch-chl ch-chl--tight"
+              data-testid="approval-reply"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!client || !reply.trim()) return;
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    await client.actions.decide(a.aid, false);
+                    await client.actions.prompt(a.sid, reply.trim());
+                    setNote(tk("replySent"));
+                    setReplying(false);
+                  } catch {
+                    setNote(t("error.other"));
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              <label htmlFor={`reply-${a.aid}`} className="ch-chl-small">
+                {tk("replyLabel")}
+              </label>
+              <textarea
+                id={`reply-${a.aid}`}
+                className="ch-input"
+                rows={2}
+                maxLength={2000}
+                placeholder={tk("replyPlaceholder")}
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+              />
+              <button type="submit" className="ch-btn ch-btn--secondary ch-chl-fit" disabled={busy || !reply.trim()}>
+                {tk("replySend")}
+              </button>
+            </form>
+          ) : null}
           <div className="ch-chl-row">
             <button
               className="ch-btn ch-btn--primary"
@@ -275,6 +341,16 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
             >
               {t("deny")}
             </button>
+            {fromHelper && !replying ? (
+              <button
+                className="ch-btn ch-btn--secondary"
+                data-testid="approval-reply-open"
+                disabled={busy}
+                onClick={() => setReplying(true)}
+              >
+                {tk("reply")}
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}

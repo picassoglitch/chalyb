@@ -209,6 +209,30 @@
   padding: 16px;
   background: rgba(16, 16, 40, 0.35);
 }
+/* Coordinator approval pop-up (ADR 0025 §6): floats over every Chalito screen, under the
+   step-up overlay; full width on a phone, a side card on wider screens. */
+.chalyb-app .ch-chl-popup {
+  position: fixed;
+  z-index: 40;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--card, #fff);
+  box-shadow: 0 2px 4px rgba(16, 16, 40, 0.04), 0 18px 48px rgba(16, 16, 40, 0.16);
+}
+@media (min-width: 720px) {
+  .chalyb-app .ch-chl-popup {
+    left: auto;
+    width: 420px;
+  }
+}
 .chalyb-app .ch-chl-modal {
   max-width: min(420px, 100%);
   box-shadow: 0 2px 4px rgba(16, 16, 40, 0.04), 0 18px 48px rgba(16, 16, 40, 0.1);

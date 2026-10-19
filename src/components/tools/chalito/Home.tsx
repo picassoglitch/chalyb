@@ -3,7 +3,7 @@ import { SignInLink } from './SignInLink';
 import { Companion } from './Companion';
 import { SetupChecklist } from './SetupChecklist';
 import { useLocale, useTranslations } from 'next-intl';
-import { Camera, Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
+import { Bot, Camera, Inbox, LayoutGrid, MonitorSmartphone, ShoppingBag, Users } from 'lucide-react';
 import { PRODUCT_NAME, formatCompanionTitle } from '@chalito/brand';
 import { companionName } from '@chalito/ui';
 import { Group, Row } from '@/components/ui/primitives';
@@ -16,6 +16,7 @@ import type { AppLocale } from '@/i18n/locales';
 // Ajustes; every other section is a row here.
 const SECTIONS = [
   ['/bandeja', 'inbox', Inbox, '#30D158'],
+  ['/equipo', 'team', Bot, '#64D2FF'],
   ['/dispositivos', 'devices', MonitorSmartphone, '#0A84FF'],
   ['/salas', 'rooms', Users, '#FF9F0A'],
   ['/m', 'mesas', LayoutGrid, '#5B4BFF'],
