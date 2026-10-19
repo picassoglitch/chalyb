@@ -46,6 +46,8 @@ export const goalComputers = (devices: readonly DeviceView[]): GoalComputer[] =>
 
 export interface GoalDraft {
   deviceId: string;
+  /** G4: other computers that take tasks too (each needs a hand-off link from the main one). */
+  helpers: string[];
   workspaceLabel: string;
   goal: string;
   app: CoordApp;
@@ -53,7 +55,14 @@ export interface GoalDraft {
   maxMinutes: number;
 }
 
-export type GoalProblem = "no_computer" | "no_workspace" | "no_goal" | "goal_too_long" | "app" | "limits";
+export type GoalProblem =
+  | "no_computer"
+  | "no_workspace"
+  | "no_goal"
+  | "goal_too_long"
+  | "app"
+  | "limits"
+  | "helpers";
 
 /** What's wrong with a goal before it's sent, or null. */
 export const goalProblem = (d: GoalDraft, computers: readonly GoalComputer[]): GoalProblem | null => {
@@ -65,6 +74,13 @@ export const goalProblem = (d: GoalDraft, computers: readonly GoalComputer[]): G
   if (!c.apps.includes(d.app)) return "app";
   if (!(AGENT_CHOICES as readonly number[]).includes(d.maxAgents)) return "limits";
   if (!Number.isInteger(d.maxMinutes) || d.maxMinutes < 5 || d.maxMinutes > 720) return "limits";
+  // Helpers: other paired computers, at most 5, never the main one.
+  if (
+    d.helpers.length > 5 ||
+    new Set(d.helpers).size !== d.helpers.length ||
+    d.helpers.some((h) => h === d.deviceId || !computers.some((x) => x.deviceId === h))
+  )
+    return "helpers";
   return null;
 };
 
@@ -127,3 +143,7 @@ export const popupApproval = (
   approvals
     .filter((a) => a.status === "pending" && a.expiresAt > now && !dismissed.has(a.aid) && !a.mesa)
     .sort((a, b) => b.createdAt - a.createdAt)[0] ?? null;
+
+/** The name of the computer a task runs on (G4), for the plan card. */
+export const deviceName = (devices: readonly DeviceView[], deviceId: string): string =>
+  devices.find((d) => d.deviceId === deviceId)?.name ?? deviceId.slice(0, 12);

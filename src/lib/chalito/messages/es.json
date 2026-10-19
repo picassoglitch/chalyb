@@ -1528,9 +1528,12 @@
         "no_goal": "Cuéntale a Chalito la meta.",
         "goal_too_long": "La meta es demasiado larga.",
         "app": "Ese agente no está listo en esa computadora.",
-        "limits": "Revisa los límites."
+        "limits": "Revisa los límites.",
+        "helpers": "Revisa las computadoras de ayuda."
       },
-      "error": "No se pudo enviar. Revisa que la computadora esté conectada y con el modo coordinador activado."
+      "error": "No se pudo enviar. Revisa que la computadora esté conectada y con el modo coordinador activado.",
+      "helpers": "También en",
+      "helpersHint": "Otras computadoras que toman tareas. Cada una necesita un enlace de traspaso hecho en la computadora principal (app de escritorio → Enlaces)."
     },
     "plans": {
       "title": "Tus planes",
@@ -1575,9 +1578,11 @@
       "error": {
         "passkey_required": "Necesitas tu llave de acceso para esto.",
         "untrusted_agent": "Esta computadora no está vinculada con este dispositivo.",
-        "other": "No se pudo enviar. Inténtalo de nuevo."
+        "other": "No se pudo enviar. Inténtalo de nuevo.",
+        "no_link": "Falta un enlace de traspaso a una de las computadoras de ayuda."
       },
-      "enrolPasskey": "Crear llave de acceso"
+      "enrolPasskey": "Crear llave de acceso",
+      "on": "en {computer}"
     },
     "approval": {
       "always": "Siempre así",

@@ -15,6 +15,7 @@ import {
   planProgress,
   plansOf,
   popupApproval,
+  deviceName,
   type CoordApp,
   type PlanView,
 } from "@/lib/chalito/web/coord";
@@ -53,6 +54,7 @@ const GoalBox = () => {
   const [app, setApp] = useState<CoordApp>("claude-code");
   const [maxAgents, setAgents] = useState(3);
   const [maxMinutes, setMinutes] = useState(120);
+  const [helpers, setHelpers] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ kind: "ok" | "bad"; text: string } | null>(null);
   // A computer that reported its folders offers them; the first one is the default.
@@ -72,7 +74,9 @@ const GoalBox = () => {
       </div>
     );
 
-  const draft = { deviceId: computer!.deviceId, workspaceLabel, goal, app, maxAgents, maxMinutes };
+  // Helpers are other computers; the main one is never its own helper.
+  const helperIds = helpers.filter((h) => h !== computer!.deviceId);
+  const draft = { deviceId: computer!.deviceId, helpers: helperIds, workspaceLabel, goal, app, maxAgents, maxMinutes };
   const problem = goalProblem(draft, computers);
   const send = async () => {
     if (!client || problem) return;
@@ -86,6 +90,7 @@ const GoalBox = () => {
         appId: app,
         maxAgents,
         maxMinutes,
+        ...(helperIds.length ? { helpers: helperIds } : {}),
       });
       setGoal("");
       setNote({ kind: "ok", text: t("sent", { computer: computer!.name }) });
@@ -203,6 +208,26 @@ const GoalBox = () => {
           </select>
         </div>
       </div>
+      {computers.length > 1 ? (
+        <fieldset className="ch-chl ch-chl--tight" data-testid="coord-helpers">
+          <legend className="ch-chl-small ch-chl-strong">{t("helpers")}</legend>
+          <p className="ch-chl-small ch-muted">{t("helpersHint")}</p>
+          {computers
+            .filter((c) => c.deviceId !== computer!.deviceId)
+            .map((c) => (
+              <label key={c.deviceId} className="ch-chl-row ch-chl-small">
+                <input
+                  type="checkbox"
+                  checked={helpers.includes(c.deviceId)}
+                  onChange={(e) =>
+                    setHelpers((h) => (e.target.checked ? [...h, c.deviceId] : h.filter((x) => x !== c.deviceId)))
+                  }
+                />
+                <span>{c.online ? c.name : `${c.name} ${t("offline")}`}</span>
+              </label>
+            ))}
+        </fieldset>
+      ) : null}
       {problem && goal.trim() ? (
         <p className="ch-chl-small ch-chl-warn" data-testid="coord-problem" data-problem={problem}>
           {t(`problem.${problem}`)}
@@ -228,7 +253,9 @@ const GoalBox = () => {
 export const PlanCard = ({ v }: { v: PlanView }) => {
   const t = useTranslations("chalito.coord.plan");
   const { client, passkey } = useChalito();
+  const { devices } = useLive();
   const { plan } = v;
+  const multi = new Set(plan.tasks.map((x) => x.deviceId)).size > 1;
   const can = planActions(plan);
   const progress = planProgress(plan);
   const [busy, setBusy] = useState(false);
@@ -274,6 +301,11 @@ export const PlanCard = ({ v }: { v: PlanView }) => {
             <li key={task.id} className="ch-chl ch-chl--tight" data-task={task.id} data-task-status={task.status}>
               <div className="ch-chl-row">
                 <span className="ch-chl-strong">{task.title}</span>
+                {multi ? (
+                  <span className="ch-chl-small ch-muted" data-testid="coord-task-device">
+                    {t("on", { computer: deviceName(devices, task.deviceId) })}
+                  </span>
+                ) : null}
                 <span className="ch-pill ch-pill--gray ch-chl-push">{t(`task.${task.status}`)}</span>
               </div>
               {task.note ? <p className="ch-chl-small ch-chl-mono">{task.note}</p> : null}

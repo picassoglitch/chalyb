@@ -1528,9 +1528,12 @@
         "no_goal": "Tell Chalito the goal.",
         "goal_too_long": "The goal is too long.",
         "app": "That agent isn't ready on that computer.",
-        "limits": "Check the limits."
+        "limits": "Check the limits.",
+        "helpers": "Check the helper computers."
       },
-      "error": "Couldn't send it. Check that the computer is connected and has coordinator mode on."
+      "error": "Couldn't send it. Check that the computer is connected and has coordinator mode on.",
+      "helpers": "Also on",
+      "helpersHint": "Other computers that take tasks. Each needs a hand-off link made on the main computer (desktop app → Links)."
     },
     "plans": {
       "title": "Your plans",
@@ -1575,9 +1578,11 @@
       "error": {
         "passkey_required": "You need your passkey for this.",
         "untrusted_agent": "That computer isn't paired with this device.",
-        "other": "Couldn't send it. Try again."
+        "other": "Couldn't send it. Try again.",
+        "no_link": "A helper computer has no hand-off link from the main one."
       },
-      "enrolPasskey": "Create a passkey"
+      "enrolPasskey": "Create a passkey",
+      "on": "on {computer}"
     },
     "approval": {
       "always": "Always like this",

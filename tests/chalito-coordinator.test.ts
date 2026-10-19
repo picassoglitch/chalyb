@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { CommandBody, CommandRejectReason, CoordPlanState, SigningContext } from '@chalito/protocol';
 import type { ApprovalView, DeviceView, SessionView } from '@chalito/client';
 import {
+  deviceName,
   goalComputers,
   goalProblem,
   isCoordOrigin,
@@ -26,8 +27,8 @@ const plan = (over: Partial<CoordPlanState> = {}): CoordPlanState => ({
   maxMinutes: 120,
   startedAt: null,
   tasks: [
-    { id: 'api', title: 'API', acceptance: ['ok'], dependsOn: [], status: 'pending', branch: 'coord/pabcdefgh/api', sid: null, note: null, reviewRounds: 0 },
-    { id: 'ui', title: 'UI', acceptance: ['ok'], dependsOn: ['api'], status: 'pending', branch: 'coord/pabcdefgh/ui', sid: null, note: null, reviewRounds: 0 },
+    { id: 'api', title: 'API', acceptance: ['ok'], dependsOn: [], status: 'pending', branch: 'coord/pabcdefgh/api', deviceId: 'pc1', sid: null, note: null, reviewRounds: 0 },
+    { id: 'ui', title: 'UI', acceptance: ['ok'], dependsOn: ['api'], status: 'pending', branch: 'coord/pabcdefgh/ui', deviceId: 'mac', sid: null, note: null, reviewRounds: 0 },
   ],
   integration: { branch: 'coord/pabcdefgh/integration', sid: null, note: null, head: null },
   note: null,
@@ -115,7 +116,7 @@ test('goal box: paired computers, their folders and agents; online first', () =>
   assert.deepEqual(cs[1]!.workspaces, ['taquito', 'chalyb']);
   assert.deepEqual(cs[1]!.apps, ['claude-code', 'grok']);
   assert.deepEqual(cs[0]!.apps, ['claude-code', 'codex', 'grok', 'gemini']);
-  const ok = { deviceId: 'mac', workspaceLabel: 'taquito', goal: 'add billing', app: 'grok' as const, maxAgents: 3, maxMinutes: 120 };
+  const ok = { deviceId: 'mac', helpers: [] as string[], workspaceLabel: 'taquito', goal: 'add billing', app: 'grok' as const, maxAgents: 3, maxMinutes: 120 };
   assert.equal(goalProblem(ok, cs), null);
   assert.equal(goalProblem({ ...ok, deviceId: 'nope' }, cs), 'no_computer');
   assert.equal(goalProblem({ ...ok, workspaceLabel: ' ' }, cs), 'no_workspace');
@@ -124,6 +125,12 @@ test('goal box: paired computers, their folders and agents; online first', () =>
   assert.equal(goalProblem({ ...ok, app: 'codex' }, cs), 'app');
   assert.equal(goalProblem({ ...ok, maxAgents: 9 }, cs), 'limits');
   assert.equal(goalProblem({ ...ok, maxMinutes: 1 }, cs), 'limits');
+  // G4: helper computers are other paired computers, never the main one, at most 5, no repeats.
+  assert.equal(goalProblem({ ...ok, helpers: ['win'] }, cs), null);
+  assert.equal(goalProblem({ ...ok, helpers: ['mac'] }, cs), 'helpers');
+  assert.equal(goalProblem({ ...ok, helpers: ['old'] }, cs), 'helpers');
+  assert.equal(goalProblem({ ...ok, helpers: ['win', 'win'] }, cs), 'helpers');
+  assert.equal(deviceName([device({ deviceId: 'mac', name: 'Mac' })], 'mac'), 'Mac');
 });
 
 test('plan card: taps by status (approve and merge only when they apply; stop while anything can run)', () => {
