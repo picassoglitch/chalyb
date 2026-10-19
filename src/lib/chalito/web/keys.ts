@@ -13,7 +13,8 @@ import type { GlyphPayload, IntroducedAgent } from "@chalito/protocol";
 import { unwrapKeyring } from "@chalito/rooms";
 
 export interface DeviceKeys {
-  keys: ClientKeys & Pick<DeviceClientKeys, "sign" | "deviceId" | "trustedAgents" | "trustAgentFromGlyph">;
+  keys: ClientKeys &
+    Pick<DeviceClientKeys, "sign" | "deviceId" | "trustedAgents" | "trustAgentFromGlyph" | "trustIntroducedAgents">;
   /** WebAuthn step-up for HIGH and CRITICAL decisions (assertion bound to the decision, D-019). */
   stepUp: StepUpProvider;
   /** Opens this device's sealed copies of a room key (epoch → key); the secret key never leaves here. */
@@ -61,6 +62,37 @@ export const endorsedDevice = (): string | null => {
     return typeof v?.deviceId === "string" ? v.deviceId : null;
   } catch {
     return null;
+  }
+};
+
+/**
+ * Sign-in alone: this browser was revoked, so it must not enrol itself again by the hub sign-in
+ * (that session outlives the revoke). Only the person bringing it back on purpose ("Activar",
+ * recovery, "Usar este navegador") clears it.
+ */
+export const REVOKED_KEY = "chalito.revoked.v1";
+
+export const markRevoked = (): void => {
+  try {
+    window.localStorage.setItem(REVOKED_KEY, "1");
+  } catch {
+    // Without storage the next load may enrol again; the revoke still cut this device off.
+  }
+};
+
+export const wasRevoked = (): boolean => {
+  try {
+    return window.localStorage.getItem(REVOKED_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+export const clearRevoked = (): void => {
+  try {
+    window.localStorage.removeItem(REVOKED_KEY);
+  } catch {
+    // Nothing to clear.
   }
 };
 
@@ -121,7 +153,8 @@ export const loadDeviceKeys = async (): Promise<DeviceKeys | null> => {
   const stored = await vault.load();
   if (!stored) return null;
   const keys = await DeviceClientKeys.create(stored, vault);
-  // Trusted once paired with a computer (its glyph) or endorsed by another trusted device.
+  // Trusted once paired with a computer (its glyph), endorsed by another trusted device, or
+  // enrolled by the person's sign-in (markEndorsed too).
   if (keys.trustedAgents().length === 0 && endorsedDevice() !== stored.deviceId) return null;
   const stepUp: StepUpProvider = (approval, body) => passkeyStepUp(passkeyRef())(approval, body);
   const forget = async () => {
