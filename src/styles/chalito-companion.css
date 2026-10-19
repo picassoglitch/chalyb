@@ -158,3 +158,17 @@
     animation: none;
   }
 }
+/* A cutout rig's part (Chalito first): a full-card layer turned about its pivot by the driver. */
+.chc__part {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.chc__part[data-part='lids'],
+.chc__part[data-part='mouth'] {
+  opacity: 0;
+}
+/* Hats and glasses on a rigged head: above its eyelids and mouth. */
+.chc__part--items {
+  z-index: 10;
+}

@@ -4,3 +4,6 @@ export * from "./idle";
 export * from "./behaviour";
 export * from "./gestures";
 export * from "./visemes";
+export * from "./actions";
+export * from "./rig";
+export * from "./activity";
