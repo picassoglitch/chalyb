@@ -12,6 +12,7 @@ import { ActivationDone } from "./Activate";
 import { GlyphCanvas } from "./Glyph";
 import { Loading } from "./Loading";
 import { Recover } from "./Recover";
+import { ResetDevices } from "./ResetDevices";
 
 type Step =
   | { s: "name" }
@@ -43,6 +44,9 @@ export const EndorseWait = () => {
   const { status, newDevice, recover, activation } = useChalito();
   const [name, setName] = useState("");
   const [recovering, setRecovering] = useState(false);
+  /** "No tengo ese dispositivo": the recovery code, or "Empezar de cero". */
+  const [noDevice, setNoDevice] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [step, setStep] = useState<Step>({ s: "name" });
   const current = useRef<Waiting | null>(null);
   const now = useNow();
@@ -67,6 +71,7 @@ export const EndorseWait = () => {
   // Just recovered: the new recovery code comes first (the status is already "ready").
   if (activation) return <ActivationDone />;
   if (recovering && recover && status === "unpaired") return <Recover />;
+  if (resetting && status === "unpaired") return <ResetDevices onBack={() => setResetting(false)} />;
   if (step.s === "done" || status === "ready")
     return (
       <div className="ch-chl ch-chl--tight" data-testid="endorse-done">
@@ -191,11 +196,33 @@ export const EndorseWait = () => {
           {t(`error.${step.reason}`)}
         </p>
       ) : null}
-      {recover ? (
-        <button type="button" className="ch-link" data-testid="endorse-lost-device" onClick={() => setRecovering(true)}>
-          {t("lostDevice")}
+      {noDevice ? (
+        <div className="ch-card ch-chl-card ch-chl--tight" data-testid="endorse-no-device">
+          <h3 className="ch-h3">{t("noDeviceTitle")}</h3>
+          {recover ? (
+            <button
+              type="button"
+              className="ch-btn ch-btn--secondary ch-chl-fit"
+              data-testid="endorse-lost-device"
+              onClick={() => setRecovering(true)}
+            >
+              {t("useRecovery")}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="ch-btn ch-btn--secondary ch-chl-fit"
+            data-testid="endorse-start-over"
+            onClick={() => setResetting(true)}
+          >
+            {t("startOver")}
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="ch-link" data-testid="endorse-no-device-link" onClick={() => setNoDevice(true)}>
+          {t("noDevice")}
         </button>
-      ) : null}
+      )}
     </div>
   );
 };
