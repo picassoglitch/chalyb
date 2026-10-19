@@ -149,7 +149,7 @@ test('Siempre así: only a verified MED prompt from a plan’s own coordinator, 
   for (const o of ['client:dev_p', 'agent:other', 'agent:coord_x']) assert.equal(isCoordOrigin(o), false, o);
   assert.deepEqual(rememberable(approval()), { kind: 'command', workspaceLabel: 'taquito', argv: ['pnpm', 'format'] });
   // Security review: exact command, allowlisted programs only (wrappers and other programs always ask).
-  for (const command of ['supabase db push', 'npx foo --x', 'pnpm dev', 'make deploy'])
+  for (const command of ['supabase db push', 'npx foo --x', 'pnpm dev', 'make deploy', 'PNPM format', 'Pytest -x'])
     assert.equal(rememberable(approval({ details: { toolName: 'Bash', input: { command }, workspaceLabel: 'taquito' } })), null, command);
   assert.equal(rememberable(approval({ risk: 'HIGH' })), null);
   assert.equal(rememberable(approval({ verified: false })), null);
