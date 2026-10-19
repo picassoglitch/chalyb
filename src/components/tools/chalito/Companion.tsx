@@ -2,15 +2,29 @@
 // The companion on every Chalito screen (owner decision 2026-10-05): the picked character, or
 // Chalito until there's a pick, doing something that fits the screen, wearing only what the person
 // put on in the store (owner decision 2026-10-08). Motion comes from the same
-// AvatarDriver the room scene uses (bob, squash, lean, gaze toward the pointer), applied to the
-// card's drawings with CSS instead of three.js. Until the person's character is known it is a
-// neutral stand-in (or last visit's character, kept on this device): never other characters first.
-import { useEffect, useMemo, useRef, useState } from 'react';
+// AvatarDriver the room scene uses (breathing, lean, gaze toward the pointer), applied to the
+// card's drawings with CSS instead of three.js. At rest it only breathes; it moves to show what the
+// person's AI sessions are doing: busy while one runs, leaning in while an answer waits, a hop when
+// one finishes, a slump when one fails (owner decision 2026-10-19). A card with a cutout rig
+// (Chalito first) also moves its arms and head, blinks and talks. Until the person's character is
+// known it is a neutral stand-in (or last visit's character, kept on this device): never other
+// characters first.
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AvatarDriver } from '@chalito/avatar-three/driver';
 import { CreatureBinding } from '@chalito/avatar-three/creature';
+import {
+  ActivityTracker,
+  activityActions,
+  parseRig,
+  rigSrcFor,
+  type Activity as SessionActivity,
+  type RigPart,
+  type RigPose,
+  type RigSpec,
+} from '@chalito/avatar';
 import { EMOTION_DRAWING, DRAWINGS, placeItem, rosterEntry, type CardAnchors } from '@chalito/roster';
-import { useChalito } from '@/lib/chalito/provider';
+import { useChalito, useLive } from '@/lib/chalito/provider';
 import { isSkin, type AccessoryItem } from '@/lib/chalito/web/store';
 import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
@@ -33,7 +47,11 @@ interface CardJson {
   width: number;
   height: number;
   anchors: CardAnchors;
+  rig?: unknown;
 }
+
+/** Says hello once per visit (not on every screen change). */
+let greeted = false;
 
 const base = (id: string) => `/roster/assets/${id}`;
 
@@ -83,7 +101,9 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const id = shown.kind === 'roster' ? shown.id : companionOrDefault(values?.avatar);
   const entry = rosterEntry(id)!;
   const activity: Activity = step ?? activityFor(path);
-  const drawing = EMOTION_DRAWING[activity.emotion];
+  // A finished or failed session shows on its face for a moment.
+  const [flash, setFlash] = useState<'happy' | 'sad' | null>(null);
+  const drawing = flash ?? EMOTION_DRAWING[activity.emotion];
   const rosterCard = useCard(id);
   const custom = shown.kind === 'custom' ? mine.card : null;
   const card: CardJson | null = custom
@@ -116,9 +136,41 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   const skinItem = all.find((i) => isSkin(i) && equipped.skin === i.id);
   const skin = skinItem && isSkin(skinItem) ? skinItem.skin : null;
   const [aspects, setAspects] = useState<Record<string, number>>({});
+  // The cutout rig (roster cards that have one); a skin tints the one flat drawing instead.
+  const rig: RigSpec | null = useMemo(
+    () => (!custom && !skin && rosterCard ? parseRig(rosterCard.rig) : null),
+    [custom, skin, rosterCard],
+  );
+  const parts = useRef<Partial<Record<RigPart['id'], HTMLDivElement | null>>>({});
 
   const body = useRef<HTMLDivElement>(null);
   const driver = useMemo(() => new AvatarDriver({ seed: 7 }), []);
+
+  // What the person's sessions are doing (the first look only learns, see ActivityTracker).
+  const live = useLive();
+  const tracker = useMemo(() => new ActivityTracker(), []);
+  const lastActivity = useRef<SessionActivity | null>(null);
+  useEffect(() => {
+    const pending = live.approvals.filter((a) => a.status === 'pending').length;
+    const act = tracker.update(live.sessions, pending);
+    driver.setMode(act.mode);
+    const now = performance.now();
+    for (const a of activityActions(lastActivity.current, act)) {
+      driver.playAction(a, now);
+      setFlash(a === 'hop' ? 'happy' : 'sad');
+    }
+    lastActivity.current = act;
+  }, [driver, tracker, live.sessions, live.approvals]);
+  useEffect(() => {
+    if (!flash) return;
+    const id = setTimeout(() => setFlash(null), flash === 'happy' ? 2500 : 3500);
+    return () => clearTimeout(id);
+  }, [flash]);
+  useEffect(() => {
+    if (greeted || hidden || pending) return;
+    greeted = true;
+    driver.playGesture('wave', performance.now());
+  }, [driver, hidden, pending]);
 
   useEffect(() => {
     const now = performance.now();
@@ -143,7 +195,9 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     window.addEventListener('pointermove', onMove, { passive: true });
     let raf = 0;
     const tick = (now: number) => {
-      binding.apply(driver.frame(now));
+      const frame = driver.frame(now);
+      binding.apply(frame);
+      applyRig(parts.current, frame.rig, el.offsetHeight);
       const h = el.offsetHeight;
       const deg = 180 / Math.PI;
       el.style.transform =
@@ -191,18 +245,31 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
           {placed.map(({ item, p }) =>
             !p || p.z < 0 ? <Item key={item.id} item={item} placed={p} onAspect={setAspects} /> : null,
           )}
-          {DRAWINGS.map((d) => (
-            <img
-              key={d}
-              src={layerSrc(d)}
-              onError={custom ? mine.onError : undefined}
-              alt={d === drawing ? entry.name[locale] : ''}
-              aria-hidden={d === drawing ? undefined : true}
-              className="chc__layer"
-              data-on={d === drawing}
-              decoding="async"
+          {rig ? (
+            <RigParts
+              rig={rig}
+              base={base(id)}
+              drawing={drawing}
+              alt={entry.name[locale]}
+              refs={parts.current}
+              headItems={placed.map(({ item, p }) =>
+                p && p.z >= 0 && rides(item) ? <Item key={item.id} item={item} placed={p} onAspect={setAspects} /> : null,
+              )}
             />
-          ))}
+          ) : (
+            DRAWINGS.map((d) => (
+              <img
+                key={d}
+                src={layerSrc(d)}
+                onError={custom ? mine.onError : undefined}
+                alt={d === drawing ? entry.name[locale] : ''}
+                aria-hidden={d === drawing ? undefined : true}
+                className="chc__layer"
+                data-on={d === drawing}
+                decoding="async"
+              />
+            ))
+          )}
           {skin ? (
             <span
               aria-hidden="true"
@@ -216,12 +283,84 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
             />
           ) : null}
           {placed.map(({ item, p }) =>
-            p && p.z >= 0 ? <Item key={item.id} item={item} placed={p} onAspect={setAspects} /> : null,
+            p && p.z >= 0 && !(rig && rides(item)) ? (
+              <Item key={item.id} item={item} placed={p} onAspect={setAspects} />
+            ) : null,
           )}
         </div>
       </div>
     </aside>
   );
+};
+
+/** Hats and glasses ride on a rigged head. */
+const rides = (item: AccessoryItem) => item.slot === 'head' || item.slot === 'face';
+
+/**
+ * Turns the rig's parts: arms about their shoulders, the head about the neck (eyelids and mouth
+ * ride on it), eyelids shown while closed, the mouth opened with the voice. CSS turns clockwise,
+ * the pose's head tilt anticlockwise (as three.js).
+ */
+const applyRig = (els: Partial<Record<RigPart['id'], HTMLDivElement | null>>, pose: RigPose, h: number) => {
+  if (els.armL) els.armL.style.transform = `rotate(${pose.armL.toFixed(2)}deg)`;
+  if (els.armR) els.armR.style.transform = `rotate(${(-pose.armR).toFixed(2)}deg)`;
+  if (els.head)
+    els.head.style.transform = `translateY(${(pose.headDrop * h).toFixed(2)}px) rotate(${(-pose.head).toFixed(2)}deg)`;
+  if (els.lids) els.lids.style.opacity = pose.lids > 0.5 ? '1' : '0';
+  if (els.mouth) {
+    els.mouth.style.opacity = pose.mouth > 0.08 ? '1' : '0';
+    els.mouth.style.transform = `scale(${(0.8 + 0.2 * pose.mouth).toFixed(3)}, ${(0.3 + 0.7 * pose.mouth).toFixed(3)})`;
+  }
+};
+
+/** The rig's parts as nested layers: each one turns about its pivot; children sit in their parent. */
+const RigParts = ({
+  rig,
+  base: dir,
+  drawing,
+  alt,
+  refs,
+  headItems,
+}: {
+  rig: RigSpec;
+  base: string;
+  drawing: string;
+  alt: string;
+  refs: Partial<Record<RigPart['id'], HTMLDivElement | null>>;
+  headItems: ReactNode;
+}) => {
+  const layer = (part: RigPart): ReactNode => {
+    const srcs = typeof part.src === 'string' ? { [drawing]: part.src } : part.src;
+    const shown = rigSrcFor(part, drawing);
+    const children = rig.parts.filter((c) => c.parent === part.id).sort((a, b) => a.z - b.z);
+    return (
+      <div
+        key={part.id}
+        ref={(el) => {
+          refs[part.id] = el;
+        }}
+        className="chc__part"
+        data-part={part.id}
+        style={{ transformOrigin: `${part.pivot[0] * 100}% ${part.pivot[1] * 100}%`, zIndex: 1 + part.z }}
+      >
+        {[...new Set(Object.values(srcs))].map((src) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={src}
+            src={`${dir}/${src}`}
+            alt={part.id === 'body' ? alt : ''}
+            aria-hidden={part.id === 'body' ? undefined : true}
+            className="chc__layer"
+            data-on={src === shown}
+            decoding="async"
+          />
+        ))}
+        {children.map(layer)}
+        {part.id === 'head' ? <div className="chc__part chc__part--items">{headItems}</div> : null}
+      </div>
+    );
+  };
+  return <>{rig.parts.filter((p) => !p.parent).sort((a, b) => a.z - b.z).map(layer)}</>;
 };
 
 // A worn item; until its image has loaded (and its aspect is known) it waits, hidden, to be placed.
