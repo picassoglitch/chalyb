@@ -29,6 +29,7 @@ type Phase =
 export const NewSession = () => {
   const t = useTranslations("chalito.live.newSession");
   const tm = useTranslations("chalito.live.session.modes");
+  const tl = useTranslations("chalito.live.session");
   const ti = useTranslations("chalito.integrations");
   const { client, settings } = useChalito();
   const live = useLive();
@@ -109,7 +110,7 @@ export const NewSession = () => {
   }, [phase, live.sessions, target, router]);
 
   // Until the first pull lands the device list is empty: don't say "no computers" yet.
-  if (computers.length === 0 && !synced) return <Loading label={t("title")} />;
+  if (computers.length === 0 && !synced) return <Loading label={tl("loading")} />;
   if (computers.length === 0)
     return (
       <div className="ch-chl ch-chl--tight">

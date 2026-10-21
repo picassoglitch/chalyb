@@ -36,7 +36,7 @@ import {
   activityFor,
   companionSettled,
   companionShown,
-  homeHeroShown,
+  floatingHidden,
   useCompanionPick,
   useCompanionStep,
   useWornLook,
@@ -115,13 +115,15 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     custom
       ? (custom.urls[custom.manifest.emotions.src[d] ?? custom.manifest.emotions.src.neutral!] ?? '')
       : `${base(id)}/layer-${d}.webp`;
-  // Inicio draws the big one instead, on exactly Home's hero condition; until settings are the
-  // account's the floating one waits too. Signed out after onboarding it stays (no hero then).
   const session = useSession();
-  const hidden =
-    !hero &&
-    activity.key === 'home' &&
-    (!settled || homeHeroShown({ settingsLoaded: !!values, onboarded, sessionStatus: session.status }));
+  const hidden = floatingHidden({
+    hero,
+    activityKey: activity.key,
+    settled,
+    settingsLoaded: !!values,
+    onboarded,
+    sessionStatus: session.status,
+  });
   const pending = shown.kind === 'pending';
 
   // What it wears: loaded once here (the store keeps it current after an equip).

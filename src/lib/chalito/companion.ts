@@ -61,6 +61,23 @@ const ACTIVITIES: [RegExp, Activity][] = [
 export const homeHeroShown = (o: { settingsLoaded: boolean; onboarded: boolean; sessionStatus: string }): boolean =>
   o.settingsLoaded && o.onboarded && o.sessionStatus !== "signed_out";
 
+/**
+ * The floating companion steps aside on Inicio while the big one shows, and while settings aren't
+ * the account's yet (so it doesn't flash). Signed out after onboarding there's no hero: it stays.
+ */
+export const floatingHidden = (o: {
+  hero: boolean;
+  activityKey: string;
+  settled: boolean;
+  settingsLoaded: boolean;
+  onboarded: boolean;
+  sessionStatus: string;
+}): boolean => !o.hero && o.activityKey === 'home' && (!o.settled || homeHeroShown(o));
+
+/** A live list may say "empty" / "not found": after its first full pull, or when it's offline. */
+export const liveSettled = (o: { status: string; pulled: boolean }): boolean =>
+  o.pulled || o.status === 'offline' || o.status === 'revoked';
+
 const HOME = A('home', 'happy', 0.9);
 const FALLBACK = A('idle', 'relaxed', 0.7);
 
