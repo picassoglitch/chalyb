@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { CoordCommands } from "./coord";
 import {
   AdapterKind,
   DeviceId,
@@ -11,8 +10,11 @@ import {
   RemotePermissionMode,
   ReplayNonce,
   SessionId,
+  Signature,
   Uid,
 } from "./common";
+import { LINK_RELAY_TYPES, LinkCommands, LinkId, LinkRelayCommands } from "./agent-link";
+import { CoordCommands } from "./coord";
 import { StepUp } from "./approval";
 import { SealedEnvelope, signed } from "./crypto";
 import { ProviderConnectMethod } from "./provider";
@@ -108,6 +110,13 @@ const SessionStart = z
     promptCt: SealedEnvelope,
     permissionMode: RemotePermissionMode.default("default"),
     codexSandbox: RemoteCodexSandbox.optional(),
+    /**
+     * ADR 0022 §4 (M16 F): a hand-off task from outside (MCP `create_task`, A2A `SendMessage`) over a
+     * link set to "ask me each time". The agent asks the owner first (`link_handoff` approval, one
+     * tap) and starts the session only on a signed yes; a no or no answer rejects it. It can only
+     * add that step, never skip one.
+     */
+    linkConfirm: z.object({ linkId: LinkId }).strict().optional(),
   })
   .refine((p) => p.adapter !== undefined || p.appId !== undefined, { message: "adapter or appId is required" });
 
@@ -169,9 +178,18 @@ export const CommandPayload = z.discriminatedUnion("type", [
   z.object({ type: z.literal("screen.signal"), sid: SessionId, signalCt: SealedEnvelope }),
   // ---- end SCREEN ---------------------------------------------------------------------------
 
-  // ---- COORDINATOR (ADR 0025 §6; chalito apps/agent/src/coord/coordinator.ts) -----------------
-  // Client-signed only; `coord.approve` and `coord.merge` also carry the signer's passkey.
+  // ---- LINKS (agent-to-agent, ADR 0022 §3; agent-link.ts) ------------------------------------
+  // A client can make share links only (with step-up), and revoke or list any link. The relay
+  // payloads come only from another agent over a link (RelayedCommand, relayedBy agent-link).
+  ...LinkCommands,
+  ...LinkRelayCommands,
+  // ---- end LINKS ------------------------------------------------------------------------------
+
+  // ---- COORDINATOR (ADR 0025 §6; coord/coordinator.ts) ---------------------------------------
+  // Client-signed only: no relay carries a coord.* payload (RelayedCommand below), and
+  // `coord.merge` also needs the signer's passkey step-up over this command (the agent checks).
   ...CoordCommands,
+  // ---- end COORDINATOR ------------------------------------------------------------------------
 ]);
 export type CommandPayload = z.infer<typeof CommandPayload>;
 
@@ -202,6 +220,11 @@ export const CommandBody = z
   // ADR 0020: a bundle step-up (revoke-all) authorizes revokes only.
   .refine((b) => b.stepUp?.bundle === undefined || b.payload.type === "device.revokeClient", {
     message: "a bundle step-up only covers device.revokeClient",
+  })
+  // ADR 0022 §3: an `agent:*` origin carries the link relay payloads and nothing else, and only
+  // it carries them (a client can't sign a hand-off, an agent can't send anything else).
+  .refine((b) => (LINK_RELAY_TYPES as readonly string[]).includes(b.payload.type) === b.origin.startsWith("agent:"), {
+    message: "link.handoff / link.share / link.result come only from an agent:* origin, and only they do",
   });
 export type CommandBody = z.infer<typeof CommandBody>;
 
@@ -210,24 +233,62 @@ export const SignedCommand = signed("chalito.command.v1", CommandBody);
 export type SignedCommand = z.infer<typeof SignedCommand>;
 
 /**
- * A command relayed by the cloud on behalf of an unsigned origin (`mcp:*`, `call:*`).
- * Restricted to prompting/answering; the agent applies its origin policy and never
+ * A command relayed on behalf of an unsigned origin: by the cloud (`mcp:*`, `call:*`, `a2a:*`),
+ * or by another of the owner's agents over a link (`agent:*`, ADR 0022 §3).
+ * The cloud relays are restricted to prompting (and hand-off starts); the agent applies its
+ * origin policy and never
  * Developer-mode auto-approve to the resulting turn.
+ * An `agent-link` relay carries only the link payloads, and is signed by the sending agent's
+ * device key (`chalito.link.v1`, `signerDeviceId` + `sig`). The receiver verifies it against the
+ * key it recorded locally for that link, never against a key from the cloud. A person's key never
+ * signs it, so its turns are never `isSignedOrigin`.
  */
 export const RelayedCommand = z
   .object({
-    relayedBy: z.enum(["mcp-gateway", "notifier"]),
+    relayedBy: z.enum(["mcp-gateway", "notifier", "a2a-server", "agent-link"]),
     body: CommandBody,
+    signerDeviceId: DeviceId.optional(),
+    sig: Signature.optional(),
   })
   // Each relay carries only its own origin (review R-L2): the MCP gateway relays `mcp:*` prompts,
-  // the notifier relays `call:*` prompts (a spoken answer becomes a prompt). Nothing relays a
-  // session.answer, and an unsigned relay can't carry a step-up.
+  // the notifier relays `call:*` prompts (a spoken answer becomes a prompt), and an agent relays
+  // `agent:*` link payloads. Nothing relays a session.answer, and a relay can't carry a step-up.
+  //
+  // ADR 0022 §4 (M16 D, D-071): a hand-off task (`create_task` on the MCP gateway, an A2A
+  // `SendMessage` on the A2A server) is a `session.start`, relayed only after a LinkAuthorizer
+  // allowed it. A relayed start never asks for more than the default permission mode (no
+  // acceptEdits, no Codex sandbox): the device's ceiling and gate still apply on top.
   .refine(
-    ({ relayedBy, body }) =>
-      (relayedBy === "mcp-gateway" ? body.origin.startsWith("mcp:") : body.origin.startsWith("call:")) &&
-      body.payload.type === "session.prompt" &&
-      body.stepUp === undefined,
-    { message: "relays carry only session.prompt from their own origin (mcp-gateway: mcp:*, notifier: call:*)" },
+    ({ relayedBy, body, signerDeviceId, sig }) => {
+      if (body.stepUp !== undefined) return false;
+      if (relayedBy === "agent-link")
+        return (
+          body.origin.startsWith("agent:") &&
+          (LINK_RELAY_TYPES as readonly string[]).includes(body.payload.type) &&
+          signerDeviceId !== undefined &&
+          sig !== undefined
+        );
+      if (signerDeviceId !== undefined || sig !== undefined) return false;
+      const own =
+        relayedBy === "mcp-gateway"
+          ? body.origin.startsWith("mcp:")
+          : relayedBy === "a2a-server"
+            ? body.origin.startsWith("a2a:")
+            : body.origin.startsWith("call:");
+      const p = body.payload;
+      const kind =
+        relayedBy === "a2a-server"
+          ? p.type === "session.start"
+          : relayedBy === "mcp-gateway"
+            ? p.type === "session.prompt" || p.type === "session.start"
+            : p.type === "session.prompt";
+      const tame = p.type !== "session.start" || (p.permissionMode !== "acceptEdits" && p.codexSandbox === undefined);
+      return own && kind && tame;
+    },
+    {
+      message:
+        "relays carry only their own origin and payloads (mcp-gateway: mcp:* session.prompt or a default/plan session.start for hand-offs, notifier: call:* session.prompt, a2a-server: a2a:* default/plan session.start, agent-link: signed agent:* link.*)",
+    },
   );
 export type RelayedCommand = z.infer<typeof RelayedCommand>;
 

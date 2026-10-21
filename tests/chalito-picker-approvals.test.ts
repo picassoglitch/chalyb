@@ -29,7 +29,7 @@ const doc = (state: ProviderStatus['state']) => ({
 });
 
 test('protocol: grok/gemini adapters, computer_control approvals and computer.changed, as in chalito #29/#31', () => {
-  assert.deepEqual(AdapterKind.options, ['claude-code', 'codex', 'acp', 'grok', 'gemini']);
+  assert.deepEqual(AdapterKind.options, ['claude-code', 'codex', 'acp', 'grok', 'gemini', 'chat-api', 'a2a']);
   for (const k of ['tool', 'decision', 'computer_control', 'terminal', 'remote_view', 'remote_control', 'app_control']) assert.ok(ApprovalKind.options.includes(k as never), k);
   const body = {
     v: 1,

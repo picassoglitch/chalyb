@@ -17,5 +17,8 @@ export * from "./billing";
 export * from "./api";
 export * from "./endorse";
 export * from "./screen";
+export * from "./link";
+export * from "./agent-link";
+export * from "./lan";
 export * from "./presence";
 export * from "./coord";

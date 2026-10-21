@@ -1,5 +1,12 @@
 export { APP_HOME, safeNextPath } from "./safe-next";
-export { SETUP_STEPS, setupChecklist, type SetupComputer, type SetupInput, type SetupState, type SetupStep } from "./setup";
+export {
+  SETUP_STEPS,
+  setupChecklist,
+  type SetupComputer,
+  type SetupInput,
+  type SetupState,
+  type SetupStep,
+} from "./setup";
 export { UiTextProvider, useUiText, type Translate } from "./text";
 export { COMPANIONS, DEFAULT_COMPANION, companionName, type CompanionId } from "./companions";
 export { RosterAssetsProvider, useRosterAsset } from "./roster-assets";

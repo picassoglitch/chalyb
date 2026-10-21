@@ -27,9 +27,19 @@ export {
   claimPairing,
   buildEndorsedEnrolment,
   enrollEndorsed,
+  enrollSignedIn,
+  deviceFingerprint,
+  keyFingerprint,
   revokeDevice,
 } from "./pairing";
 export type { PairingDisplay, ScanResult, ClaimRequest } from "./pairing";
 export { deviceLogin } from "./device-login";
-export { EndorseError, approveEndorsement, endorseGlyph, introducedAgents, resolveForEndorsement } from "./endorse";
+export {
+  EndorseError,
+  accountAgents,
+  approveEndorsement,
+  endorseGlyph,
+  introducedAgents,
+  resolveForEndorsement,
+} from "./endorse";
 export type { DirectoryDevice, DroppedAgent, EndorseTarget, IntroductionCheck } from "./endorse";
