@@ -30,12 +30,17 @@ test('recordAuthorizedPayment keeps a known ledger status over an unmapped one',
   // A failed read is not "no row": it retries instead of writing blind.
   assert.match(s, /const \{ data: existing, error: existingErr \}/);
   assert.match(s, /if \(existingErr\) \{[\s\S]{0,160}retry: true/);
-  assert.ok(s.indexOf('if (existingErr)') < s.indexOf('ledgerStatus(paymentStatus, previousLedgerStatus)'));
+  assert.ok(
+    s.indexOf('if (existingErr)') < s.indexOf('ledgerStatus(paymentStatus, previousLedgerStatus)'),
+  );
 });
 
 test('an approved authorized_payment never rolls last_charge_at back', () => {
   const s = src('src/lib/payments/subscription-sync.ts');
-  assert.match(s, /const olderThanStored = !!storedAt && Date\.parse\(chargeAt\) < Date\.parse\(storedAt\);/);
+  assert.match(
+    s,
+    /const olderThanStored = !!storedAt && Date\.parse\(chargeAt\) < Date\.parse\(storedAt\);/,
+  );
   assert.match(s, /\.\.\.\(olderThanStored \? \{\} : \{ last_charge_at: chargeAt \}\)/);
 });
 
@@ -72,21 +77,24 @@ test('webhook: a handled topic without an id is acknowledged (200), not retried'
 test('billing cron reports a failed subscriptions query instead of a quiet run', () => {
   const s = src('src/app/api/cron/billing/route.ts');
   assert.match(s, /const \{ data: rows, error: rowsErr \} = await admin/);
-  assert.match(s, /if \(rowsErr\) return NextResponse\.json\(\{ ok: false, \.\.\.stats \}, \{ status: 500 \}\);/);
+  assert.match(
+    s,
+    /if \(rowsErr\) return NextResponse\.json\(\{ ok: false, \.\.\.stats \}, \{ status: 500 \}\);/,
+  );
 });
 
 test('settle answers 404 for an unregistered engine, like admit', () => {
   const s = src('src/app/api/engines/[slug]/usage/settle/route.ts');
-  assert.match(s, /result\.error\?\.startsWith\('engine not registered'\)\) \{\s*return NextResponse\.json\(\{ error: result\.error \}, \{ status: 404 \}\);/);
+  assert.match(
+    s,
+    /result\.error\?\.startsWith\('engine not registered'\)\) \{\s*return NextResponse\.json\(\{ error: result\.error \}, \{ status: 404 \}\);/,
+  );
 });
 
 test("an earlier cycle's approved charge can't lift the current hold, grace or reminder", () => {
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /const EARLIER_CYCLE_SLACK_MS = 7 \* 86_400_000;/);
-  assert.match(
-    s,
-    /Date\.parse\(chargeAt\) < Date\.parse\(storedAt\) - EARLIER_CYCLE_SLACK_MS/,
-  );
+  assert.match(s, /Date\.parse\(chargeAt\) < Date\.parse\(storedAt\) - EARLIER_CYCLE_SLACK_MS/);
   // The whole state reset sits behind the guard, hold included.
   assert.match(s, /if \(!earlierCycle\) \{[\s\S]{0,400}charge_hold_until: null/);
 });
