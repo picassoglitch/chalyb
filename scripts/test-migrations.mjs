@@ -13,9 +13,10 @@ const DIR = new URL('../supabase/migrations/', import.meta.url);
 // timestamp files (Chalito, Taquito) share this folder so one repo owns
 // nexo-ai's ledger (docs/infra/supabase.md), but they need pg_cron,
 // realtime.messages and their own roles, and they're tested in their own
-// repos, not in PGlite.
+// repos, not in PGlite. New hub migrations are timestamped (pnpm db:new) with
+// a `hub_` prefix so they sort after applied versions and are tested here.
 const files = readdirSync(DIR)
-  .filter((f) => /^\d{4}_.*\.sql$/.test(f))
+  .filter((f) => /^(\d{4}|\d{14}_hub)_.*\.sql$/.test(f))
   .sort();
 
 const STUBS = `
@@ -760,6 +761,149 @@ try {
     )
   ).rows.map((r) => r.id);
   check('undeliverable counts as done for completion', !owed.includes(u));
+}
+
+// ── Client writes on messages / user_notifications (hub_lock_client_writes) ──
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const LOCK = files.find((f) => /_hub_lock_client_writes_messages_notices\.sql$/.test(f));
+  // Act as a signed-in user the way PostgREST does: role + JWT sub.
+  await db.exec(`
+    create or replace function auth.uid() returns uuid language sql stable
+      as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+    alter role service_role bypassrls;
+    grant usage on schema public, auth to anon, authenticated, service_role;
+  `);
+  const asUser = async (id, sql, params = []) => {
+    await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub', '${id}', false);`);
+    try {
+      return { rows: (await db.query(sql, params)).rows, error: null };
+    } catch (err) {
+      return { rows: [], error: err.message };
+    } finally {
+      await db.exec(`reset role; select set_config('request.jwt.claim.sub', '', false);`);
+    }
+  };
+  const asService = async (sql, params = []) => {
+    await db.exec(`set role service_role`);
+    try {
+      return (await db.query(sql, params)).rows;
+    } finally {
+      await db.exec(`reset role`);
+    }
+  };
+  const [subA, subB, staff] = (
+    await db.query(
+      `insert into auth.users (email) values ('a@example.com'), ('b@example.com'), ('staff@example.com') returning id`,
+    )
+  ).rows.map((r) => r.id);
+  const seed = async () => {
+    await db.exec(`delete from public.messages; delete from public.user_notifications;`);
+    await db.query(
+      `insert into public.messages (thread_user_id, sender_user_id, sender_role, body) values
+         ($1, $2, 'ADMIN', 'Hola, ¿en qué te ayudo?'), ($1, $1, 'USER', 'No me llegó el cobro')`,
+      [subA, staff],
+    );
+    await db.query(
+      `insert into public.user_notifications (user_id, kind, title, keep_until, dedupe_key) values
+         ($1, 'renewalReminder', 'Tu plan se renueva el 1 nov', now() + interval '10 days', 'renew:1'),
+         ($1, 'clipsReady', '3 clips listos', null, 'clips:1')`,
+      [subA],
+    );
+  };
+  // Pre-fix state, as prod has it today: Supabase's default ALL grants plus the
+  // two policies from 0014 / 0043.
+  const prefix = async () => {
+    await db.exec(`
+      grant all on public.messages, public.user_notifications to anon, authenticated, service_role;
+      drop policy if exists "messages_user_mark_read" on public.messages;
+      create policy "messages_user_mark_read" on public.messages for update
+        using (thread_user_id = (select auth.uid())) with check (thread_user_id = (select auth.uid()));
+      drop policy if exists "user_notifications_update_own" on public.user_notifications;
+      create policy "user_notifications_update_own" on public.user_notifications for update
+        using (auth.uid() = user_id);
+    `);
+    await seed();
+  };
+  const forge = `update public.messages set sender_role = 'ADMIN', body = 'Reembolso aprobado' where sender_role = 'USER' returning id`;
+  const unpin = `update public.user_notifications set keep_until = null where kind = 'renewalReminder' returning id`;
+
+  await prefix();
+  check('pre-fix: a subscriber can forge a staff reply', (await asUser(subA, forge)).rows.length === 1);
+  check('pre-fix: a subscriber can unpin a billing notice', (await asUser(subA, unpin)).rows.length === 1);
+
+  await prefix();
+  await db.exec(readFileSync(new URL(LOCK, DIR), 'utf8'));
+  await db.exec(readFileSync(new URL(LOCK, DIR), 'utf8')); // idempotent
+  const policies = (
+    await db.query(
+      `select policyname from pg_policies where schemaname = 'public'
+         and policyname in ('messages_user_mark_read', 'user_notifications_update_own')`,
+    )
+  ).rows;
+  check('client UPDATE policies on messages / notices are gone', policies.length === 0);
+  const f = await asUser(subA, forge);
+  check('a subscriber can no longer rewrite a message', /permission denied/.test(f.error ?? ''), f.error);
+  const d = await asUser(subA, `delete from public.messages returning id`);
+  check('a subscriber can no longer delete messages', /permission denied/.test(d.error ?? ''), d.error);
+  const u = await asUser(subA, unpin);
+  check('a subscriber can no longer unpin a billing notice', /permission denied/.test(u.error ?? ''), u.error);
+  const ins = await asUser(
+    subA,
+    `insert into public.user_notifications (user_id, kind, title) values ($1, 'x', 'fake') returning id`,
+    [subA],
+  );
+  check('a subscriber cannot plant a notice', /permission denied/.test(ins.error ?? ''), ins.error);
+
+  // What stays: reading your thread, sending as USER, the guarded delete.
+  const mine = await asUser(subA, `select id from public.messages`);
+  check('a subscriber still reads their own thread', mine.rows.length === 2, mine.error);
+  const other = await asUser(subB, `select id from public.messages`);
+  check('another subscriber still sees nothing', other.rows.length === 0, other.error);
+  const send = await asUser(
+    subA,
+    `insert into public.messages (thread_user_id, sender_user_id, sender_role, body) values ($1, $1, 'USER', 'Gracias') returning id`,
+    [subA],
+  );
+  check('a subscriber can still send a message', send.rows.length === 1, send.error);
+  const del = await asUser(
+    subA,
+    `delete from public.user_notifications where kind in ('clipsReady', 'renewalReminder') returning kind`,
+  );
+  check(
+    'the guarded delete still removes a plain notice and keeps the billing one',
+    del.rows.length === 1 && del.rows[0].kind === 'clipsReady',
+    JSON.stringify(del),
+  );
+
+  // The server actions' writes (service-role client) still work:
+  // markThreadReadAsUser, markThreadReadAsAdmin, markAllNoticesRead.
+  const readUser = await asService(
+    `update public.messages set read_at_user = now()
+       where thread_user_id = $1 and sender_role = 'ADMIN' and read_at_user is null returning id`,
+    [subA],
+  );
+  check('server mark-read (subscriber side) still works', readUser.length === 1);
+  const readAdmin = await asService(
+    `update public.messages set read_at_admin = now()
+       where thread_user_id = $1 and sender_role = 'USER' and read_at_admin is null returning id`,
+    [subA],
+  );
+  check('server mark-read (admin side) still works', readAdmin.length === 2);
+  const readNotices = await asService(
+    `update public.user_notifications set read_at = now() where user_id = $1 and read_at is null returning id`,
+    [subA],
+  );
+  check('server mark-all-notices-read still works', readNotices.length === 1);
+  await db.exec(
+    `create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;`,
+  );
 }
 
 console.log(

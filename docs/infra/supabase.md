@@ -73,7 +73,8 @@ strings, so every hub version sorts before every Chalito one. Consequences:
   topics, and touch no hub table. Better: name new hub migrations with
   `pnpm db:new` (timestamped), and plain `db push` works again.
 - `scripts/new-engine.mjs` numbers from the four-digit files only, and
-  `pnpm test:migrations` (PGlite) applies only the four-digit files. Chalito's
+  `pnpm test:migrations` (PGlite) applies only the four-digit files and
+  timestamped hub files named `<ts>_hub_*.sql` (`pnpm db:new hub_<name>`). Chalito's
   need `pg_cron` and `realtime.messages`; they're tested in the Chalito repo.
 
 **Taquito** (`picassoglitch/de-taquitos-a-imperio`) also writes to nexo-ai.
