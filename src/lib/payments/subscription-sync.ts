@@ -124,7 +124,8 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // Any status, not just authorized: a 'pending' notice that got here first
   // would write a row WITHOUT plan_key, and the authorized one right after
   // it would find that row and be gated against the monthly price anyway.
-  // Only start-subscription creates rows (the legacy checkout is retired).
+  // Every checkout writes the row before any sync, and cancels the
+  // preapproval when it can't (start-subscription, subscription-actions).
   if (!before) {
     console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
       preapprovalId,
@@ -457,11 +458,17 @@ export async function recordAuthorizedPayment(
       console.error('[mp/subscription] payments upsert failed', error);
       return { ok: false, retry: true };
     }
-    const { data: subRow } = await admin
+    const { data: subRow, error: subErr } = await admin
       .from('subscriptions')
       .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
+    // A failed read is not "no stored charge": the replay guards below would
+    // pass and roll last_charge_at back. Retry instead.
+    if (subErr) {
+      console.error('[mp/subscription] subscriptions read failed', subErr);
+      return { ok: false, retry: true };
+    }
     if (paymentStatus === 'approved') {
       // Notifications can be replayed (unsigned IPN) or arrive out of order:
       // last_charge_at only ever moves forward. Writing an older charge's
