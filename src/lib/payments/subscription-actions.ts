@@ -268,7 +268,7 @@ async function dropUnrecordedPreapproval(
   return {
     ok: false,
     reason: 'mp_error',
-    error: 'No pudimos guardar tu suscripción y la cancelamos. Inténtalo de nuevo en un momento.',
+    error: 'No pudimos guardar tu suscripción. Inténtalo de nuevo en un momento.',
   };
 }
 
