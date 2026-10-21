@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { PlansConfig, resolveInclusions, type Inclusions } from '../src/lib/chalito/pkg/protocol/plans';
 import { HubUsageKind } from '../src/lib/chalito/pkg/protocol/billing';
+import { Origin, isSignedOrigin } from '../src/lib/chalito/pkg/protocol/common';
 import { AgentEvent, LiveBroadcast, isLiveOnlyEvent } from '../src/lib/chalito/pkg/protocol/agentEvent';
 import { HUB_PLAN_LIMITS } from '../src/lib/chalito/pkg/ui/settings/plan-limits';
 
@@ -69,6 +70,28 @@ test('protocol sync: streamed assistant deltas parse and stay live-only (chalito
   assert.equal(isLiveOnlyEvent(delta), true);
   assert.equal(isLiveOnlyEvent({ type: 'screen.state', state: 'ended' }), false);
   assert.equal(LiveBroadcast.safeParse({ table: 'live', op: 'events', deviceId: 'dev_agent', events: [delta] }).success, true);
+});
+
+test('protocol sync: agent-link events and origins parse, and the timeline names them (ADR 0022)', () => {
+  const base = { v: 1, deviceId: 'dev_agent', sid: 'ses_1', eid: 'evt_2', seq: 4, t: 1_700_000_000_000 };
+  const handoff = AgentEvent.parse({
+    ...base,
+    type: 'link.handoff',
+    linkId: 'lnk_abcdefgh',
+    taskId: 'tsk_1',
+    direction: 'in',
+    stage: 'delivered',
+    hop: 1,
+    peerDeviceId: 'dev_other',
+  });
+  const shared = AgentEvent.parse({ ...base, type: 'link.shared', linkId: 'lnk_abcdefgh', mode: 'share', direction: 'out', peerDeviceId: 'dev_other' });
+  assert.equal(Origin.safeParse('agent:ses_9').success, true);
+  assert.equal(Origin.safeParse('a2a:grant_1').success, true);
+  assert.equal(isSignedOrigin('agent:ses_9'), false);
+  for (const lang of ['es', 'en']) {
+    const m = JSON.parse(readFileSync(`src/lib/chalito/messages/${lang}.json`, 'utf8'));
+    for (const e of [handoff, shared]) assert.ok(m.live.timeline.type[e.type.replace(/\./g, '_')], `${lang} ${e.type}`);
+  }
 });
 
 test('protocol sync: every connection mode has a label in both languages', () => {

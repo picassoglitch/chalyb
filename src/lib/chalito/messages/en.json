@@ -699,7 +699,9 @@
         "question_asked": "Question",
         "usage": "Usage",
         "card_updated": "Card",
-        "error": "Error"
+        "error": "Error",
+        "link_handoff": "Task from another agent",
+        "link_shared": "Shared between agents"
       }
     },
     "devices": {

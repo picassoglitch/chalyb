@@ -699,7 +699,9 @@
         "question_asked": "Pregunta",
         "usage": "Uso",
         "card_updated": "Tarjeta",
-        "error": "Error"
+        "error": "Error",
+        "link_handoff": "Tarea de otro agente",
+        "link_shared": "Compartido entre agentes"
       }
     },
     "devices": {
