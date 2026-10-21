@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ChalitoProvider } from '@/lib/chalito/provider';
 import { HubBridge } from '@/components/tools/chalito/HubBridge';
+import { KeepApprovalLink } from '@/components/tools/chalito/HandoffStash';
 import { UiBridge } from '@/components/tools/chalito/UiBridge';
 import { TestModeBanner } from '@/components/tools/chalito/TestModeBanner';
 import { DevModeBanner } from '@/components/tools/chalito/DevModeBanner';
@@ -23,17 +24,21 @@ import { chalitoGate } from '@/lib/chalito/web/plan-gate';
 // hubUserId: Chalito's own browser session must belong to the person signed in to the hub.
 // Chalito is Pro and VIP only (owner decision 2026-10-16): a plan without it gets the shared
 // "viene en Pro" state, not a sign-in that ends in a 403.
+// KeepApprovalLink sits outside HubBridge: the approval link's code id leaves the address bar
+// even while Chalito signs in or when that sign-in fails.
 export default async function ChalitoLayout({ children }: { children: ReactNode }) {
   const [user, session] = await Promise.all([getCurrentUser(), getSessionUser()]);
   const entitlements = session ? await getEntitlements(session) : null;
   if (entitlements && chalitoGate(entitlements.tools) === 'locked')
     return (
       <ToolShell slug="chalito" tab={null} plan={lockedOffer(entitlements).trial ? 'offer' : 'pro'}>
+        <KeepApprovalLink />
         <ToolLockedState slug="chalito" entitlements={entitlements} />
       </ToolShell>
     );
   return (
     <ToolShell slug="chalito" tab="auto">
+      <KeepApprovalLink />
       <UiBridge>
         <ChalitoProvider hubUserId={user?.id}>
           <TestModeBanner />

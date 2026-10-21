@@ -7,6 +7,7 @@
 
 import { test, expect, type Request } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { chalitoScreen } from './utils/chalito';
 
 const CODE_ID = 'e2eHandoffCodeId0123456789ab';
 const PATH = '/app/chalito/computadoras/aprobar';
@@ -54,10 +55,13 @@ test.describe('signed in', () => {
     await expect.poll(() => new URL(page.url()).hash).toBe('');
     // A made-up code: the screen falls back to typing the code, saying why.
     await expect(
-      page
-        .getByTestId('approve-input')
-        .or(page.getByTestId('gate-unpaired'))
-        .or(page.getByTestId('activate')),
+      chalitoScreen(
+        page,
+        page
+          .getByTestId('approve-input')
+          .or(page.getByTestId('gate-unpaired'))
+          .or(page.getByTestId('activate')),
+      ),
     ).toBeVisible({ timeout: 30_000 });
     expect(leaks(requests, new URL(baseURL!).origin)).toEqual([]);
   });

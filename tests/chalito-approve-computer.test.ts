@@ -24,6 +24,7 @@ import {
   handoffFor,
   handoffFromHash,
   headedToApproval,
+  onApprovalPage,
   pendingApproval,
   stashHandoff,
   stashedHandoff,
@@ -186,6 +187,21 @@ test('the fragment leaves the address bar, and analytics never sees one', () => 
     page.indexOf('<KeepApprovalLink />') < page.indexOf('<LiveGate'),
     'kept and stripped before the gate',
   );
+});
+
+test('the link leaves the address bar even while Chalito signs in or when that fails', () => {
+  assert.equal(onApprovalPage('/app/chalito/computadoras/aprobar'), true);
+  assert.equal(onApprovalPage('/en/app/chalito/computadoras/aprobar/'), true);
+  assert.equal(onApprovalPage('/app/chalito/sesiones'), false, 'other screens keep their hash');
+  const stash = readFileSync('src/components/tools/chalito/HandoffStash.tsx', 'utf8');
+  assert.match(stash, /if \(!onApprovalPage\(window\.location\.pathname\)\) return;/);
+  // HubBridge shows "Entrando…" or the sign-in error instead of the page: strip outside it.
+  const layout = readFileSync('src/app/[locale]/(dashboard)/app/chalito/layout.tsx', 'utf8');
+  const unlocked = layout.slice(layout.indexOf('tab="auto"'));
+  assert.ok(unlocked.includes('<KeepApprovalLink />'));
+  assert.ok(unlocked.indexOf('<KeepApprovalLink />') < unlocked.indexOf('<HubBridge>'));
+  const locked = layout.slice(layout.indexOf('tab={null}'), layout.indexOf('tab="auto"'));
+  assert.ok(locked.includes('<KeepApprovalLink />'), 'a plan without Chalito strips it too');
 });
 
 // ---- the loopback ------------------------------------------------------------------------

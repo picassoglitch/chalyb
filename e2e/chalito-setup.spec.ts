@@ -5,6 +5,7 @@
 
 import { test, expect } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { chalitoScreen } from './utils/chalito';
 
 const STEPS = ['account', 'browser', 'computer', 'ai', 'folder', 'firstTask'];
 /** Where the open step's button goes (SetupChecklist.tsx ACTIONS). */
@@ -58,7 +59,7 @@ test.describe('a signed-in account', () => {
     const none = page.getByTestId('no-computer');
     const list = page.getByTestId('device').first();
     const gate = page.getByTestId('activate').or(page.getByTestId('gate-unpaired'));
-    await expect(none.or(list).or(gate)).toBeVisible({ timeout: 20_000 });
+    await expect(chalitoScreen(page, none.or(list).or(gate))).toBeVisible({ timeout: 20_000 });
     if (await none.isVisible()) {
       expect(await page.getByTestId('no-computer-download').getAttribute('href')).toMatch(
         /\/app\/chalito\/descargar$/,
@@ -71,11 +72,14 @@ test.describe('a signed-in account', () => {
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto('/app/chalito/sesiones/nueva?first=1');
     await expect(
-      page
-        .getByTestId('new-session')
-        .or(page.getByTestId('no-computers'))
-        .or(page.getByTestId('activate'))
-        .or(page.getByTestId('gate-unpaired')),
+      chalitoScreen(
+        page,
+        page
+          .getByTestId('new-session')
+          .or(page.getByTestId('no-computers'))
+          .or(page.getByTestId('activate'))
+          .or(page.getByTestId('gate-unpaired')),
+      ),
     ).toBeVisible({ timeout: 20_000 });
     expect(errors).toEqual([]);
   });

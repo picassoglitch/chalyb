@@ -6,7 +6,13 @@
 // an email magic link opened in a new tab doesn't (sessionStorage is per tab): there the page asks
 // for the code shown on the computer instead.
 import { useEffect } from 'react';
-import { headedToApproval, stashHandoff, stripHash } from '@/lib/chalito/web/approve-computer';
+import { usePathname } from 'next/navigation';
+import {
+  headedToApproval,
+  onApprovalPage,
+  stashHandoff,
+  stripHash,
+} from '@/lib/chalito/web/approve-computer';
 
 export const HandoffStash = () => {
   useEffect(() => {
@@ -26,15 +32,18 @@ export const HandoffStash = () => {
 /**
  * On the approval page itself, outside its gate: keep the link (this browser may first need to be
  * activated or endorsed, which can leave the page) and take it out of the address bar at once.
+ * Also in Chalito's layout, outside HubBridge: its sign-in (or a failed one) hides the page.
  */
 export const KeepApprovalLink = () => {
+  const pathname = usePathname();
   useEffect(() => {
+    if (!onApprovalPage(window.location.pathname)) return;
     try {
       stashHandoff(window.sessionStorage, window.location.hash, Date.now());
     } catch {
       /* storage blocked */
     }
     stripHash(window.location, window.history);
-  }, []);
+  }, [pathname]);
   return null;
 };
