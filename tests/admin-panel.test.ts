@@ -343,3 +343,22 @@ test('every legacy admin page checks the admin role itself, and the layout fails
   const layout = readFileSync(join(root, 'layout.tsx'), 'utf8');
   assert.match(layout, /if \(!session \|\| !isAdminRole\(session\.role\)\)/);
 });
+
+test('"Reenviar correo de acceso" links to /auth/callback with the hashed token, which verifies it server-side', () => {
+  const people = readFileSync(
+    fileURLToPath(new URL('../src/lib/admin/people-actions.ts', import.meta.url)),
+    'utf8',
+  );
+  assert.match(people, /const hashed = data\?\.properties\?\.hashed_token;/);
+  assert.match(
+    people,
+    /\/auth\/callback\?token_hash=\$\{encodeURIComponent\(hashed\)\}&type=magiclink/,
+  );
+  assert.doesNotMatch(people, /properties\?\.action_link/);
+  const cb = readFileSync(
+    fileURLToPath(new URL('../src/app/auth/callback/route.ts', import.meta.url)),
+    'utf8',
+  );
+  assert.match(cb, /otpType === 'invite' \|\| otpType === 'magiclink'/);
+  assert.match(cb, /verifyOtp\(\{ type: otpType, token_hash: tokenHash \}\)/);
+});

@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${url.origin}${next}`);
     }
-    console.error('Auth callback invite error:', error.message);
+    console.error(`Auth callback ${otpType} error:`, error.message);
     return NextResponse.redirect(`${signIn}?error=${encodeURIComponent(error.message)}`);
   }
 
