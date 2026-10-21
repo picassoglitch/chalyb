@@ -80,6 +80,7 @@ import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
 import { trialCardCheck } from './trial-eligibility';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
+import { notify } from '@/lib/notifications/notify';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -510,9 +511,17 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       '[billing/start] subscriptions row not stored — cancelling the new preapproval',
       rowErr,
     );
-    await cancelPreapproval(preapprovalId).catch((e) =>
-      console.error('[billing/start] COULD NOT CANCEL preapproval without a row', preapprovalId, e),
-    );
+    await cancelPreapproval(preapprovalId).catch(async (e) => {
+      console.error('[billing/start] COULD NOT CANCEL preapproval without a row', preapprovalId, e);
+      // Its webhooks retry forever without a row and MP keeps charging: a human cancels it.
+      await notify({
+        severity: 'critical',
+        title: 'Preapproval vivo sin fila — cancélalo en Mercado Pago',
+        body: `usuario ${userId} · MP ${preapprovalId}`,
+        href: '/dashboard/dinero',
+        source: 'billing.start',
+      });
+    });
     return { ok: false, code: 'MP_ERROR' };
   }
   if (mode === 'trial') {

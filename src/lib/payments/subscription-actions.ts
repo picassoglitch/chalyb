@@ -53,6 +53,7 @@ import {
   subscriptionReference,
 } from './subscription-reference';
 import { cancelPreapproval, syncSubscription } from './subscription-sync';
+import { notify } from '@/lib/notifications/notify';
 
 /** What a customer reads when the card itself was the problem. */
 const CARD_ERROR =
@@ -242,6 +243,35 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
   };
 }
 
+/** Our row couldn't be written: without it the sync retries every
+ *  notification forever, so cancel the preapproval before it charges. */
+async function dropUnrecordedPreapproval(
+  userId: string,
+  preapprovalId: string,
+  rowErr: unknown,
+): Promise<{ ok: false; reason: 'mp_error'; error: string }> {
+  console.error(
+    '[mp/subscription] subscriptions row not stored — cancelling',
+    preapprovalId,
+    rowErr,
+  );
+  await cancelPreapproval(preapprovalId).catch(async (e) => {
+    console.error('[mp/subscription] COULD NOT CANCEL preapproval without a row', preapprovalId, e);
+    await notify({
+      severity: 'critical',
+      title: 'Preapproval vivo sin fila — cancélalo en Mercado Pago',
+      body: `usuario ${userId} · MP ${preapprovalId}`,
+      href: '/dashboard/dinero',
+      source: 'billing.legacy-checkout',
+    });
+  });
+  return {
+    ok: false,
+    reason: 'mp_error',
+    error: 'No pudimos guardar tu suscripción y la cancelamos. Inténtalo de nuevo en un momento.',
+  };
+}
+
 export async function authorizeTierSubscription(input: {
   tier: SubscriptionTier;
   cardTokenId: string;
@@ -295,7 +325,7 @@ export async function authorizeTierSubscription(input: {
     }
 
     // Our copy, written before the sync so a webhook racing us finds it.
-    await admin.from('subscriptions').upsert(
+    const { error: rowErr } = await admin.from('subscriptions').upsert(
       {
         user_id: session.user.id,
         tier: targetTier,
@@ -309,6 +339,7 @@ export async function authorizeTierSubscription(input: {
       },
       { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
     );
+    if (rowErr) return dropUnrecordedPreapproval(session.user.id, result.id, rowErr);
 
     // Same path the webhook takes: fetch the preapproval, check the price,
     // apply the entitlement. Doing it here means the plan is active when the
@@ -404,7 +435,7 @@ export async function startHostedTierSubscription(input: {
 
     // Our copy, pending. The webhook (or the sync when the user comes back)
     // flips it to authorized and activates the tier.
-    await admin.from('subscriptions').upsert(
+    const { error: rowErr } = await admin.from('subscriptions').upsert(
       {
         user_id: session.user.id,
         tier: targetTier,
@@ -418,6 +449,7 @@ export async function startHostedTierSubscription(input: {
       },
       { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
     );
+    if (rowErr) return dropUnrecordedPreapproval(session.user.id, result.id, rowErr);
 
     return { ok: true, url };
   } catch (err) {

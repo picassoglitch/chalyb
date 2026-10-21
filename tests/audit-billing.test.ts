@@ -98,3 +98,28 @@ test("an earlier cycle's approved charge can't lift the current hold, grace or r
   // The whole state reset sits behind the guard, hold included.
   assert.match(s, /if \(!earlierCycle\) \{[\s\S]{0,400}charge_hold_until: null/);
 });
+
+test('replay guard: a failed subscriptions read retries instead of rolling the charge date back', () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /const \{ data: subRow, error: subErr \} = await admin/);
+  assert.match(s, /if \(subErr\) \{[\s\S]{0,120}retry: true/);
+  assert.ok(s.indexOf('if (subErr)') < s.indexOf('const olderThanStored'));
+});
+
+test('a preapproval whose row could not be written is cancelled, and a failed cancel alerts', () => {
+  const start = src('src/lib/billing/start-subscription.ts');
+  assert.match(
+    start,
+    /COULD NOT CANCEL preapproval without a row[\s\S]{0,200}await notify\(\{\s*severity: 'critical'/,
+  );
+  const legacy = src('src/lib/payments/subscription-actions.ts');
+  // Both legacy checkouts (card form and hosted) check their upsert.
+  const guards = legacy.match(
+    /if \(rowErr\) return dropUnrecordedPreapproval\(session\.user\.id, result\.id, rowErr\);/g,
+  );
+  assert.equal(guards?.length, 2);
+  assert.match(
+    legacy,
+    /async function dropUnrecordedPreapproval[\s\S]{0,400}cancelPreapproval\(preapprovalId\)[\s\S]{0,300}await notify\(\{\s*severity: 'critical'/,
+  );
+});
