@@ -96,6 +96,9 @@ test.describe('as vip', () => {
     await page.goto('/app/en-vivo');
     // Connected rows show the platform handle; the mock signs in as mi_canal.
     const kickRow = page.locator('.ch-ev-dest', { hasText: 'Conectado con tu cuenta' });
+    // The list renders with this button; before it, goto may still show the
+    // loading screen and a connected Kick (from an earlier run) looks missing.
+    await expect(page.getByRole('button', { name: 'Agregar canal' })).toBeVisible();
     if (!(await kickRow.isVisible().catch(() => false))) {
       await page.getByRole('button', { name: 'Agregar canal' }).click();
       await page.getByRole('button', { name: /Kick/ }).click();

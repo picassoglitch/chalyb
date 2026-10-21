@@ -26,9 +26,12 @@ async function expectOnePrimary(page: Page) {
 
 async function expectToolChrome(page: Page, selected: string) {
   await expect(page.getByRole('heading', { level: 1, name: 'Clips' })).toBeVisible();
-  await expect(page.getByText('Incluido en tu plan')).toBeVisible();
+  // Inside main: while the page streams, React keeps a hidden copy of the
+  // incoming screen (same header) outside it for a moment.
+  await expect(page.getByRole('main').getByText('Incluido en tu plan')).toBeVisible();
   const tabs = page.getByRole('tab');
-  await expect(tabs).toHaveCount(3);
+  // Hacer clips, Mis clips, Publicar, Ajustes (Publicar since 4c4cc57).
+  await expect(tabs).toHaveCount(4);
   await expect(page.getByRole('tab', { name: selected })).toHaveAttribute('aria-selected', 'true');
 }
 
