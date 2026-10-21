@@ -49,6 +49,9 @@ registerHooks({
       return { url: new URL('./stubs/server-only.mjs', import.meta.url).href, shortCircuit: true };
     }
 
+    // Next ships next/server as a plain file without an exports map: Node's ESM needs the .js.
+    if (specifier === 'next/server') return nextResolve('next/server.js', context);
+
     return nextResolve(specifier, context);
   },
 });
