@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { ApprovalDeepLink } from '@/components/tools/chalito/Approvals';
 import { LiveGate } from '@/components/tools/chalito/LiveGate';
+import { chalitoMetadata } from '@/lib/chalito/meta';
+
+export const generateMetadata = chalitoMetadata('approval');
 
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
 

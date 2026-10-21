@@ -3,6 +3,9 @@ import { redirect } from '@/i18n/routing';
 import { requireUser } from '@/lib/auth/session';
 import { desktopStartPath, handoffFromQuery } from '@/lib/chalito/web/desktop-sso';
 import { DesktopHandoff } from '@/components/tools/chalito/DesktopHandoff';
+import { chalitoMetadata } from '@/lib/chalito/meta';
+
+export const generateMetadata = chalitoMetadata('desktopSignIn');
 
 // /app/chalito/auth/desktop?client=desktop&state=…&redirect_uri=chalito://auth/sso: the desktop
 // app's "Iniciar sesión" (ADR 0016, First Run A). Signed out → hub sign-in and back here with the

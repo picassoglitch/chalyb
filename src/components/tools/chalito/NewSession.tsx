@@ -8,6 +8,8 @@ import { useChalito, useLive } from "@/lib/chalito/provider";
 import { adapterNameKey, adaptersFor, keepAdapter, startTarget } from "@/lib/chalito/web/adapters";
 import { LOAD_TIMEOUT_MS, indexConnections, withTimeout, type StatusIndex } from "@/lib/chalito/web/connect";
 import { firstTaskTarget } from "@/lib/chalito/web/setup";
+import { useLiveSynced } from "@/lib/chalito/useLiveSynced";
+import { Loading } from "./Loading";
 import { REMOTE_MODES } from "./Sessions";
 import { SetupChecklist } from "./SetupChecklist";
 
@@ -30,6 +32,7 @@ export const NewSession = () => {
   const ti = useTranslations("chalito.integrations");
   const { client, settings } = useChalito();
   const live = useLive();
+  const synced = useLiveSynced();
   const router = useRouter();
   const computers = live.devices.filter((d) => d.role === "agent" && !d.revoked);
   const [agent, setAgent] = useState("");
@@ -105,6 +108,8 @@ export const NewSession = () => {
     return () => clearTimeout(timer);
   }, [phase, live.sessions, target, router]);
 
+  // Until the first pull lands the device list is empty: don't say "no computers" yet.
+  if (computers.length === 0 && !synced) return <Loading label={t("title")} />;
   if (computers.length === 0)
     return (
       <div className="ch-chl ch-chl--tight">

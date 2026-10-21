@@ -2,7 +2,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { CatalogApp } from "@/lib/chalito/web/apps-catalog";
-import { checkApiKey, type KeyCheck } from "@/lib/chalito/web/connect";
+import { appName, checkApiKey, keyLabel, type KeyCheck } from "@/lib/chalito/web/connect";
 
 /**
  * "Pega tu clave": one app's API key, checked here (shape and the provider's usual prefix) and
@@ -24,7 +24,9 @@ export const PasteKeyForm = ({
   const [bad, setBad] = useState<Extract<KeyCheck, { ok: false }> | null>(null);
   // The prefix the key lacks, once warned: the next submit sends it anyway.
   const [warned, setWarned] = useState<string | null>(null);
-  const label = app.apiKey?.label ?? app.name;
+  const name = appName(t, app);
+  // "Tu API key de Anthropic"; an app without a key label: "API key de <app>".
+  const label = keyLabel(t, app);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,7 @@ export const PasteKeyForm = ({
   return (
     <form className="ch-chl ch-chl--tight" onSubmit={submit} data-testid={`paste-key-${app.id}`}>
       <div className={`ch-field${bad ? " ch-field--bad" : ""}`}>
-        <label htmlFor={id}>{t("keyLabel", { name: label })}</label>
+        <label htmlFor={id}>{label ? t("keyField", { label }) : t("keyLabel", { name })}</label>
         <div className="ch-paste">
           <input
             id={id}
@@ -64,7 +66,7 @@ export const PasteKeyForm = ({
           </p>
         ) : warned !== null ? (
           <p id={`${id}-hint`} role="status" className="ch-field__hint">
-            {t("keyShape", { name: app.name, prefix: warned })}
+            {t("keyShape", { name, prefix: warned })}
           </p>
         ) : (
           <p id={`${id}-hint`} className="ch-muted ch-field__hint">
@@ -72,7 +74,7 @@ export const PasteKeyForm = ({
           </p>
         )}
       </div>
-      {app.apiKey ? <p className="ch-muted">{t("keyWhere", { label: app.apiKey.label, url: app.apiKey.docsUrl })}</p> : null}
+      {app.apiKey ? <p className="ch-muted">{t("keyWhere", { label: label ?? "", url: app.apiKey.docsUrl })}</p> : null}
       <div className="ch-chl-row">
         <button type="submit" className="ch-btn ch-btn--primary ch-btn--compact">
           {warned !== null ? t("keySendAnyway") : t("send")}

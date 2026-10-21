@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { MesaComposer, MesaFeed, MesaInbox, type BrainProvider } from "@chalito/ui";
+import { MesaComposer, MesaFeed, MesaInbox, type BrainProvider, type LinkLike } from "@chalito/ui";
 import {
   MCP_INBOX,
   readInbox,
@@ -59,8 +59,21 @@ export const Mesa = ({ mid }: { mid: string }) => {
   useEffect(() => {
     if (!mesa) return;
     void reload();
-    void mesa.state.get(mid).then((s) => s && setLocal(s));
+    void mesa.state
+      .get(mid)
+      .then((s) => s && setLocal(s))
+      .catch(() => undefined);
   }, [mesa, mid, reload]);
+
+  // A turn's recharge chip carries Chalito's own path ("/creditos", "/en/creditos"); inside the hub
+  // that page lives under /app/chalito, so it's resolved here (other hrefs come resolved already).
+  const FeedLink = useMemo<LinkLike>(() => {
+    const creditos = getPathname({ href: "/creditos", locale });
+    const FeedLink: LinkLike = ({ href, ...rest }) => (
+      <NextLinkLike href={href === "/creditos" || href === "/en/creditos" ? creditos : href} {...rest} />
+    );
+    return FeedLink;
+  }, [locale]);
 
   // New turns (or inbox posts) arrive as pointers on this device's channel.
   useEffect(() => {
@@ -179,11 +192,11 @@ export const Mesa = ({ mid }: { mid: string }) => {
         decisions={decisions}
         approvalHref={(aid) => getPathname({ href: { pathname: "/a/[id]", params: { id: aid } }, locale })}
         sourceLabel={(s) => t(`from.${s}`, { app: appLabel(s) })}
-        Link={NextLinkLike}
+        Link={FeedLink}
       />
       {stopped ? (
         <p role="status" data-testid="mesa-stopped" className="ch-card ch-chl-card ch-chl-card--warn ch-chl-warn">
-          {t(`errors.${info.status}`)}
+          {t.has(`errors.${info.status}`) ? t(`errors.${info.status}`) : t("errors.closed")}
         </p>
       ) : null}
       {error ? (

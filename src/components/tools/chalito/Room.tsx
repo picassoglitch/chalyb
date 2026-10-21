@@ -70,7 +70,8 @@ export const Room = ({ roomId }: { roomId: string }) => {
   const t = useTranslations("chalito.settings.rooms");
   const { rooms, readCompanion, deviceId, store } = useChalito();
   const live = useLive();
-  const [me, setMe] = useState<string | null | undefined>(undefined);
+  /** undefined: loading; null: no companion yet; "error": the companion couldn't be read. */
+  const [me, setMe] = useState<string | null | "error" | undefined>(undefined);
   const [leftByMe, setLeftByMe] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -79,7 +80,9 @@ export const Room = ({ roomId }: { roomId: string }) => {
   useEffect(() => {
     if (!readCompanion) return;
     let alive = true;
-    void readCompanion().then((c) => alive && setMe(c && c !== "error" ? c.companionId : null));
+    void readCompanion()
+      .catch(() => "error" as const)
+      .then((c) => alive && setMe(c === "error" ? "error" : c ? c.companionId : null));
     return () => {
       alive = false;
     };
@@ -87,7 +90,7 @@ export const Room = ({ roomId }: { roomId: string }) => {
 
   const ctl = useMemo(
     () =>
-      rooms && deviceId && me
+      rooms && deviceId && me && me !== "error"
         ? new RoomController({
             db: rooms.db as RoomsDb,
             api: rooms.api,
@@ -139,7 +142,7 @@ export const Room = ({ roomId }: { roomId: string }) => {
   // Co-members' custom cards (signed for members of this room only).
   const cardOf = useRoomCards(roomId, memberKey);
   useEffect(() => {
-    if (!rooms || !me || !readCompanion) return;
+    if (!rooms || !me || me === "error" || !readCompanion) return;
     let alive = true;
     void (async () => {
       // Re-read on membership changes: the directory itself doesn't broadcast.
@@ -206,6 +209,12 @@ export const Room = ({ roomId }: { roomId: string }) => {
         </Link>
       </p>
     );
+  if (me === "error")
+    return (
+      <p role="alert" data-testid="room-load-error" className="ch-err">
+        {t("error.failed")}
+      </p>
+    );
   if (!ctl || snap.status === "loading") return <p aria-live="polite">…</p>;
   if (snap.status === "not_member" || (snap.status === "error" && !snap.room))
     return (
@@ -250,7 +259,8 @@ export const Room = ({ roomId }: { roomId: string }) => {
     <div className="ch-chl" data-testid="room" data-room={roomId} data-status={snap.status}>
       <div className="ch-chl-row ch-chl-row--between">
         <h2 className="ch-h2">{snap.room?.name ?? ""}</h2>
-        {!ended ? (
+        {/* The owner can't leave (the api answers 409: it dissolves instead, in its settings). */}
+        {!ended && !owner ? (
           confirmLeave ? (
             <span className="ch-chl-row">
               {t("leaveConfirm")}
