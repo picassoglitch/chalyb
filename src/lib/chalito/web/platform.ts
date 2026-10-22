@@ -20,6 +20,7 @@ import { httpAvatar, type AvatarApi } from "./avatar";
 import { httpUsage, type UsageApi } from "./usage";
 import { httpAccount, type AccountApi } from "./account";
 import { httpBalance, type BalanceApi } from "./balance";
+import { httpCoding, type CodingApi } from "./coding";
 import { httpMesa, type MesaApi } from "@chalito/client";
 
 /**
@@ -50,6 +51,8 @@ export interface Platform {
   account(token: () => Promise<string | null>): AccountApi;
   /** GET /v1/billing/balance (the hub balance in tokens) as whoever is signed in. */
   balance(token: () => Promise<string | null>): BalanceApi;
+  /** /v1/coding/settings (IA de Chalyb's daily cap and spend) as whoever is signed in. */
+  coding(token: () => Promise<string | null>): CodingApi;
   /** The api as whoever the bearer is (/v1/endorse: the person on a new browser, the device on a trusted one). */
   api(token: () => Promise<string | null>): ApiClient;
   /** Hears the endorsement pointer on `chalito:pairing:<codeId>` with the code's scoped watch token. */
@@ -81,6 +84,7 @@ export const productionPlatform = (): Platform => ({
   avatar: (token) => httpAvatar(env.apiBase, token),
   account: (token) => httpAccount(env.apiBase, token),
   balance: (token) => httpBalance(env.apiBase, token),
+  coding: (token) => httpCoding(env.apiBase, token),
   endorseWatch: supabaseEndorseWatch(env.supabaseUrl, env.supabaseAnonKey),
   saveDeviceKeys,
   passkeyAssertion: (ref) => stepUpWithPasskey(ref),

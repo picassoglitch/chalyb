@@ -60,7 +60,7 @@ export const ConnectProviders = ({
 }) => {
   const t = useTranslations("chalito.connect");
   const ti = useTranslations("chalito.integrations");
-  const { client, settings, mesa, status } = useChalito();
+  const { client, settings, mesa, status, coding } = useChalito();
   const live = useLive();
   const computers = live.devices.filter((d) => d.role === "agent" && !d.revoked);
 
@@ -73,6 +73,16 @@ export const ConnectProviders = ({
   const [query, setQuery] = useState("");
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
+  // IA de Chalyb (chalito ADR 0030) is offered only while it's on and the owner's plan has it.
+  const [chalyb, setChalyb] = useState(false);
+  useEffect(() => {
+    if (!coding) return;
+    let alive = true;
+    void coding.settings().then((s) => alive && setChalyb(s !== "error" && s.enabled && s.eligible));
+    return () => {
+      alive = false;
+    };
+  }, [coding]);
 
   const reload = useCallback(async () => {
     if (!settings) return setLoad("error");
@@ -155,6 +165,7 @@ export const ConnectProviders = ({
         else if (action === "launch") await a.launchApp(deviceId, appId);
         else if (action === "disconnect") await a.disconnectApp(deviceId, appId);
         else if (action === "signin") await a.connectApp(deviceId, appId, { method: "signin" });
+        else if (action === "chalyb") await a.connectApp(deviceId, appId, { method: "chalyb" });
         else if (key) await a.connectApp(deviceId, appId, { method: "api_key", key });
       } catch {
         setPending((cur) => ({ ...cur, [k]: { action, sentAt: Date.now(), prevAt, failed: "send" } }));
@@ -275,6 +286,7 @@ export const ConnectProviders = ({
               computer={c}
               showName={computers.length > 1}
               app={a}
+              chalyb={chalyb}
               status={rows[c.deviceId]?.[a.id] ?? null}
               loaded={load !== "loading" || !!rows[c.deviceId]}
               trusted={trusted(c.deviceId)}
@@ -297,6 +309,7 @@ const ComputerRow = ({
   computer,
   showName,
   app,
+  chalyb,
   status,
   loaded,
   trusted,
@@ -308,6 +321,7 @@ const ComputerRow = ({
   computer: DeviceView;
   showName: boolean;
   app: CatalogApp;
+  chalyb: boolean;
   status: ProviderStatus | null;
   loaded: boolean;
   trusted: boolean;
@@ -320,7 +334,7 @@ const ComputerRow = ({
   const ti = useTranslations("chalito.integrations");
   const name = appName(t, app);
   const busy = !!pending && !pending.failed;
-  const actions = actionsFor(status, app);
+  const actions = actionsFor(status, app, chalyb);
   const gate = signinGate(app.planSignin);
   const legacy = LEGACY_COPY[app.id];
 
@@ -391,6 +405,8 @@ const ComputerRow = ({
               })}
             </div>
           ) : null}
+          {actions.includes("chalyb") ? <p className="ch-muted">{t("chalybNote")}</p> : null}
+          {app.id === "claude-code" && chalyb ? <p className="ch-muted">{t("chalybClaude")}</p> : null}
           {actions.includes("signin") ? <p className="ch-muted">{t("signinNote")}</p> : null}
           {actions.includes("signin") && gate === "owner_only" ? (
             <p className="ch-chl-warn">{legacy && ti.has(`${legacy}.ownerOnly`) ? ti(`${legacy}.ownerOnly`) : t("ownerOnly")}</p>

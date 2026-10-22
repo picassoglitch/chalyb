@@ -7,6 +7,7 @@ import {
   type RecipeKind,
 } from "@chalito/protocol";
 import type { CatalogApp } from "./apps-catalog";
+import { CHALYB_APPS } from "./coding";
 
 /**
  * "Conecta tus IA" (onboarding's connect step and Ajustes): what each computer reported for each
@@ -27,7 +28,7 @@ export interface ProviderStatus {
   appId: string;
   deviceId: string;
   state: AppState;
-  mode: "api_key" | "signin" | null;
+  mode: "api_key" | "signin" | "chalyb" | null;
   connected: boolean;
   cli: { installed: boolean; version: string | null } | null;
   /** The agent's own short error code/text (shown as-is only under a generic line). */
@@ -78,7 +79,7 @@ export const parseConnection = (row: ConnectionRow): ProviderStatus | null => {
 };
 
 /** The status report's mode → the settings' ConnectionMode (pre-contract rows already use these). */
-const SETTINGS_MODE = { api_key: "byo_api_key", signin: "byo_subscription_local" } as const;
+const SETTINGS_MODE = { api_key: "byo_api_key", signin: "byo_subscription_local", chalyb: "chalyb" } as const;
 
 /** One row → Ajustes' read-only ConnectionStatus (SettingsValues.connections), or null. */
 export const toSettingsConnection = (row: ConnectionRow) => {
@@ -110,7 +111,7 @@ export type SigninGate = "on" | "owner_only" | "off";
 export const signinGate = (subscription: string): SigninGate =>
   subscription === "on" || subscription === "approved" ? "on" : subscription === "owner_only" ? "owner_only" : "off";
 
-export type ConnectAction = "install" | "api_key" | "signin" | "disconnect" | "launch";
+export type ConnectAction = "install" | "chalyb" | "api_key" | "signin" | "disconnect" | "launch";
 
 /**
  * The buttons for one app on one computer. Agents: connect with an API key (when the app takes
@@ -121,7 +122,9 @@ export type ConnectAction = "install" | "api_key" | "signin" | "disconnect" | "l
  */
 export const actionsFor = (
   status: ProviderStatus | null,
-  app: Pick<CatalogApp, "group" | "planSignin" | "installable" | "apiKey">,
+  app: Pick<CatalogApp, "group" | "planSignin" | "installable" | "apiKey"> & { id?: string },
+  /** IA de Chalyb is on and the owner's plan has it (GET /v1/coding/settings); offered first. */
+  chalyb = false,
 ): ConnectAction[] => {
   if (app.group !== "agent") {
     if (status?.state === "not_installed") return app.installable ? ["install"] : [];
@@ -129,7 +132,8 @@ export const actionsFor = (
     if (status?.state === "error" && status.cli && !status.cli.installed) return app.installable ? ["install"] : [];
     return ["launch"];
   }
-  const key: ConnectAction[] = app.apiKey ? ["api_key"] : [];
+  const ours: ConnectAction[] = chalyb && !!app.id && CHALYB_APPS.has(app.id) ? ["chalyb"] : [];
+  const key: ConnectAction[] = [...ours, ...(app.apiKey ? (["api_key"] as const) : [])];
   const signin: ConnectAction[] = signinGate(app.planSignin) === "off" ? [] : ["signin"];
   if (!status) return [...key, ...signin];
   switch (status.state) {
@@ -147,7 +151,7 @@ export const actionsFor = (
     case "needs_auth":
       return [...key, ...signin];
     case "blocked_by_policy":
-      // The plan sign-in was just refused for this person: offer the key when there is one.
+      // The plan sign-in was just refused for this person: offer IA de Chalyb or the key when there is one.
       return key;
   }
 };

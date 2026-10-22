@@ -58,6 +58,7 @@ import {
 import type { McpApi } from "@/lib/chalito/web/mcp";
 import type { AccountApi } from "@/lib/chalito/web/account";
 import type { BalanceApi } from "@/lib/chalito/web/balance";
+import type { CodingApi } from "@/lib/chalito/web/coding";
 import { disablePush, enablePush, type PushDb, type PushResult } from "@/lib/chalito/web/push";
 import { env } from "@/lib/chalito/web/env";
 import { readCompanion, type CompanionLook, type StoreApi } from "@/lib/chalito/web/store";
@@ -156,6 +157,8 @@ interface Ctx {
   account: AccountApi | null;
   /** The hub balance in tokens (/creditos); null when signed out. */
   balance: BalanceApi | null;
+  /** IA de Chalyb's daily cap and spend (Ajustes, Uso); null when signed out. */
+  coding: CodingApi | null;
   /** Web Push on this browser (its own push_subscriptions row, written as this device). Null until paired. */
   push: { enable: () => Promise<PushResult>; disable: () => Promise<PushResult> } | null;
 }
@@ -260,6 +263,7 @@ const INITIAL: Ctx = {
   push: null,
   account: null,
   balance: null,
+  coding: null,
 };
 const Chalito = createContext<Ctx>(INITIAL);
 
@@ -583,6 +587,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
         myCard,
         account: platform.account(token),
         balance: platform.balance(token),
+        coding: platform.coding(token),
         readCompanion: () => readCompanion(platform.db, owner),
       };
       const keys = await platform.loadDeviceKeys();

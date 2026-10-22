@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { CodingBlockedChip } from '@/components/tools/chalito/CodingBlockedChip';
 import { LiveGate } from '@/components/tools/chalito/LiveGate';
 import { SessionDetail } from '@/components/tools/chalito/Sessions';
 import { chalitoMetadata } from '@/lib/chalito/meta';
@@ -18,6 +19,7 @@ export default async function SessionPage({
   if (!ID.test(sid)) notFound();
   return (
     <LiveGate>
+      <CodingBlockedChip sid={sid} />
       <SessionDetail sid={sid} />
     </LiveGate>
   );

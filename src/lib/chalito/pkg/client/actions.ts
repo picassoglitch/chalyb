@@ -300,10 +300,11 @@ export class ClientActions {
   async connectApp(
     agentDeviceId: string,
     appId: AppId,
-    auth: { method: "api_key"; key: string } | { method: "signin" },
+    auth: { method: "api_key"; key: string } | { method: "signin" } | { method: "chalyb" },
   ): Promise<string> {
     return this.#command(agentDeviceId, async (cid) => {
-      if (auth.method === "signin") return { type: "app.connect", appId, method: "signin" };
+      // signin and chalyb carry no secret: the computer signs in, or asks Chalyb's api per session.
+      if (auth.method !== "api_key") return { type: "app.connect", appId, method: auth.method };
       const agentKey = this.keys.trustedAgentBoxKey(agentDeviceId);
       if (!agentKey) throw new ActionError("untrusted_agent");
       const keyCt = await this.keys.seal(auth.key, { [agentDeviceId]: agentKey }, `command:${cid}`);

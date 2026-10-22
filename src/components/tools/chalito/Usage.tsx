@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Usage as UsageData, UsageDay } from "@/lib/chalito/web/usage";
 import { useChalito } from "@/lib/chalito/provider";
 import { Loading } from "./Loading";
+import { CodingUsage } from "./CodingUsage";
 import { intlLocale, tokenFormat } from "@/lib/chalito/format";
 
 const RANGES = [7, 30] as const;
@@ -293,6 +294,7 @@ export const Usage = () => {
           </div>
         </div>
       </details>
+      <CodingUsage />
     </div>
   );
 };
