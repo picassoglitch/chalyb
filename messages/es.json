@@ -1192,7 +1192,8 @@
       "periodYear": "por 1 año",
       "periodMonth": "cada mes",
       "accountClosed": "Esta cuenta está cerrada por un contracargo de mala fe sin pagar (Términos de Suscripción §10.6). Siempre puedes descargar tu contenido. Si crees que es un error, escríbenos.",
-      "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis."
+      "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis.",
+      "chargedNoPlan": "No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar."
     },
     "summary": {
       "title": "Resumen",

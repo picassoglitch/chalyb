@@ -114,7 +114,10 @@ export type StartError =
   | 'PAID_REFUSED'
   | 'BAD_TOKEN'
   | 'DECLINED'
-  | 'MP_ERROR';
+  | 'MP_ERROR'
+  // Charged, but neither our row nor the fallback could be written: the team is
+  // alerted and the customer must not pay again.
+  | 'CHARGED_NO_PLAN';
 
 export type StartResult =
   | { ok: true; consentId: string; mode: StartMode; preapprovalId: string }
@@ -527,7 +530,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     });
     const fallback = !synced?.ok ? 'failed' : synced.applied === 'activate' ? 'granted' : 'row_only';
     await alertChargedWithoutRow({ ...who, planKey: input.planKey, fallback });
-    if (fallback === 'failed') return { ok: false, code: 'MP_ERROR' };
+    if (fallback === 'failed') return { ok: false, code: 'CHARGED_NO_PLAN' };
   }
   if (mode === 'trial') {
     await admin

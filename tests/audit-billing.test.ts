@@ -194,7 +194,7 @@ test('a charged checkout whose row failed builds it before answering, or answers
   );
   assert.match(
     startFail,
-    /await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey, fallback \}\);\s*if \(fallback === 'failed'\) return \{ ok: false, code: 'MP_ERROR' \};/,
+    /await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey, fallback \}\);\s*if \(fallback === 'failed'\) return \{ ok: false, code: 'CHARGED_NO_PLAN' \};/,
   );
   const alert = src('src/lib/payments/unrecorded-preapproval.ts');
   assert.match(alert, /da el plan y verifícalo a mano/);
@@ -223,4 +223,22 @@ test('writeRowWithRetry: one retry, then the error', async () => {
   const down = calls([{ message: 'a' }, { message: 'b' }, null]);
   assert.deepEqual(await writeRowWithRetry(down.write), { message: 'b' });
   assert.equal(down.count(), 2);
+});
+
+test('charged with no row and no fallback: the customer is told not to pay again, in both languages', async () => {
+  const start = src('src/lib/billing/start-subscription.ts');
+  assert.match(
+    start,
+    /if \(fallback === 'failed'\) return \{ ok: false, code: 'CHARGED_NO_PLAN' \};/,
+  );
+  const form = src('src/components/app/billing/pay-form.tsx');
+  assert.match(form, /body\.code === 'CHARGED_NO_PLAN'\s*\?\s*t\('chargedNoPlan'\)/);
+  const es = JSON.parse(src('messages/es.json'));
+  const en = JSON.parse(src('messages/en.json'));
+  assert.match(es.checkout.pay.chargedNoPlan, /no vuelvas a pagar/);
+  assert.match(en.checkout.pay.chargedNoPlan, /don’t pay again/);
+  // The generic MP error says nothing changed: never used for this case.
+  assert.doesNotMatch(es.checkout.pay.chargedNoPlan, /ningún cambio/);
+  const { statusForStartError } = await import('@/lib/billing/api');
+  assert.equal(statusForStartError('CHARGED_NO_PLAN'), 502);
 });
