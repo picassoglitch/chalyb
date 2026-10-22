@@ -17,9 +17,7 @@ test('syncSubscription asks for a retry when the row is not written yet', () => 
   assert.doesNotMatch(s, /!before && status === 'authorized'/);
   // The retry check runs before the price gate and before the upsert.
   assert.ok(s.indexOf('if (wait) {') < s.indexOf('gatePreapproval({'));
-  assert.ok(
-    s.indexOf('if (wait) {') < s.indexOf(".from('subscriptions').upsert("),
-  );
+  assert.ok(s.indexOf('if (wait) {') < s.indexOf(".from('subscriptions').upsert("));
 });
 
 test('recordAuthorizedPayment keeps a known ledger status over an unmapped one', () => {
@@ -179,7 +177,10 @@ test('a charged checkout whose row failed builds it before answering, or answers
   );
   const cardFail = card.slice(card.indexOf('if (rowErr) {'));
   assert.match(cardFail, /await syncSubscription\(result\.id, \{ rowFailed: \{\} \}\)/);
-  assert.match(cardFail, /granted,[\s\S]{0,80}\}\);\s*if \(!granted\) \{\s*return \{\s*ok: false,/);
+  assert.match(
+    cardFail,
+    /fallback,[\s\S]{0,80}\}\);\s*if \(fallback === 'failed'\) \{\s*return \{\s*ok: false,/,
+  );
   assert.ok(cardFail.indexOf('rowFailed') < cardFail.indexOf('return { ok: true, status }'));
 
   const start = src('src/lib/billing/start-subscription.ts');
@@ -193,11 +194,17 @@ test('a charged checkout whose row failed builds it before answering, or answers
   );
   assert.match(
     startFail,
-    /await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey, granted \}\);\s*if \(!granted\) return \{ ok: false, code: 'MP_ERROR' \};/,
+    /await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey, fallback \}\);\s*if \(fallback === 'failed'\) return \{ ok: false, code: 'MP_ERROR' \};/,
   );
   const alert = src('src/lib/payments/unrecorded-preapproval.ts');
   assert.match(alert, /da el plan y verifícalo a mano/);
   assert.doesNotMatch(alert, /~10 min/);
+  // A pending preapproval has a row but no plan yet: never reported as granted.
+  for (const f of [start, legacy])
+    assert.match(
+      f,
+      /!synced\?\.ok\s*\?\s*'failed'\s*:\s*synced\.applied === 'activate'\s*\?\s*'granted'\s*:\s*'row_only'/,
+    );
 });
 
 test('writeRowWithRetry: one retry, then the error', async () => {

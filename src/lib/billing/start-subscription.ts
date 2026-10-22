@@ -525,9 +525,9 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       console.error('[billing/start] fallback sync failed', preapprovalId, err);
       return null;
     });
-    const granted = !!synced?.ok;
-    await alertChargedWithoutRow({ ...who, planKey: input.planKey, granted });
-    if (!granted) return { ok: false, code: 'MP_ERROR' };
+    const fallback = !synced?.ok ? 'failed' : synced.applied === 'activate' ? 'granted' : 'row_only';
+    await alertChargedWithoutRow({ ...who, planKey: input.planKey, fallback });
+    if (fallback === 'failed') return { ok: false, code: 'MP_ERROR' };
   }
   if (mode === 'trial') {
     await admin

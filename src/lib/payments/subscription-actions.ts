@@ -322,15 +322,19 @@ export async function authorizeTierSubscription(input: {
         console.error('[mp/subscription] fallback sync failed', result.id, err);
         return null;
       });
-      const granted = !!synced?.ok;
+      const fallback = !synced?.ok
+        ? 'failed'
+        : synced.applied === 'activate'
+          ? 'granted'
+          : 'row_only';
       await alertChargedWithoutRow({
         userId: session.user.id,
         preapprovalId: result.id,
         planKey: `${targetTier} mensual (legacy)`,
-        granted,
+        fallback,
         source: 'billing.legacy-checkout',
       });
-      if (!granted) {
+      if (fallback === 'failed') {
         return {
           ok: false,
           reason: 'mp_error',
