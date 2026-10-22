@@ -23,13 +23,15 @@ const agent = (id: string) => ({
   apiKey: { label: 'k', docsUrl: 'https://x' },
 });
 
-test('IA de Chalyb is offered first for Codex, Grok and Gemini, only while it is on for this plan, never for Claude Code', () => {
-  for (const id of ['codex', 'grok', 'gemini']) {
+test('IA de Chalyb is offered first for Codex and Gemini, only while it is on for this plan, never for Claude Code', () => {
+  for (const id of ['codex', 'gemini']) {
     assert.deepEqual(actionsFor(null, agent(id), true), ['chalyb', 'api_key', 'signin'], id);
     assert.deepEqual(actionsFor(null, agent(id), false), ['api_key', 'signin'], id);
   }
   assert.deepEqual(actionsFor(null, agent('claude-code'), true), ['api_key', 'signin']);
   assert.deepEqual(actionsFor(null, agent('goose'), true), ['api_key', 'signin']);
+  // Managed Grok Build is pending (chalito ADR 0030).
+  assert.deepEqual(actionsFor(null, agent('grok'), true), ['api_key', 'signin']);
   const connected = {
     appId: 'codex',
     deviceId: 'd',

@@ -28,8 +28,8 @@ export interface CodingApi {
   setCap(tokens: number, stepUp?: unknown): Promise<CapResult>;
 }
 
-/** The chalito app ids that can run on IA de Chalyb (providers.yaml codingAgents.*.managed). Never Claude Code. */
-export const CHALYB_APPS: ReadonlySet<string> = new Set(["codex", "grok", "gemini"]);
+/** The chalito app ids that can run on IA de Chalyb (providers.yaml codingAgents.*.managed). Never Claude Code; Grok pending. */
+export const CHALYB_APPS: ReadonlySet<string> = new Set(["codex", "gemini"]);
 
 const AGENTS: readonly string[] = ["codex", "gemini-cli", "grok-build"];
 const n = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0;
