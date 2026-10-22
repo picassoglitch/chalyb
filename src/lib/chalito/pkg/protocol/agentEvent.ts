@@ -20,6 +20,7 @@ import { ScreenEndReason, ScreenMode, ScreenState } from "./screen";
 import { LinkHandoffStage, LinkId, LinkMode, LinkRefusal } from "./agent-link";
 import { LinkTaskState } from "./link";
 import { TransferRefusal, TransferStage } from "./rc";
+import { BranchName } from "./coord";
 
 export const SessionState = z.enum([
   "starting",
@@ -228,6 +229,8 @@ export const AgentEvent = z.discriminatedUnion("type", [
     peerDeviceId: DeviceId,
     peerSid: SessionId.optional(),
     reason: TransferRefusal.optional(),
+    /** Unfinished work was saved on this new branch (`chalito/move-…`) for the move. */
+    branch: BranchName.optional(),
   }),
 ]);
 export type AgentEvent = z.infer<typeof AgentEvent>;

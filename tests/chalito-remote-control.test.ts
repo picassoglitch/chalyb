@@ -94,10 +94,15 @@ test('rules edit as a list; computers list online first and drop phones and revo
 
 test('transfer state comes from the newest outgoing session.transferred event', () => {
   assert.deepEqual(transferOf(undefined), { stage: 'none' });
-  assert.deepEqual(transferOf([ev({ stage: 'sent', peerDeviceId: 'pc2' })]), { stage: 'sent', to: 'pc2' });
+  assert.deepEqual(transferOf([ev({ stage: 'sent', peerDeviceId: 'pc2' })]), { stage: 'sent', to: 'pc2', branch: null });
+  assert.deepEqual(transferOf([ev({ stage: 'sent', peerDeviceId: 'pc2', branch: 'chalito/move-0a1b2c3d' })]), {
+    stage: 'sent',
+    to: 'pc2',
+    branch: 'chalito/move-0a1b2c3d',
+  });
   assert.deepEqual(
     transferOf([ev({ stage: 'sent', peerDeviceId: 'pc2' }), ev({ stage: 'delivered', peerDeviceId: 'pc2', peerSid: 's9' }, 2)]),
-    { stage: 'delivered', to: 'pc2', peerSid: 's9' },
+    { stage: 'delivered', to: 'pc2', peerSid: 's9', branch: null },
   );
   assert.deepEqual(transferOf([ev({ stage: 'refused', peerDeviceId: 'pc2', reason: 'dirty' })]), {
     stage: 'refused',
@@ -108,11 +113,11 @@ test('transfer state comes from the newest outgoing session.transferred event', 
   assert.deepEqual(transferOf([ev({ direction: 'in', stage: 'delivered', peerDeviceId: 'pc1' })]), { stage: 'none' });
   assert.equal(canTransfer('idle', { stage: 'none' }), true);
   assert.equal(canTransfer('running', { stage: 'none' }), false);
-  assert.equal(canTransfer('idle', { stage: 'sent', to: 'x' }), false);
+  assert.equal(canTransfer('idle', { stage: 'sent', to: 'x', branch: null }), false);
 });
 
 test('copy: every transfer refusal has its text in es and en', () => {
-  for (const reason of ['busy', 'no_link', 'dirty', 'unpushed', 'offline', 'wrong_repo', 'start_failed', 'link_refused'])
+  for (const reason of ['busy', 'no_link', 'dirty', 'unpushed', 'offline', 'wrong_repo', 'start_failed', 'link_refused', 'push_auth', 'push_failed'])
     for (const m of [es, en])
       assert.equal(typeof (m.live.transfer.refused as Record<string, string>)[reason], 'string', reason);
   assert.equal(typeof es.routing.title, 'string');

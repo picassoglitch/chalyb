@@ -55,6 +55,11 @@ export const TransferSession = ({ sid }: { sid: string }) => {
           ) : null}
         </p>
       ) : null}
+      {(view.stage === "sent" || view.stage === "delivered") && view.branch ? (
+        <p className="ch-chl-small" data-testid="transfer-branch">
+          {t("savedOn", { branch: view.branch })}
+        </p>
+      ) : null}
       {view.stage === "refused" ? (
         <p role="alert" className="ch-err" data-testid="transfer-status" data-stage="refused">
           {t.has(`refused.${view.reason}`)
