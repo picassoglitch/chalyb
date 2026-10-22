@@ -84,6 +84,9 @@ export const TransferRefusal = z.enum([
   "no_link",
   "dirty",
   "unpushed",
+  // Saving unfinished work on a branch for the move: the push was refused (auth) or failed.
+  "push_auth",
+  "push_failed",
   /** The receiver didn't answer within the relay's lifetime. */
   "offline",
   /** The receiving computer's workspace isn't the same project (`origin` differs). */

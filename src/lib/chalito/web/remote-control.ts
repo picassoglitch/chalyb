@@ -44,8 +44,8 @@ export const transferTargets = (devices: readonly DeviceView[], fromDeviceId: st
 
 export type TransferView =
   | { stage: "none" }
-  | { stage: "sent"; to: string }
-  | { stage: "delivered"; to: string; peerSid: string | null }
+  | { stage: "sent"; to: string; branch: string | null }
+  | { stage: "delivered"; to: string; peerSid: string | null; branch: string | null }
   | { stage: "refused"; to: string; reason: string };
 
 /** The session's latest outgoing transfer, from its `session.transferred` events. */
@@ -55,11 +55,17 @@ export const transferOf = (events: readonly EventView[] | undefined): TransferVi
     .find((e) => e.type === "session.transferred" && e.meta.direction === "out");
   if (!last) return { stage: "none" };
   const to = String(last.meta.peerDeviceId ?? "");
+  const branch = typeof last.meta.branch === "string" ? last.meta.branch : null;
   if (last.meta.stage === "delivered")
-    return { stage: "delivered", to, peerSid: typeof last.meta.peerSid === "string" ? last.meta.peerSid : null };
+    return {
+      stage: "delivered",
+      to,
+      peerSid: typeof last.meta.peerSid === "string" ? last.meta.peerSid : null,
+      branch,
+    };
   if (last.meta.stage === "refused")
     return { stage: "refused", to, reason: String(last.meta.reason ?? "link_refused") };
-  return { stage: "sent", to };
+  return { stage: "sent", to, branch };
 };
 
 /** A session the owner can move now: not working, not waiting on them, not already moving. */

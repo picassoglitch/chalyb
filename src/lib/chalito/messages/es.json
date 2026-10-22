@@ -910,7 +910,7 @@
     },
     "transfer": {
       "title": "Mover a otra computadora",
-      "body": "Sigue esta sesión en otra de tus computadoras. Necesita un enlace hecho en esta computadora hacia la otra, y los cambios con commit y push.",
+      "body": "Sigue esta sesión en otra de tus computadoras. Necesita un enlace hecho en esta computadora hacia la otra; si hay cambios sin subir, Chalito los guarda en una rama nueva.",
       "to": "Computadora",
       "move": "Mover",
       "busy": "Detén la sesión antes de moverla.",
@@ -927,9 +927,12 @@
         "busy": "Detén la sesión antes de moverla.",
         "no_link": "Falta un enlace de esta computadora hacia {computer}. Créalo en el panel de Chalito de esta computadora (Enlaces).",
         "dirty": "Hay cambios sin commit (o submódulos) en la carpeta. Haz commit y push primero.",
-        "unpushed": "La rama no está subida. Haz push primero."
+        "unpushed": "La rama no está subida. Haz push primero.",
+        "push_auth": "No se pudo subir la rama con tus cambios: revisa tu acceso a git en esa computadora. La sesión sigue aquí.",
+        "push_failed": "No se pudo subir la rama con tus cambios. La sesión sigue aquí."
       },
-      "failedWhy": "No se pudo enviar la orden ({reason})."
+      "failedWhy": "No se pudo enviar la orden ({reason}).",
+      "savedOn": "Tus cambios sin terminar quedaron guardados en la rama {branch}."
     },
     "transcript": {
       "label": "Conversación",

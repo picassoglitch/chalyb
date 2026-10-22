@@ -910,7 +910,7 @@
     },
     "transfer": {
       "title": "Move to another computer",
-      "body": "Continue this session on another of your computers. It needs a link made on this computer to the other one, and the changes committed and pushed.",
+      "body": "Continue this session on another of your computers. It needs a link made on this computer to the other one; unpushed changes are saved on a new branch.",
       "to": "Computer",
       "move": "Move",
       "busy": "Stop the session before moving it.",
@@ -927,9 +927,12 @@
         "busy": "Stop the session before moving it.",
         "no_link": "There's no link from this computer to {computer}. Make one in this computer's Chalito panel (Links).",
         "dirty": "The folder has uncommitted changes (or submodules). Commit and push first.",
-        "unpushed": "The branch isn't pushed. Push first."
+        "unpushed": "The branch isn't pushed. Push first.",
+        "push_auth": "The branch with your changes couldn't be pushed: check git access on that computer. The session stays here.",
+        "push_failed": "The branch with your changes couldn't be pushed. The session stays here."
       },
-      "failedWhy": "The request couldn't be sent ({reason})."
+      "failedWhy": "The request couldn't be sent ({reason}).",
+      "savedOn": "Your unfinished changes were saved on branch {branch}."
     },
     "transcript": {
       "label": "Conversation",
