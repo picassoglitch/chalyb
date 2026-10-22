@@ -13,6 +13,7 @@ import { BrainKeys } from "./BrainKeys";
 import { CreateCharacter } from "./CreateCharacter";
 import { useRosterPickWithCustom } from "@/lib/chalito/useMyCard";
 import { ConnectProviders } from "./ConnectProviders";
+import { CodingCap } from "./CodingCap";
 import { Loading } from "./Loading";
 import { CoordRules } from "./Coordinator";
 import { RoutingRules } from "./RoutingRules";
@@ -50,6 +51,7 @@ export const Settings = () => {
         </h2>
         <p className="ch-muted">{tc("body")}</p>
         <ConnectProviders />
+        <CodingCap />
       </section>
       <PushOptIn />
       <Link href="/conexiones" className="ch-lnk ch-chl-fit">

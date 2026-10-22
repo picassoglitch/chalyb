@@ -704,7 +704,8 @@
         "card_updated": "Card",
         "error": "Error",
         "link_handoff": "Task from another agent",
-        "link_shared": "Shared between agents"
+        "link_shared": "Shared between agents",
+        "session_blocked": "Session stopped by IA de Chalyb"
       }
     },
     "devices": {
@@ -1423,7 +1424,8 @@
     },
     "via": {
       "api_key": "with your API key",
-      "signin": "with your plan"
+      "signin": "with your plan",
+      "chalyb": "with IA de Chalyb"
     },
     "version": "Version {version}",
     "actions": {
@@ -1432,7 +1434,8 @@
       "signin": "Sign in with your plan",
       "disconnect": "Disconnect",
       "launch": "Open on your computer",
-      "signinSoon": "Your plan · Coming soon"
+      "signinSoon": "Your plan · Coming soon",
+      "chalyb": "IA de Chalyb"
     },
     "installNote": "It installs with the official installer. Your computer will ask you to confirm.",
     "signinNote": "The official sign-in opens in that computer's browser; finish it there.",
@@ -1499,7 +1502,9 @@
       "grok": "xAI API key",
       "mistral-vibe": "Mistral API key",
       "qwen-code": "OpenAI-compatible API key (also set OPENAI_BASE_URL and OPENAI_MODEL)"
-    }
+    },
+    "chalybNote": "Uses our AI, no key or account needed. It comes out of your Chalyb tokens, with a daily limit you set in Settings.",
+    "chalybClaude": "Claude Code can't run on IA de Chalyb (Anthropic's rules): use your own key or plan."
   },
   "download": {
     "title": "Download Chalito for your computer",
@@ -1753,6 +1758,47 @@
     "team": "Team · Chalito",
     "approveComputer": "Approve computer · Chalito",
     "desktopSignIn": "Sign in to the app · Chalito"
+  },
+  "coding": {
+    "cap": {
+      "title": "IA de Chalyb daily limit",
+      "body": "The most your coding agents can spend from your tokens in a day with IA de Chalyb.",
+      "today": "Today: {used} of {cap} tokens.",
+      "label": "Tokens per day",
+      "help": "Left alone it is {def}. You can lower it anytime; raising it asks for your passkey, up to {max}.",
+      "save": "Save",
+      "paused": "IA de Chalyb is paused for now; your limit is saved anyway.",
+      "note": {
+        "saved": "Saved.",
+        "invalid": "Enter whole numbers only, within your plan's maximum.",
+        "step_up_required": "To raise it, confirm with this device's passkey.",
+        "step_up_failed": "Your passkey couldn't confirm it. Try again.",
+        "cancelled_step_up": "You cancelled the confirmation; the limit didn't change.",
+        "above_ceiling": "That's above your plan's maximum.",
+        "not_eligible": "IA de Chalyb comes with Pro and VIP.",
+        "failed": "Couldn't save. Try again.",
+        "no_passkey": "To raise it, first add a passkey on this device."
+      },
+      "error": "Couldn't load your daily limit.",
+      "retry": "Try again"
+    },
+    "usage": {
+      "title": "Coding agents",
+      "line": "{agent}: {tokens} tokens in {requests, plural, one {# request} other {# requests}} (last 30 days)",
+      "today": "Today: {tokens} tokens.",
+      "agents": {
+        "codex": "Codex",
+        "gemini-cli": "Gemini CLI",
+        "grok-build": "Grok Build"
+      }
+    },
+    "blocked": {
+      "out_of_energy": "You ran out of tokens: this session stopped.",
+      "daily_cap": "You reached your daily coding-agent limit: this session stopped.",
+      "recharge": "Recharge",
+      "raise": "Change limit",
+      "ownKey": "Use my key"
+    }
   },
   "routing": {
     "title": "Where new sessions run",
