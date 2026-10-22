@@ -22,7 +22,8 @@ export type CapResult =
     };
 
 export interface CodingApi {
-  settings(): Promise<CodingSettings | "error">;
+  /** "unavailable": this api has no IA de Chalyb (404), so nothing about it is shown. */
+  settings(): Promise<CodingSettings | "unavailable" | "error">;
   /** Raising needs `stepUp` (ChalitoProvider.assertPasskey); lowering never does. */
   setCap(tokens: number, stepUp?: unknown): Promise<CapResult>;
 }
@@ -124,6 +125,7 @@ export const httpCoding = (
   return {
     settings: async () => {
       const r = await call("GET");
+      if (r?.status === 404) return "unavailable";
       if (!r?.ok) return "error";
       return parseCodingSettings(await r.json().catch(() => null)) ?? "error";
     },

@@ -146,6 +146,11 @@ test('saving the cap: the passkey assertion goes along only when given; the api 
   assert.deepEqual(sent.at(-1), { dailyCapTokens: 2_000_000, stepUp: { a: 1 } });
   answer = { status: 500, body: { error: 'internal' } };
   assert.deepEqual(await api.setCap(1), { ok: false, reason: 'failed' });
+  // An api without IA de Chalyb (the route isn't mounted): nothing is shown, not an error.
+  answer = { status: 404, body: { error: 'not_found' } };
+  assert.equal(await api.settings(), 'unavailable');
+  answer = { status: 503, body: {} };
+  assert.equal(await api.settings(), 'error');
 });
 
 test('the session chip: the latest block shows until the agent answers again', () => {

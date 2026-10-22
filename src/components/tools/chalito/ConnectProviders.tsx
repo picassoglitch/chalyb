@@ -78,7 +78,7 @@ export const ConnectProviders = ({
   useEffect(() => {
     if (!coding) return;
     let alive = true;
-    void coding.settings().then((s) => alive && setChalyb(s !== "error" && s.enabled && s.eligible));
+    void coding.settings().then((s) => alive && setChalyb(typeof s === "object" && s.enabled && s.eligible));
     return () => {
       alive = false;
     };

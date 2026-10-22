@@ -12,7 +12,7 @@ export const CodingCap = () => {
   const t = useTranslations("chalito.coding.cap");
   const locale = useLocale();
   const { coding, assertPasskey } = useChalito();
-  const [s, setS] = useState<CodingSettings | "loading" | "error">("loading");
+  const [s, setS] = useState<CodingSettings | "loading" | "unavailable" | "error">("loading");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note | null>(null);
@@ -24,7 +24,7 @@ export const CodingCap = () => {
     const r = await coding.settings();
     if (!alive.current) return;
     setS(r);
-    if (r !== "error") setText(String(r.dailyCapTokens));
+    if (r !== "error" && r !== "unavailable") setText(String(r.dailyCapTokens));
   }, [coding]);
   useEffect(() => {
     alive.current = true;
@@ -34,7 +34,7 @@ export const CodingCap = () => {
     };
   }, [load]);
 
-  if (!coding || s === "loading") return null;
+  if (!coding || s === "loading" || s === "unavailable") return null;
   if (s === "error")
     return (
       <section className="ch-card ch-chl-card ch-chl-row" data-testid="coding-cap-error">

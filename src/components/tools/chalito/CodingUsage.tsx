@@ -14,7 +14,7 @@ export const CodingUsage = () => {
   useEffect(() => {
     if (!coding) return;
     let alive = true;
-    void coding.settings().then((r) => alive && setS(r === "error" ? null : r));
+    void coding.settings().then((r) => alive && setS(r === "error" || r === "unavailable" ? null : r));
     return () => {
       alive = false;
     };
