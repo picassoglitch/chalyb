@@ -8,6 +8,7 @@ import {
   httpCoding,
   latestBlock,
   parseCodingSettings,
+  parseTokens,
   spendByAgent,
 } from '@/lib/chalito/web/coding';
 import es from '../src/lib/chalito/messages/es.json' with { type: 'json' };
@@ -188,4 +189,19 @@ test('the copy exists in both languages', () => {
     for (const k of ['cap', 'usage', 'blocked']) assert.ok(m.coding![k], k);
   }
   assert.deepEqual(Object.keys(es.coding.cap.note).sort(), Object.keys(en.coding.cap.note).sort());
+});
+
+test('the cap field takes whole tokens only; it never guesses what was meant', () => {
+  assert.equal(parseTokens('1250000'), 1_250_000);
+  assert.equal(parseTokens(' 1,250,000 '), 1_250_000);
+  assert.equal(parseTokens('2.5'), null);
+  assert.equal(parseTokens('1e6'), null);
+  assert.equal(parseTokens(''), null);
+  assert.equal(parseTokens('-5'), null);
+});
+
+test('the session timeline names session.blocked in both languages', () => {
+  assert.equal(typeof es.live.timeline.type.session_blocked, 'string');
+  assert.equal(typeof en.live.timeline.type.session_blocked, 'string');
+  assert.match(es.coding.usage.line, /plural/);
 });

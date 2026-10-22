@@ -1,11 +1,11 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { tokenFormat } from "@/lib/chalito/format";
 import { useChalito } from "@/lib/chalito/provider";
-import type { CapResult, CodingSettings } from "@/lib/chalito/web/coding";
+import { parseTokens, type CapResult, type CodingSettings } from "@/lib/chalito/web/coding";
 
-type Note = Exclude<CapResult, { ok: true }>["reason"] | "saved" | "cancelled_step_up" | "invalid";
+type Note = Exclude<CapResult, { ok: true }>["reason"] | "saved" | "cancelled_step_up" | "invalid" | "no_passkey";
 
 /** Ajustes: IA de Chalyb's daily limit in tokens (chalito ADR 0030). Lowering is free; raising asks for the passkey. */
 export const CodingCap = () => {
@@ -17,29 +17,46 @@ export const CodingCap = () => {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note | null>(null);
 
+  const alive = useRef(true);
   const load = useCallback(async () => {
     if (!coding) return;
+    setS("loading");
     const r = await coding.settings();
+    if (!alive.current) return;
     setS(r);
     if (r !== "error") setText(String(r.dailyCapTokens));
   }, [coding]);
   useEffect(() => {
+    alive.current = true;
     void load();
+    return () => {
+      alive.current = false;
+    };
   }, [load]);
 
-  if (!coding || s === "loading" || s === "error" || !s.eligible) return null;
+  if (!coding || s === "loading") return null;
+  if (s === "error")
+    return (
+      <section className="ch-card ch-chl-card ch-chl-row" data-testid="coding-cap-error">
+        <span role="alert">{t("error")}</span>
+        <button className="ch-btn ch-btn--secondary ch-btn--compact" onClick={() => void load()}>
+          {t("retry")}
+        </button>
+      </section>
+    );
+  if (!s.eligible) return null;
   const n = tokenFormat(locale);
 
   const save = async () => {
-    const want = Number(text.replace(/[^\d]/g, ""));
-    if (!Number.isFinite(want) || text.trim() === "" || want > s.ceilingTokens) return setNote("invalid");
+    const want = parseTokens(text);
+    if (want === null || want > s.ceilingTokens) return setNote("invalid");
     setBusy(true);
     setNote(null);
     let stepUp: unknown;
     if (want > s.dailyCapTokens) {
       if (!assertPasskey) {
         setBusy(false);
-        return setNote("step_up_required");
+        return setNote("no_passkey");
       }
       try {
         stepUp = await assertPasskey();

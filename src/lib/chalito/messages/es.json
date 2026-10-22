@@ -703,7 +703,8 @@
         "card_updated": "Tarjeta",
         "error": "Error",
         "link_handoff": "Tarea de otro agente",
-        "link_shared": "Compartido entre agentes"
+        "link_shared": "Compartido entre agentes",
+        "session_blocked": "Sesión detenida por IA de Chalyb"
       }
     },
     "devices": {
@@ -1416,7 +1417,7 @@
       "qwen-code": "API key compatible con OpenAI (define también OPENAI_BASE_URL y OPENAI_MODEL)"
     },
     "chalybNote": "Usa nuestra IA, sin clave ni cuenta. Se descuenta de tus tokens de Chalyb, con un límite diario que cambias en Ajustes.",
-    "chalybClaude": "Claude Code solo funciona con tu clave o tu plan: Anthropic no permite que te cobremos su uso."
+    "chalybClaude": "Claude Code no funciona con IA de Chalyb (reglas de Anthropic): úsalo con tu clave o tu plan."
   },
   "download": {
     "title": "Descarga Chalito para tu computadora",
@@ -1682,18 +1683,21 @@
       "paused": "IA de Chalyb está en pausa por ahora; tu límite se guarda igual.",
       "note": {
         "saved": "Listo, guardado.",
-        "invalid": "Escribe un número de tokens dentro del máximo de tu plan.",
+        "invalid": "Escribe solo números (sin puntos decimales), dentro del máximo de tu plan.",
         "step_up_required": "Para subirlo, confirma con la llave de acceso de este dispositivo.",
         "step_up_failed": "No se pudo confirmar con tu llave de acceso. Intenta de nuevo.",
         "cancelled_step_up": "Cancelaste la confirmación; el límite no cambió.",
         "above_ceiling": "Eso pasa el máximo de tu plan.",
         "not_eligible": "IA de Chalyb viene en Pro y VIP.",
-        "failed": "No se pudo guardar. Intenta de nuevo."
-      }
+        "failed": "No se pudo guardar. Intenta de nuevo.",
+        "no_passkey": "Para subirlo, primero agrega una llave de acceso en este dispositivo."
+      },
+      "error": "No se pudo cargar tu límite diario.",
+      "retry": "Reintentar"
     },
     "usage": {
       "title": "Agentes de código",
-      "line": "{agent}: {tokens} tokens en {requests} pedidos (últimos 30 días)",
+      "line": "{agent}: {tokens} tokens en {requests, plural, one {# pedido} other {# pedidos}} (últimos 30 días)",
       "today": "Hoy: {tokens} tokens.",
       "agents": {
         "codex": "Codex",

@@ -90,6 +90,13 @@ export const latestBlock = (events: readonly { type: string; seq: number; meta: 
   return answered ? null : block.reason;
 };
 
+/** Whole tokens only, thousands separators allowed: "1,250,000" yes, "2.5" or "1e6" no. */
+export const parseTokens = (text: string): number | null => {
+  const t = text.trim();
+  if (!/^\d{1,3}([,\s]\d{3})*$|^\d+$/.test(t)) return null;
+  return Number(t.replace(/[,\s]/g, ""));
+};
+
 const REASONS = ["step_up_required", "step_up_failed", "above_ceiling", "not_eligible"] as const;
 
 export const httpCoding = (

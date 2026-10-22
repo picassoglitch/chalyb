@@ -703,7 +703,8 @@
         "card_updated": "Card",
         "error": "Error",
         "link_handoff": "Task from another agent",
-        "link_shared": "Shared between agents"
+        "link_shared": "Shared between agents",
+        "session_blocked": "Session stopped by IA de Chalyb"
       }
     },
     "devices": {
@@ -1416,7 +1417,7 @@
       "qwen-code": "OpenAI-compatible API key (also set OPENAI_BASE_URL and OPENAI_MODEL)"
     },
     "chalybNote": "Uses our AI, no key or account needed. It comes out of your Chalyb tokens, with a daily limit you set in Settings.",
-    "chalybClaude": "Claude Code only works with your own key or plan: Anthropic doesn't allow us to charge you for it."
+    "chalybClaude": "Claude Code can't run on IA de Chalyb (Anthropic's rules): use your own key or plan."
   },
   "download": {
     "title": "Download Chalito for your computer",
@@ -1682,18 +1683,21 @@
       "paused": "IA de Chalyb is paused for now; your limit is saved anyway.",
       "note": {
         "saved": "Saved.",
-        "invalid": "Enter a number of tokens within your plan's maximum.",
+        "invalid": "Enter whole numbers only, within your plan's maximum.",
         "step_up_required": "To raise it, confirm with this device's passkey.",
         "step_up_failed": "Your passkey couldn't confirm it. Try again.",
         "cancelled_step_up": "You cancelled the confirmation; the limit didn't change.",
         "above_ceiling": "That's above your plan's maximum.",
         "not_eligible": "IA de Chalyb comes with Pro and VIP.",
-        "failed": "Couldn't save. Try again."
-      }
+        "failed": "Couldn't save. Try again.",
+        "no_passkey": "To raise it, first add a passkey on this device."
+      },
+      "error": "Couldn't load your daily limit.",
+      "retry": "Try again"
     },
     "usage": {
       "title": "Coding agents",
-      "line": "{agent}: {tokens} tokens in {requests} requests (last 30 days)",
+      "line": "{agent}: {tokens} tokens in {requests, plural, one {# request} other {# requests}} (last 30 days)",
       "today": "Today: {tokens} tokens.",
       "agents": {
         "codex": "Codex",
