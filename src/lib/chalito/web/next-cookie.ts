@@ -1,5 +1,6 @@
 import { APP_HOME, safeNextPath } from "@chalito/ui";
 import { hubLaunchUrl } from "./hub";
+import { NEXT_COOKIE_NAME, SSO_STATE_COOKIE_NAME } from "./sso-landing";
 
 /**
  * The hub's launch route doesn't forward `next` (sign-in remembers only /auth/launch/chalito and
@@ -7,7 +8,7 @@ import { hubLaunchUrl } from "./hub";
  * where they were going in a short-lived first-party cookie (it survives a sign-in in a new tab)
  * and returns there after /auth/sso.
  */
-export const NEXT_COOKIE = "chalito_next";
+export const NEXT_COOKIE = NEXT_COOKIE_NAME;
 const MAX_AGE_S = 600;
 
 /** A same-origin app path to come back to; never the api, Next internals or the SSO page itself. */
@@ -44,7 +45,7 @@ let launching = false;
  * cookie is there (and matches `state` when the hub echoes it), so a token someone else sends you
  * can't sign you into their account.
  */
-export const SSO_STATE_COOKIE = "chalito_sso_state";
+export const SSO_STATE_COOKIE = SSO_STATE_COOKIE_NAME;
 
 const newState = (): string => {
   const b = crypto.getRandomValues(new Uint8Array(32));
