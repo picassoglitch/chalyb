@@ -1,13 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ApiError, type ApiClient, type DeviceKeys } from '@chalito/client-keys';
-import { CompleteRecoveryRequest, EnrollFirstClientRequest } from '@chalito/protocol';
+import {
+  CompleteRecoveryRequest,
+  EnrollFirstClientRequest,
+  EnrollSignInClientRequest,
+} from '@chalito/protocol';
 import {
   activateFirstClient,
   canActivate,
   cleanRecoveryCode,
   needsRecovery,
   recoverWithCode,
+  signInClient,
 } from '@/lib/chalito/web/activate';
 import type { DirectoryRow } from '@/lib/chalito/web/endorse';
 import es from '../src/lib/chalito/messages/es.json' with { type: 'json' };
@@ -212,4 +217,68 @@ test('activate: es and en have the same strings', () => {
   assert.deepEqual(keys(es.live.activate).sort(), keys(en.live.activate).sort());
   assert.deepEqual(keys(es.live.recover).sort(), keys(en.live.recover).sort());
   assert.ok(es.endorse.wait.lostDevice && en.endorse.wait.lostDevice);
+});
+
+// ---- Sign-in alone (owner decision 2026-10-19) ----
+
+const signIn = async (api: ApiClient) => {
+  const saved: DeviceKeys[] = [];
+  const r = await signInClient({
+    api,
+    save: async (k) => void saved.push(k),
+    owner: OWNER,
+    name: 'Chrome en Linux',
+  });
+  return { r, saved };
+};
+
+test('sign-in alone: saves a fresh identity and enrols it with the person session, no code or endorsement', async () => {
+  let deviceId = '';
+  const api = fakeApi((_p, body) => {
+    deviceId = (body as { registration: { body: { deviceId: string } } }).registration.body
+      .deviceId;
+    return { deviceId, customToken: 'tok' };
+  });
+  const { r, saved } = await signIn(api);
+  assert.deepEqual(
+    api.calls.map((c) => c[0]),
+    ['/v1/devices/signin'],
+  );
+  const req = EnrollSignInClientRequest.parse(api.calls[0]![1]);
+  assert.equal(req.registration.body.owner, OWNER);
+  assert.equal(req.registration.body.kind, 'web');
+  assert.equal(req.registration.body.name, 'Chrome en Linux');
+  assert.equal(req.registration.signerDeviceId, req.registration.body.deviceId);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0]!.deviceId, deviceId);
+  assert.deepEqual(r, { ok: true, deviceId, customToken: 'tok' });
+  assert.ok(!JSON.stringify(api.calls).includes('secretKey'));
+});
+
+test('sign-in alone: an api without the route is "unsupported" (the old screens apply); others map', async () => {
+  const fail = (status: number, code: string) =>
+    fakeApi(() => {
+      throw new ApiError(status, code);
+    });
+  assert.deepEqual((await signIn(fail(404, 'not_found'))).r, { ok: false, reason: 'unsupported' });
+  assert.deepEqual((await signIn(fail(403, 'owner_mismatch'))).r, {
+    ok: false,
+    reason: 'rejected',
+  });
+  assert.deepEqual((await signIn(fail(503, 'down'))).r, { ok: false, reason: 'failed' });
+  assert.deepEqual(
+    (
+      await signIn(
+        fakeApi(() => {
+          throw new Error('network');
+        }),
+      )
+    ).r,
+    { ok: false, reason: 'failed' },
+  );
+  // A credential for another device id is never used.
+  assert.deepEqual((await signIn(fakeApi(() => ({ deviceId: 'dev_other', customToken: 't' })))).r, {
+    ok: false,
+    reason: 'failed',
+  });
 });

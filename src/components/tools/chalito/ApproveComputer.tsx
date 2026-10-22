@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/chalito/navigation";
 import { useChalito, useNow } from "@/lib/chalito/provider";
@@ -53,6 +53,17 @@ export const ApproveComputer = () => {
   useEffect(() => {
     void flow?.start();
   }, [flow]);
+
+  // Owner decision 2026-10-19 ("sign-in alone"): the person is signed in here and the computer
+  // proved this browser runs on it (loopback), so it's their own computer: approve by itself, once.
+  // A phone, another network or a typed code still shows the screen and waits for the tap.
+  const autoApproved = useRef<string | null>(null);
+  useEffect(() => {
+    if (!flow || view.s !== "confirm" || !view.sameComputer || view.blocked || view.needsCode || view.busy) return;
+    if (view.error || autoApproved.current === view.target.codeId) return;
+    autoApproved.current = view.target.codeId;
+    void flow.approve();
+  }, [flow, view]);
 
   if (!flow) return null;
 

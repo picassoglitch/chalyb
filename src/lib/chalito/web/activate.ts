@@ -161,3 +161,41 @@ export const recoverWithCode = async (d: ActivateDeps, code: string): Promise<Re
     return { ok: false, reason: recoverError(err) };
   }
 };
+
+// ---- Sign-in alone (owner decision 2026-10-19): signing in approves this browser ----
+
+export type SignInEnrolResult =
+  | { ok: true; deviceId: string; customToken: string }
+  /** `unsupported`: an api without /v1/devices/signin (404); the old screens still apply. */
+  | { ok: false; reason: "unsupported" | "rejected" | "failed" };
+
+/**
+ * The person's own hub session enrols this browser (POST /v1/devices/signin): a fresh identity
+ * whose keys never leave it, its self-signed registration, no endorsement, no code, no second
+ * device. The api checks the registration, alerts the account's other devices and audits it.
+ */
+export const signInClient = async (d: Omit<ActivateDeps, "recoveryCode">): Promise<SignInEnrolResult> => {
+  const now = d.now ?? Date.now;
+  const keys = await (d.generate ?? generateDeviceKeys)();
+  let registration: DeviceRegistration;
+  try {
+    await d.save(keys);
+    registration = await signDeviceRegistration(keys, {
+      owner: d.owner,
+      kind: "web",
+      platform: "web",
+      name: d.name.slice(0, 40),
+      now: now(),
+    });
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+  try {
+    const r = await d.api.post<{ deviceId: string; customToken: string }>("/v1/devices/signin", { registration });
+    if (r.deviceId !== keys.deviceId) return { ok: false, reason: "failed" };
+    return { ok: true, deviceId: r.deviceId, customToken: r.customToken };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return { ok: false, reason: "unsupported" };
+    return { ok: false, reason: err instanceof ApiError && err.status < 500 ? "rejected" : "failed" };
+  }
+};

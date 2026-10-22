@@ -23,11 +23,12 @@ import {
   type RevokeAllResult,
   type Snapshot,
 } from "@chalito/client";
-import type { EndorseTarget } from "@chalito/client-keys";
+import { accountAgents, type EndorseTarget } from "@chalito/client-keys";
 import type { PhoneVerifier } from "@chalito/ui";
 import type { DeviceKeys } from "@/lib/chalito/web/keys";
 import {
   approveTarget,
+  browserName,
   resolveTarget,
   waitForEndorsement,
   type AddError,
@@ -36,7 +37,7 @@ import {
   type WaitError,
   type Waiting,
 } from "@/lib/chalito/web/endorse";
-import { markEndorsed, passkeyRef } from "@/lib/chalito/web/keys";
+import { clearRevoked, markEndorsed, markRevoked, passkeyRef, wasRevoked } from "@/lib/chalito/web/keys";
 import {
   approveComputer,
   declineComputer,
@@ -50,6 +51,7 @@ import {
   canActivate,
   needsRecovery,
   recoverWithCode,
+  signInClient,
   type ActivateError,
   type RecoverResult,
 } from "@/lib/chalito/web/activate";
@@ -303,6 +305,9 @@ type DirectoryDb = {
   };
 };
 /** The account's devices directory (RLS), for vetting introduced computers (ADR 0018). */
+/** `endorsedBy` recorded for computers trusted from the directory because the person signed in. */
+const SIGN_IN_INTRODUCER = "sign_in";
+
 const readDirectory = async (db: unknown, owner: string): Promise<DirectoryRow[]> => {
   const { data, error } = await (db as DirectoryDb)
     .from("devices")
@@ -339,6 +344,7 @@ const newDevice =
       // auth change reruns the connection, which now finds trusted keys.
       result: w.result.then(async (r) => {
         if (!r.ok) return r;
+        clearRevoked();
         markEndorsed(r.deviceId);
         try {
           await ensureSession(platform.db.auth as never, {
@@ -434,6 +440,8 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
   /** The companion card source handed out last (replaced, and stopped, when the account changes). */
   const myCardRef = useRef<CustomCardSource | null>(null);
 
+  /** Sign-in alone: the owners this browser already tried to enrol by itself (once each). */
+  const signInTried = useRef(new Set<string>());
   /** Bumped to rerun the connection once a flow that held it (activation) is done. */
   const [epoch, setEpoch] = useState(0);
   const [activation, setActivation] = useState<Activation | null>(null);
@@ -457,6 +465,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       try {
         const r = await run();
         if (!r.ok) return r;
+        clearRevoked();
         markEndorsed(r.deviceId);
         let passkey: Activation["passkey"] = "error";
         try {
@@ -581,6 +590,38 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       if (!alive || deviceMode.current) return;
       if (!keys) {
         const person = isPersonSession(session.session);
+        // Owner decision 2026-10-19 ("sign-in alone"): the person signed in, so this browser
+        // enrols itself (its computers are trusted on the connect that follows). Once per owner,
+        // and never for a browser that was revoked: if the api refuses or predates it, the screens
+        // below (Activar, Esperando aprobación) still apply.
+        if (person && !signInTried.current.has(owner) && !wasRevoked()) {
+          signInTried.current.add(owner);
+          deviceMode.current = true;
+          owns = true;
+          try {
+            const r = await signInClient({
+              api: platform.api(token),
+              save: (k) => platform.saveDeviceKeys(k),
+              owner,
+              name: browserName(navigator.userAgent, document.documentElement.lang || "es"),
+            });
+            if (r.ok) {
+              // A client of the account now; the rerun connects and trusts its computers.
+              markEndorsed(r.deviceId);
+              await ensureSession(platform.db.auth as never, {
+                kind: "device",
+                deviceId: r.deviceId,
+                login: async () => r.customToken,
+              });
+            }
+          } catch {
+            // Falls through to the screens below on the rerun.
+          } finally {
+            deviceMode.current = false;
+            setEpoch((e) => e + 1);
+          }
+          return;
+        }
         const dir = person ? await readDirectory(platform.db, owner).catch(() => null) : null;
         return done({
           ...INITIAL,
@@ -607,6 +648,13 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
           create: () => platform.db,
         });
         clientRef.current = client;
+        // Sign-in alone: the account's computers, as the directory lists them now (new ones too).
+        await readDirectory(platform.db, owner)
+          .then(accountAgents)
+          .then((agents) =>
+            agents.length ? keys.keys.trustIntroducedAgents(agents, SIGN_IN_INTRODUCER, Date.now()) : [],
+          )
+          .catch(() => undefined);
         done({
           ...INITIAL,
           ...base,
@@ -689,6 +737,7 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
         });
       } catch (err) {
         if (err instanceof DeviceRevokedError) {
+          markRevoked();
           await keys.forget().catch(() => undefined);
           return done({ ...INITIAL, ...base, status: "revoked" });
         }
@@ -706,7 +755,10 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
     const client = ctx.client;
     if (!client) return;
     return client.live.subscribe(() => {
-      if (client.live.getSnapshot().status === "revoked") void keysRef.current?.forget().catch(() => undefined);
+      if (client.live.getSnapshot().status === "revoked") {
+        markRevoked();
+        void keysRef.current?.forget().catch(() => undefined);
+      }
     });
   }, [ctx.client]);
 
