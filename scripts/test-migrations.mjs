@@ -825,6 +825,10 @@ try {
       drop policy if exists "messages_user_mark_read" on public.messages;
       create policy "messages_user_mark_read" on public.messages for update
         using (thread_user_id = (select auth.uid())) with check (thread_user_id = (select auth.uid()));
+      drop policy if exists "messages_insert_own_thread" on public.messages;
+      create policy "messages_insert_own_thread" on public.messages for insert
+        with check (thread_user_id = (select auth.uid()) and sender_role = 'USER'
+          and sender_user_id = (select auth.uid()));
       drop policy if exists "user_notifications_update_own" on public.user_notifications;
       create policy "user_notifications_update_own" on public.user_notifications for update
         using (auth.uid() = user_id);
@@ -833,10 +837,16 @@ try {
   };
   const forge = `update public.messages set sender_role = 'ADMIN', body = 'Reembolso aprobado' where sender_role = 'USER' returning id`;
   const unpin = `update public.user_notifications set keep_until = null where kind = 'renewalReminder' returning id`;
+  const hidden = `insert into public.messages (thread_user_id, sender_user_id, sender_role, body, read_at_admin, created_at)
+     values ($1, $1, 'USER', 'Mensaje escondido', now(), now() - interval '90 days') returning id`;
 
   await prefix();
   check('pre-fix: a subscriber can forge a staff reply', (await asUser(subA, forge)).rows.length === 1);
   check('pre-fix: a subscriber can unpin a billing notice', (await asUser(subA, unpin)).rows.length === 1);
+  check(
+    'pre-fix: a subscriber can insert a message hidden from the admin badge and backdated',
+    (await asUser(subA, hidden, [subA])).rows.length === 1,
+  );
 
   await prefix();
   await db.exec(readFileSync(new URL(LOCK, DIR), 'utf8'));
@@ -844,10 +854,10 @@ try {
   const policies = (
     await db.query(
       `select policyname from pg_policies where schemaname = 'public'
-         and policyname in ('messages_user_mark_read', 'user_notifications_update_own')`,
+         and policyname in ('messages_user_mark_read', 'messages_insert_own_thread', 'user_notifications_update_own')`,
     )
   ).rows;
-  check('client UPDATE policies on messages / notices are gone', policies.length === 0);
+  check('client write policies on messages / notices are gone', policies.length === 0);
   const f = await asUser(subA, forge);
   check('a subscriber can no longer rewrite a message', /permission denied/.test(f.error ?? ''), f.error);
   const d = await asUser(subA, `delete from public.messages returning id`);
@@ -861,17 +871,26 @@ try {
   );
   check('a subscriber cannot plant a notice', /permission denied/.test(ins.error ?? ''), ins.error);
 
-  // What stays: reading your thread, sending as USER, the guarded delete.
-  const mine = await asUser(subA, `select id from public.messages`);
-  check('a subscriber still reads their own thread', mine.rows.length === 2, mine.error);
-  const other = await asUser(subB, `select id from public.messages`);
-  check('another subscriber still sees nothing', other.rows.length === 0, other.error);
-  const send = await asUser(
+  const h = await asUser(subA, hidden, [subA]);
+  check('a subscriber can no longer insert a hidden or backdated message', /permission denied/.test(h.error ?? ''), h.error);
+  const direct = await asUser(
     subA,
     `insert into public.messages (thread_user_id, sender_user_id, sender_role, body) values ($1, $1, 'USER', 'Gracias') returning id`,
     [subA],
   );
-  check('a subscriber can still send a message', send.rows.length === 1, send.error);
+  check('a subscriber can no longer insert even a plain message directly', /permission denied/.test(direct.error ?? ''), direct.error);
+
+  // What stays: reading your thread, the guarded delete, and sending through the server.
+  const mine = await asUser(subA, `select id from public.messages`);
+  check('a subscriber still reads their own thread', mine.rows.length === 2, mine.error);
+  const other = await asUser(subB, `select id from public.messages`);
+  check('another subscriber still sees nothing', other.rows.length === 0, other.error);
+  // sendMessageFromUser: service-role insert, server-set columns only.
+  const send = await asService(
+    `insert into public.messages (thread_user_id, sender_user_id, sender_role, body) values ($1, $1, 'USER', 'Gracias') returning read_at_admin`,
+    [subA],
+  );
+  check('server send still works and arrives unread', send.length === 1 && send[0].read_at_admin === null);
   const del = await asUser(
     subA,
     `delete from public.user_notifications where kind in ('clipsReady', 'renewalReminder') returning kind`,
