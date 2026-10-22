@@ -21,7 +21,12 @@ import { subscriptionActiveTemplate } from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
-import { authorizedPaymentStatusToChargeStatus, paymentStatusToChargeStatus } from './order-charge';
+import {
+  authorizedPaymentStatusToChargeStatus,
+  ledgerStatus,
+  paymentStatusToChargeStatus,
+  type ChargeStatus,
+} from './order-charge';
 import { gatePreapproval } from './webhook-verify';
 import {
   PRICING,
@@ -45,6 +50,7 @@ import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { onLealtadCharge } from '@/lib/billing/lealtad-server';
 import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { lealtadFailedVars } from '@/lib/billing/notices';
+import { waitForCheckoutRow } from './row-retry';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -67,6 +73,15 @@ export type SyncOutcome =
   | { ok: true; status: PreapprovalStatus; applied: 'activate' | 'end' | 'none' }
   | { ok: false; reason: 'not_ours' | 'amount_mismatch' | 'db'; retry: boolean };
 
+/** Slack before an approved charge counts as an earlier cycle's: well under
+ *  the shortest billing cycle (a month), well over the gap between the dates
+ *  Mercado Pago reports for one and the same charge. */
+const EARLIER_CYCLE_SLACK_MS = 7 * 86_400_000;
+
+/** How long after creating a preapproval its checkout may still be writing
+ *  our row (retries included). */
+export const ROW_WAIT_MS = 10 * 60_000;
+
 /**
  * Pull the preapproval from Mercado Pago and make our side match it.
  *
@@ -74,7 +89,12 @@ export type SyncOutcome =
  * because no retry will change that. `db`: our write failed, retry so
  * Mercado Pago sends it again once the database is back.
  */
-export async function syncSubscription(preapprovalId: string): Promise<SyncOutcome> {
+export async function syncSubscription(
+  preapprovalId: string,
+  // Set only by a checkout whose own row write failed: build the row now,
+  // with the plan it sold, instead of waiting for it.
+  opts: { rowFailed?: { planKey?: PlanKey } } = {},
+): Promise<SyncOutcome> {
   const { preapproval } = getMercadoPago();
   const mp = await preapproval.get({ id: preapprovalId });
 
@@ -95,14 +115,41 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   const admin = createAdminClient();
 
   // What we last knew, to tell a transition from a repeat.
-  const { data: before } = await admin
+  const { data: before, error: beforeErr } = await admin
     .from('subscriptions')
     .select(
       'status, plan_key, trial_ends_at, next_charge_at, charge_hold_until, last_charge_at, reminder_delivered_at, first_charge_at',
     )
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle();
-  const planKey = (before?.plan_key as PlanKey | null) ?? null;
+  if (beforeErr) {
+    console.error('[mp/subscription] subscriptions read failed', beforeErr);
+    return { ok: false, reason: 'db', retry: true };
+  }
+  // Every checkout writes our row (with its plan_key) right after creating the
+  // preapproval. A notification that beats that write would be gated against
+  // the default monthly price — wrong for an annual or Lealtad plan — and be
+  // stored as amount_mismatch with no retry. Ask Mercado Pago to send it
+  // again instead; by then the row is there (or the checkout cancelled it).
+  // Any status, not just authorized: a 'pending' notice that got here first
+  // would write a row WITHOUT plan_key, and the authorized one right after
+  // it would find that row and be gated against the monthly price anyway.
+  // Only while a healthy checkout's write can still land; past ROW_WAIT_MS,
+  // build the row from MP and grant as before.
+  const wait = waitForCheckoutRow({
+    hasRow: !!before,
+    dateCreated: mp.date_created,
+    rowFailed: !!opts.rowFailed,
+    waitMs: ROW_WAIT_MS,
+    now: Date.now(),
+  });
+  if (wait) {
+    console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
+      preapprovalId,
+    });
+    return { ok: false, reason: 'db', retry: true };
+  }
+  const planKey = (before?.plan_key as PlanKey | null) ?? opts.rowFailed?.planKey ?? null;
   const trialEndsAt = (before?.trial_ends_at as string | null) ?? null;
   const inTrial = !!trialEndsAt && Date.now() < Date.parse(trialEndsAt);
   const previousStatus = before ? normalizePreapprovalStatus(before.status as string) : null;
@@ -146,6 +193,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
       tier,
       mp_preapproval_id: preapprovalId,
       external_reference: mp.external_reference,
+      ...(!before && opts.rowFailed?.planKey ? { plan_key: opts.rowFailed.planKey } : {}),
       status: gate.storedStatus,
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',
@@ -389,12 +437,26 @@ export async function recordAuthorizedPayment(
   // and writing it raw is what made a settled monthly charge read as
   // "processed" — invisible to every `status = 'approved'` filter on
   // /app/billing and in the revenue queries. Normalise before it is stored.
-  const paymentStatus: string = ap.payment?.status
+  const paymentStatus: ChargeStatus = ap.payment?.status
     ? paymentStatusToChargeStatus(ap.payment.status)
     : authorizedPaymentStatusToChargeStatus(ap.status);
   // 'scheduled' means Mercado Pago has not tried the card yet: there is no
   // payment to record, only a date. Everything else has a payment id.
   if (paymentId) {
+    // What the ledger already says about this charge: an unmapped status
+    // never overwrites a known one (same rule as every other ledger writer).
+    const { data: existing, error: existingErr } = await admin
+      .from('payments')
+      .select('status')
+      .eq('mp_payment_id', String(paymentId))
+      .maybeSingle();
+    // Unread is not "no row": treating it as a first write would let an
+    // unmapped status overwrite a known one. Ask Mercado Pago to retry.
+    if (existingErr) {
+      console.error('[mp/subscription] payments read failed', existingErr);
+      return { ok: false, retry: true };
+    }
+    const previousLedgerStatus = (existing?.status as string | null | undefined) ?? null;
     const { error } = await admin.from('payments').upsert(
       {
         user_id: ref.userId,
@@ -405,7 +467,7 @@ export async function recordAuthorizedPayment(
         amount_cents: Math.round((ap.transaction_amount ?? 0) * 100),
         iva_cents: ivaPortion(Math.round((ap.transaction_amount ?? 0) * 100)),
         currency: ap.currency_id ?? 'MXN',
-        status: paymentStatus,
+        status: ledgerStatus(paymentStatus, previousLedgerStatus),
         raw: ap as unknown as Record<string, unknown>,
       },
       { onConflict: 'mp_payment_id' },
@@ -414,22 +476,47 @@ export async function recordAuthorizedPayment(
       console.error('[mp/subscription] payments upsert failed', error);
       return { ok: false, retry: true };
     }
-    const { data: subRow } = await admin
+    const { data: subRow, error: subErr } = await admin
       .from('subscriptions')
       .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
+    // A failed read is not "no stored charge": the replay guards below would
+    // pass and roll last_charge_at back. Retry instead.
+    if (subErr) {
+      console.error('[mp/subscription] subscriptions read failed', subErr);
+      return { ok: false, retry: true };
+    }
     if (paymentStatus === 'approved') {
-      await admin
-        .from('subscriptions')
-        .update({
-          last_charge_at: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
-          grace_ends_at: null,
-          // The next charge needs its own notice.
-          reminder_delivered_at: null,
-          charge_hold_until: null,
-        })
-        .eq('mp_preapproval_id', preapprovalId);
+      // Notifications can be replayed (unsigned IPN) or arrive out of order:
+      // last_charge_at only ever moves forward. Writing an older charge's
+      // date would roll it back and could start the unpaid-charge deadline
+      // for someone who has paid.
+      const chargeAt = new Date(
+        ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+      ).toISOString();
+      const storedAt = (subRow?.last_charge_at as string | null | undefined) ?? null;
+      const olderThanStored = !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt);
+      // A charge from an EARLIER cycle (a replay, or a notice that arrived
+      // after the next charge was recorded) says nothing about the current
+      // cycle: it must not lift a bounce hold, settle a grace window or
+      // re-arm a reminder that belong to the later charge. A few days of
+      // slack keeps the same charge reported with slightly different dates
+      // (debit_date vs MP's summary) counting as the current one.
+      const earlierCycle =
+        !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt) - EARLIER_CYCLE_SLACK_MS;
+      if (!earlierCycle) {
+        await admin
+          .from('subscriptions')
+          .update({
+            ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
+            grace_ends_at: null,
+            // The next charge needs its own notice.
+            reminder_delivered_at: null,
+            charge_hold_until: null,
+          })
+          .eq('mp_preapproval_id', preapprovalId);
+      }
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
       if (subRow?.plan_key === 'pro_lealtad') {
         await onLealtadCharge({

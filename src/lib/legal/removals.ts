@@ -27,3 +27,14 @@ export async function hiddenJobIds(userId: string): Promise<Set<string>> {
 export async function isJobHidden(userId: string, jobId: string): Promise<boolean> {
   return (await hiddenJobIds(userId)).has(jobId);
 }
+
+/** Drops the items whose job was removed after a copyright notice. */
+export async function withoutHiddenJobs<T>(
+  userId: string,
+  items: T[],
+  jobIdOf: (item: T) => string,
+): Promise<T[]> {
+  if (items.length === 0) return items;
+  const hidden = await hiddenJobIds(userId);
+  return hidden.size === 0 ? items : items.filter((i) => !hidden.has(jobIdOf(i)));
+}

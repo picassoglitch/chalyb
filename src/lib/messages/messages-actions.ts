@@ -11,8 +11,8 @@
 //     so unread badges are accurate from either perspective.
 //
 // WRITE PATHS:
-//   - sendMessageFromUser → INSERT row with sender_role='USER'. Subscriber
-//     RLS policy permits this when thread_user_id = auth.uid().
+//   - sendMessageFromUser → INSERT row with sender_role='USER'. Uses the
+//     admin client: clients have no write grants on messages (hub_lock_client_writes).
 //   - sendReplyFromAdmin → INSERT row with sender_role='ADMIN'. Uses the
 //     admin client so RLS isn't in the way (auth happens in the action body).
 //   - markThreadReadAsUser → UPDATE read_at_user on every ADMIN row in

@@ -53,6 +53,8 @@ import {
   subscriptionReference,
 } from './subscription-reference';
 import { cancelPreapproval, syncSubscription } from './subscription-sync';
+import { alertChargedWithoutRow, cancelUnchargedWithoutRow } from './unrecorded-preapproval';
+import { writeRowWithRetry } from './row-retry';
 
 /** What a customer reads when the card itself was the problem. */
 const CARD_ERROR =
@@ -295,20 +297,51 @@ export async function authorizeTierSubscription(input: {
     }
 
     // Our copy, written before the sync so a webhook racing us finds it.
-    await admin.from('subscriptions').upsert(
-      {
-        user_id: session.user.id,
-        tier: targetTier,
-        mp_preapproval_id: result.id,
-        external_reference: externalReference,
-        status: normalizePreapprovalStatus(result.status),
-        amount_cents: pricing.amountCents,
-        currency: pricing.currency,
-        next_payment_date: result.next_payment_date ?? null,
-        raw: result as unknown as Record<string, unknown>,
-      },
-      { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
+    const rowErr = await writeRowWithRetry(() =>
+      admin.from('subscriptions').upsert(
+        {
+          user_id: session.user.id,
+          tier: targetTier,
+          mp_preapproval_id: result.id,
+          external_reference: externalReference,
+          status: normalizePreapprovalStatus(result.status),
+          amount_cents: pricing.amountCents,
+          currency: pricing.currency,
+          next_payment_date: result.next_payment_date ?? null,
+          raw: result as unknown as Record<string, unknown>,
+        },
+        { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
+      ),
     );
+    // Monthly, charged on creation: keep it, and build the row from MP now so
+    // the plan is on (and a second purchase blocked) before we answer.
+    if (rowErr) {
+      console.error('[mp/subscription] subscriptions row not stored', result.id, rowErr);
+      // No plan_key: like any legacy row, priced by the tier's monthly price.
+      const synced = await syncSubscription(result.id, { rowFailed: {} }).catch((err) => {
+        console.error('[mp/subscription] fallback sync failed', result.id, err);
+        return null;
+      });
+      const fallback = !synced?.ok
+        ? 'failed'
+        : synced.applied === 'activate'
+          ? 'granted'
+          : 'row_only';
+      await alertChargedWithoutRow({
+        userId: session.user.id,
+        preapprovalId: result.id,
+        planKey: `${targetTier} mensual (legacy)`,
+        fallback,
+        source: 'billing.legacy-checkout',
+      });
+      if (fallback === 'failed') {
+        return {
+          ok: false,
+          reason: 'mp_error',
+          error: 'No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar.',
+        };
+      }
+    }
 
     // Same path the webhook takes: fetch the preapproval, check the price,
     // apply the entitlement. Doing it here means the plan is active when the
@@ -404,20 +437,36 @@ export async function startHostedTierSubscription(input: {
 
     // Our copy, pending. The webhook (or the sync when the user comes back)
     // flips it to authorized and activates the tier.
-    await admin.from('subscriptions').upsert(
-      {
-        user_id: session.user.id,
-        tier: targetTier,
-        mp_preapproval_id: result.id,
-        external_reference: externalReference,
-        status: normalizePreapprovalStatus(result.status),
-        amount_cents: pricing.amountCents,
-        currency: pricing.currency,
-        next_payment_date: result.next_payment_date ?? null,
-        raw: result as unknown as Record<string, unknown>,
-      },
-      { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
+    const rowErr = await writeRowWithRetry(() =>
+      admin.from('subscriptions').upsert(
+        {
+          user_id: session.user.id,
+          tier: targetTier,
+          mp_preapproval_id: result.id,
+          external_reference: externalReference,
+          status: normalizePreapprovalStatus(result.status),
+          amount_cents: pricing.amountCents,
+          currency: pricing.currency,
+          next_payment_date: result.next_payment_date ?? null,
+          raw: result as unknown as Record<string, unknown>,
+        },
+        { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
+      ),
     );
+    // No card authorised yet, so nothing charged: cancel it.
+    if (rowErr) {
+      console.error('[mp/subscription] subscriptions row not stored', result.id, rowErr);
+      await cancelUnchargedWithoutRow({
+        userId: session.user.id,
+        preapprovalId: result.id,
+        source: 'billing.legacy-checkout',
+      });
+      return {
+        ok: false,
+        reason: 'mp_error',
+        error: 'No pudimos guardar tu suscripción. Inténtalo de nuevo en un momento.',
+      };
+    }
 
     return { ok: true, url };
   } catch (err) {

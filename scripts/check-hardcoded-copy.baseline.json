@@ -1,6 +1,4 @@
 {
-  "src/app/[locale]/(dashboard)/app/error.tsx": 5,
-  "src/app/[locale]/(dashboard)/app/messages/page.tsx": 3,
   "src/app/[locale]/(dashboard)/app/subscription/checkout/page.tsx": 9,
   "src/components/workspace/chalybclip-grace-banner.tsx": 7,
   "src/components/workspace/help-faq.tsx": 43,

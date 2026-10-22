@@ -7,6 +7,7 @@ import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/cli
 import { runTool } from '@/lib/tools/bff';
 import { CLASSIC_CONNECT_PLATFORMS } from '@/lib/tools/adapters/types';
 import { listClipJobs } from '@/lib/tools/clips-jobs';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { processingRows } from '@/lib/tools/clips-home';
 import { creditsRenewDate } from '@/lib/tools/clips-copy';
 import { clipSourceHref } from '@/lib/tools/clips-sources';
@@ -73,7 +74,11 @@ export default async function ClipsHomePage({ params }: { params: Promise<{ loca
       'chalybclip',
       userId,
       () =>
-        Promise.all([listClipJobs(userId), adapter.listClips(userId), adapter.accounts(userId)]),
+        Promise.all([
+          listClipJobs(userId),
+          adapter.listClips(userId).then((all) => withoutHiddenJobs(userId, all, (c) => c.jobId)),
+          adapter.accounts(userId),
+        ]),
       { idempotent: true, adapterErrorsOnly: true },
     ),
     getTokenBalance(userId).catch(() => null),

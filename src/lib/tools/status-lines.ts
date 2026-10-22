@@ -6,8 +6,9 @@
 import 'server-only';
 import type { PlanTierKey } from './adapters/tools';
 import { getClipsAdapter } from './adapters/clips';
-import { getEnVivo, getSenales } from './registry';
+import { getEnVivo, getSenales, hubRunsTool } from './registry';
 import { runTool } from './bff';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { clipsLine, liveLine, signalsLine, type ToolStatusLine } from './status-lines-core';
 
 export type { ToolStatusLine } from './status-lines-core';
@@ -23,6 +24,10 @@ export async function toolStatusLines(
   const tz = 'America/Mexico_City';
   await Promise.all(
     includedSlugs.map(async (slug) => {
+      // Only tools the hub runs itself have a line. Mode A is a stub that
+      // throws NOT_IMPLEMENTED (registry.ts): calling it would log a tool
+      // error, trip the breaker and mark the tool down on every page view.
+      if (!hubRunsTool(slug)) return;
       if (slug === 'chalybclip') {
         const a = getClipsAdapter();
         if (!a) return;
@@ -30,8 +35,9 @@ export async function toolStatusLines(
           idempotent: true,
         });
         if (!r.ok) return;
-        const working = r.data.filter((j) => j.state !== 'ready' && j.state !== 'failed');
-        const ready = r.data.filter((j) => j.state === 'ready');
+        const jobs = await withoutHiddenJobs(userId, r.data, (j) => j.id);
+        const working = jobs.filter((j) => j.state !== 'ready' && j.state !== 'failed');
+        const ready = jobs.filter((j) => j.state === 'ready');
         out[slug] = clipsLine(
           {
             inProgress: working.length,

@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { formatUsdMicros, getProviderUsage } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'API e integraciones' };
 
@@ -49,6 +50,7 @@ function isConfigured(envKeys: string[][]): boolean {
 export default async function ApiPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const providers = await getProviderUsage();
   const configured = INTEGRATIONS.map((i) => ({ ...i, ok: isConfigured(i.envKeys) }));

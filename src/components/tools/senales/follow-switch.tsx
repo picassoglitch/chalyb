@@ -40,7 +40,16 @@ export function FollowSwitch({
         body: JSON.stringify({ coins: [...set] }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      setList([...set]);
+      // The server keeps at least one coin (signals-prefs.ts), so turning off
+      // the only one is refused: show what was actually saved.
+      const json = (await res.json().catch(() => null)) as {
+        data?: { coins?: unknown };
+      } | null;
+      const saved = Array.isArray(json?.data?.coins)
+        ? json.data.coins.map(String)
+        : [...set];
+      setList(saved);
+      setOn(saved.includes(coin));
     } catch {
       setOn(!next);
       setError(true);

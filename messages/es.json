@@ -867,6 +867,21 @@
         "vip": "Plan VIP"
       },
       "yourAccount": "Tu cuenta"
+    },
+    "error": {
+      "title": "Algo se rompió en esta pantalla",
+      "body": "Un error de servidor cortó la carga. La sesión sigue activa — puedes recargar o irte a otra parte del workspace mientras lo investigamos.",
+      "id": "ID del error:",
+      "retry": "↻ Reintentar",
+      "home": "Volver al inicio"
+    },
+    "messages": {
+      "metaTitle": "Mensajes",
+      "title": "Habla directo con el equipo Chalyb",
+      "body": "Este chat llega directo a nosotros. Escríbenos para ideas, fallas que encontraste, propuestas de colaboración o lo que prefieras no mandar por correo. Nadie más lo ve.",
+      "empty": "Todavía no hay mensajes. Escríbenos el primero aquí abajo — leemos todo.",
+      "placeholder": "Cuéntanos qué tienes en mente. Enter envía · Shift+Enter agrega línea.",
+      "send": "Enviar al equipo"
     }
   },
   "account": {
@@ -1177,7 +1192,8 @@
       "periodYear": "por 1 año",
       "periodMonth": "cada mes",
       "accountClosed": "Esta cuenta está cerrada por un contracargo de mala fe sin pagar (Términos de Suscripción §10.6). Siempre puedes descargar tu contenido. Si crees que es un error, escríbenos.",
-      "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis."
+      "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis.",
+      "chargedNoPlan": "No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar."
     },
     "summary": {
       "title": "Resumen",

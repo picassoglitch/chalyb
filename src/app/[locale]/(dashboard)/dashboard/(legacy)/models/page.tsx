@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { formatCompact, formatUsdMicros, getModelUsage } from '@/lib/data/ops';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Modelos y medidores' };
 
@@ -19,6 +20,7 @@ export default async function ModelsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const providers = await getModelUsage();
 

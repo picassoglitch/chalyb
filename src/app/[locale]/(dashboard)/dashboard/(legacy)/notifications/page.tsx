@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { listNotifications, timeAgo, type NotificationRow } from '@/lib/data/ops';
 import { markAllNotificationsRead } from '@/lib/notifications/actions';
+import { requireAdminPage } from '@/lib/admin/guard';
 
 export const metadata = { title: 'Notificaciones' };
 
@@ -46,6 +47,7 @@ export default async function NotificationsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireAdminPage();
 
   const notifications = await listNotifications();
   const unread = notifications.filter((n) => !n.read_at);

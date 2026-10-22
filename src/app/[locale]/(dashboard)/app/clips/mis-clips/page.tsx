@@ -5,6 +5,7 @@ import { loadTool } from '@/lib/tools/access';
 import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/clips';
 import { runTool } from '@/lib/tools/bff';
 import { MineNav } from '@/components/tools/clips/engine/mine-nav';
+import { withoutHiddenJobs } from '@/lib/legal/removals';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { ToolLockedState, lockedOffer } from '@/components/tools/tool-locked-state';
@@ -53,7 +54,10 @@ export default async function MisClipsPage({ params }: { params: Promise<{ local
   const loaded = await runTool(
     'chalybclip',
     gate.session.user.id,
-    (signal) => gate.adapter.listClips(gate.session.user.id, undefined, signal),
+    (signal) =>
+      gate.adapter
+        .listClips(gate.session.user.id, undefined, signal)
+        .then((all) => withoutHiddenJobs(gate.session.user.id, all, (c) => c.jobId)),
     { idempotent: true, adapterErrorsOnly: true },
   );
   if (!loaded.ok)

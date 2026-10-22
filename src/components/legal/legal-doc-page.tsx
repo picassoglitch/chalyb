@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { legalDraftsAsPublished, legalPublished } from '@/lib/config/flags';
+import { inForce } from '@/lib/legal/in-force';
 import {
   archived,
   currentVersion,
@@ -22,7 +22,6 @@ import {
   parseVersionSlug,
   renderedBlocks,
   renderedSource,
-  versionMeta,
   versionSlug,
   type LegalDoc,
 } from '@/lib/legal/registry';
@@ -53,13 +52,8 @@ function resolveVersion(doc: LegalDoc, slug?: string): string | null {
   return v && archived(doc, v) ? v : null;
 }
 
-/** Whether a version is the text in force (the local e2e override treats
- *  drafts as published). */
-export function inForce(doc: LegalDoc, version = currentVersion(doc)): boolean {
-  return (
-    legalPublished() && (Boolean(versionMeta(doc, version)?.published) || legalDraftsAsPublished())
-  );
-}
+// inForce lives in a plain module so the sitemap (and its tests) can use it.
+export { inForce };
 
 export async function legalDocMetadata(
   doc: LegalDoc,
@@ -90,7 +84,8 @@ export async function LegalDocPage({
   const version = resolveVersion(doc, versionSlugParam);
   // The packs text names the owner's pack prices in force (Ajustes), the
   // same totals the checkout charges. A published version keeps its own.
-  const packs = doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
+  const packs =
+    doc === 'paquetes' ? (await loadPricedPacks().catch(() => null))?.totals : undefined;
   const list = version ? renderedBlocks(doc, version, packs) : null;
   if (!version || !list) notFound();
 
@@ -101,7 +96,7 @@ export async function LegalDocPage({
     return (
       <LegalPage
         title={t(`${MESSAGE_KEY[doc]}.title`)}
-        lastUpdated={t('doc.reviewLine')}
+        meta={t('doc.reviewLine')}
         isAuthenticated={user !== null}
       >
         <p className="legal-callout" role="note">
@@ -129,7 +124,7 @@ export async function LegalDocPage({
   return (
     <LegalPage
       title={title && title.t === 'h' ? inlineText(title.c) : t(`${MESSAGE_KEY[doc]}.title`)}
-      lastUpdated={t('doc.versionLine', { version, fecha: effective })}
+      meta={t('doc.versionLine', { version, fecha: effective })}
       isAuthenticated={user !== null}
     >
       {locale !== 'es' && (

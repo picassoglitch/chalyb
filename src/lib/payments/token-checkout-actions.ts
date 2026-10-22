@@ -418,15 +418,17 @@ export async function payTokenPackWithCard(input: PackConsentInput & {
           ],
         },
       },
-      // Stable per user, pack and ten-minute window (order-charge.ts): a
-      // retried submit reuses the order instead of charging twice. The card
-      // token is single-use anyway; the key is what keeps the ORDER single.
+      // Stable per user, pack, card token and ten-minute window
+      // (order-charge.ts): a retried submit reuses the order instead of
+      // charging twice, and a different card after a decline gets its own
+      // attempt instead of the first card's cached rejection.
       requestOptions: {
         idempotencyKey: orderIdempotencyKey({
           userId: session.user.id,
           packId: pack.id,
           mode: 'card',
           amountCents: accepted.cents,
+          cardToken: token,
         }),
       },
     });
