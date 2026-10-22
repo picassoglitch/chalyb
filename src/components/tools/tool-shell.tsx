@@ -1,6 +1,6 @@
 // A tool's own home inside the app (TOOLS-SPEC §3): the AppShell sidebar
 // stays (shell-routes TOOL), and on top go the tool header (icon in the
-// tool's color, name, plan pill) and at most 3 tabs. Nothing opens a tab.
+// tool's color, name, plan pill) and its tabs (Clips has 4). Nothing opens a tab.
 
 import type { Route } from 'next';
 import type { ReactNode } from 'react';

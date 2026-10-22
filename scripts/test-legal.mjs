@@ -76,7 +76,7 @@ const SUITE = [
 const run = spawnSync(
   process.execPath,
   [
-    '--experimental-strip-types',
+    '--experimental-transform-types',
     '--no-warnings',
     '--import',
     './tests/ts-resolve.mjs',
