@@ -667,7 +667,6 @@
         "testsValue": "{passed} bien, {failed} mal",
         "blockers": "Bloqueos"
       },
-      "interrupt": "Interrumpir",
       "resume": "Reanudar",
       "mode": "Modo",
       "modes": {
@@ -685,7 +684,8 @@
       "answer": "Responder",
       "answerSent": "Respuesta enviada.",
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
-      "failed": "No pudimos enviarlo."
+      "failed": "No pudimos enviarlo.",
+      "stop": "Detener"
     },
     "timeline": {
       "label": "Actividad",
@@ -900,6 +900,56 @@
         "rejected": "No pudimos recuperar tu cuenta. Vuelve a intentarlo.",
         "failed": "Algo falló. Vuelve a intentarlo en un momento."
       }
+    },
+    "transcript": {
+      "label": "Conversación",
+      "empty": "Aún no hay mensajes. Escríbele abajo.",
+      "writing": "Escribiendo…",
+      "sealedMessage": "Mensaje cifrado para otro dispositivo.",
+      "sealedStep": "Paso cifrado para otro dispositivo",
+      "from": {
+        "client": "Tú",
+        "local": "Tú, en la computadora",
+        "agent": "Otro agente",
+        "mcp": "Tú, desde una app conectada",
+        "call": "Tú, por llamada",
+        "other": "Mensaje"
+      },
+      "category": {
+        "read": "Leer",
+        "search": "Buscar",
+        "edit": "Editar",
+        "create": "Crear",
+        "delete": "Borrar",
+        "shell": "Terminal",
+        "web": "Web",
+        "mcp": "Conector",
+        "git": "Git",
+        "other": "Herramienta"
+      },
+      "step": {
+        "running": "En curso",
+        "ok": "Listo",
+        "failed": "Falló",
+        "stopped": "Sin terminar"
+      },
+      "pill": {
+        "running": "Trabajando",
+        "waiting": "Te está esperando",
+        "idle": "En pausa",
+        "ended": "Terminada"
+      },
+      "error": {
+        "adapter_crash": "el agente se cerró",
+        "auth_required": "hay que volver a iniciar sesión en la IA",
+        "rate_limited": "la IA pidió esperar un momento",
+        "quota_exhausted": "se acabó el plan de la IA",
+        "policy_block": "tu regla de seguridad lo bloqueó",
+        "internal": "algo falló en la computadora"
+      },
+      "waitingHere": "{count, plural, =0 {Aprobaciones vencidas} one {Te espera # aprobación} other {Te esperan # aprobaciones}}",
+      "more": "Detalles y ajustes de la sesión",
+      "earlier": "Los mensajes anteriores ya no se muestran."
     }
   },
   "mcp": {

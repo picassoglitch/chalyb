@@ -769,3 +769,202 @@
 .chalyb-app .ch-chl-check--off {
   color: var(--ink3-text);
 }
+
+/* ---------- Live session (/rc-style transcript, 2026-10-21) ---------- */
+.chalyb-app .ch-chl-wrap {
+  overflow-wrap: anywhere;
+}
+.chalyb-app .ch-chl-stop {
+  justify-self: start;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-chl-stop {
+    max-width: none;
+  }
+}
+.chalyb-app .ch-chl-stop:focus-visible,
+.chalyb-app .ch-chl-composer .ch-btn:focus-visible,
+.chalyb-app .ch-chl-step summary:focus-visible,
+.chalyb-app .ch-chl-more > summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chalyb-app .ch-chl-stop:active:not([disabled]),
+.chalyb-app .ch-chl-composer .ch-btn:active:not([disabled]) {
+  transform: scale(0.97);
+}
+.chalyb-app .ch-chl-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.chalyb-app .ch-chl-msg {
+  display: grid;
+  gap: 4px;
+  align-self: flex-start;
+  max-width: min(100%, 680px);
+  min-width: 0;
+  padding: 14px 18px;
+  border-radius: 20px 20px 20px 6px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 18px;
+}
+.chalyb-app .ch-chl-msg--me {
+  align-self: flex-end;
+  max-width: min(88%, 560px);
+  border-radius: 20px 20px 6px 20px;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+.chalyb-app .ch-chl-msg--draft {
+  box-shadow: inset 0 0 0 1.5px #dad6ff;
+}
+.chalyb-app .ch-chl-msg__who {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink3-text);
+}
+.chalyb-app .ch-chl-msg--me .ch-chl-msg__who {
+  color: rgba(255, 255, 255, 0.85);
+}
+.chalyb-app .ch-chl-caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  border-radius: 2px;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chalyb-app .ch-chl-caret {
+    animation: ch-chl-blink 1s steps(2, start) infinite;
+  }
+  .chalyb-app .ch-chl-msg {
+    animation: ch-chl-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+@keyframes ch-chl-blink {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ch-chl-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+/* Tool steps: one quiet line each, the whole input on tap. */
+.chalyb-app .ch-chl-step {
+  min-width: 0;
+}
+.chalyb-app .ch-chl-step__fold {
+  border-radius: 14px;
+  background: #eeeef2;
+  padding: 0 14px;
+  font-size: 15px;
+  color: var(--ink2);
+}
+.chalyb-app .ch-chl-step__fold > summary,
+.chalyb-app .ch-chl-step__fold--flat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  min-width: 0;
+  cursor: pointer;
+  list-style: none;
+}
+.chalyb-app .ch-chl-step__fold--flat {
+  cursor: default;
+}
+.chalyb-app .ch-chl-step__fold > summary::-webkit-details-marker {
+  display: none;
+}
+.chalyb-app .ch-chl-step__fold[open] {
+  padding-bottom: 12px;
+}
+.chalyb-app .ch-chl-step__fold[open] > pre {
+  margin: 4px 0 0;
+  max-height: 320px;
+  overflow: auto;
+}
+.chalyb-app .ch-chl-step__cat {
+  flex: none;
+  font-weight: 700;
+  color: var(--ink);
+}
+.chalyb-app .ch-chl-step__sum {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.chalyb-app .ch-chl-step__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ink3);
+}
+.chalyb-app .ch-chl-step__dot--ok {
+  background: var(--ok);
+}
+.chalyb-app .ch-chl-step__dot--failed {
+  background: var(--bad);
+}
+.chalyb-app .ch-chl-step__dot--running {
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chalyb-app .ch-chl-step__dot--running {
+    animation: ch-chl-blink 1.2s ease-in-out infinite alternate;
+  }
+}
+.chalyb-app .ch-chl-notice {
+  align-self: center;
+  font-size: 15px;
+  color: var(--ink3-text);
+  text-align: center;
+}
+/* The composer stays reachable above the phone tab bar (88px) while the conversation scrolls. */
+.chalyb-app .ch-chl-composer {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  padding: 8px;
+  border-radius: 20px;
+  background: var(--bg);
+  box-shadow: 0 -8px 16px var(--bg);
+}
+.chalyb-app .ch-chl-composer .ch-btn {
+  flex: none;
+  padding: 0 20px;
+}
+@media (max-width: 899px) {
+  .chalyb-app .ch-chl-composer {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 479px) {
+  .chalyb-app .ch-chl-composer__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+.chalyb-app .ch-chl-more > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
