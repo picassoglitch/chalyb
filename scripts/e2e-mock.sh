@@ -33,6 +33,8 @@ cleanup() {
   done
 }
 trap cleanup EXIT
+trap 'exit 130' INT  # bash skips the EXIT trap when a signal kills it; exit runs it
+trap 'exit 143' TERM
 
 MOCK_SUPABASE_PORT="$MOCK_PORT" setsid node e2e/mock-supabase/server.mjs >"$LOGS/mock-supabase.log" 2>&1 &
 mock_pid=$!
