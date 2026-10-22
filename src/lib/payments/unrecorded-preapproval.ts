@@ -12,12 +12,15 @@ import { cancelPreapproval } from './subscription-sync';
 export async function alertChargedWithoutRow(input: {
   userId: string;
   preapprovalId: string;
+  planKey: string;
   source: string;
 }): Promise<void> {
+  // The sync's fallback row has no plan_key, so it prices at the monthly
+  // default: only a monthly plan is granted by itself.
   await notify({
     severity: 'critical',
     title: 'Cobro sin fila de suscripción — revisa el plan en Mercado Pago',
-    body: `usuario ${input.userId} · MP ${input.preapprovalId} · ya se cobró; el webhook intentará crear la fila y dar el plan`,
+    body: `usuario ${input.userId} · MP ${input.preapprovalId} · plan ${input.planKey} · ya se cobró. Mensual: el webhook crea la fila y da el plan en ~10 min. Anual/Lealtad: dalo a mano.`,
     href: '/dashboard/dinero',
     source: input.source,
   });

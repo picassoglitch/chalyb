@@ -517,7 +517,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       await cancelUnchargedWithoutRow(who);
       return { ok: false, code: 'MP_ERROR' };
     }
-    await alertChargedWithoutRow(who);
+    await alertChargedWithoutRow({ ...who, planKey: input.planKey });
   }
   if (mode === 'trial') {
     await admin

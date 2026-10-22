@@ -114,7 +114,7 @@ test('a failed row write never cancels a preapproval that already charged', () =
   // Cancel (and fail the checkout) only when the first charge is later.
   assert.match(
     block,
-    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}\s*await alertChargedWithoutRow\(who\);\s*\}\s*$/,
+    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}\s*await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey \}\);\s*\}\s*$/,
   );
   assert.match(start, /const rowErr = await writeRowWithRetry\(\(\) =>/);
   // The old comment promised a refund path that doesn't exist.

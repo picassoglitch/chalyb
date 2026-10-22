@@ -53,10 +53,7 @@ import {
   subscriptionReference,
 } from './subscription-reference';
 import { cancelPreapproval, syncSubscription } from './subscription-sync';
-import {
-  alertChargedWithoutRow,
-  cancelUnchargedWithoutRow,
-} from './unrecorded-preapproval';
+import { alertChargedWithoutRow, cancelUnchargedWithoutRow } from './unrecorded-preapproval';
 import { writeRowWithRetry } from './row-retry';
 
 /** What a customer reads when the card itself was the problem. */
@@ -322,6 +319,7 @@ export async function authorizeTierSubscription(input: {
       await alertChargedWithoutRow({
         userId: session.user.id,
         preapprovalId: result.id,
+        planKey: `${targetTier} mensual`,
         source: 'billing.legacy-checkout',
       });
     }
