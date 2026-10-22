@@ -32,10 +32,11 @@ test.describe('signed out', () => {
     expect(new URL(page.url()).searchParams.get('next')).toContain(
       '/app/chalito/computadoras/aprobar',
     );
-    const stashed = await page.evaluate(() =>
-      window.sessionStorage.getItem('chalito.pairing.handoff.v1'),
-    );
-    expect(JSON.parse(stashed ?? '{}')).toMatchObject({ codeId: CODE_ID, port: 47810 });
+    const stashed = () =>
+      page.evaluate(() => window.sessionStorage.getItem('chalito.pairing.handoff.v1'));
+    // The sign-in page stashes it after hydration, which can land after the URL changes.
+    await expect.poll(stashed).not.toBeNull();
+    expect(JSON.parse((await stashed()) ?? '{}')).toMatchObject({ codeId: CODE_ID, port: 47810 });
     // Out of the address bar (history, analytics) right after the stash.
     await expect.poll(() => new URL(page.url()).hash).toBe('');
     expect(leaks(requests, new URL(baseURL!).origin)).toEqual([]);

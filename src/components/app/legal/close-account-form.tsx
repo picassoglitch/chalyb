@@ -56,13 +56,13 @@ export function CloseAccountForm({ creditsShown }: { creditsShown: number | null
 
   if (respondBy)
     return (
-      <p role="status" className="ch-card" style={{ fontWeight: 600 }}>
+      <p role="status" className="ch-card" style={{ fontWeight: 600, padding: 16 }}>
         {t('done', { fecha: formatFechaLarga(respondBy, locale) })}
       </p>
     );
 
   return (
-    <div className="ch-card" style={{ display: 'grid', gap: 16 }}>
+    <div className="ch-card" style={{ display: 'grid', gap: 16, padding: 16 }}>
       <label className="ch-check">
         <input
           type="checkbox"

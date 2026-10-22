@@ -2,6 +2,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import {
   NAV_ITEMS,
   activeNavFor,
@@ -84,6 +86,66 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
   assert.equal(shellModeFor('/app/usage'), 'modern', 'FIX-3 B');
   assert.equal(shellModeFor('/en/app/usage'), 'modern');
   assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Tus herramientas');
+});
+
+test('a screen built on the light design never lands in the dark legacy panel', () => {
+  // Cerrar mi cuenta shipped as ch- markup but missing from MODERN, so it rendered pale text on black.
+  const root = 'src/app/[locale]/(dashboard)/app';
+  const pages = (readdirSync(root, { recursive: true }) as string[]).filter((f) =>
+    f.endsWith('page.tsx'),
+  );
+  // Follows @/components and relative imports all the way down: the markup may live several files deep.
+  const unresolved: string[] = [];
+  const resolveImport = (from: string, spec: string) => {
+    const base = spec.startsWith('@/components/')
+      ? `src/components/${spec.slice(13)}`
+      : join(dirname(from), spec);
+    for (const ext of ['', '.tsx', '.ts', '/index.tsx', '/index.ts']) {
+      try {
+        if (readFileSync(base + ext) && /\.tsx?$/.test(base + ext)) return base + ext;
+      } catch {
+        // not this extension; try the next one
+      }
+    }
+    unresolved.push(`${from} → ${spec}`);
+    return null;
+  };
+  const source = (entry: string) => {
+    const seen = new Set<string>();
+    const queue = [entry];
+    let code = '';
+    while (queue.length) {
+      const file = queue.pop()!;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      const text = readFileSync(file, 'utf8');
+      code += text + '\n';
+      for (const m of text.matchAll(/from '((?:@\/components\/|\.{1,2}\/)[^']+)'/g)) {
+        const spec = m[1]!;
+        if (/\.(css|svg|png|json)$/.test(spec)) continue;
+        const next = resolveImport(file, spec);
+        if (next) queue.push(next);
+      }
+    }
+    return code;
+  };
+  const light = pages
+    .filter((f) => {
+      const code = source(join(root, f));
+      return /\bch-(h1|card|btn)|ButtonLink/.test(code) && !/\bcc-/.test(code);
+    })
+    .map(
+      (f) =>
+        '/app/' +
+        relative('.', dirname(f))
+          .replace(/\([^)]+\)\/?/g, '')
+          .replace(/%5F/g, '_'),
+    )
+    .map((p) => p.replace(/\/\.$|\/$/, ''));
+  assert.deepEqual(unresolved, [], 'every import the scan follows resolves');
+  for (const p of ['/app/settings/cerrar-cuenta', '/app/planes'])
+    assert.ok(light.includes(p), `the scan finds ${p}`);
+  for (const p of light) assert.notEqual(shellModeFor(p), 'legacy', p);
 });
 
 test('plan labels', () => {
