@@ -80,7 +80,11 @@ import { paidPlansBlocked } from './quebec';
 import { loadBilling } from './subscription-store';
 import { trialCardCheck } from './trial-eligibility';
 import { PLAN_NAMES } from '@/lib/billing/plan-names';
-import { notify } from '@/lib/notifications/notify';
+import {
+  alertChargedWithoutRow,
+  cancelUnchargedWithoutRow,
+} from '@/lib/payments/unrecorded-preapproval';
+import { writeRowWithRetry } from '@/lib/payments/row-retry';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -402,9 +406,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
 
   // ── Evidence, then our copy ────────────────────────────────────────
   // A subscription without its consent evidence must not survive: if the
-  // event can't be stored, the preapproval is cancelled before anything is
-  // charged (the trial's first charge is a month away; a paid start's first
-  // charge is refunded by the cancel path's reversal handling).
+  // event can't be stored, the preapproval is cancelled. A trial is cancelled
+  // before any charge; a paid start's first charge is NOT refunded here.
   const ctx = await requestContext();
   let consent;
   try {
@@ -476,53 +479,45 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     card.expiration_month && card.expiration_year
       ? `${String(card.expiration_month).padStart(2, '0')}/${String(card.expiration_year).slice(-2)}`
       : null;
-  const { error: rowErr } = await admin.from('subscriptions').upsert(
-    {
-      user_id: userId,
-      tier,
-      plan_key: input.planKey,
-      mp_preapproval_id: preapprovalId,
-      external_reference: reference,
-      // Written as 'pending'; the sync below records Mercado Pago's real
-      // status, which is what makes it a first activation (audit, grant).
-      status: 'pending',
-      amount_cents: chargeCents,
-      ...(lealtad ? { loyalty_step: startStep, loyalty_mp_amount_cents: chargeCents } : {}),
-      currency: CURRENCY,
-      started_at: now.toISOString(),
-      trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
-      next_charge_at: firstChargeLater ? dates.chargeAt.toISOString() : null,
-      // Fixed at creation: dates the deadline if this never charges (0057).
-      first_charge_at: dates.chargeAt.toISOString(),
-      next_payment_date: firstChargeLater ? dates.chargeAt.toISOString() : null,
-      reminder_due_at: trialLike ? dates.reminderAt.toISOString() : null,
-      card_brand: card.payment_method_id ?? null,
-      card_last4: card.last_four_digits ?? null,
-      card_exp: exp,
-      consent_id: consent.consent_id,
-    },
-    { onConflict: 'mp_preapproval_id' },
+  const rowErr = await writeRowWithRetry(() =>
+    admin.from('subscriptions').upsert(
+      {
+        user_id: userId,
+        tier,
+        plan_key: input.planKey,
+        mp_preapproval_id: preapprovalId,
+        external_reference: reference,
+        // Written as 'pending'; the sync below records Mercado Pago's real
+        // status, which is what makes it a first activation (audit, grant).
+        status: 'pending',
+        amount_cents: chargeCents,
+        ...(lealtad ? { loyalty_step: startStep, loyalty_mp_amount_cents: chargeCents } : {}),
+        currency: CURRENCY,
+        started_at: now.toISOString(),
+        trial_ends_at: trialLike ? dates.trialEndsAt.toISOString() : null,
+        next_charge_at: firstChargeLater ? dates.chargeAt.toISOString() : null,
+        // Fixed at creation: dates the deadline if this never charges (0057).
+        first_charge_at: dates.chargeAt.toISOString(),
+        next_payment_date: firstChargeLater ? dates.chargeAt.toISOString() : null,
+        reminder_due_at: trialLike ? dates.reminderAt.toISOString() : null,
+        card_brand: card.payment_method_id ?? null,
+        card_last4: card.last_four_digits ?? null,
+        card_exp: exp,
+        consent_id: consent.consent_id,
+      },
+      { onConflict: 'mp_preapproval_id' },
+    ),
   );
-  // Without our row the webhook can't price-check the preapproval (it has no
-  // plan_key) and keeps asking for a retry: same rule as missing evidence —
-  // the preapproval must not survive.
+  // No money taken yet: cancel. Already charged: cancelling would keep the
+  // money and give nothing, so carry on and let the webhook build the row.
   if (rowErr) {
-    console.error(
-      '[billing/start] subscriptions row not stored — cancelling the new preapproval',
-      rowErr,
-    );
-    await cancelPreapproval(preapprovalId).catch(async (e) => {
-      console.error('[billing/start] COULD NOT CANCEL preapproval without a row', preapprovalId, e);
-      // Its webhooks retry forever without a row and MP keeps charging: a human cancels it.
-      await notify({
-        severity: 'critical',
-        title: 'Preapproval vivo sin fila — cancélalo en Mercado Pago',
-        body: `usuario ${userId} · MP ${preapprovalId}`,
-        href: '/dashboard/dinero',
-        source: 'billing.start',
-      });
-    });
-    return { ok: false, code: 'MP_ERROR' };
+    console.error('[billing/start] subscriptions row not stored', preapprovalId, rowErr);
+    const who = { userId, preapprovalId, source: 'billing.start' };
+    if (firstChargeLater) {
+      await cancelUnchargedWithoutRow(who);
+      return { ok: false, code: 'MP_ERROR' };
+    }
+    await alertChargedWithoutRow(who);
   }
   if (mode === 'trial') {
     await admin

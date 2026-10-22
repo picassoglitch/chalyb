@@ -13,14 +13,13 @@ test('syncSubscription asks for a retry when the row is not written yet', () => 
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /if \(beforeErr\) \{[\s\S]{0,140}retry: true/);
   // Whatever the status: a pending notice must not write a row without plan_key.
-  assert.match(s, /if \(!before\) \{[\s\S]{0,200}retry: true/);
+  assert.match(s, /if \(!before && rowMayLand\) \{[\s\S]{0,200}retry: true/);
   assert.doesNotMatch(s, /!before && status === 'authorized'/);
   // The retry check runs before the price gate and before the upsert.
-  assert.ok(s.indexOf('if (!before) {') < s.indexOf('gatePreapproval({'));
-  assert.ok(s.indexOf('if (!before) {') < s.indexOf(".from('subscriptions').upsert("));
-  const start = src('src/lib/billing/start-subscription.ts');
-  assert.match(start, /const \{ error: rowErr \} = await admin\.from\('subscriptions'\)\.upsert/);
-  assert.match(start, /if \(rowErr\) \{[\s\S]{0,300}cancelPreapproval\(preapprovalId\)/);
+  assert.ok(s.indexOf('if (!before && rowMayLand) {') < s.indexOf('gatePreapproval({'));
+  assert.ok(
+    s.indexOf('if (!before && rowMayLand) {') < s.indexOf(".from('subscriptions').upsert("),
+  );
 });
 
 test('recordAuthorizedPayment keeps a known ledger status over an unmapped one', () => {
@@ -106,20 +105,58 @@ test('replay guard: a failed subscriptions read retries instead of rolling the c
   assert.ok(s.indexOf('if (subErr)') < s.indexOf('const olderThanStored'));
 });
 
-test('a preapproval whose row could not be written is cancelled, and a failed cancel alerts', () => {
+test('a failed row write never cancels a preapproval that already charged', () => {
   const start = src('src/lib/billing/start-subscription.ts');
-  assert.match(
-    start,
-    /COULD NOT CANCEL preapproval without a row[\s\S]{0,200}await notify\(\{\s*severity: 'critical'/,
+  const block = start.slice(
+    start.indexOf('if (rowErr) {'),
+    start.indexOf("if (mode === 'trial') {"),
   );
+  // Cancel (and fail the checkout) only when the first charge is later.
+  assert.match(
+    block,
+    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}\s*await alertChargedWithoutRow\(who\);\s*\}\s*$/,
+  );
+  assert.match(start, /const rowErr = await writeRowWithRetry\(\(\) =>/);
+  // The old comment promised a refund path that doesn't exist.
+  assert.doesNotMatch(start, /refunded by the cancel path/);
+
   const legacy = src('src/lib/payments/subscription-actions.ts');
-  // Both legacy checkouts (card form and hosted) check their upsert.
-  const guards = legacy.match(
-    /if \(rowErr\) return dropUnrecordedPreapproval\(session\.user\.id, result\.id, rowErr\);/g,
+  assert.equal(legacy.match(/const rowErr = await writeRowWithRetry\(\(\) =>/g)?.length, 2);
+  const card = legacy.slice(
+    legacy.indexOf('export async function authorizeTierSubscription'),
+    legacy.indexOf('export async function startHostedTierSubscription'),
   );
-  assert.equal(guards?.length, 2);
+  // Card form: charged on creation, so alert and carry on to the sync.
+  assert.match(card, /if \(rowErr\) \{[\s\S]{0,120}await alertChargedWithoutRow\(/);
+  assert.doesNotMatch(card, /cancelUnchargedWithoutRow/);
+  const hosted = legacy.slice(legacy.indexOf('export async function startHostedTierSubscription'));
+  // Hosted: no card yet, so nothing charged: cancel.
+  assert.match(hosted, /if \(rowErr\) \{[\s\S]{0,120}await cancelUnchargedWithoutRow\(/);
+});
+
+test('the sync waits for a checkout row only while it can still land, then builds it as before', () => {
+  const s = src('src/lib/payments/subscription-sync.ts');
+  assert.match(s, /export const ROW_WAIT_MS = 10 \* 60_000;/);
   assert.match(
-    legacy,
-    /async function dropUnrecordedPreapproval[\s\S]{0,400}cancelPreapproval\(preapprovalId\)[\s\S]{0,300}await notify\(\{\s*severity: 'critical'/,
+    s,
+    /const rowMayLand = !!mp\.date_created && Date\.now\(\) - Date\.parse\(mp\.date_created\) < ROW_WAIT_MS;\s*if \(!before && rowMayLand\) \{/,
   );
+});
+
+test('writeRowWithRetry: one retry, then the error', async () => {
+  const { writeRowWithRetry } = await import('@/lib/payments/row-retry');
+  const calls = (results: unknown[]) => {
+    let n = 0;
+    const write = async () => ({ error: results[n++] ?? null });
+    return { write, count: () => n };
+  };
+  const ok = calls([null]);
+  assert.equal(await writeRowWithRetry(ok.write), null);
+  assert.equal(ok.count(), 1);
+  const blip = calls([{ message: 'connection reset' }, null]);
+  assert.equal(await writeRowWithRetry(blip.write), null);
+  assert.equal(blip.count(), 2);
+  const down = calls([{ message: 'a' }, { message: 'b' }, null]);
+  assert.deepEqual(await writeRowWithRetry(down.write), { message: 'b' });
+  assert.equal(down.count(), 2);
 });

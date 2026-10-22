@@ -77,6 +77,10 @@ export type SyncOutcome =
  *  Mercado Pago reports for one and the same charge. */
 const EARLIER_CYCLE_SLACK_MS = 7 * 86_400_000;
 
+/** How long after creating a preapproval its checkout may still be writing
+ *  our row (retries included). */
+export const ROW_WAIT_MS = 10 * 60_000;
+
 /**
  * Pull the preapproval from Mercado Pago and make our side match it.
  *
@@ -124,9 +128,10 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // Any status, not just authorized: a 'pending' notice that got here first
   // would write a row WITHOUT plan_key, and the authorized one right after
   // it would find that row and be gated against the monthly price anyway.
-  // Every checkout writes the row before any sync, and cancels the
-  // preapproval when it can't (start-subscription, subscription-actions).
-  if (!before) {
+  // Only while the checkout's write can still land: past ROW_WAIT_MS it
+  // failed (and alerted), so build the row from MP and grant as before.
+  const rowMayLand = !!mp.date_created && Date.now() - Date.parse(mp.date_created) < ROW_WAIT_MS;
+  if (!before && rowMayLand) {
     console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
       preapprovalId,
     });
