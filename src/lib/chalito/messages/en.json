@@ -161,7 +161,8 @@
       "body": "High-risk actions ask for your passkey: your fingerprint, face or device lock."
     },
     "later": "Do it later",
-    "laterNote": "We'll remind you on Home until it's done."
+    "laterNote": "We'll remind you on Home until it's done.",
+    "finishFailed": "We couldn't save your setup. Try again."
   },
   "settings": {
     "title": "Settings",
@@ -338,7 +339,8 @@
         "ended": "This room has ended for you.",
         "not_owner": "Only the person who created the room can do this.",
         "conflict": "The room changed in the meantime. Try again.",
-        "unsupported": "This device can't do that yet."
+        "unsupported": "This device can't do that yet.",
+        "already": "You're already in that room: find it in your list."
       },
       "memberCount": "{n, plural, one {# member} other {# members}}",
       "unread": "New",
@@ -754,7 +756,8 @@
       "noComputer": "You haven't connected a computer yet",
       "noComputerBody": "Chalito works on your computer. Download it, open it and tap “Connect this computer”; you approve it here.",
       "download": "Download Chalito",
-      "devModeWhat": "With developer mode, your AIs do more without asking you. It can only be turned on at the computer; here you can turn it off."
+      "devModeWhat": "With developer mode, your AIs do more without asking you. It can only be turned on at the computer; here you can turn it off.",
+      "thisDevice": "This device"
     },
     "settings": {
       "server": "Your settings are saved to your account.",
@@ -933,7 +936,8 @@
       "revoke": "Disconnect",
       "revokeConfirm": "Disconnect {name}? It loses access immediately.",
       "revokeYes": "Yes, disconnect",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "revokeFailed": "We couldn't disconnect it. Try again."
     },
     "sharing": {
       "label": "Share card with connected apps",
@@ -1365,7 +1369,11 @@
       "signin_timeout": "The sign-in took too long. Try again from that computer.",
       "key_invalid": "That API key didn't work. Check it's complete and still valid.",
       "keychain_failed": "We couldn't save the key on that computer.",
-      "status_failed": "We couldn't check the status. Try again."
+      "status_failed": "We couldn't check the status. Try again.",
+      "launch_failed": "It couldn't open on that computer. Try again.",
+      "unsupported_platform": "This AI isn't available for that computer's system.",
+      "install_unavailable": "There's no official installer for that computer, or it's missing the tool to install it.",
+      "recipe_disabled": "This custom AI isn't turned on on that computer, or it changed since you turned it on."
     },
     "search": "Search for an AI",
     "noMatch": "No AI matches your search.",
@@ -1375,9 +1383,10 @@
       "web": "AI websites"
     },
     "howTo": {
-      "agent": "Connect {name} with your API key ({key}) or its own sign-in on your computer.",
+      "agent": "Connect {name} with your {key} or its own sign-in on your computer.",
       "desktop": "Chalito opens {name} on your computer. You sign in inside the app, as usual.",
-      "web": "Chalito opens {name} in its own browser profile on your computer. You sign in on the real site; your session stays on that computer."
+      "web": "Chalito opens {name} in its own browser profile on your computer. You sign in on the real site; your session stays on that computer.",
+      "agentNoKey": "Connect {name} with its own sign-in on your computer."
     },
     "launchNote": {
       "desktop": "It opens on that computer.",
@@ -1386,7 +1395,24 @@
     "ownerOnly": "Using your subscription plan is coming soon. Meanwhile, use the AI you already have on your computer (“Use” in the Chalito app) or paste your API key.",
     "keyWhere": "Get your {label} at {url}",
     "keyShape": "{name} keys usually start with \"{prefix}\". Check that you copied the right key, in full.",
-    "keySendAnyway": "Send anyway"
+    "keySendAnyway": "Send anyway",
+    "keyField": "Your {label}",
+    "appNames": {
+      "windsurf": "Devin Desktop (formerly Windsurf)",
+      "chatgpt-desktop": "ChatGPT (desktop)",
+      "claude-desktop": "Claude (desktop)"
+    },
+    "keyLabels": {
+      "aider": "OpenAI API key (Aider also accepts Anthropic, OpenRouter and others)",
+      "claude-code": "Anthropic API key",
+      "codex": "OpenAI API key",
+      "copilot-cli": "GitHub fine-grained token with the “Copilot Requests” permission",
+      "cursor-cli": "Cursor API key",
+      "gemini": "Gemini API key",
+      "grok": "xAI API key",
+      "mistral-vibe": "Mistral API key",
+      "qwen-code": "OpenAI-compatible API key (also set OPENAI_BASE_URL and OPENAI_MODEL)"
+    }
   },
   "download": {
     "title": "Download Chalito for your computer",
@@ -1612,5 +1638,33 @@
       "forgetting": "Forgetting…",
       "error": "Couldn't do it. Try again."
     }
+  },
+  "meta": {
+    "home": "Chalito",
+    "settings": "Chalito settings",
+    "inbox": "Inbox · Chalito",
+    "onboarding": "Get started · Chalito",
+    "connectors": "Connected apps · Chalito",
+    "credits": "Credits · Chalito",
+    "download": "Download Chalito",
+    "devices": "Devices · Chalito",
+    "addDevice": "Add a device · Chalito",
+    "mesas": "Mesas · Chalito",
+    "mesa": "Mesa · Chalito",
+    "rooms": "Rooms · Chalito",
+    "room": "Room · Chalito",
+    "sessions": "Sessions · Chalito",
+    "newSession": "New session · Chalito",
+    "session": "Session · Chalito",
+    "store": "Store · Chalito",
+    "character": "Create your character · Chalito",
+    "usage": "Usage · Chalito",
+    "link": "Link · Chalito",
+    "approval": "Approval · Chalito",
+    "notification": "Notice · Chalito",
+    "consent": "Authorize app · Chalito",
+    "team": "Team · Chalito",
+    "approveComputer": "Approve computer · Chalito",
+    "desktopSignIn": "Sign in to the app · Chalito"
   }
 }

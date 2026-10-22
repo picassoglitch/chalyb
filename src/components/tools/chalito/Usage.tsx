@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Usage as UsageData, UsageDay } from "@/lib/chalito/web/usage";
 import { useChalito } from "@/lib/chalito/provider";
 import { Loading } from "./Loading";
+import { intlLocale, tokenFormat } from "@/lib/chalito/format";
 
 const RANGES = [7, 30] as const;
 type Range = (typeof RANGES)[number];
@@ -116,11 +117,11 @@ export const Usage = () => {
   }, [usage, range]);
   useEffect(load, [load]);
 
-  const n = new Intl.NumberFormat(locale);
-  const compact = new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 });
-  const pct = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 });
+  const n = tokenFormat(locale);
+  const compact = new Intl.NumberFormat(intlLocale(locale), { notation: "compact", maximumFractionDigits: 1 });
+  const pct = new Intl.NumberFormat(intlLocale(locale), { style: "percent", maximumFractionDigits: 1 });
   const dayLabel = (d: string) =>
-    new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(d));
+    new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(d));
 
   const head = (
     <div className="ch-chl-row ch-chl-row--between">

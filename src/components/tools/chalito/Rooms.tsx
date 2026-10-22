@@ -14,7 +14,8 @@ export const Rooms = () => {
   const t = useTranslations("chalito.settings.rooms");
   const { rooms, readCompanion } = useChalito();
   const router = useRouter();
-  const [me, setMe] = useState<string | null | undefined>(undefined);
+  /** undefined: loading; null: no companion yet; "error": the companion couldn't be read. */
+  const [me, setMe] = useState<string | null | "error" | undefined>(undefined);
   const [list, setList] = useState<RoomListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,11 +23,15 @@ export const Rooms = () => {
     if (!rooms || !readCompanion) return;
     let alive = true;
     void (async () => {
-      const c = await readCompanion();
+      const c = await readCompanion().catch(() => "error" as const);
       if (!alive) return;
-      const id = c && c !== "error" ? c.companionId : null;
+      if (c === "error") return setMe("error");
+      const id = c ? c.companionId : null;
       setMe(id);
-      if (id) setList(await roomList(rooms.db as RoomsDb, id, seenRev).catch(() => []));
+      if (id) {
+        const l = await roomList(rooms.db as RoomsDb, id, seenRev).catch(() => []);
+        if (alive) setList(l);
+      }
     })();
     return () => {
       alive = false;
@@ -34,6 +39,12 @@ export const Rooms = () => {
   }, [rooms, readCompanion]);
 
   if (!rooms || me === undefined) return <p aria-live="polite">…</p>;
+  if (me === "error")
+    return (
+      <p role="alert" data-testid="rooms-load-error" className="ch-err">
+        {t("error.failed")}
+      </p>
+    );
   return (
     <div className="ch-chl" data-testid="rooms">
       <header className="ch-chl-head">
@@ -44,7 +55,9 @@ export const Rooms = () => {
         <p data-testid="room-no-companion">{t("noCompanion")}</p>
       ) : (
         <>
-          {list && list.length ? (
+          {list === null ? (
+            <p aria-live="polite">…</p>
+          ) : list.length ? (
             <ul className="ch-chl-list">
               {list.map((r) => (
                 <li key={r.roomId}>

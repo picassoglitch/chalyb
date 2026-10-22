@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { LiveGate } from '@/components/tools/chalito/LiveGate';
 import { Room } from '@/components/tools/chalito/Room';
+import { chalitoMetadata } from '@/lib/chalito/meta';
+
+export const generateMetadata = chalitoMetadata('room');
 
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
 

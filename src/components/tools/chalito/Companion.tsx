@@ -30,11 +30,13 @@ import { SKIN_SWATCH } from '@/lib/chalito/skins';
 import { usePathname } from '@/lib/chalito/navigation';
 import { useSettings } from '@/lib/chalito/useSettings';
 import { useOwnCard, useRememberLook } from '@/lib/chalito/useOwnLook';
+import { useSession } from '@/lib/chalito/web/session';
 import {
   companionOrDefault,
   activityFor,
   companionSettled,
   companionShown,
+  floatingHidden,
   useCompanionPick,
   useCompanionStep,
   useWornLook,
@@ -113,8 +115,15 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
     custom
       ? (custom.urls[custom.manifest.emotions.src[d] ?? custom.manifest.emotions.src.neutral!] ?? '')
       : `${base(id)}/layer-${d}.webp`;
-  // On Inicio the hero takes over once onboarded; until that's known the floating one waits too.
-  const hidden = !hero && activity.key === 'home' && (onboarded || !settled);
+  const session = useSession();
+  const hidden = floatingHidden({
+    hero,
+    activityKey: activity.key,
+    settled,
+    settingsLoaded: !!values,
+    onboarded,
+    sessionStatus: session.status,
+  });
   const pending = shown.kind === 'pending';
 
   // What it wears: loaded once here (the store keeps it current after an equip).
@@ -123,8 +132,10 @@ export const Companion = ({ hero = false }: { hero?: boolean }) => {
   useEffect(() => {
     if (!store || !readCompanion || useWornLook.getState().look !== undefined) return;
     let live = true;
-    void Promise.all([readCompanion(), store.catalog()]).then(
+    Promise.all([readCompanion(), store.catalog()]).then(
       ([l, c]) => live && useWornLook.getState().look === undefined && useWornLook.getState().set(l, c),
+      // Unreadable now: it wears nothing until a later mount (or the store) loads it.
+      () => undefined,
     );
     return () => {
       live = false;

@@ -5,6 +5,9 @@ import {
   companionOrDefault,
   companionSettled,
   companionShown,
+  floatingHidden,
+  homeHeroShown,
+  liveSettled,
   loadLastCompanion,
   onboardingActivity,
   saveLastCompanion,
@@ -136,4 +139,32 @@ test('the store preview never shows the roster art and then swaps to the custom 
   assert.deepEqual(kinds(open('custom', { owner: 'u1', kind: 'custom' })), ['custom']);
   // Last visit was a roster one: the account's own roster avatar at once (not the cached id).
   assert.deepEqual(kinds(open('none', { owner: 'u1', kind: 'roster', id: 'bruno' })), ['luna']);
+});
+
+test('Inicio shows exactly one companion: the hero, or the floating one when the hero is off', () => {
+  // Owner decision 2026-10-05: every screen shows the picked companion. Signed out after
+  // onboarding there is no hero, so the floating one must stay (it used to hide on `onboarded`).
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: true, sessionStatus: 'signed_in' }), true);
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: true, sessionStatus: 'signed_out' }), false);
+  assert.equal(homeHeroShown({ settingsLoaded: false, onboarded: true, sessionStatus: 'signed_in' }), false);
+  assert.equal(homeHeroShown({ settingsLoaded: true, onboarded: false, sessionStatus: 'loading' }), false);
+});
+
+test('the floating companion on Inicio: hidden under the hero and until settled, shown when there is no hero', () => {
+  const base = { hero: false, activityKey: 'home', settled: true, settingsLoaded: true, onboarded: true, sessionStatus: 'signed_in' };
+  assert.equal(floatingHidden(base), true, 'the hero shows');
+  assert.equal(floatingHidden({ ...base, sessionStatus: 'signed_out' }), false, 'signed out after onboarding: no hero');
+  assert.equal(floatingHidden({ ...base, settingsLoaded: false }), false, 'no settings: no hero');
+  assert.equal(floatingHidden({ ...base, onboarded: false }), false, 'not onboarded: no hero');
+  assert.equal(floatingHidden({ ...base, settled: false, onboarded: false }), true, 'waits until settled');
+  assert.equal(floatingHidden({ ...base, activityKey: 'store' }), false, 'other screens always show it');
+  assert.equal(floatingHidden({ ...base, hero: true }), false, 'the hero itself never hides');
+});
+
+test('live lists say "empty" only after the first pull, or once offline', () => {
+  assert.equal(liveSettled({ status: 'connecting', pulled: false }), false);
+  assert.equal(liveSettled({ status: 'live', pulled: false }), false, 'SUBSCRIBED comes before the first pull');
+  assert.equal(liveSettled({ status: 'live', pulled: true }), true);
+  assert.equal(liveSettled({ status: 'offline', pulled: false }), true, 'blocked realtime: no skeleton forever');
+  assert.equal(liveSettled({ status: 'idle', pulled: false }), false);
 });

@@ -116,6 +116,8 @@ export const useSettings = () => {
     const cur = latest.current;
     if (!store || !cur) return false;
     if (companionTimer.current) clearTimeout(companionTimer.current);
+    // Cleared, not pending: the pagehide/unmount flush must not save it a second time.
+    companionTimer.current = null;
     try {
       await store.saveCompanion(cur);
       return true;

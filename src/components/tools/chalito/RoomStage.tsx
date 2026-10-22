@@ -22,6 +22,10 @@ export const RoomStage = ({
   const canvas = useRef<HTMLCanvasElement>(null);
   const scene = useRef<RoomScene | null>(null);
   const [failed, setFailed] = useState(false);
+  // The latest props, for the scene once three.js has loaded: members and events that arrived
+  // while it was loading would otherwise never reach it (their effects ran with no scene yet).
+  const latest = useRef({ members, events });
+  latest.current = { members, events };
 
   useEffect(() => {
     let alive = true;
@@ -31,6 +35,8 @@ export const RoomStage = ({
         if (!alive || !canvas.current) return;
         const s = new RoomScene({ canvas: canvas.current, roomId, assetBase: "/roster/", quality: "auto" });
         scene.current = s;
+        s.setMembers([...latest.current.members]);
+        s.pushEvents([...latest.current.events]);
         s.start();
       } catch {
         if (alive) setFailed(true);
@@ -43,8 +49,12 @@ export const RoomStage = ({
     };
   }, [roomId]);
 
-  useEffect(() => scene.current?.setMembers([...members]), [members]);
-  useEffect(() => scene.current?.pushEvents([...events]), [events]);
+  useEffect(() => {
+    scene.current?.setMembers([...members]);
+  }, [members]);
+  useEffect(() => {
+    scene.current?.pushEvents([...events]);
+  }, [events]);
 
   if (failed) return null;
   return (

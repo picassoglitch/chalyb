@@ -29,9 +29,12 @@ export const PushOptIn = () => {
 
   useEffect(() => {
     let alive = true;
-    void registerWorker(locale).then(() =>
-      pushState(env.vapidPublicKey).then((s) => alive && setState(s)),
-    );
+    void registerWorker(locale)
+      .then(() => pushState(env.vapidPublicKey))
+      .then(
+        (s) => alive && setState(s),
+        () => alive && setState("unsupported"),
+      );
     return () => {
       alive = false;
     };
@@ -40,10 +43,15 @@ export const PushOptIn = () => {
   const run = async (fn: () => Promise<string>) => {
     setBusy(true);
     setFailed(false);
-    const r = await fn();
-    setBusy(false);
-    if (r === "failed") setFailed(true);
-    else setState(r as PushState);
+    try {
+      const r = await fn();
+      if (r === "failed") setFailed(true);
+      else setState(r as PushState);
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

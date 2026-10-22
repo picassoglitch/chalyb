@@ -24,7 +24,9 @@ export const Activate = () => {
 
   const run = async () => {
     setState("busy");
-    const r = await activate(browserName(navigator.userAgent, locale));
+    const r = await activate(browserName(navigator.userAgent, locale)).catch(
+      () => ({ ok: false, reason: "failed" }) as const,
+    );
     // On success the provider reconnects and the gate shows the recovery code.
     setState(r.ok ? "idle" : { error: r.reason });
   };
