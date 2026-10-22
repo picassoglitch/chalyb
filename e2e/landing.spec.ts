@@ -216,9 +216,10 @@ test.describe('signed in', () => {
     const burger = page.locator('.pub-nav__burger');
     if (await burger.isVisible()) {
       await burger.click();
-      const menuCta = page.locator('[data-cta="menu_trial"]');
-      await expect(menuCta).toHaveText(/Ver planes/);
+      // #120: signed in, it carries no trial tag, so find it by its name.
+      const menuCta = page.locator('#pub-menu').getByRole('link', { name: /Ver planes/ });
       await expect(menuCta).toHaveAttribute('href', '/planes');
+      await expect(menuCta).not.toHaveAttribute('data-cta', /./);
     }
   });
 });

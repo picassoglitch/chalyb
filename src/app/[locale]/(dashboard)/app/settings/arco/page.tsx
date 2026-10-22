@@ -50,7 +50,7 @@ export default async function ArcoPage({ params }: { params: Promise<{ locale: s
           </h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
             {rows.map((r) => (
-              <li key={r.id} className="ch-card" style={{ display: 'grid', gap: 4 }}>
+              <li key={r.id} className="ch-card" style={{ display: 'grid', gap: 4, padding: 16 }}>
                 <b>{t(`form.rights.${r.right_kind}.title`)}</b>
                 <span className="ch-muted">
                   {r.responded_at

@@ -16,6 +16,7 @@ import { ConnectProviders } from "./ConnectProviders";
 import { CodingCap } from "./CodingCap";
 import { Loading } from "./Loading";
 import { CoordRules } from "./Coordinator";
+import { RoutingRules } from "./RoutingRules";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
@@ -71,6 +72,7 @@ export const Settings = () => {
         customCompanion={customCompanion}
       />
       <CoordRules />
+      <RoutingRules />
       <BrainKeys />
       <AccountDeletion />
     </div>

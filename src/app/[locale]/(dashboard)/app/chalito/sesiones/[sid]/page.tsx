@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { CodingBlockedChip } from '@/components/tools/chalito/CodingBlockedChip';
 import { LiveGate } from '@/components/tools/chalito/LiveGate';
 import { SessionDetail } from '@/components/tools/chalito/Sessions';
+import { TransferSession } from '@/components/tools/chalito/TransferSession';
 import { chalitoMetadata } from '@/lib/chalito/meta';
 
 export const generateMetadata = chalitoMetadata('session');
@@ -21,6 +22,7 @@ export default async function SessionPage({
     <LiveGate>
       <CodingBlockedChip sid={sid} />
       <SessionDetail sid={sid} />
+      <TransferSession sid={sid} />
     </LiveGate>
   );
 }

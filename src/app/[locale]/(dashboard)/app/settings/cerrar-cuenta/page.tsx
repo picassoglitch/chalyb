@@ -33,7 +33,7 @@ export default async function CloseAccountPage({
     return (
       <div style={{ display: 'grid', gap: 22, maxWidth: 760 }}>
         <h1 className="ch-h1">{t('title')}</h1>
-        <p role="status" className="ch-card" style={{ fontWeight: 600 }}>
+        <p role="status" className="ch-card" style={{ fontWeight: 600, padding: 16 }}>
           {t('open', {
             recibida: formatFechaLarga(open.receivedAt, locale),
             fecha: formatFechaLarga(open.respondBy, locale),
@@ -63,7 +63,7 @@ export default async function CloseAccountPage({
       <section
         className="ch-card"
         aria-labelledby="close-credits"
-        style={{ display: 'grid', gap: 6 }}
+        style={{ display: 'grid', gap: 6, padding: 16 }}
       >
         <h2 id="close-credits" className="ch-h2">
           {t('credits.title')}
@@ -76,7 +76,11 @@ export default async function CloseAccountPage({
               : t('credits.none')}
         </p>
       </section>
-      <section className="ch-card" aria-labelledby="close-plan" style={{ display: 'grid', gap: 6 }}>
+      <section
+        className="ch-card"
+        aria-labelledby="close-plan"
+        style={{ display: 'grid', gap: 6, padding: 16 }}
+      >
         <h2 id="close-plan" className="ch-h2">
           {t('plan.title')}
         </h2>

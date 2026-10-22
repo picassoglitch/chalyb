@@ -57,14 +57,19 @@ export function ArcoForm({ email }: { email: string }) {
 
   if (done) {
     return (
-      <p role="status" className="ch-card" style={{ fontWeight: 600 }}>
+      <p role="status" className="ch-card" style={{ fontWeight: 600, padding: 16 }}>
         {t('sent')}
       </p>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="ch-card" style={{ display: 'grid', gap: 18 }}>
+    <form
+      onSubmit={onSubmit}
+      noValidate
+      className="ch-card"
+      style={{ display: 'grid', gap: 18, padding: 16 }}
+    >
       <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'grid', gap: 10 }}>
         <legend className="ch-label" style={{ marginBottom: 8 }}>
           {t('right')}

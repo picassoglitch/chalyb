@@ -685,7 +685,8 @@
       "answer": "Responder",
       "answerSent": "Respuesta enviada.",
       "untrusted": "Esta computadora no está emparejada con este dispositivo.",
-      "failed": "No pudimos enviarlo."
+      "failed": "No pudimos enviarlo.",
+      "stop": "Detener"
     },
     "timeline": {
       "label": "Actividad",
@@ -829,7 +830,13 @@
       "connectAdapter": "Conectar {name}",
       "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes.",
       "firstTask": "Tu primera tarea: tu IA lee el proyecto y te lo resume. En modo plan solo lee; no cambia ningún archivo. Revisa y toca «Iniciar sesión».",
-      "firstTaskPrompt": "Resume este proyecto en 5 líneas: qué es, cómo está organizado y por dónde empezarías. No cambies ningún archivo."
+      "firstTaskPrompt": "Resume este proyecto en 5 líneas: qué es, cómo está organizado y por dónde empezarías. No cambies ningún archivo.",
+      "auto": "Automático (según tus reglas)",
+      "autoGoes": "Irá a {computer} con {ai}.",
+      "autoNone": "Ninguna computadora puede ahora con esa carpeta: elige una o revisa tus reglas en Ajustes.",
+      "autoAi": "La IA la eligen tus reglas (o la primera lista en esa computadora).",
+      "autoRulesFailed": "No se pudieron leer tus reglas: elige una computadora.",
+      "autoLoading": "Leyendo tus reglas…"
     },
     "account": {
       "title": "Eliminar mi cuenta de Chalito",
@@ -901,6 +908,86 @@
         "rejected": "No pudimos recuperar tu cuenta. Vuelve a intentarlo.",
         "failed": "Algo falló. Vuelve a intentarlo en un momento."
       }
+    },
+    "transfer": {
+      "title": "Mover a otra computadora",
+      "body": "Sigue esta sesión en otra de tus computadoras. Necesita un enlace hecho en esta computadora hacia la otra; si hay cambios sin subir, Chalito los guarda en una rama nueva.",
+      "to": "Computadora",
+      "move": "Mover",
+      "busy": "Detén la sesión antes de moverla.",
+      "none": "No tienes otra computadora conectada.",
+      "sent": "Moviéndola a {computer}…",
+      "delivered": "Sigue en {computer}.",
+      "open": "Abrir allá",
+      "failed": "No se pudo enviar la orden.",
+      "refused": {
+        "offline": "{computer} no respondió. La sesión sigue aquí.",
+        "wrong_repo": "{computer} no tiene ese proyecto en la carpeta del enlace.",
+        "start_failed": "{computer} no pudo abrir la IA.",
+        "link_refused": "El enlace no lo permitió (o dijiste que no).",
+        "busy": "Detén la sesión antes de moverla.",
+        "no_link": "Falta un enlace de esta computadora hacia {computer}. Créalo en el panel de Chalito de esta computadora (Enlaces).",
+        "dirty": "No se puede mover así: hay cambios sin commit en un proyecto sin remoto, submódulos o una configuración del repo que ejecuta código.",
+        "unpushed": "La rama no está subida. Haz push primero.",
+        "push_auth": "No se pudo subir la rama con tus cambios: revisa tu acceso a git en esa computadora. La sesión sigue aquí.",
+        "push_failed": "No se pudo subir la rama con tus cambios. La sesión sigue aquí.",
+        "secret_files": "Hay archivos sin seguimiento que parecen secretos o son muy grandes; no se suben. Agrégalos a .gitignore, bórralos o súbelos a mano y vuelve a intentar:",
+        "git_too_old": "El git de esa computadora es anterior a 2.40 y no puede mover el trabajo con seguridad. Actualízalo y vuelve a intentar.",
+        "lfs_files": "El proyecto usa Git LFS; esos archivos no se pueden mover así. Súbelos tú y vuelve a intentar."
+      },
+      "failedWhy": "No se pudo enviar la orden ({reason}).",
+      "savedOn": "Tus cambios sin terminar quedaron guardados en la rama {branch}.",
+      "untracked": "Se llevó {count, plural, one {# archivo nuevo} other {# archivos nuevos}}"
+    },
+    "transcript": {
+      "label": "Conversación",
+      "empty": "Aún no hay mensajes. Escríbele abajo.",
+      "writing": "Escribiendo…",
+      "sealedMessage": "Mensaje cifrado para otro dispositivo.",
+      "sealedStep": "Paso cifrado para otro dispositivo",
+      "from": {
+        "client": "Tú",
+        "local": "Tú, en la computadora",
+        "agent": "Otro agente",
+        "mcp": "Tú, desde una app conectada",
+        "call": "Tú, por llamada",
+        "other": "Mensaje"
+      },
+      "category": {
+        "read": "Leer",
+        "search": "Buscar",
+        "edit": "Editar",
+        "create": "Crear",
+        "delete": "Borrar",
+        "shell": "Terminal",
+        "web": "Web",
+        "mcp": "Conector",
+        "git": "Git",
+        "other": "Herramienta"
+      },
+      "step": {
+        "running": "En curso",
+        "ok": "Listo",
+        "failed": "Falló",
+        "stopped": "Sin terminar"
+      },
+      "pill": {
+        "running": "Trabajando",
+        "waiting": "Te está esperando",
+        "idle": "En pausa",
+        "ended": "Terminada"
+      },
+      "error": {
+        "adapter_crash": "el agente se cerró",
+        "auth_required": "hay que volver a iniciar sesión en la IA",
+        "rate_limited": "la IA pidió esperar un momento",
+        "quota_exhausted": "se acabó el plan de la IA",
+        "policy_block": "tu regla de seguridad lo bloqueó",
+        "internal": "algo falló en la computadora"
+      },
+      "waitingHere": "{count, plural, =0 {Aprobaciones vencidas} one {Te espera # aprobación} other {Te esperan # aprobaciones}}",
+      "more": "Detalles y ajustes de la sesión",
+      "earlier": "Los mensajes anteriores ya no se muestran."
     }
   },
   "mcp": {
@@ -1712,5 +1799,26 @@
       "raise": "Cambiar límite",
       "ownKey": "Usar mi clave"
     }
+  },
+  "routing": {
+    "title": "Dónde corren las sesiones nuevas",
+    "body": "Cuando eliges «Automático», Chalito usa la primera regla que aplica y la primera computadora encendida que puede. Ninguna regla salta los permisos de cada computadora.",
+    "empty": "Sin reglas: va a la primera computadora encendida que pueda.",
+    "any": "cualquiera",
+    "rule": "Carpeta {workspace} · IA {ai} → {computers}",
+    "workspace": "Carpeta (vacío = cualquiera)",
+    "ai": "IA",
+    "computers": "Computadoras, en orden",
+    "add": "Agregar regla",
+    "remove": "Quitar",
+    "up": "Subir",
+    "fallback": "Si ninguna regla aplica, probar en este orden",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "error": "No se pudo guardar. Revisa la regla e intenta de nuevo.",
+    "tooMany": "Máximo 8 reglas, 3 computadoras por regla y 6 en el orden de respaldo.",
+    "invalid": "Esa carpeta no es válida (sin «/», «\\\\» ni «~»).",
+    "maxComputers": "Hasta 3 por regla.",
+    "loadFailed": "No se pudieron leer tus reglas. Recarga la página para intentarlo de nuevo."
   }
 }
