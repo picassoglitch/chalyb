@@ -94,17 +94,40 @@ test('a screen built on the light design never lands in the dark legacy panel', 
   const pages = (readdirSync(root, { recursive: true }) as string[]).filter((f) =>
     f.endsWith('page.tsx'),
   );
-  const source = (file: string) => {
-    const own = readFileSync(file, 'utf8');
-    const deps = [...own.matchAll(/from '@\/components\/([^']+)'/g)].map((m) => {
-      for (const ext of ['.tsx', '.ts', '/index.tsx']) {
-        try {
-          return readFileSync(`src/components/${m[1]}${ext}`, 'utf8');
-        } catch {}
+  // Follows @/components and relative imports all the way down: the markup may live several files deep.
+  const unresolved: string[] = [];
+  const resolveImport = (from: string, spec: string) => {
+    const base = spec.startsWith('@/components/')
+      ? `src/components/${spec.slice(13)}`
+      : join(dirname(from), spec);
+    for (const ext of ['', '.tsx', '.ts', '/index.tsx', '/index.ts']) {
+      try {
+        if (readFileSync(base + ext) && /\.tsx?$/.test(base + ext)) return base + ext;
+      } catch {
+        // not this extension; try the next one
       }
-      return '';
-    });
-    return [own, ...deps].join('\n');
+    }
+    unresolved.push(`${from} → ${spec}`);
+    return null;
+  };
+  const source = (entry: string) => {
+    const seen = new Set<string>();
+    const queue = [entry];
+    let code = '';
+    while (queue.length) {
+      const file = queue.pop()!;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      const text = readFileSync(file, 'utf8');
+      code += text + '\n';
+      for (const m of text.matchAll(/from '((?:@\/components\/|\.{1,2}\/)[^']+)'/g)) {
+        const spec = m[1]!;
+        if (/\.(css|svg|png|json)$/.test(spec)) continue;
+        const next = resolveImport(file, spec);
+        if (next) queue.push(next);
+      }
+    }
+    return code;
   };
   const light = pages
     .filter((f) => {
@@ -119,7 +142,9 @@ test('a screen built on the light design never lands in the dark legacy panel', 
           .replace(/%5F/g, '_'),
     )
     .map((p) => p.replace(/\/\.$|\/$/, ''));
-  assert.ok(light.includes('/app/settings/cerrar-cuenta'), 'the scan finds the closure screen');
+  assert.deepEqual(unresolved, [], 'every import the scan follows resolves');
+  for (const p of ['/app/settings/cerrar-cuenta', '/app/planes'])
+    assert.ok(light.includes(p), `the scan finds ${p}`);
   for (const p of light) assert.notEqual(shellModeFor(p), 'legacy', p);
 });
 

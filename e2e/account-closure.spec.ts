@@ -9,7 +9,6 @@
 import { test, expect } from '@playwright/test';
 import { asRole } from './utils/roles';
 
-
 test.describe('as free', () => {
   asRole('free');
 
@@ -29,7 +28,6 @@ test.describe('as free', () => {
     await page.getByRole('checkbox').check();
     await expect(cta).toBeEnabled();
   });
-
 });
 
 test.describe('as pro', () => {

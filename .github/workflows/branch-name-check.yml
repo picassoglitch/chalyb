@@ -1,4 +1,4 @@
-# Picasso branch-name gate. Copy to .github/workflows/branch-name-check.yml in each personal repo.
+# Branch names look like feat/42-short-desc, fix/m16-short-desc or chore/short-desc.
 name: branch-name-check
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Validate head branch name
         env:

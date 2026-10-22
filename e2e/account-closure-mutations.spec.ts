@@ -8,6 +8,8 @@ const MOCK = process.env.E2E_MOCK_BACKEND === '1';
 
 test.describe('as free', () => {
   asRole('free');
+  // A retry would find the request already filed and fail on the checkbox, hiding the first error.
+  test.describe.configure({ retries: 0 });
 
   test('confirming files the request; the screen then shows it open', async ({ page }) => {
     test.skip(!MOCK, 'E2E_MOCK_BACKEND=1 not set (files a closure request)');
