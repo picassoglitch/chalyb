@@ -828,7 +828,13 @@
       "connectAdapter": "Conectar {name}",
       "adapterHint": "Para usar Grok Build o Gemini CLI, primero conéctalos en esta computadora desde Ajustes.",
       "firstTask": "Tu primera tarea: tu IA lee el proyecto y te lo resume. En modo plan solo lee; no cambia ningún archivo. Revisa y toca «Iniciar sesión».",
-      "firstTaskPrompt": "Resume este proyecto en 5 líneas: qué es, cómo está organizado y por dónde empezarías. No cambies ningún archivo."
+      "firstTaskPrompt": "Resume este proyecto en 5 líneas: qué es, cómo está organizado y por dónde empezarías. No cambies ningún archivo.",
+      "auto": "Automático (según tus reglas)",
+      "autoGoes": "Irá a {computer} con {ai}.",
+      "autoNone": "Ninguna computadora puede ahora con esa carpeta: elige una o revisa tus reglas en Ajustes.",
+      "autoAi": "La IA la eligen tus reglas (o la primera lista en esa computadora).",
+      "autoRulesFailed": "No se pudieron leer tus reglas: elige una computadora.",
+      "autoLoading": "Leyendo tus reglas…"
     },
     "account": {
       "title": "Eliminar mi cuenta de Chalito",
@@ -900,6 +906,29 @@
         "rejected": "No pudimos recuperar tu cuenta. Vuelve a intentarlo.",
         "failed": "Algo falló. Vuelve a intentarlo en un momento."
       }
+    },
+    "transfer": {
+      "title": "Mover a otra computadora",
+      "body": "Sigue esta sesión en otra de tus computadoras. Necesita un enlace hecho en esta computadora hacia la otra, y los cambios con commit y push.",
+      "to": "Computadora",
+      "move": "Mover",
+      "busy": "Detén la sesión antes de moverla.",
+      "none": "No tienes otra computadora conectada.",
+      "sent": "Moviéndola a {computer}…",
+      "delivered": "Sigue en {computer}.",
+      "open": "Abrir allá",
+      "failed": "No se pudo enviar la orden.",
+      "refused": {
+        "offline": "{computer} no respondió. La sesión sigue aquí.",
+        "wrong_repo": "{computer} no tiene ese proyecto en la carpeta del enlace.",
+        "start_failed": "{computer} no pudo abrir la IA.",
+        "link_refused": "El enlace no lo permitió (o dijiste que no).",
+        "busy": "Detén la sesión antes de moverla.",
+        "no_link": "Falta un enlace de esta computadora hacia {computer}. Créalo en el panel de Chalito de esta computadora (Enlaces).",
+        "dirty": "Hay cambios sin commit (o submódulos) en la carpeta. Haz commit y push primero.",
+        "unpushed": "La rama no está subida. Haz push primero."
+      },
+      "failedWhy": "No se pudo enviar la orden ({reason})."
     }
   },
   "mcp": {
@@ -1666,5 +1695,26 @@
     "team": "Equipo · Chalito",
     "approveComputer": "Aprobar computadora · Chalito",
     "desktopSignIn": "Iniciar sesión en la app · Chalito"
+  },
+  "routing": {
+    "title": "Dónde corren las sesiones nuevas",
+    "body": "Cuando eliges «Automático», Chalito usa la primera regla que aplica y la primera computadora encendida que puede. Ninguna regla salta los permisos de cada computadora.",
+    "empty": "Sin reglas: va a la primera computadora encendida que pueda.",
+    "any": "cualquiera",
+    "rule": "Carpeta {workspace} · IA {ai} → {computers}",
+    "workspace": "Carpeta (vacío = cualquiera)",
+    "ai": "IA",
+    "computers": "Computadoras, en orden",
+    "add": "Agregar regla",
+    "remove": "Quitar",
+    "up": "Subir",
+    "fallback": "Si ninguna regla aplica, probar en este orden",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "error": "No se pudo guardar. Revisa la regla e intenta de nuevo.",
+    "tooMany": "Máximo 8 reglas, 3 computadoras por regla y 6 en el orden de respaldo.",
+    "invalid": "Esa carpeta no es válida (sin «/», «\\\\» ni «~»).",
+    "maxComputers": "Hasta 3 por regla.",
+    "loadFailed": "No se pudieron leer tus reglas. Recarga la página para intentarlo de nuevo."
   }
 }

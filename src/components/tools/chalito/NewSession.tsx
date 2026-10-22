@@ -2,12 +2,13 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ActionError } from "@chalito/client";
-import type { RemotePermissionMode } from "@chalito/protocol";
+import type { RemotePermissionMode, RouteRules } from "@chalito/protocol";
 import { Link, useRouter } from "@/lib/chalito/navigation";
 import { useChalito, useLive } from "@/lib/chalito/provider";
 import { adapterNameKey, adaptersFor, keepAdapter, startTarget } from "@/lib/chalito/web/adapters";
 import { LOAD_TIMEOUT_MS, indexConnections, withTimeout, type StatusIndex } from "@/lib/chalito/web/connect";
 import { firstTaskTarget } from "@/lib/chalito/web/setup";
+import { autoStart } from "@/lib/chalito/web/remote-control";
 import { useLiveSynced } from "@/lib/chalito/useLiveSynced";
 import { Loading } from "./Loading";
 import { REMOTE_MODES } from "./Sessions";
@@ -16,9 +17,16 @@ import { SetupChecklist } from "./SetupChecklist";
 export { START_ADAPTERS } from "@/lib/chalito/web/adapters";
 /** The computer may refuse silently (unknown workspace, adapter off): stop waiting after this. */
 export const START_WAIT_MS = 30_000;
+/** ADR 0031 §5: the computer picker's "Automático" (the owner's routing rules decide). */
+export const AUTO = "auto";
+// Read only in the submit handler; React's purity lint can't tell this handler from render code.
+const clock = () => Date.now();
 
 type Phase =
-  { kind: "idle" } | { kind: "waiting"; since: number } | { kind: "timeout" } | { kind: "error"; msg: string };
+  | { kind: "idle" }
+  | { kind: "waiting"; since: number; on: string }
+  | { kind: "timeout" }
+  | { kind: "error"; msg: string };
 
 /**
  * "Nueva sesión": a signed session.start to a paired computer (ClientActions.startSession), the
@@ -65,7 +73,28 @@ export const NewSession = () => {
     setPrompt(t("firstTaskPrompt"));
   }, [firstTarget, t]);
 
-  const target = agent || computers[0]?.deviceId || "";
+  // ADR 0031 §5: rules from Ajustes; none saved means "the first computer that can".
+  const [rules, setRules] = useState<RouteRules | null>(null);
+  const [rulesState, setRulesState] = useState<"loading" | "ready" | "failed">("loading");
+  useEffect(() => {
+    if (!settings) return;
+    let alive = true;
+    settings.routing().then(
+      (r) => {
+        if (!alive) return;
+        setRules(r);
+        setRulesState("ready");
+      },
+      () => alive && setRulesState("failed"),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [settings]);
+  const isAuto = agent === AUTO;
+  // Never route without the owner's rules: while they load (or if they can't be read) Automático waits.
+  const auto = isAuto && rulesState === "ready" ? autoStart(rules, workspace, live.devices) : null;
+  const target = isAuto ? (auto?.ok ? auto.choice.deviceId : "") : agent || computers[0]?.deviceId || "";
   const options = useMemo(() => adaptersFor(connections, target), [connections, target]);
   const chosen = keepAdapter(adapter, options);
   const chosenAdapter = options.find((o) => o.adapter.appId === chosen)?.adapter;
@@ -91,15 +120,17 @@ export const NewSession = () => {
             .map((s) => s.card?.workspaceLabel ?? s.label)
             .filter((l): l is string => !!l),
           // The folders the computer reported (First Run D): labels only, never paths.
-          ...(computers.find((c) => c.deviceId === target)?.setup?.labels ?? []),
+          ...(isAuto
+            ? computers.flatMap((c) => c.setup?.labels ?? [])
+            : (computers.find((c) => c.deviceId === target)?.setup?.labels ?? [])),
         ]),
       ].sort(),
-    [live.sessions, target, computers],
+    [live.sessions, target, computers, isAuto],
   );
 
   useEffect(() => {
     if (phase.kind !== "waiting") return;
-    const started = live.sessions.find((s) => s.agentDeviceId === target && !before.current.has(s.sid));
+    const started = live.sessions.find((s) => s.agentDeviceId === phase.on && !before.current.has(s.sid));
     if (started) {
       router.push(`/sesiones/${encodeURIComponent(started.sid)}`);
       return;
@@ -107,7 +138,7 @@ export const NewSession = () => {
     const left = START_WAIT_MS - (Date.now() - phase.since);
     const timer = setTimeout(() => setPhase({ kind: "timeout" }), Math.max(0, left));
     return () => clearTimeout(timer);
-  }, [phase, live.sessions, target, router]);
+  }, [phase, live.sessions, router]);
 
   // Until the first pull lands the device list is empty: don't say "no computers" yet.
   if (computers.length === 0 && !synced) return <Loading label={tl("loading")} />;
@@ -125,14 +156,22 @@ export const NewSession = () => {
     e.preventDefault();
     const text = prompt.trim();
     const label = workspace.trim();
-    if (!client || !target || !text || !label || !chosenAdapter) return;
+    if (!client || !target || !text || !label) return;
+    const startArgs = isAuto
+      ? auto?.ok
+        ? { ...auto.target, workspaceLabel: auto.choice.workspaceLabel }
+        : null
+      : chosenAdapter
+        ? { ...startTarget(chosenAdapter), workspaceLabel: label }
+        : null;
+    if (!startArgs) return;
     before.current = new Set(live.sessions.map((s) => s.sid));
-    setPhase({ kind: "waiting", since: Date.now() });
+    // The computer it went to, fixed now: Automático's pick may change while we wait.
+    setPhase({ kind: "waiting", since: clock(), on: target });
     try {
       await client.actions.startSession({
         agentDeviceId: target,
-        ...startTarget(chosenAdapter),
-        workspaceLabel: label,
+        ...startArgs,
         prompt: text,
         permissionMode: mode,
       });
@@ -159,10 +198,11 @@ export const NewSession = () => {
         <select
           id="ns-computer"
           className="ch-input"
-          value={target}
+          value={isAuto ? AUTO : target}
           onChange={(e) => setAgent(e.target.value)}
           disabled={waiting}
         >
+          <option value={AUTO}>{t("auto")}</option>
           {computers.map((c) => (
             <option key={c.deviceId} value={c.deviceId}>
               {c.name} · {c.online ? t("online") : t("offline")}
@@ -170,12 +210,27 @@ export const NewSession = () => {
           ))}
         </select>
       </div>
-      {selected && !selected.online ? (
+      {isAuto ? (
+        <p role="status" className="ch-chl-small" data-testid="auto-choice">
+          {rulesState === "failed"
+            ? t("autoRulesFailed")
+            : rulesState === "loading"
+              ? t("autoLoading")
+              : auto?.ok
+                ? t("autoGoes", {
+                    computer: computers.find((c) => c.deviceId === auto.choice.deviceId)?.name ?? auto.choice.deviceId,
+                    ai: options.find((o) => o.adapter.appId === auto.choice.appId)?.adapter.name ?? auto.choice.appId,
+                  })
+                : t("autoNone")}
+        </p>
+      ) : null}
+      {!isAuto && selected && !selected.online ? (
         <p role="note" className="ch-chl-small ch-chl-warn">
           {t("offlineNote")}
         </p>
       ) : null}
-      <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight">
+      {isAuto ? <p className="ch-muted ch-chl-small">{t("autoAi")}</p> : null}
+      <fieldset className="ch-chl-fieldset ch-chl ch-chl--tight" hidden={isAuto}>
         <legend className="ch-chl-strong">{t("adapter")}</legend>
         <div className="ch-chl-row">
           {options.map(({ adapter: a, availability }) => {
@@ -214,9 +269,7 @@ export const NewSession = () => {
             );
           })}
         </div>
-        {options.some((o) => o.availability !== "ready") ? (
-          <span className="ch-muted">{t("adapterHint")}</span>
-        ) : null}
+        {options.some((o) => o.availability !== "ready") ? <span className="ch-muted">{t("adapterHint")}</span> : null}
       </fieldset>
       <div className="ch-field">
         <label htmlFor="ns-workspace">{t("workspace")}</label>
@@ -282,7 +335,7 @@ export const NewSession = () => {
       </div>
       <button
         className="ch-btn ch-btn--primary ch-chl-fit"
-        disabled={waiting || !prompt.trim() || !workspace.trim()}
+        disabled={waiting || !prompt.trim() || !workspace.trim() || (isAuto && !auto?.ok)}
       >
         {t("start")}
       </button>

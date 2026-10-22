@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { LiveGate } from '@/components/tools/chalito/LiveGate';
 import { SessionDetail } from '@/components/tools/chalito/Sessions';
+import { TransferSession } from '@/components/tools/chalito/TransferSession';
 import { chalitoMetadata } from '@/lib/chalito/meta';
 
 export const generateMetadata = chalitoMetadata('session');
@@ -19,6 +20,7 @@ export default async function SessionPage({
   return (
     <LiveGate>
       <SessionDetail sid={sid} />
+      <TransferSession sid={sid} />
     </LiveGate>
   );
 }

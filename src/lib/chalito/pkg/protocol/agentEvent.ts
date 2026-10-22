@@ -19,6 +19,7 @@ import { TerminalCloseReason, TerminalCols, TerminalId, TerminalRows } from "./t
 import { ScreenEndReason, ScreenMode, ScreenState } from "./screen";
 import { LinkHandoffStage, LinkId, LinkMode, LinkRefusal } from "./agent-link";
 import { LinkTaskState } from "./link";
+import { TransferRefusal, TransferStage } from "./rc";
 
 export const SessionState = z.enum([
   "starting",
@@ -218,6 +219,16 @@ export const AgentEvent = z.discriminatedUnion("type", [
     ct: SealedEnvelope.optional(),
   }),
   // ---- end LINKS ----
+  // ADR 0031 §4: a transfer, `out` on the computer it left and `in` on the one it reached.
+  z.object({
+    ...base,
+    type: z.literal("session.transferred"),
+    direction: z.enum(["in", "out"]),
+    stage: TransferStage,
+    peerDeviceId: DeviceId,
+    peerSid: SessionId.optional(),
+    reason: TransferRefusal.optional(),
+  }),
 ]);
 export type AgentEvent = z.infer<typeof AgentEvent>;
 
@@ -368,6 +379,10 @@ export const CommandRejectReason = z.enum([
   "no_link",
   /** G4: helper computers need the project's `origin` remote. */
   "no_origin",
+  // ADR 0031 §4: a transfer needs an idle session and a clean, pushed git workspace.
+  "session_busy",
+  "transfer_dirty",
+  "transfer_unpushed",
 ]);
 export type CommandRejectReason = z.infer<typeof CommandRejectReason>;
 

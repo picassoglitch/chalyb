@@ -828,7 +828,13 @@
       "connectAdapter": "Connect {name}",
       "adapterHint": "To use Grok Build or Gemini CLI, connect them on this computer first, in Settings.",
       "firstTask": "Your first task: your AI reads the project and sums it up. In plan mode it only reads; it changes no files. Check it and tap “Start session”.",
-      "firstTaskPrompt": "Summarize this project in 5 lines: what it is, how it's organized and where you'd start. Don't change any files."
+      "firstTaskPrompt": "Summarize this project in 5 lines: what it is, how it's organized and where you'd start. Don't change any files.",
+      "auto": "Automatic (by your rules)",
+      "autoGoes": "It will run on {computer} with {ai}.",
+      "autoNone": "No computer can run it now with that folder: pick one or check your rules in Settings.",
+      "autoAi": "Your rules pick the AI (or the first one ready on that computer).",
+      "autoRulesFailed": "Your rules couldn't be read: pick a computer.",
+      "autoLoading": "Reading your rules…"
     },
     "account": {
       "title": "Delete my Chalito account",
@@ -900,6 +906,29 @@
         "rejected": "We couldn't recover your account. Try again.",
         "failed": "Something went wrong. Try again in a moment."
       }
+    },
+    "transfer": {
+      "title": "Move to another computer",
+      "body": "Continue this session on another of your computers. It needs a link made on this computer to the other one, and the changes committed and pushed.",
+      "to": "Computer",
+      "move": "Move",
+      "busy": "Stop the session before moving it.",
+      "none": "You have no other computer connected.",
+      "sent": "Moving it to {computer}…",
+      "delivered": "It continues on {computer}.",
+      "open": "Open it there",
+      "failed": "The request couldn't be sent.",
+      "refused": {
+        "offline": "{computer} didn't answer. The session stays here.",
+        "wrong_repo": "{computer} doesn't have this project in the link's folder.",
+        "start_failed": "{computer} couldn't start the AI.",
+        "link_refused": "The link didn't allow it (or you said no).",
+        "busy": "Stop the session before moving it.",
+        "no_link": "There's no link from this computer to {computer}. Make one in this computer's Chalito panel (Links).",
+        "dirty": "The folder has uncommitted changes (or submodules). Commit and push first.",
+        "unpushed": "The branch isn't pushed. Push first."
+      },
+      "failedWhy": "The request couldn't be sent ({reason})."
     }
   },
   "mcp": {
@@ -1666,5 +1695,26 @@
     "team": "Team · Chalito",
     "approveComputer": "Approve computer · Chalito",
     "desktopSignIn": "Sign in to the app · Chalito"
+  },
+  "routing": {
+    "title": "Where new sessions run",
+    "body": "When you pick “Automatic”, Chalito uses the first rule that applies and the first computer that is on and can. No rule skips a computer's own permissions.",
+    "empty": "No rules: it goes to the first computer that is on and can.",
+    "any": "any",
+    "rule": "Folder {workspace} · AI {ai} → {computers}",
+    "workspace": "Folder (empty = any)",
+    "ai": "AI",
+    "computers": "Computers, in order",
+    "add": "Add rule",
+    "remove": "Remove",
+    "up": "Move up",
+    "fallback": "If no rule applies, try in this order",
+    "save": "Save",
+    "saved": "Saved.",
+    "error": "Couldn't save. Check the rule and try again.",
+    "tooMany": "At most 8 rules, 3 computers per rule and 6 in the fallback order.",
+    "invalid": "That folder isn't valid (no “/”, “\\\\” or “~”).",
+    "maxComputers": "Up to 3 per rule.",
+    "loadFailed": "Your rules couldn't be read. Reload the page to try again."
   }
 }
