@@ -926,13 +926,17 @@
         "link_refused": "The link didn't allow it (or you said no).",
         "busy": "Stop the session before moving it.",
         "no_link": "There's no link from this computer to {computer}. Make one in this computer's Chalito panel (Links).",
-        "dirty": "The folder has uncommitted changes (or submodules). Commit and push first.",
+        "dirty": "It can't be moved this way: uncommitted work in a project without a remote, submodules, or repo config that runs code.",
         "unpushed": "The branch isn't pushed. Push first.",
         "push_auth": "The branch with your changes couldn't be pushed: check git access on that computer. The session stays here.",
-        "push_failed": "The branch with your changes couldn't be pushed. The session stays here."
+        "push_failed": "The branch with your changes couldn't be pushed. The session stays here.",
+        "secret_files": "There are untracked files that look like secrets or are too big; they aren't pushed. Gitignore, delete or push them yourself, then try again:",
+        "git_too_old": "Git on that computer is older than 2.40 and can't move the work safely. Update it and try again.",
+        "lfs_files": "The project uses Git LFS; those files can't be moved this way. Push them yourself, then try again."
       },
       "failedWhy": "The request couldn't be sent ({reason}).",
-      "savedOn": "Your unfinished changes were saved on branch {branch}."
+      "savedOn": "Your unfinished changes were saved on branch {branch}.",
+      "untracked": "Took {count, plural, one {# new file} other {# new files}}"
     },
     "transcript": {
       "label": "Conversation",

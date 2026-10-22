@@ -44,28 +44,57 @@ export const transferTargets = (devices: readonly DeviceView[], fromDeviceId: st
 
 export type TransferView =
   | { stage: "none" }
-  | { stage: "sent"; to: string; branch: string | null }
-  | { stage: "delivered"; to: string; peerSid: string | null; branch: string | null }
-  | { stage: "refused"; to: string; reason: string };
+  | { stage: "sent"; to: string; branch: string | null; files: string[] }
+  | { stage: "delivered"; to: string; peerSid: string | null; branch: string | null; files: string[] }
+  | { stage: "refused"; to: string; reason: string; files: string[] };
+
+// A file name can carry characters that reorder or hide text (bidi controls, zero-width, C0/C1):
+// they're shown as visible \u{…} escapes, so the owner sees the real name.
+const HIDDEN = /[\u0000-\u001f\u007f-\u009f\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/g;
+export const visiblePath = (p: string): string =>
+  p.replace(HIDDEN, (c) => `\\u{${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}}`);
+
+/** Paths a transfer event carries sealed (`untracked` it took, or `secretFiles` it refused on). */
+const pathsOf = (e: EventView | undefined, key: "untracked" | "secretFiles"): string[] => {
+  const v = (e?.content as Record<string, unknown> | null | undefined)?.[key];
+  return Array.isArray(v)
+    ? v
+        .filter((x): x is string => typeof x === "string")
+        .slice(0, 200)
+        .map(visiblePath)
+    : [];
+};
 
 /** The session's latest outgoing transfer, from its `session.transferred` events. */
 export const transferOf = (events: readonly EventView[] | undefined): TransferView => {
-  const last = [...(events ?? [])]
+  const outs = [...(events ?? [])]
     .reverse()
-    .find((e) => e.type === "session.transferred" && e.meta.direction === "out");
+    .filter((e) => e.type === "session.transferred" && e.meta.direction === "out");
+  const last = outs[0];
   if (!last) return { stage: "none" };
   const to = String(last.meta.peerDeviceId ?? "");
   const branch = typeof last.meta.branch === "string" ? last.meta.branch : null;
+  // The untracked files a move took ride on its "sent" event.
+  const took = pathsOf(
+    outs.find((e) => e.meta.stage === "sent"),
+    "untracked",
+  );
   if (last.meta.stage === "delivered")
     return {
       stage: "delivered",
       to,
       peerSid: typeof last.meta.peerSid === "string" ? last.meta.peerSid : null,
       branch,
+      files: took,
     };
   if (last.meta.stage === "refused")
-    return { stage: "refused", to, reason: String(last.meta.reason ?? "link_refused") };
-  return { stage: "sent", to, branch };
+    return {
+      stage: "refused",
+      to,
+      reason: String(last.meta.reason ?? "link_refused"),
+      files: pathsOf(last, "secretFiles"),
+    };
+  return { stage: "sent", to, branch, files: took };
 };
 
 /** A session the owner can move now: not working, not waiting on them, not already moving. */

@@ -926,13 +926,17 @@
         "link_refused": "El enlace no lo permitió (o dijiste que no).",
         "busy": "Detén la sesión antes de moverla.",
         "no_link": "Falta un enlace de esta computadora hacia {computer}. Créalo en el panel de Chalito de esta computadora (Enlaces).",
-        "dirty": "Hay cambios sin commit (o submódulos) en la carpeta. Haz commit y push primero.",
+        "dirty": "No se puede mover así: hay cambios sin commit en un proyecto sin remoto, submódulos o una configuración del repo que ejecuta código.",
         "unpushed": "La rama no está subida. Haz push primero.",
         "push_auth": "No se pudo subir la rama con tus cambios: revisa tu acceso a git en esa computadora. La sesión sigue aquí.",
-        "push_failed": "No se pudo subir la rama con tus cambios. La sesión sigue aquí."
+        "push_failed": "No se pudo subir la rama con tus cambios. La sesión sigue aquí.",
+        "secret_files": "Hay archivos sin seguimiento que parecen secretos o son muy grandes; no se suben. Agrégalos a .gitignore, bórralos o súbelos a mano y vuelve a intentar:",
+        "git_too_old": "El git de esa computadora es anterior a 2.40 y no puede mover el trabajo con seguridad. Actualízalo y vuelve a intentar.",
+        "lfs_files": "El proyecto usa Git LFS; esos archivos no se pueden mover así. Súbelos tú y vuelve a intentar."
       },
       "failedWhy": "No se pudo enviar la orden ({reason}).",
-      "savedOn": "Tus cambios sin terminar quedaron guardados en la rama {branch}."
+      "savedOn": "Tus cambios sin terminar quedaron guardados en la rama {branch}.",
+      "untracked": "Se llevó {count, plural, one {# archivo nuevo} other {# archivos nuevos}}"
     },
     "transcript": {
       "label": "Conversación",

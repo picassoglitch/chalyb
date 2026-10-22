@@ -60,12 +60,37 @@ export const TransferSession = ({ sid }: { sid: string }) => {
           {t("savedOn", { branch: view.branch })}
         </p>
       ) : null}
+      {(view.stage === "sent" || view.stage === "delivered") && view.files.length ? (
+        <details className="ch-chl-small" data-testid="transfer-untracked">
+          <summary>{t("untracked", { count: view.files.length })}</summary>
+          <ul>
+            {view.files.map((f) => (
+              <li key={f}>
+                <code dir="ltr" style={{ unicodeBidi: "plaintext" }}>
+                  {f}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       {view.stage === "refused" ? (
         <p role="alert" className="ch-err" data-testid="transfer-status" data-stage="refused">
           {t.has(`refused.${view.reason}`)
             ? t(`refused.${view.reason}`, { computer: nameOf(view.to) })
             : t("refused.link_refused")}
         </p>
+      ) : null}
+      {view.stage === "refused" && view.files.length ? (
+        <ul className="ch-chl-small" data-testid="transfer-secret-files">
+          {view.files.map((f) => (
+            <li key={f}>
+              <code dir="ltr" style={{ unicodeBidi: "plaintext" }}>
+                {f}
+              </code>
+            </li>
+          ))}
+        </ul>
       ) : null}
       {failed ? (
         <p role="alert" className="ch-err">
