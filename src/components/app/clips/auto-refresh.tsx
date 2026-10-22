@@ -10,6 +10,7 @@
 // by the next before it rendered, and the page sat on "creating" past the
 // test's 30 s (clips-flow.spec.ts:29).
 
+// A refresh still pending after STUCK_MS is retried (armRefresh).
 //
 // Only while the tab is visible: a hidden tab doesn't re-render the whole
 // page on the server every few seconds (and doesn't compete with the clicks
@@ -17,6 +18,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { armRefresh } from '@/lib/tools/clips-refresh';
 
 export function AutoRefresh({ everyMs = 2000 }: { everyMs?: number }) {
   const router = useRouter();
@@ -34,11 +36,11 @@ export function AutoRefresh({ everyMs = 2000 }: { everyMs?: number }) {
       wasHidden.current = true;
       return;
     }
-    if (pending) return;
-    const delay = wasHidden.current ? 0 : everyMs;
+    const cameBack = wasHidden.current;
     wasHidden.current = false;
-    const id = window.setTimeout(() => startTransition(() => router.refresh()), delay);
-    return () => window.clearTimeout(id);
+    return armRefresh({ pending, cameBack, everyMs }, () =>
+      startTransition(() => router.refresh()),
+    );
   }, [pending, hidden, router, everyMs]);
   return null;
 }

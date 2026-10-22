@@ -51,5 +51,5 @@ test('clips-flow flake · the job page chains its refreshes, never a fixed inter
   const src = read('src/components/app/clips/auto-refresh.tsx');
   assert.doesNotMatch(src, /setInterval\(/);
   assert.match(src, /useTransition/);
-  assert.match(src, /if \(pending\) return;/);
+  assert.match(src, /armRefresh\(\{ pending, cameBack, everyMs \}/);
 });
