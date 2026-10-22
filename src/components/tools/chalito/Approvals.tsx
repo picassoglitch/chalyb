@@ -94,10 +94,10 @@ const MesaApprovalCard = ({ a, m }: { a: ApprovalView; m: MesaDecisionView }) =>
 };
 
 /** One approval: risk, countdown, opened details, approve/deny (HIGH asks for step-up). */
-export const ApprovalCard = ({ a }: { a: ApprovalView }) =>
-  a.mesa ? <MesaApprovalCard a={a} m={a.mesa} /> : <ToolApprovalCard a={a} />;
+export const ApprovalCard = ({ a, inSession = false }: { a: ApprovalView; inSession?: boolean }) =>
+  a.mesa ? <MesaApprovalCard a={a} m={a.mesa} /> : <ToolApprovalCard a={a} inSession={inSession} />;
 
-const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
+const ToolApprovalCard = ({ a, inSession }: { a: ApprovalView; inSession: boolean }) => {
   const t = useTranslations("chalito.live.approval");
   const tc = useTranslations("chalito.live.approval.computer");
   const tk = useTranslations("chalito.coord.approval");
@@ -360,12 +360,11 @@ const ToolApprovalCard = ({ a }: { a: ApprovalView }) => {
           {note}
         </p>
       ) : null}
-      <Link
-        href={`/sesiones/${encodeURIComponent(a.sid)}`}
-        className="ch-lnk ch-chl-fit"
-      >
-        {t("openSession")}
-      </Link>
+      {inSession ? null : (
+        <Link href={`/sesiones/${encodeURIComponent(a.sid)}`} className="ch-lnk ch-chl-fit">
+          {t("openSession")}
+        </Link>
+      )}
     </article>
   );
 };

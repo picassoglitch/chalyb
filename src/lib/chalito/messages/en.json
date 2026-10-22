@@ -685,7 +685,8 @@
       "answer": "Answer",
       "answerSent": "Answer sent.",
       "untrusted": "That computer isn't paired with this device.",
-      "failed": "We couldn't send it."
+      "failed": "We couldn't send it.",
+      "stop": "Stop"
     },
     "timeline": {
       "label": "Activity",
@@ -929,6 +930,56 @@
         "unpushed": "The branch isn't pushed. Push first."
       },
       "failedWhy": "The request couldn't be sent ({reason})."
+    },
+    "transcript": {
+      "label": "Conversation",
+      "empty": "No messages yet. Write below.",
+      "writing": "Writing…",
+      "sealedMessage": "Message sealed for another device.",
+      "sealedStep": "Step sealed for another device",
+      "from": {
+        "client": "You",
+        "local": "You, at the computer",
+        "agent": "Another agent",
+        "mcp": "You, from a connected app",
+        "call": "You, by phone call",
+        "other": "Message"
+      },
+      "category": {
+        "read": "Read",
+        "search": "Search",
+        "edit": "Edit",
+        "create": "Create",
+        "delete": "Delete",
+        "shell": "Terminal",
+        "web": "Web",
+        "mcp": "Connector",
+        "git": "Git",
+        "other": "Tool"
+      },
+      "step": {
+        "running": "Running",
+        "ok": "Done",
+        "failed": "Failed",
+        "stopped": "Not finished"
+      },
+      "pill": {
+        "running": "Working",
+        "waiting": "Waiting for you",
+        "idle": "Idle",
+        "ended": "Ended"
+      },
+      "error": {
+        "adapter_crash": "the agent closed",
+        "auth_required": "sign in to the AI again",
+        "rate_limited": "the AI asked to wait a moment",
+        "quota_exhausted": "the AI plan ran out",
+        "policy_block": "your security rule blocked it",
+        "internal": "something failed on the computer"
+      },
+      "waitingHere": "{count, plural, =0 {Expired approvals} one {# approval waiting for you} other {# approvals waiting for you}}",
+      "more": "Session details and settings",
+      "earlier": "Earlier messages are no longer shown."
     }
   },
   "mcp": {
