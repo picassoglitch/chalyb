@@ -15,6 +15,7 @@ import { useRosterPickWithCustom } from "@/lib/chalito/useMyCard";
 import { ConnectProviders } from "./ConnectProviders";
 import { Loading } from "./Loading";
 import { CoordRules } from "./Coordinator";
+import { RoutingRules } from "./RoutingRules";
 
 export const Settings = () => {
   const t = useTranslations("chalito.settings");
@@ -69,6 +70,7 @@ export const Settings = () => {
         customCompanion={customCompanion}
       />
       <CoordRules />
+      <RoutingRules />
       <BrainKeys />
       <AccountDeletion />
     </div>

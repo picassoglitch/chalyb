@@ -1,5 +1,7 @@
 import type { ChannelSetter } from "./phone";
 import { toSettingsConnection, type ConnectionRow } from "./connect";
+import { loadRouteRules, saveRouteRules } from "@chalito/client";
+import type { RouteRules } from "@chalito/protocol";
 import { COMPANIONS, DEFAULT_COMPANION, DEFAULT_SETTINGS, type CompanionId, type SettingsValues } from "@chalito/ui";
 
 /**
@@ -212,5 +214,14 @@ export class SettingsStore {
 
   async markOnboarded(): Promise<void> {
     await must(this.db.rpc("update_my_settings", { p: { prefs: { onboarded_at: new Date().toISOString() } } }));
+  }
+
+  /** ADR 0031 §5: where new sessions run when the owner doesn't pick (prefs.routing). */
+  routing(): Promise<RouteRules | null> {
+    return loadRouteRules(this.db);
+  }
+
+  saveRouting(rules: RouteRules | null): Promise<void> {
+    return saveRouteRules(this.db, rules);
   }
 }
