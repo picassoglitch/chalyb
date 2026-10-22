@@ -2,15 +2,13 @@
 // and Mi cuenta → Cuentas conectadas (Aviso de privacidad §6).
 //  - The closure screen shows the unused extra credits and what happens to
 //    the plan before the button; the button waits for the box.
-//  - Free (mock backend only): confirming files the request, and the screen
-//    then shows it open instead of the form.
+//  - Free, filing the request: account-closure-mutations.spec.ts (runs once, last).
 //  - Pro: the plan is cancelled by the closure; the screen says so and
 //    offers Mi plan for someone who only wants to stop paying.
 
 import { test, expect } from '@playwright/test';
 import { asRole } from './utils/roles';
 
-const MOCK = process.env.E2E_MOCK_BACKEND === '1';
 
 test.describe('as free', () => {
   asRole('free');
@@ -32,16 +30,6 @@ test.describe('as free', () => {
     await expect(cta).toBeEnabled();
   });
 
-  test('confirming files the request; the screen then shows it open', async ({ page }) => {
-    test.skip(!MOCK, 'E2E_MOCK_BACKEND=1 not set (files a closure request)');
-    await page.goto('/app/settings/cerrar-cuenta');
-    await page.getByRole('checkbox').check();
-    await page.getByRole('button', { name: 'Cerrar mi cuenta' }).click();
-    await expect(page.getByRole('status')).toContainText('Recibimos tu solicitud');
-    await page.reload();
-    await expect(page.getByRole('status')).toContainText('Ya pediste cerrar tu cuenta');
-    await expect(page.getByRole('button', { name: 'Cerrar mi cuenta' })).toHaveCount(0);
-  });
 });
 
 test.describe('as pro', () => {

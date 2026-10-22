@@ -40,6 +40,8 @@ for (const role of ['free', 'trial', 'pro', 'pro_annual', 'past_due', 'vip', 'ad
       expect(hrefs.length).toBeGreaterThan(0);
       for (const href of hrefs) {
         await page.goto(href);
+        // A tool may redirect after its loading screen (Señales → empezar); check the page it lands on.
+        await page.waitForLoadState('networkidle');
         await expectNoLeaks(page);
         await expectNoOverflow(page, testInfo);
         await expectAccessible(page);
