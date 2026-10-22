@@ -137,6 +137,9 @@ export const handoffFor = (store: Store, hash: string, now: number): Handoff | n
 
 const APPROVE_PATH = /^\/(?:[a-z]{2}\/)?app\/chalito\/computadoras\/aprobar\/?$/;
 
+/** Whether this pathname is the approval screen (with or without a locale prefix). */
+export const onApprovalPage = (pathname: string): boolean => APPROVE_PATH.test(pathname);
+
 /** On the hub sign-in page: whether `?next=` is the approval screen (then the fragment is stashed). */
 export const headedToApproval = (search: string): boolean => {
   const next = new URLSearchParams(search).get("next") ?? "";

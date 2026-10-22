@@ -3,6 +3,7 @@
 
 import { test, expect } from '@playwright/test';
 import { asRole } from './utils/roles';
+import { chalitoScreen } from './utils/chalito';
 
 test.describe('signed in', () => {
   asRole('pro');
@@ -10,10 +11,13 @@ test.describe('signed in', () => {
   test('Equipo opens from Inicio and shows the goal box or what is missing', async ({ page }) => {
     await page.goto('/app/chalito/equipo');
     await expect(
-      page
-        .getByTestId('coord-home')
-        .or(page.getByTestId('gate-unpaired'))
-        .or(page.getByTestId('activate')),
+      chalitoScreen(
+        page,
+        page
+          .getByTestId('coord-home')
+          .or(page.getByTestId('gate-unpaired'))
+          .or(page.getByTestId('activate')),
+      ),
     ).toBeVisible({ timeout: 30_000 });
     if (await page.getByTestId('coord-home').isVisible()) {
       await expect(page.getByTestId('coord-goal').or(page.getByTestId('coord-no-computers'))).toBeVisible();
