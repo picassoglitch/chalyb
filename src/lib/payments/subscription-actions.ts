@@ -313,15 +313,30 @@ export async function authorizeTierSubscription(input: {
         { onConflict: 'mp_preapproval_id', ignoreDuplicates: true },
       ),
     );
-    // Monthly, charged on creation: keep it so the webhook can still grant the plan.
+    // Monthly, charged on creation: keep it, and build the row from MP now so
+    // the plan is on (and a second purchase blocked) before we answer.
     if (rowErr) {
       console.error('[mp/subscription] subscriptions row not stored', result.id, rowErr);
+      // No plan_key: like any legacy row, priced by the tier's monthly price.
+      const synced = await syncSubscription(result.id, { rowFailed: {} }).catch((err) => {
+        console.error('[mp/subscription] fallback sync failed', result.id, err);
+        return null;
+      });
+      const granted = !!synced?.ok;
       await alertChargedWithoutRow({
         userId: session.user.id,
         preapprovalId: result.id,
-        planKey: `${targetTier} mensual`,
+        planKey: `${targetTier} mensual (legacy)`,
+        granted,
         source: 'billing.legacy-checkout',
       });
+      if (!granted) {
+        return {
+          ok: false,
+          reason: 'mp_error',
+          error: 'No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar.',
+        };
+      }
     }
 
     // Same path the webhook takes: fetch the preapproval, check the price,

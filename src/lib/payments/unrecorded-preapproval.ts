@@ -7,20 +7,21 @@ import 'server-only';
 import { notify } from '@/lib/notifications/notify';
 import { cancelPreapproval } from './subscription-sync';
 
-/** Already charged: keep the preapproval so the webhook sync can still build
- *  the row and grant the plan, and tell an admin to check it. */
+/** Already charged, no checkout row: `granted` says whether the fallback row
+ *  from Mercado Pago put the plan on. Either way a human verifies it. */
 export async function alertChargedWithoutRow(input: {
   userId: string;
   preapprovalId: string;
   planKey: string;
+  granted: boolean;
   source: string;
 }): Promise<void> {
-  // The sync's fallback row has no plan_key, so it prices at the monthly
-  // default: only a monthly plan is granted by itself.
   await notify({
     severity: 'critical',
-    title: 'Cobro sin fila de suscripción — revisa el plan en Mercado Pago',
-    body: `usuario ${input.userId} · MP ${input.preapprovalId} · plan ${input.planKey} · ya se cobró. Mensual: el webhook crea la fila y da el plan en ~10 min. Anual/Lealtad: dalo a mano.`,
+    title: input.granted
+      ? 'Cobro sin fila de checkout — plan dado desde Mercado Pago, verifícalo'
+      : 'Cobro sin plan — da el plan y verifícalo a mano',
+    body: `usuario ${input.userId} · MP ${input.preapprovalId} · plan ${input.planKey} · ya se cobró${input.granted ? '; falta la evidencia de consentimiento en la fila' : '; no hay fila ni plan'}`,
     href: '/dashboard/dinero',
     source: input.source,
   });

@@ -517,7 +517,17 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       await cancelUnchargedWithoutRow(who);
       return { ok: false, code: 'MP_ERROR' };
     }
-    await alertChargedWithoutRow({ ...who, planKey: input.planKey });
+    // Build the row from MP now, with the plan sold, so the plan is on (and a
+    // second purchase is blocked) before we answer.
+    const synced = await syncSubscription(preapprovalId, {
+      rowFailed: { planKey: input.planKey },
+    }).catch((err) => {
+      console.error('[billing/start] fallback sync failed', preapprovalId, err);
+      return null;
+    });
+    const granted = !!synced?.ok;
+    await alertChargedWithoutRow({ ...who, planKey: input.planKey, granted });
+    if (!granted) return { ok: false, code: 'MP_ERROR' };
   }
   if (mode === 'trial') {
     await admin

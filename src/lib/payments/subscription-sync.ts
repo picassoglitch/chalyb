@@ -50,6 +50,7 @@ import { PLAN_NAMES } from '@/lib/billing/plan-names';
 import { onLealtadCharge } from '@/lib/billing/lealtad-server';
 import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { lealtadFailedVars } from '@/lib/billing/notices';
+import { waitForCheckoutRow } from './row-retry';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -88,7 +89,12 @@ export const ROW_WAIT_MS = 10 * 60_000;
  * because no retry will change that. `db`: our write failed, retry so
  * Mercado Pago sends it again once the database is back.
  */
-export async function syncSubscription(preapprovalId: string): Promise<SyncOutcome> {
+export async function syncSubscription(
+  preapprovalId: string,
+  // Set only by a checkout whose own row write failed: build the row now,
+  // with the plan it sold, instead of waiting for it.
+  opts: { rowFailed?: { planKey?: PlanKey } } = {},
+): Promise<SyncOutcome> {
   const { preapproval } = getMercadoPago();
   const mp = await preapproval.get({ id: preapprovalId });
 
@@ -128,16 +134,22 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
   // Any status, not just authorized: a 'pending' notice that got here first
   // would write a row WITHOUT plan_key, and the authorized one right after
   // it would find that row and be gated against the monthly price anyway.
-  // Only while the checkout's write can still land: past ROW_WAIT_MS it
-  // failed (and alerted), so build the row from MP and grant as before.
-  const rowMayLand = !!mp.date_created && Date.now() - Date.parse(mp.date_created) < ROW_WAIT_MS;
-  if (!before && rowMayLand) {
+  // Only while a healthy checkout's write can still land; past ROW_WAIT_MS,
+  // build the row from MP and grant as before.
+  const wait = waitForCheckoutRow({
+    hasRow: !!before,
+    dateCreated: mp.date_created,
+    rowFailed: !!opts.rowFailed,
+    waitMs: ROW_WAIT_MS,
+    now: Date.now(),
+  });
+  if (wait) {
     console.warn('[mp/subscription] preapproval has no row yet — asking for a retry', {
       preapprovalId,
     });
     return { ok: false, reason: 'db', retry: true };
   }
-  const planKey = (before?.plan_key as PlanKey | null) ?? null;
+  const planKey = (before?.plan_key as PlanKey | null) ?? opts.rowFailed?.planKey ?? null;
   const trialEndsAt = (before?.trial_ends_at as string | null) ?? null;
   const inTrial = !!trialEndsAt && Date.now() < Date.parse(trialEndsAt);
   const previousStatus = before ? normalizePreapprovalStatus(before.status as string) : null;
@@ -181,6 +193,7 @@ export async function syncSubscription(preapprovalId: string): Promise<SyncOutco
       tier,
       mp_preapproval_id: preapprovalId,
       external_reference: mp.external_reference,
+      ...(!before && opts.rowFailed?.planKey ? { plan_key: opts.rowFailed.planKey } : {}),
       status: gate.storedStatus,
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',

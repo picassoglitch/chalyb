@@ -13,12 +13,12 @@ test('syncSubscription asks for a retry when the row is not written yet', () => 
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /if \(beforeErr\) \{[\s\S]{0,140}retry: true/);
   // Whatever the status: a pending notice must not write a row without plan_key.
-  assert.match(s, /if \(!before && rowMayLand\) \{[\s\S]{0,200}retry: true/);
+  assert.match(s, /if \(wait\) \{[\s\S]{0,200}retry: true/);
   assert.doesNotMatch(s, /!before && status === 'authorized'/);
   // The retry check runs before the price gate and before the upsert.
-  assert.ok(s.indexOf('if (!before && rowMayLand) {') < s.indexOf('gatePreapproval({'));
+  assert.ok(s.indexOf('if (wait) {') < s.indexOf('gatePreapproval({'));
   assert.ok(
-    s.indexOf('if (!before && rowMayLand) {') < s.indexOf(".from('subscriptions').upsert("),
+    s.indexOf('if (wait) {') < s.indexOf(".from('subscriptions').upsert("),
   );
 });
 
@@ -114,7 +114,7 @@ test('a failed row write never cancels a preapproval that already charged', () =
   // Cancel (and fail the checkout) only when the first charge is later.
   assert.match(
     block,
-    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}\s*await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey \}\);\s*\}\s*$/,
+    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}/,
   );
   assert.match(start, /const rowErr = await writeRowWithRetry\(\(\) =>/);
   // The old comment promised a refund path that doesn't exist.
@@ -127,7 +127,7 @@ test('a failed row write never cancels a preapproval that already charged', () =
     legacy.indexOf('export async function startHostedTierSubscription'),
   );
   // Card form: charged on creation, so alert and carry on to the sync.
-  assert.match(card, /if \(rowErr\) \{[\s\S]{0,120}await alertChargedWithoutRow\(/);
+  assert.match(card, /if \(rowErr\) \{[\s\S]{0,600}await alertChargedWithoutRow\(/);
   assert.doesNotMatch(card, /cancelUnchargedWithoutRow/);
   const hosted = legacy.slice(legacy.indexOf('export async function startHostedTierSubscription'));
   // Hosted: no card yet, so nothing charged: cancel.
@@ -137,10 +137,67 @@ test('a failed row write never cancels a preapproval that already charged', () =
 test('the sync waits for a checkout row only while it can still land, then builds it as before', () => {
   const s = src('src/lib/payments/subscription-sync.ts');
   assert.match(s, /export const ROW_WAIT_MS = 10 \* 60_000;/);
+  assert.match(s, /rowFailed: !!opts\.rowFailed,[\s\S]{0,80}\}\);\s*if \(wait\) \{/);
+  assert.ok(s.indexOf('if (wait) {') < s.indexOf('gatePreapproval({'));
+  // The checkout's fallback row carries the plan it sold, so annual/Lealtad price right.
   assert.match(
     s,
-    /const rowMayLand = !!mp\.date_created && Date\.now\(\) - Date\.parse\(mp\.date_created\) < ROW_WAIT_MS;\s*if \(!before && rowMayLand\) \{/,
+    /\(before\?\.plan_key as PlanKey \| null\) \?\? opts\.rowFailed\?\.planKey \?\? null/,
   );
+  assert.match(
+    s,
+    /\.\.\.\(!before && opts\.rowFailed\?\.planKey \? \{ plan_key: opts\.rowFailed\.planKey \} : \{\}\)/,
+  );
+});
+
+test('waitForCheckoutRow: waits only for a healthy checkout inside the window', async () => {
+  const { waitForCheckoutRow } = await import('@/lib/payments/row-retry');
+  const now = Date.parse('2026-10-21T12:00:00Z');
+  const base = { hasRow: false, rowFailed: false, waitMs: 600_000, now };
+  assert.equal(waitForCheckoutRow({ ...base, dateCreated: '2026-10-21T11:58:00Z' }), true);
+  assert.equal(waitForCheckoutRow({ ...base, dateCreated: '2026-10-21T11:49:00Z' }), false);
+  assert.equal(waitForCheckoutRow({ ...base, dateCreated: null }), false);
+  assert.equal(
+    waitForCheckoutRow({ ...base, hasRow: true, dateCreated: '2026-10-21T11:59:00Z' }),
+    false,
+  );
+  // The checkout's own sync after its write failed never waits on itself.
+  assert.equal(
+    waitForCheckoutRow({ ...base, rowFailed: true, dateCreated: '2026-10-21T11:59:59Z' }),
+    false,
+  );
+});
+
+test('a charged checkout whose row failed builds it before answering, or answers with an error', () => {
+  // Second purchase: the live-preapproval guards read only subscriptions rows,
+  // so the row must exist before the checkout returns ok.
+  const legacy = src('src/lib/payments/subscription-actions.ts');
+  assert.match(legacy, /\.in\('status', \['pending', 'authorized'\]\)/);
+  const card = legacy.slice(
+    legacy.indexOf('export async function authorizeTierSubscription'),
+    legacy.indexOf('export async function startHostedTierSubscription'),
+  );
+  const cardFail = card.slice(card.indexOf('if (rowErr) {'));
+  assert.match(cardFail, /await syncSubscription\(result\.id, \{ rowFailed: \{\} \}\)/);
+  assert.match(cardFail, /granted,[\s\S]{0,80}\}\);\s*if \(!granted\) \{\s*return \{\s*ok: false,/);
+  assert.ok(cardFail.indexOf('rowFailed') < cardFail.indexOf('return { ok: true, status }'));
+
+  const start = src('src/lib/billing/start-subscription.ts');
+  const startFail = start.slice(
+    start.indexOf('if (rowErr) {'),
+    start.indexOf("if (mode === 'trial') {"),
+  );
+  assert.match(
+    startFail,
+    /await syncSubscription\(preapprovalId, \{\s*rowFailed: \{ planKey: input\.planKey \},/,
+  );
+  assert.match(
+    startFail,
+    /await alertChargedWithoutRow\(\{ \.\.\.who, planKey: input\.planKey, granted \}\);\s*if \(!granted\) return \{ ok: false, code: 'MP_ERROR' \};/,
+  );
+  const alert = src('src/lib/payments/unrecorded-preapproval.ts');
+  assert.match(alert, /da el plan y verifícalo a mano/);
+  assert.doesNotMatch(alert, /~10 min/);
 });
 
 test('writeRowWithRetry: one retry, then the error', async () => {
