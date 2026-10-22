@@ -26,3 +26,4 @@ export {
   sha256,
 } from "./webauthn";
 export type { WebAuthnCredentialRef, WebAuthnAssertionInput, AssertionCheck } from "./webauthn";
+export { outsideTaskSid } from "./outside-task";
