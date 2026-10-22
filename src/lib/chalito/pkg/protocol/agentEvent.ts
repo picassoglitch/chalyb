@@ -231,6 +231,8 @@ export const AgentEvent = z.discriminatedUnion("type", [
     reason: TransferRefusal.optional(),
     /** Unfinished work was saved on this new branch (`chalito/move-…`) for the move. */
     branch: BranchName.optional(),
+    /** Sealed `{untracked?: string[]; secretFiles?: string[]}`: the paths a move took, or refused. */
+    ct: SealedEnvelope.optional(),
   }),
 ]);
 export type AgentEvent = z.infer<typeof AgentEvent>;
