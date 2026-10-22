@@ -34,7 +34,7 @@ export default async function TermsOptionsPage({
       </header>
       <ul style={{ display: 'grid', gap: 14, listStyle: 'none', padding: 0, margin: 0 }}>
         {OPTIONS.map((o) => (
-          <li key={o.key} className="ch-card" style={{ display: 'grid', gap: 8 }}>
+          <li key={o.key} className="ch-card" style={{ display: 'grid', gap: 8, padding: 16 }}>
             <h2 style={{ fontWeight: 700, fontSize: 19 }}>{t(`${o.key}.title`)}</h2>
             <p className="ch-muted">{t(`${o.key}.body`)}</p>
             <div>

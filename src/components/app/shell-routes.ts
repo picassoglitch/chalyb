@@ -28,6 +28,10 @@ const MODERN = new Set([
   '/app/history',
   '/app/help',
   '/app/avisos',
+  '/app/settings/cerrar-cuenta',
+  '/app/settings/arco',
+  '/app/usage/checkout',
+  '/app/terminos',
 ]);
 
 /** Step-by-step flows: focus layout, no navigation. The Clips wizard

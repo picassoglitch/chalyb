@@ -2,6 +2,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import {
   NAV_ITEMS,
   activeNavFor,
@@ -84,6 +86,41 @@ test('wizards hide the nav; rebuilt screens are modern; the rest legacy', () => 
   assert.equal(shellModeFor('/app/usage'), 'modern', 'FIX-3 B');
   assert.equal(shellModeFor('/en/app/usage'), 'modern');
   assert.equal(shellModeFor('/app/herramientas'), 'modern', 'Tus herramientas');
+});
+
+test('a screen built on the light design never lands in the dark legacy panel', () => {
+  // Cerrar mi cuenta shipped as ch- markup but missing from MODERN, so it rendered pale text on black.
+  const root = 'src/app/[locale]/(dashboard)/app';
+  const pages = (readdirSync(root, { recursive: true }) as string[]).filter((f) =>
+    f.endsWith('page.tsx'),
+  );
+  const source = (file: string) => {
+    const own = readFileSync(file, 'utf8');
+    const deps = [...own.matchAll(/from '@\/components\/([^']+)'/g)].map((m) => {
+      for (const ext of ['.tsx', '.ts', '/index.tsx']) {
+        try {
+          return readFileSync(`src/components/${m[1]}${ext}`, 'utf8');
+        } catch {}
+      }
+      return '';
+    });
+    return [own, ...deps].join('\n');
+  };
+  const light = pages
+    .filter((f) => {
+      const code = source(join(root, f));
+      return /\bch-(h1|card|btn)|ButtonLink/.test(code) && !/\bcc-/.test(code);
+    })
+    .map(
+      (f) =>
+        '/app/' +
+        relative('.', dirname(f))
+          .replace(/\([^)]+\)\/?/g, '')
+          .replace(/%5F/g, '_'),
+    )
+    .map((p) => p.replace(/\/\.$|\/$/, ''));
+  assert.ok(light.includes('/app/settings/cerrar-cuenta'), 'the scan finds the closure screen');
+  for (const p of light) assert.notEqual(shellModeFor(p), 'legacy', p);
 });
 
 test('plan labels', () => {
