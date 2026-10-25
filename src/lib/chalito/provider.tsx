@@ -23,7 +23,7 @@ import {
   type RevokeAllResult,
   type Snapshot,
 } from "@chalito/client";
-import { accountAgents, type EndorseTarget } from "@chalito/client-keys";
+import { SIGN_IN_INTRODUCER, newAccountAgents, type EndorseTarget } from "@chalito/client-keys";
 import type { PhoneVerifier } from "@chalito/ui";
 import type { DeviceKeys } from "@/lib/chalito/web/keys";
 import {
@@ -52,7 +52,9 @@ import {
   needsRecovery,
   recoverWithCode,
   signInClient,
+  signInFallback,
   type ActivateError,
+  type SignInBlocked,
   type RecoverResult,
 } from "@/lib/chalito/web/activate";
 import type { McpApi } from "@/lib/chalito/web/mcp";
@@ -96,6 +98,11 @@ interface Ctx {
    * code for a trusted device to approve; on success this browser signs in as itself. Null otherwise.
    */
   newDevice: ((name: string) => Promise<Waiting | { error: WaitError }>) | null;
+  // ADR 0032 — "Aprobar este navegador": the retry after a refusal, and the explicit way back for a
+  // revoked browser. Null unless unpaired on the person's session.
+  approveThisBrowser: (() => void) | null;
+  /** Why the sign-in didn't approve this browser by itself; null when it never tried. */
+  signInBlocked: SignInBlocked | null;
   /**
    * "Activar": this browser becomes the account's FIRST trusted client (passkey right after), only
    * while the account has none (the api enforces it). Null when not unpaired on the person's session.
@@ -241,6 +248,8 @@ const INITIAL: Ctx = {
   assertPasskey: null,
   readSharing: null,
   newDevice: null,
+  approveThisBrowser: null,
+  signInBlocked: null,
   activate: null,
   canActivate: false,
   recover: null,
@@ -309,9 +318,6 @@ type DirectoryDb = {
   };
 };
 /** The account's devices directory (RLS), for vetting introduced computers (ADR 0018). */
-/** `endorsedBy` recorded for computers trusted from the directory because the person signed in. */
-const SIGN_IN_INTRODUCER = "sign_in";
-
 const readDirectory = async (db: unknown, owner: string): Promise<DirectoryRow[]> => {
   const { data, error } = await (db as DirectoryDb)
     .from("devices")
@@ -446,6 +452,10 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
 
   /** Sign-in alone: the owners this browser already tried to enrol by itself (once each). */
   const signInTried = useRef(new Set<string>());
+  /** Why that try didn't approve this browser, per owner (shown with "Aprobar este navegador"). */
+  const signInFailed = useRef(new Map<string, Exclude<SignInBlocked, "revoked">>());
+  /** The person clicked "Aprobar este navegador": a revoked browser may enrol again, this once. */
+  const approveClicked = useRef(false);
   /** Bumped to rerun the connection once a flow that held it (activation) is done. */
   const [epoch, setEpoch] = useState(0);
   const [activation, setActivation] = useState<Activation | null>(null);
@@ -596,11 +606,11 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
       if (!keys) {
         const person = isPersonSession(session.session);
         // Owner decision 2026-10-19 ("sign-in alone"): the person signed in, so this browser
-        // enrols itself (its computers are trusted on the connect that follows). Once per owner,
-        // and never for a browser that was revoked: if the api refuses or predates it, the screens
-        // below (Activar, Esperando aprobación) still apply.
-        if (person && !signInTried.current.has(owner) && !wasRevoked()) {
+        // enrols itself (its computers are trusted on the connect that follows). Once per owner; a
+        // revoked browser only on the person's "Aprobar este navegador" (ADR 0032).
+        if (person && !signInTried.current.has(owner) && (!wasRevoked() || approveClicked.current)) {
           signInTried.current.add(owner);
+          approveClicked.current = false;
           deviceMode.current = true;
           owns = true;
           try {
@@ -610,8 +620,10 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
               owner,
               name: browserName(navigator.userAgent, document.documentElement.lang || "es"),
             });
+            if (!r.ok) signInFailed.current.set(owner, r.reason);
             if (r.ok) {
               // A client of the account now; the rerun connects and trusts its computers.
+              clearRevoked();
               markEndorsed(r.deviceId);
               await ensureSession(platform.db.auth as never, {
                 kind: "device",
@@ -621,22 +633,34 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
             }
           } catch {
             // Falls through to the screens below on the rerun.
+            signInFailed.current.set(owner, "failed");
           } finally {
             deviceMode.current = false;
             setEpoch((e) => e + 1);
           }
           return;
         }
-        const dir = person ? await readDirectory(platform.db, owner).catch(() => null) : null;
+        const blocked: SignInBlocked | null = signInFailed.current.get(owner) ?? (wasRevoked() ? "revoked" : null);
+        const { approve, legacy } = signInFallback(person, blocked);
+        const dir = legacy ? await readDirectory(platform.db, owner).catch(() => null) : null;
         return done({
           ...INITIAL,
           ...base,
           status: "unpaired",
-          newDevice: person ? newDevice(platform, owner, token) : null,
-          activate: person ? activateWith(platform, owner, token) : null,
-          canActivate: person && canActivate(dir),
-          recover: person ? recoverWith(platform, owner, token) : null,
-          needsRecovery: person && needsRecovery(dir),
+          signInBlocked: person ? blocked : null,
+          approveThisBrowser: approve
+            ? () => {
+                signInTried.current.delete(owner);
+                signInFailed.current.delete(owner);
+                approveClicked.current = true;
+                setEpoch((e) => e + 1);
+              }
+            : null,
+          newDevice: legacy ? newDevice(platform, owner, token) : null,
+          activate: legacy ? activateWith(platform, owner, token) : null,
+          canActivate: legacy && canActivate(dir),
+          recover: legacy ? recoverWith(platform, owner, token) : null,
+          needsRecovery: legacy && needsRecovery(dir),
         });
       }
       keysRef.current = keys;
@@ -653,9 +677,9 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
           create: () => platform.db,
         });
         clientRef.current = client;
-        // Sign-in alone: the account's computers, as the directory lists them now (new ones too).
+        // Sign-in alone: computers new to the account since last time; ADR 0032 — known ids keep their keys.
         await readDirectory(platform.db, owner)
-          .then(accountAgents)
+          .then((dir) => newAccountAgents(dir, keys.keys.trustedAgents()))
           .then((agents) =>
             agents.length ? keys.keys.trustIntroducedAgents(agents, SIGN_IN_INTRODUCER, Date.now()) : [],
           )

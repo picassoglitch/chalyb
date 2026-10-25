@@ -504,7 +504,8 @@ export const ApprovalPopup = () => {
           {t("later")}
         </button>
       </div>
-      <ApprovalCard a={a} />
+      {/* Keyed: one approval's note or opened input must never carry over to the next (ADR 0032). */}
+      <ApprovalCard key={a.aid} a={a} />
       <Link href="/bandeja" className="ch-lnk ch-chl-small">
         {t("inbox")}
       </Link>

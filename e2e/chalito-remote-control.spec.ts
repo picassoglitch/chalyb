@@ -12,7 +12,7 @@ test.describe('signed in', () => {
     await expect(
       chalitoScreen(
         page,
-        page.getByTestId('new-session').or(page.getByTestId('no-computers')).or(page.getByTestId('activate')),
+        page.getByTestId('new-session').or(page.getByTestId('no-computers')).or(page.getByTestId('activate').or(page.getByTestId('approve-browser'))),
       ),
     ).toBeVisible({ timeout: 30_000 });
     if (!(await page.getByTestId('new-session').isVisible())) return;
@@ -25,7 +25,7 @@ test.describe('signed in', () => {
 
   test('Ajustes lists where new sessions run', async ({ page }) => {
     await page.goto('/app/chalito/ajustes');
-    await expect(chalitoScreen(page, page.getByTestId('routing-rules').or(page.getByTestId('activate')))).toBeVisible({
+    await expect(chalitoScreen(page, page.getByTestId('routing-rules').or(page.getByTestId('activate').or(page.getByTestId('approve-browser'))))).toBeVisible({
       timeout: 30_000,
     });
   });

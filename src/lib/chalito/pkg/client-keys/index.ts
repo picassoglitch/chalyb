@@ -36,7 +36,9 @@ export type { PairingDisplay, ScanResult, ClaimRequest } from "./pairing";
 export { deviceLogin } from "./device-login";
 export {
   EndorseError,
+  SIGN_IN_INTRODUCER,
   accountAgents,
+  newAccountAgents,
   approveEndorsement,
   endorseGlyph,
   introducedAgents,
