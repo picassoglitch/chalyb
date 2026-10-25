@@ -62,7 +62,8 @@ export const ENGINE_CAPABILITIES: ClipsCapabilities = {
   // A failed run may already have used tokens (the engine meters what it
   // spent): never promise "no se usaron créditos" for engine jobs.
   confirmsNoChargeOnFailure: false,
-  editClips: false,
+  // #101 — the editor (/app/clips/[clipId]) is live in engine mode.
+  editClips: true,
   framing: false,
   apiAccess: false,
   // The engine's own recovery loop re-dispatches stuck runs, and every
