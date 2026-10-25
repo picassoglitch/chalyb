@@ -653,6 +653,8 @@ export const ChalitoProvider = ({ children, hubUserId }: { children: ReactNode; 
                 signInTried.current.delete(owner);
                 signInFailed.current.delete(owner);
                 approveClicked.current = true;
+                // ADR 0032 — "loading" unmounts the card, so a failed try comes back with a live button.
+                setCtx((c) => ({ ...c, status: "loading" }));
                 setEpoch((e) => e + 1);
               }
             : null,
