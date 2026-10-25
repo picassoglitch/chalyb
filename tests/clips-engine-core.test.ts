@@ -273,3 +273,8 @@ test('engine mode lists exactly the networks publishing can connect', async () =
   assert.deepEqual(caps.connectPlatforms, CONNECT_PLATFORMS);
   assert.equal(caps.autoRetry, false);
 });
+
+test('engine mode offers the clip editor, so a video page shows Editar', async () => {
+  const { createEngineClipsAdapter } = await import('@/lib/tools/adapters/clips/adapter');
+  assert.equal(createEngineClipsAdapter(() => ({}) as never).capabilities().editClips, true);
+});
