@@ -553,11 +553,21 @@
       "loading": "Conectando…",
       "signed_out": "Entra con tu cuenta de Chalyb para ver tus sesiones y aprobaciones.",
       "signIn": "Entrar con Chalyb",
-      "unpaired": "Este navegador aún no está aprobado. Apruébalo desde un dispositivo aprobado o emparéjalo desde la app de escritorio.",
+      "unpaired": "Este navegador aún no está aprobado.",
       "error": "No pudimos conectar. Vuelve a intentarlo en un momento.",
-      "revoked": "Este dispositivo fue retirado de tu cuenta. Vuelve a emparejarlo desde un dispositivo aprobado.",
-      "repair": "Emparejar de nuevo",
-      "link": "Usar este navegador"
+      "revoked": "Este dispositivo fue retirado de tu cuenta. Apruébalo de nuevo con tu cuenta de Chalyb.",
+      "repair": "Aprobar de nuevo",
+      "link": "Usar este navegador",
+      "approve": {
+        "title": "Usar este navegador",
+        "body": "Al entrar con tu cuenta de Chalyb, este navegador queda aprobado. Tus otros dispositivos reciben un aviso.",
+        "cta": "Aprobar este navegador",
+        "reason": {
+          "revoked": "Este navegador fue retirado de tu cuenta antes. Apruébalo solo si fuiste tú.",
+          "rejected": "Tu cuenta no aceptó este navegador. Vuelve a entrar con Chalyb e inténtalo de nuevo.",
+          "failed": "No pudimos aprobar este navegador. Vuelve a intentarlo."
+        }
+      }
     },
     "devMode": {
       "banner": "Modo desarrollador ACTIVO: tus IA pueden hacer más cosas sin preguntarte.",

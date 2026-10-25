@@ -61,7 +61,7 @@ test.describe('signed in', () => {
         page
           .getByTestId('approve-input')
           .or(page.getByTestId('gate-unpaired'))
-          .or(page.getByTestId('activate')),
+          .or(page.getByTestId('activate').or(page.getByTestId('approve-browser'))),
       ),
     ).toBeVisible({ timeout: 30_000 });
     expect(leaks(requests, new URL(baseURL!).origin)).toEqual([]);

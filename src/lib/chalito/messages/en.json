@@ -553,11 +553,21 @@
       "loading": "Connecting…",
       "signed_out": "Sign in with your Chalyb account to see your sessions and approvals.",
       "signIn": "Sign in with Chalyb",
-      "unpaired": "This browser isn't approved yet. Approve it from an approved device or pair it from the desktop app.",
+      "unpaired": "This browser isn't approved yet.",
       "error": "We couldn't connect. Try again in a moment.",
-      "revoked": "This device was removed from your account. Pair it again from an approved device.",
-      "repair": "Pair again",
-      "link": "Use this browser"
+      "revoked": "This device was removed from your account. Approve it again with your Chalyb account.",
+      "repair": "Approve again",
+      "link": "Use this browser",
+      "approve": {
+        "title": "Use this browser",
+        "body": "Signing in with your Chalyb account approves this browser. Your other devices get an alert.",
+        "cta": "Approve this browser",
+        "reason": {
+          "revoked": "This browser was removed from your account before. Approve it only if it was you.",
+          "rejected": "Your account didn't accept this browser. Sign in with Chalyb again and retry.",
+          "failed": "We couldn't approve this browser. Try again."
+        }
+      }
     },
     "devMode": {
       "banner": "Developer mode ACTIVE: your AIs can do more without asking you.",

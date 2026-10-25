@@ -58,7 +58,7 @@ test.describe('a signed-in account', () => {
     await page.goto('/app/chalito/dispositivos');
     const none = page.getByTestId('no-computer');
     const list = page.getByTestId('device').first();
-    const gate = page.getByTestId('activate').or(page.getByTestId('gate-unpaired'));
+    const gate = page.getByTestId('activate').or(page.getByTestId('approve-browser')).or(page.getByTestId('gate-unpaired'));
     await expect(chalitoScreen(page, none.or(list).or(gate))).toBeVisible({ timeout: 20_000 });
     if (await none.isVisible()) {
       expect(await page.getByTestId('no-computer-download').getAttribute('href')).toMatch(
@@ -77,7 +77,7 @@ test.describe('a signed-in account', () => {
         page
           .getByTestId('new-session')
           .or(page.getByTestId('no-computers'))
-          .or(page.getByTestId('activate'))
+          .or(page.getByTestId('activate').or(page.getByTestId('approve-browser')))
           .or(page.getByTestId('gate-unpaired')),
       ),
     ).toBeVisible({ timeout: 20_000 });

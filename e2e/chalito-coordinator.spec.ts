@@ -16,7 +16,7 @@ test.describe('signed in', () => {
         page
           .getByTestId('coord-home')
           .or(page.getByTestId('gate-unpaired'))
-          .or(page.getByTestId('activate')),
+          .or(page.getByTestId('activate').or(page.getByTestId('approve-browser'))),
       ),
     ).toBeVisible({ timeout: 30_000 });
     if (await page.getByTestId('coord-home').isVisible()) {

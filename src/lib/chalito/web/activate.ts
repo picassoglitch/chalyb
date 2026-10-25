@@ -199,3 +199,14 @@ export const signInClient = async (d: Omit<ActivateDeps, "recoveryCode">): Promi
     return { ok: false, reason: err instanceof ApiError && err.status < 500 ? "rejected" : "failed" };
   }
 };
+
+/** Why the sign-in didn't approve this browser by itself; `revoked`: removed before, so it waits for a click. */
+export type SignInBlocked = "unsupported" | "rejected" | "failed" | "revoked";
+
+// ADR 0032 — an unpaired browser on the person's session offers "Aprobar este navegador" (sign in
+// again); the old screens (a code, Activar) only for an api without /v1/devices/signin.
+export const signInFallback = (person: boolean, blocked: SignInBlocked | null) => ({
+  approve: person && blocked !== "unsupported",
+  legacy: person && blocked === "unsupported",
+});
+

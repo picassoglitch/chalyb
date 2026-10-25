@@ -13,6 +13,7 @@ import { GlyphCanvas } from "./Glyph";
 import { Loading } from "./Loading";
 import { Recover } from "./Recover";
 import { ResetDevices } from "./ResetDevices";
+import { ApproveBrowser } from "./ApproveBrowser";
 
 type Step =
   | { s: "name" }
@@ -41,7 +42,7 @@ export const EndorseWait = () => {
   const [backToApproval, setBackToApproval] = useState(false);
   useEffect(() => setBackToApproval(pendingApproval(sessionOrNull(), Date.now())), []);
   const locale = useLocale();
-  const { status, newDevice, recover, activation } = useChalito();
+  const { status, newDevice, recover, activation, approveThisBrowser } = useChalito();
   const [name, setName] = useState("");
   const [recovering, setRecovering] = useState(false);
   /** "No tengo ese dispositivo": the recovery code, or "Empezar de cero". */
@@ -111,6 +112,8 @@ export const EndorseWait = () => {
       </div>
     );
   if (status === "loading") return <Loading label={t("loading")} rows={2} />;
+  // ADR 0032 — signing in approves this browser: the retry, never a code for another device.
+  if (status === "unpaired" && approveThisBrowser) return <ApproveBrowser />;
   if (status === "signed_out" || ((status === "unpaired" || status === "revoked") && !newDevice))
     return (
       <div className="ch-chl ch-chl--tight" data-testid="endorse-signin">

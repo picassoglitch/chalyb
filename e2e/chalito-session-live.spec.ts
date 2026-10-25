@@ -20,7 +20,7 @@ test.describe('signed in', () => {
         .or(page.getByTestId('gate-unpaired'))
         .or(page.getByTestId('gate-error'))
         .or(page.getByTestId('recover'))
-        .or(page.getByTestId('activate'))
+        .or(page.getByTestId('activate').or(page.getByTestId('approve-browser')))
         // Mock Supabase has no Chalito api behind it: the hub's SSO into Chalito says so.
         .or(page.getByTestId('chalito-sso-failed')),
     ).toBeVisible({ timeout: 30_000 });

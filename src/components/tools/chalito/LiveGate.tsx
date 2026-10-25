@@ -6,6 +6,7 @@ import { useChalito, useLive } from "@/lib/chalito/provider";
 import { Loading } from "./Loading";
 import { Activate, ActivationDone } from "./Activate";
 import { Recover } from "./Recover";
+import { ApproveBrowser } from "./ApproveBrowser";
 
 /**
  * Live screens need a signed-in, paired, connected device; otherwise say what's missing. Inside
@@ -20,7 +21,8 @@ export const LiveGate = ({
   stayAfterActivation?: boolean;
 }) => {
   const t = useTranslations("chalito.live.gate");
-  const { status, newDevice, activate, canActivate, recover, needsRecovery, activation } = useChalito();
+  const { status, newDevice, activate, canActivate, recover, needsRecovery, activation, approveThisBrowser } =
+    useChalito();
   const live = useLive();
   // Revoked: at sign-in (the api refused the device) or while connected (the live store saw it).
   // The provider has already forgotten the agents this browser trusted.
@@ -40,6 +42,8 @@ export const LiveGate = ({
     return (
       <Loading label={t("loading")} />
     );
+  // ADR 0032 — signing in approves it; this is the retry, or the explicit way back after a revoke.
+  if (status === "unpaired" && approveThisBrowser) return <ApproveBrowser />;
   // No trusted client on the account yet: one tap instead of a second device (tester item #1).
   if (status === "unpaired" && activate && canActivate) return <Activate />;
   // No trusted client but a paired computer: computers count, so the recovery code instead.
