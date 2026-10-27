@@ -92,8 +92,8 @@ export function stateFromProgress(
   return 'received';
 }
 
-/** The steps a video page lists. Voice detection is off in the engine for now,
- *  so its skipped step is hidden instead of showing "Analizando las voces · 0 s". */
+/** The engine skips diarize whenever voices aren't analyzed (off, no model, deferred to
+ *  transcribe); hide it instead of showing "Analizando las voces · 0 s". */
 export function visibleSteps(steps: EngineProgress['steps']): EngineProgress['steps'] {
   return steps.filter((s) => !(s.name === 'diarize' && s.skipped));
 }
