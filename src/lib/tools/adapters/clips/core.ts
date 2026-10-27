@@ -92,6 +92,12 @@ export function stateFromProgress(
   return 'received';
 }
 
+/** The engine skips diarize whenever voices aren't analyzed (off, no model, deferred to
+ *  transcribe); hide it instead of showing "Analizando las voces · 0 s". */
+export function visibleSteps(steps: EngineProgress['steps']): EngineProgress['steps'] {
+  return steps.filter((s) => !(s.name === 'diarize' && s.skipped));
+}
+
 export function reasonFromFailure(kind: FailureKind | null | undefined): ClipFailureReason {
   switch (kind) {
     case 'source':
