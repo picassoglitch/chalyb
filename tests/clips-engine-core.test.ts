@@ -10,6 +10,7 @@ import {
   jobFromStream,
   reasonFromFailure,
   stateFromProgress,
+  visibleSteps,
 } from '@/lib/tools/adapters/clips/core';
 import { ClipsEngineError } from '@/lib/tools/adapters/clips/errors';
 import type { EngineProgress, EngineStream } from '@/lib/tools/adapters/clips/engine-api';
@@ -277,4 +278,24 @@ test('engine mode lists exactly the networks publishing can connect', async () =
 test('engine mode offers the clip editor, so a video page shows Editar', async () => {
   const { createEngineClipsAdapter } = await import('@/lib/tools/adapters/clips/adapter');
   assert.equal(createEngineClipsAdapter(() => ({}) as never).capabilities().editClips, true);
+});
+
+test('video page hides voice detection only when the engine skipped it', () => {
+  const skip = (p: EngineProgress, name: string): EngineProgress => ({
+    ...p,
+    steps: p.steps.map((s) => (s.name === name ? { ...s, skipped: true } : s)),
+  });
+  const names = (p: EngineProgress) => visibleSteps(p.steps).map((s) => s.name);
+  assert.deepEqual(names(skip(prog({ diarize: 'done' }), 'diarize')), [
+    'ingest',
+    'analyze_video',
+    'transcribe',
+    'detect',
+    'cut',
+  ]);
+  assert.ok(names(prog({ diarize: 'done' })).includes('diarize'));
+  assert.ok(names(prog({ diarize: 'running' })).includes('diarize'));
+  assert.ok(
+    names(skip(prog({ analyze_video: 'done' }), 'analyze_video')).includes('analyze_video'),
+  );
 });

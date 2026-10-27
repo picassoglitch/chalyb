@@ -13,6 +13,7 @@ import { mmss } from '@/lib/tools/clips-home';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { AutoRefresh } from '@/components/app/clips/auto-refresh';
 import { Pill } from '@/components/ui/primitives';
+import { visibleSteps } from '@/lib/tools/adapters/clips/core';
 import { StreamActions } from './stream-actions';
 import { streamActionsCopy } from './copy';
 import '@/styles/tools-clips.css';
@@ -21,7 +22,7 @@ import '@/styles/tools-clips-engine.css';
 function stepTime(s: EngineStep, t: (k: string, v?: Record<string, string | number>) => string) {
   if (s.status === 'running' && s.elapsed_s != null)
     return t('step.elapsed', { t: dur(s.elapsed_s) });
-  if (s.status === 'done' && s.skipped && s.name !== 'diarize') return t('step.skipped');
+  if (s.status === 'done' && s.skipped) return t('step.skipped');
   if (s.status === 'done' && s.duration_s != null) return dur(s.duration_s);
   return '';
 }
@@ -119,7 +120,7 @@ export async function EngineVideoPage({
                   })}
                 </p>
                 <ol className="ch-ce-steps">
-                  {progress.steps.map((s) => (
+                  {visibleSteps(progress.steps).map((s) => (
                     <li key={s.name} className="ch-ce-step" data-s={s.status}>
                       <span className="ch-ce-step__dot" aria-hidden="true">
                         {s.status === 'done' && <Check />}
