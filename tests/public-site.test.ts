@@ -13,6 +13,7 @@ import {
   heroRows,
   toolList,
   toPublicTool,
+  TOOL_ORDER,
 } from '@/lib/tools/public-tools';
 import {
   TRIAL_SIGNUP_HREF,
@@ -60,7 +61,30 @@ test('active tools: only active, never hidden, in display order', () => {
   );
   assert.deepEqual(
     tools.map((t) => t.name),
-    ['Clips', 'Señales', 'En vivo'],
+    ['Clips', 'En vivo'],
+  );
+});
+
+test('the public site sells only Clips and En vivo, even when the others are active', () => {
+  const tools = activeTools(
+    rows([
+      'chalybclip',
+      'chalybcrypto',
+      'chalybobs',
+      'chalybbot',
+      'chalybpicks',
+      'chalybrealtor',
+      'chalybtrade',
+    ]),
+  );
+  assert.deepEqual(
+    tools.map((t) => t.slug),
+    ['chalybclip', 'chalybobs'],
+  );
+  assert.deepEqual(
+    audienceCards(tools),
+    ['streamers', 'creators'],
+    'no investors or business card',
   );
 });
 
@@ -73,16 +97,8 @@ test('hero rows, audience cards and the tool list follow the active tools', () =
   assert.deepEqual(audienceCards(three), ['streamers', 'creators']);
   assert.equal(toolList(three, 'es'), 'Clips y En vivo');
 
-  const all = activeTools(
-    rows([
-      'chalybclip',
-      'chalybcrypto',
-      'chalybobs',
-      'chalybbot',
-      'chalybpicks',
-      'chalybrealtor',
-      'chalybtrade',
-    ]),
+  const all = ['chalybclip', 'chalybcrypto', 'chalybobs', 'chalybbot', 'chalybpicks'].map((s) =>
+    toPublicTool(s as Parameters<typeof toPublicTool>[0]),
   );
   assert.equal(heroRows(all).length, 4, 'the panel shows at most 4 examples');
   assert.deepEqual(audienceCards(all), ['streamers', 'creators', 'business', 'investors']);
@@ -95,20 +111,10 @@ test('hero rows, audience cards and the tool list follow the active tools', () =
   );
 });
 
-test('every active tool has its landing copy in both locales', () => {
+test('every tool has its landing copy in both locales', () => {
   for (const locale of ['es', 'en']) {
     const m = landing(locale);
-    for (const tool of activeTools(
-      rows([
-        'chalybclip',
-        'chalybcrypto',
-        'chalybobs',
-        'chalybbot',
-        'chalybpicks',
-        'chalybrealtor',
-        'chalybtrade',
-      ]),
-    )) {
+    for (const tool of TOOL_ORDER.map(toPublicTool)) {
       assert.ok(m[`landing.tools.desc.${tool.slug}`], `${locale}: tools.desc.${tool.slug}`);
     }
   }

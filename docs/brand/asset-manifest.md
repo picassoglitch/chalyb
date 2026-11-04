@@ -41,8 +41,8 @@ replaces the derived assets in place — the paths and sizes do not move.
 
 | File | Source |
 | --- | --- |
-| `public/landing/tool-envivo.webp` | Gemini `gemini-2.5-flash-image`, 2026-11-03. Prompt: candid phone photo of a young Latin American streamer's home streaming desk at night, from behind: monitor with a streaming studio app and a red LIVE indicator, ring light, boom mic, webcam, phone showing stream controls; warm lamp plus pink/violet LEDs; no logos, no readable text. Cropped to 960×480. |
-| `public/landing/hero-{laptop,phone}.webp` | `scripts/render-hero-shots.mjs` (HTML + the `clip-*.webp` stills), 2026-11-03. |
+| `public/landing/clip-{1..6}.webp`, `clip-hero.webp`, `tool-envivo.webp` | Gemini `gemini-2.5-flash-image`, 2026-11-03 (owner asked for Magnific; its credits were at 42, owner chose Gemini). Prompts: excited Latin American streamers/YouTubers per clip title (win celebration, shocked reaction, final play, reading chat, friends laughing, tip to camera, close-up shock; En vivo: creator waving at his camera going live), shot like a real webcam/phone frame, no logos, no text. Clips cropped to 540×968, En vivo to 960×480. |
+| `public/landing/hero-{laptop,phone}.webp`, `paso-{1,2,3}.webp` | `scripts/render-hero-shots.mjs` (HTML + the stills above), 2026-11-03. |
 
 ## Read this before drawing anything
 

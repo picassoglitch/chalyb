@@ -36,6 +36,10 @@ export interface PublicTool {
 
 const isToolSlug = (s: string): s is ToolSlug => (TOOL_ORDER as readonly string[]).includes(s);
 
+// Owner request 2026-11-03: the public site sells only Clips and En vivo. Marketing only;
+// in-app access still follows engines.status (hide tools in Admin → Herramientas).
+export const PUBLIC_TOOLS: ReadonlySet<ToolSlug> = new Set(FALLBACK_ACTIVE);
+
 /** Active, customer-visible tools from catalog rows, in display order. */
 export function activeTools(rows: ReadonlyArray<{ slug: string; status: string }>): PublicTool[] {
   const active = new Set(
@@ -43,7 +47,7 @@ export function activeTools(rows: ReadonlyArray<{ slug: string; status: string }
       .filter((r) => r.status === 'active' && !HIDDEN_FROM_CUSTOMERS.has(r.slug))
       .map((r) => r.slug),
   );
-  return TOOL_ORDER.filter((s) => active.has(s)).map(toPublicTool);
+  return TOOL_ORDER.filter((s) => active.has(s) && PUBLIC_TOOLS.has(s)).map(toPublicTool);
 }
 
 export function toPublicTool(slug: ToolSlug): PublicTool {
