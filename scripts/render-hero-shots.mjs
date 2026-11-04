@@ -1,4 +1,4 @@
-// Renders public/landing/hero-{laptop,phone}.webp from HTML with the real clip stills.
+// Renders the hero (hero-{laptop,phone}.webp) and the 3 steps (paso-N.webp) from HTML with the clip stills.
 // Run: node scripts/render-hero-shots.mjs (fetches the Inter font, so it needs network).
 
 import { readFileSync } from 'node:fs';
@@ -98,6 +98,54 @@ const phone = `<!doctype html><html><head><meta charset="utf-8">${BASE}<style>
   <div class="nav"><b>Inicio</b><span>Resultados</span><span>Cuenta</span></div>
 </body></html>`;
 
+const STEP = `<!doctype html><html><head><meta charset="utf-8">${BASE}<style>
+  body { width: 340px; height: 135px; background: #fff; padding: 8px 12px; text-align: center; overflow: hidden; }
+  .dots { display: flex; gap: 3px; justify-content: center; } .dots i { width: 16px; height: 3px; border-radius: 2px; background: #e5e5ea; } .dots i.on { background: #5b4bff; }
+  .of { font-size: 5px; color: #8e8e93; margin-top: 2px; }
+  h2 { font-size: 10px; font-weight: 800; margin-top: 5px; letter-spacing: -0.02em; } .sub { font-size: 5.5px; color: #6e6e73; margin-top: 2px; }
+</style>`;
+const dots = (n) => `<div class="dots">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div><p class="of">Paso ${n} de 3</p>`;
+
+const paso1 = `${STEP}<style>
+  .in { margin: 8px auto 0; width: 250px; display: flex; gap: 4px; align-items: center; border: 1.5px solid #5b4bff; border-radius: 7px; padding: 3px 3px 3px 7px; font-size: 6.5px; text-align: left; }
+  .in span { flex: 1; color: #1d1d1f; } .in b { background: #5b4bff; color: #fff; border-radius: 5px; padding: 4px 9px; font-size: 6px; }
+  .vid { margin: 6px auto 0; width: 250px; display: flex; gap: 7px; align-items: center; background: #f5f5f7; border-radius: 7px; padding: 4px; text-align: left; }
+  .th { width: 64px; height: 36px; border-radius: 4px; background: url(${img('tool-envivo')}) center / cover; position: relative; }
+  .th i { position: absolute; right: 2px; bottom: 2px; background: #000b; color: #fff; font-size: 4.5px; font-style: normal; padding: 0 2px; border-radius: 2px; }
+  .vid p { font-size: 6.5px; font-weight: 700; } .vid span { font-size: 5px; color: #34a853; font-weight: 600; }
+</style></head><body>${dots(1)}<h2>Pega el enlace de tu stream o video</h2><p class="sub">Copia la dirección de tu video y pégala aquí. Nosotros hacemos el resto.</p>
+  <div class="in"><span>🔗 youtube.com/live/noche-de-preguntas</span><b>Pegar</b></div>
+  <div class="vid"><div class="th"><i>2:14:08</i></div><div><p>Noche de preguntas 🔴 EN VIVO</p><span>✓ Video encontrado · listo para hacer clips</span></div></div>
+</body></html>`;
+
+const paso2 = `${STEP}<style>
+  .opts { display: flex; gap: 6px; justify-content: center; margin-top: 7px; }
+  .o { border: 1px solid #e5e5ea; border-radius: 7px; padding: 4px; width: 92px; }
+  .o.on { border: 1.5px solid #5b4bff; box-shadow: 0 0 0 2px #efedff; }
+  .f { margin: 0 auto; border-radius: 4px; background-size: cover; background-position: center; }
+  .o p { font-size: 6px; font-weight: 700; margin-top: 3px; } .o span { font-size: 5px; color: #8e8e93; }
+  .rec { display: inline-block; background: #5b4bff; color: #fff; font-size: 4.5px; font-weight: 700; padding: 1px 4px; border-radius: 3px; margin-bottom: 2px; }
+</style></head><body>${dots(2)}<h2>¿Dónde los vas a publicar?</h2>
+  <div class="opts">
+    <div class="o on"><span class="rec">Recomendado</span><div class="f" style="width:26px;height:46px;background-image:url(${img('clip-1')})"></div><p>TikTok / Reels / Shorts</p><span>Vertical</span></div>
+    <div class="o" style="padding-top:12px"><div class="f" style="width:72px;height:41px;background-image:url(${img('tool-envivo')})"></div><p>YouTube</p><span>Horizontal</span></div>
+    <div class="o" style="padding-top:12px"><div class="f" style="width:41px;height:41px;background-image:url(${img('clip-4')})"></div><p>Cuadrado</p><span>Instagram</span></div>
+  </div>
+</body></html>`;
+
+const paso3 = `${STEP}<style>
+  body { text-align: left; } .of { text-align: center; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; }
+  h2 { margin: 0; } .dl { background: #5b4bff; color: #fff; font-size: 5.5px; font-weight: 600; border-radius: 4px; padding: 3px 6px; }
+  .g { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 5px; }
+  .c { position: relative; aspect-ratio: 9 / 16; border-radius: 4px; background-size: cover; background-position: center; overflow: hidden; }
+  .c::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, #000a); }
+  .c p { position: absolute; left: 2px; right: 2px; bottom: 5px; z-index: 1; color: #fff; font-size: 4.5px; font-weight: 900; text-align: center; line-height: 1.1; }
+  .c p b { color: #ffd60a; } .c i { position: absolute; top: 2px; right: 2px; z-index: 1; background: #000a; color: #fff; font-size: 4px; font-style: normal; padding: 0 2px; border-radius: 2px; }
+</style></head><body>${dots(3)}<div class="row"><h2>Tus clips están listos 🎉</h2><span class="dl">⬇ Descargar todos</span></div>
+  <div class="g">${CLIPS.map((c) => `<div class="c" style="background-image:url(${img(c.still)})"><i>${c.time}</i><p>${c.cap}</p></div>`).join('')}</div>
+</body></html>`;
+
 const browser = await chromium.launch();
 async function shot(html, w, h, name) {
   const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
@@ -111,5 +159,8 @@ async function shot(html, w, h, name) {
 }
 await shot(laptop, 536, 335, 'hero-laptop');
 await shot(phone, 200, 433, 'hero-phone');
+await shot(paso1, 340, 135, 'paso-1');
+await shot(paso2, 340, 135, 'paso-2');
+await shot(paso3, 340, 135, 'paso-3');
 await browser.close();
-console.log('wrote hero-laptop.webp and hero-phone.webp');
+console.log('wrote hero-laptop, hero-phone and paso-1..3 (.webp)');
