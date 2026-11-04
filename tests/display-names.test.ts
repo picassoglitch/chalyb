@@ -4,6 +4,7 @@ import {
   ENGINE_DISPLAY_NAMES,
   HIDDEN_FROM_CUSTOMERS,
   engineDisplayName,
+  isListed,
 } from '@/lib/engines/display-names';
 
 test('customer tool names (P0-8)', () => {
@@ -28,6 +29,13 @@ test('no display name carries a Chaly* product name', () => {
 test('the map wins over a stale database name', () => {
   assert.equal(engineDisplayName('chalybclip', 'ChalyClip'), 'Clips');
   assert.equal(engineDisplayName('newthing', 'Fallback'), 'Fallback');
+});
+
+test('Chalito and hidden tools never list; the rest do', () => {
+  assert.equal(isListed('chalito'), false);
+  assert.equal(isListed('chalybstream'), false);
+  assert.equal(isListed('chalybclip'), true);
+  assert.equal(isListed('chalybobs'), true);
 });
 
 test('chalybstream stays hidden from customers (Q32)', () => {

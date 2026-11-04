@@ -32,6 +32,15 @@ export const ENGINE_DISPLAY_NAMES: Record<string, string> = {
  *  their status (Q32). */
 export const HIDDEN_FROM_CUSTOMERS: ReadonlySet<string> = new Set(['chalybstream']);
 
+// Owner request 2026-11-03: Chalyb lists only Clips and En vivo. Chalito keeps its
+// /app/chalito links (push approvals, desktop sign-in) but never shows in a list.
+export const UNLISTED: ReadonlySet<string> = new Set(['chalito']);
+
+/** Whether a slug may appear in customer lists. */
+export function isListed(slug: string): boolean {
+  return !HIDDEN_FROM_CUSTOMERS.has(slug) && !UNLISTED.has(slug);
+}
+
 /** Tool colors from the design system (`more_shared.py` TOOLS). */
 export const TOOL_COLORS: Record<string, string> = {
   chalybclip: '#5B4BFF',
@@ -58,9 +67,3 @@ export function engineDisplayName(
   return ENGINE_DISPLAY_NAMES[key] ?? fallback ?? (slug || '');
 }
 
-/** The three tools with a product behind them today, in display order. */
-export const LIVE_ENGINE_NAMES = [
-  ENGINE_DISPLAY_NAMES.chalybclip!,
-  ENGINE_DISPLAY_NAMES.chalybcrypto!,
-  ENGINE_DISPLAY_NAMES.chalybobs!,
-] as const;

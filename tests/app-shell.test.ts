@@ -156,7 +156,8 @@ test('plan labels', () => {
 });
 
 test('task cards: only visible headline tools, and Más only with extra live tools', () => {
-  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs']);
+  // Chalito never gets a card (unlisted), even though entitlements carry it.
+  const three = selectTaskCards(['chalybclip', 'chalybcrypto', 'chalybobs', 'chalito']);
   assert.deepEqual(
     three.cards.map((c) => [c.key, c.href]),
     [
@@ -221,6 +222,7 @@ test('VIP / admin: everything included, chips of four + "y N más"', () => {
       chalybobs: 'included',
       chalybbot: 'included',
       chalybpicks: 'included',
+      chalito: 'included',
     }),
   };
   assert.deepEqual(selectPlanStrip(e, NAMES, OFF), {
@@ -251,4 +253,13 @@ test('Pro on one tool (Q7 off) names what it includes; with all tools it is "tod
     chips: ['Clips', 'Señales', 'En vivo'],
     more: 0,
   });
+});
+
+test('Pro with nothing listed included (its tool was hidden) gets "see plans", never an empty strip', () => {
+  const e = {
+    plan: 'PRO' as const,
+    trialUsed: false,
+    tools: tools({ chalybclip: 'trial_offer', chalybobs: 'trial_offer', chalito: 'included' }),
+  };
+  assert.deepEqual(selectPlanStrip(e, NAMES, OFF), { kind: 'offer', cta: 'plans' });
 });

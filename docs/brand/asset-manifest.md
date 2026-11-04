@@ -37,6 +37,13 @@ replaces the derived assets in place — the paths and sizes do not move.
 
 ---
 
+## Landing art provenance
+
+| File | Source |
+| --- | --- |
+| `public/landing/tool-envivo.webp` | Gemini `gemini-2.5-flash-image`, 2026-11-03. Prompt: candid phone photo of a young Latin American streamer's home streaming desk at night, from behind: monitor with a streaming studio app and a red LIVE indicator, ring light, boom mic, webcam, phone showing stream controls; warm lamp plus pink/violet LEDs; no logos, no readable text. Cropped to 960×480. |
+| `public/landing/hero-{laptop,phone}.webp` | `scripts/render-hero-shots.mjs` (HTML + the `clip-*.webp` stills), 2026-11-03. |
+
 ## Read this before drawing anything
 
 Four constraints come from how the code uses the artwork, not from taste.

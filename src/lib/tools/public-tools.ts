@@ -26,7 +26,7 @@ export type ToolSlug = (typeof TOOL_ORDER)[number];
 
 /** The tools with a product behind them today; the fallback when the catalog
  *  can't be read, so the landing never claims more than this. */
-export const FALLBACK_ACTIVE: readonly ToolSlug[] = ['chalybclip', 'chalybcrypto', 'chalybobs'];
+export const FALLBACK_ACTIVE: readonly ToolSlug[] = ['chalybclip', 'chalybobs'];
 
 export interface PublicTool {
   slug: ToolSlug;

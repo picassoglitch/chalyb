@@ -68,10 +68,10 @@ test('hero rows, audience cards and the tool list follow the active tools', () =
   const three = fallbackTools();
   assert.deepEqual(
     heroRows(three).map((t) => t.slug),
-    ['chalybclip', 'chalybcrypto', 'chalybobs'],
+    ['chalybclip', 'chalybobs'],
   );
-  assert.deepEqual(audienceCards(three), ['streamers', 'creators', 'investors']);
-  assert.equal(toolList(three, 'es'), 'Clips, Señales y En vivo');
+  assert.deepEqual(audienceCards(three), ['streamers', 'creators']);
+  assert.equal(toolList(three, 'es'), 'Clips y En vivo');
 
   const all = activeTools(
     rows([

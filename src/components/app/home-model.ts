@@ -5,6 +5,7 @@ import type { Entitlements } from '@/lib/billing/entitlement-core';
 import { paidPlanName } from '@/lib/billing/plan-label';
 import { toolHref } from '@/lib/tools/routes';
 import { toolBySlug } from '@/config/tools';
+import { isListed } from '@/lib/engines/display-names';
 
 export type TaskKey = 'clips' | 'senales' | 'envivo' | 'mas';
 
@@ -33,10 +34,11 @@ function hrefFor(key: TaskKey, slug: string): string {
  * TOOLS-SPEC §2, F7, Q9). BUILD-SPEC §0.3: no dead-end cards.
  * `visibleSlugs` is the catalog order of the tools in entitlements.tools.
  */
-export function selectTaskCards(visibleSlugs: string[]): {
+export function selectTaskCards(slugs: string[]): {
   cards: TaskCardModel[];
   extraSlugs: string[];
 } {
+  const visibleSlugs = slugs.filter(isListed);
   const visible = new Set(visibleSlugs);
   const cards: TaskCardModel[] = HEADLINE.filter((h) => visible.has(h.slug)).map((h) => ({
     ...h,
@@ -63,7 +65,7 @@ export function selectPlanStrip(
   toolNames: Record<string, string>,
   flags: { proIncludesAllTools: boolean; trialFlow: boolean },
 ): PlanStrip {
-  const visible = Object.keys(e.tools);
+  const visible = Object.keys(e.tools).filter(isListed);
   const included = visible.filter((s) => e.tools[s]!.state === 'included');
   const names = (slugs: string[]) => slugs.map((s) => toolNames[s] ?? s);
 
@@ -80,5 +82,6 @@ export function selectPlanStrip(
       more: Math.max(0, all.length - 4),
     };
   }
+  if (included.length === 0) return { kind: 'offer', cta: 'plans' };
   return { kind: 'single', tools: names(included) };
 }
