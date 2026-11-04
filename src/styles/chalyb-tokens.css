@@ -712,6 +712,12 @@ body {
   overflow: hidden;
   flex: none;
 }
+/* The mark scales with its box: a smaller box (34px in the public nav) used to crop it. */
+.chalyb-app .ch-logo__mark .lp-mark {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .chalyb-app .ch-logo__word {
   font-size: 25px;
   font-weight: 700;

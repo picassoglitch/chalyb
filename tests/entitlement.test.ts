@@ -18,6 +18,7 @@ const ENGINES = [
     ownerUserId: null,
   },
   { id: 'e-obs', slug: 'chalybobs', status: 'active', tierRequired: 'PRO', ownerUserId: null },
+  { id: 'e-chalito', slug: 'chalito', status: 'active', tierRequired: 'PRO', ownerUserId: null },
   { id: 'e-bot', slug: 'chalybbot', status: 'coming_soon', tierRequired: 'PRO', ownerUserId: null },
   {
     id: 'e-stream',
@@ -50,7 +51,7 @@ test('FREE without a trial: every tool is a trial offer', () => {
   const e = computeEntitlements(input());
   assert.equal(e.plan, 'FREE');
   assert.equal(state(e, 'chalybclip'), 'trial_offer');
-  assert.equal(state(e, 'chalybcrypto'), 'trial_offer');
+  assert.equal(state(e, 'chalybobs'), 'trial_offer');
 });
 
 test('FREE with FREE_INCLUDES_CLIPS: Clips included, others offered', () => {
@@ -58,7 +59,6 @@ test('FREE with FREE_INCLUDES_CLIPS: Clips included, others offered', () => {
     input({ flags: { freeIncludesClips: true, proIncludesAllTools: false } }),
   );
   assert.equal(state(e, 'chalybclip'), 'included');
-  assert.equal(state(e, 'chalybcrypto'), 'trial_offer');
   assert.equal(state(e, 'chalybobs'), 'trial_offer');
 });
 
@@ -67,7 +67,7 @@ test('FREE in the legacy 7-day Clips trial: Clips only', () => {
     input({ clipsTrialStartedAt: new Date(NOW - 2 * DAY).toISOString() }),
   );
   assert.equal(state(e, 'chalybclip'), 'included');
-  assert.equal(state(e, 'chalybcrypto'), 'trial_offer');
+  assert.equal(state(e, 'chalybobs'), 'trial_offer');
   assert.deepEqual(e.trial, { kind: 'clips_legacy', daysLeft: 5, grace: false });
 });
 
@@ -80,16 +80,16 @@ test('FREE after the trial with bonus credits left: grace keeps Clips', () => {
 });
 
 test('PRO: the selected tool is included, the others are not (until P2)', () => {
-  const e = computeEntitlements(input({ storedTier: 'PRO', selectedEngineId: 'e-crypto' }));
-  assert.equal(state(e, 'chalybcrypto'), 'included');
-  assert.equal(state(e, 'chalybobs'), 'trial_offer');
+  const e = computeEntitlements(input({ storedTier: 'PRO', selectedEngineId: 'e-obs' }));
+  assert.equal(state(e, 'chalybobs'), 'included');
+  assert.equal(state(e, 'chalybclip'), 'trial_offer');
 });
 
 test('PRO with PRO_INCLUDES_ALL_TOOLS: every visible tool included', () => {
   const e = computeEntitlements(
     input({ storedTier: 'PRO', flags: { freeIncludesClips: false, proIncludesAllTools: true } }),
   );
-  for (const slug of ['chalybclip', 'chalybcrypto', 'chalybobs'])
+  for (const slug of ['chalybclip', 'chalybobs'])
     assert.equal(state(e, slug), 'included');
 });
 
@@ -99,7 +99,7 @@ test('VIP and admins: everything visible is included', () => {
     computeEntitlements(input({ role: 'ADMIN', storedTier: 'FREE' })),
   ]) {
     assert.equal(e.plan, 'VIP');
-    for (const slug of ['chalybclip', 'chalybcrypto', 'chalybobs'])
+    for (const slug of ['chalybclip', 'chalybobs'])
       assert.equal(state(e, slug), 'included');
   }
 });
@@ -108,6 +108,7 @@ test('unfinished and hidden tools have no entry at all', () => {
   const e = computeEntitlements(input({ storedTier: 'VIP' }));
   assert.equal(e.tools.chalybbot, undefined, 'coming_soon is not shown');
   assert.equal(e.tools.chalybstream, undefined, 'chalybstream is hidden (Q32)');
+  assert.equal(e.tools.chalybcrypto?.state, 'included', 'Señales is hidden from the admin panel, not in code');
 });
 
 test('a partner-owned tool is included for its owner', () => {
@@ -122,4 +123,9 @@ test('a partner-owned tool is included for its owner', () => {
   ];
   const e = computeEntitlements(input({ storedTier: 'PARTNER', engines }));
   assert.equal(state(e, 'chalybpicks'), 'included');
+});
+
+test('Chalito is unlisted, not hidden: its screens still get an entitlement', () => {
+  const e = computeEntitlements(input({ storedTier: 'VIP' }));
+  assert.equal(state(e, 'chalito'), 'included');
 });

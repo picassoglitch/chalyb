@@ -28,6 +28,7 @@ import { Avatar, ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { SignOutRow } from '@/components/app/sign-out-row';
 import { getClipsAdapter } from '@/lib/tools/adapters/clips';
 import { PLATFORM_NAMES } from '@/components/tools/clips/accounts-list';
+import { isListed } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('account');
@@ -67,7 +68,9 @@ export default async function MiCuentaPage({ params }: { params: Promise<{ local
     ?.filter((a) => a.connected)
     .map((a) => PLATFORM_NAMES[a.platform]);
   const listFmt = new Intl.ListFormat(locale === 'es' ? 'es' : 'en', { type: 'conjunction' });
-  const tools = Object.values(entitlements.tools);
+  const tools = Object.entries(entitlements.tools)
+    .filter(([slug]) => isListed(slug))
+    .map(([, a]) => a);
   const allIncluded = tools.length > 0 && tools.every((a) => a.state === 'included');
   const planKey = planLabelKey(entitlements.plan) as 'gratis' | 'pro' | 'vip';
   // "Ver mi plan" → Mi plan (SCR-30); Free → the trial (SCR-14) once it exists.

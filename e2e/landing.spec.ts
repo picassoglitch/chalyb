@@ -49,7 +49,7 @@ test('sections run hero → herramientas → como → galería → para quién �
 test('exactly one h1', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('h1')).toHaveCount(1);
-  await expect(page.locator('h1')).toContainText('Tú duermes.');
+  await expect(page.locator('h1')).toContainText('Tú transmites.');
 });
 
 test('the hero CTA is fully visible without scrolling at 390×844', async ({ browser }) => {

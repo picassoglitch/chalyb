@@ -13,9 +13,14 @@ import { LEGAL_PAGES } from '@/lib/legal/public-pages';
 import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 import { CookieSettingsButton } from './cookie-banner';
 
+/** The disclaimer names these tools, so it shows only while one of them is active. */
+const FINANCIAL = new Set(['chalybcrypto', 'chalybpicks', 'chalybtrade']);
+
 export async function PublicFooter({ onLanding = false }: { onLanding?: boolean }) {
   const t = await getTranslations('landing.publicFooter');
-  const tools = (await listActiveTools()).slice(0, 3);
+  const active = await listActiveTools();
+  const tools = active.slice(0, 3);
+  const financial = active.some((x) => FINANCIAL.has(x.slug));
   const entity = legalEntity();
   const seller = [entity.name, entity.address, entity.phone, entity.email].filter(Boolean);
 
@@ -67,7 +72,7 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
           </nav>
         </div>
 
-        <p className="pub-foot__disc">{t('disclaimer')}</p>
+        {financial && <p className="pub-foot__disc">{t('disclaimer')}</p>}
 
         {seller.length > 0 && (
           <address className="pub-foot__seller">

@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "Chalyb — Bots que trabajan por ti mientras duermes",
-    "description": "Clips para tus redes, señales de cripto y tu transmisión en un solo plan. Prueba Pro gratis 7 días. Precios en MXN, IVA incluido.",
-    "descriptionNoTrial": "Clips para tus redes, señales de cripto y tu transmisión en un solo lugar. Precios en MXN, IVA incluido."
+    "title": "Chalyb — Clips y transmisiones en vivo: todo tu estudio en un solo lugar",
+    "description": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar. Prueba Pro gratis 7 días. Precios en MXN, IVA incluido.",
+    "descriptionNoTrial": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar. Precios en MXN, IVA incluido."
   },
   "landing": {
     "nav": {
@@ -34,10 +34,10 @@
       "eyebrowTag": "Todo incluido",
       "eyebrowTagNoClaim": "Todo en español",
       "eyebrow": "Un plan, todas las herramientas",
-      "eyebrowNoClaim": "Herramientas que trabajan por ti",
-      "title": "Tú duermes. <em>Tus bots trabajan.</em>",
-      "sub": "Clips para tus redes, señales de cripto, tu transmisión y mucho más, en un solo plan.",
-      "subNoClaim": "Clips para tus redes, señales de cripto, tu transmisión y mucho más.",
+      "eyebrowNoClaim": "Tu estudio en un solo lugar",
+      "title": "Tú transmites. <em>Chalyb hace los clips.</em>",
+      "sub": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar, en un solo plan.",
+      "subNoClaim": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar.",
       "noteStrong": "Cancela cuando quieras.",
       "noteRest": "Hoy pagas {cero}.",
       "seal1": "En español",
@@ -54,7 +54,7 @@
     "tools": {
       "label": "Herramientas",
       "title": "Todo en un solo plan",
-      "titleNoClaim": "Herramientas que trabajan por ti",
+      "titleNoClaim": "Todo tu estudio en un solo lugar",
       "sub": "Cada herramienta hace una cosa y la hace por ti. Todas vienen incluidas en Pro.",
       "subNoClaim": "Cada herramienta hace una cosa y la hace por ti.",
       "included": "Incluido en Pro",
@@ -73,7 +73,7 @@
         "chalito": "Tus agentes de código te piden permiso y tú apruebas desde el teléfono."
       },
       "allTitle": "Fuiste por una cosa y te llevaste todo.",
-      "allBody": "Entras por los clips y te quedas con las señales, tu transmisión, tu Asistente y más. Todo en el mismo plan, sin pagar extra.",
+      "allBody": "Entras por los clips y te quedas con tu transmisión en vivo. Todo tu estudio en el mismo plan, sin pagar extra.",
       "allBodyMobile": "Entras por los clips y te quedas con todo lo demás. Mismo plan, sin pagar extra."
     },
     "how": {
@@ -187,7 +187,7 @@
       "a8OneInterval": "Sí. Desde Mi cuenta → Mi plan puedes subir a VIP o volver a Gratis cuando quieras."
     },
     "final": {
-      "title": "Empieza hoy. <em>Mañana ya trabajan por ti.</em>",
+      "title": "Empieza hoy. <em>Tu próximo stream ya trae clips.</em>",
       "sub": "{lista}. Todo en un solo plan.",
       "subNoClaim": "{lista}.",
       "subMobile": "Todas las herramientas en un solo plan.",
@@ -195,7 +195,7 @@
       "note": "Hoy pagas {cero}. Cancela cuando quieras."
     },
     "publicFooter": {
-      "lead": "Herramientas que trabajan por ti, en español y sin saber de tecnología.",
+      "lead": "Clips y transmisiones en vivo en un solo lugar, en español y sin saber de tecnología.",
       "tools": "Herramientas",
       "toolsAll": "Ver todas",
       "chalyb": "Chalyb",
@@ -244,8 +244,8 @@
     "ctaSignedIn": "Ver planes",
     "ctaSubShort": "Cancela cuando quieras.",
     "meta": {
-      "title": "Chalyb: bots que trabajan por ti mientras duermes",
-      "description": "Clips para tus redes, señales de cripto, tu transmisión y más. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
+      "title": "Chalyb: clips y transmisiones en vivo, todo tu estudio en un solo lugar",
+      "description": "Clips para tus redes y tu transmisión en vivo, todo tu estudio en un solo lugar. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
     }
   },
   "auth": {
@@ -260,7 +260,7 @@
       "newSubtitle": "Crea tu espacio de operador en segundos.",
       "newCta": "Empezar gratis",
       "returningTitle": "Bienvenido de vuelta.",
-      "returningSubtitle": "Retoma donde lo dejaste — bots, agentes IA, historial de ejecución.",
+      "returningSubtitle": "Retoma donde lo dejaste: tus clips, tus transmisiones y tus resultados.",
       "returningCta": "Continuar →",
       "benefits": {
         "1": "Haz clips gratis desde el primer día",
@@ -355,7 +355,7 @@
       },
       "engines": {
         "title": "Tus herramientas",
-        "body": "En «Herramientas» ves y abres tus herramientas (Clips, Señales y más). «Incluido en tu plan» = lista para usar."
+        "body": "En «Herramientas» ves y abres tus herramientas (Clips y En vivo). «Incluido en tu plan» = lista para usar."
       },
       "tokens": {
         "title": "Tus créditos",
@@ -417,7 +417,7 @@
     },
     "upsell": {
       "title": "Más herramientas con Pro",
-      "sub": "Usa Señales, En vivo y más con un plan Pro.",
+      "sub": "Usa Clips y En vivo sin límites con un plan Pro.",
       "cta": "Ver planes →"
     },
     "caps": {

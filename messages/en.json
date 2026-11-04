@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "Chalyb — Bots that work for you while you sleep",
-    "description": "Clips for your socials, crypto signals and your live stream in one plan. Try Pro free for 7 days. Prices in MXN, VAT included.",
-    "descriptionNoTrial": "Clips for your socials, crypto alerts and your stream in one place. Prices in MXN, VAT included."
+    "title": "Chalyb — Clips and live streaming: your whole studio in one place",
+    "description": "Clips for your socials and your live stream: your whole studio in one place. Try Pro free for 7 days. Prices in MXN, VAT included.",
+    "descriptionNoTrial": "Clips for your socials and your live stream: your whole studio in one place. Prices in MXN, VAT included."
   },
   "landing": {
     "nav": {
@@ -34,10 +34,10 @@
       "eyebrowTag": "All included",
       "eyebrowTagNoClaim": "In Spanish",
       "eyebrow": "One plan, every tool",
-      "eyebrowNoClaim": "Tools that work for you",
-      "title": "You sleep. <em>Your bots work.</em>",
-      "sub": "Clips for your socials, crypto signals, your stream and much more, in one plan.",
-      "subNoClaim": "Clips for your socials, crypto signals, your stream and much more.",
+      "eyebrowNoClaim": "Your studio in one place",
+      "title": "You stream. <em>Chalyb makes the clips.</em>",
+      "sub": "Clips for your socials and your live stream: your whole studio in one place, in one plan.",
+      "subNoClaim": "Clips for your socials and your live stream: your whole studio in one place.",
       "noteStrong": "Cancel anytime.",
       "noteRest": "You pay {cero} today.",
       "seal1": "In Spanish",
@@ -54,7 +54,7 @@
     "tools": {
       "label": "Tools",
       "title": "Everything in one plan",
-      "titleNoClaim": "Tools that work for you",
+      "titleNoClaim": "Your whole studio in one place",
       "sub": "Each tool does one thing and does it for you. All of them come with Pro.",
       "subNoClaim": "Each tool does one thing and does it for you.",
       "included": "Included in Pro",
@@ -73,7 +73,7 @@
         "chalito": "Your coding agents ask first, and you approve from your phone."
       },
       "allTitle": "You came for one thing and got it all.",
-      "allBody": "You come for the clips and stay for the signals, your stream, your Assistant and more. All in the same plan, nothing extra to pay.",
+      "allBody": "You come for the clips and stay for your live stream. Your whole studio in the same plan, nothing extra to pay.",
       "allBodyMobile": "You come for the clips and stay for everything else. Same plan, nothing extra."
     },
     "how": {
@@ -187,7 +187,7 @@
       "a8OneInterval": "Yes. From My account → My plan you can move up to VIP or go back to Free anytime."
     },
     "final": {
-      "title": "Start today. <em>Tomorrow they work for you.</em>",
+      "title": "Start today. <em>Your next stream comes with clips.</em>",
       "sub": "{lista}. All in one plan.",
       "subNoClaim": "{lista}.",
       "subMobile": "Every tool in one plan.",
@@ -195,7 +195,7 @@
       "note": "You pay {cero} today. Cancel anytime."
     },
     "publicFooter": {
-      "lead": "Tools that work for you, in Spanish and with no tech skills needed.",
+      "lead": "Clips and live streaming in one place, in Spanish and with no tech skills needed.",
       "tools": "Tools",
       "toolsAll": "See all",
       "chalyb": "Chalyb",
@@ -244,8 +244,8 @@
     "ctaSignedIn": "See plans",
     "ctaSubShort": "Cancel any time.",
     "meta": {
-      "title": "Chalyb: bots that work for you while you sleep",
-      "description": "Clips for your socials, crypto signals, your stream and more. Try Pro free for 7 days and cancel anytime. In Spanish."
+      "title": "Chalyb: clips and live streaming, your whole studio in one place",
+      "description": "Clips for your socials and your live stream, your whole studio in one place. Try Pro free for 7 days and cancel anytime. In Spanish."
     }
   },
   "auth": {
@@ -260,7 +260,7 @@
       "newSubtitle": "Create your operator workspace in seconds.",
       "newCta": "Start free",
       "returningTitle": "Welcome back.",
-      "returningSubtitle": "Pick up where you left off — bots, AI agents, execution history.",
+      "returningSubtitle": "Pick up where you left off: your clips, your streams and your results.",
       "returningCta": "Continue →",
       "benefits": {
         "1": "Make clips for free from day one",
@@ -355,7 +355,7 @@
       },
       "engines": {
         "title": "Your tools",
-        "body": "Under “Tools” you see and open your tools (Clips, Señales and more). “Included in your plan” = ready to use."
+        "body": "Under “Tools” you see and open your tools (Clips and En vivo). “Included in your plan” = ready to use."
       },
       "tokens": {
         "title": "Your credits",
@@ -417,7 +417,7 @@
     },
     "upsell": {
       "title": "More tools with Pro",
-      "sub": "Use Señales, En vivo and more with a Pro plan.",
+      "sub": "Use Clips and En vivo without limits on a Pro plan.",
       "cta": "See plans →"
     },
     "caps": {

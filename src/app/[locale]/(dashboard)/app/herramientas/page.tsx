@@ -7,6 +7,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { listEngines } from '@/lib/data/engines';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { isCustomerVisible } from '@/lib/billing/entitlement-core';
+import { isListed } from '@/lib/engines/display-names';
 import { proIncludesAllTools, trialFlowEnabled } from '@/lib/config/flags';
 import { TOOLS, toolBySlug } from '@/config/tools';
 import { toolHref } from '@/lib/tools/routes';
@@ -51,7 +52,7 @@ export default async function HerramientasPage({
   if (!session) return null;
   const [entitlements, engines] = await Promise.all([getEntitlements(session), listEngines().catch(() => [])]);
   const visibleSlugs = new Set(
-    engines.filter((e) => isCustomerVisible(e) && entitlements.tools[e.slug]).map((e) => e.slug),
+    engines.filter((e) => isCustomerVisible(e) && isListed(e.slug) && entitlements.tools[e.slug]).map((e) => e.slug),
   );
   const main = TOOLS.filter((x) => visibleSlugs.has(x.slug));
   const extra = engines.filter(
