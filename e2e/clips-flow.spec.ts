@@ -2,11 +2,14 @@
 // adapter: the server under test runs with TOOL_HUB_MODE_CHALYBCLIP=mock and
 // this spec with E2E_CLIPS_MODE=mock.
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { asRole, type Role } from './utils/roles';
 import { expectAccessible, expectNoOverflow } from './utils/a11y';
 
 const MOCK = process.env.E2E_CLIPS_MODE === 'mock';
+
+// React attaches its props to the node when it hydrates; no public signal exists for the ✕.
+const isHydrated = (el: Locator) => el.evaluate((n) => Object.keys(n).some((k) => k.startsWith('__reactProps')));
 
 /** Inicio → Clips → Hacer clips nuevos (≤ 3 taps to step 1, TOOLS-SPEC
  *  §4.4), then paste → Continuar → Crear. Returns the taps after step 1. */
@@ -101,6 +104,36 @@ test.describe('as pro', () => {
     await expect(page.getByRole('dialog', { name: '¿Salir? Lo que escribiste no se guardará.' })).toBeVisible();
     await page.getByRole('button', { name: 'Sí, salir' }).click();
     await expect(page).toHaveURL(/\/app\/clips$/);
+  });
+
+  test('the ✕ still asks when the link was typed before the page finished loading', async ({ page }) => {
+    // Hold the JS so the typing lands before React hydrates: the CI race, made certain.
+    let release!: () => void;
+    let heldCount = 0;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.route(/\/_next\/static\/chunks\/.+\.js(\?|$)/, async (route) => {
+      heldCount++;
+      await gate;
+      await route.continue();
+    });
+    await page.goto('/app/clips/nuevo', { waitUntil: 'commit' });
+    await page.getByLabel(/Pega el enlace/).fill('https://www.youtube.com/watch?v=antes');
+    const close = page.getByRole('link', { name: 'Cerrar y volver a Clips' });
+    expect(heldCount).toBeGreaterThan(0);
+    expect(await isHydrated(close)).toBe(false);
+    release();
+    await expect.poll(() => isHydrated(close)).toBe(true);
+    await close.click();
+    await expect(page.getByRole('dialog', { name: '¿Salir? Lo que escribiste no se guardará.' })).toBeVisible();
+  });
+
+  test('the ✕ leaves at once when the prefilled link was not touched', async ({ page }) => {
+    await page.goto('/app/clips/nuevo?link=' + encodeURIComponent('https://www.youtube.com/watch?v=x'));
+    const close = page.getByRole('link', { name: 'Cerrar y volver a Clips' });
+    await expect.poll(() => isHydrated(close)).toBe(true);
+    await close.click();
+    await expect(page).toHaveURL(/\/app\/clips$/);
+    await expect(page.getByRole('dialog', { name: '¿Salir? Lo que escribiste no se guardará.' })).toHaveCount(0);
   });
 
   test('ready clips can be shared', async ({ page }) => {
