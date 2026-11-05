@@ -180,6 +180,9 @@ test('unknown probes and unsafe catalog URLs are refused before sending any requ
     { ...CLIPS, external_url: 'http://localhost:8080' },
     { ...CLIPS, external_url: 'https://user:secret@clips.example.test' },
     { ...CLIPS, external_url: 'https://clips.example.test?secret=oops' },
+    { ...CLIPS, external_url: 'https://clips.example.test#frag' },
+    { ...CLIPS, external_url: 'https://:pw@clips.example.test' },
+    { ...CLIPS, external_url: 'not a url' },
     { ...CLIPS, slug: 'unknown' },
   ]) {
     await assert.rejects(probePublicEngine(e, new AbortController().signal, fetchImpl));
@@ -307,6 +310,19 @@ test('readiness targets match Clips and En vivo API overrides and fall back exac
     }) as typeof fetch,
   );
   assert.equal(requested, 'https://clip-api.example.test/prefix/readyz');
+  for (const base of ['https://clip-api.example.test?', 'https://clip-api.example.test#']) {
+    await probePublicEngine({ ...CLIPS, external_url: base }, new AbortController().signal, (async (
+      url,
+    ) => {
+      requested = String(url);
+      return Response.json({ status: 'ready' });
+    }) as typeof fetch);
+    assert.equal(
+      requested,
+      'https://clip-api.example.test/readyz',
+      'empty ? or # cannot move the path',
+    );
+  }
   await assert.rejects(
     probePublicEngine(
       readinessEngineTarget(CLIPS, { CHALYBCLIP_API_BASE: 'http://unsafe.test' }),

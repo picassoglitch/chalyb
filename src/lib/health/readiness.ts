@@ -48,6 +48,12 @@ export async function healthDeadline<T>(
   }
 }
 
+// Our own snake_case codes are safe to log; foreign errors may carry URLs, so log only their name.
+function failureCode(err: unknown): string {
+  if (!(err instanceof Error)) return 'unknown';
+  return /^[a-z_]+$/.test(err.message) ? err.message : err.name;
+}
+
 export async function readinessResponse(request: Request, deps: ReadinessDeps): Promise<Response> {
   if (!healthAuthorized(request, deps.secret)) {
     return Response.json({ ok: false }, { status: 401, headers: READINESS_HEADERS });
@@ -62,8 +68,9 @@ export async function readinessResponse(request: Request, deps: ReadinessDeps): 
           try {
             await deps.probe(engine, signal);
             engines[engine.slug] = true;
-          } catch {
+          } catch (err) {
             engines[engine.slug] = false;
+            console.error('[ready] probe_failed', engine.slug, failureCode(err));
           }
         }),
       );
@@ -74,7 +81,8 @@ export async function readinessResponse(request: Request, deps: ReadinessDeps): 
       { ...result, status: result.ok ? 'ready' : 'not_ready' },
       { status: result.ok ? 200 : 503, headers: READINESS_HEADERS },
     );
-  } catch {
+  } catch (err) {
+    console.error('[ready] not_ready', failureCode(err));
     // No dependency URLs, provider errors or credentials in the response.
     return Response.json(
       { ok: false, status: 'not_ready' },
@@ -101,12 +109,15 @@ export async function probePublicEngine(
         ? '/api/hub/v1/state'
         : null;
   if (!path) throw new Error('unmonitored_engine');
-  const response = await fetchImpl(new URL(`${base.href.replace(/\/+$/, '')}${path}`), {
-    signal,
-    cache: 'no-store',
-    redirect: 'manual',
-    headers: { Accept: 'application/json' },
-  });
+  const response = await fetchImpl(
+    new URL(`${base.origin}${base.pathname.replace(/\/+$/, '')}${path}`),
+    {
+      signal,
+      cache: 'no-store',
+      redirect: 'manual',
+      headers: { Accept: 'application/json' },
+    },
+  );
   try {
     if (engine.slug === 'chalybclip') {
       if (response.status !== 200) throw new Error('engine_unready');
