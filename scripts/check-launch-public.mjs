@@ -51,10 +51,18 @@ function blocksEveryCrawler(robotsTxt) {
       collectingAgents = true;
     } else {
       collectingAgents = false;
-      if (/^disallow$/i.test(key) && value === '/' && agents.includes('*')) return true;
+      if (/^disallow$/i.test(key) && /^\/\*?\$?$/.test(value) && agents.includes('*')) return true;
     }
   }
   return false;
+}
+
+// Drops a "googlebot:" header prefix but keeps valued directives like max-image-preview:none.
+function robotsDirective(token) {
+  return token
+    .trim()
+    .toLowerCase()
+    .replace(/^(?!max-|unavailable_after)[a-z0-9_-]+:\s*/, '');
 }
 
 // Production's root canonical omits the trailing slash; parsing makes equal URLs compare equal.
@@ -84,7 +92,10 @@ export function inspectResponse(check, response, body, origin) {
           /^(robots|googlebot)$/i.test(attr(tag, 'name')) ? attr(tag, 'content') : '',
         )
         .join(',');
-      if (/\b(noindex|none)\b/i.test(robots + ',' + (response.headers.get('x-robots-tag') ?? ''))) {
+      const directives = (robots + ',' + (response.headers.get('x-robots-tag') ?? ''))
+        .split(',')
+        .map(robotsDirective);
+      if (directives.includes('noindex') || directives.includes('none')) {
         return 'Public page is not published/indexable';
       }
     }
@@ -99,7 +110,9 @@ export function inspectResponse(check, response, body, origin) {
     }
   } else if (check.kind === 'robots') {
     const sitemapLine = new RegExp(
-      '^Sitemap:\\s*' + (origin + '/sitemap.xml').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$',
+      '^Sitemap:\\s*' +
+        (origin + '/sitemap.xml').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+        '\\s*(#.*)?$',
       'im',
     );
     if (!/^text\/plain/i.test(type) || !sitemapLine.test(body)) {

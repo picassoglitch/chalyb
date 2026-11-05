@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const { normalizeOrigin, inspectResponse, runPublicChecks, PUBLIC_CHECKS } = await import(
   new URL('../scripts/check-launch-public.mjs', import.meta.url).href
@@ -167,6 +168,24 @@ test('public launch checks catch unquoted and "none" robots tags but ignore data
     ),
     /not published/,
   );
+  assert.equal(
+    inspectResponse(
+      legal,
+      response(200, 'text/html', { 'x-robots-tag': 'max-image-preview:none' }),
+      withMeta('<meta name="robots" content="index, follow, max-image-preview:none">'),
+      origin,
+    ),
+    null,
+  );
+  assert.match(
+    inspectResponse(
+      legal,
+      response(200, 'text/html', { 'x-robots-tag': 'googlebot: noindex' }),
+      html,
+      origin,
+    ),
+    /not published/,
+  );
   const home = { path: '/', kind: 'html', canonical: true };
   assert.equal(
     inspectResponse(home, response(), html.replace('rel="canonical"', 'rel="Canonical"'), origin),
@@ -184,6 +203,8 @@ test('public launch robots check only fails when the * group is blocked', () => 
     null,
   );
   assert.match(check('User-agent: GPTBot\nUser-agent: *\nDisallow: /' + sitemapLine), /blocks/);
+  assert.match(check('User-agent: *\nDisallow: /*' + sitemapLine), /blocks/);
+  assert.equal(check('User-agent: *\nDisallow: /app' + sitemapLine + ' # main'), null);
   assert.match(
     check('User-agent: *\nAllow: /\nSitemap: ' + origin + '/sitemap.xml.bak'),
     /missing the canonical sitemap/,
@@ -225,7 +246,7 @@ test('public launch runner reports ok with no error keys when every check passes
 });
 
 test('public launch CLI exits 2 on invalid invocation without sending requests', () => {
-  const script = new URL('../scripts/check-launch-public.mjs', import.meta.url).pathname;
+  const script = fileURLToPath(new URL('../scripts/check-launch-public.mjs', import.meta.url));
   for (const args of [[], [origin, origin], [origin, '--yaml'], [origin + '/app'], ['garbage']]) {
     const run = spawnSync(process.execPath, [script, ...args], { encoding: 'utf8' });
     assert.equal(run.status, 2, args.join(' '));
