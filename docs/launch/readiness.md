@@ -53,7 +53,8 @@ redirects instead of accepting a sign-in/protection page, times out individual
 requests, and emits a report without response bodies or transport diagnostics.
 
 It checks public HTML, canonical entry pages, published/indexable legal pages,
-robots, sitemap and liveness. It does not execute browser JavaScript or test
+robots, sitemap and liveness. A legal page still in draft (noindex until
+LEGAL_PUBLISH is on) fails on purpose, because it is a launch gate. It does not execute browser JavaScript or test
 auth, email, payment, tool processing, analytics delivery or database recovery.
 Run it against the canonical host, not the apex redirect. A preview needs its
 canonical origin configured to its own origin, and an unprotected test URL;
@@ -63,7 +64,7 @@ For local validation:
 
 ```sh
 pnpm test
-pnpm ci
+pnpm run ci
 ```
 
 The normal GitHub browser suite uses mock adapters. The real Clips smoke needs

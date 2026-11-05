@@ -30,9 +30,31 @@ export function normalizeOrigin(input) {
   return url.origin;
 }
 
+// Whitespace before the name keeps data-name from matching name; unquoted values are valid HTML.
 function attr(tag, name) {
-  const match = tag.match(new RegExp('\\b' + name + '\\s*=\\s*(["\\\'])(.*?)\\1', 'i'));
-  return match?.[2] ?? '';
+  const match = tag.match(
+    new RegExp('\\s' + name + '\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s"\'>]+))', 'i'),
+  );
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? '';
+}
+
+// Only a Disallow: / in the * group blocks every crawler; blocking one bot is fine.
+function blocksEveryCrawler(robotsTxt) {
+  let agents = [];
+  let collectingAgents = false;
+  for (const raw of robotsTxt.split(/\r?\n/)) {
+    const [, key, value] = raw.replace(/#.*/, '').match(/^\s*([a-z-]+)\s*:\s*(.*?)\s*$/i) ?? [];
+    if (!key) continue;
+    if (/^user-agent$/i.test(key)) {
+      if (!collectingAgents) agents = [];
+      agents.push(value);
+      collectingAgents = true;
+    } else {
+      collectingAgents = false;
+      if (/^disallow$/i.test(key) && value === '/' && agents.includes('*')) return true;
+    }
+  }
+  return false;
 }
 
 // Production's root canonical omits the trailing slash; parsing makes equal URLs compare equal.
@@ -62,36 +84,37 @@ export function inspectResponse(check, response, body, origin) {
           /^(robots|googlebot)$/i.test(attr(tag, 'name')) ? attr(tag, 'content') : '',
         )
         .join(',');
-      if (/\bnoindex\b/i.test(robots + ',' + (response.headers.get('x-robots-tag') ?? ''))) {
+      if (/\b(noindex|none)\b/i.test(robots + ',' + (response.headers.get('x-robots-tag') ?? ''))) {
         return 'Public page is not published/indexable';
       }
     }
     if (check.canonical) {
       const links = [...body.matchAll(/<link\b[^>]*>/gi)];
-      const canonical = links.find(([tag]) => attr(tag, 'rel').split(/\s+/).includes('canonical'));
+      const canonical = links.find(([tag]) =>
+        attr(tag, 'rel').toLowerCase().split(/\s+/).includes('canonical'),
+      );
       const expected = new URL(check.path, origin).href;
       if (!canonical || absoluteHref(attr(canonical[0], 'href')) !== expected)
         return 'Canonical URL does not match requested origin';
     }
   } else if (check.kind === 'robots') {
-    if (!/^text\/plain/i.test(type) || !body.includes('Sitemap: ' + origin + '/sitemap.xml')) {
+    const sitemapLine = new RegExp(
+      '^Sitemap:\\s*' + (origin + '/sitemap.xml').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$',
+      'im',
+    );
+    if (!/^text\/plain/i.test(type) || !sitemapLine.test(body)) {
       return 'robots.txt is missing the canonical sitemap';
     }
-    if (/^Disallow:\s*\/\s*$/im.test(body)) return 'robots.txt blocks the entire site';
+    if (blocksEveryCrawler(body)) return 'robots.txt blocks the entire site';
   } else if (check.kind === 'sitemap') {
     if (!/xml/i.test(type) || !/<urlset\b/i.test(body)) return 'Expected an XML sitemap';
-    const urls = [...body.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map((m) => m[1].trim());
+    const urls = [...body.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map((m) =>
+      absoluteHref(m[1].trim()),
+    );
+    if (urls.includes('')) return 'Sitemap contains an invalid URL';
     if (!urls.includes(origin + '/') || !urls.includes(origin + '/planes'))
       return 'Sitemap is missing public entry pages';
-    if (
-      urls.some((url) => {
-        try {
-          return new URL(url).origin !== origin;
-        } catch {
-          return true;
-        }
-      })
-    )
+    if (urls.some((url) => new URL(url).origin !== origin))
       return 'Sitemap contains a different origin';
   } else if (check.kind === 'health') {
     if (!/application\/json/i.test(type)) return 'Expected JSON liveness response';
@@ -110,19 +133,22 @@ export async function runPublicChecks(input, fetcher = fetch) {
   const checks = [];
   // Sequential requests avoid a burst against the production deployment.
   for (const check of PUBLIC_CHECKS) {
-    let error;
+    let response;
+    let body;
     try {
-      const response = await fetcher(new URL(check.path, origin), {
+      response = await fetcher(new URL(check.path, origin), {
         method: 'GET',
         redirect: 'manual',
         headers: { accept: '*/*' },
         signal: AbortSignal.timeout(15_000),
       });
-      const body = await response.text();
-      error = inspectResponse(check, response, body, origin);
+      body = await response.text();
     } catch {
-      error = 'Request failed or timed out';
+      checks.push({ path: check.path, ok: false, error: 'Request failed or timed out' });
+      continue;
     }
+    // Outside the try so a checker bug fails loudly instead of looking like a network error.
+    const error = inspectResponse(check, response, body, origin);
     checks.push({ path: check.path, ok: !error, ...(error ? { error } : {}) });
   }
   return {
