@@ -31,7 +31,6 @@ import { gatePreapproval } from './webhook-verify';
 import {
   PRICING,
   ivaPortion,
-  planPrice,
   type PlanKey,
 } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
@@ -39,6 +38,7 @@ import { dispatchBillingEmail } from '@/lib/billing/notices';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
 import { unpaidCharge } from '@/lib/billing/billing-state';
 import { track } from '@/lib/analytics/track';
+import { trackFirstCharge } from '@/lib/analytics/conversion';
 import {
   entitlementFor,
   isLiveStatus,
@@ -77,6 +77,53 @@ export type SyncOutcome =
  *  the shortest billing cycle (a month), well over the gap between the dates
  *  Mercado Pago reports for one and the same charge. */
 const EARLIER_CYCLE_SLACK_MS = 7 * 86_400_000;
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/** Writes `patch` only while last_charge_at is still null; true when this call
+ *  made that move. A failed write counts as not claimed (the caller rewrites). */
+async function claimFirstCharge(
+  admin: AdminClient,
+  preapprovalId: string,
+  patch: Record<string, unknown>,
+): Promise<boolean> {
+  const { data, error } = await admin
+    .from('subscriptions')
+    .update(patch)
+    .eq('mp_preapproval_id', preapprovalId)
+    .is('last_charge_at', null)
+    .select('mp_preapproval_id');
+  if (error) console.error('[mp/subscription] first-charge claim failed', error);
+  return !error && (data?.length ?? 0) > 0;
+}
+
+/** The conversion for a claimed first charge. Never throws: billing goes on. */
+async function emitFirstCharge(c: {
+  userId: string;
+  preapprovalId: string;
+  planKey: PlanKey | null;
+  trial: boolean;
+  amountCents: number;
+}): Promise<void> {
+  try {
+    // Another charged subscription means a plan change or a win-back, not a new buyer.
+    const { data, error } = await createAdminClient()
+      .from('subscriptions')
+      .select('mp_preapproval_id')
+      .eq('user_id', c.userId)
+      .neq('mp_preapproval_id', c.preapprovalId)
+      .not('last_charge_at', 'is', null)
+      .limit(1);
+    trackFirstCharge({
+      planKey: c.planKey,
+      amountCents: c.amountCents,
+      trial: c.trial,
+      ...(error ? {} : { returning: (data?.length ?? 0) > 0 }),
+    });
+  } catch (err) {
+    console.warn('[analytics] conversion not sent', err instanceof Error ? err.message : err);
+  }
+}
 
 /** How long after creating a preapproval its checkout may still be writing
  *  our row (retries included). */
@@ -163,6 +210,8 @@ export async function syncSubscription(
     !!chargedByMp &&
     (!knownChargeAt || Date.parse(chargedByMp) > Date.parse(knownChargeAt));
   const lastChargeAt = newerCharge ? chargedByMp : knownChargeAt;
+  // A charge whose notification never reached us (or hasn't yet) is still a first payment.
+  const firstChargeClaim = newerCharge && !knownChargeAt && !!before;
   const unpaid = unpaidCharge({
     tier,
     plan_key: planKey,
@@ -198,8 +247,11 @@ export async function syncSubscription(
       amount_cents: Math.round((amountMajor ?? 0) * 100),
       currency: currency ?? 'MXN',
       next_payment_date: nextPaymentDate,
-      // A charge we missed: it settles any grace a failure had opened.
-      ...(newerCharge ? { last_charge_at: chargedByMp, grace_ends_at: null } : {}),
+      // A charge we missed: it settles any grace a failure had opened. A first
+      // one is written by the claim below instead, which counts it once.
+      ...(newerCharge
+        ? { grace_ends_at: null, ...(firstChargeClaim ? {} : { last_charge_at: chargedByMp }) }
+        : {}),
       ...(before?.charge_hold_until
         ? {}
         : { next_charge_at: nextPaymentDate ?? before?.next_charge_at ?? null }),
@@ -211,6 +263,20 @@ export async function syncSubscription(
   if (rowErr) {
     console.error('[mp/subscription] subscriptions upsert failed', rowErr);
     return { ok: false, reason: 'db', retry: true };
+  }
+  if (firstChargeClaim) {
+    const claimed = await claimFirstCharge(admin, preapprovalId, { last_charge_at: chargedByMp });
+    if (claimed && !gate.refused) {
+      await emitFirstCharge({
+        userId,
+        preapprovalId,
+        planKey,
+        trial: !!trialEndsAt,
+        amountCents: Math.round(
+          (Number(mp.summarized?.last_charged_amount) || (amountMajor ?? 0)) * 100,
+        ),
+      });
+    }
   }
 
   if (gate.refused) {
@@ -505,17 +571,21 @@ export async function recordAuthorizedPayment(
       // (debit_date vs MP's summary) counting as the current one.
       const earlierCycle =
         !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt) - EARLIER_CYCLE_SLACK_MS;
+      let firstCharge = false;
       if (!earlierCycle) {
-        await admin
-          .from('subscriptions')
-          .update({
-            ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
-            grace_ends_at: null,
-            // The next charge needs its own notice.
-            reminder_delivered_at: null,
-            charge_hold_until: null,
-          })
-          .eq('mp_preapproval_id', preapprovalId);
+        const patch = {
+          ...(olderThanStored ? {} : { last_charge_at: chargeAt }),
+          grace_ends_at: null,
+          // The next charge needs its own notice.
+          reminder_delivered_at: null,
+          charge_hold_until: null,
+        };
+        // Only the write that moves last_charge_at off null is the first charge,
+        // so a replay or a racing re-sync can't count it twice.
+        if (!storedAt) firstCharge = await claimFirstCharge(admin, preapprovalId, patch);
+        if (!firstCharge) {
+          await admin.from('subscriptions').update(patch).eq('mp_preapproval_id', preapprovalId);
+        }
       }
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
       if (subRow?.plan_key === 'pro_lealtad') {
@@ -526,14 +596,13 @@ export async function recordAuthorizedPayment(
           chargedCents: Math.round((ap.transaction_amount ?? 0) * 100),
         }).catch((err) => console.error('[mp/subscription] Pro Lealtad step not recorded', err));
       }
-      if (!subRow?.last_charge_at && subRow?.trial_ends_at) {
-        void track('conversion', {
-          // From the plan, not the amount: VIP mensual costs more than any
-          // threshold that once told the two Pro intervals apart.
-          plan:
-            subRow.plan_key && planPrice(subRow.plan_key as PlanKey).interval === 'year'
-              ? 'anual'
-              : 'mensual',
+      if (firstCharge) {
+        await emitFirstCharge({
+          userId: ref.userId,
+          preapprovalId,
+          planKey: (subRow?.plan_key as PlanKey | null | undefined) ?? null,
+          trial: !!subRow?.trial_ends_at,
+          amountCents: Math.round((ap.transaction_amount ?? 0) * 100),
         });
       }
     } else if (paymentStatus === 'rejected') {

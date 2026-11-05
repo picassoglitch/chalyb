@@ -29,6 +29,7 @@ import {
 import { isDispute, ledgerStatus, type NormalizedCharge } from './order-charge';
 import { issueRefund, onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { parsePackReference } from './subscription-reference';
+import { trackPackSettled } from '@/lib/analytics/conversion';
 import type { SubscriptionTier } from '@/lib/auth/session';
 
 const VALID_TIERS: SubscriptionTier[] = ['FREE', 'PRO', 'VIP'];
@@ -412,6 +413,8 @@ export async function settleOneOffCharge(
       },
     });
     if (!grantRes.alreadyGranted) {
+      // The grant RPC is idempotent on the payment id: a replay lands in alreadyGranted.
+      trackPackSettled({ packId: pack.id, amountCents });
       await notify({
         severity: 'info',
         title: `Pack de tokens acreditado — ${pack.tokens.toLocaleString('es-MX')} tokens`,
