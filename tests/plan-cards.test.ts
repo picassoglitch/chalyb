@@ -13,6 +13,7 @@ import {
 } from '@/lib/billing/plan-card-model';
 import { planFeatures, storageLabel } from '@/lib/billing/plan-features';
 import { TIER_CAPS } from '@/lib/billing/tiers';
+import { createTranslator } from 'next-intl';
 import { plansCta } from '@/lib/billing/plans-cta';
 import { pct, planPrice } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
@@ -216,18 +217,35 @@ test('retention · paid plans promise 30 days, the media bucket delete age', () 
   assert.equal(TIER_CAPS.FREE.clipVodRetentionDays, 7);
 
   const en = JSON.parse(readFileSync(join(ROOT, 'messages/en.json'), 'utf8'));
-  const card = (msgs: typeof es, t: 'FREE' | 'PRO' | 'VIP') =>
-    planFeatures(t, { freeIncludesClips: true })
+  const card = (locale: 'es' | 'en', t: 'FREE' | 'PRO' | 'VIP') => {
+    const tr = createTranslator({ locale, messages: locale === 'es' ? es : en, namespace: 'plans.feat' });
+    return planFeatures(t, { freeIncludesClips: true })
       .filter((f) => f.key === 'history')
-      .map((f) => String(msgs.plans.feat.history).replace('{dias}', String(f.values!.dias)));
-  assert.deepEqual(card(es, 'FREE'), ['Tus resultados se guardan 7 días']);
-  assert.deepEqual(card(es, 'PRO'), ['Tus resultados se guardan 30 días']);
-  assert.deepEqual(card(en, 'PRO'), ['30 days of history']);
+      .map((f) => tr(f.key, f.values));
+  };
+  assert.deepEqual(card('es', 'FREE'), ['Tus resultados se guardan 7 días']);
+  assert.deepEqual(card('es', 'PRO'), ['Tus resultados se guardan 30 días']);
+  assert.deepEqual(card('en', 'FREE'), ['7 days of history']);
+  assert.deepEqual(card('en', 'PRO'), ['30 days of history']);
   // VIP shows only what is above Pro; its history is the same 30 days.
-  assert.deepEqual(card(es, 'VIP'), []);
+  assert.deepEqual(card('es', 'VIP'), []);
+  assert.deepEqual(card('en', 'VIP'), []);
 
-  const copy = JSON.stringify([es.plans.feat, en.plans.feat]);
-  assert.doesNotMatch(copy, /1 año|full year|90 d|365/);
+  const copy = JSON.stringify([es.plans, en.plans, es.engines.caps, en.engines.caps]);
+  assert.doesNotMatch(copy, /1 año\+|1 year\+|full year of history|se guardan 1 año/);
+});
+
+test('retention · no plan promises more than the media bucket keeps', () => {
+  const tf = readFileSync(join(ROOT, 'infra/terraform/variables.tf'), 'utf8');
+  const block = tf.slice(tf.indexOf('variable "media_retention_days"'));
+  const bucketDays = Number(/default\s*=\s*(\d+)/.exec(block)?.[1]);
+  const example = readFileSync(join(ROOT, 'infra/terraform/terraform.tfvars.example'), 'utf8');
+  const exampleDays = Number(/^media_retention_days\s*=\s*(\d+)/m.exec(example)?.[1]);
+  const promised = Math.max(
+    ...Object.values(TIER_CAPS).flatMap((c) => [c.historyDays, c.clipVodRetentionDays]),
+  );
+  assert.ok(bucketDays >= promised, `bucket deletes at ${bucketDays}d, plans promise ${promised}d`);
+  assert.ok(exampleDays >= promised, `tfvars example deletes at ${exampleDays}d, plans promise ${promised}d`);
 });
 
 test('C15 · headline without a tool claim', () => {

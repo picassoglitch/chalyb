@@ -160,8 +160,8 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     sourceMinutesPerMonth: 3_000,
     maxConcurrentJobs: 2,
     boost: 'paid',
-    // Owner 2026-11-05: paid plans keep results 30 days, matching the media
-    // bucket's 30-day delete rule (infra/terraform/storage.tf). Raise both together.
+    // Owner 2026-11-05: paid plans keep results 30 days, the media bucket's delete
+    // age (media_retention_days, infra/terraform). Raise both together.
     historyDays: 30,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: false,
