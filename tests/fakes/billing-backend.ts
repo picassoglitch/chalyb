@@ -16,10 +16,14 @@ export interface FakeBackend {
   /** Mercado Pago GET responses by path (e.g. /authorized_payments/1). */
   mp: Record<string, unknown>;
   events: AnalyticsEvent[];
+  /** POSTs that reached the analytics endpoint, answered or not. */
+  analyticsAttempts: number;
   /** Make the analytics endpoint throw instead of answering. */
   analyticsThrows: boolean;
   /** Fail the next request matching (method, table): PostgREST error body. */
   failNext: { method: string; table: string; filter?: string }[];
+  /** Filters the fake can't evaluate; tests assert this stays empty. */
+  unsupported: string[];
   reset(): void;
 }
 
@@ -33,6 +37,8 @@ function matches(row: Row, key: string, op: string): boolean {
   if (op === 'not.is.null') return v != null;
   const [kind, ...rest] = op.split('.');
   const arg = rest.join('.');
+  // SQL comparisons drop NULLs, as PostgREST does.
+  if (v == null) return false;
   switch (kind) {
     case 'eq':
       return String(v) === arg;
@@ -49,9 +55,11 @@ function matches(row: Row, key: string, op: string): boolean {
     case 'lt':
       return v != null && String(v) < arg;
     default:
-      throw new Error(`fake postgrest: unsupported filter ${key}=${op}`);
+      throw new UnsupportedFilter(`${key}=${op}`);
   }
 }
+
+class UnsupportedFilter extends Error {}
 
 const RESERVED = new Set(['select', 'order', 'limit', 'offset', 'on_conflict', 'columns']);
 
@@ -93,6 +101,19 @@ function rpc(b: FakeBackend, name: string, args: Row): Response {
 }
 
 function postgrest(b: FakeBackend, url: URL, init: RequestInit): Response {
+  try {
+    return postgrestUnchecked(b, url, init);
+  } catch (e) {
+    // Loud, not retried: supabase-js would turn a thrown fetch into a quiet { error }.
+    if (e instanceof UnsupportedFilter) {
+      b.unsupported.push(e.message);
+      return json(400, { code: 'PGRST100', message: `fake: unsupported filter ${e.message}` });
+    }
+    throw e;
+  }
+}
+
+function postgrestUnchecked(b: FakeBackend, url: URL, init: RequestInit): Response {
   const method = (init.method ?? 'GET').toUpperCase();
   const path = url.pathname.replace('/rest/v1/', '');
   const body = init.body ? JSON.parse(String(init.body)) : null;
@@ -166,14 +187,18 @@ export function installFakeBackend(): FakeBackend {
     tables: {},
     mp: {},
     events: [],
+    analyticsAttempts: 0,
     analyticsThrows: false,
     failNext: [],
+    unsupported: [],
     reset() {
       this.tables = {};
       this.mp = {};
       this.events = [];
+      this.analyticsAttempts = 0;
       this.analyticsThrows = false;
       this.failNext = [];
+      this.unsupported = [];
     },
   };
 
@@ -186,6 +211,7 @@ export function installFakeBackend(): FakeBackend {
       body: init.body ?? (req ? await req.text() : undefined),
     };
     if (url.href === ANALYTICS_URL) {
+      b.analyticsAttempts += 1;
       if (b.analyticsThrows) throw new Error('analytics endpoint down');
       const sent = JSON.parse(String(merged.body)) as { en: string; ed?: Record<string, unknown> };
       b.events.push({ name: sent.en, props: sent.ed ?? {} });

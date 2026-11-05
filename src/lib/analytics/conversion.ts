@@ -10,14 +10,9 @@ function mxn(cents: number): number {
   return Math.round(cents) / 100;
 }
 
+// track() catches its own failures and never rejects.
 function send(props: FunnelProps): void {
-  try {
-    void track('conversion', props).catch((err) =>
-      console.warn('[analytics] conversion not sent', err instanceof Error ? err.message : err),
-    );
-  } catch (err) {
-    console.warn('[analytics] conversion not sent', err instanceof Error ? err.message : err);
-  }
+  void track('conversion', props);
 }
 
 export interface FirstChargeConversion {
@@ -30,16 +25,17 @@ export interface FirstChargeConversion {
 }
 
 export function trackFirstCharge(c: FirstChargeConversion): void {
-  const interval = c.planKey ? planPrice(c.planKey).interval : 'month';
+  // A plan_key outside PlanKey (legacy row) has no price: say unknown, never guess monthly.
+  const interval = (c.planKey && planPrice(c.planKey)?.interval) || 'unknown';
+  // Most important first: Vercel Pro keeps 2 properties per event, Analytics Plus 8.
   send({
-    // `plan` keeps the value trial conversions always sent, so existing
-    // dashboards don't split; `plan_key` names the exact plan.
-    plan: interval === 'year' ? 'anual' : 'mensual',
-    plan_key: c.planKey ?? 'unknown',
-    interval,
-    amount_mxn: mxn(c.amountCents),
+    // `plan` keeps the values trial conversions always sent, so dashboards don't split.
+    plan: interval === 'year' ? 'anual' : interval === 'month' ? 'mensual' : 'unknown',
     kind: 'subscription_first',
+    amount_mxn: mxn(c.amountCents),
+    interval,
     trial: c.trial,
+    plan_key: c.planKey ?? 'unknown',
     ...(c.returning === undefined ? {} : { returning: c.returning }),
   });
 }
@@ -47,10 +43,10 @@ export function trackFirstCharge(c: FirstChargeConversion): void {
 export function trackPackSettled(c: { packId: string; amountCents: number }): void {
   send({
     plan: 'pack',
-    plan_key: c.packId,
-    interval: 'once',
-    amount_mxn: mxn(c.amountCents),
     kind: 'pack',
+    amount_mxn: mxn(c.amountCents),
+    interval: 'once',
     trial: false,
+    plan_key: c.packId,
   });
 }

@@ -36,7 +36,7 @@ import {
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { dispatchBillingEmail } from '@/lib/billing/notices';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
-import { unpaidCharge } from '@/lib/billing/billing-state';
+import { AMOUNT_MISMATCH_STATUS, unpaidCharge } from '@/lib/billing/billing-state';
 import { track } from '@/lib/analytics/track';
 import { trackFirstCharge } from '@/lib/analytics/conversion';
 import {
@@ -80,21 +80,24 @@ const EARLIER_CYCLE_SLACK_MS = 7 * 86_400_000;
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
-/** Writes `patch` only while last_charge_at is still null; true when this call
- *  made that move. A failed write counts as not claimed (the caller rewrites). */
+/** Writes `patch` only while last_charge_at is still null: 'claimed' when this
+ *  call made that move, 'taken' when another already had, 'error' when unwritten. */
 async function claimFirstCharge(
   admin: AdminClient,
   preapprovalId: string,
   patch: Record<string, unknown>,
-): Promise<boolean> {
+): Promise<'claimed' | 'taken' | 'error'> {
   const { data, error } = await admin
     .from('subscriptions')
     .update(patch)
     .eq('mp_preapproval_id', preapprovalId)
     .is('last_charge_at', null)
     .select('mp_preapproval_id');
-  if (error) console.error('[mp/subscription] first-charge claim failed', error);
-  return !error && (data?.length ?? 0) > 0;
+  if (error) {
+    console.error('[mp/subscription] first-charge claim failed', preapprovalId, error);
+    return 'error';
+  }
+  return (data?.length ?? 0) > 0 ? 'claimed' : 'taken';
 }
 
 /** The conversion for a claimed first charge. Never throws: billing goes on. */
@@ -114,6 +117,7 @@ async function emitFirstCharge(c: {
       .neq('mp_preapproval_id', c.preapprovalId)
       .not('last_charge_at', 'is', null)
       .limit(1);
+    if (error) console.warn('[analytics] conversion returning lookup failed', error.message);
     trackFirstCharge({
       planKey: c.planKey,
       amountCents: c.amountCents,
@@ -211,7 +215,7 @@ export async function syncSubscription(
     (!knownChargeAt || Date.parse(chargedByMp) > Date.parse(knownChargeAt));
   const lastChargeAt = newerCharge ? chargedByMp : knownChargeAt;
   // A charge whose notification never reached us (or hasn't yet) is still a first payment.
-  const firstChargeClaim = newerCharge && !knownChargeAt && !!before;
+  const firstChargeClaim = newerCharge && !knownChargeAt;
   const unpaid = unpaidCharge({
     tier,
     plan_key: planKey,
@@ -265,8 +269,10 @@ export async function syncSubscription(
     return { ok: false, reason: 'db', retry: true };
   }
   if (firstChargeClaim) {
-    const claimed = await claimFirstCharge(admin, preapprovalId, { last_charge_at: chargedByMp });
-    if (claimed && !gate.refused) {
+    const claim = await claimFirstCharge(admin, preapprovalId, { last_charge_at: chargedByMp });
+    // last_charge_at is unwritten: retry, or the unpaid-charge deadline could lapse a payer.
+    if (claim === 'error') return { ok: false, reason: 'db', retry: true };
+    if (claim === 'claimed' && !gate.refused) {
       await emitFirstCharge({
         userId,
         preapprovalId,
@@ -544,7 +550,7 @@ export async function recordAuthorizedPayment(
     }
     const { data: subRow, error: subErr } = await admin
       .from('subscriptions')
-      .select('tier, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
+      .select('tier, status, plan_key, last_charge_at, trial_ends_at, charge_hold_until, reminder_delivered_at, first_charge_at')
       .eq('mp_preapproval_id', preapprovalId)
       .maybeSingle();
     // A failed read is not "no stored charge": the replay guards below would
@@ -582,10 +588,24 @@ export async function recordAuthorizedPayment(
         };
         // Only the write that moves last_charge_at off null is the first charge,
         // so a replay or a racing re-sync can't count it twice.
-        if (!storedAt) firstCharge = await claimFirstCharge(admin, preapprovalId, patch);
+        const claim = storedAt ? 'taken' : await claimFirstCharge(admin, preapprovalId, patch);
+        // Unwritten: let MP retry (the ledger upsert is idempotent) so the charge still counts.
+        if (claim === 'error') return { ok: false, retry: true };
+        firstCharge = claim === 'claimed';
         if (!firstCharge) {
           await admin.from('subscriptions').update(patch).eq('mp_preapproval_id', preapprovalId);
         }
+      }
+      // Emitted before anything that can throw: a retry would find the charge already claimed.
+      // A refused (amount_mismatch) preapproval isn't a sale, same rule as the re-sync.
+      if (firstCharge && subRow?.status !== AMOUNT_MISMATCH_STATUS) {
+        await emitFirstCharge({
+          userId: ref.userId,
+          preapprovalId,
+          planKey: (subRow?.plan_key as PlanKey | null | undefined) ?? null,
+          trial: !!subRow?.trial_ends_at,
+          amountCents: Math.round((ap.transaction_amount ?? 0) * 100),
+        });
       }
       await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
       if (subRow?.plan_key === 'pro_lealtad') {
@@ -595,15 +615,6 @@ export async function recordAuthorizedPayment(
           paymentId: String(paymentId),
           chargedCents: Math.round((ap.transaction_amount ?? 0) * 100),
         }).catch((err) => console.error('[mp/subscription] Pro Lealtad step not recorded', err));
-      }
-      if (firstCharge) {
-        await emitFirstCharge({
-          userId: ref.userId,
-          preapprovalId,
-          planKey: (subRow?.plan_key as PlanKey | null | undefined) ?? null,
-          trial: !!subRow?.trial_ends_at,
-          amountCents: Math.round((ap.transaction_amount ?? 0) * 100),
-        });
       }
     } else if (paymentStatus === 'rejected') {
       // Pago pendiente: full access until the grace window ends (Q12), and

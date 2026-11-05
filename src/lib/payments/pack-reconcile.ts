@@ -109,7 +109,9 @@ export async function reconcilePackGrants(now: Date): Promise<{ granted: number;
     }
     if (!r.alreadyGranted) {
       granted += 1;
-      trackPackSettled({ packId: row.pack_id ?? 'unknown', amountCents: row.amount_cents ?? 0 });
+      if (row.pack_id && row.amount_cents) {
+        trackPackSettled({ packId: row.pack_id, amountCents: row.amount_cents });
+      }
       await notify({
         severity: 'warning',
         title: `Pack acreditado por la conciliación — ${tokens.toLocaleString('es-MX')} tokens`,
