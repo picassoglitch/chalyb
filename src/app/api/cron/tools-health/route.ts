@@ -17,6 +17,8 @@ import { engineBase } from '@/lib/tools/adapters/envivo-engine';
 import { toolHubMode } from '@/lib/config/flags';
 import { recordToolHealth } from '@/lib/tools/status';
 import { TOOL_TIMEOUT_MS } from '@/lib/tools/bff-core';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { clipsHealthProbe, readinessEngineTarget } from '@/lib/health/readiness';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,10 +34,24 @@ function authorized(req: Request): boolean {
 /** The cheapest read each adapter has, standing in for GET /health until
  *  the engines publish one (OPS-13). */
 const PROBES: Record<string, () => (() => Promise<unknown>) | null> = {
-  chalybclip: () => {
-    const a = getClipsAdapter();
-    return a ? async () => a.capabilities() : null;
-  },
+  chalybclip: () =>
+    clipsHealthProbe(toolHubMode('chalybclip'), {
+      readEngine: async (signal) => {
+        const { data, error } = await createAdminClient()
+          .from('engines')
+          .select('slug, status, external_url')
+          .eq('slug', 'chalybclip')
+          .abortSignal(signal)
+          .maybeSingle();
+        if (error || !data) throw new Error('engine_unavailable');
+        return readinessEngineTarget(data, process.env);
+      },
+      capabilities: () => {
+        const adapter = getClipsAdapter();
+        if (!adapter) throw new Error('adapter_unavailable');
+        return adapter.capabilities();
+      },
+    }),
   chalybcrypto: () => {
     const a = getSenales();
     // The data-only venue: an engine round trip (URL, token, auth) that
