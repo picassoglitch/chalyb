@@ -234,6 +234,32 @@ test('first landing view waits for consent and is emitted once with bounded camp
   expect(await views()).toHaveLength(1);
 });
 
+test('a returning visitor landing view is queued behind beforeSend while the analytics script is inert', async ({
+  page,
+  baseURL,
+}) => {
+  // Consent already stored and the script stubbed empty, so vaq is never drained: the view waits
+  // behind beforeSend (no fragment leaks), whichever of trackClient or <Analytics /> made the queue.
+  await page.route(ANALYTICS, (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: '' }),
+  );
+  await page.context().addCookies([{ name: 'chalyb_consent', value: 'v1.a1.p1', url: baseURL! }]);
+  const queue = () =>
+    page.evaluate(() =>
+      ((window as unknown as { vaq?: [string, { name?: string }?][] }).vaq ?? []).map(
+        ([kind, event]) => (kind === 'event' ? `event:${event?.name}` : kind),
+      ),
+    );
+  await page.goto('/?utm_source=launch');
+  await expect
+    .poll(async () => (await queue()).filter((k) => k === 'event:landing_view'))
+    .toEqual(['event:landing_view']);
+  await expect(page.getByRole('dialog')).toBeHidden();
+  const kinds = await queue();
+  expect(kinds.indexOf('beforeSend')).toBeGreaterThanOrEqual(0);
+  expect(kinds.indexOf('beforeSend')).toBeLessThan(kinds.indexOf('event:landing_view'));
+});
+
 test.describe('signed in', () => {
   asRole('free');
 
