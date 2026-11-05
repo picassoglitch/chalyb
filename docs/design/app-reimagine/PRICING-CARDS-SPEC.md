@@ -231,7 +231,7 @@ planFeatures('FREE' | 'PRO' | 'VIP', { freeIncludesClips }): PlanFeature[]  // {
 |---|---|---|---|---|
 | Clips quality / watermark | `clipExportMaxQuality`, `clipWatermark` | `feat.clipsTry` (only if `freeIncludesClips()`) | `feat.noWatermarkHd` | `feat.clips4k` |
 | Live streams to clip | `clipStreamsPerMonth` | `feat.noStreams` (✕) | `feat.streams` {n}=12 | `feat.streamsUnlimited` (Infinity) |
-| History | `historyDays` | `feat.history` {dias}=7 | `feat.history` {dias}=90 | `feat.historyYear` (365) |
+| History | `historyDays` | `feat.history` {dias}=7 | `feat.history` {dias}=30 | same as Pro (30), not repeated |
 | Storage | `storageMB` → `500 MB` / `5 GB` / `50 GB` (≥1000 → GB, decimal like the caps) | `feat.storage` | `feat.storage` | `feat.storage` |
 | Cancel | – | – | `feat.cancel` | (inherited via "Todo lo de Pro") |
 VIP renders only what's **above** Pro (header "Todo lo de Pro, más:").
@@ -301,7 +301,6 @@ VIP renders only what's **above** Pro (header "Todo lo de Pro, más:").
 | `streams` | Clips de hasta {n} transmisiones en vivo al mes | Clip up to {n} live streams a month |
 | `streamsUnlimited` | Clips de transmisiones en vivo sin límite al mes | Unlimited live streams to clip |
 | `history` | Tus resultados se guardan {dias} días | {dias} days of history |
-| `historyYear` | Tus resultados se guardan 1 año | A full year of history |
 | `storage` | {espacio} para tus videos y archivos | {espacio} of storage |
 | `cancel` | Cancela en 1 clic, sin llamadas | Cancel online anytime, no calls |
 | `notIncluded` (sr-only, existing `plans.notIncluded`) | No incluye | Not included |

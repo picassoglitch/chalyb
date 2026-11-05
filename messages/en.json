@@ -1120,7 +1120,6 @@
       "streams": "Clip up to {n} live streams a month",
       "streamsUnlimited": "Unlimited live streams to clip",
       "history": "{dias} days of history",
-      "historyYear": "A full year of history",
       "storage": "{espacio} of storage",
       "cancel": "Cancel online anytime, no calls"
     },
