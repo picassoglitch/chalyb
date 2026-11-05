@@ -67,3 +67,12 @@ __pycache__/
 /screenshots/
 /e2e/*-snapshots/
 .env*
+
+# Terraform variables hold real secrets; only the .example is tracked.
+# Covers backup copies too (e.g. terraform.tfvars.pre-<change>, .bak).
+infra/terraform/terraform.tfvars*
+*.tfvars.json
+*.tfvars.*
+*.tfvars.bak
+*.tfvars.pre-*
+!infra/terraform/terraform.tfvars.example
