@@ -74,7 +74,10 @@ export async function offeredIntervals(): Promise<Interval[]> {
   return annualOffered ? (monthlyOffered ? ['month', 'year'] : ['year']) : ['month'];
 }
 
-export async function loadPlansProps(locale: string): Promise<PlansProps> {
+export async function loadPlansProps(
+  locale: string,
+  options: { clipsActive?: boolean } = {},
+): Promise<PlansProps> {
   const user = await getCurrentUser().catch(() => null);
   const session = user ? await getSessionUser() : null;
   const billing = session ? await loadBilling(session.user.id).catch(() => null) : null;
@@ -99,6 +102,7 @@ export async function loadPlansProps(locale: string): Promise<PlansProps> {
 
   const opts = {
     freeIncludesClips: freeIncludesClips(),
+    clipsActive: options.clipsActive,
     clipLimitsEnforced: planFeatureClipLimitsEnforced(),
   };
   return {

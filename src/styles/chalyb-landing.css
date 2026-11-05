@@ -951,6 +951,13 @@
     width: 400px;
   }
 }
+/* Without the Clips device mock the copy takes the full row, not half of it. */
+@media (min-width: 1024px) {
+  .chalyb-app .pub-hero2__in--solo {
+    grid-template-columns: minmax(0, 760px);
+    min-height: 0;
+  }
+}
 
 /* Phone (§3.3 <768): icon 48 px with the title on one line. */
 @media (max-width: 767px) {

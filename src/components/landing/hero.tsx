@@ -13,11 +13,15 @@ import { claimKey } from './claims';
 // the laptop image has priority (LCP).
 
 export async function Hero({
+  hasClips,
+  hasEnVivo,
   trialHref,
   ctaLabel,
   trialOffered,
   claimAll,
 }: {
+  hasClips: boolean;
+  hasEnVivo: boolean;
   trialHref: Route;
   ctaLabel: string;
   /** hero.noteRest ("Hoy pagas …") only when this visitor can start the trial (K-7). */
@@ -27,17 +31,27 @@ export async function Hero({
 }) {
   const t = await getTranslations('landing.hero');
   const cero = formatMXN(0);
+  const sub =
+    hasClips && hasEnVivo
+      ? t(claimKey('heroSub', claimAll))
+      : t(hasClips ? 'subClipsOnly' : 'subLiveOnly');
   return (
     <section id="hero" className="pub-hero2" aria-labelledby="hero-title">
-      <div className="pub-hero2__in">
+      <div className={hasClips ? 'pub-hero2__in' : 'pub-hero2__in pub-hero2__in--solo'}>
         <div className="pub-hero2__copy">
           <p className="pub-kick">
             <span>{t(claimKey('heroTag', claimAll))}</span>
             <span className="pub-kick__rest">{t(claimKey('heroEyebrow', claimAll))}</span>
           </p>
-          <h1 id="hero-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h1>
-          <p className="pub-hero2__sub">{t(claimKey('heroSub', claimAll))}</p>
-          <Link href={trialHref} className="ch-btn ch-btn--primary pub-hero2__cta" data-cta="hero_trial">
+          <h1 id="hero-title">
+            {t.rich(hasClips ? 'title' : 'titleLiveOnly', { em: (c) => <em>{c}</em> })}
+          </h1>
+          <p className="pub-hero2__sub">{sub}</p>
+          <Link
+            href={trialHref}
+            className="ch-btn ch-btn--primary pub-hero2__cta"
+            data-cta="hero_trial"
+          >
             {ctaLabel}
             <ArrowRight aria-hidden="true" />
           </Link>
@@ -55,47 +69,48 @@ export async function Hero({
           </ul>
         </div>
 
-        <div className="pub-dev" role="img" aria-label={t('alt')}>
-          <div className="pub-dev__halo" aria-hidden="true" />
-          <div className="pub-laptop" aria-hidden="true">
-            <div className="pub-laptop__screen">
+        {hasClips && (
+          <div className="pub-dev" role="img" aria-label={t('alt')}>
+            <div className="pub-dev__halo" aria-hidden="true" />
+            <div className="pub-laptop" aria-hidden="true">
+              <div className="pub-laptop__screen">
+                <Image
+                  src="/landing/hero-laptop.webp"
+                  alt=""
+                  width={1072}
+                  height={670}
+                  sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
+                  // The LCP, the only image with priority (§7): fetchpriority straight
+                  // from the HTML (Next 16 deprecated `priority`; its preload lacked it).
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </div>
+              <div className="pub-laptop__base" />
+            </div>
+            <div className="pub-phone" aria-hidden="true">
               <Image
-                src="/landing/hero-laptop.webp"
+                src="/landing/hero-phone.webp"
                 alt=""
-                width={1072}
-                height={670}
-                sizes="(max-width: 767px) 272px, (max-width: 1279px) 456px, 536px"
-                // The LCP: high fetch priority straight from the HTML (Next
-                // 16 deprecated `priority`; its preload carried no
-                // fetchpriority). The only image with priority (§7).
+                width={400}
+                height={866}
+                sizes="(max-width: 767px) 108px, (max-width: 1279px) 170px, 200px"
                 loading="eager"
-                fetchPriority="high"
               />
             </div>
-            <div className="pub-laptop__base" />
-          </div>
-          <div className="pub-phone" aria-hidden="true">
-            <Image
-              src="/landing/hero-phone.webp"
-              alt=""
-              width={400}
-              height={866}
-              sizes="(max-width: 767px) 108px, (max-width: 1279px) 170px, 200px"
-              loading="eager"
-            />
-          </div>
-          <div className="pub-notif" aria-hidden="true">
-            <BrandMark size={44} />
-            <div>
-              <p className="pub-notif__top">
-                <span className="pub-notif__app">{t('notifApp')}</span>
-                <span>{t('notifWhen')}</span>
-              </p>
-              <b>{t('notifTitle')}</b>
-              <p>{t('notifBody')}</p>
+            <div className="pub-notif" aria-hidden="true">
+              <BrandMark size={44} />
+              <div>
+                <p className="pub-notif__top">
+                  <span className="pub-notif__app">{t('notifApp')}</span>
+                  <span>{t('notifWhen')}</span>
+                </p>
+                <b>{t('notifTitle')}</b>
+                <p>{t('notifBody')}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

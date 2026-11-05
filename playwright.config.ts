@@ -44,13 +44,13 @@ export default defineConfig({
     {
       name: 'desktop-chromium',
       dependencies: ['setup'],
-      testIgnore: [/smoke\//, /-mutations\.spec\.ts/],
+      testIgnore: [/smoke\//, /-mutations\.spec\.ts/, /catalog-availability\.spec\.ts/],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
       name: 'mobile-360',
       dependencies: ['setup'],
-      testIgnore: [/smoke\//, /-mutations\.spec\.ts/],
+      testIgnore: [/smoke\//, /-mutations\.spec\.ts/, /catalog-availability\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 360, height: 740 },
@@ -65,6 +65,14 @@ export default defineConfig({
       dependencies: ['desktop-chromium', 'mobile-360'],
       testMatch: /-mutations\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      // Catalog fixtures change the shared local mock only after every normal
+      // and mutation spec has finished. The spec refuses real deployments.
+      name: 'catalog',
+      dependencies: ['mutations'],
+      testMatch: /catalog-availability\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'smoke',

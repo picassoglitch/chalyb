@@ -8,6 +8,7 @@ import { claimKey } from './claims';
 // 9 · CTA final (LANDING-SPEC §3.10), with the active tools.
 
 export async function FinalCta({
+  hasClips,
   tools,
   locale,
   trialHref,
@@ -15,6 +16,7 @@ export async function FinalCta({
   trialOffered,
   claimAll,
 }: {
+  hasClips: boolean;
   tools: PublicTool[];
   locale: string;
   trialHref: Route;
@@ -27,7 +29,9 @@ export async function FinalCta({
     <section className="pub-band pub-band--tight" aria-labelledby="final-title" id="final">
       <div className="pub-wrap">
         <div className="pub-final2">
-          <h2 id="final-title">{t.rich('title', { em: (c) => <em>{c}</em> })}</h2>
+          <h2 id="final-title">
+            {t.rich(hasClips ? 'title' : 'titleLiveOnly', { em: (c) => <em>{c}</em> })}
+          </h2>
           <p>
             <span className="pub-only-desk">
               {t(claimKey('finalSub', claimAll), { lista: toolList(tools, locale) })}

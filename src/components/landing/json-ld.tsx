@@ -39,7 +39,10 @@ export async function JsonLd() {
     tools,
     locale,
     trialOffered: trialFlowEnabled(),
-    claimAll: allToolsClaimAllowed(),
+    claimAll:
+      allToolsClaimAllowed() &&
+      tools.some((tool) => tool.slug === 'chalybclip') &&
+      tools.some((tool) => tool.slug === 'chalybobs'),
     intervals,
   });
   return (

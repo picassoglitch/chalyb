@@ -20,6 +20,9 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
   const t = await getTranslations('landing.publicFooter');
   const active = await listActiveTools();
   const tools = active.slice(0, 3);
+  const hasClips = active.some((tool) => tool.slug === 'chalybclip');
+  const hasEnVivo = active.some((tool) => tool.slug === 'chalybobs');
+  const leadKey = hasClips && hasEnVivo ? 'lead' : hasClips ? 'leadClipsOnly' : hasEnVivo ? 'leadLiveOnly' : 'leadGeneric';
   const financial = active.some((x) => FINANCIAL.has(x.slug));
   const entity = legalEntity();
   const seller = [entity.name, entity.address, entity.phone, entity.email].filter(Boolean);
@@ -30,22 +33,26 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
         <div className="pub-foot__cols">
           <div className="pub-foot__brand">
             <Logo href="/" />
-            <p className="pub-foot__lead">{t('lead')}</p>
+            <p className="pub-foot__lead">{t(leadKey)}</p>
           </div>
-          <nav aria-label={t('tools')} data-foot="tools">
-            <p className="pub-foot__h">{t('tools')}</p>
-            {tools.map((tool) => (
-              <Link key={tool.slug} href={'/#herramientas' as Route}>
-                {tool.name}
-              </Link>
-            ))}
-            <Link href={'/#herramientas' as Route}>{t('toolsAll')}</Link>
-          </nav>
+          {active.length > 0 && (
+            <nav aria-label={t('tools')} data-foot="tools">
+              <p className="pub-foot__h">{t('tools')}</p>
+              {tools.map((tool) => (
+                <Link key={tool.slug} href={'/#herramientas' as Route}>
+                  {tool.name}
+                </Link>
+              ))}
+              <Link href={'/#herramientas' as Route}>{t('toolsAll')}</Link>
+            </nav>
+          )}
           <nav aria-label={t('chalyb')}>
             <p className="pub-foot__h">{t('chalyb')}</p>
-            <Link href={(onLanding ? '/#precios' : '/planes') as Route}>{t('pricing')}</Link>
+            {active.length > 0 && (
+              <Link href={(onLanding ? '/#precios' : '/planes') as Route}>{t('pricing')}</Link>
+            )}
             <Link href="/contacto">{t('help')}</Link>
-            <Link href={'/#idea' as Route}>{t('idea')}</Link>
+            {active.length > 0 && <Link href={'/#idea' as Route}>{t('idea')}</Link>}
             <Link href="/sign-in" data-signin="footer">
               {t('login')}
             </Link>
