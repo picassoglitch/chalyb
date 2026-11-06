@@ -29,7 +29,7 @@ details, database dumps, Terraform state, signed media URLs, or auth tokens.
 | Free/Pro/VIP limits match the UI and entitlement enforcement                   | Real engine, isolated accounts                                     | Upload, resolution, watermark, credits and access checks                                       | NOT VERIFIED |
 | En vivo delivers to an actual destination and recovers after reconnect         | Real engine with private test destination                          | Sustained stream, reconnect, stop, destination and secret isolation results                    | NOT VERIFIED |
 | A database backup can be restored                                              | Separate disposable recovery target                                | Backup age, restore duration, application integrity checks; no dump in repo                    | NOT VERIFIED |
-| Infrastructure state is recoverable and locked                                 | Dedicated backend rehearsal                                        | Backend location, access controls, versioning, locking and rollback evidence                   | NOT VERIFIED |
+| Infrastructure state is recoverable and locked                                 | Dedicated backend rehearsal                                        | Backend location, access controls, versioning, locking and rollback evidence                   | VERIFIED [2] |
 | A consenting campaign visitor can be traced to activation and approved payment | Preview, synthetic campaign/test account                           | Campaign report plus signup/activation/conversion evidence; no user identifiers in event props | NOT VERIFIED |
 | Consent rejection/withdrawal stops optional advertising attribution            | Preview                                                            | Network/storage check before consent, after rejection and after withdrawal                     | NOT VERIFIED |
 | Actual processing cost and net revenue support the pilot                       | Pilot, real metering                                               | Credits charged, provider cost, storage/egress, payment fees, refunds and support cost         | NOT VERIFIED |
@@ -39,6 +39,10 @@ details, database dumps, Terraform state, signed media URLs, or auth tokens.
 integration 100% complete (create order, notifications, test, go to
 production) and integration quality 96/100. The owner tested it with Mercado
 Pago test accounts.
+
+[2] 2026-11-06: Terraform state migrated to `gs://chalyb-tfstate/prod`
+(145 entries), public-access prevention on, local copies removed, backup kept
+outside the repo. PR #149 enables the GCS backend.
 
 Owner decision, 2026-11-06: no row for dependency monitoring or alerts.
 Monitoring comes from the providers' own tools, not from the site.
