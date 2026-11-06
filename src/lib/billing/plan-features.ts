@@ -20,7 +20,6 @@ export interface PlanFeature {
     | 'streams'
     | 'streamsUnlimited'
     | 'history'
-    | 'historyYear'
     | 'storage'
     | 'cancel';
   values?: Record<string, string | number>;
@@ -59,10 +58,7 @@ function streamsFeature(tier: Tier): PlanFeature {
 }
 
 function historyFeature(tier: Tier): PlanFeature {
-  const dias = TIER_CAPS[tier].historyDays;
-  return dias >= 365
-    ? { key: 'historyYear', included: true }
-    : { key: 'history', values: { dias }, included: true };
+  return { key: 'history', values: { dias: TIER_CAPS[tier].historyDays }, included: true };
 }
 
 /**

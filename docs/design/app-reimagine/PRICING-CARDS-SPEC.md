@@ -96,7 +96,7 @@ Re-render: `python3 build_pricing.py && python3 render_pricing.py [80 81 …]`. 
 | 4 | Monthly price | "MXN al mes" on the price line | "$868.84 MXN al mes · se renueva cada mes" | Big "$868.84" + "MXN al mes" on **one line** (`nowrap`). "Se renueva cada mes" sits directly under it in the same price block, the same pattern as Anual. `billing.price.monthLine` (one line) stays for compact contexts. |
 | 5 | Free month | Prominent chip | It must be clear, honored and conditional. It is a 30-day trial, Pro anual only, once per account and card | Chip **"1 mes gratis con Pro anual"** shows only when `trialOffered && interval==='year'`. Disclosure under the CTA ("Hoy pagas $0. Al terminar tus 30 días se cobran $8,688.40 MXN al año, salvo que canceles. Te avisamos 7 días antes."). Footnote: "Mes gratis: prueba de 30 días, solo con Pro anual, una vez por cuenta y por tarjeta." All ⚖. |
 | 6 | Tool access | Don't claim a tool count (code contradicts itself) | Terms say "UN Engine" while flags say all tools | **Omitted.** Removed `plans.pro.tag` "Todas las herramientas", `plans.pro.f1` "Las {n} herramientas…", Gratis "✕ Señales, En vivo y las demás herramientas", and the landing tagline. See D7. |
-| 7 | Bullets | 3–5 outcome bullets, real limits only | – | 4 / 5 / 4 bullets built from `TIER_CAPS` (history 7/90/365, storage 500 MB/5 GB/50 GB, Clips SD/HD/4K, watermark only on Gratis, 0/12/unlimited live streams to clip). No credits or jobs. |
+| 7 | Bullets | 3–5 outcome bullets, real limits only | – | 4 / 5 / 2 bullets built from `TIER_CAPS` (history 7/30/30, VIP doesn't repeat Pro's, storage 500 MB/5 GB/50 GB, Clips SD/HD/4K, watermark only on Gratis, 0/12/unlimited live streams to clip). No credits or jobs. |
 | 8 | VIP | "Para quién es" + "Todo lo de Pro, más…" | – | Tag "Para quien transmite a diario o maneja varios canales". List header "Todo lo de Pro, más:". |
 | 9 | Toggle | Mensual/Anual above the cards | The pill can't make an unconditional trial claim (today `plans.toggle.save` = "1 mes gratis" with no check, `plans-view.tsx:86`) | Toggle centered above the cards. Pill **"Ahorras $1,737"**, which is true in every state. The trial claim lives only on the Pro card. |
 | 10 | "2 meses gratis" | Never | Banned (test) | Not used anywhere. No bare $8,988 / $10,426.08 either. The en copy also avoids "two months free". |
@@ -231,7 +231,7 @@ planFeatures('FREE' | 'PRO' | 'VIP', { freeIncludesClips }): PlanFeature[]  // {
 |---|---|---|---|---|
 | Clips quality / watermark | `clipExportMaxQuality`, `clipWatermark` | `feat.clipsTry` (only if `freeIncludesClips()`) | `feat.noWatermarkHd` | `feat.clips4k` |
 | Live streams to clip | `clipStreamsPerMonth` | `feat.noStreams` (✕) | `feat.streams` {n}=12 | `feat.streamsUnlimited` (Infinity) |
-| History | `historyDays` | `feat.history` {dias}=7 | `feat.history` {dias}=90 | `feat.historyYear` (365) |
+| History | `historyDays` | `feat.history` {dias}=7 | `feat.history` {dias}=30 | same as Pro (30), not repeated |
 | Storage | `storageMB` → `500 MB` / `5 GB` / `50 GB` (≥1000 → GB, decimal like the caps) | `feat.storage` | `feat.storage` | `feat.storage` |
 | Cancel | – | – | `feat.cancel` | (inherited via "Todo lo de Pro") |
 VIP renders only what's **above** Pro (header "Todo lo de Pro, más:").
@@ -301,7 +301,6 @@ VIP renders only what's **above** Pro (header "Todo lo de Pro, más:").
 | `streams` | Clips de hasta {n} transmisiones en vivo al mes | Clip up to {n} live streams a month |
 | `streamsUnlimited` | Clips de transmisiones en vivo sin límite al mes | Unlimited live streams to clip |
 | `history` | Tus resultados se guardan {dias} días | {dias} days of history |
-| `historyYear` | Tus resultados se guardan 1 año | A full year of history |
 | `storage` | {espacio} para tus videos y archivos | {espacio} of storage |
 | `cancel` | Cancela en 1 clic, sin llamadas | Cancel online anytime, no calls |
 | `notIncluded` (sr-only, existing `plans.notIncluded`) | No incluye | Not included |
@@ -364,7 +363,7 @@ To ship USD: the strings need `{moneda}` instead of the literal "MXN" in both lo
 | `tests/i18n-parity.test.ts` | New keys in both files; placeholders `{ahorro}`, `{monto}`, `{dias_prueba}`, `{dias_aviso}`, `{n}`, `{dias}`, `{espacio}` match. |
 | `tests/customer-copy.test.ts` | Passes (no "token" / "tier" / "engine"). |
 | **NEW** `tests/plan-cards.test.ts` | (1) `trialOffered=false` ⇒ rendered output has none of `plans.trialChip`, `trialFootnote`, `pro.cta`, `pro.note`. (2) interval `month` ⇒ no chip, CTA `ctaMonth`. (3) `intervals=['month']` ⇒ no toggle, no "al año". (4) Pro big number is `planPrice('pro_year')` with "MXN al año" when yearly. (5) no "equivale" on cards. |
-| **NEW** `tests/plan-features.test.ts` | Bullets match `TIER_CAPS` (7/90/365, 500 MB / 5 GB / 50 GB, SD/HD/4K, watermark only on FREE, 0/12/∞), and `clipsTry` is hidden when `FREE_INCLUDES_CLIPS=false`. |
+| **NEW** `tests/plan-features.test.ts` | Bullets match `TIER_CAPS` (7/30/30, 500 MB / 5 GB / 50 GB, SD/HD/4K, watermark only on FREE, 0/12/∞), and `clipsTry` is hidden when `FREE_INCLUDES_CLIPS=false`. |
 | e2e (if present) | Selectors on `.pub-pl*` / `.ch-plancard` → `.ch-pc*` / `data-testid`. |
 
 ---

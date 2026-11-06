@@ -160,7 +160,9 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     sourceMinutesPerMonth: 3_000,
     maxConcurrentJobs: 2,
     boost: 'paid',
-    historyDays: 90,
+    // Owner 2026-11-05: paid plans keep results 30 days, the media bucket's delete
+    // age (media_retention_days, infra/terraform). Raise both together.
+    historyDays: 30,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: false,
     hasEarlyAccess: false,
@@ -169,7 +171,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     // export, one brand kit. Auto-publish stays a VIP-only perk. Out of tokens
     // before month end → prompted to buy a top-up pack (TOKEN_PACKS).
     clipWatermark: false,
-    clipVodRetentionDays: 90,
+    clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
@@ -198,13 +200,13 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     sourceMinutesPerMonth: 3_000,
     maxConcurrentJobs: 2,
     boost: 'paid',
-    historyDays: 180,
+    historyDays: 30,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
     hasEarlyAccess: true,
     community: 'premium',
     clipWatermark: false,
-    clipVodRetentionDays: 90,
+    clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
@@ -228,13 +230,13 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     sourceMinutesPerMonth: 12_000,
     maxConcurrentJobs: 4,
     boost: 'included',
-    historyDays: 365,
+    historyDays: 30,
     hasAdvancedAnalytics: true,
     hasPrioritySupport: true,
     hasEarlyAccess: true,
     community: 'premium',
     clipWatermark: false,
-    clipVodRetentionDays: 365,
+    clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity,
     clipExportMaxQuality: '4k',
     clipAutoPublish: true,

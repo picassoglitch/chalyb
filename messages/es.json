@@ -446,7 +446,6 @@
       "tokens": "Créditos al mes",
       "storage": "Almacenamiento",
       "history": "Historial",
-      "historyYear": "1 año+",
       "historyDays": "{days} días",
       "support": "Soporte",
       "supportPriority": "Prioritario",
@@ -1120,7 +1119,6 @@
       "streams": "Clips de hasta {n} transmisiones en vivo al mes",
       "streamsUnlimited": "Clips de transmisiones en vivo sin límite al mes",
       "history": "Tus resultados se guardan {dias} días",
-      "historyYear": "Tus resultados se guardan 1 año",
       "storage": "{espacio} para tus videos y archivos",
       "cancel": "Cancela en 1 clic, sin llamadas"
     },
