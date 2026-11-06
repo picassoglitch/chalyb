@@ -5,8 +5,8 @@ Read-only audit of launch readiness against `origin/main` at `6e5de88`. Ranked b
 | # | Finding | Rank | Status |
 |---|---|---|---|
 | 1 | Mercado Pago: no recorded end-to-end test-user sign-off | Blocker | Done |
-| 2 | Conversions: only trial conversions are tracked | Blocker | Fix in progress |
-| 3 | Media retention shorter than the plan cards promise | Blocker | Fix in progress |
+| 2 | Conversions: only trial conversions are tracked | Blocker | Done |
+| 3 | Media retention shorter than the plan cards promise | Blocker | Done |
 | 4 | Database: no backups, no PITR, no restore runbook | Blocker | Accepted risk |
 | 5 | Terraform state is local only | Should fix | Done |
 | 6 | Clips and En vivo: mock e2e only; relay disk has no snapshots | Should fix | Open |
@@ -30,7 +30,7 @@ The audit found no recorded sign-off in the repo: the Results table in `docs/inf
 - Direct paid starts and credit packs emit nothing.
 - There is no ad pixel and no Conversions API (CAPI).
 
-**Status:** fix in progress in its own PR ("count every first payment"). The owner deferred ad attribution.
+**Status: Done (2026-11-06).** PR #146 counts every first payment as a conversion. The owner deferred ad attribution.
 
 ### 3. Media retention shorter than promised
 
@@ -39,7 +39,7 @@ The audit found no recorded sign-off in the repo: the Results table in `docs/inf
   - `historyDays`: PRO 90, VIP 365. The plan cards show it through `src/lib/billing/plan-features.ts`.
   - `clipVodRetentionDays` (the ChalyClip VOD promise): PRO 90, PARTNER 90, VIP 365.
 
-**Status:** the owner chose to change the promise to 30 days. PR in progress.
+**Status: Done (2026-11-06).** The owner chose to change the promise to 30 days. PR #145 made that change.
 
 ### 4. Database: no backups (accepted risk)
 
