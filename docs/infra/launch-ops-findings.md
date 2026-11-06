@@ -8,7 +8,7 @@ Read-only audit of launch readiness against `origin/main` at `6e5de88`. Ranked b
 | 2 | Conversions: only trial conversions are tracked | Blocker | Fix in progress |
 | 3 | Media retention shorter than the plan cards promise | Blocker | Fix in progress |
 | 4 | Database: no backups, no PITR, no restore runbook | Blocker | Accepted risk |
-| 5 | Terraform state is local only | Should fix | Owner action |
+| 5 | Terraform state is local only | Should fix | Done |
 | 6 | Clips and En vivo: mock e2e only; relay disk has no snapshots | Should fix | Open |
 | 7 | Monitoring: readiness check, cron secret and schedulers | Should fix | Won't do |
 
@@ -51,6 +51,8 @@ The audit found no recorded sign-off in the repo: the Results table in `docs/inf
 ## Should fix
 
 ### 5. Terraform state is local only
+
+**Status: Done (2026-11-06).** State migrated to `gs://chalyb-tfstate/prod` (145 entries), with public-access prevention on. The local copies were removed from `infra/terraform/`, and a backup is kept outside the repo. PR #149 enables the `backend "gcs"` block. The audit notes below are kept as the record.
 
 - State for 81 resources (per the audit) lives on one machine, with secrets in plaintext.
 - The `backend "gcs"` block in `infra/terraform/versions.tf` (lines 20–23) is commented out.
