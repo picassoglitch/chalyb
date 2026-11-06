@@ -10,10 +10,13 @@ import { X } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/routing';
 import { Sheet } from './sheet';
 
+const FREE_TEXT = 'input[type="text"], input[type="url"], input[type="number"], input:not([type]), textarea';
+
 export function WizardClose({ label, href = '/app' }: { label: string; href?: string }) {
   const t = useTranslations('wizard');
   const [confirmTitle, leaveLabel, stayLabel] = [t('unsaved'), t('leave'), t('stay')];
-  const dirty = useRef(false);
+  // null until a free-text input or submit is seen; typing before hydration has no listener yet.
+  const dirty = useRef<boolean | null>(null);
   const [asking, setAsking] = useState(false);
   const router = useRouter();
 
@@ -23,8 +26,7 @@ export function WizardClose({ label, href = '/app' }: { label: string; href?: st
     const mark = (e: Event) => {
       const el = e.target as HTMLElement;
       // Free-text input counts; radio/checkbox choices are easy to redo.
-      if (el.matches('input[type="text"], input[type="url"], input[type="number"], input:not([type]), textarea'))
-        dirty.current = true;
+      if (el.matches(FREE_TEXT)) dirty.current = true;
     };
     const clean = () => {
       dirty.current = false;
@@ -44,7 +46,7 @@ export function WizardClose({ label, href = '/app' }: { label: string; href?: st
         className="ch-close"
         aria-label={label}
         onClick={(e) => {
-          if (!dirty.current) return;
+          if (!(dirty.current ?? typedBeforeHydration())) return;
           e.preventDefault();
           setAsking(true);
         }}
@@ -63,4 +65,12 @@ export function WizardClose({ label, href = '/app' }: { label: string; href?: st
       </Sheet>
     </>
   );
+}
+
+// Differs from the server-rendered default: typed before hydration, or set without an input event.
+function typedBeforeHydration() {
+  const fields = document
+    .getElementById('main')
+    ?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(FREE_TEXT);
+  return [...(fields ?? [])].some((f) => f.value !== f.defaultValue);
 }
