@@ -79,7 +79,7 @@ const phone = `<!doctype html><html><head><meta charset="utf-8">${BASE}<style>
   .k { font-size: 4.8px; font-weight: 800; letter-spacing: .06em; }
   .n { font-size: 7px; font-weight: 700; } .x { font-size: 5.5px; color: #6e6e73; }
   .lt { font-size: 7px; font-weight: 700; margin: 9px 0 5px; }
-  .last { position: relative; height: 196px; border-radius: 9px; background: url(${img('clip-hero')}) center 30% / cover; overflow: hidden; }
+  .last { position: relative; height: 196px; border-radius: 9px; background: url(${img('clip-hero')}) center 80% / cover; overflow: hidden; }
   .last::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, #000b); }
   .last p { position: absolute; left: 7px; bottom: 6px; color: #fff; z-index: 1; font-size: 7px; font-weight: 700; }
   .last span { display: block; font-size: 5.5px; font-weight: 500; opacity: .85; }

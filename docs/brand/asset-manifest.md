@@ -41,8 +41,34 @@ replaces the derived assets in place — the paths and sizes do not move.
 
 | File | Source |
 | --- | --- |
-| `public/landing/clip-{1..6}.webp`, `clip-hero.webp`, `tool-envivo.webp` | Gemini `gemini-2.5-flash-image`, 2026-11-03 (owner asked for Magnific; its credits were at 42, owner chose Gemini). Prompts: excited Latin American streamers/YouTubers per clip title (win celebration, shocked reaction, final play, reading chat, friends laughing, tip to camera, close-up shock; En vivo: creator waving at his camera going live), shot like a real webcam/phone frame, no logos, no text. Clips cropped to 540×968, En vivo to 960×480. |
-| `public/landing/hero-{laptop,phone}.webp`, `paso-{1,2,3}.webp` | `scripts/render-hero-shots.mjs` (HTML + the stills above), 2026-11-03. |
+| `public/landing/clip-{1..6}.webp`, `clip-hero.webp`, `tool-envivo.webp` | Gemini `gemini-3-pro-image` (1K output), generated 2026-11-04, hero regenerated and approved 2026-11-05. About $0.13 per image. Prompts: `docs/brand/landing-prompts/<name>.txt`, one per file, each complete as sent. Regenerate with `node scripts/gen-landing-image.mjs docs/brand/landing-prompts/<name>.txt <out.png> <aspect>` (9:16 for clips and the hero, 21:9 for En vivo). Clips cover-resized to 540×968; the hero cropped to the source box 502×900 at (212, 60) to drop the foreground lamp and monitor, then to 540×968; En vivo center-cropped to 960×480. webp quality 82. |
+| `public/landing/hero-{laptop,phone}.webp`, `paso-{1,2,3}.webp` | `scripts/render-hero-shots.mjs` (HTML + the stills above), re-rendered 2026-11-05. |
+
+To rebuild the shipped files from fresh PNGs in `$SRC` (the webps, then the composites):
+
+```bash
+for n in clip-1 clip-2 clip-3 clip-4 clip-5 clip-6 clip-hero tool-envivo; do
+  ar=9:16; [ $n = tool-envivo ] && ar=21:9
+  node scripts/gen-landing-image.mjs docs/brand/landing-prompts/$n.txt "$SRC/$n.png" $ar
+done
+node --input-type=module -e "
+import { createRequire } from 'node:module';
+const sharp = createRequire(createRequire(process.cwd() + '/').resolve('next/package.json'))('sharp');
+const S = process.env.SRC, O = 'public/landing/', q = { quality: 82 };
+for (let i = 1; i <= 6; i++) await sharp(S + '/clip-' + i + '.png').resize(540, 968).webp(q).toFile(O + 'clip-' + i + '.webp');
+await sharp(S + '/clip-hero.png').extract({ left: 212, top: 60, width: 502, height: 900 }).resize(540, 968).webp(q).toFile(O + 'clip-hero.webp');
+await sharp(S + '/tool-envivo.png').resize(960, 480).webp(q).toFile(O + 'tool-envivo.webp');
+"
+node scripts/render-hero-shots.mjs
+```
+
+A new generation is a new picture: the hero crop box fits the approved 2026-11-05
+image only, so look at a regenerated hero and move the box before committing.
+
+These replace the 2026-11-03 set (`gemini-2.5-flash-image`), which the owner
+rejected on 2026-11-04 because it looked AI-made and low quality. The new
+prompts ask for ordinary people, uneven home lighting and webcam/phone camera
+artifacts instead of a polished render.
 
 ## Read this before drawing anything
 
