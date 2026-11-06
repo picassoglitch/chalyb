@@ -6,7 +6,7 @@
 
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Check, Coins, CreditCard, FileText, Gift, MessageCircle, Star } from 'lucide-react';
+import { Check, Coins, FileText, Gift, MessageCircle, Star } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { annualMath, floorToPeso, pct, planHasTrial, planPrice, PRICING } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
@@ -154,13 +154,6 @@ export async function FreePlan({
             ) : (
               <Row icon={<Coins />} iconColor="#FF9F0A" title={tm('credits')} href="/app/usage" />
             )}
-            <Row
-              icon={<CreditCard />}
-              iconColor="#34C759"
-              title={tm('method')}
-              detail={t('method.sub')}
-              value={t('method.value')}
-            />
             <Row
               icon={<FileText />}
               iconColor="#8E8E93"
