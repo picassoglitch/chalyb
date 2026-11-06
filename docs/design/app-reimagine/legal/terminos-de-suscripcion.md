@@ -108,7 +108,7 @@ Además, si tienes un plan mensual, una vez al año te enviaremos un recordatori
 | 6 | **$831 MXN** | 50% |
 | 7 y siguientes | **$664 MXN** | 60% |
 
-Cada mes el precio baja un 10% **del monto del mes 1** ($166.20), sin pasar de 60%. Los montos se **redondean hacia abajo al peso entero**, por lo que el descuento real es igual o un poco mayor al indicado. Del mes 1 al mes 4 pagas más que en Pro mensual ($1,099 MXN); desde el mes 6 pagas menos.
+Cada mes el precio baja un 10% **del monto del mes 1** ($166.20), sin pasar de 60%. Los montos se **redondean hacia abajo al peso entero**, por lo que el descuento real es igual o un poco mayor al indicado. Del mes 1 al mes 4 pagas más que en Pro mensual ($1,099 MXN); desde el mes 5 pagas menos.
 
 4 bis.2. **Cobro de hoy y renovación.** Al contratar se cobra **hoy** el mes 1 ($1,662 MXN). Después, la suscripción **se renueva automáticamente cada mes**, en la misma fecha, por el monto del calendario que corresponda, **hasta que canceles**. Antes de pagar te mostramos el calendario completo con las fechas de cada cobro. **Pro Lealtad no tiene prueba gratis.**
 

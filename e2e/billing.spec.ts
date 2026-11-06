@@ -134,7 +134,8 @@ test.describe('Mi plan as cancelled', () => {
 
 test.describe('banners', () => {
   for (const [role, text] of [
-    ['trial', /Prueba Pro gratis · El .* se cobrarán \$10,990 MXN/],
+    // The mock trial agreed to the 2026-10-03 yearly price; it is charged that.
+    ['trial', /Prueba Pro gratis · El .* se cobrarán \$9,970 MXN/],
     ['past_due', /No pudimos cobrar tu plan/],
     ['pro_annual', /se renueva el/],
   ] as [Role, RegExp][]) {

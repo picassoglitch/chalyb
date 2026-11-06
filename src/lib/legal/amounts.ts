@@ -7,7 +7,7 @@
 //
 // An amount that matches no role fails the archive step: the legal text
 // can't promise a number the code doesn't charge. An amount that matches
-// two roles today (Pro mensual and Lealtad month 5 are both $997) is never
+// two roles (Pro mensual and Lealtad month 5 were both $997 until 2026-11-06) is never
 // guessed: registry.json lists, per version, the role of each of its
 // occurrences in order (`amountRoles`), and the archive step fails while
 // one is missing or the count doesn't match.

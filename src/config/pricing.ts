@@ -235,6 +235,9 @@ export function togglePct(tiers: readonly ('pro' | 'vip')[] = ['pro', 'vip']): n
 export const GRANDFATHERED_CENTS = {
   PRO: [74_900, 86_884, 99_700],
   VIP: [249_900, 289_884, 379_900],
+  /** Yearly plans sold at the 2026-10-03 prices ($9,970 / $36,325). */
+  PRO_YEAR: [997_000],
+  VIP_YEAR: [3_632_500],
   /** The old pack amounts, for checkouts started before a change. */
   packs: {
     tokens_100k: [14_900, 17_284],
@@ -246,15 +249,21 @@ export const GRANDFATHERED_CENTS = {
 /** Whether a subscriber renews at an old amount (they pay less than the
  *  reference, so it is never shown to them). */
 export function isGrandfatheredAmount(cents: number | null | undefined): boolean {
-  const old: readonly number[] = [...GRANDFATHERED_CENTS.PRO, ...GRANDFATHERED_CENTS.VIP];
+  const old: readonly number[] = [
+    ...GRANDFATHERED_CENTS.PRO,
+    ...GRANDFATHERED_CENTS.VIP,
+    ...GRANDFATHERED_CENTS.PRO_YEAR,
+    ...GRANDFATHERED_CENTS.VIP_YEAR,
+  ];
   return typeof cents === 'number' && old.includes(cents);
 }
 
 /** Earlier amounts a renewal of this plan may still charge. Yearly plans
- *  were never sold at another price, so they accept only their total. */
+ *  accept only their own old totals, never a monthly amount. */
 export function grandfatheredFor(key: PlanKey): readonly number[] {
   const p = planPrice(key);
-  return p.interval === 'year' ? [] : GRANDFATHERED_CENTS[p.tier];
+  if (p.interval === 'year') return GRANDFATHERED_CENTS[`${p.tier}_YEAR`];
+  return GRANDFATHERED_CENTS[p.tier];
 }
 
 // ── Reference price (Law §16.5, behind SHOW_REFERENCE_PRICE) ────────────────

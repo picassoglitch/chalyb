@@ -1146,7 +1146,7 @@
       "yearMonthlySub": "12 × {monto}",
       "yearAnnual": "Pro anual, 1 año",
       "cheapest": "Lo más barato el 1.er año",
-      "compare": "Del mes 1 al 4 pagas más que en Pro mensual ({pm}); desde el mes 6 pagas menos. En el primer año, Pro anual ({pa}) es lo más barato. Segundo año, si sigues: Pro Lealtad {l2} · Pro anual {pa} · Pro mensual {pm12}.",
+      "compare": "Del mes 1 al 4 pagas más que en Pro mensual ({pm}); desde el mes 5 pagas menos. En el primer año, Pro anual ({pa}) es lo más barato. Segundo año, si sigues: Pro Lealtad {l2} · Pro anual {pa} · Pro mensual {pm12}.",
       "cta": "Pagar {m1} y empezar Pro Lealtad",
       "ctaContinue": "Continuar con Pro Lealtad",
       "notOthers": "Gratis y VIP no tienen Pro Lealtad:",

@@ -56,7 +56,7 @@ test('price gate: vip_year accepts exactly its total, never a VIP monthly (grand
     label: 'plan vip_year',
   };
   assert.ok(checkCharge(expected, { amountMajor: 40_310, currency: 'MXN' }).ok);
-  for (const old of [2499, 2898.84, 3799, 4199, 36_325]) {
+  for (const old of [2499, 2898.84, 3799, 4199]) {
     assert.equal(
       checkCharge(expected, { amountMajor: old, currency: 'MXN' }).ok,
       false,

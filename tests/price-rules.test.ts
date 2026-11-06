@@ -108,7 +108,8 @@ test('Mercado Pago charges the same totals the cards show', () => {
 test('grandfathered amounts are hard-coded, not derived from the prices', () => {
   assert.deepEqual(GRANDFATHERED_CENTS.PRO, [74_900, 86_884, 99_700]);
   assert.deepEqual(GRANDFATHERED_CENTS.VIP, [249_900, 289_884, 379_900]);
-  assert.deepEqual(grandfatheredFor('pro_year'), []);
+  assert.deepEqual(grandfatheredFor('pro_year'), [997_000]);
+  assert.deepEqual(grandfatheredFor('vip_year'), [3_632_500]);
   assert.deepEqual(grandfatheredFor('pro_month'), [74_900, 86_884, 99_700]);
   assert.deepEqual(grandfatheredFor('vip_month'), [249_900, 289_884, 379_900]);
 });
@@ -131,8 +132,8 @@ test('the price gate: today’s totals, existing renewals, nothing else', () => 
     label: 'plan pro_year',
   };
   assert.ok(checkCharge(yearly, { amountMajor: 10990, currency: 'MXN' }).ok);
-  // No yearly plan was ever sold at $9,970 and renewed: yearly accepts only today's total.
-  assert.equal(checkCharge(yearly, { amountMajor: 9970, currency: 'MXN' }).ok, false);
+  // A yearly trial started at the 2026-10-03 price still charges what it agreed to.
+  assert.ok(checkCharge(yearly, { amountMajor: 9970, currency: 'MXN' }).ok);
   assert.equal(checkCharge(yearly, { amountMajor: 749, currency: 'MXN' }).ok, false);
   assert.equal(checkCharge(yearly, { amountMajor: 8688.4, currency: 'MXN' }).ok, false);
   const pack = expectedChargeForPack('tokens_100k', PACK_CENTS.tokens_100k)!;
