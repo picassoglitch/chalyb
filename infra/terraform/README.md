@@ -119,14 +119,16 @@ build and DNS, in order. The bootstrap below is step 2 of it.
 ## Bootstrap
 
 State must not live on a laptop — that is the failure mode that caused this
-migration. Create the state bucket first, then uncomment the `backend "gcs"`
-block in `versions.tf`:
+migration. State is in `gs://chalyb-tfstate/prod/` (moved there on
+2026-11-06; versioned, public access prevented). For a new project, create the
+bucket before `terraform init`:
 
 ```sh
 gcloud storage buckets create gs://chalyb-tfstate \
   --project=chalyb --location=us-central1 \
   --uniform-bucket-level-access
 gcloud storage buckets update gs://chalyb-tfstate --versioning
+gcloud storage buckets update gs://chalyb-tfstate --public-access-prevention
 ```
 
 Then:
