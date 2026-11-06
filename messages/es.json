@@ -963,7 +963,7 @@
       "proMonthBig": "{monto} MXN al mes",
       "monthLine": "{monto} MXN al mes · se renueva cada mes",
       "tax": "Precios en MXN, IVA incluido.",
-      "free": "Sin tarjeta · Para siempre",
+      "free": "Para siempre",
       "ref": {
         "wasSr": "Precio anterior:",
         "labelA1": "Precio anterior en <b>{sitio}</b> hasta el <b>{fecha}</b>. Aquí pagas {pct}% menos.",
@@ -1298,7 +1298,7 @@
     "pastDueBody": "Actualiza tu tarjeta antes del {fecha} para no perder {plan}.",
     "updateCard": "Actualizar tarjeta",
     "changeCta": "Cambiar plan",
-    "freeBody": "Sin tarjeta · Para siempre",
+    "freeBody": "Para siempre",
     "freeCta": "Ver planes",
     "next": {
       "title": "Próximo cobro",
@@ -2215,10 +2215,6 @@
     "credits": {
       "used": "Usaste {usados} de {total}",
       "link": "Ver mis créditos ›"
-    },
-    "method": {
-      "value": "Sin tarjeta",
-      "sub": "No la necesitas"
     },
     "other": "Otros planes",
     "vip": {

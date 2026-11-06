@@ -963,7 +963,7 @@
       "proMonthBig": "{monto} MXN a month",
       "monthLine": "{monto} MXN a month · renews every month",
       "tax": "Prices in MXN, IVA (VAT) included.",
-      "free": "No card needed · Free forever",
+      "free": "Free forever",
       "ref": {
         "wasSr": "Previous price:",
         "labelA1": "Previous price on <b>{sitio}</b> until <b>{fecha}</b>. Here you pay {pct}% less.",
@@ -1298,7 +1298,7 @@
     "pastDueBody": "Update your card before {fecha} to keep {plan}.",
     "updateCard": "Update card",
     "changeCta": "Change plan",
-    "freeBody": "No card · Forever",
+    "freeBody": "Forever",
     "freeCta": "See plans",
     "next": {
       "title": "Next charge",
@@ -2215,10 +2215,6 @@
     "credits": {
       "used": "You used {usados} of {total}",
       "link": "See my credits ›"
-    },
-    "method": {
-      "value": "No card",
-      "sub": "You don’t need one"
     },
     "other": "Other plans",
     "vip": {
