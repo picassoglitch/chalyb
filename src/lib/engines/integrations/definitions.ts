@@ -25,7 +25,7 @@ export const ENGINE_INTEGRATIONS: EngineIntegration[] = [
 
   createEngineIntegration({
     slug: 'chalybobs',
-    displayName: 'ChalyOBS',
+    displayName: 'En vivo',
     // No postSsoPath: ChalyOBS's own /auth/sso picks the landing route.
   }),
 

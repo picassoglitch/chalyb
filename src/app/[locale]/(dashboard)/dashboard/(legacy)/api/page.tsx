@@ -37,7 +37,7 @@ const INTEGRATIONS: Array<{ name: string; detail: string; envKeys: string[][] }>
     envKeys: [['CHALYBCRYPTO_ADMIN_TOKEN'], ['CHALYBCRYPTO_SSO_SECRET']],
   },
   {
-    name: 'ChalyOBS',
+    name: 'En vivo',
     detail: 'engine · SSO + admin API',
     envKeys: [['CHALYBOBS_ADMIN_TOKEN'], ['CHALYBOBS_SSO_SECRET']],
   },

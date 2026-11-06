@@ -25,7 +25,7 @@ export default async function StreamsPage({ params }: { params: Promise<{ locale
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">En vivo ahora</div>
           <div className="cc-mod-stat-v gr">{live.length}</div>
-          <div className="cc-mod-stat-sub">{streams.length} sesiones de ChalyOBS en total</div>
+          <div className="cc-mod-stat-sub">{streams.length} sesiones de En vivo en total</div>
         </div>
         <div className="cc-mod-stat">
           <div className="cc-mod-stat-l">Destinos activos</div>
@@ -54,7 +54,7 @@ export default async function StreamsPage({ params }: { params: Promise<{ locale
               fontSize: 13,
             }}
           >
-            Todavía nadie ha creado una sesión de ChalyOBS.
+            Todavía nadie ha creado una sesión de En vivo.
           </div>
         ) : (
           <div className="cc-mod-grid cc-mod-grid-2">
