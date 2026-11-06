@@ -12,6 +12,7 @@ import { grantTokenPack } from '@/lib/usage/tokens';
 import { getTokenPack, type PackTotals } from './pricing';
 import { acceptedPackCents, loadPricedPacks } from './pack-prices';
 import { checkCharge, expectedChargeForPack } from './webhook-verify';
+import { trackPackSettled } from '@/lib/analytics/conversion';
 
 const MINUTE = 60 * 1000;
 const DAY = 24 * 60 * MINUTE;
@@ -108,6 +109,9 @@ export async function reconcilePackGrants(now: Date): Promise<{ granted: number;
     }
     if (!r.alreadyGranted) {
       granted += 1;
+      if (row.pack_id && row.amount_cents) {
+        trackPackSettled({ packId: row.pack_id, amountCents: row.amount_cents });
+      }
       await notify({
         severity: 'warning',
         title: `Pack acreditado por la conciliación — ${tokens.toLocaleString('es-MX')} tokens`,

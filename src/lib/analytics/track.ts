@@ -1,6 +1,6 @@
 // Funnel events (rebuild prompt §6.5), behind one tiny provider-agnostic
 // wrapper. Server-side, where the truth is: trial_start on the authorized
-// preapproval, conversion on the first approved charge after a trial,
+// preapproval, conversion on a first subscription charge or a pack (conversion.ts),
 // payment_failed on a rejected charge, cancel on a successful cancel.
 //
 // NO PII in props: never an email, name, card or user id.
