@@ -4,23 +4,25 @@ Read-only audit of launch readiness against `origin/main` at `6e5de88`. Ranked b
 
 | # | Finding | Rank | Status |
 |---|---|---|---|
-| 1 | Mercado Pago: no recorded end-to-end test-user sign-off | Blocker | Open |
+| 1 | Mercado Pago: no recorded end-to-end test-user sign-off | Blocker | Done |
 | 2 | Conversions: only trial conversions are tracked | Blocker | Fix in progress |
 | 3 | Media retention shorter than the plan cards promise | Blocker | Fix in progress |
 | 4 | Database: no backups, no PITR, no restore runbook | Blocker | Accepted risk |
 | 5 | Terraform state is local only | Should fix | Owner action |
 | 6 | Clips and En vivo: mock e2e only; relay disk has no snapshots | Should fix | Open |
-| 7 | Monitoring: readiness check, cron secret and schedulers | Should fix | Partly in progress |
+| 7 | Monitoring: readiness check, cron secret and schedulers | Should fix | Won't do |
 
 ## Blockers
 
-### 1. Mercado Pago: no recorded end-to-end sign-off
+### 1. Mercado Pago: end-to-end sign-off
 
-- The results table in `docs/infra/launch-runbook.md` §5 ("Results", T1–T3 and S1–S7) is empty.
-- No automated test calls the real Mercado Pago API. `tests/mp-integration.test.ts` is unit-only, and CI (`.github/workflows/ci.yml`) runs `scripts/e2e-mock.sh`.
-- This does not mean payments were never tested. It means no sign-off is recorded.
+**Status: Done (2026-11-06).** The owner showed the Mercado Pago dashboard:
 
-**Next step:** on a Preview, run `docs/infra/launch-runbook.md` §5 (test-user setup per `docs/payments/mercadopago.md` §5) and fill in its Results table. Then make one real Pro charge in production and cancel it.
+- Checkout Pro integration 100% complete: create order, notifications, test, go to production.
+- Integration quality score 96/100.
+- The owner tested the flow with Mercado Pago test accounts.
+
+The audit found no recorded sign-off in the repo: the Results table in `docs/infra/launch-runbook.md` §5 was empty, and no automated test calls the real Mercado Pago API. The dashboard evidence above is the sign-off.
 
 ### 2. Conversions: only trial conversions are tracked
 
@@ -74,11 +76,7 @@ Read-only audit of launch readiness against `origin/main` at `6e5de88`. Ranked b
 
 ### 7. Monitoring
 
-- PR #142 adds `/api/ready`.
-- Still needed:
-  - `CRON_SECRET` set in Vercel production.
-  - An external monitor on `/api/ready` every 60 s.
-  - A scheduler for `/api/cron/tools-health` (every 60 s, not in `vercel.json`; see `docs/infra/launch-runbook.md` §3). On Vercel Pro, a per-minute cron in `vercel.json` is also an option.
+**Status: Won't do. Owner decision (2026-11-06):** monitoring comes from the providers' own tools. The site gets no new health or readiness endpoints for it. PR #142 (`/api/ready`) was closed without merging.
 
 ## Fine
 
