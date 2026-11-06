@@ -292,8 +292,12 @@ resource "google_cloud_run_v2_service" "engine" {
   lifecycle {
     # Deploys push images through Cloud Build; without this the next apply
     # would roll the service back to the image pinned in config.
+    # Revision labels are bumped by hand to force a restart (secret rotation,
+    # pooler switch); service-level scaling is read back from the API.
     ignore_changes = [
       template[0].containers[0].image,
+      template[0].labels,
+      scaling,
       client,
       client_version,
     ]
@@ -392,8 +396,12 @@ resource "google_cloud_run_v2_service" "worker" {
   }
 
   lifecycle {
+    # Revision labels are bumped by hand to force a restart (secret rotation,
+    # pooler switch); service-level scaling is read back from the API.
     ignore_changes = [
       template[0].containers[0].image,
+      template[0].labels,
+      scaling,
       client,
       client_version,
     ]
