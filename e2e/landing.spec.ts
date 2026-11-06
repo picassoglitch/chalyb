@@ -188,6 +188,78 @@ test('no Vercel analytics request before consent is accepted', async ({ page }) 
   await expect.poll(() => analytics.length).toBeGreaterThan(0);
 });
 
+test('first landing view waits for consent and is emitted once with bounded campaign props', async ({
+  page,
+}) => {
+  await page.route(ANALYTICS, (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: '' }),
+  );
+  await page.addInitScript(() => {
+    const calls: unknown[][] = [];
+    Object.assign(window, {
+      __landingAnalytics: calls,
+      va: (...args: unknown[]) => calls.push(args),
+    });
+  });
+  const views = () =>
+    page.evaluate(() => {
+      const w = window as unknown as {
+        __landingAnalytics: [string, { name?: string; data?: Record<string, unknown> }][];
+      };
+      return w.__landingAnalytics.filter(
+        ([kind, event]) => kind === 'event' && event.name === 'landing_view',
+      );
+    });
+  await page.goto(
+    '/?utm_source=launch&utm_campaign=clips-01&utm_private=secret&utm_term=person%40example.com',
+  );
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(await views()).toEqual([]);
+  await page.getByRole('dialog').getByRole('button', { name: 'Aceptar todas' }).click();
+  await expect.poll(async () => (await views()).length).toBe(1);
+  const props = (await views())[0]![1].data!;
+  expect(props.utm_source).toBe('launch');
+  expect(props.utm_campaign).toBe('clips-01');
+  expect(props).not.toHaveProperty('utm_private');
+  expect(props).not.toHaveProperty('utm_term');
+
+  // Repeated notifications and withdraw/re-accept cannot duplicate this view.
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event('chalyb:consent-changed'));
+    document.cookie = 'chalyb_consent=v1.a0.p0; Path=/; SameSite=Lax';
+    window.dispatchEvent(new Event('chalyb:consent-changed'));
+    document.cookie = 'chalyb_consent=v1.a1.p1; Path=/; SameSite=Lax';
+    window.dispatchEvent(new Event('chalyb:consent-changed'));
+  });
+  expect(await views()).toHaveLength(1);
+});
+
+test('a returning visitor landing view is queued behind beforeSend while the analytics script is inert', async ({
+  page,
+  baseURL,
+}) => {
+  // Consent already stored and the script stubbed empty, so vaq is never drained: the view waits
+  // behind beforeSend (no fragment leaks), whichever of trackClient or <Analytics /> made the queue.
+  await page.route(ANALYTICS, (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: '' }),
+  );
+  await page.context().addCookies([{ name: 'chalyb_consent', value: 'v1.a1.p1', url: baseURL! }]);
+  const queue = () =>
+    page.evaluate(() =>
+      ((window as unknown as { vaq?: [string, { name?: string }?][] }).vaq ?? []).map(
+        ([kind, event]) => (kind === 'event' ? `event:${event?.name}` : kind),
+      ),
+    );
+  await page.goto('/?utm_source=launch');
+  await expect
+    .poll(async () => (await queue()).filter((k) => k === 'event:landing_view'))
+    .toEqual(['event:landing_view']);
+  await expect(page.getByRole('dialog')).toBeHidden();
+  const kinds = await queue();
+  expect(kinds.indexOf('beforeSend')).toBeGreaterThanOrEqual(0);
+  expect(kinds.indexOf('beforeSend')).toBeLessThan(kinds.indexOf('event:landing_view'));
+});
+
 test.describe('signed in', () => {
   asRole('free');
 
