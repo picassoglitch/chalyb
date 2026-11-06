@@ -76,9 +76,9 @@ test('annual mode: the yearly charge leads, Q5 reference line, accent savings pi
   const c = proCard(input(), 'year');
   assert.equal(c.amountCents, planPrice('pro_year').totalCents);
   assert.equal(c.unit, 'year');
-  assert.equal(formatMXN(c.amountCents), '$9,970');
+  assert.equal(formatMXN(c.amountCents), '$10,990');
   assert.equal(c.monthlyRef, true);
-  assert.equal(c.saveCents, 199_400);
+  assert.equal(c.saveCents, 219_800);
   assert.equal(c.savePct, 16);
   assert.equal(c.referenceLine, false);
   assert.equal(es.billing.price.monthlyRef, 'o paga mes a mes: {monto} MXN al mes (plan mensual)');
@@ -86,7 +86,7 @@ test('annual mode: the yearly charge leads, Q5 reference line, accent savings pi
 
 test('monthly mode: no reference line to another plan, the reference/launch line, the switch link', () => {
   const c = proCard(input(), 'month');
-  assert.equal(formatMXN(c.amountCents), '$997');
+  assert.equal(formatMXN(c.amountCents), '$1,099');
   assert.equal(c.monthlyRef, false);
   assert.equal(c.saveCents, 0);
   assert.equal(c.referenceLine, true);
@@ -128,7 +128,7 @@ test('VIP: the trial for a first-time customer; "Solo plan mensual" until VIP an
   const c = vipCard(input(), 'year');
   assert.equal(c.noYear, true);
   assert.equal(c.unit, 'month');
-  assert.equal(formatMXN(c.amountCents), '$3,799');
+  assert.equal(formatMXN(c.amountCents), '$4,199');
   assert.equal(c.chip, true);
   assert.equal(c.ctaKey, 'vip.ctaTrial');
   assert.equal(c.noteKey, 'pro.noteMonth');
@@ -144,7 +144,7 @@ test('VIP: the trial for a first-time customer; "Solo plan mensual" until VIP an
     trialOffered: false,
   });
   const y = vipCard(offered, 'year');
-  assert.equal(formatMXN(y.amountCents), '$36,325');
+  assert.equal(formatMXN(y.amountCents), '$40,310');
   assert.equal(y.savePct, 20);
   assert.equal(y.ctaKey, 'vip.ctaYear');
   assert.equal(vipCard(offered, 'month').switchYear, true);

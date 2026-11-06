@@ -4,7 +4,8 @@
 //
 // - Who: a subscription renewing at a grandfathered amount below today's
 //   price for its plan (GRANDFATHERED_CENTS: the old Pro and VIP amounts).
-//   The % is per subscriber, floored (+33% for Pro's old $749).
+//   The % is per subscriber, floored (+46% for Pro's old $749). Never Pro
+//   Lealtad: its month-5 $997 is its schedule, not an old Pro price.
 // - When: EXACTLY 30 calendar days before the first renewal that is at least
 //   30 days away, computed in the subscriber's zone (not 29: Quebec; not 31:
 //   CA / NY), robust at month ends and DST. A reminder 7 days before if there
@@ -14,7 +15,7 @@
 //   (default; Términos §5.3, mockup 89) — the plan doesn't renew, the user
 //   keeps it until the period ends, then Gratis — or 'keep_old'.
 
-import { isGrandfatheredAmount, planPrice, type PlanKey } from '@/config/pricing';
+import { grandfatheredFor, planPrice, type PlanKey } from '@/config/pricing';
 
 export const NOTICE_DAYS = 30;
 export const REMINDER_DAYS = 7;
@@ -26,7 +27,7 @@ export interface Increase {
   planKey: PlanKey;
   oldCents: number;
   newCents: number;
-  /** floor((new − old) × 100 / old): +33 for $749 → $997. */
+  /** floor((new − old) × 100 / old): +46 for $749 → $1,099. */
   pct: number;
 }
 
@@ -36,7 +37,8 @@ export function increaseFor(
   planKey: PlanKey,
   chargedCents: number | null | undefined,
 ): Increase | null {
-  if (!chargedCents || !isGrandfatheredAmount(chargedCents)) return null;
+  if (planKey === 'pro_lealtad' || !chargedCents) return null;
+  if (!grandfatheredFor(planKey).includes(chargedCents)) return null;
   const newCents = planPrice(planKey).totalCents;
   if (newCents <= chargedCents) return null;
   return {

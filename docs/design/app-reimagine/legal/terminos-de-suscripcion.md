@@ -1,11 +1,11 @@
 # Términos de Suscripción, Prueba Gratis, Cobros y Reembolsos de Chalyb
 
-**Versión:** 1.0 · **Fecha de entrada en vigor:** 5 de octubre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.1 · **Fecha de entrada en vigor:** 6 de noviembre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
-> - Hay 6 opciones: **Gratis ($0)**, **Pro $997 MXN/mes**, **Pro anual $9,970 MXN/año**, **Pro Lealtad**, cuando esté disponible (empieza en $1,662 MXN el primer mes y baja cada mes hasta $664 MXN al mes desde el mes 7; sección 4 bis), **VIP $3,799 MXN/mes** y **VIP anual $36,325 MXN/año**. En México los precios son el **total a pagar, con IVA incluido**. Si pagas en dólares (USD), los impuestos que correspondan a tu ubicación se suman y te los mostramos antes de pagar.
-> - **Prueba gratis de 7 días** en cualquier plan de pago (Pro mensual, Pro anual, VIP mensual o VIP anual), solo la primera vez: hoy pagas **$0**, pero necesitas registrar una tarjeta. Si no cancelas, **al terminar la prueba se cobra automáticamente el plan que elegiste** ($997 MXN cada mes, $9,970 MXN por un año, $3,799 MXN cada mes o $36,325 MXN por un año). Te mostramos la fecha y el monto exactos antes de empezar.
+> - Hay 6 opciones: **Gratis ($0)**, **Pro $1,099 MXN/mes**, **Pro anual $10,990 MXN/año**, **Pro Lealtad**, cuando esté disponible (empieza en $1,662 MXN el primer mes y baja cada mes hasta $664 MXN al mes desde el mes 7; sección 4 bis), **VIP $4,199 MXN/mes** y **VIP anual $40,310 MXN/año**. En México los precios son el **total a pagar, con IVA incluido**. Si pagas en dólares (USD), los impuestos que correspondan a tu ubicación se suman y te los mostramos antes de pagar.
+> - **Prueba gratis de 7 días** en cualquier plan de pago (Pro mensual, Pro anual, VIP mensual o VIP anual), solo la primera vez: hoy pagas **$0**, pero necesitas registrar una tarjeta. Si no cancelas, **al terminar la prueba se cobra automáticamente el plan que elegiste** ($1,099 MXN cada mes, $10,990 MXN por un año, $4,199 MXN cada mes o $40,310 MXN por un año). Te mostramos la fecha y el monto exactos antes de empezar.
 > - **El mismo día que empiezas la prueba te enviamos un aviso de cobro** (7 días antes del primer cobro). Antes de cada renovación te avisamos **al menos 7 días antes** (planes mensuales) o **30 y 7 días antes** (planes anuales). Si no podemos avisarte con al menos 5 días de anticipación, no te cobramos.
 > - **Un aumento de precio solo se te aplica si lo aceptas.** Te avisamos 30 días antes. Si no lo aceptas, tu plan no se renueva al nuevo precio y no se te cobra.
 > - **Cancelas en 1 clic** en **Mi cuenta → Mi plan**. Sigues teniendo acceso hasta el final del periodo que ya tienes (o de la prueba) y **no se te vuelve a cobrar**.
@@ -22,11 +22,11 @@
 | Plan | Precio | Periodicidad del cobro | Créditos incluidos* |
 |---|---|---|---|
 | **Gratis** | $0 MXN | Sin cobro | 50,000 por mes |
-| **Pro** (mensual) | **$997 MXN** | Cada mes, automático | 8,000,000 por mes |
-| **Pro anual** | **$9,970 MXN** (ahorras $1,994 frente a 12 meses de Pro mensual, que suman $11,964) | Un solo cobro cada año, automático | 8,000,000 por mes |
+| **Pro** (mensual) | **$1,099 MXN** | Cada mes, automático | 8,000,000 por mes |
+| **Pro anual** | **$10,990 MXN** (ahorras $2,198 frente a 12 meses de Pro mensual, que suman $13,188) | Un solo cobro cada año, automático | 8,000,000 por mes |
 | **Pro Lealtad** (cuando esté disponible) | **$1,662 MXN el mes 1**; después $1,495 · $1,329 · $1,163 · $997 · $831 y, del mes 7 en adelante, **$664 MXN al mes** (sección 4 bis) | Cada mes, automático; el monto cambia según el calendario | 8,000,000 por mes |
-| **VIP** (mensual) | **$3,799 MXN** | Cada mes, automático | 32,000,000 por mes |
-| **VIP anual** | **$36,325 MXN** (ahorras $9,263 frente a 12 meses de VIP mensual, que suman $45,588) | Un solo cobro cada año, automático | 32,000,000 por mes |
+| **VIP** (mensual) | **$4,199 MXN** | Cada mes, automático | 32,000,000 por mes |
+| **VIP anual** | **$40,310 MXN** (ahorras $10,078 frente a 12 meses de VIP mensual, que suman $50,388) | Un solo cobro cada año, automático | 32,000,000 por mes |
 
 **Precios en dólares (USD), si se te muestran:** Pro US$50 al mes · Pro anual US$500 al año · VIP US$200 al mes · VIP anual US$2,000 al año, **más los impuestos que apliquen según tu ubicación** (sección 11).
 
@@ -47,14 +47,14 @@
 2.3. **Tarjeta obligatoria y $0 hoy.** Para activar la Prueba debes registrar una tarjeta u otro método de pago aceptado por Mercado Pago. **Hoy pagas $0.** Mercado Pago o tu banco pueden realizar una autorización temporal de verificación que no se cobra o que se libera automáticamente según las reglas de tu banco.
 
 2.4. **Elección del plan que sigue a la Prueba.** Antes de activar la Prueba eliges el plan que empezará al terminarla:
-- **Pro mensual — $997 MXN cada mes**,
-- **Pro anual — $9,970 MXN por 1 año** (un solo cobro al año),
-- **VIP mensual — $3,799 MXN cada mes**, o
-- **VIP anual — $36,325 MXN por 1 año** (un solo cobro al año).
+- **Pro mensual — $1,099 MXN cada mes**,
+- **Pro anual — $10,990 MXN por 1 año** (un solo cobro al año),
+- **VIP mensual — $4,199 MXN cada mes**, o
+- **VIP anual — $40,310 MXN por 1 año** (un solo cobro al año).
 
 Puedes cambiar tu elección en cualquier momento antes del cobro, desde **Mi cuenta → Mi plan**. Cada cambio te lo confirmamos con un nuevo aviso de cobro por el monto del plan nuevo. Si cambias tan cerca del final de la Prueba que ese aviso ya no te llegaría al menos 5 días naturales antes, **la Fecha de cobro se mueve a 5 días naturales después del nuevo aviso** y la Prueba se extiende hasta esa fecha sin costo.
 
-2.5. **Cobro automático al terminar la Prueba.** Si no cancelas, **en la fecha de fin de la Prueba** que te mostramos al activarla (el día 7, salvo lo previsto en la sección 2.4, la "**Fecha de cobro**"), haremos **un cargo automático por el monto exacto del plan elegido** ($997 MXN si elegiste Pro mensual, $9,970 MXN si elegiste Pro anual, $3,799 MXN si elegiste VIP mensual o $36,325 MXN si elegiste VIP anual) a la tarjeta registrada, y tu suscripción quedará activa y se renovará automáticamente según la sección 3.
+2.5. **Cobro automático al terminar la Prueba.** Si no cancelas, **en la fecha de fin de la Prueba** que te mostramos al activarla (el día 7, salvo lo previsto en la sección 2.4, la "**Fecha de cobro**"), haremos **un cargo automático por el monto exacto del plan elegido** ($1,099 MXN si elegiste Pro mensual, $10,990 MXN si elegiste Pro anual, $4,199 MXN si elegiste VIP mensual o $40,310 MXN si elegiste VIP anual) a la tarjeta registrada, y tu suscripción quedará activa y se renovará automáticamente según la sección 3.
 
 2.6. **Lo que verás antes de aceptar.** Antes de activar la Prueba te mostramos, de forma clara y destacada y junto al botón para aceptar: que pagas $0 hoy; la fecha de fin de la Prueba; la Fecha de cobro; el monto exacto y su periodicidad; la terminación de tu tarjeta; que el cobro se repetirá automáticamente hasta que canceles; cuándo te avisaremos; y cómo cancelar. Te pedimos tu **consentimiento expreso** para ese cobro automático mediante una casilla que tú marcas (nunca premarcada). Antes de confirmar puedes revisar y corregir tu elección.
 
@@ -83,8 +83,8 @@ Además, si tienes un plan mensual, una vez al año te enviaremos un recordatori
 ## 4. Planes anuales (Pro anual y VIP anual)
 
 4.1. **Pago por adelantado.** Los planes anuales se pagan **por adelantado en un solo cargo** y dan acceso al plan durante **12 meses**:
-- **Pro anual:** $9,970 MXN (o US$500) por año.
-- **VIP anual:** $36,325 MXN (o US$2,000) por año.
+- **Pro anual:** $10,990 MXN (o US$500) por año.
+- **VIP anual:** $40,310 MXN (o US$2,000) por año.
 
 4.2. **Renovación.** Al terminar los 12 meses, el plan anual se renueva automáticamente por otros 12 meses, con un solo cargo, al precio vigente que te hayamos informado, hasta que canceles. Te avisamos 30 y 7 días antes (sección 3.3).
 
@@ -108,7 +108,7 @@ Además, si tienes un plan mensual, una vez al año te enviaremos un recordatori
 | 6 | **$831 MXN** | 50% |
 | 7 y siguientes | **$664 MXN** | 60% |
 
-Cada mes el precio baja un 10% **del monto del mes 1** ($166.20), sin pasar de 60%. Los montos se **redondean hacia abajo al peso entero**, por lo que el descuento real es igual o un poco mayor al indicado. Del mes 1 al mes 4 pagas más que en Pro mensual ($997 MXN); desde el mes 6 pagas menos.
+Cada mes el precio baja un 10% **del monto del mes 1** ($166.20), sin pasar de 60%. Los montos se **redondean hacia abajo al peso entero**, por lo que el descuento real es igual o un poco mayor al indicado. Del mes 1 al mes 4 pagas más que en Pro mensual ($1,099 MXN); desde el mes 5 pagas menos.
 
 4 bis.2. **Cobro de hoy y renovación.** Al contratar se cobra **hoy** el mes 1 ($1,662 MXN). Después, la suscripción **se renueva automáticamente cada mes**, en la misma fecha, por el monto del calendario que corresponda, **hasta que canceles**. Antes de pagar te mostramos el calendario completo con las fechas de cada cobro. **Pro Lealtad no tiene prueba gratis.**
 
@@ -258,4 +258,4 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
-Última actualización: 5 de octubre de 2026 · Versión 1.0
+Última actualización: 6 de noviembre de 2026 · Versión 1.1

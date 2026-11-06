@@ -93,10 +93,17 @@ export function trialNoticeVars(input: {
   consentId: string | null;
   appUrl: string;
   now?: Date;
+  /** What the subscription was created to charge; a trial started before a
+   *  price change is charged its old amount. Missing → today's price. */
+  amountCents?: number | null;
 }): BillingEmailVars {
   const price = planPrice(input.planKey);
   const year = price.interval === 'year';
-  const monto = formatMXN(price.totalCents);
+  const charged =
+    typeof input.amountCents === 'number' && input.amountCents > 0
+      ? input.amountCents
+      : price.totalCents;
+  const monto = formatMXN(charged);
   return {
     nombre: input.nombre,
     plan: PLAN_NAMES[input.planKey],

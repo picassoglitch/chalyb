@@ -413,9 +413,9 @@ test('VIP upgrade: full VIP today, refund of the unused days', () => {
       now: new Date('2026-10-16T00:00:00Z'),
     }),
     {
-      chargeTodayCents: 379_900,
+      chargeTodayCents: 419_900,
       refundCents: 49_850,
-      thenCents: 379_900,
+      thenCents: 419_900,
     },
   );
   assert.equal(
@@ -523,7 +523,7 @@ test('the charge block renders Law’s examples exactly (aceptacion-ux §3.2–3
     [
       'Hoy pagas $0.',
       'Tu prueba gratis de 7 días termina el 10 de octubre de 2026.',
-      'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $9,970 MXN por 1 año de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada año ($9,970 MXN) hasta que canceles.',
+      'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $10,990 MXN por 1 año de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada año ($10,990 MXN) hasta que canceles.',
       'Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto.',
       'Cancela en 1 clic desde Mi cuenta → Mi plan, sin llamadas. Si cancelas, sigues con Pro hasta el 10 de octubre de 2026 y no se te cobra nada.',
     ].join('\n'),
@@ -533,18 +533,18 @@ test('the charge block renders Law’s examples exactly (aceptacion-ux §3.2–3
     [
       'Hoy pagas $0.',
       'Tu prueba gratis de 7 días termina el 10 de octubre de 2026.',
-      'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $997 MXN por tu primer mes de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada mes ($997 MXN) hasta que canceles.',
+      'Si no cancelas antes, el 10 de octubre de 2026 se cobrarán $1,099 MXN por tu primer mes de Pro a tu tarjeta terminación 4821, y se renovará automáticamente cada mes ($1,099 MXN) hasta que canceles.',
       'Hoy mismo te enviamos por correo el aviso de cobro con esta fecha y este monto.',
       'Cancela en 1 clic desde Mi cuenta → Mi plan, sin llamadas. Si cancelas, sigues con Pro hasta el 10 de octubre de 2026 y no se te cobra nada.',
     ].join('\n'),
   );
   assert.equal(
     stripMarkup(consentSentence(t, { planKey: 'pro_month', dates, cardLast4: null, locale: 'es' })),
-    'Acepto que, si no cancelo antes del 10 de octubre de 2026, Chalyb cobre automáticamente $997 MXN y cada mes después a mi tarjeta, y acepto los Términos de Suscripción.',
+    'Acepto que, si no cancelo antes del 10 de octubre de 2026, Chalyb cobre automáticamente $1,099 MXN y cada mes después a mi tarjeta, y acepto los Términos de Suscripción.',
   );
   assert.equal(
     stripMarkup(consentSentence(t, { planKey: 'pro_year', dates, cardLast4: null, locale: 'es' })),
-    'Acepto que, si no cancelo antes del 10 de octubre de 2026, Chalyb cobre automáticamente $9,970 MXN y cada año después a mi tarjeta, y acepto los Términos de Suscripción.',
+    'Acepto que, si no cancelo antes del 10 de octubre de 2026, Chalyb cobre automáticamente $10,990 MXN y cada año después a mi tarjeta, y acepto los Términos de Suscripción.',
   );
 });
 

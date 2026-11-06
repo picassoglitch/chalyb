@@ -1146,7 +1146,7 @@
       "yearMonthlySub": "12 × {monto}",
       "yearAnnual": "Pro yearly, 1 year",
       "cheapest": "The cheapest in year 1",
-      "compare": "From month 1 to 4 you pay more than on Pro monthly ({pm}); from month 6 you pay less. In the first year, Pro yearly ({pa}) is the cheapest. Second year, if you stay: Pro Loyalty {l2} · Pro yearly {pa} · Pro monthly {pm12}.",
+      "compare": "From month 1 to 4 you pay more than on Pro monthly ({pm}); from month 5 you pay less. In the first year, Pro yearly ({pa}) is the cheapest. Second year, if you stay: Pro Loyalty {l2} · Pro yearly {pa} · Pro monthly {pm12}.",
       "cta": "Pay {m1} and start Pro Loyalty",
       "ctaContinue": "Continue with Pro Loyalty",
       "notOthers": "Free and VIP have no Pro Loyalty:",

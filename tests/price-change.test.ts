@@ -25,14 +25,21 @@ test('who: grandfathered amounts below today’s price; % per subscriber, floore
   assert.deepEqual(increaseFor('pro_month', 74_900), {
     planKey: 'pro_month',
     oldCents: 74_900,
-    newCents: 99_700,
-    pct: 33,
+    newCents: 109_900,
+    pct: 46,
   });
-  assert.equal(increaseFor('pro_month', 86_884)!.pct, 14);
-  assert.equal(increaseFor('vip_month', 249_900)!.pct, 52);
-  assert.equal(increaseFor('vip_month', 289_884)!.pct, 31);
-  assert.equal(increaseFor('pro_month', 99_700), null, 'already at today’s price');
+  assert.equal(increaseFor('pro_month', 86_884)!.pct, 26);
+  assert.equal(increaseFor('vip_month', 249_900)!.pct, 68);
+  assert.equal(increaseFor('vip_month', 289_884)!.pct, 44);
+  assert.equal(increaseFor('vip_month', 379_900)!.pct, 10);
+  assert.equal(increaseFor('pro_year', 997_000)!.newCents, 1_099_000);
+  assert.equal(increaseFor('vip_year', 3_632_500)!.newCents, 4_031_000);
+  assert.equal(increaseFor('pro_month', 109_900), null, 'already at today’s price');
+  assert.equal(increaseFor('pro_month', 99_700)?.pct, 10, 'the 2026-10-03 price is grandfathered');
   assert.equal(increaseFor('pro_month', 12_300), null, 'not a grandfathered amount');
+  assert.equal(increaseFor('pro_lealtad', 99_700), null, 'Lealtad month 5 is its schedule');
+  assert.equal(increaseFor('pro_year', 99_700), null, 'a monthly amount never matches a yearly plan');
+  assert.equal(increaseFor('vip_month', 99_700), null, 'a Pro amount never matches VIP');
   assert.equal(increaseFor('pro_month', null), null);
 });
 

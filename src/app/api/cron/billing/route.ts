@@ -194,6 +194,7 @@ export async function GET(req: Request) {
                       consentId: (row.consent_id as string | null) ?? null,
                       appUrl: getAppUrl(),
                       now,
+                      amountCents: row.amount_cents as number | null,
                     })
                   : {
                       nombre,

@@ -19,7 +19,7 @@ test.describe('public /planes', () => {
     expect(body).not.toMatch(FORBIDDEN_PRICE);
     if (FLOW) {
       // Anual is on by default: the yearly charge leads (Law §16).
-      expect(body).toMatch(/\$9,970\s+MXN al año/);
+      expect(body).toMatch(/\$10,990\s+MXN al año/);
       await page.getByRole('radio', { name: 'Mensual' }).click();
       await expect(page.getByTestId('plan-cards')).toHaveAttribute('data-interval', 'month');
     } else {
@@ -27,7 +27,7 @@ test.describe('public /planes', () => {
       await expect(page.getByRole('radiogroup')).toHaveCount(0);
       expect(body).not.toMatch(/al año/);
     }
-    expect(body).toMatch(/\$997\s+MXN al mes|\$9,970\s+MXN al año/);
+    expect(body).toMatch(/\$1,099\s+MXN al mes|\$10,990\s+MXN al año/);
     await expectNoOverflow(page, info);
     await expectAccessible(page);
   });
@@ -134,6 +134,7 @@ test.describe('Mi plan as cancelled', () => {
 
 test.describe('banners', () => {
   for (const [role, text] of [
+    // The mock trial agreed to the 2026-10-03 yearly price; it is charged that.
     ['trial', /Prueba Pro gratis · El .* se cobrarán \$9,970 MXN/],
     ['past_due', /No pudimos cobrar tu plan/],
     ['pro_annual', /se renueva el/],

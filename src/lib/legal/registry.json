@@ -15,7 +15,7 @@
   "suscripcion": {
     "file": "terminos-de-suscripcion.md",
     "path": "/legal/subscription",
-    "current": "1.0",
+    "current": "1.1",
     "versions": {
       "1.0": {
         "published": true,
@@ -34,6 +34,14 @@
             "mxn:pro_month"
           ]
         }
+      },
+      "1.1": {
+        "published": true,
+        "effective": "2026-11-06",
+        "relevance": "minor",
+        "changes": [
+          "Nuevos precios de Pro y VIP (mensual y anual)."
+        ]
       }
     }
   },
