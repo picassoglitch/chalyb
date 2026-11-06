@@ -52,14 +52,16 @@ The audit found no recorded sign-off in the repo: the Results table in `docs/inf
 
 ### 5. Terraform state is local only
 
-**Status: Done (2026-11-06).** State migrated to `gs://chalyb-tfstate/prod` (145 entries), with public-access prevention on. The local copies were removed from `infra/terraform/`, and a backup is kept outside the repo. PR #149 enables the `backend "gcs"` block. The audit notes below are kept as the record.
+**Status: Done (2026-11-06).** State migrated to `gs://chalyb-tfstate/prod` (145 entries), with public-access prevention on. The local copies were removed from `infra/terraform/`, and a backup is kept outside the repo. PR #149 enables the `backend "gcs"` block. The notes below describe the state before the migration.
+
+**Pre-migration audit (2026-11-04/05):**
 
 - State for 81 resources (per the audit) lives on one machine, with secrets in plaintext.
 - The `backend "gcs"` block in `infra/terraform/versions.tf` (lines 20–23) is commented out.
 - `gs://chalyb-tfstate` already exists, is versioned, and is empty (per the audit).
 - An untracked, secret-bearing tfvars backup was in `infra/terraform/`. This PR adds `.gitignore` coverage for tfvars backups. The owner should still move that file out of the repo.
 
-**Migration (owner runs it, from `infra/terraform/`):**
+**Migration steps (done 2026-11-06; kept for reference, run from `infra/terraform/`):**
 
 1. Copy the local state files to a safe place outside the repo.
 2. Enable public-access prevention on the bucket:
