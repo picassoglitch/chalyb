@@ -37,20 +37,20 @@ const ROOT = fileURLToPath(new URL('../', import.meta.url));
 test('prices are IVA-included totals by default (a missing env var never adds 16%)', () => {
   delete process.env.PRICES_INCLUDE_IVA;
   assert.equal(pricesIncludeIva(), true);
-  assert.equal(planPrice('pro_month').totalCents, 99_700);
-  assert.equal(planPrice('pro_year').totalCents, 997_000);
-  assert.equal(planPrice('vip_month').totalCents, 379_900);
-  assert.equal(PRICE_CENTS.vip.year, 3_632_500);
-  assert.equal(formatMXN(planPrice('pro_month').totalCents), '$997');
-  assert.equal(formatMXN(planPrice('pro_year').totalCents), '$9,970');
-  assert.equal(formatMXN(planPrice('vip_month').totalCents), '$3,799');
-  assert.equal(formatMXN(PRICE_CENTS.vip.year), '$36,325');
+  assert.equal(planPrice('pro_month').totalCents, 109_900);
+  assert.equal(planPrice('pro_year').totalCents, 1_099_000);
+  assert.equal(planPrice('vip_month').totalCents, 419_900);
+  assert.equal(PRICE_CENTS.vip.year, 4_031_000);
+  assert.equal(formatMXN(planPrice('pro_month').totalCents), '$1,099');
+  assert.equal(formatMXN(planPrice('pro_year').totalCents), '$10,990');
+  assert.equal(formatMXN(planPrice('vip_month').totalCents), '$4,199');
+  assert.equal(formatMXN(PRICE_CENTS.vip.year), '$40,310');
 });
 
 test('PRICES_INCLUDE_IVA=false treats the amounts as list prices (what-if only)', () => {
   process.env.PRICES_INCLUDE_IVA = 'false';
   try {
-    assert.equal(planPrice('pro_month').totalCents, 115_652);
+    assert.equal(planPrice('pro_month').totalCents, 127_484);
   } finally {
     delete process.env.PRICES_INCLUDE_IVA;
   }
@@ -73,10 +73,10 @@ test('pack defaults are the owner’s totals, IVA included, whatever the plan IV
 
 test('annual math, savings and percentages (floor)', () => {
   delete process.env.PRICES_INCLUDE_IVA;
-  assert.deepEqual(annualMath('pro'), { yearVsMonthlyCents: 1_196_400, yearSavingsCents: 199_400 });
-  assert.deepEqual(annualMath('vip'), { yearVsMonthlyCents: 4_558_800, yearSavingsCents: 926_300 });
-  assert.equal(formatMXN(annualMath('pro').yearSavingsCents), '$1,994');
-  assert.equal(formatMXN(annualMath('vip').yearSavingsCents), '$9,263');
+  assert.deepEqual(annualMath('pro'), { yearVsMonthlyCents: 1_318_800, yearSavingsCents: 219_800 });
+  assert.deepEqual(annualMath('vip'), { yearVsMonthlyCents: 5_038_800, yearSavingsCents: 1_007_800 });
+  assert.equal(formatMXN(annualMath('pro').yearSavingsCents), '$2,198');
+  assert.equal(formatMXN(annualMath('vip').yearSavingsCents), '$10,078');
   assert.equal(pct('pro'), 16);
   assert.equal(pct('vip'), 20);
   assert.equal(togglePct(), 20);
@@ -106,22 +106,22 @@ test('Mercado Pago charges the same totals the cards show', () => {
 });
 
 test('grandfathered amounts are hard-coded, not derived from the prices', () => {
-  assert.deepEqual(GRANDFATHERED_CENTS.PRO, [74_900, 86_884]);
-  assert.deepEqual(GRANDFATHERED_CENTS.VIP, [249_900, 289_884]);
+  assert.deepEqual(GRANDFATHERED_CENTS.PRO, [74_900, 86_884, 99_700]);
+  assert.deepEqual(GRANDFATHERED_CENTS.VIP, [249_900, 289_884, 379_900]);
   assert.deepEqual(grandfatheredFor('pro_year'), []);
-  assert.deepEqual(grandfatheredFor('pro_month'), [74_900, 86_884]);
-  assert.deepEqual(grandfatheredFor('vip_month'), [249_900, 289_884]);
+  assert.deepEqual(grandfatheredFor('pro_month'), [74_900, 86_884, 99_700]);
+  assert.deepEqual(grandfatheredFor('vip_month'), [249_900, 289_884, 379_900]);
 });
 
 test('the price gate: today’s totals, existing renewals, nothing else', () => {
   const pro = expectedChargeForTier('PRO')!;
-  for (const amount of [997, 749, 868.84]) {
+  for (const amount of [1099, 997, 749, 868.84]) {
     assert.ok(checkCharge(pro, { amountMajor: amount, currency: 'MXN' }).ok, String(amount));
   }
   assert.equal(checkCharge(pro, { amountMajor: 1, currency: 'MXN' }).ok, false);
   assert.equal(checkCharge(pro, { amountMajor: 997, currency: 'USD' }).ok, false);
   const vip = expectedChargeForTier('VIP')!;
-  for (const amount of [3799, 2499, 2898.84]) {
+  for (const amount of [4199, 3799, 2499, 2898.84]) {
     assert.ok(checkCharge(vip, { amountMajor: amount, currency: 'MXN' }).ok, String(amount));
   }
   const yearly = {
@@ -130,7 +130,9 @@ test('the price gate: today’s totals, existing renewals, nothing else', () => 
     currency: 'MXN',
     label: 'plan pro_year',
   };
-  assert.ok(checkCharge(yearly, { amountMajor: 9970, currency: 'MXN' }).ok);
+  assert.ok(checkCharge(yearly, { amountMajor: 10990, currency: 'MXN' }).ok);
+  // No yearly plan was ever sold at $9,970 and renewed: yearly accepts only today's total.
+  assert.equal(checkCharge(yearly, { amountMajor: 9970, currency: 'MXN' }).ok, false);
   assert.equal(checkCharge(yearly, { amountMajor: 749, currency: 'MXN' }).ok, false);
   assert.equal(checkCharge(yearly, { amountMajor: 8688.4, currency: 'MXN' }).ok, false);
   const pack = expectedChargeForPack('tokens_100k', PACK_CENTS.tokens_100k)!;
@@ -153,7 +155,7 @@ test('reference price: off by default, on only with every value and before the c
   const on = referencePriceState(now, REF_ENV);
   assert.equal(on.show, true);
   assert.equal(on.refCents, REFERENCE_CENTS.pro_month);
-  assert.equal(on.pct, 40);
+  assert.equal(on.pct, 33);
   assert.equal(on.site, 'otrositio.mx');
   assert.equal(on.date, '30 de septiembre de 2026');
   for (const missing of [
@@ -234,7 +236,7 @@ test('banned amounts appear nowhere (messages, emails, components, legal, JSON-L
       hits.push(`${file}: ${m[0]}`);
     }
     // 12 × monthly is never a "vs." or struck anchor.
-    for (const m of text.matchAll(/(vs\.?|<s>|<del>)\s*\$(11,964|45,588)/g))
+    for (const m of text.matchAll(/(vs\.?|<s>|<del>)\s*\$(13,188|50,388)/g))
       hits.push(`${file}: ${m[0]}`);
   }
   assert.deepEqual(hits, []);

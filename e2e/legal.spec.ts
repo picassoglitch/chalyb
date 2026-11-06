@@ -24,7 +24,7 @@ test('the subscription terms render Law’s text with config amounts', async ({ 
   await page.goto('/legal/subscription');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Términos de Suscripción');
   await expect(page.getByRole('heading', { name: /Planes y precios/ })).toBeVisible();
-  await expect(page.locator('table').first()).toContainText('$997 MXN');
+  await expect(page.locator('table').first()).toContainText('$1,099 MXN');
   await expect(page.getByText(/SHA-256 [0-9a-f]{64}/)).toBeVisible();
   await expectNoOverflow(page, testInfo);
   await expectAccessible(page);

@@ -38,12 +38,12 @@ function translatorFor(locale: 'es' | 'en'): Translate {
   };
 }
 
-test('vip_year: $36,325 a year, the trial like every plan, saves $9,263 · 20%', () => {
+test('vip_year: $40,310 a year, the trial like every plan, saves $10,078 · 20%', () => {
   delete process.env.PRICES_INCLUDE_IVA;
   const p = planPrice('vip_year');
-  assert.deepEqual(p, { key: 'vip_year', tier: 'VIP', interval: 'year', totalCents: 3_632_500 });
-  assert.equal(formatMXN(p.totalCents), '$36,325');
-  assert.deepEqual(annualMath('vip'), { yearVsMonthlyCents: 4_558_800, yearSavingsCents: 926_300 });
+  assert.deepEqual(p, { key: 'vip_year', tier: 'VIP', interval: 'year', totalCents: 4_031_000 });
+  assert.equal(formatMXN(p.totalCents), '$40,310');
+  assert.deepEqual(annualMath('vip'), { yearVsMonthlyCents: 5_038_800, yearSavingsCents: 1_007_800 });
   assert.equal(planHasTrial('vip_year'), true);
   assert.equal(PLAN_NAMES.vip_year, 'VIP anual');
 });
@@ -55,8 +55,8 @@ test('price gate: vip_year accepts exactly its total, never a VIP monthly (grand
     currency: 'MXN',
     label: 'plan vip_year',
   };
-  assert.ok(checkCharge(expected, { amountMajor: 36_325, currency: 'MXN' }).ok);
-  for (const old of [2499, 2898.84, 3799]) {
+  assert.ok(checkCharge(expected, { amountMajor: 40_310, currency: 'MXN' }).ok);
+  for (const old of [2499, 2898.84, 3799, 4199, 36_325]) {
     assert.equal(
       checkCharge(expected, { amountMajor: old, currency: 'MXN' }).ok,
       false,
@@ -98,7 +98,7 @@ test('plan changes: VIP → VIP anual today with credit, VIP anual → VIP at ye
     now: new Date('2026-10-16T00:00:00Z'),
   });
   // Charged at the NEW plan's price (fix of plan-change.ts:60), credit for half the month.
-  assert.deepEqual(q, { chargeTodayCents: 3_632_500, refundCents: 189_950, thenCents: 3_632_500 });
+  assert.deepEqual(q, { chargeTodayCents: 4_031_000, refundCents: 189_950, thenCents: 4_031_000 });
 });
 
 test('Law Q4: the VIP anual checkout block and checkbox, verbatim', () => {
@@ -111,16 +111,16 @@ test('Law Q4: the VIP anual checkout block and checkbox, verbatim', () => {
   };
   assert.equal(
     stripMarkup(paidParagraphs(t, input).join('\n')),
-    'Hoy se cobran $36,325 MXN (IVA incluido) por 1 año de VIP a tu tarjeta terminación 4821. Se renovará automáticamente el 3 de octubre de 2027 y cada año después por $36,325 MXN hasta que canceles. Te avisaremos 30 y 7 días antes. Cancela en 1 clic desde Mi cuenta → Mi plan; conservas VIP hasta el final del año pagado.',
+    'Hoy se cobran $40,310 MXN (IVA incluido) por 1 año de VIP a tu tarjeta terminación 4821. Se renovará automáticamente el 3 de octubre de 2027 y cada año después por $40,310 MXN hasta que canceles. Te avisaremos 30 y 7 días antes. Cancela en 1 clic desde Mi cuenta → Mi plan; conservas VIP hasta el final del año pagado.',
   );
   assert.equal(
     stripMarkup(paidConsentSentence(t, input)),
-    'Acepto el cobro de $36,325 MXN hoy y su renovación automática cada año, y acepto los Términos de Suscripción.',
+    'Acepto el cobro de $40,310 MXN hoy y su renovación automática cada año, y acepto los Términos de Suscripción.',
   );
   // Pro anual bought without a trial: the same structure, its own amount.
   assert.equal(
     stripMarkup(paidConsentSentence(t, { ...input, planKey: 'pro_year' })),
-    'Acepto el cobro de $9,970 MXN hoy y su renovación automática cada año, y acepto los Términos de Suscripción.',
+    'Acepto el cobro de $10,990 MXN hoy y su renovación automática cada año, y acepto los Términos de Suscripción.',
   );
 });
 
@@ -179,7 +179,7 @@ test('JSON-LD offers VIP anual only when it is on sale', () => {
   assert.deepEqual(names(true).at(-1), {
     ...names(true).at(-1),
     name: 'Chalyb VIP · Anual',
-    price: '36325.00',
+    price: '40310.00',
   });
 });
 

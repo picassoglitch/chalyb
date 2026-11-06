@@ -23,9 +23,10 @@ export const CURRENCY = 'MXN';
 export const IVA_RATE_PERCENT = 16;
 
 /** What each plan costs per period, IVA included, in centavos. */
+// Owner 2026-11-06: +10% so a user who spends every credit still leaves margin.
 export const PRICE_CENTS = {
-  pro: { month: 99_700, year: 997_000 },
-  vip: { month: 379_900, year: 3_632_500 },
+  pro: { month: 109_900, year: 1_099_000 },
+  vip: { month: 419_900, year: 4_031_000 },
 } as const;
 
 /**
@@ -226,13 +227,14 @@ export function togglePct(tiers: readonly ('pro' | 'vip')[] = ['pro', 'vip']): n
  * Amounts the price gate still accepts besides today's totals: what every
  * subscription created before the 2026-10-03 prices still renews at — live
  * main ($749 / $2,499) and the P5 IVA-added defaults ($868.84 / $2,898.84),
- * in case those shipped. HARD-CODED, never derived from PRICE_CENTS, or a
+ * in case those shipped — and the 2026-10-03 prices ($997 / $3,799) that the
+ * 2026-11-06 prices replaced. HARD-CODED, never derived from PRICE_CENTS, or a
  * price change would refuse every existing renewal. They stay until each
  * subscriber accepts the new price (WS-6).
  */
 export const GRANDFATHERED_CENTS = {
-  PRO: [74_900, 86_884],
-  VIP: [249_900, 289_884],
+  PRO: [74_900, 86_884, 99_700],
+  VIP: [249_900, 289_884, 379_900],
   /** The old pack amounts, for checkouts started before a change. */
   packs: {
     tokens_100k: [14_900, 17_284],

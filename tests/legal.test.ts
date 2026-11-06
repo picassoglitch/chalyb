@@ -208,19 +208,22 @@ test('amounts: the packs page shows the pack prices in force, never typed ones',
 });
 
 test('amounts: an amount two roles share is never guessed', () => {
-  // Pro mensual and Lealtad month 5 are both $997 today.
-  const r = tokenizeAmounts('Pro $997 · mes 5 $997', {}, false);
-  assert.equal(r.ambiguous.length, 1);
-  assert.throws(() => tokenizeAmounts('Pro $997', {}), /ambiguous/);
+  // Today only Lealtad month 5 is $997 (Pro mensual was too until 2026-11-06).
+  assert.equal(tokenizeAmounts('mes 5 $997', {}).template, 'mes 5 {{mxn:lealtad_4}}');
+  // A shared amount needs registry.json amountRoles: with the IVA flag off,
+  // Pro mensual's list price is $1,274.84 and no role collides, so make one.
+  const r = tokenizeAmounts('Pro $997 · mes 5 $997', { $997: ['mxn:lealtad_4'] }, false);
+  assert.equal(r.ambiguous.length, 1, 'count must match');
   assert.throws(
-    () => tokenizeAmounts('$997 y $997', { $997: ['mxn:pro_month'] }),
+    () => tokenizeAmounts('$997 y $997', { $997: ['mxn:lealtad_4'] }),
     /ambiguous/,
     'count must match',
   );
   assert.throws(() => tokenizeAmounts('$997', { $997: ['mxn:vip_month'] }), /wrong role/);
   assert.equal(
-    tokenizeAmounts('Pro $997 · mes 5 $997', { $997: ['mxn:pro_month', 'mxn:lealtad_4'] }).template,
-    'Pro {{mxn:pro_month}} · mes 5 {{mxn:lealtad_4}}',
+    tokenizeAmounts('mes 5 $997 · otra vez $997', { $997: ['mxn:lealtad_4', 'mxn:lealtad_4'] })
+      .template,
+    'mes 5 {{mxn:lealtad_4}} · otra vez {{mxn:lealtad_4}}',
   );
 });
 
@@ -241,13 +244,13 @@ test('amounts: a price change re-renders a draft, never the Lealtad month-5 cell
   withEnv({ PRICES_INCLUDE_IVA: 'false' }, () => {
     // How a draft renders: the template with today's prices.
     const text = bindAmounts(archived('suscripcion')!.template);
-    // $997 as a list price + 16% IVA.
-    assert.match(text, /\*\*Pro \$1,156\.52 MXN\/mes\*\*/);
+    // $1,099 as a list price + 16% IVA.
+    assert.match(text, /\*\*Pro \$1,274\.84 MXN\/mes\*\*/);
     // Lealtad steps don't move with the IVA flag: month 5 stays $997.
     assert.match(text, /\| 5 \| \*\*\$997 MXN\*\* \| 40% \|/);
     assert.match(text, /\$1,163 · \$997 · \$831/);
   });
-  assert.equal(bindAmounts('{{mxn:pro_month}} · {{usd:pro_year}}'), '$997 · US$500');
+  assert.equal(bindAmounts('{{mxn:pro_month}} · {{usd:pro_year}}'), '$1,099 · US$500');
 });
 
 test('amounts: a published version is frozen: today’s prices never change it', () => {
