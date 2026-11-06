@@ -24,8 +24,8 @@ export const TOOL_ORDER = [
 
 export type ToolSlug = (typeof TOOL_ORDER)[number];
 
-/** The tools with a product behind them today; the fallback when the catalog
- *  can't be read, so the landing never claims more than this. */
+/** Marketing scope and examples for design fixtures. This list is not
+ *  evidence that either tool is active; public pages must read the catalog. */
 export const FALLBACK_ACTIVE: readonly ToolSlug[] = ['chalybclip', 'chalybobs'];
 
 export interface PublicTool {
@@ -50,10 +50,31 @@ export function activeTools(rows: ReadonlyArray<{ slug: string; status: string }
   return TOOL_ORDER.filter((s) => active.has(s) && PUBLIC_TOOLS.has(s)).map(toPublicTool);
 }
 
+/** An empty or failed catalog read advertises nothing. The reader is injected
+ *  so tests can simulate outages without a database. */
+export async function readActiveTools(
+  readCatalog: () => Promise<ReadonlyArray<{ slug: string; status: string }> | null>,
+  onUnavailable: (err: unknown) => void,
+): Promise<PublicTool[]> {
+  let rows: Awaited<ReturnType<typeof readCatalog>>;
+  try {
+    rows = await readCatalog();
+  } catch (err) {
+    onUnavailable(err);
+    return [];
+  }
+  if (!rows) {
+    onUnavailable(new Error('catalog read returned no data'));
+    return [];
+  }
+  return activeTools(rows);
+}
+
 export function toPublicTool(slug: ToolSlug): PublicTool {
   return { slug, name: ENGINE_DISPLAY_NAMES[slug]!, color: TOOL_COLORS[slug]! };
 }
 
+/** Example tools for design fixtures; never use as a catalog outage fallback. */
 export function fallbackTools(): PublicTool[] {
   return FALLBACK_ACTIVE.map(toPublicTool);
 }

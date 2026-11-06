@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/ui/primitives';
 import { trialFlowEnabled } from '@/lib/config/flags';
+import { listActiveTools } from '@/lib/tools/public-tools-server';
 import {
   APP_HREF,
   LOGIN_HREF,
@@ -30,7 +31,13 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
     ? APP_HREF
     : landingTrialHref({ from: 'nav_trial', trialFlowEnabled: flow, signedIn });
   const menuTrialHref = landingTrialHref({ from: 'menu_trial', trialFlowEnabled: flow, signedIn });
-  const links = LINKS.map(([key, href]) => ({ key, href, label: t(key) }));
+  // With nothing confirmed active there is no tools section, price or trial to point at.
+  const selling = (await listActiveTools()).length > 0;
+  const links = LINKS.filter(([key]) => selling || key === 'help').map(([key, href]) => ({
+    key,
+    href,
+    label: t(key),
+  }));
 
   return (
     <header className="pub-nav">
@@ -46,22 +53,28 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
         <Link href={signedIn ? APP_HREF : LOGIN_HREF} className="pub-nav__in" data-signin="nav">
           {signedIn ? t('app') : t('login')}
         </Link>
-        <Link
-          href={trialHref}
-          className="ch-btn ch-btn--primary pub-nav__cta"
-          data-cta={signedIn ? undefined : 'nav_trial'}
-        >
-          {signedIn ? t('app') : flow ? t('trial') : t('trialNoTrial')}
-        </Link>
+        {selling && (
+          <Link
+            href={trialHref}
+            className="ch-btn ch-btn--primary pub-nav__cta"
+            data-cta={signedIn ? undefined : 'nav_trial'}
+          >
+            {signedIn ? t('app') : flow ? t('trial') : t('trialNoTrial')}
+          </Link>
+        )}
         <MobileMenu
           links={links}
           login={{ href: signedIn ? APP_HREF : LOGIN_HREF, label: signedIn ? t('app') : t('login') }}
-          cta={{
-            href: menuTrialHref,
-            label: tl(trialCtaLabel({ trialFlowEnabled: flow, signedIn })),
-            // Same as the desktop CTA: a signed-in click isn't a trial click.
-            track: signedIn ? undefined : 'menu_trial',
-          }}
+          cta={
+            selling
+              ? {
+                  href: menuTrialHref,
+                  label: tl(trialCtaLabel({ trialFlowEnabled: flow, signedIn })),
+                  // Same as the desktop CTA: a signed-in click isn't a trial click.
+                  track: signedIn ? undefined : 'menu_trial',
+                }
+              : undefined
+          }
           labels={{ open: t('menu'), close: t('close'), aria: t('aria') }}
         />
       </div>

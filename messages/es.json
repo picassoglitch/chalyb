@@ -47,7 +47,10 @@
       "notifApp": "Chalyb",
       "notifWhen": "ahora",
       "notifTitle": "Tus clips están listos",
-      "notifBody": "Ya tienen subtítulos. Descárgalos cuando quieras."
+      "notifBody": "Ya tienen subtítulos. Descárgalos cuando quieras.",
+      "titleLiveOnly": "Tu transmisión. <em>En un solo lugar.</em>",
+      "subClipsOnly": "Clips para tus redes, desde tu video hasta la descarga.",
+      "subLiveOnly": "Administra tu transmisión en vivo desde Chalyb."
     },
     "cta": "Empezar mis 7 días gratis",
     "ctaSub": "Todas las herramientas incluidas. Cancela cuando quieras.",
@@ -128,7 +131,9 @@
       "momP": "Simple y fácil de usar: todo claro, en pocos pasos y sin nada complicado que aprender.",
       "strip1": "En español, para México y Latinoamérica",
       "strip2": "Pago seguro con Mercado Pago",
-      "strip3": "Cancela en 1 clic, sin llamadas"
+      "strip3": "Cancela en 1 clic, sin llamadas",
+      "streamersClipsOnlyP": "Saca clips de tus videos y transmisiones.",
+      "streamersLiveOnlyP": "Transmite a todos tus canales a la vez."
     },
     "plans": {
       "label": "Precios",
@@ -192,7 +197,8 @@
       "subNoClaim": "{lista}.",
       "subMobile": "Todas las herramientas en un solo plan.",
       "subMobileNoClaim": "Todo desde tu celular o tu computadora.",
-      "note": "Hoy pagas {cero}. Cancela cuando quieras."
+      "note": "Hoy pagas {cero}. Cancela cuando quieras.",
+      "titleLiveOnly": "Empieza hoy. <em>Tu transmisión en un solo lugar.</em>"
     },
     "publicFooter": {
       "lead": "Clips y transmisiones en vivo en un solo lugar, en español y sin saber de tecnología.",
@@ -219,7 +225,10 @@
       "disclaimer": "Señales, Pronósticos e Inversiones son informativos: no son asesoría financiera ni de apuestas, y no garantizan resultados. Las decisiones y los riesgos son tuyos.",
       "copy": "© {year} Chalyb. Precios en MXN, IVA incluido.",
       "secure": "Pago seguro con Mercado Pago",
-      "lang": "Español · English"
+      "lang": "Español · English",
+      "leadClipsOnly": "Clips para tus redes, en español y sin saber de tecnología.",
+      "leadLiveOnly": "Tu transmisión en vivo en un solo lugar, en español y sin saber de tecnología.",
+      "leadGeneric": "Tu cuenta de Chalyb, con ayuda en español."
     },
     "cookies": {
       "title": "Cookies",
@@ -245,7 +254,17 @@
     "ctaSubShort": "Cancela cuando quieras.",
     "meta": {
       "title": "Chalyb: clips y transmisiones en vivo, todo tu estudio en un solo lugar",
-      "description": "Clips para tus redes y tu transmisión en vivo, todo tu estudio en un solo lugar. Prueba Pro gratis 7 días y cancela cuando quieras. En español."
+      "description": "Clips para tus redes y tu transmisión en vivo, todo tu estudio en un solo lugar. Prueba Pro gratis 7 días y cancela cuando quieras. En español.",
+      "unavailableTitle": "Chalyb: tu cuenta y ayuda",
+      "unavailableDescription": "Entra a tu cuenta de Chalyb o contacta al equipo si necesitas ayuda.",
+      "liveOnlyTitle": "Chalyb: tu transmisión en vivo en un solo lugar",
+      "liveOnlyDescription": "Administra tu transmisión en vivo desde Chalyb, en español.",
+      "clipsOnlyTitle": "Chalyb: clips para tus redes",
+      "clipsOnlyDescription": "Convierte tus videos en clips para tus redes desde Chalyb, en español."
+    },
+    "availability": {
+      "title": "No podemos mostrar las herramientas ahora",
+      "body": "Consulta de nuevo más tarde. Puedes entrar a tu cuenta o escribirnos si necesitas ayuda."
     }
   },
   "auth": {

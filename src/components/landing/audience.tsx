@@ -1,5 +1,14 @@
 import { getTranslations } from 'next-intl/server';
-import { Briefcase, Clapperboard, Globe, Heart, Radio, ShieldCheck, CircleCheck, type LucideIcon } from 'lucide-react';
+import {
+  Briefcase,
+  Clapperboard,
+  Globe,
+  Heart,
+  Radio,
+  ShieldCheck,
+  CircleCheck,
+  type LucideIcon,
+} from 'lucide-react';
 import type { PublicTool } from '@/lib/tools/public-tools';
 import { SectionHead } from './section-head';
 
@@ -27,6 +36,14 @@ export function audienceKeys(tools: readonly PublicTool[]): Key[] {
 
 export async function Audience({ tools }: { tools: PublicTool[] }) {
   const t = await getTranslations('landing.who');
+  const hasClips = tools.some((tool) => tool.slug === 'chalybclip');
+  const hasEnVivo = tools.some((tool) => tool.slug === 'chalybobs');
+  const bodyKey = (key: Key) =>
+    key === 'streamers' && !(hasClips && hasEnVivo)
+      ? hasClips
+        ? 'streamersClipsOnlyP'
+        : 'streamersLiveOnlyP'
+      : `${key}P`;
   const strip: [LucideIcon, string][] = [
     [Globe, t('strip1')],
     [ShieldCheck, t('strip2')],
@@ -45,7 +62,7 @@ export async function Audience({ tools }: { tools: PublicTool[] }) {
                   <Icon />
                 </span>
                 <h3>{t(k)}</h3>
-                <p>{t(`${k}P`)}</p>
+                <p>{t(bodyKey(k))}</p>
               </li>
             );
           })}

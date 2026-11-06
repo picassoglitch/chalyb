@@ -13,6 +13,7 @@ import { loadPlansProps } from '@/lib/billing/plans-props';
 import { formatMXN } from '@/lib/billing/format';
 import { landingTrialHref, trialCtaLabel } from './links';
 import { Hero } from './hero';
+import { CatalogUnavailable } from './catalog-unavailable';
 import { ToolsSection } from './tools';
 import { HowItWorks } from './how-it-works';
 import { Gallery } from './gallery';
@@ -34,8 +35,11 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
     getLocale(),
     getTranslations('landing'),
   ]);
+  if (tools.length === 0) return <CatalogUnavailable signedIn={signedIn} />;
+  const hasClips = tools.some((tool) => tool.slug === 'chalybclip');
+  const hasEnVivo = tools.some((tool) => tool.slug === 'chalybobs');
   const flow = trialFlowEnabled();
-  const claimAll = allToolsClaimAllowed();
+  const claimAll = allToolsClaimAllowed() && hasClips && hasEnVivo;
   const href = (from: Parameters<typeof landingTrialHref>[0]['from']) =>
     landingTrialHref({ from, trialFlowEnabled: flow, signedIn });
   // Signed in: "Ver planes" → /planes, never the trial promise; the trial
@@ -43,7 +47,7 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
   // can still start it (K-7).
   const ctaLabel = t(trialCtaLabel({ trialFlowEnabled: flow, signedIn }));
   const trialOffered = flow && !signedIn;
-  const plans = await loadPlansProps(locale);
+  const plans = await loadPlansProps(locale, { clipsActive: hasClips });
 
   return (
     <div className="chalyb-app pub pub-landing">
@@ -53,6 +57,8 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
       <PublicNav signedIn={signedIn} />
       <main id="main">
         <Hero
+          hasClips={hasClips}
+          hasEnVivo={hasEnVivo}
           trialHref={href('hero_trial')}
           ctaLabel={ctaLabel}
           trialOffered={trialOffered}
@@ -64,8 +70,8 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
           trialHref={href('tools_trial')}
           ctaLabel={ctaLabel}
         />
-        <HowItWorks />
-        {tools.some((tool) => tool.slug === 'chalybclip') && <Gallery />}
+        {hasClips && <HowItWorks />}
+        {hasClips && <Gallery />}
         <Audience tools={tools} />
         <PlansSummary {...plans} />
         <Faq
@@ -77,6 +83,7 @@ export async function LandingPage({ signedIn }: { signedIn: boolean }) {
         />
         <Partner />
         <FinalCta
+          hasClips={hasClips}
           tools={tools}
           locale={locale}
           trialHref={href('final_trial')}

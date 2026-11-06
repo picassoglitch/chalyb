@@ -37,6 +37,8 @@ type Tier = 'FREE' | 'PRO' | 'VIP';
 
 interface FeatureOpts {
   freeIncludesClips: boolean;
+  /** Public pages omit benefits of an inactive Clips tool. */
+  clipsActive?: boolean;
   /** D8 · the Clips app enforces Gratis' SD cap and 0 live streams. */
   clipLimitsEnforced?: boolean;
 }
@@ -69,13 +71,14 @@ function historyFeature(tier: Tier): PlanFeature {
  */
 export function planFeatures(tier: Tier, opts: FeatureOpts): PlanFeature[] {
   const all = (t: Tier): PlanFeature[] => {
-    const clips = clipsFeature(t, opts);
+    const hasClips = opts.clipsActive !== false;
+    const clips = hasClips ? clipsFeature(t, opts) : null;
     return [
       ...(clips && (t !== 'FREE' || opts.freeIncludesClips) ? [clips] : []),
-      ...(t === 'FREE' ? [] : [streamsFeature(t)]),
+      ...(hasClips && t !== 'FREE' ? [streamsFeature(t)] : []),
       historyFeature(t),
       { key: 'storage', values: { espacio: storageLabel(TIER_CAPS[t].storageMB) }, included: true },
-      ...(t === 'FREE' && opts.clipLimitsEnforced ? [streamsFeature(t)] : []),
+      ...(hasClips && t === 'FREE' && opts.clipLimitsEnforced ? [streamsFeature(t)] : []),
       ...(t === 'PRO' ? [{ key: 'cancel', included: true } as PlanFeature] : []),
     ];
   };
