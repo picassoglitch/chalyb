@@ -32,7 +32,7 @@
     },
     "hero": {
       "eyebrowTag": "All included",
-      "eyebrowTagNoClaim": "In Spanish",
+      "eyebrowTagNoClaim": "In English and Spanish",
       "eyebrow": "One plan, every tool",
       "eyebrowNoClaim": "Your studio in one place",
       "title": "You stream. <em>Chalyb makes the clips.</em>",
@@ -40,7 +40,7 @@
       "subNoClaim": "Clips for your socials and your live stream: your whole studio in one place.",
       "noteStrong": "Cancel anytime.",
       "noteRest": "You pay {cero} today.",
-      "seal1": "In Spanish",
+      "seal1": "In English and Spanish",
       "seal2": "No tech skills needed",
       "seal3": "Cancel in 1 click",
       "alt": "Chalyb on a computer and a phone: the Your clips are ready screen and the Home screen.",
@@ -129,7 +129,7 @@
       "businessP": "An Assistant that answers your customers, day and night.",
       "mom": "Your mom too",
       "momP": "Simple and easy to use: everything clear, in a few steps, with nothing complicated to learn.",
-      "strip1": "In Spanish, for Mexico and Latin America",
+      "strip1": "In English and Spanish, made in Mexico",
       "strip2": "Secure payment with Mercado Pago",
       "strip3": "Cancel in 1 click, no calls",
       "streamersClipsOnlyP": "Get clips from your videos and streams.",
@@ -201,7 +201,7 @@
       "titleLiveOnly": "Start today. <em>Your live stream in one place.</em>"
     },
     "publicFooter": {
-      "lead": "Clips and live streaming in one place, in Spanish and with no tech skills needed.",
+      "lead": "Clips and live streaming in one place, in English or Spanish, with no tech skills needed.",
       "tools": "Tools",
       "toolsAll": "See all",
       "chalyb": "Chalyb",
@@ -226,9 +226,9 @@
       "copy": "© {year} Chalyb. Prices in MXN, VAT included.",
       "secure": "Secure payment with Mercado Pago",
       "lang": "Español · English",
-      "leadClipsOnly": "Clips for your socials, in Spanish and with no tech skills needed.",
-      "leadLiveOnly": "Your live stream in one place, in Spanish and with no tech skills needed.",
-      "leadGeneric": "Your Chalyb account, with help in Spanish."
+      "leadClipsOnly": "Clips for your socials, in English or Spanish, with no tech skills needed.",
+      "leadLiveOnly": "Your live stream in one place, in English or Spanish, with no tech skills needed.",
+      "leadGeneric": "Your Chalyb account, with help in English or Spanish."
     },
     "cookies": {
       "title": "Cookie preferences",
@@ -254,13 +254,13 @@
     "ctaSubShort": "Cancel any time.",
     "meta": {
       "title": "Chalyb: clips and live streaming, your whole studio in one place",
-      "description": "Clips for your socials and your live stream, your whole studio in one place. Try Pro free for 7 days and cancel anytime. In Spanish.",
+      "description": "Clips for your socials and your live stream, your whole studio in one place. Try Pro free for 7 days and cancel anytime. In English and Spanish.",
       "unavailableTitle": "Chalyb: your account and help",
       "unavailableDescription": "Sign in to your Chalyb account or contact the team if you need help.",
       "liveOnlyTitle": "Chalyb: your live stream in one place",
-      "liveOnlyDescription": "Manage your live stream from Chalyb, in Spanish.",
+      "liveOnlyDescription": "Manage your live stream from Chalyb, in English or Spanish.",
       "clipsOnlyTitle": "Chalyb: clips for your socials",
-      "clipsOnlyDescription": "Turn your videos into clips for your socials with Chalyb, in Spanish."
+      "clipsOnlyDescription": "Turn your videos into clips for your socials with Chalyb, in English or Spanish."
     },
     "availability": {
       "title": "We cannot show the tools right now",
@@ -375,7 +375,7 @@
       },
       "engines": {
         "title": "Your tools",
-        "body": "Under “Tools” you see and open your tools (Clips and En vivo). “Included in your plan” = ready to use."
+        "body": "Under “Tools” you see and open your tools (Clips and Live). “Included in your plan” = ready to use."
       },
       "tokens": {
         "title": "Your credits",
@@ -437,7 +437,7 @@
     },
     "upsell": {
       "title": "More tools with Pro",
-      "sub": "Use Clips and En vivo without limits on a Pro plan.",
+      "sub": "Use Clips and Live without limits on a Pro plan.",
       "cta": "See plans →"
     },
     "caps": {
@@ -2788,8 +2788,8 @@
       "lab": "Strategies"
     },
     "market": {
-      "metaTitle": "Market · Señales",
-      "back": "Señales",
+      "metaTitle": "Market · Signals",
+      "back": "Signals",
       "title": "Market",
       "sub": "Live prices, the order book and context for each coin. General information, the same for everyone.",
       "toLab": "See strategies and tests on past data",
@@ -2867,10 +2867,10 @@
       "retry": "Try again"
     },
     "lab": {
-      "metaTitle": "Strategies · Señales",
-      "back": "Señales",
+      "metaTitle": "Strategies · Signals",
+      "back": "Signals",
       "title": "Strategies",
-      "sub": "Señales strategies and tests on past data. General information, the same for everyone.",
+      "sub": "Signals strategies and tests on past data. General information, the same for everyone.",
       "toMarket": "See the market",
       "listTitle": "Strategies",
       "on": "Active",

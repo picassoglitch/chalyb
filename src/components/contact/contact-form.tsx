@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { submitContactForm, type ContactErrorKey } from '@/lib/contact/contact-actions';
 
 type FieldError = 'name' | 'email' | 'subject' | 'message' | 'chargeDate' | 'chargeAmount' | null;
@@ -21,6 +21,7 @@ interface Props {
 export function ContactForm({ pane = 'client', category, defaultSubject }: Props = {}) {
   const t = useTranslations('contact.form');
   const tError = useTranslations('contact.errors');
+  const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
   // The server action returns a message KEY (see ContactResult.errorKey), not a
@@ -31,6 +32,7 @@ export function ContactForm({ pane = 'client', category, defaultSubject }: Props
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    fd.set('locale', locale);
     setErrorKey(null);
     setFieldError(null);
     startTransition(async () => {

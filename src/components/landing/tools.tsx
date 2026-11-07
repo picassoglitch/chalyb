@@ -1,12 +1,13 @@
 import type { Route } from 'next';
 import Image from 'next/image';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Check, Info } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { PublicTool, ToolSlug } from '@/lib/tools/public-tools';
 import { ToolTile } from './tool-tile';
 import { claimKey } from './claims';
 import { SectionHead } from './section-head';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 // 2 · "Todo en un solo plan" (#herramientas, LANDING-SPEC §3.3). A bento of
 // the ACTIVE tools only: a hidden tool's card disappears and the "todo
@@ -87,6 +88,7 @@ export async function ToolsSection({
   ctaLabel: string;
 }) {
   const t = await getTranslations('landing.tools');
+  const locale = await getLocale();
   const cards = bentoCards(tools);
   const span = allCardSpan(cards);
 
@@ -141,7 +143,7 @@ export async function ToolsSection({
                 {!clips && <CardArt slug={tool.slug} />}
                 <div className="pub-bc__tx">
                   <ToolTile slug={tool.slug} color={tool.color} size={60} />
-                  <h3>{tool.name}</h3>
+                  <h3>{localizedToolName(tool.name, locale)}</h3>
                   <p>{t(`desc.${tool.slug}`)}</p>
                   {note && (
                     <p className="pub-bc__legal">

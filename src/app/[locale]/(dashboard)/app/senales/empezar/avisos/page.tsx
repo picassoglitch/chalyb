@@ -5,6 +5,7 @@ import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-acces
 import { saveSignalPrefs } from '@/lib/tools/senales-actions';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { SubmitButton } from '@/components/ui/submit-button';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('signals');
@@ -38,7 +39,7 @@ export default async function SenalesStep2({
   return (
     <WizardShell
       slug="chalybcrypto"
-      toolName="Señales"
+      toolName={localizedToolName('Señales', locale)}
       step={2}
       stepLabel={tw('step', { n: 2 })}
       backHref={`/app/senales/empezar`}

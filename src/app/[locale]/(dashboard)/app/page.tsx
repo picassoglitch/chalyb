@@ -8,6 +8,7 @@ import { collectResults } from '@/lib/results/collect';
 import { ToolIcon } from '@/components/ui/tool-icon';
 import { selectPlanStrip, selectTaskCards } from '@/components/app/home-model';
 import { ButtonLink, Chip, StateBlock, TaskCard } from '@/components/ui/primitives';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata() {
   const t = await getTranslations('home');
@@ -37,7 +38,9 @@ export default async function InicioPage({ params }: { params: Promise<{ locale:
     listEngines().catch(() => []),
   ]);
   const visible = engines.filter((e) => entitlements.tools[e.slug]).map((e) => e.slug);
-  const names = Object.fromEntries(engines.map((e) => [e.slug, e.name]));
+  const names = Object.fromEntries(
+    engines.map((e) => [e.slug, localizedToolName(e.name, locale)]),
+  );
   const { cards, extraSlugs } = selectTaskCards(visible);
   const strip = selectPlanStrip(entitlements, names, {
     proIncludesAllTools: proIncludesAllTools(),

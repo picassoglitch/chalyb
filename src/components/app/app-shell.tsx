@@ -11,6 +11,7 @@ import { Bell, House, LayoutDashboard, SquarePlay, User } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import { Avatar, Logo } from '@/components/ui/primitives';
+import { AppLanguageToggle } from '@/components/i18n/app-language-toggle';
 import {
   NAV_ITEMS,
   activeNavFor,
@@ -125,12 +126,14 @@ export function AppShell({ userName, planKey, isAdmin, banner, unread = 0, child
             <span className="ch-me__p">{t(`plan.${planKey}`)}</span>
           </span>
         </Link>
+        <AppLanguageToggle />
       </aside>
 
       <div className="ch-main">
         <header className="ch-mhead">
           <Logo href="/app" />
           <div className="ch-mhead__r">
+            <AppLanguageToggle compact />
             {bell}
             <Link href={'/app/settings' as Route} aria-label={t('cuenta')}>
               <Avatar name={userName} />

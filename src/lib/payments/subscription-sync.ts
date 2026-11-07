@@ -17,7 +17,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
-import { subscriptionActiveTemplate } from '@/lib/email/templates';
+import {
+  subscriptionActiveSubject,
+  subscriptionActiveTemplate,
+} from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { getMercadoPago, getAppUrl, mpGet } from './mercadopago';
@@ -420,7 +423,7 @@ export async function syncSubscription(
         });
         void sendEmail({
           to: email,
-          subject: `Tu plan ${TIER_CAPS[tier].label} está activo · Chalyb`,
+          subject: subscriptionActiveSubject(TIER_CAPS[tier].label),
           html: tmpl.html,
           text: tmpl.text,
         }).catch((err) => console.error('[mp/subscription] activation email failed', err));

@@ -55,7 +55,7 @@ export async function unreadCount(userId: string): Promise<number> {
 }
 
 /** Title and body from messages (notif.<kind>), for producers that run
- *  outside a request (cron, webhooks): Spanish, like the billing emails. */
+ *  outside a request (cron, webhooks), in `locale` (default Spanish). */
 export async function noticeText(
   kind: Exclude<UserNoticeKind, 'signal'>,
   vars: Record<string, string | number> = {},
@@ -64,3 +64,4 @@ export async function noticeText(
   const t = await getTranslations({ locale, namespace: `notif.${kind}` });
   return { title: t('title'), body: t('body', vars) };
 }
+

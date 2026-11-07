@@ -15,6 +15,7 @@ import {
   landingTrialHref,
   trialCtaLabel,
 } from '@/components/landing/links';
+import { LanguageToggle } from '@/components/i18n/language-switcher';
 import { MobileMenu } from './mobile-menu';
 
 const LINKS = [
@@ -50,6 +51,7 @@ export async function PublicNav({ signedIn }: { signedIn: boolean }) {
         ))}
       </nav>
       <div className="pub-nav__r">
+        <LanguageToggle className="ch-lang pub-nav__lang" />
         <Link href={signedIn ? APP_HREF : LOGIN_HREF} className="pub-nav__in" data-signin="nav">
           {signedIn ? t('app') : t('login')}
         </Link>

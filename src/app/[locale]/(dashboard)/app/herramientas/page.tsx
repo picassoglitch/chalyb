@@ -18,6 +18,7 @@ import { toolStatusLines, type ToolStatusLine } from '@/lib/tools/status-lines';
 import { isSupportCode } from '@/lib/tools/bff-core';
 import { Banner, ButtonLink, Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('tools');
@@ -95,7 +96,7 @@ export default async function HerramientasPage({
             label: te('human'),
           }}
         >
-          <b>{te('title', { herramienta: failedTool.name })}.</b> {te('body')}
+          <b>{te('title', { herramienta: localizedToolName(failedTool.name, locale) })}.</b> {te('body')}
           {codigo && isSupportCode(codigo) && <> {te.rich('code', { codigo, b: (c) => <b>{c}</b> })}</>}
         </Banner>
       )}
@@ -121,12 +122,12 @@ export default async function HerramientasPage({
                 {action.pill === 'setup' && <Pill kind="warn">{t('setup')}</Pill>}
               </div>
               <div className="ch-tool__tx">
-                <h2 className="ch-tool__name">{tool.name}</h2>
+                <h2 className="ch-tool__name">{localizedToolName(tool.name, locale)}</h2>
                 <p className="ch-muted">{t(`tagline.${tool.slug}`)}</p>
                 {lines[tool.slug] && <StatusLine line={lines[tool.slug]!} />}
               </div>
               {action.pill === 'included' && (
-                <ButtonLink href={toolHref(tool.slug)} aria-label={`${t('open')} ${tool.name}`}>
+                <ButtonLink href={toolHref(tool.slug)} aria-label={`${t('open')} ${localizedToolName(tool.name, locale)}`}>
                   {t('open')}
                 </ButtonLink>
               )}
@@ -154,7 +155,7 @@ export default async function HerramientasPage({
               <li key={e.slug}>
                 <Link href={toolHref(e.slug) as Route} className="ch-card ch-tool ch-tool--light">
                   <ToolIcon slug={e.slug} size="sm" />
-                  <b>{toolBySlug(e.slug)?.name ?? e.name}</b>
+                  <b>{localizedToolName(toolBySlug(e.slug)?.name ?? e.name, locale)}</b>
                   <span className="ch-lnk">{t('openArrow')}</span>
                 </Link>
               </li>
