@@ -9,6 +9,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Check, TriangleAlert, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { EngineStep, EngineStreamDetail } from '@/lib/tools/adapters/clips/engine-api';
+import type { RunCharge } from '@/lib/usage/run-charge';
 import { mmss } from '@/lib/tools/clips-home';
 import { ToolShell } from '@/components/tools/tool-shell';
 import { AutoRefresh } from '@/components/app/clips/auto-refresh';
@@ -33,11 +34,23 @@ function dur(sec: number): string {
   return `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`;
 }
 
+// Ledger kinds → copy keys (next-intl reads dots in a key as nesting).
+const SOURCE_KEYS: Record<string, string> = {
+  'engine.base': 'base',
+  'compute.seconds': 'compute',
+  'transcription.seconds': 'transcription',
+  'llm.tokens': 'ai',
+  'boost.fee': 'boost',
+};
+
 export async function EngineVideoPage({
   d,
+  charge,
   editorReady,
 }: {
   d: EngineStreamDetail;
+  /** From the ledger (null: couldn't be read); see lib/usage/run-charge. */
+  charge: RunCharge | null;
   editorReady: boolean;
 }) {
   const t = await getTranslations('clipsEngine.video');
@@ -53,7 +66,9 @@ export async function EngineVideoPage({
 
   return (
     <ToolShell slug="chalybclip" tab="history">
-      {live && !failed && <AutoRefresh everyMs={4000} />}
+      {((live && !failed) ||
+        charge?.state === 'reserved' ||
+        (charge?.state === 'settled' && charge.settling)) && <AutoRefresh everyMs={4000} />}
       <div className="ch-ce-stack">
         <Link href={'/app/clips/videos' as Route} className="ch-lnk">
           {t('back')}
@@ -258,21 +273,50 @@ export async function EngineVideoPage({
               <h3 id="v-cost" className="ch-h3">
                 {t('cost.title')}
               </h3>
-              {cost.tokens_used != null ? (
-                <>
-                  <p>
-                    <b>{t('cost.used', { n: nf.format(cost.tokens_used) })}</b>
-                  </p>
-                  <ul className="ch-ce-clip__signals">
-                    {cost.tokens_by_source.map((s) => (
-                      <li key={s.label}>
-                        {s.label === 'base' ? t('cost.base') : s.label}: {nf.format(s.tokens)}
-                      </li>
-                    ))}
-                  </ul>
-                </>
+              {charge === null ? (
+                <p className="ch-muted">
+                  {t('cost.unknown')}{' '}
+                  <Link href={'/app/usage' as Route} className="ch-lnk">
+                    {t('cost.seeUsage')}
+                  </Link>
+                </p>
+              ) : charge.state === 'none' ? (
+                <p className="ch-muted">
+                  {t('cost.none')}{' '}
+                  <Link href={'/app/usage' as Route} className="ch-lnk">
+                    {t('cost.seeUsage')}
+                  </Link>
+                </p>
               ) : (
-                <p className="ch-muted">{t('cost.none')}</p>
+                <>
+                  {charge.state === 'reserved' && (
+                    <p>
+                      <b>{t('cost.reserved', { n: nf.format(charge.reserved) })}</b>
+                    </p>
+                  )}
+                  {(charge.state === 'settled' || charge.charged > 0) && (
+                    <p>
+                      <b>
+                        {t(charge.state === 'settled' ? 'cost.used' : 'cost.soFar', {
+                          n: nf.format(charge.charged),
+                        })}
+                      </b>
+                    </p>
+                  )}
+                  {charge.bySource.length > 0 && (
+                    <ul className="ch-ce-clip__signals">
+                      {charge.bySource.map((s) => (
+                        <li key={s.kind}>
+                          {s.kind in SOURCE_KEYS ? t(`cost.kind.${SOURCE_KEYS[s.kind]}`) : s.kind}:{' '}
+                          {nf.format(s.credits)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {charge.state === 'reserved' && (
+                    <p className="ch-ce-note">{t('cost.reservedNote')}</p>
+                  )}
+                </>
               )}
               <p className="ch-ce-note">
                 {t('cost.estimate', { n: nf.format(cost.estimate_tokens) })}

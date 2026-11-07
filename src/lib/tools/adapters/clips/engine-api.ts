@@ -133,8 +133,9 @@ export interface EngineStreamDetail {
   can_rerun: boolean;
   personas: EnginePersona[];
   cost: {
-    tokens_used: number | null;
-    tokens_by_source: { label: string; tokens: number }[];
+    /** The video's runs as the hub's usage_reservations.external_job_id; what
+     *  they were charged is read from the ledger, never computed by the engine. */
+    usage_job_ids?: string[] | null;
     estimate_tokens: number;
     runs_available: number | null;
     unlimited: boolean;
