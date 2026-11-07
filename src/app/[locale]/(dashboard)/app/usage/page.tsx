@@ -15,6 +15,7 @@ import { engineDisplayName } from '@/lib/engines/display-names';
 import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth/session';
 import { effectiveTier, isAdminRole, TIER_CAPS } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
+import { groupUses, type UsageEventRow } from '@/lib/usage/ledger';
 import { createClient } from '@/lib/supabase/server';
 import { loadPricedPacks } from '@/lib/payments/pack-prices';
 import { INVOICE_EMAIL } from '@/config/invoicing';
@@ -36,14 +37,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-interface UsageEventRow {
-  id: string;
-  engine_id: string;
-  kind: string;
-  amount: number;
-  occurred_at: string;
-  operation: string | null;
-}
 
 interface PageData {
   /** True when getSessionUser() succeeded AND returned a user. */
@@ -175,7 +168,7 @@ async function loadUsagePageData(): Promise<PageData> {
     try {
       const first = await supabase
         .from('usage_events')
-        .select('id, engine_id, kind, amount, occurred_at, operation')
+        .select('id, engine_id, kind, amount, occurred_at, operation, billable_tokens')
         .eq('user_id', userId)
         .order('occurred_at', { ascending: false })
         .limit(60);
@@ -316,19 +309,7 @@ export default async function UsagePage({
   const toolName = (engineId: string) => data.engineMap.get(engineId)?.name ?? t('tool');
   const toolSlug = (engineId: string) => data.engineMap.get(engineId)?.slug ?? 'more';
 
-  // Runs: events sharing tool, operation and day are one use.
-  type Use = { key: string; engineId: string; at: string; credits: number; operation: string };
-  const uses = new Map<string, Use>();
-  for (const e of data.events) {
-    const key = e.operation ? `${e.engine_id}|${e.operation}|${(e.occurred_at || '').slice(0, 10)}` : e.id;
-    const credits = e.kind === 'llm.tokens' ? e.amount : 0;
-    const u = uses.get(key);
-    if (u) {
-      u.credits += credits;
-      if (e.occurred_at > u.at) u.at = e.occurred_at;
-    } else
-      uses.set(key, { key, engineId: e.engine_id, at: e.occurred_at, credits, operation: e.operation ?? e.kind });
-  }
+  const uses = groupUses(data.events);
   const thisMonth = [...uses.values()].filter((u) => u.at >= balance.periodStart);
   const byTool = new Map<string, { n: number; credits: number }>();
   for (const u of thisMonth) {
