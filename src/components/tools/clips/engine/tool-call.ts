@@ -8,6 +8,8 @@ export interface ErrorCopy {
   code: string;
   session: string;
   no_credits: string;
+  /** no_credits with figures: "{necesita}" and "{tienes}" are replaced. */
+  no_credits_amounts: string;
   rate_limited: string;
   too_large: string;
   needs_plan: string;
@@ -22,6 +24,7 @@ export class ToolCallError extends Error {
     readonly reason: string,
     readonly supportCode: string | null,
     readonly refusal: string | null,
+    readonly credits: { needed: number; remaining: number } | null = null,
   ) {
     super(reason);
   }
@@ -47,7 +50,12 @@ export async function toolCall<T>(
     ok?: boolean;
     data?: T;
     code?: string;
-    error?: { reason?: string; supportCode?: string; refusal?: string };
+    error?: {
+      reason?: string;
+      supportCode?: string;
+      refusal?: string;
+      credits?: { needed?: unknown; remaining?: unknown };
+    };
   } | null;
   if (json?.ok) return json.data as T;
   if (json?.code === 'SESSION_EXPIRED') throw new ToolCallError('session', null, null);
@@ -55,8 +63,16 @@ export async function toolCall<T>(
     json?.error?.reason ?? 'unknown',
     json?.error?.supportCode ?? null,
     json?.error?.refusal ?? null,
+    creditsIn(json?.error?.credits),
   );
 }
+
+function creditsIn(c: { needed?: unknown; remaining?: unknown } | undefined) {
+  const ok = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
+  return c && ok(c.needed) && ok(c.remaining) ? { needed: c.needed, remaining: c.remaining } : null;
+}
+
+const fmt = new Intl.NumberFormat('es-MX');
 
 /** One sentence for a failed call. */
 export function errorText(err: unknown, copy: ErrorCopy): string {
@@ -65,8 +81,12 @@ export function errorText(err: unknown, copy: ErrorCopy): string {
   const base =
     err.reason === 'session'
       ? copy.session
-      : reason in copy && reason !== 'code' && reason !== 'generic'
-        ? copy[reason]
-        : copy.generic;
+      : err.reason === 'no_credits' && err.credits
+        ? copy.no_credits_amounts
+            .replace('{necesita}', fmt.format(err.credits.needed))
+            .replace('{tienes}', fmt.format(err.credits.remaining))
+        : reason in copy && reason !== 'code' && reason !== 'generic'
+          ? copy[reason]
+          : copy.generic;
   return err.supportCode ? `${base} ${copy.code.replace('{codigo}', err.supportCode)}` : base;
 }

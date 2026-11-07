@@ -67,7 +67,25 @@ export function parseUploadStart(b: Body) {
     content_type,
     persona_id: persona ? parseId(persona) : null,
     boost: bool(b, 'boost') ?? null,
+    duration_s: duration(b.duration_s, size_bytes),
   };
+}
+
+/** Above this a declared length is too short for the file's size: no
+ *  camera or editor export reaches 1 Gbit/s (4K ProRes 422 HQ is ~0.7). */
+export const MAX_UPLOAD_BYTES_PER_SECOND = 125_000_000;
+
+/** The length the browser read from the file, in seconds; null when it
+ *  couldn't (the engine then estimates). It only sizes the first credit
+ *  hold, but a length the file can't have is refused, not passed on. */
+function duration(v: unknown, sizeBytes: number): number | null {
+  if (v === undefined || v === null) return null;
+  if (typeof v !== 'number' || !Number.isFinite(v)) throw new ToolRequestError('bad duration');
+  // Checked after rounding: what is sent is what was validated.
+  const r = Math.round(v * 10) / 10;
+  if (r <= 0 || r > 86_400 || sizeBytes / r > MAX_UPLOAD_BYTES_PER_SECOND)
+    throw new ToolRequestError('bad duration');
+  return r;
 }
 
 export function parseTicket(b: Body): string {

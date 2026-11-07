@@ -34,6 +34,14 @@ export interface ToolError {
   refusal?: string;
   /** With 'usage_refused': the admission reason (no_tokens, jobs_cap, …). */
   usage?: string;
+  /** With a no_tokens refusal: what the job needs and what the person has,
+   *  in credits, so the screen can say it instead of a bare "no". */
+  credits?: ToolCredits;
+}
+
+export interface ToolCredits {
+  needed: number;
+  remaining: number;
 }
 
 export type ToolResult<T> = { ok: true; data: T } | { ok: false; error: ToolError };
@@ -131,14 +139,21 @@ export function markingAdapter<A extends object>(adapter: A): A {
 export function failureEffect(
   err: unknown,
   opts: { adapterErrorsOnly?: boolean } = {},
-): { reason: ToolErrorReason; retryable: boolean; outage: boolean; refusal?: string } {
-  const { reason, retryable, refusal } = normalizeToolError(err);
+): {
+  reason: ToolErrorReason;
+  retryable: boolean;
+  outage: boolean;
+  refusal?: string;
+  credits?: ToolCredits;
+} {
+  const { reason, retryable, refusal, credits } = normalizeToolError(err);
   const fromTool = !opts.adapterErrorsOnly || isAdapterError(err) || reason === 'timeout';
   return {
     reason,
     retryable: retryable && fromTool,
     outage: countsAsOutage(reason) && fromTool,
     ...(refusal ? { refusal } : {}),
+    ...(credits ? { credits } : {}),
   };
 }
 
@@ -158,7 +173,24 @@ export function normalizeToolError(err: unknown): Omit<ToolError, 'supportCode'>
     err && typeof err === 'object' && 'code' in err ? String((err as { code: unknown }).code) : '';
   const base = normalizeCode(code);
   const refusal = refusalOf(err);
-  return refusal ? { ...base, refusal } : base;
+  const credits = base.reason === 'no_credits' ? creditsOf(err) : null;
+  return {
+    ...base,
+    ...(refusal ? { refusal } : {}),
+    ...(credits ? { credits } : {}),
+  };
+}
+
+/** An adapter error's credit figures, when both are whole numbers ≥ 0. */
+export function creditsOf(err: unknown): ToolCredits | null {
+  const c =
+    err && typeof err === 'object' && 'credits' in err
+      ? (err as { credits: unknown }).credits
+      : null;
+  if (!c || typeof c !== 'object') return null;
+  const { needed, remaining } = c as Record<string, unknown>;
+  const ok = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
+  return ok(needed) && ok(remaining) ? { needed, remaining } : null;
 }
 
 const REFUSAL_RE = /^[a-z][a-z0-9_]{0,47}$/;

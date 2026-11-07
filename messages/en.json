@@ -3838,6 +3838,7 @@
       "code": "If you write to us, mention this code: {codigo}.",
       "session": "Your session ended. Sign in again.",
       "no_credits": "You don't have enough credits. Top up or upgrade your plan.",
+      "no_credits_amounts": "This video needs about {necesita} credits and you have {tienes}. Top up or upgrade your plan.",
       "rate_limited": "You hit a limit of your plan (minutes, videos or jobs at once). Wait or upgrade your plan.",
       "too_large": "The video is bigger or longer than your plan allows.",
       "needs_plan": "Your plan doesn't include this.",
