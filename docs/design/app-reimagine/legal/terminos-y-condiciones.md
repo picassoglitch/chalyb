@@ -1,6 +1,6 @@
 # Términos y Condiciones de Uso de Chalyb
 
-**Versión:** 1.0 · **Fecha de entrada en vigor:** 5 de octubre de 2026 · **Sitio:** chalyb.com
+**Versión:** 1.1 · **Fecha de entrada en vigor:** 7 de noviembre de 2026 · **Sitio:** chalyb.com
 
 > **Resumen en palabras simples**
 >
@@ -89,7 +89,7 @@ Si hay contradicción, se aplica primero el documento más específico sobre el 
 
 7.1. Trabajamos para que Chalyb funcione de forma continua, pero **no garantizamos que el Servicio esté siempre disponible, sin interrupciones ni errores**. Puede haber mantenimiento, fallas técnicas o causas de fuerza mayor.
 
-7.2. Varias funciones dependen de **plataformas de terceros** (por ejemplo, TikTok, YouTube, Instagram, Facebook, Twitch, Kick, OBS, Mercado Pago, exchanges o brókers, proveedores de modelos de IA). Si esas plataformas cambian sus reglas, sus API o dejan de dar servicio, alguna función de Chalyb podría limitarse o dejar de funcionar. No somos responsables de los actos de esas plataformas.
+7.2. Varias funciones dependen de **plataformas de terceros** (por ejemplo, TikTok, YouTube, Instagram, Facebook, Twitch, Kick, OBS, procesadores de pago como Stripe y Mercado Pago, exchanges o brókers, proveedores de modelos de IA). Si esas plataformas cambian sus reglas, sus API o dejan de dar servicio, alguna función de Chalyb podría limitarse o dejar de funcionar. No somos responsables de los actos de esas plataformas.
 
 7.3. Podemos **agregar, modificar, limitar o retirar** herramientas o funciones, y lanzar funciones de prueba ("beta") que pueden cambiar o desaparecer. Si retiramos de forma permanente una función esencial de tu plan de pago, te avisaremos con anticipación razonable (cuando sea posible, al menos 30 días naturales) y, durante un periodo ya pagado, te ofreceremos una alternativa razonable o el **reembolso proporcional** del periodo no usado, a tu elección. Esto no aplica a cambios impuestos por la ley, por una autoridad o por plataformas de terceros fuera de nuestro control, en cuyo caso te avisaremos tan pronto como sea posible y procederá el reembolso proporcional si la función era esencial.
 
@@ -178,7 +178,7 @@ Al usar Chalyb **no puedes**:
 
 15.4. **Reseñas.** Nada en estos Términos te impide publicar opiniones o reseñas honestas sobre Chalyb, ni presentar quejas ante cualquier autoridad.
 
-15.5. **Ejercer tus derechos no te perjudica.** Pedir o recibir un reembolso, bonificación o compensación, disputar un cargo ante tu banco o Mercado Pago, cancelar tu suscripción o presentar una queja ante la PROFECO **nunca** da lugar a una penalización, cargo adicional, suspensión, cierre o bloqueo de tu cuenta, ni a un cambio o reinicio de tu precio. La única excepción es un contracargo de mala fe, que es un fraude y no el ejercicio de un derecho, y solo en los términos de la sección 10 de los Términos de Suscripción.
+15.5. **Ejercer tus derechos no te perjudica.** Pedir o recibir un reembolso, bonificación o compensación, disputar un cargo ante tu banco o, si se cobró con Mercado Pago, ante Mercado Pago, cancelar tu suscripción o presentar una queja ante la PROFECO **nunca** da lugar a una penalización, cargo adicional, suspensión, cierre o bloqueo de tu cuenta, ni a un cambio o reinicio de tu precio. La única excepción es un contracargo de mala fe, que es un fraude y no el ejercicio de un derecho, y solo en los términos de la sección 10 de los Términos de Suscripción.
 
 ## 16. Ley aplicable y jurisdicción
 
@@ -216,4 +216,4 @@ Domicilio: Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez
 Correo: hola@chalyb.com
 Horario: lunes a viernes, de 9:00 a 18:00 (hora del centro de México)
 
-Última actualización: 5 de octubre de 2026 · Versión 1.0
+Última actualización: 7 de noviembre de 2026 · Versión 1.1

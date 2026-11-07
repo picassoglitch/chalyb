@@ -1,6 +1,6 @@
 # Aviso de Privacidad Integral de Chalyb
 
-**Versión:** 1.0 · **Última actualización:** 5 de octubre de 2026
+**Versión:** 1.1 · **Última actualización:** 7 de noviembre de 2026
 
 Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesión de los Particulares** publicada en el Diario Oficial de la Federación el 20 de marzo de 2025 (la "**LFPDPPP**") y demás disposiciones aplicables.
 
@@ -8,7 +8,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 >
 > - **Myriam Alcantara Moreno**, persona física con actividad empresarial que opera bajo el nombre comercial Chalyb (RFC RAAA960329GA2), es responsable de tus datos personales.
 > - Usamos tus datos principalmente para **darte el servicio**: tu cuenta, tus clips y herramientas, tus cobros y la atención a clientes.
-> - **No guardamos el número de tu tarjeta**: lo guarda Mercado Pago.
+> - **No guardamos el número de tu tarjeta**: lo guarda nuestro procesador de pagos, Stripe (o Mercado Pago, en las suscripciones que se cobran con Mercado Pago; sección 4.1 bis).
 > - Si conectas tus redes (TikTok, YouTube, Instagram, etc.), **no vemos tu contraseña**; usamos un permiso que puedes quitar cuando quieras.
 > - Compartimos datos solo con proveedores que nos ayudan a dar el servicio (servidores, pagos, IA, correo) y cuando la ley lo permite o exige. **No vendemos tus datos.**
 > - El envío de **promociones es opcional**: puedes decir que no desde el inicio o en cualquier momento.
@@ -28,7 +28,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 |---|---|---|
 | **Identificación y contacto** | Nombre, correo electrónico, nombre de usuario, foto de perfil, país, idioma | Al crear tu cuenta (directamente o con "Continuar con Google" u otra red) |
 | **Autenticación** | Contraseña (guardada de forma cifrada e irreversible), registros de inicio de sesión | Al crear o usar tu cuenta |
-| **Facturación y pago** | Plan contratado, historial de cobros, **identificador (token) del método de pago**, marca y últimos 4 dígitos de la tarjeta, fecha de vencimiento, datos fiscales para CFDI (RFC, razón social, régimen, código postal) | De ti y de Mercado Pago. **No recibimos ni guardamos el número completo de tu tarjeta ni su código de seguridad.** |
+| **Facturación y pago** | Plan contratado, historial de cobros, **identificador (token) del método de pago**, marca y últimos 4 dígitos de la tarjeta, fecha de vencimiento, datos fiscales para CFDI (RFC, razón social, régimen, código postal) | De ti y del procesador de pagos (Stripe, o Mercado Pago en las suscripciones que se cobran ahí). **No recibimos ni guardamos el número completo de tu tarjeta ni su código de seguridad.** |
 | **Contenido que subes o enlazas** | Videos, streams, grabaciones, audio, imágenes, textos, enlaces, transcripciones, y los clips y resultados generados | De ti, al usar las herramientas |
 | **Cuentas conectadas (OAuth)** | Identificador y nombre de tu cuenta en la plataforma, tokens de acceso, permisos otorgados, lista de tus videos/streams, estadísticas públicas o que autorices, datos necesarios para publicar en tu nombre | De TikTok, YouTube/Google, Instagram/Facebook (Meta), Twitch, Kick u otras plataformas que conectes. **Nunca recibimos tu contraseña de esas plataformas.** |
 | **Configuración de transmisión (En vivo)** | Claves de transmisión, escenas y configuración de OBS que decidas guardar | De ti |
@@ -52,7 +52,7 @@ Emitido conforme a la **Ley Federal de Protección de Datos Personales en Posesi
 1. Crear, administrar y proteger tu cuenta, y verificar tu identidad.
 2. Prestarte las herramientas que uses: procesar tus videos y streams para generar clips, subtítulos y textos (Clips); gestionar tus transmisiones (En vivo); generar información de Señales; y, cuando estén disponibles, responder tus consultas (Asistente) y generar información de Pronósticos, Inmuebles e Inversiones.
 3. Conectar tus cuentas de redes sociales y **publicar en ellas únicamente cuando tú lo indiques** o configures la publicación automática.
-4. Procesar pagos, renovaciones, reembolsos y facturas (CFDI) a través de Mercado Pago, y enviarte avisos de cobro, recordatorios de fin de prueba y de renovación.
+4. Procesar pagos, renovaciones, reembolsos y facturas (CFDI) a través de nuestros procesadores de pago (sección 4.1 bis), y enviarte avisos de cobro, recordatorios de fin de prueba y de renovación.
 5. Enviarte comunicaciones de servicio (seguridad, cambios a los Términos o al Aviso de Privacidad, confirmaciones de cancelación).
 6. Brindarte soporte y atender quejas, aclaraciones y solicitudes ARCO.
 7. **Conservar la evidencia de tu aceptación** de Términos y de cobros recurrentes, y usarla para atender aclaraciones, contracargos, quejas ante PROFECO o procesos legales.
@@ -85,11 +85,23 @@ Compartimos datos con proveedores que nos ayudan a prestar el servicio, que est�
 | Tipo de proveedor | Proveedor | Para qué |
 |---|---|---|
 | Hospedaje, almacenamiento y nube | Vercel, Supabase y Google Cloud | Guardar tu cuenta y contenido; procesar videos |
-| Pagos | Mercado Pago | Procesar cobros, tokenizar tu tarjeta, reembolsos y contracargos |
+| Pagos con tarjeta | Stripe Payments México, S. de R.L. de C.V., con Stripe, Inc. (Estados Unidos) | Procesar cobros, tokenizar tu tarjeta, prevenir fraude, reembolsos y contracargos (sección 4.1 bis) |
+| Pagos de las suscripciones que se cobran con Mercado Pago | Mercado Pago | Procesar esos cobros, tokenizar tu tarjeta, reembolsos y contracargos (sección 4.1 bis) |
 | Modelos de inteligencia artificial | Anthropic y Google (Gemini) | Transcribir, analizar y generar clips, textos y respuestas |
 | Correo electrónico transaccional y de marketing | Resend | Avisos de cobro, recordatorios, soporte y, si aceptas, promociones |
 | Analítica y medición | Vercel Analytics, solo si lo aceptas | Medir uso y errores del servicio |
 | Facturación electrónica | Proveedor autorizado de certificación (PAC) del SAT | Emitir CFDI |
+
+### 4.1 bis. Procesadores de pago
+
+**Stripe.** Los pagos con tarjeta los procesa **Stripe Payments México, S. de R.L. de C.V.** ("**Stripe**").
+
+- **Datos que recibe Stripe:** los datos de tu tarjeta (número, fecha de vencimiento y código de seguridad), que escribes en campos seguros de Stripe dentro de chalyb.com y **van directo a Stripe**; tu correo, tu nombre si está en tu cuenta y el identificador de tu cuenta en Chalyb; el plan o paquete, el monto y la moneda; y la IP y datos de tu dispositivo y navegador, que Stripe usa para validar el pago y prevenir fraude.
+- **Datos que Chalyb recibe de Stripe:** el identificador (token) de tu método de pago, la marca, los últimos 4 dígitos y la fecha de vencimiento de la tarjeta, y el resultado de cada cobro, reembolso o contracargo. **Chalyb nunca recibe ni guarda el número completo de tu tarjeta ni su código de seguridad.**
+- **Papel de Stripe:** trata estos datos como **encargado**, por cuenta de Chalyb y según nuestras instrucciones, para procesar tus pagos. Para cumplir sus propias obligaciones legales y prevenir fraude, Stripe trata algunos de esos datos como responsable, conforme a su propio aviso de privacidad (stripe.com/mx/privacy).
+- **Transferencia internacional:** Stripe trata estos datos en **Estados Unidos**, por medio de **Stripe, Inc.**, y en otros países donde opera. Enviarlos a Stripe es una remisión a un encargado y, en lo que Stripe trata como responsable, una transferencia necesaria para cumplir el contrato que celebras con Chalyb (art. 36 de la LFPDPPP); por eso **no requiere tu consentimiento**.
+
+**Mercado Pago.** Mercado Pago (operado por la entidad de Mercado Libre que corresponda en tu país) **sigue procesando** las suscripciones que contrataste con Mercado Pago, mientras sigan cobrándose ahí. Para esos cobros recibe tus datos de pago, resguarda tu tarjeta y nos entrega un identificador (token). Trata tus datos conforme a su propio aviso de privacidad.
 
 ### 4.2. Plataformas que tú conectas
 
@@ -175,7 +187,7 @@ Si usas Chalyb desde otro país, tus datos se tratarán en México y en los paí
 
 Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consientes el tratamiento de tus datos para las finalidades primarias. Para los datos patrimoniales o financieros y para las finalidades secundarias te pediremos tu **consentimiento expreso** por separado.
 
-Última actualización: 5 de octubre de 2026 · Versión 1.0
+Última actualización: 7 de noviembre de 2026 · Versión 1.1
 
 ---
 
@@ -187,11 +199,11 @@ Al crear tu cuenta, después de haber tenido a tu disposición este Aviso, consi
 
 **Datos que tratamos:** identificación y contacto (nombre, correo, usuario, país); datos de autenticación; facturación y pago (plan, historial de cobros, token y últimos 4 dígitos de tu tarjeta, datos fiscales); el contenido que subes y los resultados generados; datos de las cuentas que conectes; datos de uso y dispositivo (IP, navegador, cookies); comunicaciones con soporte y con el Asistente; evidencia de tu aceptación; y, solo si los proporcionas y con tu consentimiento expreso, datos patrimoniales o financieros (claves de API, saldos, posiciones u operaciones). **No tratamos datos personales sensibles.**
 
-**Finalidades principales:** crear y administrar tu cuenta; prestarte las herramientas de Chalyb (Clips, Señales y En vivo; y, cuando estén disponibles, Asistente, Pronósticos, Inmuebles e Inversiones); conectar y publicar en tus redes cuando tú lo indiques; procesar pagos con Mercado Pago (no guardamos tu tarjeta); enviarte avisos de cobro y de servicio; dar soporte; prevenir fraude; conservar evidencia de tu aceptación; y cumplir la ley.
+**Finalidades principales:** crear y administrar tu cuenta; prestarte las herramientas de Chalyb (Clips, Señales y En vivo; y, cuando estén disponibles, Asistente, Pronósticos, Inmuebles e Inversiones); conectar y publicar en tus redes cuando tú lo indiques; procesar pagos con Stripe (y con Mercado Pago en las suscripciones que se cobran ahí; no guardamos tu tarjeta); enviarte avisos de cobro y de servicio; dar soporte; prevenir fraude; conservar evidencia de tu aceptación; y cumplir la ley.
 
 **Finalidades opcionales:** enviarte promociones y novedades, encuestas y publicidad personalizada. Si no quieres, deja sin marcar la casilla de promociones o desactívalas en **Mi cuenta → Privacidad y notificaciones**. Tu negativa no afecta tu servicio.
 
-**Compartimos datos** con proveedores de hospedaje, pagos (Mercado Pago), inteligencia artificial, correo y analítica que trabajan por nuestra cuenta, y con autoridades cuando la ley lo exige. **No vendemos tus datos** ni hacemos transferencias que requieran tu consentimiento.
+**Compartimos datos** con proveedores de hospedaje, pagos (Stripe, que también los trata en Estados Unidos, y Mercado Pago), inteligencia artificial, correo y analítica que trabajan por nuestra cuenta, y con autoridades cuando la ley lo exige. **No vendemos tus datos** ni hacemos transferencias que requieran tu consentimiento.
 
 **Cómo limitar el uso de tus datos:** en **Mi cuenta → Privacidad y notificaciones**, con el enlace "Dejar de recibir" de cada correo promocional, o escribiendo a hola@chalyb.com.
 

@@ -2,20 +2,28 @@
   "terminos": {
     "file": "terminos-y-condiciones.md",
     "path": "/legal/terms",
-    "current": "1.0",
+    "current": "1.1",
     "versions": {
       "1.0": {
         "published": true,
         "effective": "2026-10-05",
         "relevance": "relevant",
         "changes": []
+      },
+      "1.1": {
+        "published": true,
+        "effective": "2026-11-07",
+        "relevance": "minor",
+        "changes": [
+          "Procesadores de pago: se nombra a Stripe junto a Mercado Pago (secciones 7.2 y 15.5)."
+        ]
       }
     }
   },
   "suscripcion": {
     "file": "terminos-de-suscripcion.md",
     "path": "/legal/subscription",
-    "current": "1.2",
+    "current": "1.3",
     "versions": {
       "1.0": {
         "published": true,
@@ -50,19 +58,35 @@
         "changes": [
           "Gratis: 75,000 créditos al mes."
         ]
+      },
+      "1.3": {
+        "published": true,
+        "effective": "2026-11-07",
+        "relevance": "minor",
+        "changes": [
+          "Los pagos con tarjeta se procesan con Stripe Payments México; Mercado Pago sigue con las suscripciones contratadas ahí (sección 12 y menciones del procesador)."
+        ]
       }
     }
   },
   "privacidad": {
     "file": "aviso-de-privacidad.md",
     "path": "/legal/privacy",
-    "current": "1.0",
+    "current": "1.1",
     "versions": {
       "1.0": {
         "published": true,
         "effective": "2026-10-05",
         "relevance": "relevant",
         "changes": []
+      },
+      "1.1": {
+        "published": true,
+        "effective": "2026-11-07",
+        "relevance": "minor",
+        "changes": [
+          "Nuevo encargado de pagos: Stripe Payments México, con Stripe, Inc. (Estados Unidos). Datos que recibe, su papel y la transferencia internacional (sección 4.1 bis). Mercado Pago sigue con las suscripciones contratadas ahí."
+        ]
       }
     }
   },
@@ -82,26 +106,42 @@
   "paquetes": {
     "file": "terminos-paquetes-de-tokens.md",
     "path": "/legal/packs",
-    "current": "1.0",
+    "current": "1.1",
     "versions": {
       "1.0": {
         "published": true,
         "effective": "2026-10-05",
         "relevance": "relevant",
         "changes": []
+      },
+      "1.1": {
+        "published": true,
+        "effective": "2026-11-07",
+        "relevance": "minor",
+        "changes": [
+          "Los paquetes se pagan con Stripe; el comprobante cita el número de operación del procesador de pagos."
+        ]
       }
     }
   },
   "quien_vende": {
     "file": "quien-vende.md",
     "path": "/quien-vende",
-    "current": "1.0",
+    "current": "1.1",
     "versions": {
       "1.0": {
         "published": true,
         "effective": "2026-10-05",
         "relevance": "relevant",
         "changes": []
+      },
+      "1.1": {
+        "published": true,
+        "effective": "2026-11-07",
+        "relevance": "minor",
+        "changes": [
+          "Los pagos con tarjeta se procesan con Stripe; versiones vigentes de los documentos actualizadas."
+        ]
       }
     }
   }
