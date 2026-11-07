@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { engineRead, loadClipsEngine } from '@/lib/tools/clips-engine';
 import { loadClipJob } from '@/lib/tools/clips-jobs';
+import { loadRunCharge } from '@/lib/tools/clips-run-charge';
 import { getStream } from '@/lib/tools/adapters/clips/engine-api';
 import { ClipsEngineError } from '@/lib/tools/adapters/clips/errors';
 import { ClipsGateView, ClipsReadError } from '@/components/tools/clips/engine/gate';
@@ -36,5 +37,12 @@ export default async function ClipsVideoPage({
     if (res.error.reason === 'not_found') notFound();
     return <ClipsReadError error={res.error} tab="history" />;
   }
-  return <EngineVideoPage d={res.data} editorReady={g.engineAdapter.capabilities().editClips} />;
+  const charge = await loadRunCharge(g.session.user.id, res.data.cost.usage_job_ids);
+  return (
+    <EngineVideoPage
+      d={res.data}
+      charge={charge}
+      editorReady={g.engineAdapter.capabilities().editClips}
+    />
+  );
 }

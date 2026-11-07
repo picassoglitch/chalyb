@@ -4036,14 +4036,25 @@
       "actionsTitle": "Actions",
       "cost": {
         "title": "What it used",
-        "used": "{n} credits",
-        "base": "Base processing",
-        "none": "Nothing charged for this video yet.",
+        "used": "{n} credits charged",
+        "none": "This video's charges aren't itemized here.",
         "estimate": "Estimate per run: up to {n} credits",
         "unlimited": "Your plan has no credit limit",
         "runs": "{n, plural, one {# more run with your balance} other {# more runs with your balance}}",
         "usd": "Real cost (admins only): ${n} USD",
-        "runsNone": "Your balance doesn't cover another run"
+        "runsNone": "Your balance doesn't cover another run",
+        "soFar": "Charged so far: {n} credits",
+        "reserved": "Reserved: up to {n} more credits",
+        "reservedNote": "Reserved credits are set aside from your balance while it runs; when it ends you're only charged what was used.",
+        "unknown": "We couldn't read what this video was charged.",
+        "seeUsage": "See Usage",
+        "kind": {
+          "base": "Base processing",
+          "compute": "Compute",
+          "transcription": "Transcription",
+          "ai": "AI",
+          "boost": "Priority"
+        }
       },
       "source": {
         "title": "Original video",
