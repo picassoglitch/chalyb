@@ -15,7 +15,7 @@ import { SourceSwitch } from './source-switch';
 import { UploadForm } from './upload-form';
 import { LivePanel } from './live-panel';
 import { SourcesPanel } from './sources-panel';
-import { liveCopy, sourcesCopy, uploadCopy } from './copy';
+import { liveCopy, sourcesCopy, uploadCopy, type UploadPlanLimits } from './copy';
 
 type Start = Awaited<ReturnType<typeof getStart>>;
 type Live = Awaited<ReturnType<typeof getLive>>;
@@ -52,7 +52,7 @@ export async function SourceFrame({
   );
 }
 
-export async function UploadSource({ start }: { start: Start }) {
+export async function UploadSource({ start, plan }: { start: Start; plan: UploadPlanLimits }) {
   const t = await getTranslations('clipsEngine.upload');
   return (
     <div className="ch-ce-stack ch-ce-source" style={{ maxWidth: 760 }}>
@@ -76,7 +76,11 @@ export async function UploadSource({ start }: { start: Start }) {
         />
       ) : (
         <section className="ch-card ch-ce-card">
-          <UploadForm copy={await uploadCopy()} maxBytes={start.upload.max_bytes} />
+          <UploadForm
+            copy={await uploadCopy(plan)}
+            maxBytes={start.upload.max_bytes}
+            maxSeconds={plan.maxMinutes != null ? plan.maxMinutes * 60 : null}
+          />
         </section>
       )}
     </div>

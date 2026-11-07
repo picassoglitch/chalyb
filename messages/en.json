@@ -1116,8 +1116,8 @@
     "featsTitle": "What you get:",
     "notePaid": "Charged today. Cancel online anytime.",
     "feat": {
-      "clipsTry": "Test clips (SD, watermarked)",
-      "clipsTryWatermark": "Test clips (watermarked)",
+      "clipsTry": "Clips from {videos, plural, one {# video} other {# videos}} a month, up to {min} minutes long (SD, watermarked)",
+      "clipsTryWatermark": "Clips from {videos, plural, one {# video} other {# videos}} a month, up to {min} minutes long (watermarked)",
       "noWatermarkHd": "Watermark-free clips in HD",
       "clips4k": "4K clip exports",
       "noStreams": "Clips from your live streams",
@@ -3887,6 +3887,12 @@
       "tooBig": "That file is bigger than what can be uploaded.",
       "badType": "Upload an MP4, MOV, MKV or WebM video.",
       "putFailed": "The file couldn't be uploaded. Check your connection and try again.",
+      "limits": {
+        "tooLongFree": "Your Free plan takes videos up to {min} minutes long. Trim it or upgrade your plan.",
+        "tooLong": "Your plan takes videos up to {min} minutes long. Trim it or upgrade your plan.",
+        "monthUsedFree": "Your Free plan includes {videos, plural, one {# video} other {# videos}} a month and you've used it. It renews on the 1st, or you can upgrade your plan.",
+        "monthUsed": "You've used this month's videos on your plan. They renew on the 1st, or you can upgrade your plan."
+      },
       "off": {
         "title": "Uploading files isn't available right now",
         "body": "Meanwhile, paste your video's link.",

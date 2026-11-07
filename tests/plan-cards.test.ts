@@ -180,12 +180,12 @@ test('K-9 · bullets come from TIER_CAPS, no tool count, no credits', () => {
   // D8 · the Clips app doesn't enforce Gratis' SD cap or 0 live streams yet,
   // so by default the card promises only the watermark.
   assert.deepEqual(keys('FREE'), [
-    ['clipsTryWatermark', null, true],
+    ['clipsTryWatermark', { videos: 1, min: 5 }, true],
     ['history', { dias: 7 }, true],
     ['storage', { espacio: '500 MB' }, true],
   ]);
   assert.deepEqual(keys('FREE', true, true), [
-    ['clipsTry', null, true],
+    ['clipsTry', { videos: 1, min: 5 }, true],
     ['history', { dias: 7 }, true],
     ['storage', { espacio: '500 MB' }, true],
     ['noStreams', null, false],
@@ -291,5 +291,26 @@ test('no "equivale", no reference line in checkout components', () => {
   for (const f of ['plan-cards.tsx', 'trial-picker.tsx', 'pay-form.tsx']) {
     const src = readFileSync(join(ROOT, 'src/components/app/billing', f), 'utf8');
     assert.doesNotMatch(src, /equivale|proYearEq|vsMonth/, f);
+  }
+});
+
+test('Gratis card states its plan: 1 video a month, up to 5 minutes (owner 2026-11-07)', () => {
+  const en = JSON.parse(readFileSync(join(ROOT, 'messages/en.json'), 'utf8'));
+  const line = (locale: 'es' | 'en', enforced: boolean) => {
+    const tr = createTranslator({ locale, messages: locale === 'es' ? es : en, namespace: 'plans.feat' });
+    const f = planFeatures('FREE', { freeIncludesClips: true, clipLimitsEnforced: enforced })[0]!;
+    return tr(f.key, f.values);
+  };
+  assert.equal(line('es', false), 'Clips de 1 video al mes, de hasta 5 minutos (con marca de agua)');
+  assert.equal(
+    line('es', true),
+    'Clips de 1 video al mes, de hasta 5 minutos (calidad SD, con marca de agua)',
+  );
+  assert.equal(line('en', false), 'Clips from 1 video a month, up to 5 minutes long (watermarked)');
+  assert.equal(TIER_CAPS.FREE.maxSourceMinutes, 5);
+  assert.equal(TIER_CAPS.FREE.sourceMinutesPerMonth, 5);
+  assert.equal(TIER_CAPS.FREE.clipVideosPerMonth, 1);
+  for (const t of ['PRO', 'PARTNER', 'VIP'] as const) {
+    assert.equal(TIER_CAPS[t].clipVideosPerMonth, Infinity, `${t} clipVideosPerMonth`);
   }
 });

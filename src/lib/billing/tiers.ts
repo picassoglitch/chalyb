@@ -93,6 +93,9 @@ export interface TierCapabilities {
   clipVodRetentionDays: number;
   /** Live streams ChalyClip allows per month (Infinity = uncapped). */
   clipStreamsPerMonth: number;
+  /** Videos ChalyClip processes a month (chalybclip/tiers.py enforces it);
+   *  the hub's minutes and credits caps back it up. */
+  clipVideosPerMonth: number;
   /** Highest export resolution ChalyClip will render. */
   clipExportMaxQuality: ClipExportQuality;
   /** Whether clips can auto-publish (false = manual download only). */
@@ -119,13 +122,15 @@ export interface TierCapabilities {
 export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
   FREE: {
     liveEnginesCount: 0,
+    // Shared by every engine (a Chalito turn is a job): "1 video" is clipVideosPerMonth.
     jobsPerMonth: 100,
-    tokensPerMonth: 50_000,
+    // Owner 2026-11-07: covers a 5-min video's 61,366 hold (USAGE_ECONOMICS).
+    tokensPerMonth: 65_000,
     storageMB: 500,
     activeStreams: 0,
     maxUploadMB: 500,
-    maxSourceMinutes: 30,
-    sourceMinutesPerMonth: 60,
+    maxSourceMinutes: 5,
+    sourceMinutesPerMonth: 5,
     maxConcurrentJobs: 1,
     boost: 'paid',
     historyDays: 7,
@@ -137,6 +142,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipWatermark: true,
     clipVodRetentionDays: 7,
     clipStreamsPerMonth: 0,
+    clipVideosPerMonth: 1,
     clipExportMaxQuality: 'sd',
     clipAutoPublish: false,
     clipBrandKits: 0,
@@ -173,6 +179,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipWatermark: false,
     clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
+    clipVideosPerMonth: Infinity,
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
@@ -208,6 +215,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipWatermark: false,
     clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity, // credits govern volume, not a stream count
+    clipVideosPerMonth: Infinity,
     clipExportMaxQuality: 'hd',
     clipAutoPublish: false,
     clipBrandKits: 1,
@@ -238,6 +246,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     clipWatermark: false,
     clipVodRetentionDays: 30,
     clipStreamsPerMonth: Infinity,
+    clipVideosPerMonth: Infinity,
     clipExportMaxQuality: '4k',
     clipAutoPublish: true,
     clipBrandKits: Infinity,
@@ -270,6 +279,9 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
  * the monthly-minutes caps sit above what the credits buy and only stop
  * abuse (Pro 3,000 min, VIP 12,000). No stream counts are promised.
  * tests/consumption.test.ts holds the rule.
+ *
+ *   Gratis (owner 2026-11-07): 1 video/month up to 5 min. Its hold is
+ *   ceil(estimate_tokens(5 min) 23,602 × 2.6) = 61,366 → 65,000.
  */
 export const USAGE_ECONOMICS = {
   usdPerMillionBillable: 4,
