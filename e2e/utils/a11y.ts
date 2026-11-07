@@ -3,6 +3,11 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
 
 /** 0 serious/critical axe violations (rebuild prompt §6.3). */
 export async function expectAccessible(page: Page) {
+  // Next 16 streams generateMetadata after the UI: under load axe ran before <title>
+  // arrived. Wait for it (bounded); a page that never gets one still fails below.
+  await page
+    .waitForFunction(() => document.title.trim() !== '', undefined, { timeout: 5000 })
+    .catch(() => undefined);
   const results = await new AxeBuilder({ page }).analyze();
   const blocking = results.violations
     .filter((v) => v.impact === 'serious' || v.impact === 'critical')

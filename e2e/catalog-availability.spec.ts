@@ -99,7 +99,10 @@ test('an En vivo-only catalog does not promise Clips or show clip demonstrations
       await page.goto(path);
       await expect(page.getByTestId('catalog-unavailable')).toHaveCount(0);
       if (path === '/' || path === '/en') {
-        await expect(page.locator('#herramientas .pub-bc h3')).toHaveText(['En vivo']);
+        // English names the tool "Live", like messages/en.json (2026-11-07).
+        await expect(page.locator('#herramientas .pub-bc h3')).toHaveText([
+          path === '/en' ? 'Live' : 'En vivo',
+        ]);
       }
       await expect(page.getByTestId('plan-cards')).toBeVisible();
       await expect(page.locator('#como, .pub-gall2, .pub-dev, .pub-notif')).toHaveCount(0);
@@ -141,7 +144,10 @@ test('both tools active restores the full landing', async ({ page, request }) =>
   await catalog(request, slugs);
   for (const path of ['/', '/en']) {
     await page.goto(path);
-    await expect(page.locator('#herramientas .pub-bc h3')).toHaveText(['Clips', 'En vivo']);
+    await expect(page.locator('#herramientas .pub-bc h3')).toHaveText([
+      'Clips',
+      path === '/en' ? 'Live' : 'En vivo',
+    ]);
     await expect(page.locator('#como, .pub-gall2, .pub-dev')).toHaveCount(3);
     await expect(page.locator('[data-cta="nav_trial"]')).toBeVisible();
     await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(0);
