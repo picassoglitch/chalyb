@@ -266,8 +266,8 @@ try {
   );
   const a6 = await admit('j6', 10, 0, 10, caps({ jobs_per_month: 2 })); // j1 succeeded + j5 failed
   check(
-    'monthly jobs cap counts failed jobs',
-    a6.allowed === false && a6.reason === 'jobs_cap',
+    'monthly jobs cap counts a failed job with no output count reported',
+    a6.allowed === false && a6.reason === 'jobs_cap' && a6.used === 2,
     JSON.stringify(a6),
   );
 
@@ -326,6 +326,196 @@ try {
 
   const un = await admit('j7', 1e9, 0, 1000, caps({ unlimited: true }));
   check('unlimited (admin) is never refused', un.allowed === true, JSON.stringify(un));
+}
+
+// ── Failed runs (20261107000300): the month's first 3 with no output don't count
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const engineId = (await db.query(`select id from public.engines where slug = 'chalybclip'`))
+    .rows[0]?.id;
+  const u = (
+    await db.query(`insert into auth.users (email) values ('fails@example.com') returning id`)
+  ).rows[0].id;
+  await db.query(`insert into public.profiles (id) values ($1) on conflict do nothing`, [u]);
+  const caps = (o = {}) =>
+    JSON.stringify({
+      allocation: 1e9,
+      unlimited: false,
+      jobs_per_month: 100,
+      minutes_per_month: 100,
+      max_concurrent_jobs: 1,
+      active_streams: 1,
+      streams_per_month: 100,
+      ...o,
+    });
+  const admit = async (job, minutes, c = caps(), cls = 'job') =>
+    (
+      await db.query(
+        `select public.admit_usage($1,$2,$3,$4,'clips.pipeline','standard',1,0,$5,0,3600,$6::jsonb) as r`,
+        [u, engineId, job, cls, minutes, c],
+      )
+    ).rows[0].r;
+  // Engines that report outputs call the 4-argument settle; failures here
+  // report 0 unless a test says otherwise.
+  const settle = async (res, outcome, outputs = 0) =>
+    (
+      await db.query(`select public.settle_usage_reservation($1,$2,$3,$4::integer) as r`, [
+        res.reservation_id,
+        engineId,
+        outcome,
+        outputs,
+      ])
+    ).rows[0].r;
+  // An older engine: the 3-argument call, named like PostgREST sends it.
+  const settleOld = async (res, outcome) =>
+    (
+      await db.query(
+        `select public.settle_usage_reservation(p_reservation_id => $1, p_engine_id => $2, p_outcome => $3) as r`,
+        [res.reservation_id, engineId, outcome],
+      )
+    ).rows[0].r;
+  // How much of the month counts right now, as admit_usage reports it.
+  const used = async (cls = 'job') => {
+    const r = await admit(`probe-${cls}`, 0, caps({ jobs_per_month: 0, streams_per_month: 0, max_concurrent_jobs: 5, active_streams: 5 }), cls);
+    return r.used;
+  };
+
+  // A real "used" figure first: one succeeded run of 20 minutes.
+  await settle(await admit('ok1', 20), 'succeeded');
+  check('a succeeded job counts', (await used()) === 1, String(await used()));
+
+  // Three failed 25-minute runs: none of them uses the month.
+  for (const n of [1, 2, 3]) {
+    const r = await admit(`f${n}`, 25);
+    check(`failed run ${n} admitted`, r.allowed === true, JSON.stringify(r));
+    await settle(r, 'failed');
+  }
+  check('the first 3 failed runs do not count as jobs', (await used()) === 1, String(await used()));
+  const fits = await admit('m1', 80); // 20 + 80 = 100: fits only if the 75 failed minutes are free
+  check('nor as minutes', fits.allowed === true, JSON.stringify(fits));
+  await settle(fits, 'cancelled');
+
+  // The 4th failure counts, jobs and minutes (anti-abuse).
+  await settle(await admit('f4', 30), 'failed');
+  check('the 4th failed run counts as a job', (await used()) === 2, String(await used()));
+  const over = await admit('m2', 60); // 20 + 30 + 60 = 110 > 100
+  check(
+    'and its minutes count',
+    over.allowed === false && over.reason === 'minutes_cap' && Number(over.used) === 50,
+    JSON.stringify(over),
+  );
+  const under = await admit('m3', 50); // 20 + 30 + 50 = 100
+  check('exactly at the cap still fits', under.allowed === true, JSON.stringify(under));
+  await settle(under, 'cancelled');
+
+  // Which failures are free is fixed by order: the earliest 3.
+  await db.query(
+    `update public.usage_reservations
+        set created_at = (select created_at from public.usage_reservations
+                           where external_job_id = 'f1' and user_id = $1) - interval '1 millisecond'
+      where external_job_id = 'f4' and user_id = $1`,
+    [u],
+  );
+  const moved = await admit('m4', 60); // now f3 (25 min) is the 4th: 20 + 25 + 60 = 105
+  check(
+    'the free three are the earliest three',
+    moved.allowed === false && Number(moved.used) === 45,
+    JSON.stringify(moved),
+  );
+
+  // Last month's failures don't use this month's free retries.
+  await db.query(
+    `update public.usage_reservations set created_at = public.usage_period_start() - interval '1 day'
+      where external_job_id in ('f1','f2','f3','f4') and user_id = $1`,
+    [u],
+  );
+  await settle(await admit('g1', 5), 'failed');
+  check('a new month starts with 3 free retries', (await used()) === 1, String(await used()));
+
+  // Streams are unchanged: a failed stream still counts.
+  const s1 = await admit('s1', 0, caps(), 'stream');
+  check('stream admitted', s1.allowed === true, JSON.stringify(s1));
+  await settle(s1, 'failed');
+  check('a failed stream still counts', (await used('stream')) === 1, String(await used('stream')));
+
+  // Codex P2: only an explicit "no output" makes a failure free.
+  const before = await used(); // g1 is free: 0
+  const old = await admit('o1', 5);
+  const oldRes = await settleOld(old, 'failed');
+  check('old 3-argument settle still works', oldRes.ok === true && oldRes.status === 'failed', JSON.stringify(oldRes));
+  check('a failure settled without outputs counts', (await used()) === before + 1, String(await used()));
+  const outs = async (job) =>
+    (await db.query(`select outputs from public.usage_reservations where external_job_id = $1 and user_id = $2`, [job, u]))
+      .rows[0].outputs;
+  check('and stores outputs as not reported', (await outs('o1')) === null, String(await outs('o1')));
+
+  const withClips = await admit('c1', 5);
+  await settle(withClips, 'failed', 4);
+  check('a failure that made clips counts', (await used()) === before + 2, String(await used()));
+  check('its clip count is stored', (await outs('c1')) === 4, String(await outs('c1')));
+
+  // g1 (outputs 0) is free retry 1 of this month; two more are free, then not.
+  await settle(await admit('g2', 5), 'failed');
+  await settle(await admit('g3', 5), 'failed');
+  check('clip-making and unreported failures do not use up the free three', (await used()) === before + 2, String(await used()));
+  await settle(await admit('g4', 5), 'failed');
+  check('the 4th no-output failure counts', (await used()) === before + 3, String(await used()));
+
+  const bad = await admit('b1', 1);
+  const badRes = await settle(bad, 'failed', -1);
+  check('negative outputs are refused', badRes.ok === false && badRes.error === 'invalid outputs', JSON.stringify(badRes));
+  const st = (await db.query(`select status from public.usage_reservations where id = $1`, [bad.reservation_id])).rows[0].status;
+  check('and leave the reservation open', st === 'open', st);
+  await settle(bad, 'cancelled');
+
+  // Settling twice is still a no-op: a late "0 outputs" can't turn a counted failure free.
+  const again = await settle(old, 'failed', 0);
+  check('re-settle is a no-op', again.ok === true && again.already === true, JSON.stringify(again));
+  check('and keeps outputs unreported', (await outs('o1')) === null, String(await outs('o1')));
+
+  // A succeeded settle with outputs works and keeps the boost-fee path.
+  const okRes = await settle(await admit('ok2', 1), 'succeeded', 3);
+  check('succeeded with outputs settles', okRes.ok === true && okRes.status === 'succeeded', JSON.stringify(okRes));
+
+  // Heartbeat with outputs keeps the job open and records nothing.
+  const hb = await admit('hb1', 1);
+  const hbRes = await settle(hb, 'heartbeat', 0);
+  check('heartbeat with outputs keeps it open', hbRes.ok === true && hbRes.status === 'open', JSON.stringify(hbRes));
+  check('heartbeat stores no outputs', (await outs('hb1')) === null, String(await outs('hb1')));
+  await settle(hb, 'cancelled');
+
+  // Server-only, like the 3-argument settle (0064).
+  const priv = (
+    await db.query(
+      `select has_function_privilege('anon', 'public.settle_usage_reservation(uuid,uuid,text,integer)', 'execute') as anon,
+              has_function_privilege('authenticated', 'public.settle_usage_reservation(uuid,uuid,text,integer)', 'execute') as auth,
+              has_function_privilege('service_role', 'public.settle_usage_reservation(uuid,uuid,text,integer)', 'execute') as svc`,
+    )
+  ).rows[0];
+  check('4-argument settle is service_role only', !priv.anon && !priv.auth && priv.svc, JSON.stringify(priv));
+  const priv3 = (
+    await db.query(
+      `select has_function_privilege('anon', 'public.settle_usage_reservation(uuid,uuid,text)', 'execute') as anon,
+              has_function_privilege('authenticated', 'public.settle_usage_reservation(uuid,uuid,text)', 'execute') as auth,
+              has_function_privilege('service_role', 'public.settle_usage_reservation(uuid,uuid,text)', 'execute') as svc`,
+    )
+  ).rows[0];
+  check('3-argument settle stays service_role only', !priv3.anon && !priv3.auth && priv3.svc, JSON.stringify(priv3));
+
+  // outputs can't go negative even written directly.
+  let rejected = false;
+  try {
+    await db.query(`update public.usage_reservations set outputs = -1 where id = $1`, [bad.reservation_id]);
+  } catch {
+    rejected = true;
+  }
+  check('outputs column refuses negatives', rejected);
 }
 
 // ── Credit packs (0065): spend once, oldest first; per-pack refund/hold ───

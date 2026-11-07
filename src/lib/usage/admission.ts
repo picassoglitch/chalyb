@@ -111,14 +111,18 @@ export async function settleUsage(
   slug: string,
   reservationId: string,
   outcome: SettleOutcome,
+  outputs?: number,
 ): Promise<{ ok: boolean; status?: string; error?: string; already?: boolean }> {
   const engineId = await engineIdFor(slug);
   if (!engineId) return { ok: false, error: `engine not registered: ${slug}` };
   const admin = createAdminClient();
+  // Without an output count the 3-argument settle runs, as before: a failure
+  // without one keeps counting toward the month (20261107000300).
   const { data, error } = await admin.rpc('settle_usage_reservation', {
     p_reservation_id: reservationId,
     p_engine_id: engineId,
     p_outcome: outcome,
+    ...(outputs === undefined ? {} : { p_outputs: outputs }),
   });
   if (error) throw new Error(`settle_usage_reservation failed: ${error.message}`);
   return (data ?? { ok: false }) as {
