@@ -1944,6 +1944,9 @@
         "note": "Lo que Anthropic nos cobró contra lo que los sistemas registraron (y por lo tanto cobraron a los usuarios). Una diferencia positiva es uso que pagamos y no cobramos.",
         "billed": "Cobrado por Anthropic",
         "recorded": "Registrado",
+        "measured": "Medido: facturación real de Anthropic (Admin API)",
+        "estimated": "Estimado: lo que los motores calcularon con su tabla de precios",
+        "unverified": "Sin costo medido: el margen no se puede verificar hasta que esta consulta funcione. No uses los costos de ejemplo de abajo como evidencia.",
         "gap": "Diferencia",
         "model": "Modelo",
         "workspaces": "Por workspace de Anthropic",
@@ -1951,7 +1954,9 @@
         "lastMonth": "Mes pasado",
         "error": {
           "no_key": "falta ANTHROPIC_ADMIN_KEY en Vercel",
-          "api": "Anthropic no respondió (revisa que la llave sea de Admin)",
+          "auth": "Anthropic rechazó ANTHROPIC_ADMIN_KEY (no es válida, se revocó o no es una llave de Admin sk-ant-admin…)",
+          "timeout": "Anthropic no respondió a tiempo; recarga la página",
+          "api": "Anthropic devolvió un error",
           "db": "no se pudo leer el uso registrado"
         }
       }

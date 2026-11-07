@@ -56,6 +56,7 @@ const ANTHROPIC_API = 'https://api.anthropic.com';
 const ANTHROPIC_API_VERSION = '2023-06-01';
 const DEFAULT_USD_TO_MXN = 18.0;
 const DEFAULT_WINDOW_DAYS = 30;
+const CALL_TIMEOUT_MS = 10_000;
 
 function isoDaysAgo(days: number): string {
   const t = Date.now() - days * 24 * 60 * 60 * 1000;
@@ -74,6 +75,9 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
   }
   const qs = new URLSearchParams(params).toString();
   let res: Response;
+  let body: unknown = null;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), CALL_TIMEOUT_MS);
   try {
     res = await fetch(`${ANTHROPIC_API}${path}?${qs}`, {
       method: 'GET',
@@ -83,20 +87,25 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       },
       // Don't cache — billing data updates continuously.
       cache: 'no-store',
+      signal: ctrl.signal,
     });
+    const text = await res.text();
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
   } catch (err) {
     return {
       ok: false,
       status: 0,
       body: null,
-      error: `network: ${err instanceof Error ? err.message : String(err)}`,
+      error: ctrl.signal.aborted
+        ? `Anthropic no respondió en ${CALL_TIMEOUT_MS / 1000}s`
+        : `network: ${err instanceof Error ? err.message : String(err)}`,
     };
-  }
-  let body: unknown = null;
-  try {
-    body = await res.json();
-  } catch {
-    body = await res.text().catch(() => '');
+  } finally {
+    clearTimeout(timer);
   }
   if (!res.ok) {
     const detail =
