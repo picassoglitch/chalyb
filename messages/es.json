@@ -1067,10 +1067,10 @@
       "name": "Pro",
       "tag": "Para quien publica cada semana",
       "cta": "Empezar mis 7 días gratis",
-      "note": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
+      "note": "Si no cancelas, el {fecha} se cobra automáticamente y se renueva cada año. Cancela en 1 clic.",
       "fCredits": "{creditos} créditos cada mes",
       "ctaMonth": "Elegir Pro mensual",
-      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras.",
+      "noteMonth": "Si no cancelas, el {fecha} se cobra automáticamente y se renueva cada mes. Cancela en 1 clic.",
       "badgePopular": "Más popular",
       "save": "Ahorras {ahorro} al año · {pct}%",
       "switchYear": "Cambia a Anual y ahorra {ahorro} al año",
@@ -1105,7 +1105,11 @@
       "a4": "Sí. Es 1 clic desde Mi cuenta. Sigues con tu plan hasta el final del periodo que pagaste."
     },
     "quebec": "Por ahora los planes de pago no están disponibles en Quebec.",
-    "trialChip": "{dias} días gratis",
+    "trialUnit": "por {dias} días",
+    "after": {
+      "month": "Después, {monto} MXN al mes",
+      "year": "Después, {monto} MXN al año"
+    },
     "trialFootnote": "Prueba gratis {dias} días en cualquier plan, mensual o anual: solo la primera vez, una vez por cuenta y por tarjeta.",
     "yourPlan": "Tu plan",
     "featsTitle": "Incluye:",

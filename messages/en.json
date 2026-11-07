@@ -1067,10 +1067,10 @@
       "name": "Pro",
       "tag": "For creators who post every week",
       "cta": "Start my 7-day free trial",
-      "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
+      "note": "Unless you cancel, you’re charged automatically on {fecha} and it renews every year. Cancel in 1 click.",
       "fCredits": "{creditos} credits every month",
       "ctaMonth": "Choose Pro monthly",
-      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
+      "noteMonth": "Unless you cancel, you’re charged automatically on {fecha} and it renews every month. Cancel in 1 click.",
       "badgePopular": "Most popular",
       "save": "Save {ahorro} a year · {pct}%",
       "switchYear": "Switch to yearly and save {ahorro} a year",
@@ -1105,7 +1105,11 @@
       "a4": "Yes. It’s 1 click from My account. You keep your plan until the end of the period you paid for."
     },
     "quebec": "Paid plans aren’t available in Quebec for now.",
-    "trialChip": "{dias} days free",
+    "trialUnit": "for {dias} days",
+    "after": {
+      "month": "Then {monto} MXN a month",
+      "year": "Then {monto} MXN a year"
+    },
     "trialFootnote": "Free {dias}-day trial on any plan, monthly or yearly: first time only, once per account and per card.",
     "yourPlan": "Your plan",
     "featsTitle": "What you get:",

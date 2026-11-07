@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
-import { Check, Gift, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { PRICING, annualMath, floorToPeso, planPrice } from '@/config/pricing';
 import { proCard, vipCard } from '@/lib/billing/plan-card-model';
@@ -96,15 +96,26 @@ export function PlanCards(props: Props) {
       </span>
     );
 
-  const price = (amount: number, unit: 'year' | 'month', live = false) => (
-    <div className="ch-pc__pb" aria-live={live ? 'polite' : undefined}>
-      <p className="ch-pc__pr">
-        <span className="ch-pc__amt">{formatMXN(amount)}</span>
-        <span className="ch-pc__unit">{tp(unit === 'year' ? 'unitYear' : 'unitMonth')}</span>
-      </p>
-      <p className="ch-pc__renew">{tp(unit === 'year' ? 'renewYear' : 'renewMonth')}</p>
-    </div>
-  );
+  const price = (amount: number, unit: 'year' | 'month', live = false, trial = false) =>
+    trial ? (
+      <div className="ch-pc__pb" aria-live={live ? 'polite' : undefined}>
+        <p className="ch-pc__pr">
+          <span className="ch-pc__amt">{formatMXN(0)}</span>
+          <span className="ch-pc__unit">{t('trialUnit', { dias: PRICING.trial.days })}</span>
+        </p>
+        <p className="ch-pc__renew">
+          {t(unit === 'year' ? 'after.year' : 'after.month', { monto: formatMXN(amount) })}
+        </p>
+      </div>
+    ) : (
+      <div className="ch-pc__pb" aria-live={live ? 'polite' : undefined}>
+        <p className="ch-pc__pr">
+          <span className="ch-pc__amt">{formatMXN(amount)}</span>
+          <span className="ch-pc__unit">{tp(unit === 'year' ? 'unitYear' : 'unitMonth')}</span>
+        </p>
+        <p className="ch-pc__renew">{tp(unit === 'year' ? 'renewYear' : 'renewMonth')}</p>
+      </div>
+    );
 
   const feats = (list: PlanFeature[], title: string) => (
     <div className="ch-pc__ft">
@@ -232,14 +243,8 @@ export function PlanCards(props: Props) {
                 {t('pro.name')}
               </H>
               <p className="ch-pc__tag">{t('pro.tag')}</p>
-              {pro.chip && (
-                <span className="ch-pc__chip">
-                  <Gift aria-hidden="true" />
-                  {t('trialChip', { dias: PRICING.trial.days })}
-                </span>
-              )}
             </div>
-            {price(pro.amountCents, pro.unit, true)}
+            {price(pro.amountCents, pro.unit, true, pro.chip)}
             <div className="ch-pc__vl">
               {pro.monthlyRef && (
                 <p className="ch-pc__ref">
@@ -292,14 +297,8 @@ export function PlanCards(props: Props) {
                 {t('vip.name')}
               </H>
               <p className="ch-pc__tag">{t('vip.tag')}</p>
-              {vip.chip && (
-                <span className="ch-pc__chip">
-                  <Gift aria-hidden="true" />
-                  {t('trialChip', { dias: PRICING.trial.days })}
-                </span>
-              )}
             </div>
-            {price(vip.amountCents, vip.unit)}
+            {price(vip.amountCents, vip.unit, false, vip.chip)}
             <div className="ch-pc__vl">
               {vip.noYear && <p className="ch-pc__ref">{t('vip.noYear')}</p>}
               {vip.monthlyRef && (
