@@ -1,6 +1,6 @@
 # Términos de Suscripción, Prueba Gratis, Cobros y Reembolsos de Chalyb
 
-**Versión:** 1.1 · **Fecha de entrada en vigor:** 6 de noviembre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.2 · **Fecha de entrada en vigor:** 7 de noviembre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
@@ -21,7 +21,7 @@
 
 | Plan | Precio | Periodicidad del cobro | Créditos incluidos* |
 |---|---|---|---|
-| **Gratis** | $0 MXN | Sin cobro | 50,000 por mes |
+| **Gratis** | $0 MXN | Sin cobro | 75,000 por mes |
 | **Pro** (mensual) | **$1,099 MXN** | Cada mes, automático | 8,000,000 por mes |
 | **Pro anual** | **$10,990 MXN** (ahorras $2,198 frente a 12 meses de Pro mensual, que suman $13,188) | Un solo cobro cada año, automático | 8,000,000 por mes |
 | **Pro Lealtad** (cuando esté disponible) | **$1,662 MXN el mes 1**; después $1,495 · $1,329 · $1,163 · $997 · $831 y, del mes 7 en adelante, **$664 MXN al mes** (sección 4 bis) | Cada mes, automático; el monto cambia según el calendario | 8,000,000 por mes |
@@ -258,4 +258,4 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
-Última actualización: 6 de noviembre de 2026 · Versión 1.1
+Última actualización: 7 de noviembre de 2026 · Versión 1.2

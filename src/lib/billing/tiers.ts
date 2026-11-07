@@ -124,8 +124,8 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
     liveEnginesCount: 0,
     // Shared by every engine (a Chalito turn is a job): "1 video" is clipVideosPerMonth.
     jobsPerMonth: 100,
-    // Owner 2026-11-07: covers a 5-min video's 61,366 hold (USAGE_ECONOMICS).
-    tokensPerMonth: 65_000,
+    // Owner 2026-11-07: a 5-min video's hold (61,366) and likely settle (~70–75k).
+    tokensPerMonth: 75_000,
     storageMB: 500,
     activeStreams: 0,
     maxUploadMB: 500,
@@ -281,7 +281,7 @@ export const TIER_CAPS: Record<SubscriptionTier, TierCapabilities> = {
  * tests/consumption.test.ts holds the rule.
  *
  *   Gratis (owner 2026-11-07): 1 video/month up to 5 min. Its hold is
- *   ceil(estimate_tokens(5 min) 23,602 × 2.6) = 61,366 → 65,000.
+ *   ceil(estimate_tokens(5 min) 23,602 × 2.6) = 61,366; settles ~70–75k → 75,000.
  */
 export const USAGE_ECONOMICS = {
   usdPerMillionBillable: 4,
