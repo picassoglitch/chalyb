@@ -34,6 +34,7 @@ import { gatePackCharge, type PackGateRefusal } from './pack-checkout-core';
 import { loadPricedPacks, packTermsText } from './pack-prices';
 import { recordPackConsent } from './pack-consent';
 import { packReference } from './subscription-reference';
+import { meliSessionOptions } from './device-session';
 import { STATEMENT_DESCRIPTOR, orderAdditionalInfo, packItem, payerName } from './order-quality';
 import {
   chargeFromOrder,
@@ -333,6 +334,8 @@ export async function payTokenPackWithCard(input: PackConsentInput & {
   installments?: number;
   paymentTypeId?: string | null;
   identification?: { type: string; number: string } | null;
+  /** MP_DEVICE_SESSION_ID from the card form, sent as X-meli-session-id. */
+  deviceSessionId?: string | null;
 }): Promise<PackCardPaymentResult> {
   try {
     const session = await getSessionUser();
@@ -430,6 +433,7 @@ export async function payTokenPackWithCard(input: PackConsentInput & {
           amountCents: accepted.cents,
           cardToken: token,
         }),
+        ...meliSessionOptions(input.deviceSessionId),
       },
     });
 

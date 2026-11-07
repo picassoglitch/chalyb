@@ -216,6 +216,7 @@ export interface ChangeInput {
   consentChecked: boolean;
   locale: string;
   clientTimezone?: string | null;
+  deviceSessionId?: string | null;
 }
 
 export type ChangeResult = StartResult & { refundCents?: number };
@@ -294,6 +295,7 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     clientTimezone: input.clientTimezone,
     intent: 'change',
     effectiveAt,
+    deviceSessionId: input.deviceSessionId,
   });
   if (!result.ok) return result;
 

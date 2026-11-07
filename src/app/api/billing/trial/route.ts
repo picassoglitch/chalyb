@@ -17,6 +17,7 @@ import {
 } from '@/lib/config/flags';
 import { startSubscription } from '@/lib/billing/start-subscription';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
+import { cleanDeviceSessionId } from '@/lib/payments/device-session';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
     declaredProvince: typeof body.province === 'string' ? body.province : null,
     clientTimezone: typeof body.timezone === 'string' ? body.timezone : null,
     locale: body.locale === 'en' ? 'en' : 'es',
+    deviceSessionId: cleanDeviceSessionId(body.deviceSessionId),
   });
   if (!result.ok) return NextResponse.json(result, { status: statusForStartError(result.code) });
   return NextResponse.json(result);
