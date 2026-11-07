@@ -1,6 +1,6 @@
 # Términos de Suscripción, Prueba Gratis, Cobros y Reembolsos de Chalyb
 
-**Versión:** 1.2 · **Fecha de entrada en vigor:** 7 de noviembre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
+**Versión:** 1.3 · **Fecha de entrada en vigor:** 7 de noviembre de 2026 · Forman parte de los Términos y Condiciones de Chalyb.
 
 > **Resumen en palabras simples**
 >
@@ -11,7 +11,7 @@
 > - **Cancelas en 1 clic** en **Mi cuenta → Mi plan**. Sigues teniendo acceso hasta el final del periodo que ya tienes (o de la prueba) y **no se te vuelve a cobrar**.
 > - **No hay reembolsos, salvo los que exige la ley** (por ejemplo, cobros no autorizados, cobros sin el aviso previo, errores o servicio no prestado; sección 7). Pedir un reembolso o presentar una disputa con tu banco **nunca** te genera una penalización, un bloqueo ni un cambio de precio.
 > - Los **créditos** no son dinero y no se cambian por efectivo. Los de tu plan se renuevan el día 1 de cada mes y no se acumulan.
-> - Los pagos se procesan con **Mercado Pago**. Nosotros no guardamos el número completo de tu tarjeta.
+> - Los pagos con tarjeta se procesan con **Stripe**. Las suscripciones que contrataste con **Mercado Pago** se siguen cobrando ahí mientras no cambien a Stripe (sección 12). Nosotros no guardamos el número completo de tu tarjeta.
 
 ---
 
@@ -44,7 +44,7 @@
 
 2.2. **Quién puede usarla.** La Prueba es solo para quien contrata un plan de pago **por primera vez**: **una Prueba por cuenta y por tarjeta o método de pago**. No es acumulable con otras promociones salvo que se indique. Podemos negar o cancelar la Prueba si detectamos cuentas múltiples, tarjetas compartidas para obtener varias pruebas, uso de datos falsos u otro abuso, o si tuviste un contracargo de mala fe (sección 10.8). Pedir un reembolso no te impide usar la Prueba.
 
-2.3. **Tarjeta obligatoria y $0 hoy.** Para activar la Prueba debes registrar una tarjeta u otro método de pago aceptado por Mercado Pago. **Hoy pagas $0.** Mercado Pago o tu banco pueden realizar una autorización temporal de verificación que no se cobra o que se libera automáticamente según las reglas de tu banco.
+2.3. **Tarjeta obligatoria y $0 hoy.** Para activar la Prueba debes registrar una tarjeta u otro método de pago aceptado por el procesador de pagos (sección 12). **Hoy pagas $0.** El procesador de pagos o tu banco pueden realizar una autorización temporal de verificación que no se cobra o que se libera automáticamente según las reglas de tu banco.
 
 2.4. **Elección del plan que sigue a la Prueba.** Antes de activar la Prueba eliges el plan que empezará al terminarla:
 - **Pro mensual — $1,099 MXN cada mes**,
@@ -124,7 +124,7 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 4 bis.5. **Lo que no reinicia tu calendario.**
 - Cambiar de tarjeta o de método de pago.
 - Un pago que falla pero se cubre dentro de los 7 días de gracia (ese mes cuenta como pagado).
-- Un cobro retenido o retrasado por causas de Chalyb o de Mercado Pago, incluida la regla de la sección 2.7 bis.
+- Un cobro retenido o retrasado por causas de Chalyb o del procesador de pagos, incluida la regla de la sección 2.7 bis.
 - **Un reembolso o bonificación** (sección 7) o una **reclamación o contracargo** que presentes: esos meses siguen contando (secciones 7.3 y 10.2). Un contracargo solo tiene consecuencias si es de mala fe y, tras el aviso y el plazo de 10 días hábiles, el monto sigue sin pagarse (secciones 10.4 a 10.6); en ese caso tu suscripción puede terminar por falta de pago y, si vuelves, se aplica la sección 10.8.
 - Que Chalyb modifique o retire el plan, o te cambie de plan por causas de Chalyb.
 
@@ -173,11 +173,11 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 7.4. **Fuera de estos casos no hay reembolsos.** No ofrecemos reembolsos discrecionales o de cortesía.
 
-7.5. **Cómo pedir un reembolso.** Escribe a hola@chalyb.com o usa **Ayuda → Problema con un cobro**, indicando el correo de tu cuenta, la fecha y el monto. No necesitas ningún otro requisito. Te respondemos por escrito en un máximo de **5 días hábiles**, explicando el motivo si la solicitud no procede. Los reembolsos se hacen al mismo método de pago a través de Mercado Pago (o a otro, si tú lo aceptas); el tiempo en que se reflejan depende de tu banco. Si no estás de acuerdo con nuestra respuesta, puedes acudir a la PROFECO.
+7.5. **Cómo pedir un reembolso.** Escribe a hola@chalyb.com o usa **Ayuda → Problema con un cobro**, indicando el correo de tu cuenta, la fecha y el monto. No necesitas ningún otro requisito. Te respondemos por escrito en un máximo de **5 días hábiles**, explicando el motivo si la solicitud no procede. Los reembolsos se hacen al mismo método de pago a través del procesador con el que se hizo el cobro (o a otro, si tú lo aceptas); el tiempo en que se reflejan depende de tu banco. Si no estás de acuerdo con nuestra respuesta, puedes acudir a la PROFECO.
 
 ## 8. Pagos fallidos, periodo de gracia y cambio a plan Gratis
 
-8.1. Si un cobro no puede realizarse (fondos insuficientes, tarjeta vencida o rechazada), te avisaremos por correo y en Chalyb, y Mercado Pago podrá **reintentar el cobro** durante el periodo de gracia.
+8.1. Si un cobro no puede realizarse (fondos insuficientes, tarjeta vencida o rechazada), te avisaremos por correo y en Chalyb, y el procesador de pagos podrá **reintentar el cobro** durante el periodo de gracia.
 
 8.2. **Periodo de gracia en las renovaciones:** si falla el cobro de una renovación, tendrás **7 días naturales** (en Pro Lealtad, también **7 días naturales**; te avisamos el día en que falla el pago y otra vez antes de que termine el plazo, indicando que, si no se cubre, tu calendario volverá al mes 1) para actualizar tu método de pago en **Mi cuenta → Método de pago**, durante los cuales conservarás el acceso a tu plan.
 
@@ -199,13 +199,13 @@ Al volver a contratar Pro Lealtad después de un reinicio, te mostramos de nuevo
 
 9.5. Si cerramos tu cuenta **sin causa** o dejamos de ofrecer Chalyb, te reembolsamos lo que pagaste por los créditos extra comprados y no usados. Si la cerramos por un contracargo de mala fe (sección 10.6), también te los reembolsamos, descontando lo que nos debas y sin incluir los del paquete disputado (Términos de los Paquetes de Créditos, sección 7.3).
 
-## 10. Contracargos (disputas con tu banco o Mercado Pago)
+## 10. Contracargos (disputas con tu banco o el procesador de pagos)
 
-10.1. **Tu derecho a disputar un cargo.** Puedes disputar cualquier cargo ante tu banco o Mercado Pago. Si prefieres, escríbenos antes a hola@chalyb.com: muchas veces lo resolvemos más rápido, pero **no es obligatorio**.
+10.1. **Tu derecho a disputar un cargo.** Puedes disputar cualquier cargo ante tu banco o, si se cobró con Mercado Pago, ante Mercado Pago. Si prefieres, escríbenos antes a hola@chalyb.com: muchas veces lo resolvemos más rápido, pero **no es obligatorio**.
 
 10.2. **Presentar una disputa no tiene consecuencias por sí solo.** Mientras tu disputa se resuelve, tu cuenta y tu plan siguen funcionando normalmente. (Si disputas la compra de un paquete de créditos, solo los créditos no usados de ese paquete pueden quedar apartados mientras se resuelve; ver Términos de los Paquetes de Créditos, sección 8.) Presentar una disputa **nunca**, por sí solo, da lugar a una suspensión, cierre o bloqueo de tu cuenta, a un cargo adicional ni a un cambio o reinicio de tu precio (incluido tu calendario de Pro Lealtad). Tampoco tiene consecuencias una disputa por un **cargo no autorizado** o por un cobro que, conforme a la sección 7.2, debíamos devolverte: en esos casos te devolvemos el dinero y, si ya lo recuperaste por medio de tu banco, damos el caso por cerrado.
 
-10.3. **Nuestra respuesta a la disputa.** Para responder a tu banco o a Mercado Pago podemos presentar la evidencia descrita en la sección 10.7. Si al revisar tu disputa vemos que el cobro corresponde a un caso de la sección 7.2, no lo impugnamos y te reembolsamos.
+10.3. **Nuestra respuesta a la disputa.** Para responder a tu banco o al procesador de pagos podemos presentar la evidencia descrita en la sección 10.7. Si al revisar tu disputa vemos que el cobro corresponde a un caso de la sección 7.2, no lo impugnamos y te reembolsamos.
 
 10.4. **Contracargo de mala fe.** Solo consideramos que un contracargo es de mala fe (un fraude o abuso, no el ejercicio de un derecho) cuando se cumplen **todas** estas condiciones:
 - (a) disputaste un cargo que **autorizaste** (consta tu consentimiento en nuestro registro de aceptación) y que **no** corresponde a ninguno de los casos de la sección 7.2;
@@ -225,7 +225,7 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 10.8. **Después de un contracargo de mala fe.** Si tuviste un contracargo de mala fe (secciones 10.4 y 10.5), para contratar de nuevo un plan de pago podemos pedirte el **pago por adelantado** de cada periodo antes de activarlo, sin Prueba gratis, o, en casos reiterados o de fraude (por ejemplo, tarjetas de terceros o identidad falsa), **negarte nuevas suscripciones** de pago. Siempre podrás usar el plan Gratis, salvo que tu cuenta se haya cerrado conforme a la sección 10.6. Estas medidas nunca se aplican por pedir un reembolso ni por una disputa que no sea de mala fe.
 
-10.9. Nada de lo anterior limita tu derecho a presentar una reclamación ante tu banco, Mercado Pago o la PROFECO.
+10.9. Nada de lo anterior limita tu derecho a presentar una reclamación ante tu banco, Mercado Pago (si el cargo se cobró ahí) o la PROFECO.
 
 ## 11. Impuestos
 
@@ -235,13 +235,15 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 
 11.2. Cualquier impuesto, comisión o tipo de cambio que te cobre tu banco o tu país por pagos internacionales corre por tu cuenta.
 
-## 12. Mercado Pago como procesador de pagos
+## 12. Procesadores de pago
 
-12.1. Los pagos se procesan a través de **Mercado Pago** (operado por la entidad de Mercado Libre que corresponda en tu país). Al pagar, también aceptas los términos y el aviso de privacidad de Mercado Pago.
+12.1. Los pagos con tarjeta se procesan a través de **Stripe Payments México, S. de R.L. de C.V.** ("**Stripe**"), que trata tus datos también en Estados Unidos por medio de Stripe, Inc. Escribes los datos de tu tarjeta en campos seguros de Stripe dentro de chalyb.com y van directo a Stripe. Qué datos recibe Stripe y para qué se explica en el Aviso de Privacidad (sección 4.1 bis).
 
-12.2. **Chalyb no almacena el número completo de tu tarjeta ni tu código de seguridad.** Mercado Pago los resguarda y nos entrega un identificador (token) para realizar los cobros autorizados, junto con datos limitados como la marca, los últimos 4 dígitos y la fecha de vencimiento.
+12.1 bis. **Mercado Pago** (operado por la entidad de Mercado Libre que corresponda en tu país) sigue procesando las suscripciones que contrataste con Mercado Pago, mientras sigan cobrándose ahí. Al pagar con Mercado Pago, también aceptas los términos y el aviso de privacidad de Mercado Pago.
 
-12.3. Chalyb no es responsable de fallas, demoras o decisiones de Mercado Pago o de tu banco (por ejemplo, rechazos de tarjeta), aunque te ayudaremos a resolverlas.
+12.2. **Chalyb no almacena el número completo de tu tarjeta ni tu código de seguridad.** El procesador de pagos (Stripe o Mercado Pago) los resguarda y nos entrega un identificador (token) para realizar los cobros autorizados, junto con datos limitados como la marca, los últimos 4 dígitos y la fecha de vencimiento.
+
+12.3. Chalyb no es responsable de fallas, demoras o decisiones de Stripe, de Mercado Pago o de tu banco (por ejemplo, rechazos de tarjeta), aunque te ayudaremos a resolverlas.
 
 ## 13. Promociones y códigos de descuento
 
@@ -258,4 +260,4 @@ En ambos casos conservas el acceso a la descarga de tu contenido conforme a la s
 Myriam Alcantara Moreno, persona física con actividad empresarial, que opera bajo el nombre comercial Chalyb · RFC RAAA960329GA2 · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México).
 También puedes acudir a **PROFECO**: www.gob.mx/profeco · 55 5568 8722 / 800 468 8722.
 
-Última actualización: 7 de noviembre de 2026 · Versión 1.2
+Última actualización: 7 de noviembre de 2026 · Versión 1.3

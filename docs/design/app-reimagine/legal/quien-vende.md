@@ -1,7 +1,7 @@
 # Quién vende
 
 **Página pública:** `chalyb.com/quien-vende`
-**Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
+**Versión:** 1.1 · **Vigente desde:** 7 de noviembre de 2026
 
 > **Resumen**
 > - Chalyb es un **nombre comercial**, no una empresa. Quien te vende, te cobra y te emite la factura es **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**.
@@ -30,7 +30,7 @@ Cuando en nuestros documentos decimos "**Chalyb**", "**nosotros**" o "**el Respo
 - Escríbenos a **hola@chalyb.com** o entra a **Ayuda → Problema con un cobro**.
 - Te respondemos en un máximo de **5 días hábiles**. Si tu reclamación es por un cobro, te decimos en ese plazo si procede un reembolso y cuándo lo recibes (Términos de Suscripción, sección 7).
 - En el domicilio indicado arriba también recibimos reclamaciones por escrito.
-- Escribirnos primero **no es obligatorio**: puedes acudir directamente a la PROFECO, a tu banco o a Mercado Pago.
+- Escribirnos primero **no es obligatorio**: puedes acudir directamente a la PROFECO, a tu banco o, si pagaste con Mercado Pago, a Mercado Pago.
 
 ## 3. PROFECO
 
@@ -41,8 +41,8 @@ Tienes derecho a presentar una queja ante la Procuraduría Federal del Consumido
 
 ## 4. Cómo pagas y cómo protegemos tu pago
 
-- Los pagos se procesan con **Mercado Pago**. Chalyb **no guarda** el número completo de tu tarjeta ni su código de seguridad: Mercado Pago los resguarda y nos entrega un identificador (token).
-- Medidas de seguridad generales: conexión cifrada (HTTPS/TLS) en todo el sitio, datos de tarjeta tokenizados por Mercado Pago y acceso restringido a la información de tu cuenta.
+- Los pagos con tarjeta se procesan con **Stripe Payments México, S. de R.L. de C.V.** ("**Stripe**"). Las suscripciones contratadas con **Mercado Pago** se siguen cobrando con Mercado Pago mientras no cambien a Stripe. Chalyb **no guarda** el número completo de tu tarjeta ni su código de seguridad: el procesador de pagos los resguarda y nos entrega un identificador (token).
+- Medidas de seguridad generales: conexión cifrada (HTTPS/TLS) en todo el sitio, datos de tarjeta tokenizados por el procesador de pagos y acceso restringido a la información de tu cuenta.
 - Todos los precios están en **pesos mexicanos con IVA incluido**, salvo que se indique otra moneda; el total que pagarás se muestra antes de confirmar.
 
 ## 5. Facturas (CFDI)
@@ -59,10 +59,10 @@ No te enviaremos publicidad si no la aceptaste, y puedes dejar de recibirla en c
 
 | Documento | Dirección | Versión vigente |
 |---|---|---|
-| Términos y Condiciones | chalyb.com/terminos | 1.0 |
-| Términos de Suscripción | chalyb.com/suscripcion | 1.0 |
-| Términos de los Paquetes de Créditos | chalyb.com/paquetes | 1.0 |
-| Aviso de Privacidad | chalyb.com/privacidad | 1.0 |
+| Términos y Condiciones | chalyb.com/terminos | 1.1 |
+| Términos de Suscripción | chalyb.com/suscripcion | 1.3 |
+| Términos de los Paquetes de Créditos | chalyb.com/paquetes | 1.1 |
+| Aviso de Privacidad | chalyb.com/privacidad | 1.1 |
 | Uso aceptable y contenido | chalyb.com/uso-aceptable | 1.0 |
 
 Las versiones anteriores siguen disponibles en su dirección fija (por ejemplo, `chalyb.com/terminos/v1-0`).

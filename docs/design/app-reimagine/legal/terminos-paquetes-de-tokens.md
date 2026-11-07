@@ -1,7 +1,7 @@
 # Términos de los Paquetes de Créditos
 
 **Página pública:** `chalyb.com/paquetes`
-**Versión:** 1.0 · **Vigente desde:** 5 de octubre de 2026
+**Versión:** 1.1 · **Vigente desde:** 7 de noviembre de 2026
 
 Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial, RFC **RAAA960329GA2**, que opera bajo el nombre comercial **Chalyb** · Av. Cuauhtémoc 997, Col. Narvarte Poniente, Alcaldía Benito Juárez, C.P. 03020, Ciudad de México, México · hola@chalyb.com (lunes a viernes, de 9:00 a 18:00, hora del centro de México). Más datos en chalyb.com/quien-vende.
 
@@ -34,11 +34,11 @@ Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial
 
 2.1. Al comprar un paquete autorizas **un solo cargo** por el precio total mostrado. **No se repite** cada mes ni se renueva solo. Para tener más créditos extra tendrás que comprar otro paquete y aceptarlo de nuevo.
 
-2.2. Guardar tu tarjeta en Mercado Pago para tu suscripción **no** nos autoriza a cobrarte paquetes sin que tú los compres expresamente.
+2.2. Tener tu tarjeta guardada para tu suscripción (en Stripe o en Mercado Pago) **no** nos autoriza a cobrarte paquetes sin que tú los compres expresamente.
 
 ## 3. Cuándo recibes tus créditos
 
-3.1. Los créditos extra se suman a tu saldo en cuanto Mercado Pago confirma el pago (normalmente en segundos o minutos).
+3.1. Los créditos extra se suman a tu saldo en cuanto el procesador de pagos (Stripe) confirma el pago (normalmente en segundos o minutos).
 
 3.2. Si pagaste y en **24 horas** no ves los créditos en **Mi cuenta → Uso**, escríbenos a hola@chalyb.com: te los acreditamos o, si lo prefieres, te devolvemos el pago completo (sección 7).
 
@@ -86,7 +86,7 @@ Vendedor: **Myriam Alcantara Moreno**, persona física con actividad empresarial
 
 ## 8. Contracargos
 
-8.1. Puedes disputar un cargo de un paquete ante tu banco o Mercado Pago. Aplica la sección 10 de los Términos de Suscripción.
+8.1. Puedes disputar un cargo de un paquete ante tu banco o, si lo pagaste con Mercado Pago, ante Mercado Pago. Aplica la sección 10 de los Términos de Suscripción.
 
 8.2. **Mientras se resuelve la disputa**, solo los créditos **no usados del paquete disputado** pueden quedar apartados (no se pueden usar). Todo lo demás sigue igual: tu plan, tus créditos del mes, tus otros paquetes y tu precio.
 
@@ -106,7 +106,7 @@ Botón: **Pagar ${precio_total} MXN**
 
 ## 10. Comprobantes y facturas
 
-10.1. Después de cada compra te enviamos por correo un **comprobante** con: paquete, número de créditos, precio total, IVA desglosado, fecha y hora, número de operación de Mercado Pago, la indicación "Cargo único, no se renueva" y un enlace a estos términos.
+10.1. Después de cada compra te enviamos por correo un **comprobante** con: paquete, número de créditos, precio total, IVA desglosado, fecha y hora, número de operación del procesador de pagos, la indicación "Cargo único, no se renueva" y un enlace a estos términos.
 
 10.2. Para pedir tu **factura (CFDI)**, emitida por RAAA960329GA2, escribe a hola@chalyb.com dentro del plazo que establecen las disposiciones fiscales.
 
