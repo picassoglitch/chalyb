@@ -40,6 +40,7 @@ import {
   type NoticeKind,
 } from '@/lib/billing/reminders';
 import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { emailLocale } from '@/lib/email/templates';
 import { inAppBillingNotice } from '@/lib/notifications/core';
 import {
   dispatchBillingEmail,
@@ -154,10 +155,11 @@ export async function GET(req: Request) {
       if (due.length > 0) {
         const { data: profile } = await admin
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, preferred_locale')
           .eq('id', userId)
           .maybeSingle();
         const email = profile?.email as string | null;
+        const locale = emailLocale(profile?.preferred_locale);
         for (const notice of due) {
           const lealtad = planKey === 'pro_lealtad';
           // Pro Lealtad: the notice before every charge carries that month's
@@ -214,7 +216,7 @@ export async function GET(req: Request) {
           // The same notice in Avisos; it can't be deleted before the charge.
           const inApp = inAppBillingNotice(notice.kind, {
             nextChargeAt,
-            fechaCobro: nextChargeAt ? formatFechaLarga(nextChargeAt, 'es') : '',
+            fechaCobro: nextChargeAt ? formatFechaLarga(nextChargeAt, locale) : '',
             monto: formatMXN(nextChargeCents({ ...row, plan_key: planKey })),
             periodKey: notice.periodKey,
           });
@@ -222,7 +224,7 @@ export async function GET(req: Request) {
             await addUserNotice({
               userId,
               kind: inApp.kind,
-              ...(await noticeText(inApp.kind, inApp.vars)),
+              ...(await noticeText(inApp.kind, inApp.vars, locale)),
               href: inApp.href,
               dedupeKey: inApp.dedupeKey,
               keepUntil: inApp.keepUntil,

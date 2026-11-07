@@ -3,7 +3,7 @@
 
 import 'server-only';
 import { logAudit } from '@/lib/audit/log';
-import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { addUserNotice, noticeText, profileLocale } from '@/lib/notifications/user';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { track } from '@/lib/analytics/track';
 import { getClipsAdapter } from './adapters/clips';
@@ -32,7 +32,11 @@ function policyDeps(adapter: ClipsAdapter): JobPolicyDeps {
       await addUserNotice({
         userId: job.userId,
         kind: 'clipsReady',
-        ...(await noticeText('clipsReady', { n: job.clips.length })),
+        ...(await noticeText(
+          'clipsReady',
+          { n: job.clips.length },
+          await profileLocale(job.userId),
+        )),
         href: `/app/clips/trabajo/${encodeURIComponent(job.id)}`,
         dedupeKey: `clips:${job.id}`,
       });

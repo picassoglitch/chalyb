@@ -12,7 +12,9 @@ import {
   contactConfirmSubject,
   contactConfirmTemplate,
   emailLocale,
+  packRefundedCopy,
   paymentReversedTemplate,
+  paymentSuccessSubject,
   paymentSuccessTemplate,
   subscriptionActiveSubject,
   subscriptionActiveTemplate,
@@ -159,18 +161,78 @@ test('customer emails: Spanish by default, English on request, links under /en',
   assert.equal(chalitoResetCodeSubject('1', 'en'), 'Your Chalito code: 1');
 });
 
-test('email language comes from the page; webhook mail and notices stay Spanish', () => {
+test('email language comes from the page for request-time mail', () => {
   assert.match(read('src/lib/contact/contact-actions.ts'), /emailLocale\(formData\.get\('locale'\)\)/);
   assert.match(read('src/components/contact/contact-form.tsx'), /fd\.set\('locale', locale\)/);
   assert.match(read('src/components/tools/chalito/ResetDevices.tsx'), /reset\/start", \{ locale \}/);
   const reset = read('src/app/api/tools/chalito/reset/start/route.ts');
   assert.match(reset, /emailLocale\(body\?\.locale\)/);
   assert.match(reset, /sendResetCode\(to, code, locale\)/);
-  // Pre-0054 profiles read 'en' by default: no profile language until that is fixed.
+});
+
+// Owner 2026-11-07: pre-0054 default-English profiles were reset to Spanish
+// (20261107000200), so webhook/cron mail and Avisos follow the profile again.
+test('webhook and cron mail and Avisos follow profiles.preferred_locale', () => {
+  const sync = read('src/lib/payments/subscription-sync.ts');
+  assert.match(sync, /const locale = await profileLocale\(userId\);/);
+  assert.match(sync, /subscriptionActiveSubject\(TIER_CAPS\[tier\]\.label, locale\)/);
+  assert.match(
+    sync,
+    /nextChargeLabel: nextPaymentDate \? formatFechaLarga\(nextPaymentDate, locale\)/,
+  );
+  assert.match(sync, /noticeText\('pastDue', \{\}, emailLocale\(profile\?\.preferred_locale\)\)/);
+  assert.match(sync, /select\('email, full_name, preferred_locale'\)/);
+
+  const oneOff = read('src/lib/payments/one-off-settlement.ts');
+  assert.match(oneOff, /select\('email, tier, tier_ends_at, preferred_locale'\)/);
+  assert.match(oneOff, /select\('email, tier, preferred_locale'\)/);
+  assert.match(oneOff, /packRefundedCopy\(claw\.tokensRemoved, locale\)/);
+  assert.match(oneOff, /paymentSuccessSubject\(TIER_CAPS\[confirmedTier\]\.label, locale\)/);
+  assert.equal(oneOff.match(/^\s+locale,$/gm)?.length, 2, 'both templates get the locale');
+  assert.doesNotMatch(oneOff, /créditos sin usar|está activo/, 'no Spanish literals left inline');
+
+  const cron = read('src/app/api/cron/billing/route.ts');
+  assert.match(cron, /select\('email, full_name, preferred_locale'\)/);
+  assert.match(cron, /noticeText\(inApp\.kind, inApp\.vars, locale\)/);
+  assert.match(cron, /fechaCobro: nextChargeAt \? formatFechaLarga\(nextChargeAt, locale\)/);
+
+  assert.match(
+    read('src/lib/tools/clips-jobs.ts'),
+    /noticeText\(\s*'clipsReady',\s*\{ n: job\.clips\.length \},\s*await profileLocale\(job\.userId\),?\s*\)/,
+  );
+  const legal = read('src/lib/legal/legal-server.ts');
+  for (const kind of ['arcoAnswered', 'contentRemoved', 'contentRestored'])
+    assert.match(
+      legal,
+      new RegExp(`noticeText\\(\\s*'${kind}'[\\s\\S]{0,160}?profileLocale\\(`),
+      kind,
+    );
+
+  // Every Avisos producer passes a language: no bare noticeText(kind[, vars]) call.
   for (const f of [
     'src/lib/payments/subscription-sync.ts',
-    'src/lib/payments/one-off-settlement.ts',
     'src/lib/tools/clips-jobs.ts',
+    'src/lib/legal/legal-server.ts',
+    'src/app/api/cron/billing/route.ts',
   ])
-    assert.doesNotMatch(read(f), /preferred_locale/, f);
+    for (const call of read(f).matchAll(/noticeText\(([^()]|\([^()]*\))*\)/g))
+      assert.match(call[0], /locale|Locale/, `${f}: ${call[0]}`);
+
+  const helper = read('src/lib/notifications/user.ts');
+  assert.match(helper, /select\('preferred_locale'\)/);
+  assert.match(helper, /return emailLocale\(data\?\.preferred_locale\)/);
+});
+
+test('webhook subjects and copy have both languages; anything but en is Spanish', () => {
+  assert.equal(paymentSuccessSubject('VIP'), 'Tu plan VIP está activo · Chalyb');
+  assert.equal(paymentSuccessSubject('VIP', 'en'), 'Your VIP plan is active · Chalyb');
+  assert.deepEqual(packRefundedCopy(100000), {
+    subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
+    what: '100,000 créditos sin usar del paquete',
+  });
+  const en = packRefundedCopy(100000, 'en');
+  assert.equal(en.what, '100,000 unused credits from the pack');
+  assert.doesNotMatch(en.subject, SPANISH);
+  for (const raw of [null, undefined, '', 'EN', 'fr', 'es']) assert.equal(emailLocale(raw), 'es');
+  assert.equal(emailLocale('en'), 'en');
 });

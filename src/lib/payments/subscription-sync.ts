@@ -18,6 +18,7 @@ import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
 import {
+  emailLocale,
   subscriptionActiveSubject,
   subscriptionActiveTemplate,
 } from '@/lib/email/templates';
@@ -38,7 +39,7 @@ import {
 } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { dispatchBillingEmail } from '@/lib/billing/notices';
-import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { addUserNotice, noticeText, profileLocale } from '@/lib/notifications/user';
 import { AMOUNT_MISMATCH_STATUS, unpaidCharge } from '@/lib/billing/billing-state';
 import { track } from '@/lib/analytics/track';
 import { trackFirstCharge } from '@/lib/analytics/conversion';
@@ -413,17 +414,19 @@ export async function syncSubscription(
       // A trial's welcome (Email 1, with the evidence) is sent by the trial
       // start itself; this generic one is for paid starts only.
       if (email && !trialEndsAt) {
+        const locale = await profileLocale(userId);
         const tmpl = subscriptionActiveTemplate({
           tier: TIER_CAPS[tier].label,
           amountMajor: (amountMajor ?? 0).toFixed(2),
           currency: currency ?? 'MXN',
-          nextChargeLabel: nextPaymentDate ? formatDateEs(nextPaymentDate) : null,
+          nextChargeLabel: nextPaymentDate ? formatFechaLarga(nextPaymentDate, locale) : null,
           preapprovalId,
           appUrl: getAppUrl(),
+          locale,
         });
         void sendEmail({
           to: email,
-          subject: subscriptionActiveSubject(TIER_CAPS[tier].label),
+          subject: subscriptionActiveSubject(TIER_CAPS[tier].label, locale),
           html: tmpl.html,
           text: tmpl.text,
         }).catch((err) => console.error('[mp/subscription] activation email failed', err));
@@ -751,7 +754,11 @@ async function chargeEmail(
 ): Promise<void> {
   const admin = createAdminClient();
   const [{ data: profile }, { data: sub }] = await Promise.all([
-    admin.from('profiles').select('email, full_name').eq('id', userId).maybeSingle(),
+    admin
+      .from('profiles')
+      .select('email, full_name, preferred_locale')
+      .eq('id', userId)
+      .maybeSingle(),
     admin
       .from('subscriptions')
       .select('plan_key, tier, card_last4, next_payment_date, grace_ends_at, loyalty_step')
@@ -768,7 +775,7 @@ async function chargeEmail(
     await addUserNotice({
       userId,
       kind: 'pastDue',
-      ...(await noticeText('pastDue')),
+      ...(await noticeText('pastDue', {}, emailLocale(profile?.preferred_locale))),
       href: '/app/billing/tarjeta',
       dedupeKey: `pay:${paymentId}`,
       keepUntil: grace,

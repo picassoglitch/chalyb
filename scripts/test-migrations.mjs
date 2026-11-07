@@ -948,6 +948,60 @@ try {
   );
 }
 
+// ── Default-English profiles back to Spanish (20261107000200) ─────────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const rows = [
+    // [label, preferred_locale, timezone, created_at, expected after]
+    ['old default, never touched', 'en', null, '2026-09-20T12:00:00Z', 'es'],
+    [
+      'old row, chose English in Mi perfil',
+      'en',
+      'America/Mexico_City',
+      '2026-09-20T12:00:00Z',
+      'en',
+    ],
+    ['old row already Spanish', 'es', null, '2026-09-20T12:00:00Z', 'es'],
+    ['new English sign-up (#174)', 'en', null, '2026-11-07T18:00:00Z', 'en'],
+    ['null locale left alone', null, null, '2026-09-20T12:00:00Z', null],
+    ['last minute before the cutoff', 'en', null, '2026-11-07T05:59:59Z', 'es'],
+    ['at the cutoff (00:00 Mexico City)', 'en', null, '2026-11-07T06:00:00Z', 'en'],
+  ];
+  const ids = [];
+  for (const [label, loc, tz, at] of rows) {
+    const id = (
+      await db.query(`insert into auth.users (email) values ($1) returning id`, [
+        `${label.replace(/\W+/g, '-')}@locale.test`,
+      ])
+    ).rows[0].id;
+    await db.query(
+      `insert into public.profiles (id, preferred_locale, timezone, created_at) values ($1,$2,$3,$4)
+         on conflict (id) do update set preferred_locale = $2, timezone = $3, created_at = $4`,
+      [id, loc, tz, at],
+    );
+    ids.push(id);
+  }
+  const mig = readdirSync(DIR).find((f) =>
+    /^\d{14}_hub_reset_default_english_profiles\.sql$/.test(f),
+  );
+  check('reset migration is present', !!mig);
+  for (let round = 1; round <= 2; round += 1) {
+    await db.exec(readFileSync(new URL(mig, DIR), 'utf8'));
+    for (let i = 0; i < rows.length; i += 1) {
+      const got = (
+        await db.query(`select preferred_locale from public.profiles where id = $1`, [ids[i]])
+      ).rows[0].preferred_locale;
+      check(`locale reset, run ${round}: ${rows[i][0]}`, got === rows[i][4], String(got));
+    }
+  }
+}
+
 console.log(
   `${files.length} migrations applied twice${process.exitCode ? ' — WITH FAILURES' : ''}`,
 );

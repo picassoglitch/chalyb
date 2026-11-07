@@ -347,6 +347,10 @@ Go to my account: ${url}
   },
 } as const;
 
+export function paymentSuccessSubject(tier: string, locale: EmailLocale = 'es'): string {
+  return PAYMENT_SUCCESS[locale].title(tier);
+}
+
 export function paymentSuccessTemplate(opts: {
   tier: string; // 'Pro' | 'VIP' (pretty label)
   amountMajor: string; // e.g. '749.00'
@@ -570,6 +574,26 @@ Was this a mistake? Write to us: ${contact}
     preview: (what: string) => `Mercado Pago reversed a payment; we removed ${what}.`,
   },
 } as const;
+
+const PACK_REFUNDED = {
+  es: {
+    subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
+    what: (n: number) => `${n.toLocaleString('es-MX')} créditos sin usar del paquete`,
+  },
+  en: {
+    subject: 'Payment refunded: we removed the pack’s unused credits · Chalyb',
+    what: (n: number) => `${n.toLocaleString('en-US')} unused credits from the pack`,
+  },
+} as const;
+
+/** A refunded token pack: the subject and the "what" for paymentReversedTemplate. */
+export function packRefundedCopy(
+  tokensRemoved: number,
+  locale: EmailLocale = 'es',
+): { subject: string; what: string } {
+  const c = PACK_REFUNDED[locale];
+  return { subject: c.subject, what: c.what(tokensRemoved) };
+}
 
 export function paymentReversedTemplate(opts: {
   /** 'refunded' | 'charged_back' */

@@ -11,7 +11,13 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email/resend';
-import { paymentReversedTemplate, paymentSuccessTemplate } from '@/lib/email/templates';
+import {
+  emailLocale,
+  packRefundedCopy,
+  paymentReversedTemplate,
+  paymentSuccessSubject,
+  paymentSuccessTemplate,
+} from '@/lib/email/templates';
 import { TIER_CAPS } from '@/lib/billing/tiers';
 import { provisionAllAccessEngines } from '@/lib/engines/subscriptions';
 import { clawbackTokenPack, grantTokenPack } from '@/lib/usage/tokens';
@@ -168,7 +174,7 @@ export async function settleOneOffCharge(
     const reversedLabel = 'reembolsado';
     const { data: profile } = await admin
       .from('profiles')
-      .select('email, tier, tier_ends_at')
+      .select('email, tier, tier_ends_at, preferred_locale')
       .eq('id', userId)
       .maybeSingle();
     const email = (profile?.email as string | null) ?? null;
@@ -212,17 +218,20 @@ export async function settleOneOffCharge(
         });
         // Nothing to tell when every credit of the pack was already used.
         if (email && claw.tokensRemoved > 0) {
+          const locale = emailLocale(profile?.preferred_locale);
+          const copy = packRefundedCopy(claw.tokensRemoved, locale);
           const tmpl = paymentReversedTemplate({
             reason,
-            what: `${claw.tokensRemoved.toLocaleString('es-MX')} créditos sin usar del paquete`,
+            what: copy.what,
             amountMajor,
             currency,
             paymentId: mpId,
             appUrl: getAppUrl(),
+            locale,
           });
           void sendEmail({
             to: email,
-            subject: 'Pago reembolsado: retiramos los créditos sin usar del paquete · Chalyb',
+            subject: copy.subject,
             html: tmpl.html,
             text: tmpl.text,
           }).catch((err) => console.error('[mp/webhook] reversal email failed', err));
@@ -443,7 +452,7 @@ export async function settleOneOffCharge(
   if (status === 'approved') {
     const { data: targetBefore } = await admin
       .from('profiles')
-      .select('email, tier')
+      .select('email, tier, preferred_locale')
       .eq('id', userId)
       .maybeSingle();
 
@@ -490,16 +499,18 @@ export async function settleOneOffCharge(
     const userEmail = targetBefore?.email as string | null | undefined;
     const confirmedTier = tier!;
     if (userEmail) {
+      const locale = emailLocale(targetBefore?.preferred_locale);
       const tmpl = paymentSuccessTemplate({
         tier: TIER_CAPS[confirmedTier].label,
         amountMajor,
         currency,
         paymentId: mpId,
         appUrl: getAppUrl(),
+        locale,
       });
       void sendEmail({
         to: userEmail,
-        subject: `Tu plan ${TIER_CAPS[confirmedTier].label} está activo · Chalyb`,
+        subject: paymentSuccessSubject(TIER_CAPS[confirmedTier].label, locale),
         html: tmpl.html,
         text: tmpl.text,
       }).catch((err) => console.error('[mp/webhook] payment email failed', err));

@@ -13,7 +13,7 @@ import { formatFechaLarga } from '@/lib/billing/format';
 import { getContactInbox, sendEmail } from '@/lib/email/resend';
 import { escapeHtml } from '@/lib/email/escape';
 import { wrap } from '@/lib/email/templates';
-import { addUserNotice, noticeText } from '@/lib/notifications/user';
+import { addUserNotice, noticeText, profileLocale } from '@/lib/notifications/user';
 import { logAudit } from '@/lib/audit/log';
 import { notify } from '@/lib/notifications/notify';
 import { legalPublished } from '@/lib/config/flags';
@@ -266,7 +266,11 @@ export async function answerArco(
   await addUserNotice({
     userId: data.user_id as string,
     kind: 'arcoAnswered',
-    ...(await noticeText('arcoAnswered', { folio: id.slice(0, 8) })),
+    ...(await noticeText(
+      'arcoAnswered',
+      { folio: id.slice(0, 8) },
+      await profileLocale(data.user_id as string),
+    )),
     href: '/app/settings/arco',
     dedupeKey: `arco-answer:${id}`,
   }).catch(() => {});
@@ -524,9 +528,11 @@ export async function removeTakedown(
   await addUserNotice({
     userId: target.userId,
     kind: 'contentRemoved',
-    ...(await noticeText('contentRemoved', {
-      contenido: String(n.content_identification).slice(0, 120),
-    })),
+    ...(await noticeText(
+      'contentRemoved',
+      { contenido: String(n.content_identification).slice(0, 120) },
+      await profileLocale(target.userId),
+    )),
     href: '/uso-aceptable#5-3-contra-aviso',
     dedupeKey: `takedown:${id}`,
   }).catch(() => {});
@@ -709,7 +715,7 @@ async function restoreTakedown(id: string, targetUserId: string | null): Promise
     await addUserNotice({
       userId: targetUserId,
       kind: 'contentRestored',
-      ...(await noticeText('contentRestored')),
+      ...(await noticeText('contentRestored', {}, await profileLocale(targetUserId))),
       href: '/app/history',
       dedupeKey: `takedown-restored:${id}`,
     }).catch(() => {});

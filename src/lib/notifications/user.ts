@@ -6,6 +6,7 @@
 import 'server-only';
 import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { emailLocale, type EmailLocale } from '@/lib/email/templates';
 
 export type UserNoticeKind =
   | 'clipsReady'
@@ -65,3 +66,15 @@ export async function noticeText(
   return { title: t('title'), body: t('body', vars) };
 }
 
+/** The account's language, for mail and notices sent outside a request
+ *  (webhooks, crons, admin actions). Spanish when unknown or unreadable;
+ *  pre-0054 rows that defaulted to 'en' were reset by 20261107000200. */
+export async function profileLocale(userId: string): Promise<EmailLocale> {
+  const { data, error } = await createAdminClient()
+    .from('profiles')
+    .select('preferred_locale')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) console.error('[notices] could not read the account language', error.message);
+  return emailLocale(data?.preferred_locale);
+}

@@ -1,7 +1,7 @@
 'use server';
 
 // The in-app toggle's save. The cookie is the explicit choice /account follows;
-// profiles.preferred_locale can't be trusted alone (pre-0054 rows default 'en').
+// profiles.preferred_locale is the language webhook mail and Avisos follow.
 
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
