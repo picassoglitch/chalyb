@@ -234,6 +234,21 @@ variable "engines" {
           paused   = true
           env      = { CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
         }
+
+        # Daily per-plan retention (free 7 days, paid 30): deletes expired
+        # clips, VODs and transcripts from the DB and the media bucket. A job,
+        # not the API's in-process loop, which only ran while an instance
+        # happened to be up (min instances 0). Ships PAUSED: dry-run it first
+        # (`gcloud run jobs execute ... --args=retention,sweep,--dry-run,--json`),
+        # then set paused = false.
+        retention-sweep = {
+          command  = ["chalybclip"]
+          args     = ["retention", "sweep", "--json"]
+          schedule = "30 9 * * *"
+          paused   = true
+          timeout  = "1800s"
+          env      = { CHALYBCLIP_DEFAULT_OUTPUT_DIR = "/tmp/out" }
+        }
       }
     }
 
