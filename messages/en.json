@@ -1969,6 +1969,9 @@
         "note": "What Anthropic billed us against what the engines recorded (and so charged users). A positive gap is usage we paid for and didn't charge.",
         "billed": "Billed by Anthropic",
         "recorded": "Recorded",
+        "measured": "Measured: Anthropic's real billing (Admin API)",
+        "estimated": "Estimated: what the engines computed from their price table",
+        "unverified": "No measured cost: the margin can't be verified until this query works. Don't use the example costs below as evidence.",
         "gap": "Gap",
         "model": "Model",
         "workspaces": "By Anthropic workspace",
@@ -1976,7 +1979,9 @@
         "lastMonth": "Last month",
         "error": {
           "no_key": "ANTHROPIC_ADMIN_KEY is missing in Vercel",
-          "api": "Anthropic didn't answer (check it's an Admin key)",
+          "auth": "Anthropic rejected ANTHROPIC_ADMIN_KEY (invalid, revoked, or not an sk-ant-admin… Admin key)",
+          "timeout": "Anthropic didn't answer in time; reload the page",
+          "api": "Anthropic returned an error",
           "db": "couldn't read recorded usage"
         }
       }
