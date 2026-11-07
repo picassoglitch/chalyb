@@ -31,6 +31,8 @@ import {
   getMercadoPago,
   getMercadoPagoIsolated,
   getAppUrl,
+  getMpEnv,
+  cachedSellerEmail,
   isCheckoutReady,
   logMpCreate,
   mpErrorCodeOf,
@@ -61,6 +63,7 @@ import {
   paidCheckoutEnabled,
   trialFlowEnabled,
   chargebackRefuseNewSubscriptions,
+  mpPayerEmailEditable,
 } from '@/lib/config/flags';
 import {
   consentSentence,
@@ -92,6 +95,7 @@ import {
   type DeclineReason,
 } from '@/lib/payments/card-decline';
 import { meliSessionOptions } from '@/lib/payments/device-session';
+import { choosePayerEmail, payerIsSeller } from '@/lib/payments/payer-email';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -110,6 +114,8 @@ export interface StartInput {
   effectiveAt?: Date;
   /** MP_DEVICE_SESSION_ID from the card form, sent as X-meli-session-id. */
   deviceSessionId?: string | null;
+  /** The buyer's Mercado Pago email from the form (MP_PAYER_EMAIL_EDITABLE). */
+  mpPayerEmail?: string | null;
 }
 
 export type StartError =
@@ -172,12 +178,24 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   const email = session.user.email;
   if (!email) return { ok: false, code: 'MP_ERROR' };
   // B33: the test buyer in `test`, the user in `prod`; never mixed.
-  const payerEmail = mpPayerEmail(email);
-  if (!payerEmail) {
+  const accountPayerEmail = mpPayerEmail(email);
+  if (!accountPayerEmail) {
     console.error('[billing/start] no payer email for this Mercado Pago environment');
     return { ok: false, code: 'NOT_CONFIGURED' };
   }
   if (!(await sellerMatches())) return { ok: false, code: 'NOT_CONFIGURED' };
+  const payer = choosePayerEmail({
+    accountPayerEmail,
+    formEmail: input.mpPayerEmail,
+    editable: mpPayerEmailEditable(),
+    mpEnv: getMpEnv(),
+  });
+  const payerEmail = payer.email;
+  // Booleans only: tells a self-charge (seller's own account) from a mismatch.
+  const payerAudit = {
+    payer_email_source: payer.source,
+    payer_is_seller: payerIsSeller(payerEmail, cachedSellerEmail()),
+  };
   // Pro Lealtad (WS-7): only with its flag, and only while it is open to
   // new customers (Términos 4 bis.3: existing schedules continue).
   const lealtad = input.planKey === 'pro_lealtad';
@@ -403,6 +421,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       requestOptions: meliSessionOptions(input.deviceSessionId),
     });
     logMpCreate('preapproval', { id: created.id, externalReference: reference });
+    console.info('[billing/start] preapproval payer', payerAudit);
     if (!created.id) return { ok: false, code: 'MP_ERROR' };
     preapprovalId = created.id;
     status = normalizePreapprovalStatus(created.status);
@@ -412,7 +431,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     const detail = rejectionDetailOf(err);
     console.error(
       '[billing/start] preapproval.create failed',
-      { mp_code: mpErrorCodeOf(err), status_detail: detail },
+      { mp_code: mpErrorCodeOf(err), status_detail: detail, ...payerAudit },
       err,
     );
     return { ok: false, code: 'DECLINED', decline: declineReasonOf(detail) };

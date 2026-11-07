@@ -9,6 +9,7 @@ import { isAdminRole } from '@/lib/billing/tiers';
 import { changePlan } from '@/lib/billing/billing-actions';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
 import { cleanDeviceSessionId, deviceSessionAudit } from '@/lib/payments/device-session';
+import { cleanPayerEmail } from '@/lib/payments/payer-email';
 import {
   paidCheckoutEnabled,
   vipYearEnabled,
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
     locale: body.locale === 'en' ? 'en' : 'es',
     clientTimezone: typeof body.timezone === 'string' ? body.timezone : null,
     deviceSessionId: cleanDeviceSessionId(body.deviceSessionId),
+    mpPayerEmail: cleanPayerEmail(body.mpEmail),
   });
   if (!result.ok) return NextResponse.json(result, { status: statusForStartError(result.code) });
   return NextResponse.json(result);

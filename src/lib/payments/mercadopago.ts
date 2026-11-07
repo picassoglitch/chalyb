@@ -123,7 +123,7 @@ export function getRawAccessTokenForDiag(): string {
   return readAccessToken(process.env) ?? '';
 }
 
-let sellerCheck: { token: string; ok: boolean } | null = null;
+let sellerCheck: { token: string; ok: boolean; email: string | null } | null = null;
 
 /**
  * When MP_EXPECTED_SELLER_ID is set, the access token must belong to that
@@ -139,13 +139,18 @@ export async function sellerMatches(): Promise<boolean> {
     const me = await getMercadoPago().user.get();
     const ok = String(me.id ?? '') === expected;
     if (!ok) console.error('[mp] access token belongs to another seller', { mp_env: getMpEnv() });
-    sellerCheck = { token, ok };
+    sellerCheck = { token, ok, email: typeof me.email === 'string' ? me.email : null };
     return ok;
   } catch (err) {
     // Not cached: a blip at Mercado Pago must not lock checkout out for good.
     console.error('[mp] could not verify the seller of the access token', err);
     return false;
   }
+}
+
+/** The seller account's email, once sellerMatches() has read it; never logged. */
+export function cachedSellerEmail(): string | null {
+  return sellerCheck && sellerCheck.token === getAccessToken() ? sellerCheck.email : null;
 }
 
 /** The access token is present. Enough to READ from Mercado Pago (the webhook
