@@ -222,3 +222,34 @@ test('every decline reason has copy in es and en; risk never blames the bank', (
     assert.match(decline.bank, /banco|bank/i);
   }
 });
+
+test('legacy monthly checkout (/app/subscription/checkout) sends the device id and maps declines', () => {
+  const src = read('src/lib/payments/subscription-actions.ts');
+  const authorize = src.slice(
+    src.indexOf('export async function authorizeTierSubscription'),
+    src.indexOf('export interface HostedSubscriptionResult'),
+  );
+  assert.match(authorize, /getMercadoPagoIsolated\(\)[\s\S]{0,80}preapproval\.create\(/);
+  assert.doesNotMatch(authorize, /getMercadoPago\(\)/);
+  assert.match(authorize, /requestOptions: meliSessionOptions\(input\.deviceSessionId\)/);
+  assert.match(authorize, /const detail = rejectionDetailOf\(err\)/);
+  assert.match(authorize, /decline: declineReasonOf\(detail\)/);
+  const page = read('src/components/workspace/subscription-checkout.tsx');
+  assert.match(page, /deviceSessionId: card\.deviceSessionId/);
+  assert.match(page, /tPay\(`decline\.\$\{asDeclineReason\(res\.decline\)\}`\)/);
+});
+
+test('a high-risk rejection on the legacy path lands on the risk copy', async () => {
+  const { getMercadoPagoIsolated } = await import('@/lib/payments/mercadopago');
+  const { calls, error } = await withFetch(
+    400,
+    { message: 'cc_rejected_high_risk', error: 'bad_request', status: 400, cause: [] },
+    () =>
+      getMercadoPagoIsolated().preapproval.create({
+        body: { reason: 'Chalyb Pro', card_token_id: 'tok_legacy', status: 'authorized' },
+        requestOptions: meliSessionOptions(DEVICE),
+      }),
+  );
+  assert.equal(calls[0]!.headers['x-meli-session-id'], DEVICE);
+  assert.equal(declineReasonOf(rejectionDetailOf(error)), 'risk');
+});
