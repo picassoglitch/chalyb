@@ -63,3 +63,36 @@ export function personActions(r: PersonRow, lastChargeCents: number | null) {
     cancel: hasRecurring && !r.sub?.cancel_at_period_end,
   };
 }
+
+export interface PlanSplit {
+  paying: number;
+  trial: number;
+  other: number;
+}
+
+type Sub = NonNullable<PersonRow['sub']>;
+
+/** Non-free profiles by their latest subscription, with Dinero's own rule for
+ *  "Activas": owner-assigned plans have no row and land in `other`. */
+export function planSplit(
+  profiles: readonly { id: string; tier: string }[],
+  subs: readonly Sub[],
+  now: number,
+): PlanSplit {
+  const latest = new Map<string, Sub>();
+  for (const s of subs) {
+    const prev = latest.get(s.user_id);
+    if (!prev || Date.parse(s.created_at ?? '') > Date.parse(prev.created_at ?? '')) {
+      latest.set(s.user_id, s);
+    }
+  }
+  const out: PlanSplit = { paying: 0, trial: 0, other: 0 };
+  for (const p of profiles) {
+    if (p.tier === 'FREE') continue;
+    const st = personStatus(latest.get(p.id) ?? null, now);
+    if (st === 'active') out.paying++;
+    else if (st === 'trial') out.trial++;
+    else out.other++;
+  }
+  return out;
+}

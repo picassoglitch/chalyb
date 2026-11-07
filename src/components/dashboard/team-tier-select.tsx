@@ -40,7 +40,7 @@ export function TeamTierSelect({ userId, current }: Props) {
       }
       showToast(`Listo, el plan ahora es <b>${next.replace('_', '-')}</b>`);
       // Refresh the team page so the row reflects the authoritative server
-      // value (also re-runs the "paid subscriptions" stat at the top). The
+      // value (also re-runs the "plans" stat at the top). The
       // target user's other tabs get auto-synced by ProfileSubscriber.
       router.refresh();
     });

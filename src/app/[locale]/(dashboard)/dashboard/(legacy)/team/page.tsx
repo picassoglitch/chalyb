@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { isSuperAdminEmail } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -18,6 +18,8 @@ import {
 import type { SubscriptionTier, UserRole } from '@/lib/auth/session';
 import { pendingInvitesFrom, type PendingInvite } from '@/lib/auth/invites';
 import { requireAdminPage } from '@/lib/admin/guard';
+import { loadSubscriptions } from '@/lib/admin/data';
+import { planSplit } from '@/lib/admin/people';
 
 export const metadata = { title: 'Equipo y roles' };
 
@@ -39,6 +41,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
 
   const session = await requireAdminPage();
   const supabase = await createClient();
+  const t = await getTranslations('admin.team');
 
   const { data: profilesRaw } = await supabase
     .from('profiles')
@@ -64,8 +67,11 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
       console.error('[team] listUsers failed; pending invites hidden', err);
     }
   }
-  const paidCount = profiles.filter((p) => p.tier !== 'FREE').length;
+  const planCount = profiles.filter((p) => p.tier !== 'FREE').length;
   const partnerCount = profiles.filter((p) => p.tier === 'PARTNER').length;
+  // A plan can be owner-assigned; split it by what Mercado Pago actually bills.
+  const subs = await loadSubscriptions();
+  const split = subs.failed ? null : planSplit(profiles, subs.data, nowMs);
 
   // Engine catalog for the PartnerEngineSelect dropdown. We pull all engines
   // + their current owner so the select can disable engines already claimed
@@ -117,11 +123,17 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
           </div>
         </div>
         <div className="cc-mod-stat">
-          <div className="cc-mod-stat-l">Suscripciones de pago</div>
-          <div className="cc-mod-stat-v gr">{paidCount}</div>
+          <div className="cc-mod-stat-l">{t('plans')}</div>
+          <div className="cc-mod-stat-v gr">{planCount}</div>
           <div className="cc-mod-stat-sub">
-            {profiles.filter((p) => p.tier === 'PRO').length} Pro · {partnerCount} Partner ·{' '}
-            {profiles.filter((p) => p.tier === 'VIP').length} VIP
+            {t('plansTiers', {
+              pro: profiles.filter((p) => p.tier === 'PRO').length,
+              partner: partnerCount,
+              vip: profiles.filter((p) => p.tier === 'VIP').length,
+            })}
+          </div>
+          <div className="cc-mod-stat-sub">
+            {split ? t('plansSplit', { ...split }) : t('plansSplitFailed')}
           </div>
         </div>
         <div className="cc-mod-stat">

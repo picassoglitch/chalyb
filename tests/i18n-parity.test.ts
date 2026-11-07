@@ -32,6 +32,8 @@ const EMPTY_OK = new Set(['workspace.pages.fallback.sub']);
 
 /** Keys whose value is legitimately the same word in both languages. */
 const SAME_OK_KEYS = new Set([
+  // Plan names only ("{pro} Pro · {partner} Partner · {vip} VIP").
+  'admin.team.plansTiers',
   // Clips (engine screens): product words that read the same in English
   // ("Boost", "Persona(s)", "Clip", "Video", Buffer/TikTok), file formats and
   // number-only labels.
