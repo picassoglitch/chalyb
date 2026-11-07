@@ -39,7 +39,7 @@
       "sub": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar, en un solo plan.",
       "subNoClaim": "Clips para tus redes y tu transmisión en vivo: todo tu estudio en un solo lugar.",
       "noteStrong": "Cancela cuando quieras.",
-      "noteRest": "Hoy pagas {cero}.",
+      "noteRest": "Hoy pagas {cero}. Registras tu tarjeta y se cobra al terminar la prueba si no cancelas.",
       "seal1": "En español",
       "seal2": "Sin saber de tecnología",
       "seal3": "Cancela en 1 clic",
@@ -197,7 +197,7 @@
       "subNoClaim": "{lista}.",
       "subMobile": "Todas las herramientas en un solo plan.",
       "subMobileNoClaim": "Todo desde tu celular o tu computadora.",
-      "note": "Hoy pagas {cero}. Cancela cuando quieras.",
+      "note": "Hoy pagas {cero}. Registras tu tarjeta y se cobra al terminar la prueba si no cancelas.",
       "titleLiveOnly": "Empieza hoy. <em>Tu transmisión en un solo lugar.</em>"
     },
     "publicFooter": {
@@ -247,7 +247,7 @@
       "link": "Cookies"
     },
     "sticky": {
-      "note": "Hoy pagas {cero}. Cancela cuando quieras."
+      "note": "Hoy pagas {cero}. Registras tu tarjeta y se cobra al terminar la prueba si no cancelas."
     },
     "ctaNoTrial": "Empieza gratis",
     "ctaSignedIn": "Ver planes",
@@ -1067,10 +1067,10 @@
       "name": "Pro",
       "tag": "Para quien publica cada semana",
       "cta": "Empezar mis 7 días gratis",
-      "note": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
+      "note": "<b>Hoy pagas $0.</b> Registras tu tarjeta y, si no cancelas, el {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
       "fCredits": "{creditos} créditos cada mes",
       "ctaMonth": "Elegir Pro mensual",
-      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras.",
+      "noteMonth": "<b>Hoy pagas $0.</b> Registras tu tarjeta y, si no cancelas, el {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras.",
       "badgePopular": "Más popular",
       "save": "Ahorras {ahorro} al año · {pct}%",
       "switchYear": "Cambia a Anual y ahorra {ahorro} al año",

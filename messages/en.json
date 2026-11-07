@@ -39,7 +39,7 @@
       "sub": "Clips for your socials and your live stream: your whole studio in one place, in one plan.",
       "subNoClaim": "Clips for your socials and your live stream: your whole studio in one place.",
       "noteStrong": "Cancel anytime.",
-      "noteRest": "You pay {cero} today.",
+      "noteRest": "You pay {cero} today. You add your card, and it’s charged when the trial ends unless you cancel.",
       "seal1": "In Spanish",
       "seal2": "No tech skills needed",
       "seal3": "Cancel in 1 click",
@@ -197,7 +197,7 @@
       "subNoClaim": "{lista}.",
       "subMobile": "Every tool in one plan.",
       "subMobileNoClaim": "All from your phone or your computer.",
-      "note": "You pay {cero} today. Cancel anytime.",
+      "note": "You pay {cero} today. You add your card, and it’s charged when the trial ends unless you cancel.",
       "titleLiveOnly": "Start today. <em>Your live stream in one place.</em>"
     },
     "publicFooter": {
@@ -247,7 +247,7 @@
       "link": "Cookie settings"
     },
     "sticky": {
-      "note": "You pay {cero} today. Cancel anytime."
+      "note": "You pay {cero} today. You add your card, and it’s charged when the trial ends unless you cancel."
     },
     "ctaNoTrial": "Start free",
     "ctaSignedIn": "See plans",
@@ -1067,10 +1067,10 @@
       "name": "Pro",
       "tag": "For creators who post every week",
       "cta": "Start my 7-day free trial",
-      "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
+      "note": "<b>You pay $0 today.</b> You add your card and, unless you cancel, on {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
       "fCredits": "{creditos} credits every month",
       "ctaMonth": "Choose Pro monthly",
-      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
+      "noteMonth": "<b>You pay $0 today.</b> You add your card and, unless you cancel, on {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
       "badgePopular": "Most popular",
       "save": "Save {ahorro} a year · {pct}%",
       "switchYear": "Switch to yearly and save {ahorro} a year",
