@@ -11,10 +11,15 @@ import {
   rejectionDetailOf,
   type DeclineReason,
 } from '@/lib/payments/card-decline';
-import { cleanDeviceSessionId, meliSessionOptions } from '@/lib/payments/device-session';
+import {
+  cleanDeviceSessionId,
+  deviceSessionAudit,
+  meliSessionOptions,
+} from '@/lib/payments/device-session';
 
 const TOK_TEST = 'TEST-1234567890123456-100125-0123456789abcdef0123456789abcdef-123456789';
-const DEVICE = 'armor.4f1c9b2e7d0a6c3b8e5f1a2d9c7b4e6f0a3d5c8b1e2f4a6c9d0b7e3f5a8c1d2e4f6';
+// Real shape, measured on www.chalyb.com 2026-11-07: "armor." + 225 hex = 231 chars.
+const DEVICE = `armor.${'4f1c9b2e7d'.repeat(22)}a6c3b`;
 const read = (p: string) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 interface Captured {
@@ -132,7 +137,9 @@ test('device session ids: only MP-shaped strings pass', () => {
   assert.equal(cleanDeviceSessionId(''), null);
   assert.equal(cleanDeviceSessionId('short'), null);
   assert.equal(cleanDeviceSessionId('a b c d e f g h'), null);
-  assert.equal(cleanDeviceSessionId('x'.repeat(129)), null);
+  assert.equal(DEVICE.length, 231);
+  assert.equal(cleanDeviceSessionId('x'.repeat(512)), 'x'.repeat(512));
+  assert.equal(cleanDeviceSessionId('x'.repeat(513)), null);
   assert.equal(cleanDeviceSessionId('abc\r\nX-Evil: 1'), null);
   assert.equal(cleanDeviceSessionId(42), null);
   assert.deepEqual(meliSessionOptions(null), {});
@@ -174,6 +181,24 @@ test('no device id → no header (never an empty one)', async () => {
   assert.equal(calls[0]!.headers['x-meli-session-id'], undefined);
 });
 
+test('the audit says whether an id came and survived, never the id itself', () => {
+  assert.deepEqual(deviceSessionAudit(DEVICE), { sent: true, kept: true, length: 231 });
+  assert.deepEqual(deviceSessionAudit(undefined), { sent: false, kept: false, length: 0 });
+  assert.deepEqual(deviceSessionAudit('bad id'), { sent: true, kept: false, length: 6 });
+  assert.ok(!JSON.stringify(deviceSessionAudit(DEVICE)).includes('armor'));
+});
+
+test('trial and change routes log the device-session audit before calling MP', () => {
+  for (const [p, call] of [
+    ['src/app/api/billing/trial/route.ts', 'startSubscription'],
+    ['src/app/api/billing/change/route.ts', 'changePlan'],
+  ] as const) {
+    const src = read(p);
+    const log = src.indexOf('deviceSessionAudit(body.deviceSessionId)');
+    assert.ok(log > 0 && log < src.indexOf(`await ${call}(`), p);
+  }
+});
+
 // ── Wiring (the server paths are Supabase-bound; their source is pinned) ────
 
 test('startSubscription sends the device id and answers the decline reason', () => {
@@ -201,7 +226,12 @@ test('the card form loads security.js after ready and hands the id up on submit'
   assert.match(html, /https:\/\/www\.mercadopago\.com\/v2\/security\.js/);
   assert.match(html, /setAttribute\('view', 'checkout'\)/);
   assert.match(html, /ready = true;\s*loadDeviceId\(\);/);
-  assert.equal((html.match(/deviceSessionId: deviceId\(\)/g) ?? []).length, 2);
+  assert.equal((html.match(/withDeviceId\(function \(device\) \{\s*send\('submit'/g) ?? []).length, 2);
+  assert.equal((html.match(/deviceSessionId: device\b/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /deviceSessionId: deviceId\(\)/);
+  // A second page-button click during the wait is ignored until the result comes back.
+  assert.match(html, /function requestSubmit\(\) \{\s*if \(requesting\) return;/);
+  assert.match(html, /chalyb-mp:submit-result'\) \{[\s\S]{0,120}requesting = false;/);
   const brick = read('src/components/payments/mp-card-brick.tsx');
   assert.match(brick, /deviceSessionId,\n\s*\}\);/);
   const form = read('src/components/app/billing/pay-form.tsx');
