@@ -71,8 +71,13 @@ async function invoiceEvent(
   type: InvoiceEvent,
 ): Promise<StripeEventResult> {
   if (!id) return done({ ignored: 'invoice without id' });
-  const report = await stripeInvoiceReport(id, type);
+  const report = await stripeInvoiceReport(id);
   if (!report) return done({ ignored: 'not a subscription invoice' });
+  // A late event that the invoice has since contradicted (failed, then paid on retry) only
+  // re-syncs: the event that matches the current state is the one that writes.
+  const agrees =
+    type === 'invoice.paid' ? report.status === 'approved' : report.status === 'rejected';
+  if (!agrees) return syncSub(report.subscriptionId);
   // A $0 invoice (a trial starting) moves no money: only the subscription changes.
   if (!report.paymentId) return syncSub(report.subscriptionId);
   // A start's own first charge failing is answered by the checkout itself: no grace, no
@@ -101,9 +106,12 @@ async function chargeRefunded(charge: Stripe.Charge): Promise<StripeEventResult>
   if (!piId) return done({ ignored: 'charge without intent' });
   const pi = await getStripe().paymentIntents.retrieve(piId, { expand: ['latest_charge'] });
   const pack = parsePackReference(pi.metadata?.external_reference);
+  // The charge as it is now (refunds only grow), not the event's snapshot.
+  const current =
+    typeof pi.latest_charge === 'object' && pi.latest_charge ? pi.latest_charge : charge;
   // A whole pack refunded takes its unused credits back (Paquetes §7.2); anything else is
   // recorded for a person, and the plan never changes (Términos §7.3).
-  if (pack && charge.refunded) {
+  if (pack && current.refunded) {
     const settled = await settleOneOffCharge(
       chargeFromPaymentIntent(pi, 'refunded'),
       pi as unknown as Record<string, unknown>,
@@ -113,7 +121,7 @@ async function chargeRefunded(charge: Stripe.Charge): Promise<StripeEventResult>
   await onRefundReported({
     userId: pack?.userId ?? pi.metadata?.user_id ?? null,
     mpPaymentId: piId,
-    amountMajor: charge.amount_refunded / 100,
+    amountMajor: current.amount_refunded / 100,
   });
   return done({ ok: true, reversal: 'recorded' });
 }

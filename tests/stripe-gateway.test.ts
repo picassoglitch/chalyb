@@ -528,3 +528,33 @@ test('webhook: a paid 3DS start the page never finalized is finished once by the
   assert.equal(stripe.calls('POST', /^\/v1\/refunds$/).length, 1);
   assert.deepEqual(rows('payment_method_fingerprints').map((r) => r.hash), ['fp-hash']);
 });
+
+// Codex P1 (2026-11-07): a failure event delivered after the retry paid is stale.
+test('webhook: a late failure event for an invoice that has since been paid changes nothing', { skip }, async () => {
+  seedRow('sub_late', { status: 'authorized' });
+  backend.tables.profiles![0]!.tier = 'PRO';
+  stripe.on('GET', /^\/v1\/invoices\/in_late$/, invoice('in_late', 'sub_late', 'pi_late', true));
+  stripe.on('GET', /^\/v1\/subscriptions\/sub_late$/, subscription('sub_late'));
+  const paid = await deliver('invoice.paid', { id: 'in_late' });
+  const late = await deliver('invoice.payment_failed', { id: 'in_late' });
+  const lateAction = await deliver('invoice.payment_action_required', { id: 'in_late' });
+  await drain();
+  assert.equal(paid.status, 200, JSON.stringify(paid.body));
+  assert.equal(late.status, 200, JSON.stringify(late.body));
+  assert.equal(lateAction.status, 200);
+  const pays = rows('payments');
+  assert.equal(pays.length, 1);
+  assert.equal(pays[0]!.status, 'approved');
+  assert.equal(rows('subscriptions')[0]!.grace_ends_at ?? null, null);
+  assert.equal(rows('profiles')[0]!.tier, 'PRO');
+  assert.equal(rows('profiles')[0]!.tier_ends_at, null);
+});
+
+test('webhook: a late paid event for an invoice that is still open writes no charge', { skip }, async () => {
+  seedRow('sub_open', { status: 'authorized' });
+  stripe.on('GET', /^\/v1\/invoices\/in_open$/, invoice('in_open', 'sub_open', 'pi_open', false));
+  stripe.on('GET', /^\/v1\/subscriptions\/sub_open$/, subscription('sub_open'));
+  const res = await deliver('invoice.paid', { id: 'in_open' });
+  assert.equal(res.status, 200, JSON.stringify(res.body));
+  assert.equal(rows('payments').length, 0);
+});

@@ -98,17 +98,22 @@ export type InvoiceEvent =
   | 'invoice.payment_failed'
   | 'invoice.payment_action_required';
 
-/** An invoice event as a recurring charge. $0 invoices (trial start) carry no payment. */
+/** The invoice as it is NOW, never as the (possibly late) event said: a failure event that
+ *  arrives after the retry paid must not reopen grace. $0 invoices carry no payment. */
 export function chargeReportFromInvoice(
   invoice: Stripe.Invoice,
-  event: InvoiceEvent,
   paymentIntentId: string | null,
 ): RecurringChargeReport | null {
   const subscriptionId = invoiceSubscriptionId(invoice);
   if (!subscriptionId) return null;
   const meta = invoice.parent?.subscription_details?.metadata ?? null;
-  const total = event === 'invoice.paid' ? invoice.amount_paid : invoice.amount_due;
-  const status: ChargeStatus = event === 'invoice.paid' ? 'approved' : 'rejected';
+  const paid = invoice.status === 'paid';
+  const total = paid ? invoice.amount_paid : invoice.amount_due;
+  const status: ChargeStatus = paid
+    ? 'approved'
+    : invoice.status === 'open' || invoice.status === 'uncollectible'
+      ? 'rejected'
+      : 'unknown';
   return {
     provider: 'stripe',
     paymentId: total > 0 ? (paymentIntentId ?? invoice.id ?? null) : null,
@@ -118,7 +123,7 @@ export function chargeReportFromInvoice(
     currency: (invoice.currency ?? 'mxn').toUpperCase(),
     status,
     chargedAt:
-      iso(event === 'invoice.paid' ? invoice.status_transitions?.paid_at : null) ??
+      iso(paid ? invoice.status_transitions?.paid_at : null) ??
       iso(invoice.created) ??
       new Date().toISOString(),
     retryAttempt: Math.max(0, (invoice.attempt_count ?? 1) - 1),

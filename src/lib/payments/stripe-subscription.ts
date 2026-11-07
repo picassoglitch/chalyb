@@ -8,7 +8,6 @@ import {
   chargeReportFromInvoice,
   invoiceSubscriptionId,
   snapshotFromStripe,
-  type InvoiceEvent,
   type RecurringChargeReport,
   type SubscriptionSnapshot,
 } from './stripe-mapping';
@@ -21,11 +20,10 @@ export async function stripeSubscriptionSnapshot(id: string): Promise<Subscripti
 /** The invoice behind an invoice.* event, read back from Stripe (never the payload alone). */
 export async function stripeInvoiceReport(
   invoiceId: string,
-  event: InvoiceEvent,
 ): Promise<RecurringChargeReport | null> {
   const stripe = getStripe();
   const invoice = await stripe.invoices.retrieve(invoiceId, { expand: ['payments'] });
-  const report = chargeReportFromInvoice(invoice, event, invoicePaymentIntent(invoice));
+  const report = chargeReportFromInvoice(invoice, invoicePaymentIntent(invoice));
   if (report && !report.externalReference) {
     const subId = invoiceSubscriptionId(invoice);
     if (subId) {
