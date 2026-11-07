@@ -80,10 +80,12 @@ export const MAX_UPLOAD_BYTES_PER_SECOND = 125_000_000;
  *  hold, but a length the file can't have is refused, not passed on. */
 function duration(v: unknown, sizeBytes: number): number | null {
   if (v === undefined || v === null) return null;
-  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0 || v > 86_400)
+  if (typeof v !== 'number' || !Number.isFinite(v)) throw new ToolRequestError('bad duration');
+  // Checked after rounding: what is sent is what was validated.
+  const r = Math.round(v * 10) / 10;
+  if (r <= 0 || r > 86_400 || sizeBytes / r > MAX_UPLOAD_BYTES_PER_SECOND)
     throw new ToolRequestError('bad duration');
-  if (sizeBytes / v > MAX_UPLOAD_BYTES_PER_SECOND) throw new ToolRequestError('bad duration');
-  return Math.round(v * 10) / 10;
+  return r;
 }
 
 export function parseTicket(b: Body): string {

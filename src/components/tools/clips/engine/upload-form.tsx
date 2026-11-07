@@ -53,6 +53,7 @@ function readDuration(file: File): Promise<number | null> {
     const done = (d: number | null) => {
       clearTimeout(timer);
       v.removeAttribute('src');
+      v.load();
       URL.revokeObjectURL(url);
       resolve(d !== null && Number.isFinite(d) && d > 0 && d <= 86_400 ? d : null);
     };

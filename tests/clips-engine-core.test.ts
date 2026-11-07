@@ -244,6 +244,13 @@ test('BFF input parsing refuses junk before the engine sees it', () => {
   const big = { ...withLength, size_bytes: 2_000_000_000 };
   assert.throws(() => parseUploadStart({ ...big, duration_s: 1 }), /bad duration/);
   assert.equal(parseUploadStart({ ...big, duration_s: 22 }).duration_s, 22);
+  // Validated after rounding: 0.04 rounds to 0; 16.04 s passes the floor
+  // for 2 GB (124.7 MB/s) but rounds to 16.0 (125.0 MB/s, over it).
+  assert.throws(() => parseUploadStart({ ...withLength, duration_s: 0.04 }), /bad duration/);
+  assert.throws(
+    () => parseUploadStart({ ...withLength, size_bytes: 2_000_000_001, duration_s: 16.04 }),
+    /bad duration/,
+  );
   assert.throws(() =>
     parseUploadStart({ filename: 'a', size_bytes: 10, content_type: 'text/html' }),
   );
