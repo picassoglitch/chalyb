@@ -69,7 +69,7 @@ export async function fetchCostReport(
           signal: ctrl.signal,
         });
         if (!res.ok) {
-          const detail = errorMessage(await res.text().catch(() => '')).slice(0, 200);
+          const detail = anthropicErrorText(await res.text().catch(() => ''), key);
           const kind = res.status === 401 || res.status === 403 ? 'auth' : 'api';
           throw new CostReportError(kind, `Anthropic ${res.status}: ${detail}`, res.status);
         }
@@ -81,7 +81,7 @@ export async function fetchCostReport(
         }
         if (e instanceof SyntaxError)
           throw new CostReportError('api', 'Anthropic devolvió una respuesta inválida');
-        throw new CostReportError('api', `red: ${e instanceof Error ? e.message : String(e)}`);
+        throw new CostReportError('api', redactSecrets(`red: ${e instanceof Error ? e.message : String(e)}`, key));
       }
       pages.push(body);
       if (!body.has_more || !body.next_page) break;
@@ -93,14 +93,25 @@ export async function fetchCostReport(
   return pages;
 }
 
-/** Anthropic's `{"error":{"message":…}}`, or the raw text when it isn't JSON. */
-function errorMessage(text: string): string {
+const REDACTED = '[redactado]';
+
+/** Removes the supplied key and anything shaped like an Anthropic key, so an
+ *  upstream error that echoes it never reaches logs or the admin UI. */
+export function redactSecrets(text: string, key?: string): string {
+  const out = key && key.length >= 8 ? text.split(key).join(REDACTED) : text;
+  return out.replace(/sk-ant-[A-Za-z0-9_-]+/g, REDACTED);
+}
+
+/** Anthropic's `{"error":{"message":…}}`, redacted and truncated. A body that
+ *  isn't that shape (proxy page, HTML) is never surfaced raw. */
+export function anthropicErrorText(text: string, key?: string): string {
+  let m: unknown;
   try {
-    const m = (JSON.parse(text) as { error?: { message?: unknown } }).error?.message;
-    return typeof m === 'string' ? m : text;
+    m = (JSON.parse(text) as { error?: { message?: unknown } } | null)?.error?.message;
   } catch {
-    return text;
+    m = undefined;
   }
+  return typeof m === 'string' ? redactSecrets(m, key).slice(0, 200) : 'respuesta sin detalle legible';
 }
 
 /** Cents (decimal string) → USD micros. 1 cent = 10,000 micros. */

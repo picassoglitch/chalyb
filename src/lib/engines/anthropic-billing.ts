@@ -24,6 +24,7 @@
 // matter, plumb workspace_id through here.
 
 import 'server-only';
+import { anthropicErrorText, redactSecrets } from '@/lib/usage/reconciliation-core';
 
 interface AnthropicUsageReportRow {
   date: string;
@@ -76,6 +77,7 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
   const qs = new URLSearchParams(params).toString();
   let res: Response;
   let body: unknown = null;
+  let rawText = '';
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), CALL_TIMEOUT_MS);
   try {
@@ -89,11 +91,11 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       cache: 'no-store',
       signal: ctrl.signal,
     });
-    const text = await res.text().catch(() => '');
+    rawText = await res.text().catch(() => '');
     try {
-      body = JSON.parse(text);
+      body = JSON.parse(rawText);
     } catch {
-      body = text;
+      body = rawText;
     }
   } catch (err) {
     return {
@@ -102,21 +104,17 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       body: null,
       error: ctrl.signal.aborted
         ? `timeout: Anthropic did not answer in ${CALL_TIMEOUT_MS / 1000}s`
-        : `network: ${err instanceof Error ? err.message : String(err)}`,
+        : redactSecrets(`network: ${err instanceof Error ? err.message : String(err)}`, key),
     };
   } finally {
     clearTimeout(timer);
   }
   if (!res.ok) {
-    const detail =
-      typeof body === 'object' && body && 'error' in body
-        ? JSON.stringify((body as { error: unknown }).error).slice(0, 200)
-        : String(body).slice(0, 200);
     return {
       ok: false,
       status: res.status,
-      body,
-      error: `Anthropic ${res.status}: ${detail}`,
+      body: null,
+      error: `Anthropic ${res.status}: ${anthropicErrorText(rawText, key)}`,
     };
   }
   return { ok: true, status: res.status, body };

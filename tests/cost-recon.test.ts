@@ -83,3 +83,54 @@ test('a 200 with a broken body says so, not "red"', async () => {
     return true;
   });
 });
+
+// Codex P2 — an upstream that echoes the key must not leak it to logs or the UI.
+const KEY = 'sk-ant-admin01-TESTSECRET_abc123';
+const echo = (asJson: boolean) =>
+  (async () =>
+    new Response(
+      asJson
+        ? JSON.stringify({ error: { type: 'authentication_error', message: `bad key ${KEY} / also sk-ant-api03-OTHER` } })
+        : `<html>proxy says x-api-key: ${KEY}</html>`,
+      { status: 401 },
+    )) as typeof fetch;
+
+test('the key is redacted from every error built from an Anthropic response', async () => {
+  for (const asJson of [true, false]) {
+    await assert.rejects(fetchCostReport(start, end, KEY, { fetch: echo(asJson) }), (e: unknown) => {
+      assert.ok(e instanceof CostReportError);
+      assert.ok(!e.message.includes(KEY), e.message);
+      assert.ok(!/sk-ant-/.test(e.message), e.message);
+      return true;
+    });
+  }
+});
+
+test('the recon detail and the sync-button error never carry the key', async () => {
+  const realFetch = globalThis.fetch;
+  const realKey = process.env.ANTHROPIC_ADMIN_KEY;
+  const realLog = console.error;
+  const logged: string[] = [];
+  process.env.ANTHROPIC_ADMIN_KEY = KEY;
+  console.error = (...a: unknown[]) => void logged.push(a.map(String).join(' '));
+  try {
+    const { reconcileAnthropic } = await import('@/lib/usage/reconciliation');
+    const { computeAnthropicBlendedRate } = await import('@/lib/engines/anthropic-billing');
+    for (const asJson of [true, false]) {
+      globalThis.fetch = echo(asJson);
+      const recon = await reconcileAnthropic(new Date('2026-11-06T00:00:00Z'));
+      assert.equal(recon.ok, false);
+      const detail = recon.ok ? '' : (recon.detail ?? '');
+      assert.ok(detail && !/sk-ant-/.test(detail), detail);
+      const sync = await computeAnthropicBlendedRate(30);
+      assert.equal(sync.ok, false);
+      assert.ok(sync.error && !/sk-ant-/.test(sync.error), sync.error);
+    }
+    assert.ok(logged.length > 0 && logged.every((l) => !/sk-ant-/.test(l)), logged.join('\n'));
+  } finally {
+    globalThis.fetch = realFetch;
+    console.error = realLog;
+    if (realKey === undefined) delete process.env.ANTHROPIC_ADMIN_KEY;
+    else process.env.ANTHROPIC_ADMIN_KEY = realKey;
+  }
+});
