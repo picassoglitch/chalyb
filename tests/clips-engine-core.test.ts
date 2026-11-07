@@ -237,8 +237,13 @@ test('BFF input parsing refuses junk before the engine sees it', () => {
   const withLength = { filename: 'a.mp4', size_bytes: 10, content_type: 'video/mp4' };
   assert.equal(parseUploadStart({ ...withLength, duration_s: 20.04 }).duration_s, 20);
   assert.equal(parseUploadStart({ ...withLength, duration_s: 100 }).duration_s, 100);
-  for (const bad of [-1, 86_401, Number.NaN, '20'])
+  for (const bad of [0, -1, 86_401, Number.NaN, '20'])
     assert.throws(() => parseUploadStart({ ...withLength, duration_s: bad }));
+  // A length the file can't have (a 2 GB file declared as 1 s) is refused;
+  // a heavy but real one (4K ProRes ~90 MB/s) passes.
+  const big = { ...withLength, size_bytes: 2_000_000_000 };
+  assert.throws(() => parseUploadStart({ ...big, duration_s: 1 }), /bad duration/);
+  assert.equal(parseUploadStart({ ...big, duration_s: 22 }).duration_s, 22);
   assert.throws(() =>
     parseUploadStart({ filename: 'a', size_bytes: 10, content_type: 'text/html' }),
   );
