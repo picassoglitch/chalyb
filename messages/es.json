@@ -1893,6 +1893,12 @@
         "legal_7_2_i": "(i) Lo ordena la ley, la PROFECO o una autoridad"
       }
     },
+    "team": {
+      "plans": "Con plan Pro, Partner o VIP",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} pagando · {trial} en prueba · {other} sin cobro activo (asignados o con pago pendiente)",
+      "plansSplitFailed": "No se pudieron leer las suscripciones: sin desglose de pagos."
+    },
     "money": {
       "metaTitle": "Dinero",
       "title": "Dinero",
@@ -1916,7 +1922,8 @@
         "cancelled": "Cancelaron"
       },
       "payments": "Pagos",
-      "subscriptions": "Suscripciones",
+      "subscriptions": "Suscripciones pagadas con Mercado Pago",
+      "subscriptionsNote": "Solo cuenta suscripciones con tarjeta. Los planes que asignas a mano en Equipo no aparecen aquí.",
       "costs": "Costos",
       "col": {
         "date": "Fecha",
@@ -1933,7 +1940,7 @@
       },
       "noMovements": "Aún no hay movimientos este mes.",
       "subsBy": {
-        "active": "Activas",
+        "active": "Activas (pagando)",
         "trial": "En prueba",
         "past_due": "Pago pendiente",
         "cancelled": "Canceladas"

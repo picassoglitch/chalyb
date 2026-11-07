@@ -1893,6 +1893,12 @@
         "legal_7_2_i": "(i) Ordered by law, PROFECO or an authority"
       }
     },
+    "team": {
+      "plans": "With a Pro, Partner or VIP plan",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} paying · {trial} on trial · {other} not being charged (assigned or payment due)",
+      "plansSplitFailed": "Could not read subscriptions: no payment breakdown."
+    },
     "money": {
       "metaTitle": "Money",
       "title": "Money",
@@ -1916,7 +1922,8 @@
         "cancelled": "Cancelled"
       },
       "payments": "Payments",
-      "subscriptions": "Subscriptions",
+      "subscriptions": "Subscriptions paid through Mercado Pago",
+      "subscriptionsNote": "Only card subscriptions count. Plans you assign by hand in Team are not included here.",
       "costs": "Costs",
       "col": {
         "date": "Date",
@@ -1933,7 +1940,7 @@
       },
       "noMovements": "No movements this month yet.",
       "subsBy": {
-        "active": "Active",
+        "active": "Active (paying)",
         "trial": "On trial",
         "past_due": "Payment due",
         "cancelled": "Cancelled"
