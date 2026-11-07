@@ -69,8 +69,9 @@ function filterRows(rows: Row[], params: URLSearchParams): Row[] {
     if (RESERVED.has(k)) continue;
     out = out.filter((r) => matches(r, k, v));
   }
+  const offset = Number(params.get('offset')) || 0;
   const limit = Number(params.get('limit'));
-  return limit ? out.slice(0, limit) : out;
+  return limit ? out.slice(offset, offset + limit) : out.slice(offset);
 }
 
 function json(status: number, body: unknown): Response {
