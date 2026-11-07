@@ -89,7 +89,7 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       cache: 'no-store',
       signal: ctrl.signal,
     });
-    const text = await res.text();
+    const text = await res.text().catch(() => '');
     try {
       body = JSON.parse(text);
     } catch {
@@ -101,7 +101,7 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       status: 0,
       body: null,
       error: ctrl.signal.aborted
-        ? `Anthropic no respondió en ${CALL_TIMEOUT_MS / 1000}s`
+        ? `timeout: Anthropic did not answer in ${CALL_TIMEOUT_MS / 1000}s`
         : `network: ${err instanceof Error ? err.message : String(err)}`,
     };
   } finally {

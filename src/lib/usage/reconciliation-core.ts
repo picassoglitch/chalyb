@@ -32,8 +32,8 @@ export class CostReportError extends Error {
   }
 }
 
-/** Every page of the month's cost report. Each call is bounded by
- *  `timeoutMs` so a stuck Anthropic call can't hang the admin page. */
+/** Every page of the month's cost report. The whole report (all pages) is
+ *  bounded by `timeoutMs` so a stuck Anthropic call can't hang the admin page. */
 export async function fetchCostReport(
   start: Date,
   end: Date,
@@ -44,45 +44,63 @@ export async function fetchCostReport(
   const timeoutMs = opts.timeoutMs ?? 10_000;
   const pages: CostReportPage[] = [];
   let page: string | null = null;
-  for (let i = 0; i < 10; i++) {
-    const qs = new URLSearchParams({
-      starting_at: start.toISOString(),
-      ending_at: end.toISOString(),
-      bucket_width: '1d',
-      limit: '31',
-    });
-    qs.append('group_by[]', 'description');
-    qs.append('group_by[]', 'workspace_id');
-    if (page) qs.set('page', page);
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    let body: CostReportPage;
-    try {
-      const res = await doFetch(`${COST_REPORT_URL}?${qs}`, {
-        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'user-agent': 'Chalyb/1.0 (https://www.chalyb.com)' },
-        cache: 'no-store',
-        signal: ctrl.signal,
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    for (let i = 0; i < 10; i++) {
+      const qs = new URLSearchParams({
+        starting_at: start.toISOString(),
+        ending_at: end.toISOString(),
+        bucket_width: '1d',
+        limit: '31',
       });
-      if (!res.ok) {
-        const detail = (await res.text().catch(() => '')).slice(0, 200);
-        const kind = res.status === 401 || res.status === 403 ? 'auth' : 'api';
-        throw new CostReportError(kind, `Anthropic ${res.status}: ${detail}`, res.status);
+      qs.append('group_by[]', 'description');
+      qs.append('group_by[]', 'workspace_id');
+      if (page) qs.set('page', page);
+      let body: CostReportPage;
+      try {
+        const res = await doFetch(`${COST_REPORT_URL}?${qs}`, {
+          headers: {
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'user-agent': 'Chalyb/1.0 (https://www.chalyb.com)',
+          },
+          cache: 'no-store',
+          signal: ctrl.signal,
+        });
+        if (!res.ok) {
+          const detail = errorMessage(await res.text().catch(() => '')).slice(0, 200);
+          const kind = res.status === 401 || res.status === 403 ? 'auth' : 'api';
+          throw new CostReportError(kind, `Anthropic ${res.status}: ${detail}`, res.status);
+        }
+        body = (await res.json()) as CostReportPage;
+      } catch (e) {
+        if (e instanceof CostReportError) throw e;
+        if (ctrl.signal.aborted) {
+          throw new CostReportError('timeout', `Anthropic no respondió en ${timeoutMs / 1000}s`);
+        }
+        if (e instanceof SyntaxError)
+          throw new CostReportError('api', 'Anthropic devolvió una respuesta inválida');
+        throw new CostReportError('api', `red: ${e instanceof Error ? e.message : String(e)}`);
       }
-      body = (await res.json()) as CostReportPage;
-    } catch (e) {
-      if (e instanceof CostReportError) throw e;
-      if (ctrl.signal.aborted) {
-        throw new CostReportError('timeout', `Anthropic no respondió en ${timeoutMs / 1000}s`);
-      }
-      throw new CostReportError('api', `red: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      clearTimeout(timer);
+      pages.push(body);
+      if (!body.has_more || !body.next_page) break;
+      page = body.next_page;
     }
-    pages.push(body);
-    if (!body.has_more || !body.next_page) break;
-    page = body.next_page;
+  } finally {
+    clearTimeout(timer);
   }
   return pages;
+}
+
+/** Anthropic's `{"error":{"message":…}}`, or the raw text when it isn't JSON. */
+function errorMessage(text: string): string {
+  try {
+    const m = (JSON.parse(text) as { error?: { message?: unknown } }).error?.message;
+    return typeof m === 'string' ? m : text;
+  } catch {
+    return text;
+  }
 }
 
 /** Cents (decimal string) → USD micros. 1 cent = 10,000 micros. */

@@ -18,7 +18,7 @@ test('a 401 from Anthropic is a key problem, not "no respondió"', async () => {
     assert.ok(e instanceof CostReportError);
     assert.equal(e.kind, 'auth');
     assert.equal(e.status, 401);
-    assert.match(e.message, /invalid x-api-key/);
+    assert.equal(e.message, 'Anthropic 401: invalid x-api-key');
     return true;
   });
 });
@@ -72,4 +72,14 @@ test('every failure kind has copy, and measured vs estimated are labeled', () =>
     for (const k of ['no_key', 'auth', 'timeout', 'api', 'db']) assert.ok(recon.error[k], `${locale}: error.${k}`);
     assert.ok(recon.measured && recon.estimated && recon.unverified, `${locale}: measured/estimated/unverified`);
   }
+});
+
+test('a 200 with a broken body says so, not "red"', async () => {
+  const f = (async () => new Response('<html>oops', { status: 200 })) as typeof fetch;
+  await assert.rejects(fetchCostReport(start, end, 'k', { fetch: f }), (e: unknown) => {
+    assert.ok(e instanceof CostReportError);
+    assert.equal(e.kind, 'api');
+    assert.match(e.message, /respuesta inválida/);
+    return true;
+  });
 });
