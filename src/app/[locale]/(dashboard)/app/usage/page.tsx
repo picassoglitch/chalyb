@@ -15,7 +15,7 @@ import { engineDisplayName } from '@/lib/engines/display-names';
 import { getSessionUser, type SubscriptionTier, type UserRole } from '@/lib/auth/session';
 import { effectiveTier, isAdminRole, TIER_CAPS } from '@/lib/billing/tiers';
 import { getTokenBalance, type TokenBalance } from '@/lib/usage/tokens';
-import { groupUses, type UsageEventRow } from '@/lib/usage/ledger';
+import { groupUses, retryWithLegacyColumns, type UsageEventRow } from '@/lib/usage/ledger';
 import { createClient } from '@/lib/supabase/server';
 import { loadPricedPacks } from '@/lib/payments/pack-prices';
 import { INVOICE_EMAIL } from '@/config/invoicing';
@@ -172,7 +172,10 @@ async function loadUsagePageData(): Promise<PageData> {
         .eq('user_id', userId)
         .order('occurred_at', { ascending: false })
         .limit(60);
-      if (first.error) {
+      if (first.error && !retryWithLegacyColumns(first.error)) {
+        console.error('[/app/usage] usage_events query failed:', first.error.message);
+        warnings.push('events_query_failed');
+      } else if (first.error) {
         console.warn(
           '[/app/usage] usage_events with operation failed, retrying legacy:',
           first.error.message,

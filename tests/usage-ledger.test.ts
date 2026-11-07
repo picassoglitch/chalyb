@@ -4,7 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { eventCredits, groupUses, type UsageEventRow } from '@/lib/usage/ledger';
+import { eventCredits, groupUses, retryWithLegacyColumns, type UsageEventRow } from '@/lib/usage/ledger';
 
 const CLIPS = 'eng-clips';
 const AT = '2026-11-07T01:20:52Z';
@@ -71,4 +71,10 @@ test('without billable_tokens (legacy query) only LLM tokens count, as before', 
     500,
   );
   assert.equal(eventCredits({ ...base, billable_tokens: 0 }), 0);
+});
+
+test('only a missing column falls back to the legacy select', () => {
+  assert.equal(retryWithLegacyColumns({ code: '42703' }), true);
+  for (const code of ['57014', 'PGRST301', '08006', undefined, null])
+    assert.equal(retryWithLegacyColumns({ code }), false, String(code));
 });

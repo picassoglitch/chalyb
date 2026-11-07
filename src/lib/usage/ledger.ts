@@ -53,3 +53,9 @@ export function groupUses(events: UsageEventRow[]): Map<string, Use> {
   }
   return uses;
 }
+
+/** Only a missing column (Postgres 42703) justifies the legacy select: it
+ *  can't count credits, so any other error must surface, not hide as zeros. */
+export function retryWithLegacyColumns(error: { code?: string | null }): boolean {
+  return error.code === '42703';
+}
