@@ -4,7 +4,7 @@
 // ya hiciste está guardado" only when the caller knows there is saved work.
 
 import type { Route } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { PlugZap } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { toolBySlug } from '@/config/tools';
@@ -12,6 +12,7 @@ import { getToolStatus } from '@/lib/tools/status';
 import type { ToolError } from '@/lib/tools/bff-core';
 import { Markup } from '@/components/ui/markup';
 import { ToolRetry } from './tool-retry';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 const MEANWHILE: Record<string, { href: string | null }> = {
   chalybclip: { href: '/app/history' },
@@ -45,7 +46,7 @@ export async function ToolErrorState({
           <PlugZap />
         </span>
         <h2 id="toolerr-title" className="ch-h2">
-          {t('title', { herramienta: tool.name })}
+          {t('title', { herramienta: localizedToolName(tool.name, await getLocale()) })}
         </h2>
         <p className="ch-muted">
           {t('body')}

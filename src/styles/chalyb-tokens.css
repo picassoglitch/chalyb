@@ -2742,3 +2742,26 @@ html body:has(.ch-flow) {
     scroll-padding-bottom: calc(96px + var(--consent-h, 0px));
   }
 }
+
+/* Language toggle (public header, app sidebar, app mobile header). */
+.chalyb-app .ch-lang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--ink2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.chalyb-app .ch-lang:hover { color: var(--ink); }
+.chalyb-app .ch-lang:disabled { opacity: 0.6; cursor: progress; }
+.chalyb-app .ch-lang svg { width: 18px; height: 18px; }
+.chalyb-app .ch-lang--row { justify-content: flex-start; margin-top: 8px; padding: 0 14px; font-size: 16px; font-weight: 550; }
+.chalyb-app .ch-lang--icon { min-width: 36px; padding: 0 4px; }

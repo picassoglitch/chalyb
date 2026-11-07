@@ -21,7 +21,12 @@
 // error so the form can highlight it.
 
 import { sendEmail, getContactInbox, isResendConfigured } from '@/lib/email/resend';
-import { contactInboxTemplate, contactConfirmTemplate } from '@/lib/email/templates';
+import {
+  contactConfirmSubject,
+  contactConfirmTemplate,
+  contactInboxTemplate,
+  emailLocale,
+} from '@/lib/email/templates';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
 
@@ -173,7 +178,9 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   // Templates live in src/lib/email/templates.ts — branded shell with dark
   // theme, Chalyb wordmark, acid-green accents. HTML escaping is handled inside.
   const inbox = contactInboxTemplate({ name: sender, email, subject, message: body, ip });
-  const confirm = contactConfirmTemplate({ name: sender, subject, message: body });
+  // The form sends the page's language; the confirmation answers in it.
+  const locale = emailLocale(formData.get('locale'));
+  const confirm = contactConfirmTemplate({ name: sender, subject, message: body, locale });
 
   const inboxResult = await sendEmail({
     to: getContactInbox(),
@@ -231,7 +238,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactResu
   // successful because the lead reached us (the important half).
   await sendEmail({
     to: email,
-    subject: 'Recibimos tu mensaje · Chalyb',
+    subject: contactConfirmSubject(locale),
     html: confirm.html,
     text: confirm.text,
   });

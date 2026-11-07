@@ -21,7 +21,9 @@
 // (FIX-3 §C.6, covered by e2e/perfil-idioma-sesion.spec.ts). Now: read once,
 // write once, and redirect only when the language changed.
 
+import { cookies } from 'next/headers';
 import { redirect } from '@/i18n/routing';
+import { LANG_COOKIE } from '@/lib/tools/routes';
 import { createClient } from '@/lib/supabase/server';
 import { profileNotificationPrefs } from '@/lib/config/flags';
 import { isKnownTimezone } from '@/lib/profile/timezones';
@@ -122,6 +124,13 @@ export async function saveProfileSettings(input: ProfileInput): Promise<SaveProf
   }
 
   if (input.locale !== input.currentLocale) {
+    // Same saved choice as the in-app toggle, so /account follows it too.
+    (await cookies()).set(LANG_COOKIE, input.locale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
     // next-intl's redirect adds the prefix for the chosen language ('es' is
     // the default and stays unprefixed). `saved=1` shows the toast once in
     // the new language; the page removes it from the URL.

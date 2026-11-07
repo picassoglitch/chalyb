@@ -30,7 +30,13 @@ import { trialFlowEnabled } from '@/lib/config/flags';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 import { reportToolError } from '@/lib/tools/bff';
 import { hasRiskAck } from '@/lib/tools/consents';
-import { RISK_TOOLS, launchLocale, localizedPath, toolHref } from '@/lib/tools/routes';
+import {
+  RISK_TOOLS,
+  engineUrlWithLang,
+  launchLocale,
+  localizedPath,
+  toolHref,
+} from '@/lib/tools/routes';
 
 export async function GET(
   request: NextRequest,
@@ -161,7 +167,7 @@ export async function GET(
 
   const result = await getEngineLaunchUrl(engineId);
   if (result.ok && result.url) {
-    return NextResponse.redirect(result.url);
+    return NextResponse.redirect(engineUrlWithLang(result.url, lang));
   }
   // Couldn't build the launch URL (engine not configured / provisioning
   // failed) — drop the user on the engine page where the error surfaces.

@@ -2,13 +2,14 @@
 // verdict pill, the "Hoy, 7:15 a.m." line and the card.
 
 import type { Route } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Markup } from '@/components/ui/markup';
 import { DisclaimerFooter } from '@/components/tools/disclaimer-footer';
 import { relativeDay, SIGNAL_TZ, VERDICT, formatRefPrice } from '@/lib/tools/signals-view';
 import type { Coin, Signal } from '@/lib/tools/adapters/tools';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function SignalsDisclaimer() {
   const t = await getTranslations('toolShell.disclaimer');
@@ -18,7 +19,7 @@ export async function SignalsDisclaimer() {
       text={t.markup('text', { b: (c) => `<b>${c}</b>` })}
       readLabel={t('read')}
       sheetTitle={t('sheetTitle')}
-      legal={tc.markup('body', { herramienta: 'Señales', b: (c) => `<b>${c}</b>` })}
+      legal={tc.markup('body', { herramienta: localizedToolName('Señales', await getLocale()), b: (c) => `<b>${c}</b>` })}
       closeLabel={t('close')}
     />
   );

@@ -4,7 +4,7 @@
 // seller block reads LEGAL_ENTITY_* and shows only the values that are set.
 
 import type { Route } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/ui/primitives';
 import { legalEntity } from '@/lib/billing/legal-entity';
@@ -12,12 +12,14 @@ import { listActiveTools } from '@/lib/tools/public-tools-server';
 import { LEGAL_PAGES } from '@/lib/legal/public-pages';
 import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 import { CookieSettingsButton } from './cookie-banner';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 /** The disclaimer names these tools, so it shows only while one of them is active. */
 const FINANCIAL = new Set(['chalybcrypto', 'chalybpicks', 'chalybtrade']);
 
 export async function PublicFooter({ onLanding = false }: { onLanding?: boolean }) {
   const t = await getTranslations('landing.publicFooter');
+  const locale = await getLocale();
   const active = await listActiveTools();
   const tools = active.slice(0, 3);
   const hasClips = active.some((tool) => tool.slug === 'chalybclip');
@@ -40,7 +42,7 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
               <p className="pub-foot__h">{t('tools')}</p>
               {tools.map((tool) => (
                 <Link key={tool.slug} href={'/#herramientas' as Route}>
-                  {tool.name}
+                  {localizedToolName(tool.name, locale)}
                 </Link>
               ))}
               <Link href={'/#herramientas' as Route}>{t('toolsAll')}</Link>

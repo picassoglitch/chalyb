@@ -35,6 +35,15 @@ export async function recordSignupConsent(input: {
       .limit(1)
       .maybeSingle();
     if (existing) return { ok: true };
+    // The email form knows the page's language (Google's callback only guesses
+    // from `next`): it becomes the profile's, which Mi perfil shows.
+    if (input.surface === 'web_signup_email' && (input.locale === 'en' || input.locale === 'es')) {
+      const { error: localeErr } = await admin
+        .from('profiles')
+        .update({ preferred_locale: input.locale })
+        .eq('id', input.userId);
+      if (localeErr) console.error('[signup] language not saved', localeErr.message);
+    }
 
     const published = legalPublished();
     const ctx = await requestContext();

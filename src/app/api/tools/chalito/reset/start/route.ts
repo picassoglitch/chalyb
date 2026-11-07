@@ -5,13 +5,14 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { startReset } from '@/lib/chalito/reset';
 import { resetSecret, resetStore, sendResetCode } from '@/lib/chalito/reset-server';
+import { emailLocale } from '@/lib/email/templates';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const noStore = { 'cache-control': 'no-store' };
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await getSessionUser();
   if (!session)
     return NextResponse.json(
@@ -24,6 +25,9 @@ export async function POST() {
       { ok: false, reason: 'send_failed' },
       { status: 503, headers: noStore },
     );
+  // The code email goes out in the page's language (sent in the body).
+  const body = (await request.json().catch(() => null)) as { locale?: unknown } | null;
+  const locale = emailLocale(body?.locale);
   try {
     const r = await startReset({
       userId: session.user.id,
@@ -31,7 +35,7 @@ export async function POST() {
       store: resetStore,
       secret,
       now: Date.now,
-      send: sendResetCode,
+      send: (to, code) => sendResetCode(to, code, locale),
     });
     const status = r.ok
       ? 200

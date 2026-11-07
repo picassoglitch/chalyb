@@ -4,13 +4,14 @@
 
 import type { Route } from 'next';
 import type { ReactNode } from 'react';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { toolBySlug, type ToolTabKey } from '@/config/tools';
 import { Pill } from '@/components/ui/primitives';
 import { ToolIcon } from '@/components/ui/tool-icon';
 import { ToolTabsAuto, ToolTabsLinks } from './tool-tabs';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function ToolShell({
   slug,
@@ -29,6 +30,7 @@ export async function ToolShell({
 }) {
   const tool = toolBySlug(slug)!;
   const t = await getTranslations('toolShell');
+  const name = localizedToolName(tool.name, await getLocale());
   return (
     <div className="ch-toolshell" data-tool={slug}>
       <header className="ch-toolhead">
@@ -40,7 +42,7 @@ export async function ToolShell({
           <div className="ch-toolhead__row">
             <ToolIcon slug={slug} filled />
             <div className="ch-toolhead__name">
-              <h1 className="ch-h1">{tool.name}</h1>
+              <h1 className="ch-h1">{name}</h1>
               {plan === 'included' ? (
                 <Pill kind="ok" check>
                   {t('included')}
@@ -54,14 +56,14 @@ export async function ToolShell({
         {plan === 'included' && tab === 'auto' && (
           <ToolTabsAuto
             slug={slug}
-            ariaLabel={t('tabsAria', { herramienta: tool.name })}
+            ariaLabel={t('tabsAria', { herramienta: name })}
             labels={Object.fromEntries(tool.tabs.map((x) => [x.key, t(`tab.${slug}.${x.key}`)]))}
           />
         )}
         {plan === 'included' && tab !== 'auto' && (
           <ToolTabsLinks
             selected={tab}
-            ariaLabel={t('tabsAria', { herramienta: tool.name })}
+            ariaLabel={t('tabsAria', { herramienta: name })}
             tabs={tool.tabs.map((x) => ({
               key: x.key,
               href: x.href,

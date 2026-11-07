@@ -40,5 +40,28 @@ export function hubLaunchHref(slug: string, locale: string): string {
   return `/auth/launch/${slug}?via=hub${lang}`;
 }
 
+/** An engine's SSO launch URL with the hub screen's language as `lang`, so an
+ *  engine UI that reads it opens in the same language. Unknown values are dropped. */
+export function engineUrlWithLang(url: string, lang: string | null | undefined): string {
+  const l = launchLocale(lang);
+  if (!l) return url;
+  try {
+    const u = new URL(url);
+    u.searchParams.set('lang', l);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+/** The explicit language choice the in-app toggle stores (locale-actions.ts). */
+export const LANG_COOKIE = 'chalyb_lang';
+
+/** /account's language: the unprefixed URL follows the saved choice; /en wins. */
+export function accountLocale(urlLocale: string, preferred: string | null | undefined): AppLocale {
+  const url = launchLocale(urlLocale) ?? DEFAULT_LOCALE;
+  return url === DEFAULT_LOCALE ? (launchLocale(preferred) ?? url) : url;
+}
+
 /** Tools that need the risk notice before first use (aceptacion-ux §6). */
 export const RISK_TOOLS = new Set(['chalybcrypto', 'chalybpicks', 'chalybtrade']);

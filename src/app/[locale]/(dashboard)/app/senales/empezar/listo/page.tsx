@@ -10,6 +10,7 @@ import { screenSignal } from '@/lib/tools/signals-screen';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { ButtonLink, Pill } from '@/components/ui/primitives';
 import { Markup } from '@/components/ui/markup';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('signals');
@@ -51,7 +52,7 @@ export default async function SenalesListo({ params }: { params: Promise<{ local
   return (
     <WizardShell
       slug="chalybcrypto"
-      toolName="Señales"
+      toolName={localizedToolName('Señales', locale)}
       backHref="/app/senales"
       backLabel={tw('back')}
       closeLabel={tw('close')}

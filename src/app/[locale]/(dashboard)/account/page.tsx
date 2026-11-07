@@ -1,9 +1,11 @@
+import { cookies } from 'next/headers';
 import { redirect } from '@/i18n/routing';
 import { setRequestLocale } from 'next-intl/server';
 import { getSessionUser, requireUser } from '@/lib/auth/session';
+import { LANG_COOKIE, accountLocale } from '@/lib/tools/routes';
 
 // /account is a router stub: SUPER_ADMIN / ADMIN → /dashboard, everyone else → /app.
-// Kept as a stable URL for the marketing-site CTA + bookmarks.
+// It is the default landing after sign-in, so it follows the toggle's saved language.
 export default async function AccountRedirectPage({
   params,
 }: {
@@ -14,6 +16,6 @@ export default async function AccountRedirectPage({
   await requireUser('/account');
   const session = await getSessionUser();
   const isAdmin = session?.role === 'SUPER_ADMIN' || session?.role === 'ADMIN';
-  // next-intl's redirect keeps the language: /en/account → /en/app.
-  redirect({ href: isAdmin ? '/dashboard' : '/app', locale });
+  const saved = (await cookies()).get(LANG_COOKIE)?.value;
+  redirect({ href: isAdmin ? '/dashboard' : '/app', locale: accountLocale(locale, saved) });
 }
