@@ -1,4 +1,4 @@
-import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { interApp as inter, jetbrainsMono as mono, spaceGrotesk as grotesk } from '@/fonts';
 import { getSessionUser, requireUser } from '@/lib/auth/session';
 import { BfcacheGuard } from '@/components/auth/bfcache-guard';
 import { AppShell } from '@/components/app/app-shell';
@@ -13,26 +13,6 @@ import { unreadCount } from '@/lib/notifications/user';
 // rebuild (they render inside AppShell's legacy panel).
 import '../dashboard/dashboard.css';
 import '@/styles/chalyb-tokens.css';
-
-// Inter is the new design system's web font (Q27) and the legacy body font.
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--cc-body',
-  display: 'swap',
-});
-const grotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--cc-disp',
-  display: 'swap',
-});
-const mono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--cc-mono',
-  display: 'swap',
-});
 
 export default async function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser('/app');

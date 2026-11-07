@@ -1,6 +1,6 @@
 import { getLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
-import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { interApp as inter, jetbrainsMono as mono, spaceGrotesk as grotesk } from '@/fonts';
 import { getSessionUser, requireUser } from '@/lib/auth/session';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { BfcacheGuard } from '@/components/auth/bfcache-guard';
@@ -10,25 +10,6 @@ import '@/styles/chalyb-tokens.css';
 
 // The owner panel's gate and fonts. Two shells below it: (admin) for the
 // six rebuilt routes (P5), (legacy) for main's other screens.
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--cc-body',
-  display: 'swap',
-});
-const grotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--cc-disp',
-  display: 'swap',
-});
-const mono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--cc-mono',
-  display: 'swap',
-});
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   await requireUser('/dashboard');
