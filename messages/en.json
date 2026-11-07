@@ -1068,10 +1068,10 @@
       "name": "Pro",
       "tag": "For creators who post every week",
       "cta": "Start my 7-day free trial",
-      "note": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN for the full year, and it renews every year automatically. Cancel any time.",
+      "note": "Unless you cancel, you’re charged automatically on {fecha} and it renews every year. Cancel in 1 click.",
       "fCredits": "{creditos} credits every month",
       "ctaMonth": "Choose Pro monthly",
-      "noteMonth": "<b>You pay $0 today.</b> On {fecha} you’re charged {monto} MXN and then every month, automatically. Cancel any time.",
+      "noteMonth": "Unless you cancel, you’re charged automatically on {fecha} and it renews every month. Cancel in 1 click.",
       "badgePopular": "Most popular",
       "save": "Save {ahorro} a year · {pct}%",
       "switchYear": "Switch to yearly and save {ahorro} a year",
@@ -1106,7 +1106,11 @@
       "a4": "Yes. It’s 1 click from My account. You keep your plan until the end of the period you paid for."
     },
     "quebec": "Paid plans aren’t available in Quebec for now.",
-    "trialChip": "{dias} days free",
+    "trialUnit": "for {dias} days",
+    "after": {
+      "month": "Then {monto} MXN a month",
+      "year": "Then {monto} MXN a year"
+    },
     "trialFootnote": "Free {dias}-day trial on any plan, monthly or yearly: first time only, once per account and per card.",
     "yourPlan": "Your plan",
     "featsTitle": "What you get:",
@@ -1274,7 +1278,8 @@
       "trial": "Free {plan} trial",
       "free": "Free",
       "vip_year": "VIP yearly — everything included and more credits",
-      "pro_lealtad": "Pro Loyalty — your price drops every month"
+      "pro_lealtad": "Pro Loyalty — your price drops every month",
+      "pro": "Pro — everything included"
     },
     "planName": {
       "pro_month": "Pro monthly",
@@ -1350,7 +1355,9 @@
     "cancelSubSub": "1 click, no calls. You keep {plan} until {fecha}.",
     "cancelTrialSub": "1 click, no calls",
     "loadError": "We couldn’t load your plan. Try again in a moment.",
-    "adminNote": "Admin accounts have VIP with no charge."
+    "adminNote": "Admin accounts have VIP with no charge.",
+    "assignedNote": "Plan assigned by Chalyb, no charge.",
+    "assignedUntil": "Active until {fecha}."
   },
   "cancel": {
     "trial": {
@@ -1893,6 +1900,12 @@
         "legal_7_2_i": "(i) Ordered by law, PROFECO or an authority"
       }
     },
+    "team": {
+      "plans": "With a Pro, Partner or VIP plan",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} paying · {trial} on trial · {other} not being charged (assigned or payment due)",
+      "plansSplitFailed": "Could not read subscriptions: no payment breakdown."
+    },
     "money": {
       "metaTitle": "Money",
       "title": "Money",
@@ -1916,7 +1929,8 @@
         "cancelled": "Cancelled"
       },
       "payments": "Payments",
-      "subscriptions": "Subscriptions",
+      "subscriptions": "Subscriptions paid through Mercado Pago",
+      "subscriptionsNote": "Only card subscriptions count. Plans you assign by hand in Team are not included here.",
       "costs": "Costs",
       "col": {
         "date": "Date",
@@ -1933,7 +1947,7 @@
       },
       "noMovements": "No movements this month yet.",
       "subsBy": {
-        "active": "Active",
+        "active": "Active (paying)",
         "trial": "On trial",
         "past_due": "Payment due",
         "cancelled": "Cancelled"
@@ -3836,6 +3850,7 @@
       "code": "If you write to us, mention this code: {codigo}.",
       "session": "Your session ended. Sign in again.",
       "no_credits": "You don't have enough credits. Top up or upgrade your plan.",
+      "no_credits_amounts": "This video needs about {necesita} credits and you have {tienes}. Top up or upgrade your plan.",
       "rate_limited": "You hit a limit of your plan (minutes, videos or jobs at once). Wait or upgrade your plan.",
       "too_large": "The video is bigger or longer than your plan allows.",
       "needs_plan": "Your plan doesn't include this.",

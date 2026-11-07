@@ -1,13 +1,15 @@
 // Clips engine errors → the BFF's normalized tool errors (bff-core.ts).
 //
 // The engine's /api/hub/v1 answers every failure as
-//   { ok: false, error: { code, message, reason, retryable } }
+//   { ok: false, error: { code, message, reason, retryable, credits? } }
 // (ChalyClip chalybclip/api/hub_api.py — keep HUB_ERROR_CODES in sync).
 // This maps it onto the `code` property normalizeToolError reads, so a
 // refusal (no credits, plan caps, file too large) reaches the screen as the
 // person's state, and only engine trouble counts as an outage.
 //
 // Pure: no imports with side effects, unit-tested.
+
+import { creditsOf, type ToolCredits } from '@/lib/tools/bff-core';
 
 /** Codes the engine sends (chalybclip/api/hub_api.py HUB_ERROR_CODES). */
 export const ENGINE_ERROR_CODES = [
@@ -51,6 +53,8 @@ export class ClipsEngineError extends Error {
     readonly status: number,
     readonly refusal: string | null = null,
     readonly userMessage: string | null = null,
+    /** no_tokens: what the job needs and what the person has, in credits. */
+    readonly credits: ToolCredits | null = null,
   ) {
     super(`clips engine ${status} ${engineCode}${refusal ? ` (${refusal})` : ''}`);
     this.code =
@@ -103,5 +107,5 @@ export function engineErrorFrom(status: number, body: unknown): ClipsEngineError
   const reason =
     err && typeof err.reason === 'string' && SAFE_REASON.test(err.reason) ? err.reason : null;
   const message = err && typeof err.message === 'string' ? err.message.slice(0, 400) : null;
-  return new ClipsEngineError(code, status, reason, message);
+  return new ClipsEngineError(code, status, reason, message, creditsOf(err));
 }

@@ -1068,10 +1068,10 @@
       "name": "Pro",
       "tag": "Para quien publica cada semana",
       "cta": "Empezar mis 7 días gratis",
-      "note": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN por el año completo y se renueva cada año, automáticamente. Cancela cuando quieras.",
+      "note": "Si no cancelas, el {fecha} se cobra automáticamente y se renueva cada año. Cancela en 1 clic.",
       "fCredits": "{creditos} créditos cada mes",
       "ctaMonth": "Elegir Pro mensual",
-      "noteMonth": "<b>Hoy pagas $0.</b> El {fecha} se cobran {monto} MXN y después cada mes, automáticamente. Cancela cuando quieras.",
+      "noteMonth": "Si no cancelas, el {fecha} se cobra automáticamente y se renueva cada mes. Cancela en 1 clic.",
       "badgePopular": "Más popular",
       "save": "Ahorras {ahorro} al año · {pct}%",
       "switchYear": "Cambia a Anual y ahorra {ahorro} al año",
@@ -1106,7 +1106,11 @@
       "a4": "Sí. Es 1 clic desde Mi cuenta. Sigues con tu plan hasta el final del periodo que pagaste."
     },
     "quebec": "Por ahora los planes de pago no están disponibles en Quebec.",
-    "trialChip": "{dias} días gratis",
+    "trialUnit": "por {dias} días",
+    "after": {
+      "month": "Después, {monto} MXN al mes",
+      "year": "Después, {monto} MXN al año"
+    },
     "trialFootnote": "Prueba gratis {dias} días en cualquier plan, mensual o anual: solo la primera vez, una vez por cuenta y por tarjeta.",
     "yourPlan": "Tu plan",
     "featsTitle": "Incluye:",
@@ -1274,7 +1278,8 @@
       "trial": "Prueba {plan} gratis",
       "free": "Gratis",
       "vip_year": "VIP anual — todo incluido y más créditos",
-      "pro_lealtad": "Pro Lealtad — tu precio baja cada mes"
+      "pro_lealtad": "Pro Lealtad — tu precio baja cada mes",
+      "pro": "Pro — todo incluido"
     },
     "planName": {
       "pro_month": "Pro mensual",
@@ -1350,7 +1355,9 @@
     "cancelSubSub": "1 clic, sin llamadas. Sigues con {plan} hasta el {fecha}.",
     "cancelTrialSub": "1 clic, sin llamadas",
     "loadError": "No pudimos cargar tu plan. Intenta de nuevo en un momento.",
-    "adminNote": "Las cuentas admin tienen VIP sin cobro."
+    "adminNote": "Las cuentas admin tienen VIP sin cobro.",
+    "assignedNote": "Plan asignado por Chalyb, sin cobro.",
+    "assignedUntil": "Activo hasta el {fecha}."
   },
   "cancel": {
     "trial": {
@@ -1893,6 +1900,12 @@
         "legal_7_2_i": "(i) Lo ordena la ley, la PROFECO o una autoridad"
       }
     },
+    "team": {
+      "plans": "Con plan Pro, Partner o VIP",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} pagando · {trial} en prueba · {other} sin cobro activo (asignados o con pago pendiente)",
+      "plansSplitFailed": "No se pudieron leer las suscripciones: sin desglose de pagos."
+    },
     "money": {
       "metaTitle": "Dinero",
       "title": "Dinero",
@@ -1916,7 +1929,8 @@
         "cancelled": "Cancelaron"
       },
       "payments": "Pagos",
-      "subscriptions": "Suscripciones",
+      "subscriptions": "Suscripciones pagadas con Mercado Pago",
+      "subscriptionsNote": "Solo cuenta suscripciones con tarjeta. Los planes que asignas a mano en Equipo no aparecen aquí.",
       "costs": "Costos",
       "col": {
         "date": "Fecha",
@@ -1933,7 +1947,7 @@
       },
       "noMovements": "Aún no hay movimientos este mes.",
       "subsBy": {
-        "active": "Activas",
+        "active": "Activas (pagando)",
         "trial": "En prueba",
         "past_due": "Pago pendiente",
         "cancelled": "Canceladas"
@@ -3836,6 +3850,7 @@
       "code": "Si nos escribes, menciona este código: {codigo}.",
       "session": "Tu sesión terminó. Vuelve a entrar.",
       "no_credits": "No tienes créditos suficientes. Recarga tu saldo o mejora tu plan.",
+      "no_credits_amounts": "Este video necesita unos {necesita} créditos y tienes {tienes}. Recarga tu saldo o mejora tu plan.",
       "rate_limited": "Llegaste a un límite de tu plan (minutos, videos o trabajos al mismo tiempo). Espera o mejora tu plan.",
       "too_large": "El video es más grande o más largo de lo que permite tu plan.",
       "needs_plan": "Tu plan no incluye esto.",

@@ -5,6 +5,7 @@
 // its toggle is on. null = nothing to buy there (not offered, Quebec, or it
 // is already the user's plan).
 
+import type { AssignedPlan } from './assigned-plan';
 import type { BillingState } from './billing-state';
 
 export type Interval = 'month' | 'year';
@@ -37,8 +38,11 @@ export function plansCta(input: {
   trialUsed: boolean;
   billing: BillingState | null;
   quebecBlocked: boolean;
+  /** A plan assigned with no subscription (assigned-plan.ts). */
+  assigned?: AssignedPlan | null;
 }): PlansCta {
   const { signedIn, flow, trialUsed, billing, quebecBlocked } = input;
+  const assigned = input.assigned ?? null;
   const state = billing?.state ?? 'free';
   const paid =
     state === 'pro' || state === 'trialing' || state === 'past_due' || state === 'cancelled_active';
@@ -47,7 +51,7 @@ export function plansCta(input: {
   const blocked = quebecBlocked;
 
   // ── Pro ──────────────────────────────────────────────────────────
-  const trial = flow && !trialUsed;
+  const trial = flow && !trialUsed && !assigned;
   // Only reached while paid checkout is live (otherwise the card is "soon").
   const proTarget = (interval: Interval): string | null => {
     if (blocked) return null;
@@ -63,19 +67,23 @@ export function plansCta(input: {
   // Sales are closed while paid checkout is off (annualOffered mirrors it):
   // the paid cards say "Muy pronto" and lead nowhere, signed in or not.
   const soon = { hrefYear: null, hrefMonth: null, label: 'soon' } as const;
-  const pro: PlansCta['pro'] = input.isAdmin
-    ? { hrefYear: null, hrefMonth: null, label: 'current' }
-    : state === 'trialing'
-      ? { hrefYear: null, hrefMonth: null, label: 'trialing' }
-      : paid && !onVip
-        ? { hrefYear: null, hrefMonth: null, label: 'current' }
-        : !input.annualOffered
-          ? soon
-          : {
-              hrefYear: proTarget('year'),
-              hrefMonth: proTarget('month'),
-              label: trial ? 'trial' : 'paid',
-            };
+  // An assigned plan has no subscription to change: the cards sell nothing.
+  const pro: PlansCta['pro'] =
+    input.isAdmin || assigned === 'PRO'
+      ? { hrefYear: null, hrefMonth: null, label: 'current' }
+      : assigned === 'VIP'
+        ? { hrefYear: null, hrefMonth: null, label: 'paid' }
+        : state === 'trialing'
+          ? { hrefYear: null, hrefMonth: null, label: 'trialing' }
+          : paid && !onVip
+            ? { hrefYear: null, hrefMonth: null, label: 'current' }
+            : !input.annualOffered
+              ? soon
+              : {
+                  hrefYear: proTarget('year'),
+                  hrefMonth: proTarget('month'),
+                  label: trial ? 'trial' : 'paid',
+                };
 
   // ── VIP: the trial too, for a first-time customer (owner, 2026-10-03) ──
   const vipTrial = trial && !paid;
@@ -90,21 +98,23 @@ export function plansCta(input: {
     return `/app/billing/cambiar?plan=vip_${interval}`;
   };
   const vip: PlansCta['vip'] =
-    input.isAdmin || onVip
+    input.isAdmin || onVip || assigned === 'VIP'
       ? { hrefYear: null, hrefMonth: null, label: 'current' }
-      : !input.annualOffered
-        ? soon
-        : {
-            hrefYear: vipTarget('year'),
-            hrefMonth: vipTarget('month'),
-            label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
-          };
+      : assigned === 'PRO'
+        ? { hrefYear: null, hrefMonth: null, label: 'up' }
+        : !input.annualOffered
+          ? soon
+          : {
+              hrefYear: vipTarget('year'),
+              hrefMonth: vipTarget('month'),
+              label: paid ? 'up' : vipTrial ? 'trial' : 'choose',
+            };
 
   // Signed in, nobody needs "Crear cuenta gratis": Gratis is your plan (an
   // admin's cards all read that way), or the way to it starts in Mi plan.
   const gratis: PlansCta['gratis'] = !signedIn
     ? { href: SIGNUP, label: 'gratis' }
-    : !paid || input.isAdmin
+    : (!paid && !assigned) || input.isAdmin
       ? { href: null, label: 'current' }
       : { href: '/app/billing', label: 'manage' };
   return { gratis, pro, vip };

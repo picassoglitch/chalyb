@@ -235,6 +235,7 @@ export default async function DineroPage({
 
       <section className="ch-section" aria-labelledby="subs-t">
         <h2 id="subs-t">{t('money.subscriptions')}</h2>
+        <p className="ch-muted">{t('money.subscriptionsNote')}</p>
         <div className="ch-kpis">
           {(['active', 'trial', 'past_due', 'cancelled'] as const).map((k) => (
             <KpiCard
