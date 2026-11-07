@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Familjen_Grotesk, Fraunces, Inter, Space_Mono } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { CookieConsent } from '@/components/public/cookie-banner';
 import { routing } from '@/i18n/routing';
+import { interPublic, legacyDisplay, legacyMono, legacySerif } from '@/fonts';
 import { PUBLIC_CLIENT_NAMESPACES, pickNamespaces } from '@/i18n/client-messages';
 import { HREFLANG } from '@/i18n/locales';
 import { canonicalOrigin } from '@/lib/site';
@@ -18,40 +18,7 @@ import './base.css';
 // MODULE_NOT_FOUND on `import('messages/favicon.ico.json')`. Now they 404 clean.
 export const dynamicParams = false;
 
-// The design system's font (Q27; LANDING-SPEC §7) for every page, public ones
-// included: self-hosted by next/font, no request to Google at runtime. The
-// tokens read it as var(--cc-body). Not preloaded: the 48 KB preload
-// competed with the hero's LCP image, and the fallback is metric-adjusted, so
-// the swap shifts nothing (LANDING-SPEC §7, CLS 0 measured).
-const inter = Inter({ subsets: ['latin'], display: 'swap', preload: false, variable: '--cc-body' });
-
-// The legacy faces (globals.css --font-display/--font-serif/--font-mono) for
-// the pages not yet rebuilt. Self-hosted too: the Google Fonts <link> they
-// used to come from blocked the landing's first paint (LANDING-SPEC §7). Not
-// preloaded, so a page that never uses them never downloads them.
-const legacyDisplay = Familjen_Grotesk({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-familjen',
-});
-const legacySerif = Fraunces({
-  subsets: ['latin'],
-  // Variable weight (covers the 400/500 the <link> asked for) with opsz.
-  axes: ['opsz'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-fraunces',
-});
-const legacyMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-space-mono',
-});
-const fontVars = [inter, legacyDisplay, legacySerif, legacyMono].map((f) => f.variable).join(' ');
+const fontVars = [interPublic, legacyDisplay, legacySerif, legacyMono].map((f) => f.variable).join(' ');
 
 export async function generateMetadata({
   params,
