@@ -16,6 +16,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { signHubApiToken } from '@/lib/engines/hub-api-token';
 import { ToolRequestError, ToolUsageRefusedError } from '../bff-core';
 import { SENALES_COINS } from '../senales-coins';
+import { engineLang } from '../engine-lang';
+import { engineLangQuery } from '../routes';
+import type { AppLocale } from '@/i18n/locales';
 import type {
   BacktestResult,
   DerivativesContext,
@@ -289,7 +292,11 @@ export const notConfigured = (e: unknown) =>
     ? null
     : Promise.reject(e);
 
-export function createEngineSenales(call = createEngineCaller(engineBase)): SenalesAdapter {
+export function createEngineSenales(
+  call = createEngineCaller(engineBase),
+  /** The screen's language: the engine writes the feed's text in it. */
+  lang: () => Promise<AppLocale> = engineLang,
+): SenalesAdapter {
   return {
     capabilities: () => CAPS,
     coins: async () => SENALES_COINS,
@@ -300,7 +307,7 @@ export function createEngineSenales(call = createEngineCaller(engineBase)): Sena
         HUB_SERVICE_PRINCIPAL,
         '/feed',
         {
-          query: { plan, ...(since ? { since } : {}) },
+          query: { plan, ...(since ? { since } : {}), ...engineLangQuery(await lang()) },
           signal,
         },
       );
@@ -313,7 +320,7 @@ export function createEngineSenales(call = createEngineCaller(engineBase)): Sena
         signal?: Record<string, unknown>;
         series?: Record<string, unknown>[];
       }>(HUB_SERVICE_PRINCIPAL, `/feed/${encodeURIComponent(id)}`, {
-        query: { range },
+        query: { range, ...engineLangQuery(await lang()) },
         signal,
       }).catch((e) =>
         e instanceof EngineHttpError && e.code === 'NOT_FOUND' ? null : Promise.reject(e),

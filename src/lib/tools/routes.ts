@@ -65,3 +65,25 @@ export function accountLocale(urlLocale: string, preferred: string | null | unde
 
 /** Tools that need the risk notice before first use (aceptacion-ux §6). */
 export const RISK_TOOLS = new Set(['chalybcrypto', 'chalybpicks', 'chalybtrade']);
+
+/** The `lang` an engine API call carries. Spanish sends none, so its requests
+ *  stay exactly as before (the engines default to es). */
+export function engineLangQuery(lang: AppLocale): { lang?: AppLocale } {
+  return lang === DEFAULT_LOCALE ? {} : { lang };
+}
+
+/** The language of the hub page that called an /api route (its Referer):
+ *  /api sits outside the locale tree. Only a same-host page counts. */
+export function refererLocale(
+  referer: string | null | undefined,
+  host: string | null | undefined,
+): AppLocale | null {
+  if (!referer || !host) return null;
+  try {
+    const u = new URL(referer);
+    if (u.host !== host) return null;
+    return launchLocale(u.pathname.split('/')[1]) ?? DEFAULT_LOCALE;
+  } catch {
+    return null;
+  }
+}
