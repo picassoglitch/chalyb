@@ -168,10 +168,16 @@ NEXT_PUBLIC_APP_URL=https://www.chalyb.com
 `MP_ENV` decides which credential pair every call uses (`src/lib/payments/
 mp-config.ts` is the only reader of these variables). In `prod` both the
 token and the public key must be `APP_USR-` and `payer_email` is the user's
-own address; in `test` the token and key must match each other, and
-`payer_email` is always `MP_TEST_PAYER_EMAIL`. Any mismatch, a missing test
-buyer, or a token from another seller fails closed: the customer sees the
-generic payment error, the log says why, nothing is created.
+own address; `prod` is refused on a Vercel Preview. In `test` the token and
+key must be `TEST-` (or `APP_USR-` only with `MP_TEST_ALLOW_APP_USR=1` and
+`MP_EXPECTED_SELLER_ID` for a newer test seller), `payer_email` is always
+`MP_TEST_PAYER_EMAIL` and must be `@testuser.com`, `MP_TEST_DATA_ISOLATED=1`
+must be set because the database/auth/webhooks are a dedicated
+non-production project, and `test` is refused on Vercel Production. Any
+mismatch, a missing test buyer, live credentials in test, shared production
+data, or a token from another seller fails closed: the customer sees the
+generic payment error, the card form does not mount, the webhook grants
+nothing, the log says why, nothing is created.
 
 Return URLs (`back_url`, the hosted order's URLs) are always
 `https://www.chalyb.com/…` in `prod`; a `test` deployment uses its own origin
@@ -186,35 +192,70 @@ pnpm db:push        # 0037_mp_subscriptions.sql and 0038_token_pack_clawback.sql
 ## 5. Testing
 
 Mercado Pago has no sandbox: test credentials run against the production
-API with **test users** whose money is not real.
+API with **test users** whose money is not real. Test accounts (vendedor /
+comprador) are **not** API credentials. The checkout stays closed until the
+test **application** access token, public key and webhook secret are set on
+Preview or Development only — never copy Production values.
 
-1. Application → **Cuentas de prueba** → create two: a **vendedor** and a
-   **comprador** (country México). Mercado Pago gives each an email and a
-   password.
+A unit mapper (`src/lib/payments/mp-qa-scenarios.ts`) covers approved /
+rejected / duplicate / canceled as **fixtures**. It is not a live adapter
+and does **not** count as Mercado Pago confirmation.
+
+### Fail-closed (what the code now refuses)
+
+| Condition | Effect |
+| --- | --- |
+| `VERCEL_ENV=production` and `MP_ENV=test` | checkout + webhook refused |
+| `VERCEL_ENV=preview` (or any non-production) and `MP_ENV=prod` | checkout + webhook refused |
+| `MP_ENV=test` and token/key are `APP_USR-` without `MP_TEST_ALLOW_APP_USR=1` **and** `MP_EXPECTED_SELLER_ID` | refused (could be live credentials) |
+| `MP_ENV=test` without `MP_TEST_PAYER_EMAIL` `@testuser.com` | refused |
+| `MP_ENV=test` without `MP_TEST_DATA_ISOLATED=1` and an isolated `NEXT_PUBLIC_SUPABASE_URL` | refused (do not write production rows) |
+| Isolation/credential problems | card form does not mount; `/api/mp/webhook` returns 503 and grants nothing |
+
+Do **not** set `MP_TEST_DATA_ISOLATED` or `MP_TEST_ALLOW_APP_USR` on Vercel
+Production. Do **not** point a test checkout at the production Supabase
+project. Do **not** register the test webhook at `https://www.chalyb.com/api/mp/webhook`.
+
+### Operator checklist (Preview / Development only)
+
+Supply values through the sanctioned secret channel, never in chat.
+
+1. Application → **Cuentas de prueba** → two México accounts: a **vendedor**
+   and a **comprador**. Mercado Pago gives each an email and a password.
 2. Sign in to Mercado Pago Developers **as the test vendedor** in a private
-   window, open its own application's credentials, and use _that_ access
-   token as `MERCADOPAGO_ACCESS_TOKEN` (the test seller is who collects).
-   With the official plugin: `/mp-integrate test-setup` does steps 1–2.
-3. Set `MP_ENV=test` and `MP_TEST_PAYER_EMAIL` = the **test comprador's**
-   email on the preview (or `.env.local`). Every preapproval and order then
-   carries the test buyer as payer, whatever account you sign in with, so
-   Mercado Pago never sees a real payer next to test credentials ("Una de
-   las partes con la que intentas hacer el pago es de prueba"). Pay at
-   Mercado Pago as that test buyer, in a private window: a browser signed
-   in to your real Mercado Pago account pays as you, and the checkout fails.
-   `MERCADOPAGO_WEBHOOK_SECRET` in test is **the test vendedor's application
-   secret** (sign in to Developers as the test vendedor → its application →
-   Webhooks → Clave secreta), not the one in your own application's panel.
-   Real test-mode notifications are signed with it; only the panel's
-   "Simular notificación" uses the shown secret. With the wrong one every
-   real notification is a 401 "signature rejected".
-4. Expose the dev server over HTTPS and point `NEXT_PUBLIC_APP_URL` and the
+   window, open **its** application's credentials (not the live app's), and
+   put that access token / public key / webhook secret in Preview
+   (or `.env.local`) as `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_PUBLIC_KEY`,
+   `MERCADOPAGO_WEBHOOK_SECRET`. Prefix: `TEST-`, or `APP_USR-` only with
+   `MP_TEST_ALLOW_APP_USR=1` and `MP_EXPECTED_SELLER_ID` = that test
+   seller's id. With the official plugin: `/mp-integrate test-setup`
+   does steps 1–2.
+3. Set `MP_ENV=test` (the default off Vercel Production) and
+   `MP_TEST_PAYER_EMAIL` = the **test comprador's** `@testuser.com` address.
+   Every preapproval and order then carries the test buyer as payer,
+   whatever account you sign in with, so Mercado Pago never sees a real
+   payer next to test credentials ("Una de las partes con la que intentas
+   hacer el pago es de prueba"). Pay at Mercado Pago as that test buyer, in
+   a private window: a browser signed in to your real Mercado Pago account
+   pays as you, and the checkout fails. `MERCADOPAGO_WEBHOOK_SECRET` in test
+   is **the test vendedor's application secret** (sign in to Developers as
+   the test vendedor → its application → Webhooks → Clave secreta), not the
+   one in your own application's panel. Real test-mode notifications are
+   signed with it; only the panel's "Simular notificación" uses the shown
+   secret. With the wrong one every real notification is a 401 "signature
+   rejected".
+4. Isolated persistence (required; the production project is not allowed):
+   a separate Supabase URL + anon key + service role, its own auth, and the
+   test webhook URL on the preview/tunnel (`NEXT_PUBLIC_APP_URL` +
+   `/api/mp/webhook`). Then set `MP_TEST_DATA_ISOLATED=1`. Without that
+   flag the form stays down. Do not migrate or copy the production database.
+5. Expose the dev server over HTTPS and point `NEXT_PUBLIC_APP_URL` and the
    test webhook URL at it:
    ```sh
    ngrok http 3000   # then NEXT_PUBLIC_APP_URL=https://<id>.ngrok-free.app
    ```
-5. `/app/subscription` → **Pro** → the card form on
-   `/app/subscription/checkout`. Pay with a test card, cardholder name `APRO`:
+6. `/app/prueba/pago?plan=pro_month` (trial) or `/app/subscription/checkout`.
+   A "Pago de prueba" banner must be visible. Pay with a test card, cardholder name `APRO`:
    - Mastercard `5474 9254 3267 0366`, CVV `123`, any future expiry
    - Visa `4075 5957 1648 3764`, CVV `123`
    - Cardholder `OTHE` rejects the charge, `FUND` rejects for insufficient
@@ -224,10 +265,13 @@ API with **test users** whose money is not real.
      can also be exercised alone at `/mp/card-brick.html`: it waits for a
      `chalyb-mp:init` message from its parent, so open it from the checkout,
      not directly.
-6. Watch it land: `/app/billing` shows the charge, `/app/subscription` shows
+7. Watch it land: `/app/billing` shows the charge, `/app/subscription` shows
    the renewal date, `/dashboard/notifications` shows "Suscripción PRO
-   activa", and `/api/diag/mp` (admin) confirms which token is in use.
-7. Cancel from `/app/subscription`: Mercado Pago's preapproval goes to
+   activa", and `/api/diag/mp` (admin) confirms `mpEnv: "test"`,
+   `webhookAdmitted: true`, and a TEST (or opted-in test-seller) token.
+   Record the test Order ID / preapproval id from Mercado Pago. Do not claim
+   success until that id matches the row in the isolated database.
+8. Cancel from `/app/subscription`: Mercado Pago's preapproval goes to
    `cancelled`, the plan stays until the renewal date, then lapses to Free.
 
 Notification delivery history and failures: Application → **Webhooks** →

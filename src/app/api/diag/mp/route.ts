@@ -10,9 +10,8 @@
 //   { ok: true, tokenPrefix, tokenKind, appUrl, isHttps, mpReachable }
 //   { ok: false, error }
 //
-// `tokenKind` reports whether the configured token is TEST (sandbox) or
-// APP_USR (production). Lets the operator confirm at a glance which mode
-// they're in without exposing the whole secret.
+// `tokenKind` reports the credential prefix: TEST or APP_USR. APP_USR is
+// not proof of live money — newer test sellers also issue APP_USR- keys.
 //
 // `mpReachable` is a real 7s read-only call: GET /users/me with the token.
 // It creates nothing, works for test and production tokens alike, reports
@@ -32,6 +31,7 @@ import {
   getRawAccessTokenForDiag,
   getWebhookSecret,
   mpExpectedWebhookUrl,
+  webhookAdmitted,
 } from '@/lib/payments/mercadopago';
 
 export const dynamic = 'force-dynamic';
@@ -46,8 +46,11 @@ interface DiagResult {
   expectedWebhookUrl?: string;
   /** null = MP_EXPECTED_SELLER_ID not set. */
   sellerMatchesExpected?: boolean | null;
-  /** TEST | APP_USR | unknown */
+  /** TEST | APP_USR | unknown — prefix only; APP_USR is not proof of live mode. */
   tokenKind?: string;
+  /** Whether the webhook would fetch and grant. Names, never values. */
+  webhookAdmitted?: boolean;
+  webhookAdmitReason?: 'not_configured' | 'inconsistent';
   /** First 8 chars of the token so operator can confirm the right key
    *  is set without us echoing the whole secret back. */
   tokenPrefix?: string | null;
@@ -85,10 +88,11 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
 
   const token = getRawAccessTokenForDiag();
   const tokenKind = token.startsWith('TEST-')
-    ? 'TEST (sandbox)'
+    ? 'TEST'
     : token.startsWith('APP_USR-')
-      ? 'APP_USR (production)'
+      ? 'APP_USR'
       : 'unknown format';
+  const admitted = webhookAdmitted();
   const tokenPrefix = token ? token.slice(0, 8) + '…' : null;
   const appUrl = getAppUrl();
   const isHttps = appUrl.startsWith('https://');
@@ -107,6 +111,9 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   const probe = 'users_me' as const;
 
   try {
+    if (!admitted.ok) {
+      throw new Error('probe skipped: credentials or data isolation inconsistent');
+    }
     const res = await fetch('https://api.mercadopago.com/users/me', {
       headers: { Authorization: `Bearer ${token.trim()}`, Accept: 'application/json' },
       signal: AbortSignal.timeout(7000),
@@ -142,7 +149,7 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   // to "why does the form never load" — the key is not accepted.
   let publicKeyProbe: DiagResult['publicKeyProbe'] = undefined;
   const publicKey = getPublicKey()?.trim();
-  if (publicKey) {
+  if (publicKey && admitted.ok) {
     try {
       const res = await fetch(
         `https://api.mercadopago.com/v1/payment_methods?public_key=${encodeURIComponent(publicKey)}`,
@@ -178,9 +185,11 @@ export async function GET(): Promise<NextResponse<DiagResult>> {
   }
 
   return NextResponse.json({
-    ok: mpReachable,
+    ok: mpReachable && admitted.ok,
     mpEnv: getMpEnv(),
     expectedWebhookUrl: mpExpectedWebhookUrl(),
+    webhookAdmitted: admitted.ok,
+    webhookAdmitReason: admitted.ok ? undefined : admitted.reason,
     sellerMatchesExpected,
     tokenKind,
     tokenPrefix,

@@ -192,12 +192,14 @@ Legend:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | required | required | required | Public by design. |
 | `SUPABASE_SERVICE_ROLE_KEY` 🔒 | required | required | required | Bypasses RLS: server only. |
 | `NEXT_PUBLIC_APP_URL` | `https://www.chalyb.com` | preview URL | `http://localhost:3000` | MP `notification_url`/back URLs, email links, sitemap. Use **www** (OPS-4). |
-| `MERCADOPAGO_ACCESS_TOKEN` 🔒 ⛔ | prod pair (`APP_USR-`) | test pair (`TEST-`/test seller) | test pair | Checkout refuses without it (`isCheckoutReady`, `src/lib/payments/mercadopago.ts`). |
-| `MERCADOPAGO_PUBLIC_KEY` ⛔ | prod pair | test pair | test pair | Not a secret, but the card form won't render without it. |
-| `MERCADOPAGO_WEBHOOK_SECRET` 🔒 ⛔ | required | required | optional | Webhook refuses unsigned or unverifiable calls; checkout refuses without it. |
-| `MP_ENV` | `prod` (default on Vercel Production) | `test` | `test` | With `prod`, both credentials must be `APP_USR-`, or checkout refuses (`mpEnvProblems`, `src/lib/payments/mp-config.ts`). |
-| `MP_TEST_PAYER_EMAIL` | unset | required when `MP_ENV=test` | same | Test buyer (OPS-19). |
-| `MP_EXPECTED_SELLER_ID` | recommended | optional | optional | The token must belong to this seller. |
+| `MERCADOPAGO_ACCESS_TOKEN` 🔒 ⛔ | prod pair (`APP_USR-`) | test pair (`TEST-`, or test-seller `APP_USR-` only with the two flags below) | test pair | Checkout refuses without it (`isCheckoutReady`, `src/lib/payments/mercadopago.ts`). Preview must not reuse the Production value. |
+| `MERCADOPAGO_PUBLIC_KEY` ⛔ | prod pair | matching test pair | matching test pair | Not a secret, but the card form won't render without it. Same isolation as the token. |
+| `MERCADOPAGO_WEBHOOK_SECRET` 🔒 ⛔ | required | test seller's secret | optional | Webhook refuses unsigned or unverifiable calls; checkout refuses without it. |
+| `MP_ENV` | `prod` (default on Vercel Production) | `test` | `test` | `prod` on a preview is refused; `test` on Vercel Production is refused (`mpEnvProblems`). |
+| `MP_TEST_PAYER_EMAIL` | unset | required `@testuser.com` | same | Test buyer (OPS-19). A real address is refused. |
+| `MP_EXPECTED_SELLER_ID` | recommended | required if test credentials are `APP_USR-` | same | The token must belong to this seller. |
+| `MP_TEST_ALLOW_APP_USR` | unset | `1` only for a test seller whose keys are `APP_USR-` | same | Without it, `APP_USR-` in test is refused. Never on Production. |
+| `MP_TEST_DATA_ISOLATED` | unset | `1` only with a non-production Supabase + auth + webhook | same | Without it, test checkout and the webhook refuse. Never on Production. Never while `NEXT_PUBLIC_SUPABASE_URL` is the production project. |
 | `RESEND_API_KEY` 🔒 | required | required | optional | Without it emails are skipped. Legal notices treat that as a provider failure, not the person's (0060), so nobody becomes "undeliverable". |
 | `RESEND_WEBHOOK_SECRET` 🔒 | required | required | optional | Delivery/bounce statuses drive the charge-notice hold rule (OPS-12). |
 | `CRON_SECRET` 🔒 ⛔ | required | required | optional | Every cron returns 401 without it; it also blocks paid checkout (`paidCheckoutBlockers`, `src/lib/config/flags.ts`). |

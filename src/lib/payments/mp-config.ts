@@ -71,12 +71,10 @@ export function checkoutConfigProblems(env: Env): string[] {
   // A public key is "<PREFIX>-<uuid>"; an access token is
   // "<PREFIX>-<digits>-<digits>-<hex>-<digits>".
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const prefixOf = (v: string) =>
-    v.startsWith('TEST-') ? 'TEST' : v.startsWith('APP_USR-') ? 'APP_USR' : null;
   const body = (v: string) => v.replace(/^(TEST|APP_USR)-/, '');
 
-  const pkPrefix = prefixOf(publicKey);
-  const tokPrefix = prefixOf(token);
+  const pkPrefix = mpCredentialPrefix(publicKey);
+  const tokPrefix = mpCredentialPrefix(token);
   if (!pkPrefix) {
     problems.push(
       `${MP_PUBLIC_KEY_VAR} no empieza con APP_USR- ni TEST-; no parece una Public Key de Mercado Pago`,
@@ -108,13 +106,35 @@ export function checkoutConfigProblems(env: Env): string[] {
 // deployment names its environment once, in MP_ENV, and everything that talks
 // to Mercado Pago (server client, card form, webhook secret, payer email)
 // follows it. Production on Vercel defaults to `prod`; every other deployment
-// (previews, local) defaults to `test`, so a preview can never charge a real
-// card by accident.
+// (previews, local) defaults to `test`. Defaulting to `test` is not enough
+// on its own: a preview that inherited live APP_USR- keys would still charge.
+// Test mode therefore also refuses APP_USR- (unless an explicit test-seller
+// opt-in), refuses Vercel Production, refuses `prod` on a preview, and
+// refuses to write until MP_TEST_DATA_ISOLATED attests a non-production
+// database.
 
 export type MpEnv = 'test' | 'prod';
 export const MP_ENV_VAR = 'MP_ENV';
 export const MP_TEST_PAYER_EMAIL_VAR = 'MP_TEST_PAYER_EMAIL';
 export const MP_EXPECTED_SELLER_ID_VAR = 'MP_EXPECTED_SELLER_ID';
+/** Opt-in: a test seller whose credentials are APP_USR- (newer MP test apps).
+ *  Never set on Vercel Production. Requires MP_EXPECTED_SELLER_ID as well. */
+export const MP_TEST_ALLOW_APP_USR_VAR = 'MP_TEST_ALLOW_APP_USR';
+/** Operator attestation that NEXT_PUBLIC_SUPABASE_URL is not production.
+ *  Required when MP_ENV=test. Never set on Vercel Production. */
+export const MP_TEST_DATA_ISOLATED_VAR = 'MP_TEST_DATA_ISOLATED';
+
+function envFlag(env: Env, name: string): boolean {
+  const s = env[name]?.trim().toLowerCase();
+  return s === '1' || s === 'true' || s === 'yes';
+}
+
+/** TEST | APP_USR | null. Prefix only — newer test sellers can be APP_USR-. */
+export function mpCredentialPrefix(value: string): 'TEST' | 'APP_USR' | null {
+  if (value.startsWith('TEST-')) return 'TEST';
+  if (value.startsWith('APP_USR-')) return 'APP_USR';
+  return null;
+}
 
 export function getMpEnv(env: Env): MpEnv {
   const explicit = env[MP_ENV_VAR]?.trim().toLowerCase();
@@ -149,8 +169,15 @@ export function mpCredentials(env: Env): MpCredentials {
  */
 export function mpEnvProblems(env: Env): string[] {
   const problems = checkoutConfigProblems(env);
-  const { mpEnv, accessToken, publicKey } = mpCredentials(env);
+  const { mpEnv, accessToken, publicKey, expectedSellerId } = mpCredentials(env);
+  const vercelEnv = env.VERCEL_ENV?.trim();
+
   if (mpEnv === 'prod') {
+    if (vercelEnv && vercelEnv !== 'production') {
+      problems.push(
+        `${MP_ENV_VAR}=prod solo se admite en Vercel Production; un preview no puede cobrar con credenciales de producción`,
+      );
+    }
     for (const [name, value] of [
       [MP_ACCESS_TOKEN_VAR, accessToken],
       [MP_PUBLIC_KEY_VAR, publicKey],
@@ -161,16 +188,69 @@ export function mpEnvProblems(env: Env): string[] {
         );
       }
     }
-  } else if (!env[MP_TEST_PAYER_EMAIL_VAR]?.trim()) {
+    return problems;
+  }
+
+  if (vercelEnv === 'production') {
+    problems.push(
+      `${MP_ENV_VAR}=test no se admite en Vercel Production: se cobraría o se escribiría en datos de producción`,
+    );
+  }
+  const payer = env[MP_TEST_PAYER_EMAIL_VAR]?.trim();
+  if (!payer) {
     problems.push(
       `${MP_ENV_VAR}=test necesita ${MP_TEST_PAYER_EMAIL_VAR} (el correo del comprador de prueba)`,
+    );
+  } else if (!isMpTestPayerEmail(payer)) {
+    problems.push(
+      `${MP_TEST_PAYER_EMAIL_VAR} debe ser un comprador de prueba de Mercado Pago (@testuser.com)`,
+    );
+  }
+  const allowAppUsr = envFlag(env, MP_TEST_ALLOW_APP_USR_VAR);
+  for (const [name, value] of [
+    [MP_ACCESS_TOKEN_VAR, accessToken],
+    [MP_PUBLIC_KEY_VAR, publicKey],
+  ] as const) {
+    if (!value) continue;
+    const prefix = mpCredentialPrefix(value);
+    if (prefix === 'TEST') continue;
+    if (prefix === 'APP_USR' && allowAppUsr && expectedSellerId) continue;
+    problems.push(
+      prefix === 'APP_USR'
+        ? `${MP_ENV_VAR}=test y ${name} es APP_USR-: hace falta ${MP_TEST_ALLOW_APP_USR_VAR}=1 y ${MP_EXPECTED_SELLER_ID_VAR} (vendedor de prueba). Sin eso se rechaza, no sea una credencial de producción`
+        : `${MP_ENV_VAR}=test pero ${name} no empieza con TEST-`,
+    );
+  }
+  if (!env.NEXT_PUBLIC_SUPABASE_URL?.trim()) {
+    problems.push(
+      `${MP_ENV_VAR}=test necesita NEXT_PUBLIC_SUPABASE_URL de un proyecto aislado, no el de producción`,
+    );
+  }
+  if (!envFlag(env, MP_TEST_DATA_ISOLATED_VAR)) {
+    problems.push(
+      `${MP_ENV_VAR}=test necesita ${MP_TEST_DATA_ISOLATED_VAR}=1 solo cuando la base, el auth y el webhook no son los de producción`,
     );
   }
   return problems;
 }
 
+/** Whether the webhook may fetch from Mercado Pago and write entitlements.
+ *  Missing token: not configured. Mixed/live credentials or shared production
+ *  data in test: inconsistent — fail closed, grant nothing. */
+export function mpWebhookAdmitted(
+  env: Env,
+): { ok: true } | { ok: false; reason: 'not_configured' | 'inconsistent' } {
+  if (!readAccessToken(env)?.trim()) return { ok: false, reason: 'not_configured' };
+  if (mpEnvProblems(env).length > 0) return { ok: false, reason: 'inconsistent' };
+  return { ok: true };
+}
+
 /** Mercado Pago's test buyers live on this domain. */
 const TEST_BUYER_DOMAIN = /@testuser\.com$/i;
+
+export function isMpTestPayerEmail(email: string | null | undefined): boolean {
+  return Boolean(email?.trim() && TEST_BUYER_DOMAIN.test(email.trim()));
+}
 
 /**
  * The payer email sent to Mercado Pago. In `test` it is the test buyer
@@ -179,9 +259,12 @@ const TEST_BUYER_DOMAIN = /@testuser\.com$/i;
  * anything (fail closed).
  */
 export function payerEmailFor(userEmail: string | null | undefined, env: Env): string | null {
-  if (getMpEnv(env) === 'test') return env[MP_TEST_PAYER_EMAIL_VAR]?.trim() || null;
+  if (getMpEnv(env) === 'test') {
+    const email = env[MP_TEST_PAYER_EMAIL_VAR]?.trim() || null;
+    return isMpTestPayerEmail(email) ? email : null;
+  }
   const email = userEmail?.trim();
-  if (!email || TEST_BUYER_DOMAIN.test(email)) return null;
+  if (!email || isMpTestPayerEmail(email)) return null;
   return email;
 }
 

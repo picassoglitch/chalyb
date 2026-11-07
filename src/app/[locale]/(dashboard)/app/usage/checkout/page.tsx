@@ -13,10 +13,11 @@ import { packCheckoutTranslator, packDisclosure } from '@/lib/payments/pack-cons
 import {
   checkoutConfigWarnings,
   checkoutNotReadyError,
-  getPublicKey,
+  checkoutPublicKey,
   missingCheckoutVars,
   mpPayerEmail,
 } from '@/lib/payments/mercadopago';
+import { MpTestModeBanner } from '@/components/payments/mp-test-mode-banner';
 import { INVOICE_EMAIL } from '@/config/invoicing';
 import { Markup } from '@/components/ui/markup';
 import { Pill, StateBlock } from '@/components/ui/primitives';
@@ -64,7 +65,7 @@ export default async function PackCheckoutPage({
   const terms = priced ? packTermsText(priced.totals) : null;
 
   const missing = missingCheckoutVars();
-  const publicKey = getPublicKey();
+  const publicKey = checkoutPublicKey();
   // Set-but-wrong credentials leave the Brick loading forever; say so here,
   // before the form, instead of after its 20 s watchdog.
   const problems = missing.length === 0 ? checkoutConfigWarnings() : [];
@@ -94,6 +95,7 @@ export default async function PackCheckoutPage({
           ‹ {t('back')}
         </Link>
         <h1 className="ch-h1">{t('title', { n })}</h1>
+        <MpTestModeBanner />
       </header>
 
       <section className="ch-card" aria-labelledby="pk-total" style={{ display: 'grid', gap: 8 }}>

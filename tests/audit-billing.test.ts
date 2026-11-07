@@ -60,10 +60,12 @@ test('a failed proration refund reaches the admin list', () => {
 
 test('webhook: no MP access token asks MP to retry (503), never drops with 200', () => {
   const s = src('src/app/api/mp/webhook/route.ts');
+  assert.match(s, /webhookAdmitted\(\)/);
   assert.match(
     s,
-    /if \(!isMercadoPagoConfigured\(\)\) \{[\s\S]{0,500}\{ error: 'mp not configured' \}, \{ status: 503 \}/,
+    /if \(admitted\.reason === 'not_configured'\) \{[\s\S]{0,400}\{ error: 'mp not configured' \}, \{ status: 503 \}/,
   );
+  assert.match(s, /\{ error: 'mp not admitted' \}, \{ status: 503 \}/);
 });
 
 test('webhook: a handled topic without an id is acknowledged (200), not retried', () => {

@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
 import { getSessionUser } from '@/lib/auth/session';
-import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { checkoutPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { MpTestModeBanner } from '@/components/payments/mp-test-mode-banner';
 import { loadBilling } from '@/lib/billing/subscription-store';
 import { planPrice } from '@/config/pricing';
 import { WizardShell } from '@/components/ui/wizard-shell';
@@ -26,10 +27,11 @@ export default async function TarjetaPage({ params }: { params: Promise<{ locale
   if (!['trialing', 'pro', 'past_due'].includes(s.state)) return redirect({ href: '/app/billing', locale });
   const t = await getTranslations('myplan');
   const tc = await getTranslations('checkout');
-  const publicKey = getPublicKey();
+  const publicKey = checkoutPublicKey();
   return (
     <WizardShell slug="chalybclip" toolName={tc('toolPaid')} backHref="/app/billing" backLabel={tc('back')} closeLabel={tc('close')} narrow>
       <div style={{ display: 'grid', gap: 22 }}>
+        <MpTestModeBanner />
         <h1 className="ch-h1" style={{ textAlign: 'center' }}>
           {s.state === 'past_due' ? t('updateCard') : t('methodChange')}
         </h1>

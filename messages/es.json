@@ -1189,6 +1189,7 @@
     "pay": {
       "metaTitle": "Pago",
       "title": "Agrega tu tarjeta",
+      "testMode": "Pago de prueba. Usa una tarjeta de prueba; una tarjeta real no sirve.",
       "oneLine": "Hoy pagas <b>$0</b>. Primer cobro: <b>{monto} MXN</b> {periodo} el <b>{fecha_cobro}</b>, salvo que canceles antes.",
       "oneLinePaid": "Hoy se cobran <b>{monto} MXN</b> y después <b>{cada_periodo}</b>, salvo que canceles.",
       "secure": "Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
