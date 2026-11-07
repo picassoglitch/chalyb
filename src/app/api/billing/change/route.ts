@@ -8,7 +8,7 @@ import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { changePlan } from '@/lib/billing/billing-actions';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
-import { cleanDeviceSessionId } from '@/lib/payments/device-session';
+import { cleanDeviceSessionId, deviceSessionAudit } from '@/lib/payments/device-session';
 import {
   paidCheckoutEnabled,
   vipYearEnabled,
@@ -38,6 +38,8 @@ export async function POST(req: Request) {
   if (!planOnSale(planKey, vipYearEnabled(), lealtadEnabled() && lealtadOpenToNewCustomers())) {
     return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
   }
+  // MP rejects as high risk without the device id; log presence only, never the value.
+  console.info('[billing/change] device session', deviceSessionAudit(body.deviceSessionId));
   const result = await changePlan({
     session,
     planKey: planKey as (typeof PLAN_KEYS)[number],
