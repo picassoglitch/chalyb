@@ -97,16 +97,19 @@ test.describe('as pro', () => {
   // En vivo's flow (connect → live → end) lives in e2e/tools-envivo.spec.ts.
 
   test('Asistente: 3 steps, and it always says it is automatic', async ({ page }, info) => {
+    // Desktop and mobile run in parallel on one pro account: two writers reset each other's steps.
+    test.skip(info.project.name !== 'desktop-chromium', 'mutates the shared pro Asistente');
     await page.goto('/app/herramientas/asistente');
     const edit = page.getByRole('button', { name: 'Cambiar' });
-    if (await edit.isVisible().catch(() => false))
+    const name = page.getByLabel('Nombre de tu negocio');
+    const tryIt = page.getByRole('heading', { level: 1, name: 'Pruébalo' });
+    // isVisible() doesn't wait: branch only once one of the screens has rendered.
+    await expect(edit.or(name).or(tryIt).first()).toBeVisible();
+    if (await edit.isVisible()) {
       await page.goto('/app/herramientas/asistente?paso=1');
-    if (
-      await page
-        .getByLabel('Nombre de tu negocio')
-        .isVisible()
-        .catch(() => false)
-    ) {
+      await expect(name.or(tryIt).first()).toBeVisible();
+    }
+    if (await name.isVisible()) {
       await page.getByLabel('Nombre de tu negocio').fill('Tacos Doña Rosa');
       await page.getByRole('radio', { name: 'WhatsApp' }).check();
       await page.getByRole('button', { name: 'Continuar' }).click();

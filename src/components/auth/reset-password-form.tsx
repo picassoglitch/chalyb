@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, routing } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { PASSWORD_MIN_LENGTH, checkNewPassword } from '@/lib/auth/password-policy';
 
 /**
  * Reset password. The email link lands here with a `token_hash` in the URL and
@@ -27,11 +28,12 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
     e.preventDefault();
     setError(null);
 
-    if (password.length < 6) {
-      setError(t('errorWeakPassword'));
+    const invalidPassword = checkNewPassword(password, confirm);
+    if (invalidPassword === 'short') {
+      setError(t('errorWeakPassword', { min: PASSWORD_MIN_LENGTH }));
       return;
     }
-    if (password !== confirm) {
+    if (invalidPassword === 'mismatch') {
       setError(t('errorMismatch'));
       return;
     }
@@ -55,7 +57,8 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
         // update can't leave anyone logged in. They'll request a fresh link.
         await supabase.auth.signOut();
         if (updErr.code === 'same_password') setError(t('errorSamePassword'));
-        else if (updErr.code === 'weak_password') setError(t('errorWeakPassword'));
+        else if (updErr.code === 'weak_password')
+          setError(t('errorWeakPassword', { min: PASSWORD_MIN_LENGTH }));
         else {
           // Supabase's raw text is English-only and internal; log it, show ours.
           console.error('[reset-password] updateUser failed', updErr);
@@ -112,10 +115,10 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
           type="password"
           autoComplete="new-password"
           required
-          minLength={6}
+          minLength={PASSWORD_MIN_LENGTH}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder={t('passwordPlaceholder')}
+          placeholder={t('passwordPlaceholder', { min: PASSWORD_MIN_LENGTH })}
         />
       </div>
 
@@ -126,10 +129,10 @@ export function ResetPasswordForm({ tokenHash }: { tokenHash?: string }) {
           type="password"
           autoComplete="new-password"
           required
-          minLength={6}
+          minLength={PASSWORD_MIN_LENGTH}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          placeholder={t('passwordPlaceholder')}
+          placeholder={t('passwordPlaceholder', { min: PASSWORD_MIN_LENGTH })}
         />
       </div>
 
