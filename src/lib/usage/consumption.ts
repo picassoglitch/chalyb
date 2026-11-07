@@ -22,7 +22,7 @@ export async function getConsumptionUsage(userId: string): Promise<ConsumptionUs
     // select returns in one page for any real month.
     admin
       .from('usage_reservations')
-      .select('id, status, source_minutes, created_at')
+      .select('id, status, source_minutes, created_at, outputs')
       .eq('user_id', userId)
       .eq('class', 'job')
       .neq('status', 'cancelled')

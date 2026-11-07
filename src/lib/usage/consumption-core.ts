@@ -6,14 +6,17 @@ export interface ReservationRow {
   status: string;
   source_minutes: number | string | null;
   created_at: string;
+  /** What the run delivered, as the engine reported at settle; null = not reported. */
+  outputs?: number | null;
 }
 
-/** Failed jobs a month that don't count (admit_usage, 20261107000300). */
+/** Failed jobs with no output a month that don't count (admit_usage, 20261107000300). */
 export const FREE_FAILED_RETRIES = 3;
 
 /** What counts toward the monthly job caps, as admit_usage() counts it: not
  *  cancelled, not expired without one usage event (abandoned), and not one of
- *  the month's first FREE_FAILED_RETRIES failed jobs (earliest first). */
+ *  the month's first FREE_FAILED_RETRIES jobs that failed with outputs = 0
+ *  (earliest first). A failure without a reported count still counts. */
 export function countedReservations<T extends ReservationRow>(
   rows: readonly T[],
   reported: ReadonlySet<string>,
@@ -23,7 +26,7 @@ export function countedReservations<T extends ReservationRow>(
   );
   const free = new Set(
     live
-      .filter((r) => r.status === 'failed')
+      .filter((r) => r.status === 'failed' && r.outputs === 0)
       .sort((a, b) => byCreatedThenId(a, b))
       .slice(0, FREE_FAILED_RETRIES)
       .map((r) => r.id),

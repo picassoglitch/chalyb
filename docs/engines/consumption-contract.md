@@ -82,13 +82,20 @@ re-checks the job against the caps and updates its reservation.
 ## POST /usage/settle
 
 ```jsonc
-{ "reservation_id": "uuid", "outcome": "succeeded" } // succeeded | failed | cancelled | heartbeat
+{ "reservation_id": "uuid", "outcome": "succeeded", "outputs": 3 } // succeeded | failed | cancelled | heartbeat
 ```
 
 `succeeded` closes the reservation and charges `boost_fee_tokens` (one
 `boost.fee` event, idempotent). `failed`/`cancelled` close it without the
 fee. `heartbeat` extends expiry by the original TTL. Settling twice is a
 no-op.
+
+`outputs` (optional, integer ≥ 0): what the run delivered (clips, files).
+A job settled `failed` with `outputs: 0` is a free retry: the month's first
+3 of them don't count toward `jobs_per_month` or `minutes_per_month`
+(tokens it used stay charged). A failure without `outputs`, or with
+`outputs > 0`, counts as usual. Anything other than a non-negative integer
+or null is `400`. Engines that don't send it keep today's behavior.
 
 ## POST /usage (unchanged path, stricter body)
 

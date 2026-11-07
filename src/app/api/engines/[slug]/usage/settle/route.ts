@@ -1,5 +1,6 @@
 // POST /api/engines/{slug}/usage/settle
-//   { reservation_id, outcome: succeeded | failed | cancelled | heartbeat }
+//   { reservation_id, outcome: succeeded | failed | cancelled | heartbeat,
+//     outputs?: integer ≥ 0 }   // clips/files delivered; failed + 0 = free retry
 //
 // Closes an admitted job (charging the boost fee if it succeeded on the
 // boost lane) or, for heartbeat, keeps a long one from expiring. Idempotent.
@@ -9,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { checkEngineBearer } from '@/lib/engines/bearer';
 import { settleUsage, type SettleOutcome } from '@/lib/usage/admission';
+import { parseSettleOutputs } from '@/lib/usage/admission-core';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,7 +28,7 @@ export async function POST(
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  let body: { reservation_id?: unknown; outcome?: unknown };
+  let body: { reservation_id?: unknown; outcome?: unknown; outputs?: unknown };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -42,7 +44,18 @@ export async function POST(
     );
   }
 
-  const result = await settleUsage(slug, body.reservation_id, body.outcome as SettleOutcome);
+  // Optional so older engines keep working; absent (or null) = not reported.
+  const outputs = parseSettleOutputs(body.outputs);
+  if (typeof outputs === 'string') {
+    return NextResponse.json({ error: outputs }, { status: 400 });
+  }
+
+  const result = await settleUsage(
+    slug,
+    body.reservation_id,
+    body.outcome as SettleOutcome,
+    outputs,
+  );
   if (!result.ok && result.error === 'not found') {
     return NextResponse.json({ error: 'unknown reservation' }, { status: 404 });
   }

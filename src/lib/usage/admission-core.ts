@@ -36,6 +36,17 @@ export interface AdmitRequest {
   ttlSeconds: number;
 }
 
+/** settle's optional `outputs` (clips/files the run delivered): undefined when
+ *  absent or null (older engines), a string error when malformed. Capped at
+ *  Postgres integer range. */
+export function parseSettleOutputs(v: unknown): number | undefined | string {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 2_147_483_647) {
+    return 'outputs must be an integer >= 0';
+  }
+  return v;
+}
+
 export const DEFAULT_TTL_SECONDS = 3 * 60 * 60;
 const MAX_TTL_SECONDS = 24 * 60 * 60;
 const MAX_EST_TOKENS = 1e11;

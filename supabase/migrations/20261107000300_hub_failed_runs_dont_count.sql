@@ -1,11 +1,103 @@
--- Chalyb — a failed job doesn't use up the month (owner, 2026-11-07).
--- A reservation the engine settled 'failed' (the run raised; the hub keeps
--- no clip count, so failed = no deliverable output here) stops counting
--- toward jobs and minutes, for the month's first 3 failed jobs; the 4th
--- and later count again, so failing on purpose can't buy unlimited runs.
--- Mirrors ChalyClip #109's Free rule. Tokens a failed run used stay
--- charged. Streams are unchanged. Same function as 20261107000100
--- otherwise; grants are kept by create or replace.
+-- Chalyb — a failed job without output doesn't use up the month (owner,
+-- 2026-11-07). A job reservation the engine settled 'failed' AND reported
+-- outputs = 0 (no clips) stops counting toward jobs and minutes, for the
+-- month's first 3 such runs; the 4th and later count again, so failing on
+-- purpose can't buy unlimited runs. A failure settled without `outputs`
+-- (older engines) or with outputs > 0 still counts: the hub can't tell it
+-- made nothing. Mirrors ChalyClip #109's Free rule. Tokens a failed run
+-- used stay charged. Streams are unchanged. admit_usage is the same as
+-- 20261107000100 otherwise; grants are kept by create or replace.
+
+-- What the run delivered (clips, files…), as the engine reported at settle.
+-- null = not reported.
+alter table public.usage_reservations
+  add column if not exists outputs integer check (outputs >= 0);
+
+-- settle with the output count. A separate 4-argument function (no default)
+-- so the 3-argument one old clients call stays unambiguous through PostgREST.
+create or replace function public.settle_usage_reservation(
+  p_reservation_id uuid,
+  p_engine_id uuid,
+  p_outcome text,
+  p_outputs integer
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.usage_reservations;
+begin
+  if p_outcome not in ('succeeded', 'failed', 'cancelled', 'heartbeat') then
+    return jsonb_build_object('ok', false, 'error', 'invalid outcome');
+  end if;
+  if p_outputs < 0 then
+    return jsonb_build_object('ok', false, 'error', 'invalid outputs');
+  end if;
+
+  select * into r from public.usage_reservations
+   where id = p_reservation_id and engine_id = p_engine_id
+   for update;
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'not found');
+  end if;
+
+  if r.status <> 'open' then
+    -- Settling twice is a no-op; a heartbeat on a closed one tells the
+    -- engine to stop.
+    return jsonb_build_object('ok', p_outcome <> 'heartbeat', 'status', r.status, 'already', true);
+  end if;
+
+  if p_outcome = 'heartbeat' then
+    update public.usage_reservations
+       set expires_at = now() + make_interval(secs => r.ttl_seconds)
+     where id = r.id;
+    return jsonb_build_object('ok', true, 'status', 'open');
+  end if;
+
+  update public.usage_reservations
+     set status = p_outcome, settled_at = now(), outputs = p_outputs
+   where id = r.id;
+
+  -- The boost fee is only for a job that ran to the end. It is already a
+  -- price, so usage_billable_tokens bills it at cost / 4 = exactly fee_tokens,
+  -- with no margin on top.
+  if p_outcome = 'succeeded' and r.fee_tokens > 0 then
+    insert into public.usage_events
+      (user_id, engine_id, kind, amount, source_id, occurred_at, operation,
+       provider, cost_usd_micros, reservation_id, metadata)
+    values
+      (r.user_id, r.engine_id, 'boost.fee', 1, 'boostfee_' || r.id::text, now(),
+       r.operation, 'chalyb', r.fee_tokens * 4, r.id,
+       jsonb_build_object('lane', r.lane))
+    on conflict (engine_id, source_id) do nothing;
+  end if;
+
+  return jsonb_build_object('ok', true, 'status', p_outcome);
+end;
+$$;
+
+-- The old call: no output count reported, so a failure keeps counting.
+create or replace function public.settle_usage_reservation(
+  p_reservation_id uuid,
+  p_engine_id uuid,
+  p_outcome text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return public.settle_usage_reservation(p_reservation_id, p_engine_id, p_outcome, null::integer);
+end;
+$$;
+
+-- Server-only, like the 3-argument one (0046, 0064).
+revoke all on function public.settle_usage_reservation(uuid, uuid, text, integer) from public;
+revoke execute on function public.settle_usage_reservation(uuid, uuid, text, integer) from anon, authenticated;
+grant execute on function public.settle_usage_reservation(uuid, uuid, text, integer) to service_role;
 
 create or replace function public.admit_usage(
   p_user_id uuid,
@@ -71,14 +163,15 @@ begin
 
     -- Monthly counts: everything admitted this period that wasn't abandoned
     -- before it ran (cancelled, or expired without reporting any usage),
-    -- minus the month's first 3 failed jobs: a failed run left nothing to
-    -- use, so the person can retry. The 4th failure on counts (anti-abuse).
+    -- minus the month's first 3 jobs that failed with no output: nothing
+    -- was delivered, so the person can retry. The 4th on counts (anti-abuse).
+    -- outputs null (not reported) counts.
     select count(*), coalesce(sum(c.source_minutes), 0) into v_count, v_minutes
       from (
         select r.source_minutes,
-               r.class = 'job' and r.status = 'failed' as free_retry,
+               r.class = 'job' and r.status = 'failed' and coalesce(r.outputs = 0, false) as free_retry,
                row_number() over (
-                 partition by r.class = 'job' and r.status = 'failed'
+                 partition by r.class = 'job' and r.status = 'failed' and coalesce(r.outputs = 0, false)
                  order by r.created_at, r.id) as nth
           from public.usage_reservations r
          where r.user_id = p_user_id and r.class = p_class and r.created_at >= v_period
