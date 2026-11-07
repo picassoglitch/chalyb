@@ -11,10 +11,12 @@ import {
   getMpEnv,
   isAllowedMpUrl,
   isCardErrorCode,
+  isMpTestPayerEmail,
   mpCredentials,
   mpEnvProblems,
   mpErrorCode,
   mpUrl,
+  mpWebhookAdmitted,
   mpWebhookUrl,
   payerEmailFor,
 } from '@/lib/payments/mp-config';
@@ -60,9 +62,23 @@ test('the token, the card form key and the webhook secret come out as one pair',
   });
 });
 
+const TEST_ISOLATED = {
+  MP_TEST_DATA_ISOLATED: '1',
+  NEXT_PUBLIC_SUPABASE_URL: 'https://isolated-qa.example.invalid',
+} as const;
+
 test('a consistent pair per environment has no problems', () => {
   assert.deepEqual(
     mpEnvProblems({
+      MP_ENV: 'prod',
+      MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+      MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+    }),
+    [],
+  );
+  assert.deepEqual(
+    mpEnvProblems({
+      VERCEL_ENV: 'production',
       MP_ENV: 'prod',
       MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
       MERCADOPAGO_PUBLIC_KEY: PK_PROD,
@@ -75,18 +91,120 @@ test('a consistent pair per environment has no problems', () => {
       MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
       MERCADOPAGO_PUBLIC_KEY: PK_TEST,
       MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+      ...TEST_ISOLATED,
     }),
     [],
   );
-  // MP's newer test accounts have APP_USR- credentials of their own.
+});
+
+test('APP_USR- in test is refused unless the test-seller opt-in and seller id are set', () => {
+  const liveInTest = mpEnvProblems({
+    MP_ENV: 'test',
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+    MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+    ...TEST_ISOLATED,
+  });
+  assert.ok(liveInTest.some((p) => /APP_USR-/.test(p) && /MP_TEST_ALLOW_APP_USR/.test(p)));
+  const allowWithoutSeller = mpEnvProblems({
+    MP_ENV: 'test',
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+    MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+    MP_TEST_ALLOW_APP_USR: '1',
+    ...TEST_ISOLATED,
+  });
+  assert.ok(allowWithoutSeller.some((p) => /MP_EXPECTED_SELLER_ID/.test(p)));
   assert.deepEqual(
     mpEnvProblems({
       MP_ENV: 'test',
       MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
       MERCADOPAGO_PUBLIC_KEY: PK_PROD,
       MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+      MP_TEST_ALLOW_APP_USR: '1',
+      MP_EXPECTED_SELLER_ID: '123456789',
+      ...TEST_ISOLATED,
     }),
     [],
+  );
+});
+
+test('test mode refuses Vercel Production and production mode refuses a preview', () => {
+  assert.ok(
+    mpEnvProblems({
+      VERCEL_ENV: 'production',
+      MP_ENV: 'test',
+      MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
+      MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+      MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+      ...TEST_ISOLATED,
+    }).some((p) => /Vercel Production/.test(p)),
+  );
+  assert.ok(
+    mpEnvProblems({
+      VERCEL_ENV: 'preview',
+      MP_ENV: 'prod',
+      MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+      MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+    }).some((p) => /preview/.test(p)),
+  );
+});
+
+test('test mode refuses until isolated data is attested and the payer is a test buyer', () => {
+  const noFlag = mpEnvProblems({
+    MP_ENV: 'test',
+    MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
+    MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+    MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+    NEXT_PUBLIC_SUPABASE_URL: 'https://isolated-qa.example.invalid',
+  });
+  assert.ok(noFlag.some((p) => /MP_TEST_DATA_ISOLATED/.test(p)));
+  const realEmail = mpEnvProblems({
+    MP_ENV: 'test',
+    MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
+    MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+    MP_TEST_PAYER_EMAIL: 'ana@example.com',
+    ...TEST_ISOLATED,
+  });
+  assert.ok(realEmail.some((p) => /@testuser\.com/.test(p)));
+  assert.equal(isMpTestPayerEmail('ana@example.com'), false);
+  assert.equal(isMpTestPayerEmail('test_user_1@testuser.com'), true);
+});
+
+test('a production-shaped Vercel Production env stays admitted (unchanged live path)', () => {
+  const prod = {
+    VERCEL_ENV: 'production',
+    MP_ENV: 'prod',
+    MERCADOPAGO_ACCESS_TOKEN: TOK_PROD,
+    MERCADOPAGO_PUBLIC_KEY: PK_PROD,
+    MERCADOPAGO_WEBHOOK_SECRET: 's',
+  };
+  assert.deepEqual(mpEnvProblems(prod), []);
+  assert.deepEqual(mpWebhookAdmitted(prod), { ok: true });
+});
+
+test('the webhook is not admitted when test isolation fails', () => {
+  assert.deepEqual(mpWebhookAdmitted({}), { ok: false, reason: 'not_configured' });
+  assert.deepEqual(
+    mpWebhookAdmitted({
+      MP_ENV: 'test',
+      MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
+      MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+      MERCADOPAGO_WEBHOOK_SECRET: 's',
+      MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+    }),
+    { ok: false, reason: 'inconsistent' },
+  );
+  assert.deepEqual(
+    mpWebhookAdmitted({
+      MP_ENV: 'test',
+      MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
+      MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+      MERCADOPAGO_WEBHOOK_SECRET: 's',
+      MP_TEST_PAYER_EMAIL: 'test_user_1@testuser.com',
+      ...TEST_ISOLATED,
+    }),
+    { ok: true },
   );
 });
 
@@ -111,6 +229,7 @@ test('mixed or wrong pairs are problems (and so the checkout fails closed)', () 
       MP_ENV: 'test',
       MERCADOPAGO_ACCESS_TOKEN: TOK_TEST,
       MERCADOPAGO_PUBLIC_KEY: PK_TEST,
+      ...TEST_ISOLATED,
     }).some((p) => /MP_TEST_PAYER_EMAIL/.test(p)),
     'test without a test buyer',
   );
@@ -120,6 +239,10 @@ test('payer_email: the test buyer in test, the user in prod, never a test buyer 
   const test_ = { MP_ENV: 'test', MP_TEST_PAYER_EMAIL: 'test_user_9@testuser.com' };
   assert.equal(payerEmailFor('ana@example.com', test_), 'test_user_9@testuser.com');
   assert.equal(payerEmailFor('ana@example.com', { MP_ENV: 'test' }), null);
+  assert.equal(
+    payerEmailFor('ana@example.com', { MP_ENV: 'test', MP_TEST_PAYER_EMAIL: 'ana@example.com' }),
+    null,
+  );
   const prod = { MP_ENV: 'prod', MP_TEST_PAYER_EMAIL: 'test_user_9@testuser.com' };
   assert.equal(payerEmailFor('ana@example.com', prod), 'ana@example.com');
   assert.equal(payerEmailFor('test_user_9@testuser.com', prod), null);
@@ -392,4 +515,27 @@ test('the card form key and the server token come from the same resolver', () =>
   assert.match(mp, /getPublicKey\(\)[\s\S]{0,80}mpCredentials\(process\.env\)\.publicKey/);
   assert.match(mp, /getAccessToken\(\)[\s\S]{0,80}mpCredentials\(process\.env\)\.accessToken/);
   assert.match(mp, /getWebhookSecret\(\)[\s\S]{0,80}mpCredentials\(process\.env\)\.webhookSecret/);
+  assert.match(mp, /checkoutPublicKey\(\)[\s\S]{0,80}isCheckoutReady\(\)/);
+  assert.match(mp, /webhookAdmitted\(\)[\s\S]{0,80}mpWebhookAdmitted\(process\.env\)/);
+});
+
+test('the webhook route fail-closes through webhookAdmitted, not a token-only check', () => {
+  const route = readFileSync('src/app/api/mp/webhook/route.ts', 'utf8');
+  assert.match(route, /webhookAdmitted\(\)/);
+  assert.doesNotMatch(route, /isMercadoPagoConfigured\(\)/);
+});
+
+test('checkout pages mount the Brick only through checkoutPublicKey', () => {
+  for (const f of [
+    'src/app/[locale]/(dashboard)/app/prueba/pago/page.tsx',
+    'src/app/[locale]/(dashboard)/app/subscription/checkout/page.tsx',
+    'src/app/[locale]/(dashboard)/app/usage/checkout/page.tsx',
+    'src/app/[locale]/(dashboard)/app/billing/cambiar/page.tsx',
+    'src/app/[locale]/(dashboard)/app/billing/tarjeta/page.tsx',
+  ]) {
+    const src = readFileSync(f, 'utf8');
+    assert.match(src, /checkoutPublicKey\(/, f);
+    assert.doesNotMatch(src, /getPublicKey\(/, f);
+    assert.match(src, /MpTestModeBanner/, f);
+  }
 });

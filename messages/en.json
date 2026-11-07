@@ -1189,6 +1189,7 @@
     "pay": {
       "metaTitle": "Payment",
       "title": "Add your card",
+      "testMode": "Test payment. Use a test card; a real card will not work.",
       "oneLine": "<b>$0</b> today. First charge: <b>{monto} MXN</b> {periodo} on <b>{fecha_cobro}</b>, unless you cancel before.",
       "oneLinePaid": "<b>{monto} MXN</b> is charged today and then <b>{cada_periodo}</b>, unless you cancel.",
       "secure": "Secure payment with Mercado Pago. Chalyb doesn’t store your card number.",

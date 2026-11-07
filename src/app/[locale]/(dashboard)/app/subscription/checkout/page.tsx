@@ -8,10 +8,11 @@ import { TIER_PRICING, formatMoney } from '@/lib/payments/pricing';
 import {
   checkoutConfigWarnings,
   checkoutNotReadyError,
-  getPublicKey,
+  checkoutPublicKey,
   missingCheckoutVars,
   mpPayerEmail,
 } from '@/lib/payments/mercadopago';
+import { MpTestModeBanner } from '@/components/payments/mp-test-mode-banner';
 import { isSubscribableTier } from '@/lib/payments/subscription-reference';
 import { paidCheckoutEnabled } from '@/lib/config/flags';
 import { SubscriptionCheckout } from '@/components/workspace/subscription-checkout';
@@ -48,7 +49,7 @@ export default async function SubscriptionCheckoutPage({
   const pricing = TIER_PRICING[tier]!;
   const caps = TIER_CAPS[tier];
   const missing = missingCheckoutVars();
-  const publicKey = getPublicKey();
+  const publicKey = checkoutPublicKey();
   // Set-but-wrong credentials leave the Brick loading forever; say so here,
   // before the form, instead of after its 20 s watchdog.
   const problems = missing.length === 0 ? checkoutConfigWarnings() : [];
@@ -57,6 +58,7 @@ export default async function SubscriptionCheckoutPage({
     <div className="cc-scroll">
       <div className="cc-mod-section" style={{ maxWidth: 560 }}>
         <div className="cc-mod-sl">Activar plan {caps.label}</div>
+        <MpTestModeBanner />
 
         <div className="cc-mod-card" style={{ marginBottom: 16 }}>
           <div className="cc-mod-card-head">

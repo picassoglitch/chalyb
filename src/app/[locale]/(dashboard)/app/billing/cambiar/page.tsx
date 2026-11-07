@@ -9,7 +9,8 @@ import {
   paidCheckoutEnabled,
   vipYearEnabled,
 } from '@/lib/config/flags';
-import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { checkoutPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { MpTestModeBanner } from '@/components/payments/mp-test-mode-banner';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { quoteChange } from '@/lib/billing/billing-actions';
@@ -141,11 +142,12 @@ export default async function CambiarPlanPage({
             b: (c) => `<b>${c}</b>`,
             terms: (c) => `<terms>${c}</terms>`,
           });
-  const publicKey = getPublicKey();
+  const publicKey = checkoutPublicKey();
 
   return (
     <WizardShell {...chrome}>
       <div style={{ display: 'grid', gap: 22 }}>
+        <MpTestModeBanner />
         <h1 className="ch-h1" style={{ textAlign: 'center' }}>
           {t('title', { plan: tPlan(to) })}
         </h1>

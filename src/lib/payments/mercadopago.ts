@@ -63,6 +63,7 @@ import {
   mpCredentials,
   mpEnvProblems,
   mpErrorCode,
+  mpWebhookAdmitted,
   readAccessToken,
   mpUrl,
   mpWebhookUrl,
@@ -171,6 +172,17 @@ export function checkoutConfigWarnings(): string[] {
  *  ONE environment. A mixed pair fails closed: nothing is created. */
 export function isCheckoutReady(): boolean {
   return missingCheckoutVars().length === 0 && checkoutConfigWarnings().length === 0;
+}
+
+/** Public key for the card form only when checkout is ready. A live key must
+ *  not initialise Bricks in a test deployment that failed isolation. */
+export function checkoutPublicKey(): string | undefined {
+  return isCheckoutReady() ? getPublicKey() : undefined;
+}
+
+/** Whether /api/mp/webhook may fetch from Mercado Pago and grant anything. */
+export function webhookAdmitted(): ReturnType<typeof mpWebhookAdmitted> {
+  return mpWebhookAdmitted(process.env);
 }
 
 /** The message a caller returns instead of starting a checkout. Missing

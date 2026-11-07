@@ -12,7 +12,8 @@ import {
 } from '@/lib/config/flags';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
-import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { checkoutPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { MpTestModeBanner } from '@/components/payments/mp-test-mode-banner';
 import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { addInterval, trialDates } from '@/lib/billing/trial-dates';
@@ -114,7 +115,7 @@ export default async function PagoPage({
         ? 'vip_year'
         : 'pro_year';
   const otherOnSale = !lealtad && (other !== 'vip_year' || vipYearEnabled());
-  const publicKey = getPublicKey();
+  const publicKey = checkoutPublicKey();
 
   return (
     <WizardShell
@@ -128,6 +129,7 @@ export default async function PagoPage({
     >
       <div style={{ display: 'grid', gap: 22 }}>
         <header style={{ textAlign: 'center', display: 'grid', gap: 10 }}>
+          <MpTestModeBanner />
           <h1 className="ch-h1">{t('pay.title')}</h1>
           <p className="ch-sub">
             <Markup

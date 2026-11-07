@@ -48,7 +48,7 @@ import {
   getMercadoPago,
   getMpEnv,
   getWebhookSecret,
-  isMercadoPagoConfigured,
+  webhookAdmitted,
 } from '@/lib/payments/mercadopago';
 import {
   chargebackPaymentIds,
@@ -77,13 +77,22 @@ export const runtime = 'nodejs';
 const ACK_BUDGET_MS = 1500;
 
 export async function POST(req: Request) {
-  if (!isMercadoPagoConfigured()) {
+  const admitted = webhookAdmitted();
+  if (!admitted.ok) {
     // Without the access token nothing can be fetched back from MP, so the
-    // notification can't be processed. 503 (not 200) so MP keeps retrying
-    // and the payment lands once the token is set — a 200 here dropped it
-    // for good, with no ledger row for the reconcile to find.
-    console.error('[mp/webhook] MERCADOPAGO_ACCESS_TOKEN is not set — asking MP to retry');
-    return NextResponse.json({ error: 'mp not configured' }, { status: 503 });
+    // notification can't be processed. Mixed or live credentials on a test
+    // deployment, or test mode pointed at production data, also fail closed:
+    // grant nothing. 503 (not 200) so MP keeps retrying once isolation is
+    // fixed — a 200 here dropped it for good, with no ledger row.
+    if (admitted.reason === 'not_configured') {
+      console.error('[mp/webhook] MERCADOPAGO_ACCESS_TOKEN is not set — asking MP to retry');
+      return NextResponse.json({ error: 'mp not configured' }, { status: 503 });
+    }
+    console.error(
+      '[mp/webhook] refusing notification; credentials or data isolation inconsistent',
+      { mp_env: getMpEnv(), reason: admitted.reason },
+    );
+    return NextResponse.json({ error: 'mp not admitted' }, { status: 503 });
   }
 
   // Query string first; an empty body (IPN) is not an error.
