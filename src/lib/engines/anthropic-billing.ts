@@ -24,6 +24,7 @@
 // matter, plumb workspace_id through here.
 
 import 'server-only';
+import { anthropicErrorText, redactSecrets } from '@/lib/usage/reconciliation-core';
 
 interface AnthropicUsageReportRow {
   date: string;
@@ -56,6 +57,7 @@ const ANTHROPIC_API = 'https://api.anthropic.com';
 const ANTHROPIC_API_VERSION = '2023-06-01';
 const DEFAULT_USD_TO_MXN = 18.0;
 const DEFAULT_WINDOW_DAYS = 30;
+const CALL_TIMEOUT_MS = 10_000;
 
 function isoDaysAgo(days: number): string {
   const t = Date.now() - days * 24 * 60 * 60 * 1000;
@@ -74,6 +76,10 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
   }
   const qs = new URLSearchParams(params).toString();
   let res: Response;
+  let body: unknown = null;
+  let rawText = '';
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), CALL_TIMEOUT_MS);
   try {
     res = await fetch(`${ANTHROPIC_API}${path}?${qs}`, {
       method: 'GET',
@@ -83,31 +89,32 @@ async function callAnthropic(path: string, params: Record<string, string>): Prom
       },
       // Don't cache — billing data updates continuously.
       cache: 'no-store',
+      signal: ctrl.signal,
     });
+    rawText = await res.text().catch(() => '');
+    try {
+      body = JSON.parse(rawText);
+    } catch {
+      body = rawText;
+    }
   } catch (err) {
     return {
       ok: false,
       status: 0,
       body: null,
-      error: `network: ${err instanceof Error ? err.message : String(err)}`,
+      error: ctrl.signal.aborted
+        ? `timeout: Anthropic did not answer in ${CALL_TIMEOUT_MS / 1000}s`
+        : redactSecrets(`network: ${err instanceof Error ? err.message : String(err)}`, key),
     };
-  }
-  let body: unknown = null;
-  try {
-    body = await res.json();
-  } catch {
-    body = await res.text().catch(() => '');
+  } finally {
+    clearTimeout(timer);
   }
   if (!res.ok) {
-    const detail =
-      typeof body === 'object' && body && 'error' in body
-        ? JSON.stringify((body as { error: unknown }).error).slice(0, 200)
-        : String(body).slice(0, 200);
     return {
       ok: false,
       status: res.status,
-      body,
-      error: `Anthropic ${res.status}: ${detail}`,
+      body: null,
+      error: `Anthropic ${res.status}: ${anthropicErrorText(rawText, key)}`,
     };
   }
   return { ok: true, status: res.status, body };
