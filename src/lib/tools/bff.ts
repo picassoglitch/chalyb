@@ -24,6 +24,7 @@ import {
   TOOL_TIMEOUT_MS,
   TOOL_SLOW_TIMEOUT_MS,
   type BreakerState,
+  type ToolCredits,
   type ToolError,
   type ToolErrorReason,
   type ToolResult,
@@ -82,6 +83,7 @@ export async function reportToolError(
   refusal?: string,
   /** With 'usage_refused': the admission reason (no_tokens, jobs_cap, …). */
   usage?: string,
+  credits?: ToolCredits,
 ): Promise<ToolError> {
   const error: ToolError = {
     reason,
@@ -89,6 +91,7 @@ export async function reportToolError(
     supportCode: newSupportCode(slug),
     ...(refusal ? { refusal } : {}),
     ...(usage ? { usage } : {}),
+    ...(credits ? { credits } : {}),
   };
   await logAudit({
     action: 'tool.error',
@@ -150,7 +153,7 @@ export async function runTool<T>(
       if (!retryable) break;
     }
   }
-  const { reason, retryable, outage, refusal } = failureEffect(last, opts);
+  const { reason, retryable, outage, refusal, credits } = failureEffect(last, opts);
   return {
     ok: false,
     error: await reportToolError(
@@ -161,6 +164,7 @@ export async function runTool<T>(
       outage,
       refusal,
       usageReasonOf(last),
+      credits,
     ),
   };
 }

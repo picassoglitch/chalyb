@@ -292,7 +292,8 @@
       "emailLabel": "Correo",
       "emailPlaceholder": "tu@correo.com",
       "passwordLabel": "Contraseña",
-      "passwordPlaceholder": "Mínimo 6 caracteres",
+      "passwordPlaceholder": "Tu contraseña",
+      "passwordPlaceholderSignup": "Mínimo {min} caracteres",
       "submitSignIn": "Iniciar sesión →",
       "submitSignUp": "Crear cuenta gratis →",
       "noAccount": "¿No tienes cuenta?",
@@ -302,7 +303,7 @@
       "orDivider": "o continuar con",
       "errorInvalidCredentials": "Correo o contraseña incorrectos.",
       "errorEmailExists": "Ya existe una cuenta con este correo. Intenta iniciar sesión.",
-      "errorWeakPassword": "La contraseña debe tener al menos 6 caracteres.",
+      "errorWeakPassword": "La contraseña debe tener al menos {min} caracteres.",
       "errorEmailNotConfirmed": "Por favor confirma tu correo primero — revisa tu bandeja por el enlace.",
       "errorRateLimit": "Demasiados intentos. Espera un minuto e inténtalo de nuevo.",
       "checkInboxTitle": "Revisa tu bandeja.",
@@ -310,8 +311,8 @@
       "forgotPassword": "¿Olvidaste tu contraseña?",
       "resetSuccess": "Contraseña actualizada. Inicia sesión con tu nueva contraseña.",
       "nameLabel": "Tu nombre",
-      "passwordHintSignup": "Mínimo 8 letras o números",
-      "errorShortPassword": "Tu contraseña necesita al menos 8 letras o números.",
+      "passwordHintSignup": "Mínimo {min} caracteres",
+      "errorShortPassword": "Tu contraseña necesita al menos {min} caracteres.",
       "marketing": "Quiero recibir novedades, consejos y promociones de Chalyb por correo. Puedo darme de baja cuando quiera.",
       "legalPublished": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y la <uso>Política de Uso Aceptable</uso>, y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
       "legalCurrent": "Al crear tu cuenta aceptas los <terminos>Términos y Condiciones</terminos> y confirmas que leíste el <privacidad>Aviso de Privacidad</privacidad>. Debes tener 18 años o más.",
@@ -334,7 +335,7 @@
       "title": "Crear nueva contraseña",
       "intro": "Elige una nueva contraseña para tu cuenta.",
       "passwordLabel": "Nueva contraseña",
-      "passwordPlaceholder": "Mínimo 6 caracteres",
+      "passwordPlaceholder": "Mínimo {min} caracteres",
       "confirmLabel": "Confirmar contraseña",
       "submit": "Actualizar contraseña →",
       "successTitle": "Contraseña actualizada.",
@@ -343,7 +344,7 @@
       "invalidBody": "Este enlace para restablecer la contraseña ya no es válido. Solicita uno nuevo para continuar.",
       "requestNew": "Solicitar un nuevo enlace →",
       "cancel": "¿No quieres restablecer? Cancelar e iniciar sesión",
-      "errorWeakPassword": "La contraseña debe tener al menos 6 caracteres.",
+      "errorWeakPassword": "La contraseña debe tener al menos {min} caracteres.",
       "errorMismatch": "Las contraseñas no coinciden.",
       "errorSamePassword": "La nueva contraseña debe ser distinta a la actual.",
       "errorGeneric": "Ocurrió un error. Inténtalo de nuevo."
@@ -1892,6 +1893,12 @@
         "legal_7_2_i": "(i) Lo ordena la ley, la PROFECO o una autoridad"
       }
     },
+    "team": {
+      "plans": "Con plan Pro, Partner o VIP",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} pagando · {trial} en prueba · {other} sin cobro activo (asignados o con pago pendiente)",
+      "plansSplitFailed": "No se pudieron leer las suscripciones: sin desglose de pagos."
+    },
     "money": {
       "metaTitle": "Dinero",
       "title": "Dinero",
@@ -1915,7 +1922,8 @@
         "cancelled": "Cancelaron"
       },
       "payments": "Pagos",
-      "subscriptions": "Suscripciones",
+      "subscriptions": "Suscripciones pagadas con Mercado Pago",
+      "subscriptionsNote": "Solo cuenta suscripciones con tarjeta. Los planes que asignas a mano en Equipo no aparecen aquí.",
       "costs": "Costos",
       "col": {
         "date": "Fecha",
@@ -1932,7 +1940,7 @@
       },
       "noMovements": "Aún no hay movimientos este mes.",
       "subsBy": {
-        "active": "Activas",
+        "active": "Activas (pagando)",
         "trial": "En prueba",
         "past_due": "Pago pendiente",
         "cancelled": "Canceladas"
@@ -3830,6 +3838,7 @@
       "code": "Si nos escribes, menciona este código: {codigo}.",
       "session": "Tu sesión terminó. Vuelve a entrar.",
       "no_credits": "No tienes créditos suficientes. Recarga tu saldo o mejora tu plan.",
+      "no_credits_amounts": "Este video necesita unos {necesita} créditos y tienes {tienes}. Recarga tu saldo o mejora tu plan.",
       "rate_limited": "Llegaste a un límite de tu plan (minutos, videos o trabajos al mismo tiempo). Espera o mejora tu plan.",
       "too_large": "El video es más grande o más largo de lo que permite tu plan.",
       "needs_plan": "Tu plan no incluye esto.",

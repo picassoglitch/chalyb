@@ -292,7 +292,8 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@email.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least 6 characters",
+      "passwordPlaceholder": "Your password",
+      "passwordPlaceholderSignup": "At least {min} characters",
       "submitSignIn": "Sign in →",
       "submitSignUp": "Create free account →",
       "noAccount": "Don't have an account?",
@@ -302,7 +303,7 @@
       "orDivider": "or continue with",
       "errorInvalidCredentials": "Invalid email or password.",
       "errorEmailExists": "An account with this email already exists. Try signing in instead.",
-      "errorWeakPassword": "Password must be at least 6 characters.",
+      "errorWeakPassword": "Password must be at least {min} characters.",
       "errorEmailNotConfirmed": "Please confirm your email first — check your inbox for the link.",
       "errorRateLimit": "Too many attempts. Wait a minute and try again.",
       "checkInboxTitle": "Check your inbox.",
@@ -310,8 +311,8 @@
       "forgotPassword": "Forgot password?",
       "resetSuccess": "Password updated. Sign in with your new password.",
       "nameLabel": "Your name",
-      "passwordHintSignup": "At least 8 letters or numbers",
-      "errorShortPassword": "Your password needs at least 8 letters or numbers.",
+      "passwordHintSignup": "At least {min} characters",
+      "errorShortPassword": "Your password needs at least {min} characters.",
       "marketing": "I want to get news, tips and offers from Chalyb by email. I can unsubscribe any time.",
       "legalPublished": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and the <uso>Acceptable Use Policy</uso>, and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
       "legalCurrent": "By creating your account you accept the <terminos>Terms and Conditions</terminos> and confirm you read the <privacidad>Privacy Notice</privacidad>. You must be 18 or older.",
@@ -334,7 +335,7 @@
       "title": "Set a new password",
       "intro": "Choose a new password for your account.",
       "passwordLabel": "New password",
-      "passwordPlaceholder": "At least 6 characters",
+      "passwordPlaceholder": "At least {min} characters",
       "confirmLabel": "Confirm password",
       "submit": "Update password →",
       "successTitle": "Password updated.",
@@ -343,7 +344,7 @@
       "invalidBody": "This password reset link is no longer valid. Request a new one to continue.",
       "requestNew": "Request a new link →",
       "cancel": "Not resetting? Cancel and sign in",
-      "errorWeakPassword": "Password must be at least 6 characters.",
+      "errorWeakPassword": "Password must be at least {min} characters.",
       "errorMismatch": "Passwords don't match.",
       "errorSamePassword": "New password must be different from your current one.",
       "errorGeneric": "Something went wrong. Try again."
@@ -1892,6 +1893,12 @@
         "legal_7_2_i": "(i) Ordered by law, PROFECO or an authority"
       }
     },
+    "team": {
+      "plans": "With a Pro, Partner or VIP plan",
+      "plansTiers": "{pro} Pro · {partner} Partner · {vip} VIP",
+      "plansSplit": "{paying} paying · {trial} on trial · {other} not being charged (assigned or payment due)",
+      "plansSplitFailed": "Could not read subscriptions: no payment breakdown."
+    },
     "money": {
       "metaTitle": "Money",
       "title": "Money",
@@ -1915,7 +1922,8 @@
         "cancelled": "Cancelled"
       },
       "payments": "Payments",
-      "subscriptions": "Subscriptions",
+      "subscriptions": "Subscriptions paid through Mercado Pago",
+      "subscriptionsNote": "Only card subscriptions count. Plans you assign by hand in Team are not included here.",
       "costs": "Costs",
       "col": {
         "date": "Date",
@@ -1932,7 +1940,7 @@
       },
       "noMovements": "No movements this month yet.",
       "subsBy": {
-        "active": "Active",
+        "active": "Active (paying)",
         "trial": "On trial",
         "past_due": "Payment due",
         "cancelled": "Cancelled"
@@ -3830,6 +3838,7 @@
       "code": "If you write to us, mention this code: {codigo}.",
       "session": "Your session ended. Sign in again.",
       "no_credits": "You don't have enough credits. Top up or upgrade your plan.",
+      "no_credits_amounts": "This video needs about {necesita} credits and you have {tienes}. Top up or upgrade your plan.",
       "rate_limited": "You hit a limit of your plan (minutes, videos or jobs at once). Wait or upgrade your plan.",
       "too_large": "The video is bigger or longer than your plan allows.",
       "needs_plan": "Your plan doesn't include this.",
