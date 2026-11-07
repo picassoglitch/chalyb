@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { recordSignupConsent } from '@/lib/billing/signup-consent';
 import { localizeNext } from '@/lib/auth/safe-next';
+import { PASSWORD_MIN_LENGTH, checkNewPassword } from '@/lib/auth/password-policy';
 
 type Mode = 'signin' | 'signup';
 
@@ -19,10 +20,6 @@ interface Props {
    *  documents that are published). Shown next to "Crear cuenta". */
   legal?: React.ReactNode;
 }
-
-/** New accounts need 8+ characters (SCR-13; Supabase policy is OPS-16).
- *  Existing accounts still sign in with what they set. */
-const SIGNUP_MIN_PASSWORD = 8;
 
 const ACCOUNT_ROUTE = '/account' as Route;
 
@@ -64,7 +61,7 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
       case 'email_exists':
         return t('errorEmailExists');
       case 'weak_password':
-        return t('errorWeakPassword');
+        return t('errorWeakPassword', { min: PASSWORD_MIN_LENGTH });
       case 'email_not_confirmed':
         return t('errorEmailNotConfirmed');
       case 'over_email_send_rate_limit':
@@ -80,12 +77,8 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
     setError(null);
     setCheckInboxEmail(null);
 
-    if (mode === 'signup' && password.length < SIGNUP_MIN_PASSWORD) {
-      setError(t('errorShortPassword'));
-      return;
-    }
-    if (password.length < 6) {
-      setError(t('errorWeakPassword'));
+    if (mode === 'signup' && checkNewPassword(password)) {
+      setError(t('errorShortPassword', { min: PASSWORD_MIN_LENGTH }));
       return;
     }
 
@@ -206,15 +199,19 @@ export function EmailAuthForm({ initialMode = 'signin', next, showModeTabs = tru
           type="password"
           autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
           required
-          minLength={mode === 'signup' ? SIGNUP_MIN_PASSWORD : 6}
+          minLength={mode === 'signup' ? PASSWORD_MIN_LENGTH : undefined}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder={t('passwordPlaceholder')}
+          placeholder={
+            mode === 'signup'
+              ? t('passwordPlaceholderSignup', { min: PASSWORD_MIN_LENGTH })
+              : t('passwordPlaceholder')
+          }
           aria-describedby={mode === 'signup' ? 'auth-password-hint' : undefined}
         />
         {mode === 'signup' && (
           <p id="auth-password-hint" className="auth-hint">
-            {t('passwordHintSignup')}
+            {t('passwordHintSignup', { min: PASSWORD_MIN_LENGTH })}
           </p>
         )}
         {mode === 'signin' && (
