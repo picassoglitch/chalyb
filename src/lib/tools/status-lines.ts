@@ -6,6 +6,7 @@
 import 'server-only';
 import type { PlanTierKey } from './adapters/tools';
 import { getClipsAdapter } from './adapters/clips';
+import { clipsMade } from './adapters/types';
 import { getEnVivo, getSenales, hubRunsTool } from './registry';
 import { runTool } from './bff';
 import { withoutHiddenJobs } from '@/lib/legal/removals';
@@ -41,7 +42,7 @@ export async function toolStatusLines(
         out[slug] = clipsLine(
           {
             inProgress: working.length,
-            ready: ready.reduce((n, j) => n + j.clips.length, 0),
+            ready: ready.reduce((n, j) => n + clipsMade(j), 0),
             latestReadyAt: ready[0]?.createdAt ?? null,
           },
           now,
