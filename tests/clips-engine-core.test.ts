@@ -224,8 +224,21 @@ test('BFF input parsing refuses junk before the engine sees it', () => {
       content_type: 'VIDEO/MP4',
       boost: true,
     }),
-    { filename: 'a.mp4', size_bytes: 10, content_type: 'video/mp4', persona_id: null, boost: true },
+    {
+      filename: 'a.mp4',
+      size_bytes: 10,
+      content_type: 'video/mp4',
+      persona_id: null,
+      boost: true,
+      duration_s: null,
+    },
   );
+  // The browser-read length rides along (QA 2026-11-06: Free refused without it).
+  const withLength = { filename: 'a.mp4', size_bytes: 10, content_type: 'video/mp4' };
+  assert.equal(parseUploadStart({ ...withLength, duration_s: 20.04 }).duration_s, 20);
+  assert.equal(parseUploadStart({ ...withLength, duration_s: 100 }).duration_s, 100);
+  for (const bad of [-1, 86_401, Number.NaN, '20'])
+    assert.throws(() => parseUploadStart({ ...withLength, duration_s: bad }));
   assert.throws(() =>
     parseUploadStart({ filename: 'a', size_bytes: 10, content_type: 'text/html' }),
   );

@@ -323,6 +323,7 @@ export const startUpload = (
     content_type: string;
     persona_id?: string | null;
     boost?: boolean | null;
+    duration_s?: number | null;
   },
   signal?: AbortSignal,
 ) => e.post<EngineUploadStart>('/uploads', body, { signal });

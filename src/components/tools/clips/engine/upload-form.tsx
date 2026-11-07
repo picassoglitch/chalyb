@@ -1,7 +1,7 @@
 'use client';
 
 // Subir un video (mode "a"). The file never passes through the app server:
-//   1. POST /uploads with name/size/type → the engine admits the size and
+//   1. POST /uploads with name/size/type/length → the engine admits it and
 //      answers a short-lived presigned PUT to the bucket + a ticket;
 //   2. the browser PUTs the file straight to the bucket (progress bar);
 //   3. POST /uploads/{id}/complete → the engine checks it and starts.
@@ -42,6 +42,26 @@ function typeOf(file: File): string | null {
   if (Object.values(TYPES).includes(file.type)) return file.type;
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
   return TYPES[ext] ?? null;
+}
+
+/** The video's length in seconds as the browser reads it, or null (format
+ *  it can't play, or no answer in 5 s): the engine then estimates. */
+function readDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const v = document.createElement('video');
+    const done = (d: number | null) => {
+      clearTimeout(timer);
+      v.removeAttribute('src');
+      URL.revokeObjectURL(url);
+      resolve(d !== null && Number.isFinite(d) && d > 0 && d <= 86_400 ? d : null);
+    };
+    const timer = setTimeout(() => done(null), 5000);
+    v.preload = 'metadata';
+    v.onloadedmetadata = () => done(v.duration);
+    v.onerror = () => done(null);
+    v.src = url;
+  });
 }
 
 export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: number }) {
@@ -86,6 +106,7 @@ export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: num
     setPhase('uploading');
     setPct(0);
     try {
+      const seconds = await readDuration(file);
       const up = await toolCall<{
         stream_id: string;
         upload_url: string;
@@ -96,6 +117,8 @@ export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: num
         size_bytes: file.size,
         content_type: type,
         boost,
+        // QA 2026-11-06 — without it the engine holds 10 min of credits, more than Free has.
+        duration_s: seconds,
       });
       started.current = { id: up.stream_id, ticket: up.ticket };
       await new Promise<void>((resolve, reject) => {

@@ -67,7 +67,17 @@ export function parseUploadStart(b: Body) {
     content_type,
     persona_id: persona ? parseId(persona) : null,
     boost: bool(b, 'boost') ?? null,
+    duration_s: duration(b.duration_s),
   };
+}
+
+/** The length the browser read from the file, in seconds; null when it
+ *  couldn't (the engine then estimates). Over a day is not a video. */
+function duration(v: unknown): number | null {
+  if (v === undefined || v === null) return null;
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 86_400)
+    throw new ToolRequestError('bad duration');
+  return Math.round(v * 10) / 10;
 }
 
 export function parseTicket(b: Body): string {

@@ -21,6 +21,7 @@ export async function errorCopy(): Promise<ErrorCopy> {
     code: t.raw('code') as string,
     session: t('session'),
     no_credits: t('no_credits'),
+    no_credits_amounts: t.raw('no_credits_amounts') as string,
     rate_limited: t('rate_limited'),
     too_large: t('too_large'),
     needs_plan: t('needs_plan'),

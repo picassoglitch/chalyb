@@ -3830,6 +3830,7 @@
       "code": "Si nos escribes, menciona este código: {codigo}.",
       "session": "Tu sesión terminó. Vuelve a entrar.",
       "no_credits": "No tienes créditos suficientes. Recarga tu saldo o mejora tu plan.",
+      "no_credits_amounts": "Este video necesita unos {necesita} créditos y tienes {tienes}. Recarga tu saldo o mejora tu plan.",
       "rate_limited": "Llegaste a un límite de tu plan (minutos, videos o trabajos al mismo tiempo). Espera o mejora tu plan.",
       "too_large": "El video es más grande o más largo de lo que permite tu plan.",
       "needs_plan": "Tu plan no incluye esto.",
