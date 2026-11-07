@@ -11,6 +11,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { effectiveTier } from '@/lib/billing/tiers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { provisionEngineAccess } from '@/lib/engines/subscriptions';
+import { engineLang } from '../engine-lang';
 import { createEngineEnVivoCore, EngineError, type EngineWho } from './envivo-engine-core';
 import { EnVivoRefusal, type EnVivoAdapter } from './tools';
 
@@ -93,6 +94,7 @@ async function who(userId: string): Promise<EngineWho> {
 export function createEngineEnVivo(): EnVivoAdapter {
   return createEngineEnVivoCore({
     secret: engineSecret,
+    lang: engineLang,
     resolve: async (userId) => ({ base: await engineBase(), who: await who(userId) }),
   });
 }

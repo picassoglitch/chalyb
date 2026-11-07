@@ -7,6 +7,8 @@
 // against a fake engine. The server wiring lives in envivo-engine.ts.
 
 import { API_AUD, PREVIEW_AUD, mintEngineToken } from '../envivo-token';
+import { engineLangQuery } from '../routes';
+import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/locales';
 import {
   isPlatformId,
   normalizeBroadcastMeta,
@@ -37,6 +39,9 @@ export interface EngineDeps {
   /** The engine's base URL and the person, for a verified user id. */
   resolve(userId: string): Promise<{ base: string; who: EngineWho }>;
   secret(): string | null;
+  /** The screen's language. The engine reads it on every route that can
+   *  create a session (its default title); none means Spanish, as before. */
+  lang?: () => Promise<AppLocale>;
   fetchImpl?: typeof fetch;
 }
 
@@ -148,9 +153,11 @@ export function createEngineEnVivoCore(deps: EngineDeps): EnVivoAdapter {
     if (!secret) throw new EngineError(503);
     const { base, who } = await deps.resolve(userId);
     const token = mintEngineToken(who, API_AUD, secret);
+    const { lang } = engineLangQuery((await deps.lang?.()) ?? DEFAULT_LOCALE);
+    const query = lang ? `?lang=${lang}` : '';
     let res: Response;
     try {
-      res = await doFetch(`${base.replace(/\/+$/, '')}/api/hub/v1${path}`, {
+      res = await doFetch(`${base.replace(/\/+$/, '')}/api/hub/v1${path}${query}`, {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
