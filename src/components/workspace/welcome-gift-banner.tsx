@@ -26,6 +26,7 @@ import { useWorkspace } from '@/lib/workspace/store';
 import { claimWelcomeGift } from '@/lib/usage/welcome-actions';
 import { WELCOME_DISMISSED_COOKIE } from '@/lib/usage/welcome-dismissal';
 import { Confetti } from './confetti';
+import { TIER_CAPS } from '@/lib/billing/tiers';
 
 const CONFETTI_MS = 2400;
 const DISMISS_MAX_AGE_S = 60 * 60 * 24 * 30;
@@ -130,7 +131,9 @@ export function WelcomeGiftBanner({
           Tu regalo de bienvenida está listo
         </div>
         <div style={{ fontSize: 13, color: 'var(--cc-txt-2)', lineHeight: 1.55, maxWidth: '60ch' }}>
-          <b style={{ color: 'var(--cc-green)' }}>50,000 créditos</b> para usar en tus herramientas
+          <b style={{ color: 'var(--cc-green)' }}>
+            {TIER_CAPS.FREE.tokensPerMonth.toLocaleString('es-MX')} créditos
+          </b> para usar en tus herramientas
           este mes, más <b style={{ color: 'var(--cc-cyan)' }}>Clips Pro gratis por 7 días</b>, sin
           tarjeta. Acepta para activarlo.
         </div>

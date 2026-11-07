@@ -254,3 +254,33 @@ test('reconciliation: cents strings → micros, per model and workspace', async 
   assert.equal(haiku.recordedMicros, 900_000);
   assert.equal(haiku.gapPct, 10); // billed $1.00, recorded $0.90 → 10% under-recorded
 });
+
+test('Gratis credits cover one 5-minute video, and only one (owner 2026-11-07)', () => {
+  assert.equal(TIER_CAPS.FREE.tokensPerMonth, 75_000);
+  // ChalyClip estimate_tokens() at 5 min and at 20 s (the shortest QA upload),
+  // before the hub's margin; the base fee alone bills 60,000 µ$ × 2.6 ÷ 4.
+  const est5min = 23_602;
+  const est20s = 15_929;
+  const baseFeeBilled = Math.ceil((60_000 * 2.6) / 4);
+  const free = TIER_CAPS.FREE;
+  const hold = reserveWithMargin(est5min, 160, 'clips.pipeline');
+  assert.equal(hold, 61_366);
+  assert.ok(free.tokensPerMonth >= hold, 'a 5-min video is admitted');
+  assert.ok(
+    free.tokensPerMonth - baseFeeBilled < reserveWithMargin(est20s, 160, 'clips.pipeline'),
+    'after one run no second hold fits',
+  );
+  assert.equal(checkItemCaps(req({ sourceMinutes: 5 }), free, false), null);
+  assert.equal(checkItemCaps(req({ sourceMinutes: 5.01 }), free, false), 'video_too_long');
+  assert.equal(sqlCaps(free, free.tokensPerMonth, false).minutes_per_month, 5);
+});
+
+test('the published Términos de Suscripción state Gratis credits as TIER_CAPS does', async () => {
+  const { ARCHIVE } = await import('@/content/legal/archive/index');
+  const registry = (await import('@/lib/legal/registry.json', { with: { type: 'json' } })).default;
+  const current = registry.suscripcion.current;
+  const text = ARCHIVE.suscripcion![current]!.rendered;
+  const row = /\| \*\*Gratis\*\* \|[^\n]*\| ([\d,]+) por mes \|/.exec(text);
+  assert.ok(row, 'Gratis row in §1.1');
+  assert.equal(Number(row[1]!.replace(/,/g, '')), TIER_CAPS.FREE.tokensPerMonth);
+});

@@ -10,7 +10,8 @@
 import { useRef, useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { CloudUpload } from 'lucide-react';
-import { errorText, toolCall, ToolCallError, type ErrorCopy } from './tool-call';
+import { toolCall, ToolCallError, type ErrorCopy } from './tool-call';
+import { overLength, uploadErrorText, type UploadLimitCopy } from './upload-limits';
 
 export interface UploadCopy {
   drop: string;
@@ -29,6 +30,7 @@ export interface UploadCopy {
   badType: string;
   putFailed: string;
   errors: ErrorCopy;
+  limits: UploadLimitCopy;
 }
 
 const TYPES: Record<string, string> = {
@@ -65,7 +67,16 @@ function readDuration(file: File): Promise<number | null> {
   });
 }
 
-export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: number }) {
+export function UploadForm({
+  copy,
+  maxBytes,
+  maxSeconds,
+}: {
+  copy: UploadCopy;
+  maxBytes: number;
+  /** The plan's longest video (null = no cap here; the engine still checks). */
+  maxSeconds: number | null;
+}) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [boost, setBoost] = useState(false);
@@ -108,6 +119,10 @@ export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: num
     setPct(0);
     try {
       const seconds = await readDuration(file);
+      if (overLength(seconds, maxSeconds) && copy.limits.tooLong) {
+        setPhase('idle');
+        return setError(copy.limits.tooLong);
+      }
       const up = await toolCall<{
         stream_id: string;
         upload_url: string;
@@ -148,7 +163,7 @@ export function UploadForm({ copy, maxBytes }: { copy: UploadCopy; maxBytes: num
       const s = started.current;
       started.current = null;
       setPhase('idle');
-      if (err instanceof ToolCallError) setError(errorText(err, copy.errors));
+      if (err instanceof ToolCallError) setError(uploadErrorText(err, copy.errors, copy.limits));
       else setError(copy.putFailed);
       if (s)
         void toolCall(`/uploads/${encodeURIComponent(s.id)}/abort`, 'POST', {

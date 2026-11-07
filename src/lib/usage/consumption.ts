@@ -5,6 +5,7 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTokenBalance } from './tokens';
+import { countedReservations, type ReservationRow } from './consumption-core';
 
 export interface ConsumptionUsage {
   tokensUsed: number;
@@ -21,7 +22,7 @@ export async function getConsumptionUsage(userId: string): Promise<ConsumptionUs
     // select returns in one page for any real month.
     admin
       .from('usage_reservations')
-      .select('status, source_minutes')
+      .select('id, status, source_minutes')
       .eq('user_id', userId)
       .eq('class', 'job')
       .neq('status', 'cancelled')
@@ -31,7 +32,12 @@ export async function getConsumptionUsage(userId: string): Promise<ConsumptionUs
       )
       .limit(50_000),
   ]);
-  const list = rows ?? [];
+  const expired = (rows ?? []).filter((r) => r.status === 'expired').map((r) => r.id as string);
+  const { data: events } = expired.length
+    ? await admin.from('usage_events').select('reservation_id').in('reservation_id', expired)
+    : { data: [] as { reservation_id: string }[] };
+  const reported = new Set((events ?? []).map((e) => e.reservation_id as string));
+  const list = countedReservations((rows ?? []) as ReservationRow[], reported);
   return {
     tokensUsed: balance.monthlyUsed,
     jobs: list.length,

@@ -32,8 +32,16 @@ export async function errorCopy(): Promise<ErrorCopy> {
   };
 }
 
-export async function uploadCopy(): Promise<UploadCopy> {
+/** The plan's Clips limits as the upload screen words them. */
+export interface UploadPlanLimits {
+  free: boolean;
+  maxMinutes: number | null;
+  videosPerMonth: number | null;
+}
+
+export async function uploadCopy(plan?: UploadPlanLimits): Promise<UploadCopy> {
   const t = await getTranslations('clipsEngine.upload');
+  const l = await getTranslations('clipsEngine.upload.limits');
   const b = await getTranslations('clipsEngine.boost');
   return {
     drop: t('drop'),
@@ -52,6 +60,16 @@ export async function uploadCopy(): Promise<UploadCopy> {
     badType: t('badType'),
     putFailed: t('putFailed'),
     errors: await errorCopy(),
+    limits: {
+      tooLong:
+        plan?.maxMinutes != null
+          ? l(plan.free ? 'tooLongFree' : 'tooLong', { min: plan.maxMinutes })
+          : null,
+      monthUsed:
+        plan?.videosPerMonth != null
+          ? l(plan.free ? 'monthUsedFree' : 'monthUsed', { videos: plan.videosPerMonth })
+          : null,
+    },
   };
 }
 

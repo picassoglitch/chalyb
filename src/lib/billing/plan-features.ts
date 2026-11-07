@@ -45,7 +45,14 @@ interface FeatureOpts {
 function clipsFeature(tier: Tier, opts: FeatureOpts): PlanFeature | null {
   const q = TIER_CAPS[tier].clipExportMaxQuality;
   if (tier === 'FREE')
-    return { key: opts.clipLimitsEnforced ? 'clipsTry' : 'clipsTryWatermark', included: true };
+    return {
+      key: opts.clipLimitsEnforced ? 'clipsTry' : 'clipsTryWatermark',
+      values: {
+        videos: TIER_CAPS.FREE.clipVideosPerMonth,
+        min: TIER_CAPS.FREE.maxSourceMinutes,
+      },
+      included: true,
+    };
   if (q === '4k') return { key: 'clips4k', included: true };
   return TIER_CAPS[tier].clipWatermark ? null : { key: 'noWatermarkHd', included: true };
 }

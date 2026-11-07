@@ -1116,8 +1116,8 @@
     "featsTitle": "Incluye:",
     "notePaid": "Se cobra hoy. Cancela en 1 clic, sin llamadas.",
     "feat": {
-      "clipsTry": "Haz clips para probar (calidad SD, con marca de agua)",
-      "clipsTryWatermark": "Haz clips para probar (con marca de agua)",
+      "clipsTry": "Clips de {videos, plural, one {# video} other {# videos}} al mes, de hasta {min} minutos (calidad SD, con marca de agua)",
+      "clipsTryWatermark": "Clips de {videos, plural, one {# video} other {# videos}} al mes, de hasta {min} minutos (con marca de agua)",
       "noWatermarkHd": "Clips sin marca de agua, en HD",
       "clips4k": "Clips en 4K",
       "noStreams": "Clips de tus transmisiones en vivo",
@@ -3902,6 +3902,12 @@
       "tooBig": "Ese archivo es más grande de lo que se puede subir.",
       "badType": "Sube un video MP4, MOV, MKV o WebM.",
       "putFailed": "No se pudo subir el archivo. Revisa tu internet e inténtalo otra vez.",
+      "limits": {
+        "tooLongFree": "Tu plan Gratis permite videos de hasta {min} minutos. Recórtalo o mejora tu plan.",
+        "tooLong": "Tu plan permite videos de hasta {min} minutos. Recórtalo o mejora tu plan.",
+        "monthUsedFree": "Tu plan Gratis incluye {videos, plural, one {# video} other {# videos}} al mes y ya lo usaste. Se renueva el día 1, o puedes mejorar tu plan.",
+        "monthUsed": "Ya usaste los videos de este mes de tu plan. Se renuevan el día 1, o puedes mejorar tu plan."
+      },
       "off": {
         "title": "Subir archivos no está disponible ahora",
         "body": "Mientras tanto, pega el enlace de tu video.",

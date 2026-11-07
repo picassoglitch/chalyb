@@ -8,6 +8,7 @@ import { getClipsAdapter, getClipsEngineAdapter } from '@/lib/tools/adapters/cli
 import { engineRead, loadClipsEngine, type ClipsEngineGate } from '@/lib/tools/clips-engine';
 import { getLive, getSources, getStart } from '@/lib/tools/adapters/clips/engine-api';
 import { createClipJob } from '@/lib/tools/clips-actions';
+import { uploadPlanLimits } from '@/lib/tools/clips-plan-limits';
 import { clipSourceHref, parseClipSource, type ClipSource } from '@/lib/tools/clips-sources';
 import { CLIP_FAILURE_REASONS, type ClipFailureReason } from '@/lib/tools/adapters/types';
 import type { ToolError } from '@/lib/tools/bff-core';
@@ -97,7 +98,9 @@ export default async function ClipsStep1Page({
     const ready = g as Extract<ClipsEngineGate, { kind: 'ready' }>;
     if (source === 'archivo') {
       const res = await engineRead(ready, (e, signal) => getStart(e, signal));
-      return res.ok ? frame(<UploadSource start={res.data} />) : failed(res.error, true);
+      return res.ok
+        ? frame(<UploadSource start={res.data} plan={uploadPlanLimits(ready.session)} />)
+        : failed(res.error, true);
     }
     if (source === 'transmision') {
       const res = await engineRead(ready, (e, signal) => getLive(e, signal));

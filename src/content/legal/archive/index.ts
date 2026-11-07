@@ -3,6 +3,7 @@
 import * as terminos_v1_0 from './terminos/v1-0';
 import * as suscripcion_v1_0 from './suscripcion/v1-0';
 import * as suscripcion_v1_1 from './suscripcion/v1-1';
+import * as suscripcion_v1_2 from './suscripcion/v1-2';
 import * as privacidad_v1_0 from './privacidad/v1-0';
 import * as uso_aceptable_v1_0 from './uso_aceptable/v1-0';
 import * as paquetes_v1_0 from './paquetes/v1-0';
@@ -23,6 +24,7 @@ export const ARCHIVE: Record<string, Record<string, ArchivedVersion>> = {
   suscripcion: {
     '1.0': suscripcion_v1_0,
     '1.1': suscripcion_v1_1,
+    '1.2': suscripcion_v1_2,
   },
   privacidad: {
     '1.0': privacidad_v1_0,
