@@ -301,6 +301,29 @@ try {
     JSON.stringify(mx.month),
   );
 
+  // An abandoned job (expired, no usage reported) stops counting toward the
+  // monthly caps; an expired one that did report usage still counts.
+  const wide = caps({ max_concurrent_jobs: 5, minutes_per_month: 100 });
+  const e1 = await admit('e1', 1, 0, 85, wide); // j1 10 + j5 10 (expired, unused) + 85
+  check('an expired unused reservation frees its minutes', e1.allowed === true, JSON.stringify(e1));
+  await db.query(`update public.usage_reservations set status = 'cancelled' where external_job_id = 'e1'`);
+  await db.query(
+    `insert into public.usage_events (user_id, engine_id, kind, amount, source_id, cost_usd_micros, reservation_id)
+       select user_id, engine_id, 'llm.tokens', 0, 'j5e1', 0, id from public.usage_reservations where external_job_id = 'j5'`,
+  );
+  const e2 = await admit('e2', 1, 0, 85, wide);
+  check(
+    'an expired reservation that reported usage still counts',
+    e2.allowed === false && e2.reason === 'minutes_cap',
+    JSON.stringify(e2),
+  );
+  const e3 = await admit('e3', 1, 0, 10, caps({ max_concurrent_jobs: 5, jobs_per_month: 2 }));
+  check(
+    'and it counts as a job (j1 + j5 = 2)',
+    e3.allowed === false && e3.reason === 'jobs_cap',
+    JSON.stringify(e3),
+  );
+
   const un = await admit('j7', 1e9, 0, 1000, caps({ unlimited: true }));
   check('unlimited (admin) is never refused', un.allowed === true, JSON.stringify(un));
 }
