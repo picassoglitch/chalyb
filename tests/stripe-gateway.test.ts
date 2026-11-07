@@ -612,7 +612,8 @@ test('payment emails name Stripe for a Stripe charge and stay byte-identical for
 
 test('every checkout string that names Mercado Pago has a Stripe twin in es and en', async () => {
   const { readFileSync } = await import('node:fs');
-  const { execFileSync } = await import('node:child_process');
+  // Mercado Pago copy as it was before Stripe; CI checkouts have no origin/main.
+  const before = JSON.parse(readFileSync(new URL('./fixtures/mp-checkout-copy.json', import.meta.url), 'utf8'));
   const twins = [
     'landing.who.strip2', 'landing.plans.secure', 'landing.faq.a7', 'landing.publicFooter.secure',
     'myplan.next.retry', 'change.card', 'credits.sheet.card', 'packCheckout.pending',
@@ -621,9 +622,8 @@ test('every checkout string that names Mercado Pago has a Stripe twin in es and 
   const at = (o: unknown, path: string) => path.split('.').reduce((x, k) => (x as Record<string, unknown>)[k], o) as string;
   for (const lang of ['es', 'en']) {
     const now = JSON.parse(readFileSync(new URL(`../messages/${lang}.json`, import.meta.url), 'utf8'));
-    const main = JSON.parse(execFileSync('git', ['show', `origin/main:messages/${lang}.json`], { encoding: 'utf8' }));
     for (const key of twins) {
-      assert.equal(at(now, key), at(main, key), `${lang} ${key}: the Mercado Pago copy is unchanged`);
+      assert.equal(at(now, key), before[lang][key], `${lang} ${key}: the Mercado Pago copy is unchanged`);
       const stripeKey = key === 'checkout.pay.secure' ? 'checkout.stripe.secure' : key === 'packCheckout.secure' ? 'packCheckout.secureStripe' : `${key}Stripe`;
       const twin = at(now, stripeKey);
       assert.ok(twin && /Stripe/.test(twin) && !/Mercado Pago/.test(twin), `${lang} ${stripeKey}`);
