@@ -269,6 +269,19 @@ export function contactConfirmTemplate(opts: {
   };
 }
 
+/** The copy is written for Mercado Pago; a Stripe charge gets the same words naming Stripe. */
+function forGateway<T extends { html: string; text: string }>(
+  gateway: 'mercadopago' | 'stripe' | undefined,
+  out: T,
+): T {
+  if (gateway !== 'stripe') return out;
+  return {
+    ...out,
+    html: out.html.replaceAll('Mercado Pago', 'Stripe'),
+    text: out.text.replaceAll('Mercado Pago', 'Stripe'),
+  };
+}
+
 // Shared bits of the payment emails.
 const PAY = {
   es: {
@@ -466,6 +479,8 @@ export function subscriptionActiveTemplate(opts: {
   preapprovalId: string;
   appUrl: string;
   locale?: EmailLocale;
+  /** The gateway; the copy names Mercado Pago unless it is Stripe. */
+  gateway?: 'mercadopago' | 'stripe';
 }): { html: string; text: string } {
   const locale = opts.locale ?? 'es';
   const c = SUBSCRIPTION_ACTIVE[locale];
@@ -510,7 +525,7 @@ export function subscriptionActiveTemplate(opts: {
     </p>
   `;
 
-  return {
+  return forGateway(opts.gateway, {
     html: wrap({ title: c.title(opts.tier), preview: c.preview(opts.tier), body, locale }),
     text: c.text(
       opts.tier,
@@ -519,7 +534,7 @@ export function subscriptionActiveTemplate(opts: {
       opts.preapprovalId,
       subUrl,
     ),
-  };
+  });
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -581,6 +596,8 @@ export function paymentReversedTemplate(opts: {
   paymentId: string;
   appUrl: string;
   locale?: EmailLocale;
+  /** The gateway; the copy names Mercado Pago unless it is Stripe. */
+  gateway?: 'mercadopago' | 'stripe';
 }): { html: string; text: string } {
   const locale = opts.locale ?? 'es';
   const c = PAYMENT_REVERSED[locale];
@@ -617,10 +634,10 @@ export function paymentReversedTemplate(opts: {
     </p>
   `;
 
-  return {
+  return forGateway(opts.gateway, {
     html: wrap({ title: c.title, preview: c.preview(opts.what), body, locale }),
     text: c.text(opts.what, why, `$${opts.amountMajor} ${opts.currency}`, opts.paymentId, contact),
-  };
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────

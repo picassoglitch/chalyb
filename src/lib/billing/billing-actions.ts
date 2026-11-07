@@ -3,7 +3,8 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
+import { getAppUrl } from '@/lib/payments/mercadopago';
+import { refundProration } from './proration-refund';
 import { cancelPreapproval } from '@/lib/payments/subscription-sync';
 import { track } from '@/lib/analytics/track';
 import { notify } from '@/lib/notifications/notify';
@@ -298,6 +299,9 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
     effectiveAt,
     deviceSessionId: input.deviceSessionId,
     mpPayerEmail: input.mpPayerEmail,
+    ...(refundCents > 0 && refundPaymentId
+      ? { prorationRefund: { paymentId: refundPaymentId, cents: refundCents } }
+      : {}),
   });
   if (!result.ok) return result;
 
@@ -337,27 +341,12 @@ export async function changePlan(input: ChangeInput): Promise<ChangeResult> {
   }
 
   if (refundCents > 0 && refundPaymentId) {
-    try {
-      await getMercadoPago().refund.create({
-        payment_id: refundPaymentId,
-        body: { amount: refundCents / 100 },
-      });
-    } catch (err) {
-      // The upgrade stands; the refund goes to the admin's attention list.
-      console.error(
-        '[billing/change] proration refund failed — refund by hand',
-        refundPaymentId,
-        refundCents,
-        err,
-      );
-      await notify({
-        severity: 'critical',
-        title: 'Reembolso de prorrateo fallido — reembolsar a mano',
-        body: `Pago ${refundPaymentId} · ${(refundCents / 100).toFixed(2)} MXN · cambio a ${input.planKey}`,
-        href: '/dashboard/dinero',
-        source: 'billing.change',
-      });
-    }
+    await refundProration({
+      paymentId: refundPaymentId,
+      cents: refundCents,
+      planKey: input.planKey,
+      idempotencyKey: `proration-${result.preapprovalId}`,
+    });
   }
   return { ...result, refundCents };
 }

@@ -96,6 +96,18 @@ import {
 } from '@/lib/payments/card-decline';
 import { meliSessionOptions } from '@/lib/payments/device-session';
 import { choosePayerEmail, payerIsSeller } from '@/lib/payments/payer-email';
+import { refundProration } from './proration-refund';
+import { notify } from '@/lib/notifications/notify';
+import { getStripe, isStripeReady, usingStripe } from '@/lib/payments/stripe';
+import {
+  confirmOrReadBack,
+  createStripeSubscription,
+  parseStartMeta,
+  readConfirmationToken,
+  STRIPE_START_EXPAND,
+  stripeStartState,
+  type StartMeta,
+} from './stripe-start';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -116,6 +128,8 @@ export interface StartInput {
   deviceSessionId?: string | null;
   /** The buyer's Mercado Pago email from the form (MP_PAYER_EMAIL_EDITABLE). */
   mpPayerEmail?: string | null;
+  /** A change's refund of the old period; a Stripe start that waits on 3DS runs it at finalize. */
+  prorationRefund?: { paymentId: string; cents: number };
 }
 
 export type StartError =
@@ -130,13 +144,16 @@ export type StartError =
   | 'BAD_TOKEN'
   | 'DECLINED'
   | 'MP_ERROR'
+  // Stripe wants the buyer's bank (3DS): the page runs it, then calls finalize.
+  | 'REQUIRES_ACTION'
   // Charged, but neither our row nor the fallback could be written: the team is
   // alerted and the customer must not pay again.
   | 'CHARGED_NO_PLAN';
 
 export type StartResult =
   | { ok: true; consentId: string; mode: StartMode; preapprovalId: string }
-  | { ok: false; code: StartError; decline?: DeclineReason };
+  | { ok: false; code: 'REQUIRES_ACTION'; clientSecret: string; subscriptionId: string }
+  | { ok: false; code: Exclude<StartError, 'REQUIRES_ACTION'>; decline?: DeclineReason };
 
 interface CardToken {
   first_six_digits?: string;
@@ -165,7 +182,8 @@ function fingerprint(card: CardToken): string | null {
 
 export async function startSubscription(input: StartInput): Promise<StartResult> {
   if (input.consentChecked !== true) return { ok: false, code: 'CONSENT_REQUIRED' };
-  if (!isCheckoutReady()) return { ok: false, code: 'NOT_CONFIGURED' };
+  const stripe = usingStripe();
+  if (!(stripe ? isStripeReady() : isCheckoutReady())) return { ok: false, code: 'NOT_CONFIGURED' };
   // The routes that call this check it too; refuse here as well so no new
   // caller can sell while paid checkout is off.
   if (!paidCheckoutEnabled()) return { ok: false, code: 'NOT_CONFIGURED' };
@@ -177,31 +195,37 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   const userId = session.user.id;
   const email = session.user.email;
   if (!email) return { ok: false, code: 'MP_ERROR' };
-  // B33: the test buyer in `test`, the user in `prod`; never mixed.
-  const accountPayerEmail = mpPayerEmail(email);
-  if (!accountPayerEmail) {
-    console.error('[billing/start] no payer email for this Mercado Pago environment');
-    return { ok: false, code: 'NOT_CONFIGURED' };
+  let payerEmail = email;
+  let payerAudit: Record<string, unknown> = {};
+  if (!stripe) {
+    // B33: the test buyer in `test`, the user in `prod`; never mixed.
+    const accountPayerEmail = mpPayerEmail(email);
+    if (!accountPayerEmail) {
+      console.error('[billing/start] no payer email for this Mercado Pago environment');
+      return { ok: false, code: 'NOT_CONFIGURED' };
+    }
+    if (!(await sellerMatches())) return { ok: false, code: 'NOT_CONFIGURED' };
+    const payer = choosePayerEmail({
+      accountPayerEmail,
+      formEmail: input.mpPayerEmail,
+      editable: mpPayerEmailEditable(),
+      mpEnv: getMpEnv(),
+    });
+    payerEmail = payer.email;
+    // Booleans only: tells a self-charge (seller's own account) from a mismatch.
+    payerAudit = {
+      payer_email_source: payer.source,
+      payer_is_seller: payerIsSeller(payerEmail, cachedSellerEmail()),
+    };
   }
-  if (!(await sellerMatches())) return { ok: false, code: 'NOT_CONFIGURED' };
-  const payer = choosePayerEmail({
-    accountPayerEmail,
-    formEmail: input.mpPayerEmail,
-    editable: mpPayerEmailEditable(),
-    mpEnv: getMpEnv(),
-  });
-  const payerEmail = payer.email;
-  // Booleans only: tells a self-charge (seller's own account) from a mismatch.
-  const payerAudit = {
-    payer_email_source: payer.source,
-    payer_is_seller: payerIsSeller(payerEmail, cachedSellerEmail()),
-  };
   // Pro Lealtad (WS-7): only with its flag, and only while it is open to
   // new customers (Términos 4 bis.3: existing schedules continue).
   const lealtad = input.planKey === 'pro_lealtad';
   if (lealtad && !(lealtadEnabled() && lealtadOpenToNewCustomers())) {
     return { ok: false, code: 'NOT_CONFIGURED' };
   }
+  // Its amount changes every month through the MP-only amount update; not sold on Stripe yet.
+  if (lealtad && stripe) return { ok: false, code: 'NOT_CONFIGURED' };
 
   const admin = createAdminClient();
   const billing = await loadBilling(userId);
@@ -237,12 +261,31 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // The card: last 4 for the evidence and Mi plan, a fingerprint for the
   // one-trial-per-card rule. Reading the token does not consume it.
   let card: CardToken = {};
-  try {
-    card = (await getMercadoPago().cardToken.get({ id: token })) as CardToken;
-  } catch (err) {
-    console.warn('[billing/start] card token lookup failed; continuing without card details', err);
+  let fp: string | null;
+  if (stripe) {
+    let sc;
+    try {
+      sc = await readConfirmationToken(token);
+    } catch (err) {
+      console.error('[billing/start] stripe unreachable reading the card', err);
+      return { ok: false, code: 'MP_ERROR' };
+    }
+    if (!sc) return { ok: false, code: 'BAD_TOKEN' };
+    card = {
+      last_four_digits: sc.last4 ?? undefined,
+      expiration_month: sc.expMonth ?? undefined,
+      expiration_year: sc.expYear ?? undefined,
+      payment_method_id: sc.brand ?? undefined,
+    };
+    fp = sc.fingerprint;
+  } else {
+    try {
+      card = (await getMercadoPago().cardToken.get({ id: token })) as CardToken;
+    } catch (err) {
+      console.warn('[billing/start] card token lookup failed; continuing without card details', err);
+    }
+    fp = fingerprint(card);
   }
-  const fp = fingerprint(card);
   // One trial per card: a card we can't fingerprint gets no trial (fail
   // closed). The customer saw the trial terms, not a charge today, so this
   // is an error to retry, never a silent switch to the paid path.
@@ -386,58 +429,91 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         ? tChange('cta')
         : tPay('paid.cta');
 
-  // ── Mercado Pago ───────────────────────────────────────────────────
+  // ── The gateway ────────────────────────────────────────────────────
   const tier = price.tier;
   const reference = subscriptionReference(userId, tier);
-  let backUrl: string;
-  try {
-    backUrl = mpReturnUrl('/app/billing');
-  } catch (err) {
-    console.error(err);
-    return { ok: false, code: 'NOT_CONFIGURED' };
-  }
   let preapprovalId: string;
   let status: string;
-  try {
-    // Isolated: the SDK keeps a call's requestOptions on its client for good.
-    const { preapproval } = getMercadoPagoIsolated();
-    const created = await preapproval.create({
-      body: {
-        reason: `Chalyb ${PLAN_NAMES[input.planKey]}`,
-        external_reference: reference,
-        payer_email: payerEmail,
-        card_token_id: token,
-        auto_recurring: {
-          frequency: price.interval === 'year' ? 12 : 1,
-          frequency_type: 'months',
-          transaction_amount: chargeCents / 100,
-          currency_id: CURRENCY,
-          // The first charge: the trial end, the change date, or now.
-          ...(firstChargeLater ? { start_date: dates.chargeAt.toISOString() } : {}),
+  let stripeSub: Awaited<ReturnType<typeof createStripeSubscription>> | null = null;
+  if (stripe) {
+    const meta: StartMeta = {
+      m: mode,
+      ts: trialSwitch ? 1 : 0,
+      sm: switchMoved ? 1 : 0,
+      fp: fp ?? '',
+      ss: trialSwitch ? String(billing.primaryRow?.started_at ?? '') : '',
+      ...(input.prorationRefund
+        ? { rp: input.prorationRefund.paymentId, rc: input.prorationRefund.cents }
+        : {}),
+    };
+    try {
+      stripeSub = await createStripeSubscription({
+        user: {
+          id: userId,
+          email,
+          name: (session.user.user_metadata?.full_name as string | undefined) ?? null,
         },
-        back_url: backUrl,
-        status: 'authorized',
-      },
-      requestOptions: meliSessionOptions(input.deviceSessionId),
-    });
-    logMpCreate('preapproval', { id: created.id, externalReference: reference });
-    console.info('[billing/start] preapproval payer', payerAudit);
-    if (!created.id) return { ok: false, code: 'MP_ERROR' };
-    preapprovalId = created.id;
-    status = normalizePreapprovalStatus(created.status);
-  } catch (err) {
-    // B36: the MP codes go to the log; the customer gets the sentence for
-    // the kind of decline (a risk rejection is not the bank's).
-    const detail = rejectionDetailOf(err);
-    console.error(
-      '[billing/start] preapproval.create failed',
-      { mp_code: mpErrorCodeOf(err), status_detail: detail, ...payerAudit },
-      err,
-    );
-    return { ok: false, code: 'DECLINED', decline: declineReasonOf(detail) };
-  }
-  if (status !== 'authorized' && status !== 'pending') {
-    return { ok: false, code: 'DECLINED', decline: 'unknown' };
+        planKey: input.planKey,
+        reference,
+        firstChargeAt: firstChargeLater ? Math.floor(dates.chargeAt.getTime() / 1000) : null,
+        confirmationToken: token,
+        meta,
+      });
+    } catch (err) {
+      console.error('[billing/start] stripe subscription create failed', err);
+      return { ok: false, code: 'MP_ERROR' };
+    }
+    preapprovalId = stripeSub.id;
+    status = 'pending';
+  } else {
+    let backUrl: string;
+    try {
+      backUrl = mpReturnUrl('/app/billing');
+    } catch (err) {
+      console.error(err);
+      return { ok: false, code: 'NOT_CONFIGURED' };
+    }
+    try {
+      // Isolated: the SDK keeps a call's requestOptions on its client for good.
+      const { preapproval } = getMercadoPagoIsolated();
+      const created = await preapproval.create({
+        body: {
+          reason: `Chalyb ${PLAN_NAMES[input.planKey]}`,
+          external_reference: reference,
+          payer_email: payerEmail,
+          card_token_id: token,
+          auto_recurring: {
+            frequency: price.interval === 'year' ? 12 : 1,
+            frequency_type: 'months',
+            transaction_amount: chargeCents / 100,
+            currency_id: CURRENCY,
+            // The first charge: the trial end, the change date, or now.
+            ...(firstChargeLater ? { start_date: dates.chargeAt.toISOString() } : {}),
+          },
+          back_url: backUrl,
+          status: 'authorized',
+        },
+        requestOptions: meliSessionOptions(input.deviceSessionId),
+      });
+      logMpCreate('preapproval', { id: created.id, externalReference: reference });
+      console.info('[billing/start] preapproval payer', payerAudit);
+      if (!created.id) return { ok: false, code: 'MP_ERROR' };
+      preapprovalId = created.id;
+      status = normalizePreapprovalStatus(created.status);
+    } catch (err) {
+      // B36: the MP codes go to the log; the customer gets the sentence for
+      // the kind of decline (a risk rejection is not the bank's).
+      const detail = rejectionDetailOf(err);
+      console.error(
+        '[billing/start] preapproval.create failed',
+        { mp_code: mpErrorCodeOf(err), status_detail: detail, ...payerAudit },
+        err,
+      );
+      return { ok: false, code: 'DECLINED', decline: declineReasonOf(detail) };
+    }
+    if (status !== 'authorized' && status !== 'pending') {
+      return { ok: false, code: 'DECLINED', decline: 'unknown' };
+    }
   }
 
   // ── Evidence, then our copy ────────────────────────────────────────
@@ -482,10 +558,12 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       charge_date_utc: dates.chargeAt.toISOString(),
       reminder_date_utc: trialLike ? dates.reminderAt.toISOString() : null,
       payment_method: {
-        processor: 'mercadopago',
+        processor: stripe ? 'stripe' : 'mercadopago',
         brand: card.payment_method_id ?? null,
         last4: card.last_four_digits ?? null,
-        mp_preapproval_id: preapprovalId,
+        ...(stripe
+          ? { stripe_subscription_id: preapprovalId }
+          : { mp_preapproval_id: preapprovalId }),
       },
       marketing_opt_in: false,
       ...(lealtad
@@ -522,6 +600,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         tier,
         plan_key: input.planKey,
         mp_preapproval_id: preapprovalId,
+        ...(stripe ? { provider: 'stripe' } : {}),
         external_reference: reference,
         // Written as 'pending'; the sync below records Mercado Pago's real
         // status, which is what makes it a first activation (audit, grant).
@@ -549,7 +628,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   if (rowErr) {
     console.error('[billing/start] subscriptions row not stored', preapprovalId, rowErr);
     const who = { userId, preapprovalId, source: 'billing.start' };
-    if (firstChargeLater) {
+    // Stripe has charged nothing yet either: its payment is confirmed only below.
+    if (firstChargeLater || stripe) {
       await cancelUnchargedWithoutRow(who);
       return { ok: false, code: 'MP_ERROR' };
     }
@@ -565,8 +645,83 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
     await alertChargedWithoutRow({ ...who, planKey: input.planKey, fallback });
     if (fallback === 'failed') return { ok: false, code: 'CHARGED_NO_PLAN' };
   }
+  if (stripeSub) {
+    const outcome = await confirmOrReadBack(stripeSub, token);
+    // Still unknown: left as is; the webhook grants it if it paid, expiry closes it if not.
+    if (!outcome) return { ok: false, code: 'MP_ERROR' };
+    if (outcome.kind === 'declined') {
+      await abandonStripeStart(preapprovalId);
+      return { ok: false, code: 'DECLINED', decline: outcome.decline };
+    }
+    if (outcome.kind === 'action') {
+      return {
+        ok: false,
+        code: 'REQUIRES_ACTION',
+        clientSecret: outcome.clientSecret,
+        subscriptionId: preapprovalId,
+      };
+    }
+    // Finished here: a later finalize call for this start must do nothing.
+    const claim = await claimStartFinish(preapprovalId, userId);
+    if (claim === 'error') {
+      console.error('[billing/start] finish not marked; a later finalize repeats it', preapprovalId);
+    }
+    // The webhook got there first and already finished this start.
+    if (claim === 'taken') return { ok: true, consentId: consent.consent_id, mode, preapprovalId };
+  }
+
+  await afterStart({
+    userId,
+    email,
+    firstName: (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '',
+    mode,
+    planKey: input.planKey,
+    interval: price.interval,
+    lealtad,
+    lealtadStart,
+    trialLike,
+    trialSwitch,
+    switchMoved,
+    now,
+    dates,
+    fp,
+    preapprovalId,
+    consentId: consent.consent_id,
+    last4: card.last_four_digits ?? null,
+    switchStartedAt: (billing.primaryRow?.started_at as string | undefined) ?? null,
+  });
+  return { ok: true, consentId: consent.consent_id, mode, preapprovalId };
+}
+
+interface AfterStart {
+  userId: string;
+  email: string;
+  firstName: string;
+  mode: StartMode;
+  planKey: PlanKey;
+  interval: 'month' | 'year';
+  lealtad: boolean;
+  lealtadStart: Date;
+  trialLike: boolean;
+  trialSwitch: boolean;
+  switchMoved: boolean;
+  now: Date;
+  dates: Pick<TrialDates, 'trialEndsAt' | 'chargeAt'>;
+  fp: string | null;
+  preapprovalId: string;
+  consentId: string;
+  last4: string | null;
+  switchStartedAt: string | null;
+}
+
+/** Everything after the gateway authorised the start: trial dates, card, sync, notices. */
+async function afterStart(c: AfterStart): Promise<void> {
+  const { userId, email, firstName, mode, planKey, interval, lealtad, lealtadStart } = c;
+  const { trialLike, trialSwitch, switchMoved, now, dates, fp, preapprovalId, consentId } = c;
+  const { last4, switchStartedAt } = c;
+  const admin = createAdminClient();
   if (mode === 'trial') {
-    await admin
+    const { error: trialErr } = await admin
       .from('profiles')
       .update({
         pro_trial_started_at: now.toISOString(),
@@ -574,6 +729,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       })
       .eq('id', userId)
       .is('pro_trial_started_at', null);
+    if (trialErr) console.error('[billing/start] trial dates not stored', userId, trialErr);
   }
   // A switch that pushed the charge back extends the trial to it.
   if (switchMoved) {
@@ -584,10 +740,21 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   }
   // Every card that starts a plan, trial or paid: a card that already paid
   // for one account can't open a trial on another.
-  if (fp)
-    await admin
+  if (fp) {
+    const { error: fpErr } = await admin
       .from('payment_method_fingerprints')
       .upsert({ hash: fp, user_id: userId }, { onConflict: 'hash', ignoreDuplicates: true });
+    if (fpErr) {
+      console.error('[billing/start] card fingerprint not stored', userId, fpErr);
+      await notify({
+        severity: 'warning',
+        title: 'Tarjeta sin registrar para la regla de una prueba por tarjeta',
+        body: `usuario ${userId} · suscripción ${preapprovalId}`,
+        href: '/dashboard/dinero',
+        source: 'billing.start',
+      });
+    }
+  }
 
   // Same path the webhook takes: grants the plan, retires an older
   // subscription (it stops charging now; its paid access is kept by
@@ -604,20 +771,20 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   // charge (the hold rule); the cron uses the same key, so it goes out once.
   // Pro Lealtad: the confirmation with the whole calendar (aceptacion-ux §4.2).
   if (lealtad) {
-    const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
+    const name = firstName;
     const v = lealtadVars();
     await dispatchBillingEmail({
       userId,
       email,
       kind: 'lealtad_started',
-      periodKey: consent.consent_id,
+      periodKey: consentId,
       vars: {
         nombre: name,
         plan: 'Pro Lealtad',
         monto: v.m1,
         reinicio: v.m1,
         fecha_hoy: formatFechaLarga(lealtadStart, 'es'),
-        ultimos4: card.last_four_digits,
+        ultimos4: last4 ?? undefined,
         calendario: lealtadCalendar(lealtadStart)
           .slice(1)
           .map((c, i, all) => ({
@@ -625,7 +792,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
             monto: formatMXN(c.cents),
             desde: i === all.length - 1,
           })),
-        consent_id: consent.consent_id,
+        consent_id: consentId,
         version_sus: legalDocuments('suscripcion')[0]?.version,
         appUrl: getAppUrl(),
       },
@@ -633,7 +800,7 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   }
 
   if (trialLike) {
-    const name = (session.user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
+    const name = firstName;
     await dispatchBillingEmail({
       userId,
       email,
@@ -642,24 +809,167 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
       evidence: 'charge_notice_sent',
       vars: trialNoticeVars({
         nombre: name,
-        planKey: input.planKey,
-        startedAt: trialSwitch
-          ? ((billing.primaryRow?.started_at as string | undefined) ?? now)
-          : now,
+        planKey: planKey,
+        startedAt: trialSwitch ? (switchStartedAt ?? now) : now,
         trialEndsAt: dates.trialEndsAt,
         chargeAt: dates.chargeAt,
-        last4: card.last_four_digits ?? null,
-        consentId: consent.consent_id,
+        last4: last4 ?? null,
+        consentId: consentId,
         appUrl: getAppUrl(),
       }),
     });
     if (mode === 'trial') {
       void track('trial_start', {
-        plan: price.interval === 'year' ? 'anual' : 'mensual',
+        plan: interval === 'year' ? 'anual' : 'mensual',
         source: 'app',
       });
     }
   }
 
-  return { ok: true, consentId: consent.consent_id, mode, preapprovalId };
+}
+
+/** Moves start_finalized_at off null; only the call that does it may finish the start. */
+async function claimStartFinish(
+  subscriptionId: string,
+  userId: string,
+): Promise<'claimed' | 'taken' | 'error'> {
+  const { data, error } = await createAdminClient()
+    .from('subscriptions')
+    .update({ start_finalized_at: new Date().toISOString() })
+    .eq('mp_preapproval_id', subscriptionId)
+    .eq('user_id', userId)
+    .is('start_finalized_at', null)
+    .select('mp_preapproval_id');
+  if (error) {
+    console.error('[billing/finalize] finish claim failed', subscriptionId, error);
+    return 'error';
+  }
+  return (data?.length ?? 0) > 0 ? 'claimed' : 'taken';
+}
+
+/** A Stripe start the card did not pay: cancelled now so its row and Stripe agree. */
+async function abandonStripeStart(subscriptionId: string): Promise<void> {
+  try {
+    await cancelPreapproval(subscriptionId);
+    await syncSubscription(subscriptionId);
+  } catch (err) {
+    console.error('[billing/start] could not close an unpaid stripe start', subscriptionId, err);
+  }
+}
+
+export type FinalizeResult =
+  | { ok: true; consentId: string; mode: StartMode; preapprovalId: string }
+  | { ok: false; code: 'NOT_FOUND' | 'DECLINED' | 'MP_ERROR'; decline?: DeclineReason }
+  | { ok: false; code: 'REQUIRES_ACTION'; clientSecret: string; subscriptionId: string };
+
+/** After the browser ran 3DS: the same finish as an inline start, or the decline. */
+export async function finalizeStripeStart(
+  session: SessionUser,
+  subscriptionId: string,
+): Promise<FinalizeResult> {
+  const email = session.user.email;
+  if (!email) return { ok: false, code: 'NOT_FOUND' };
+  return finishStripeStart(subscriptionId, {
+    id: session.user.id,
+    email,
+    fullName: (session.user.user_metadata?.full_name as string | undefined) ?? null,
+  });
+}
+
+/** The webhook's half: a paid 3DS start whose page never called finalize still finishes. */
+export async function finishStripeStartFromWebhook(subscriptionId: string): Promise<void> {
+  const { data: row } = await createAdminClient()
+    .from('subscriptions')
+    .select('user_id, start_finalized_at')
+    .eq('mp_preapproval_id', subscriptionId)
+    .maybeSingle();
+  if (!row?.user_id || row.start_finalized_at) return;
+  const { data: profile } = await createAdminClient()
+    .from('profiles')
+    .select('email, full_name')
+    .eq('id', row.user_id as string)
+    .maybeSingle();
+  if (!profile?.email) return;
+  const out = await finishStripeStart(subscriptionId, {
+    id: row.user_id as string,
+    email: profile.email as string,
+    fullName: (profile.full_name as string | null) ?? null,
+  });
+  if (!out.ok && out.code === 'MP_ERROR') throw new Error(`stripe start ${subscriptionId} not finished`);
+}
+
+async function finishStripeStart(
+  subscriptionId: string,
+  user: { id: string; email: string; fullName: string | null },
+): Promise<FinalizeResult> {
+  const userId = user.id;
+  const email = user.email;
+  if (!subscriptionId.startsWith('sub_')) return { ok: false, code: 'NOT_FOUND' };
+  const admin = createAdminClient();
+  const { data: row } = await admin
+    .from('subscriptions')
+    .select('plan_key, consent_id, started_at, trial_ends_at, first_charge_at, card_last4')
+    .eq('mp_preapproval_id', subscriptionId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!row?.consent_id || !row.plan_key) return { ok: false, code: 'NOT_FOUND' };
+  let sub;
+  try {
+    sub = await getStripe().subscriptions.retrieve(subscriptionId, { expand: STRIPE_START_EXPAND });
+  } catch (err) {
+    console.error('[billing/finalize] stripe read failed', subscriptionId, err);
+    return { ok: false, code: 'MP_ERROR' };
+  }
+  const meta = parseStartMeta(sub.metadata?.chalyb_start);
+  if (sub.metadata?.user_id !== userId || !meta) return { ok: false, code: 'NOT_FOUND' };
+  const outcome = await stripeStartState(sub).catch((err) => {
+    console.error('[billing/finalize] stripe state unreadable', subscriptionId, err);
+    return null;
+  });
+  if (!outcome) return { ok: false, code: 'MP_ERROR' };
+  if (outcome.kind === 'action') {
+    return { ok: false, code: 'REQUIRES_ACTION', clientSecret: outcome.clientSecret, subscriptionId };
+  }
+  if (outcome.kind === 'declined') {
+    await abandonStripeStart(subscriptionId);
+    return { ok: false, code: 'DECLINED', decline: outcome.decline };
+  }
+  const consentId = row.consent_id as string;
+  // Single use: only the call that claims the finish runs its side effects (refund above all).
+  const claim = await claimStartFinish(subscriptionId, userId);
+  if (claim === 'error') return { ok: false, code: 'MP_ERROR' };
+  if (claim === 'taken') return { ok: true, consentId, mode: meta.m, preapprovalId: subscriptionId };
+  const planKey = row.plan_key as PlanKey;
+  // First, so nothing that can throw below stands between the claim and the refund.
+  if (meta.rp && meta.rc) {
+    await refundProration({
+      paymentId: meta.rp,
+      cents: meta.rc,
+      planKey,
+      idempotencyKey: `proration-${subscriptionId}`,
+    });
+  }
+  const trialEndsAt = row.trial_ends_at ? new Date(row.trial_ends_at as string) : null;
+  const chargeAt = new Date((row.first_charge_at as string | null) ?? Date.now());
+  await afterStart({
+    userId,
+    email,
+    firstName: user.fullName?.split(' ')[0] ?? '',
+    mode: meta.m,
+    planKey,
+    interval: planPrice(planKey).interval,
+    lealtad: false,
+    lealtadStart: chargeAt,
+    trialLike: meta.m === 'trial' || meta.ts === 1,
+    trialSwitch: meta.ts === 1,
+    switchMoved: meta.sm === 1,
+    now: new Date((row.started_at as string | null) ?? Date.now()),
+    dates: { trialEndsAt: trialEndsAt ?? chargeAt, chargeAt },
+    fp: meta.fp || null,
+    preapprovalId: subscriptionId,
+    consentId,
+    last4: (row.card_last4 as string | null) ?? null,
+    switchStartedAt: meta.ss || null,
+  });
+  return { ok: true, consentId, mode: meta.m, preapprovalId: subscriptionId };
 }

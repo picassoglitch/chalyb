@@ -1,0 +1,28 @@
+{
+  "es": {
+    "landing.who.strip2": "Pago seguro con Mercado Pago",
+    "landing.plans.secure": "Pago seguro con Mercado Pago.",
+    "landing.faq.a7": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
+    "landing.publicFooter.secure": "Pago seguro con Mercado Pago",
+    "myplan.next.retry": "Mercado Pago intentará de nuevo en los próximos días",
+    "change.card": "Confirma con tu tarjeta. Por seguridad, Mercado Pago la pide de nuevo en cada cambio.",
+    "credits.sheet.card": "En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.",
+    "packCheckout.pending": "<b>Pago en revisión.</b> Mercado Pago todavía no lo aprueba. En cuanto lo confirme, tus créditos aparecen en Mis créditos. Puedes cerrar esta página.",
+    "packCheckout.pendingShort": "Mercado Pago dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe.",
+    "packCheckout.secure": "Los datos de tu tarjeta viajan directo a Mercado Pago en campos seguros; Chalyb nunca los ve ni los guarda.",
+    "checkout.pay.secure": "Pago seguro con Mercado Pago. Chalyb no guarda el número de tu tarjeta."
+  },
+  "en": {
+    "landing.who.strip2": "Secure payment with Mercado Pago",
+    "landing.plans.secure": "Secure payment with Mercado Pago.",
+    "landing.faq.a7": "With a credit or debit card, securely through Mercado Pago. Chalyb doesn’t store your card number.",
+    "landing.publicFooter.secure": "Secure payment with Mercado Pago",
+    "myplan.next.retry": "Mercado Pago will try again in the next few days",
+    "change.card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
+    "credits.sheet.card": "You enter your card in the next step. Secure payment with Mercado Pago.",
+    "packCheckout.pending": "<b>Payment under review.</b> Mercado Pago hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
+    "packCheckout.pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved.",
+    "packCheckout.secure": "Your card details go straight to Mercado Pago in secure fields; Chalyb never sees or stores them.",
+    "checkout.pay.secure": "Secure payment with Mercado Pago. Chalyb doesn’t store your card number."
+  }
+}

@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import { Link } from '@/i18n/routing';
 import { PRICING } from '@/config/pricing';
 import type { PlansProps } from '@/lib/billing/plans-props';
@@ -49,7 +50,9 @@ export async function PlansSummary(props: PlansProps) {
         <PlanCards {...tagged} headingLevel={3} />
         <div className="ch-pc-foot">
           <p className="pub-plans__tax">{tb(props.priceDisplay.taxKey)}</p>
-          <p className="ch-pc-foot__note">{t('plans.secure')}</p>
+          <p className="ch-pc-foot__note">
+            {t(sellsThroughStripe() ? 'plans.secureStripe' : 'plans.secure')}
+          </p>
           {props.trialOffered && (
             <p className="ch-pc-foot__note">{t('plans.trialNote', { dias: PRICING.trial.days })}</p>
           )}

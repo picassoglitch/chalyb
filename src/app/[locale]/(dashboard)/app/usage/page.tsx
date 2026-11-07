@@ -6,6 +6,7 @@
 // balance itself couldn't be read, no number is painted — the page says so
 // instead of showing a default as if it were real.
 
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import type { Metadata, Route } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
@@ -457,7 +458,12 @@ export default async function UsagePage({
               {/* Sales are closed while paid checkout is off. */}
               {paidCheckoutEnabled() ? (
                 <>
-                  <CreditsSheet packs={packs} defaultOpen={sp.comprar === '1'} triggerLabel={t('cta')} />
+                  <CreditsSheet
+                    packs={packs}
+                    defaultOpen={sp.comprar === '1'}
+                    triggerLabel={t('cta')}
+                    stripe={sellsThroughStripe()}
+                  />
                   <p className="ch-muted" style={{ margin: 0 }}>
                     <Markup text={t.markup('invoice', { correo: INVOICE_EMAIL, b })} />
                   </p>

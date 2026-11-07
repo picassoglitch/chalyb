@@ -4,7 +4,7 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago } from '@/lib/payments/mercadopago';
+import { setRecurringAmount } from '@/lib/payments/gateway';
 import { notify } from '@/lib/notifications/notify';
 import {
   mpPreapprovalAmountPutVerified,
@@ -229,12 +229,7 @@ export async function applyAccepted(
     return { ok: true };
   }
   try {
-    await getMercadoPago().preapproval.update({
-      id: p.preapprovalId,
-      body: {
-        auto_recurring: { transaction_amount: p.increase.newCents / 100, currency_id: 'MXN' },
-      },
-    } as never);
+    await setRecurringAmount(p.preapprovalId, p.increase.newCents);
   } catch (err) {
     console.error('[price-change] PUT preapproval amount failed', p.preapprovalId, err);
     return { ok: false, code: 'MP_ERROR' };

@@ -10,13 +10,13 @@ import { getTokenPack } from '@/lib/payments/pricing';
 import { loadPricedPacks, packTermsText } from '@/lib/payments/pack-prices';
 import { packConsentSentence, termsShowPrice } from '@/lib/payments/pack-checkout-core';
 import { packCheckoutTranslator, packDisclosure } from '@/lib/payments/pack-consent';
+import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import {
-  checkoutConfigWarnings,
-  checkoutNotReadyError,
-  getPublicKey,
-  missingCheckoutVars,
-  mpPayerEmail,
-} from '@/lib/payments/mercadopago';
+  checkoutMissingVars,
+  checkoutNotReadyText,
+  checkoutWarnings,
+} from '@/lib/payments/checkout-ready';
+import { stripePublishableKey, usingStripe } from '@/lib/payments/stripe';
 import { INVOICE_EMAIL } from '@/config/invoicing';
 import { Markup } from '@/components/ui/markup';
 import { Pill, StateBlock } from '@/components/ui/primitives';
@@ -63,11 +63,12 @@ export default async function PackCheckoutPage({
   const cents = priced ? priced.totals[pack.id] : null;
   const terms = priced ? packTermsText(priced.totals) : null;
 
-  const missing = missingCheckoutVars();
-  const publicKey = getPublicKey();
+  const missing = checkoutMissingVars();
+  const stripeKey = usingStripe() ? stripePublishableKey() : undefined;
+  const publicKey = usingStripe() ? stripeKey : getPublicKey();
   // Set-but-wrong credentials leave the Brick loading forever; say so here,
   // before the form, instead of after its 20 s watchdog.
-  const problems = missing.length === 0 ? checkoutConfigWarnings() : [];
+  const problems = missing.length === 0 ? checkoutWarnings() : [];
   const n = pack.tokens.toLocaleString(locale === 'es' ? 'es-MX' : 'en-US');
   const b = (c: string) => `<b>${c}</b>`;
 
@@ -118,7 +119,7 @@ export default async function PackCheckoutPage({
         <StateBlock
           icon={<TriangleAlert />}
           title={t('unavailableTitle')}
-          body={problems.length > 0 ? problems.join('. ') + '.' : checkoutNotReadyError()}
+          body={problems.length > 0 ? problems.join('. ') + '.' : checkoutNotReadyText()}
           role="alert"
         />
       ) : (
@@ -128,6 +129,7 @@ export default async function PackCheckoutPage({
           publicKey={publicKey}
           payerEmail={mpPayerEmail(session.user.email)}
           consentText={packConsentSentence(tm, { cents, tokens: pack.tokens, locale })}
+          stripeKey={stripeKey}
         />
       )}
 
@@ -135,7 +137,7 @@ export default async function PackCheckoutPage({
         <Markup text={t.markup('invoice', { correo: INVOICE_EMAIL, b })} />
       </p>
       <p className="ch-muted" style={{ margin: 0 }}>
-        {t('secure')}
+        {stripeKey ? t('secureStripe') : t('secure')}
       </p>
     </div>
   );

@@ -228,7 +228,7 @@ test('#7 a returning customer (any charged plan) has used the trial', async () =
   assert.match(store, /trialUsed: trialUsedFrom\(\{[\s\S]*?chargedBefore:/);
   const start = read('src/lib/billing/start-subscription.ts');
   // Every card is fingerprinted at start, not only trial cards.
-  assert.match(start, /\n  if \(fp\)\n    await admin\n      \.from\('payment_method_fingerprints'\)/);
+  assert.match(start, /\n  if \(fp\) \{\n    const \{ error: fpErr \} = await admin\n      \.from\('payment_method_fingerprints'\)/);
   // Fail closed: the check runs on a null fingerprint too.
   assert.match(start, /trialCardCheck\(\{ mode, fingerprint: fp, seenUserId: undefined, userId \}\)/);
   assert.match(read('src/lib/billing/api.ts'), /case 'CARD_UNVERIFIED':/);

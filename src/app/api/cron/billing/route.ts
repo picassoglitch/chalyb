@@ -24,7 +24,8 @@
 import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago, getAppUrl } from '@/lib/payments/mercadopago';
+import { getAppUrl } from '@/lib/payments/mercadopago';
+import { gatewayName, holdCharges, resumeCharges } from '@/lib/payments/gateway';
 import { cancelPreapproval, syncSubscription } from '@/lib/payments/subscription-sync';
 import { notify } from '@/lib/notifications/notify';
 import {
@@ -333,13 +334,13 @@ export async function GET(req: Request) {
       // card token, i.e. the customer (O-16), so a person follows up.
       if (decision.action === 'hold') {
         if (!row.charge_hold_until) {
-          const confirmed = await pausePreapproval(preapprovalId);
+          const confirmed = await holdCharges(preapprovalId, decision.until);
           const outcome = pauseOutcome({ pauseConfirmed: confirmed, nextChargeAt, now });
           const fecha = formatFechaLarga(decision.until, 'es');
           if (outcome === 'retry') {
             await notify({
               severity: 'critical',
-              title: 'Cobro sin detener: Mercado Pago no confirmó la pausa',
+              title: `Cobro sin detener: ${gatewayName(preapprovalId)} no confirmó la pausa`,
               body: `Suscripción ${preapprovalId} · el aviso de cobro no consta como entregado y no se puede cobrar antes del ${fecha}. Se reintenta en la próxima corrida; si sigue sin pausa, se cancela antes del cobro.`,
               href: '/dashboard/dinero',
               source: 'billing.cron',
@@ -381,10 +382,7 @@ export async function GET(req: Request) {
         // paused trial past its start_date is unverified; until
         // MP_PAUSE_IN_TRIAL_VERIFIED a person checks the first charge lands.
         if (row.status === 'paused') {
-          await getMercadoPago().preapproval.update({
-            id: preapprovalId,
-            body: { status: 'authorized' },
-          });
+          await resumeCharges(preapprovalId);
           if (state.state === 'trialing' && !mpPauseInTrialVerified()) {
             await notify({
               severity: 'info',
@@ -508,19 +506,6 @@ export async function GET(req: Request) {
   console.info('[cron/billing]', stats);
   if (rowsErr) return NextResponse.json({ ok: false, ...stats }, { status: 500 });
   return NextResponse.json({ ok: true, ...stats });
-}
-
-/** Ask MP to pause, then read it back: only a confirmed pause counts. */
-async function pausePreapproval(preapprovalId: string): Promise<boolean> {
-  const { preapproval } = getMercadoPago();
-  try {
-    await preapproval.update({ id: preapprovalId, body: { status: 'paused' } });
-    const mp = await preapproval.get({ id: preapprovalId });
-    return mp.status === 'paused';
-  } catch (err) {
-    console.error('[cron/billing] pause for a notice hold failed', preapprovalId, err);
-    return false;
-  }
 }
 
 /** Last resort for a hold MP won't pause: cancel the preapproval. The person

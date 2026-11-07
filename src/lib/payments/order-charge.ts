@@ -22,7 +22,7 @@ export type ChargeStatus =
 
 export interface NormalizedCharge {
   /** Which API the charge came from, for logs and the audit trail. */
-  source: 'payment' | 'order';
+  source: 'payment' | 'order' | 'stripe';
   /** The id that keys the `payments` ledger (UNIQUE). For an order it is the
    *  id of its payment when Mercado Pago has one, else the order id. */
   mpPaymentId: string;

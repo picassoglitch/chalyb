@@ -9,6 +9,7 @@
 // rule) as the owner panel's Dinero, so the two can't disagree
 // (docs/payments/money-truth.md).
 
+import { isStripeSubscriptionId } from '@/lib/payments/stripe-config';
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Coins, CreditCard, FileText } from 'lucide-react';
@@ -37,7 +38,7 @@ import {
 } from '@/lib/config/flags';
 import { Banner, ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { getTokenBalance } from '@/lib/usage/tokens';
-import { missingCheckoutVars } from '@/lib/payments/mercadopago';
+import { checkoutMissingVars } from '@/lib/payments/checkout-ready';
 import { FreePlan } from './free-plan';
 import { CancelSheet } from '@/components/app/billing/cancel-sheet';
 import { Markup } from '@/components/ui/markup';
@@ -83,7 +84,7 @@ export async function MiPlanView({
     );
   }
   const tf = await getTranslations('freeplan');
-  const missingVars = entitlements.isAdmin ? missingCheckoutVars() : [];
+  const missingVars = entitlements.isAdmin ? checkoutMissingVars() : [];
   const renderNow = new Date().getTime();
   const date = (iso: string | null | undefined) => (iso ? formatFechaLarga(iso, locale) : '');
   // Plan changes go through the new checkout only while it is live.
@@ -410,7 +411,12 @@ export async function MiPlanView({
               title={s.state === 'past_due' ? t('pastDueAmount', { monto }) : date(s.nextChargeAt)}
               detail={
                 s.state === 'past_due'
-                  ? t('next.retry')
+                  ? t(
+                      // The retry is the subscription's own gateway's, whatever sells today.
+                      isStripeSubscriptionId(billing?.primaryRow?.mp_preapproval_id as string | undefined)
+                        ? 'next.retryStripe'
+                        : 'next.retry',
+                    )
                   : s.state === 'trialing' && s.nextChargeAt
                     ? t('next.noticeOn', {
                         fecha: date(

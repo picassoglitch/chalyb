@@ -1138,6 +1138,55 @@ try {
   );
 }
 
+// ── Stripe gateway: provider defaults to MP, only known gateways, one customer per user ──
+{
+  const check = (label, cond) => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label}`);
+      process.exitCode = 1;
+    }
+  };
+  const u = (await db.query(`insert into auth.users (email) values ('stripe@example.com') returning id`))
+    .rows[0].id;
+  const row = (
+    await db.query(
+      `insert into public.subscriptions (user_id, tier, mp_preapproval_id, external_reference, status, amount_cents)
+       values ($1, 'PRO', 'pre-legacy', 'sub|x|PRO', 'authorized', 109900) returning provider`,
+      [u],
+    )
+  ).rows[0];
+  check('an MP row written without provider is mercadopago', row.provider === 'mercadopago');
+  await db.query(
+    `insert into public.payments (user_id, tier, mp_payment_id, amount_cents, status, provider)
+     values ($1, 'PRO', 'pi_123', 109900, 'approved', 'stripe')`,
+    [u],
+  );
+  let refused = false;
+  try {
+    await db.query(
+      `insert into public.payments (user_id, tier, mp_payment_id, amount_cents, status, provider)
+       values ($1, 'PRO', 'x-1', 1, 'approved', 'paypal')`,
+      [u],
+    );
+  } catch {
+    refused = true;
+  }
+  check('an unknown gateway is refused', refused);
+  await db.query(`insert into public.stripe_customers (user_id, customer_id) values ($1, 'cus_1')`, [u]);
+  let dup = false;
+  try {
+    await db.query(`insert into public.stripe_customers (user_id, customer_id) values ($1, 'cus_2')`, [u]);
+  } catch {
+    dup = true;
+  }
+  check('one Stripe customer per user', dup);
+  const rls = (
+    await db.query(`select relrowsecurity from pg_class where relname = 'stripe_customers'`)
+  ).rows[0]?.relrowsecurity;
+  check('stripe_customers has RLS on', rls === true);
+}
+
 console.log(
   `${files.length} migrations applied twice${process.exitCode ? ' — WITH FAILURES' : ''}`,
 );

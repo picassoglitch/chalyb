@@ -13,6 +13,12 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # tests/stripe-gateway.test.ts runs the real Stripe SDK against the official mock.
+    services:
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0
+        ports:
+          - 12111:12111
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

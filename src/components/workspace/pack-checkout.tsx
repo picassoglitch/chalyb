@@ -15,9 +15,16 @@ import { useRouter } from '@/i18n/routing';
 import { useWorkspace } from '@/lib/workspace/store';
 import {
   createTokenPackCheckout,
+  finishTokenPackStripe,
   payTokenPackWithCard,
+  payTokenPackWithStripe,
   type PackCheckoutResult,
+  type PackStripeResult,
 } from '@/lib/payments/token-checkout-actions';
+import {
+  StripeCardElement,
+  type StripeSubmission,
+} from '@/components/payments/stripe-card-element';
 import { formatMXN } from '@/lib/billing/format';
 import {
   MpCardBrick,
@@ -38,10 +45,20 @@ interface Props {
   payerEmail: string | null;
   /** The checkbox sentence, rendered on the server (same as the evidence). */
   consentText: string;
+  /** Stripe's publishable key when this deployment sells through Stripe. */
+  stripeKey?: string;
 }
 
-export function PackCheckout({ packId, cents, publicKey, payerEmail, consentText }: Props) {
+export function PackCheckout({
+  packId,
+  cents,
+  publicKey,
+  payerEmail,
+  consentText,
+  stripeKey,
+}: Props) {
   const t = useTranslations('packCheckout');
+  const ts = useTranslations('checkout.stripe');
   const locale = useLocale();
   const router = useRouter();
   const showToast = useWorkspace((s) => s.showToast);
@@ -101,6 +118,37 @@ export function PackCheckout({ packId, cents, publicKey, payerEmail, consentText
     [consent, message, router, showToast, t],
   );
 
+  const onStripeSubmit = useCallback(
+    async (sub: StripeSubmission): Promise<CardSubmitResult> => {
+      if (!consent.accepted) return { ok: false, error: t('consentError') };
+      let res: PackStripeResult = await payTokenPackWithStripe({
+        ...consent,
+        confirmationToken: sub.token,
+      });
+      // The bank's check runs here, in-site; then the server settles the same charge.
+      if (res.action) {
+        const action = await sub.handleNextAction(res.action.clientSecret);
+        if (!action.ok) return { ok: false, error: action.error ?? ts('actionFailed') };
+        res = await finishTokenPackStripe(res.action.paymentIntentId);
+        if (res.action) return { ok: false, error: ts('actionFailed') };
+      }
+      if (!res.ok) {
+        if (res.reason === 'price_changed') router.refresh();
+        return { ok: false, error: message(res) };
+      }
+      if (res.status !== 'approved') {
+        return { ok: true, outcome: 'pending', message: t('pendingShortStripe') };
+      }
+      showToast(`<b>${t('approvedToast')}</b>`);
+      setTimeout(() => {
+        router.push('/app/usage');
+        router.refresh();
+      }, 1800);
+      return { ok: true, outcome: 'approved' };
+    },
+    [consent, message, router, showToast, t, ts],
+  );
+
   function pay() {
     if (!checked) {
       setNudge(true);
@@ -137,34 +185,47 @@ export function PackCheckout({ packId, cents, publicKey, payerEmail, consentText
       </label>
 
       <div className="ch-brick">
-        <MpCardBrick
-          publicKey={publicKey}
-          amount={cents / 100}
-          payerEmail={payerEmail}
-          maxInstallments={12}
-          submitLabel={t('cta', { monto })}
-          hideSubmit
-          submitSignal={signal}
-          theme="light"
-          onPhaseChange={setPhase}
-          onSubmit={onSubmit}
-          success={panel('ok', t('approved'))}
-          pending={panel('wait', t('pending'))}
-          fallback={
-            <HostedCheckoutButton
-              hint={t('hostedHint')}
-              label={t('hostedCta', { monto })}
-              start={async () => {
-                if (!consent.accepted) {
-                  setNudge(true);
-                  return { ok: false, error: t('consentError') };
-                }
-                const res = await createTokenPackCheckout(consent);
-                return res.ok ? res : { ok: false, error: message(res) };
-              }}
-            />
-          }
-        />
+        {stripeKey ? (
+          <StripeCardElement
+            publishableKey={stripeKey}
+            mode="payment"
+            amountCents={cents}
+            submitSignal={signal}
+            onPhaseChange={setPhase}
+            onSubmit={onStripeSubmit}
+            success={panel('ok', t('approved'))}
+            pending={panel('wait', t('pendingStripe'))}
+          />
+        ) : (
+          <MpCardBrick
+            publicKey={publicKey}
+            amount={cents / 100}
+            payerEmail={payerEmail}
+            maxInstallments={12}
+            submitLabel={t('cta', { monto })}
+            hideSubmit
+            submitSignal={signal}
+            theme="light"
+            onPhaseChange={setPhase}
+            onSubmit={onSubmit}
+            success={panel('ok', t('approved'))}
+            pending={panel('wait', t('pending'))}
+            fallback={
+              <HostedCheckoutButton
+                hint={t('hostedHint')}
+                label={t('hostedCta', { monto })}
+                start={async () => {
+                  if (!consent.accepted) {
+                    setNudge(true);
+                    return { ok: false, error: t('consentError') };
+                  }
+                  const res = await createTokenPackCheckout(consent);
+                  return res.ok ? res : { ok: false, error: message(res) };
+                }}
+              />
+            }
+          />
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>

@@ -3,6 +3,7 @@
 // · Contacto. Column titles are not headings (one h2 per section above). The
 // seller block reads LEGAL_ENTITY_* and shows only the values that are set.
 
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import type { Route } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
@@ -91,7 +92,7 @@ export async function PublicFooter({ onLanding = false }: { onLanding?: boolean 
 
         <div className="pub-foot__bottom">
           <p>{t('copy', { year: new Date().getFullYear() })}</p>
-          <p>{t('secure')}</p>
+          <p>{t(sellsThroughStripe() ? 'secureStripe' : 'secure')}</p>
           <CookieSettingsButton className="pub-foot__cookies" />
           <LanguageSwitcher />
         </div>

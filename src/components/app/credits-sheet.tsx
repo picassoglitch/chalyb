@@ -27,10 +27,13 @@ export function CreditsSheet({
   packs,
   defaultOpen = false,
   triggerLabel,
+  stripe = false,
 }: {
   packs: PackOption[];
   defaultOpen?: boolean;
   triggerLabel: string;
+  /** The card is paid through Stripe (PAYMENTS_PROVIDER=stripe). */
+  stripe?: boolean;
 }) {
   const t = useTranslations('credits');
   const locale = useLocale();
@@ -91,7 +94,7 @@ export function CreditsSheet({
           {packs.length === 0 && (
             <p role="status">{t('sheet.unavailable')}</p>
           )}
-          <p className="ch-muted">{t('sheet.card')}</p>
+          <p className="ch-muted">{t(stripe ? 'sheet.cardStripe' : 'sheet.card')}</p>
           {chosen && (
             <ButtonLink href={`/app/usage/checkout?pack=${chosen.id}`} variant="primary" size="xl">
               {t('sheet.cta', { monto: chosen.amount })}

@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import { ChevronDown } from 'lucide-react';
 import type { PublicTool } from '@/lib/tools/public-tools';
 import { faqItems } from './faq-items';
@@ -26,7 +27,14 @@ export async function Faq({
 }) {
   const t = await getTranslations('landing.faq');
   // One source with the FAQPage JSON-LD (faq-items.ts).
-  const items = faqItems((k, v) => t(k, v), { tools, locale, trialOffered, claimAll, intervals });
+  const items = faqItems((k, v) => t(k, v), {
+    tools,
+    locale,
+    trialOffered,
+    claimAll,
+    intervals,
+    stripe: sellsThroughStripe(),
+  });
 
   return (
     <section id="preguntas" className="pub-band" aria-labelledby="faq-title">

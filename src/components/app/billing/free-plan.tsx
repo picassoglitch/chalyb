@@ -11,7 +11,7 @@ import { Link } from '@/i18n/routing';
 import { annualMath, floorToPeso, pct, planHasTrial, planPrice, PRICING } from '@/config/pricing';
 import { formatMXN } from '@/lib/billing/format';
 import { allToolsClaimAllowed, paidCheckoutEnabled, trialFlowEnabled } from '@/lib/config/flags';
-import { isCheckoutReady } from '@/lib/payments/mercadopago';
+import { checkoutReady } from '@/lib/payments/checkout-ready';
 import type { TokenBalance } from '@/lib/usage/tokens';
 import { Banner, ButtonLink, Group, Pill, Row, StateBlock } from '@/components/ui/primitives';
 
@@ -38,7 +38,7 @@ export async function FreePlan({
   const trial = trialFlowEnabled() && !trialUsed && planHasTrial('pro_month');
   const paid = paidCheckoutEnabled();
   // Sales are closed while paid checkout is off: no offer, no plan rows.
-  const ready = paid && isCheckoutReady();
+  const ready = paid && checkoutReady();
   // §A.5: the trial picker with Pro mensual preselected (never the annual);
   // without the trial, the paid path; without the new flow, the old checkout.
   const proHref = trial

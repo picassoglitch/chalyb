@@ -58,6 +58,7 @@ import {
 import { cancelPreapproval, syncSubscription } from './subscription-sync';
 import { alertChargedWithoutRow, cancelUnchargedWithoutRow } from './unrecorded-preapproval';
 import { writeRowWithRetry } from './row-retry';
+import { usingStripe } from './stripe';
 
 /** What a customer reads when the card itself was the problem. */
 const CARD_ERROR =
@@ -156,7 +157,8 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
       result: { ok: false, reason: 'not_subscribable', error: 'Ese plan no tiene precio.' },
     };
   }
-  if (!isCheckoutReady()) {
+  // With Stripe selling, Mercado Pago must not open new subscriptions (PAYMENTS_PROVIDER).
+  if (usingStripe() || !isCheckoutReady()) {
     console.error('[mp/subscription] refusing to start checkout:', checkoutNotReadyError());
     return {
       ok: false,

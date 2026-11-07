@@ -235,8 +235,9 @@ test('the card form loads security.js after ready and hands the id up on submit'
   const brick = read('src/components/payments/mp-card-brick.tsx');
   assert.match(brick, /deviceSessionId,\n\s*\}\);/);
   const form = read('src/components/app/billing/pay-form.tsx');
-  assert.match(form, /deviceSessionId: card\.deviceSessionId/);
-  assert.match(form, /t\(`decline\.\$\{asDeclineReason\(body\.decline\)\}`\)/);
+  assert.match(form, /send\(card\.token, card\.deviceSessionId\)/);
+  assert.match(form, /deviceSessionId,\n/);
+  assert.match(form, /const reason = asDeclineReason\(body\.decline\);[\s\S]{0,200}t\(`decline\.\$\{reason\}`\)/);
   assert.match(read('src/components/workspace/pack-checkout.tsx'), /deviceSessionId: card\.deviceSessionId/);
 });
 
