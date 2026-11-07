@@ -60,6 +60,9 @@ export interface ClipJob {
   /** Moments found so far, once known ("Encontramos {n}"). */
   momentsFound: number | null;
   clips: Clip[];
+  /** Clips the job made, when known without loading them: the engine's video
+   *  list carries the number but not the clips. Read it through clipsMade(). */
+  clipCount?: number;
   /** A short name for the video when the engine knows it ("Torneo del
    *  sábado"); screens fall back to the platform name. */
   title?: string;
@@ -75,6 +78,11 @@ export interface ClipJob {
    *  MAX_MANUAL_RETRIES). */
   manualRetries?: number;
   createdAt: string;
+}
+
+/** How many clips a job made. A list row may not carry its clips, only the count. */
+export function clipsMade(job: Pick<ClipJob, 'clips' | 'clipCount'>): number {
+  return job.clipCount ?? job.clips.length;
 }
 
 /** "Intentar otra vez" on a failed job: at most this many times. */

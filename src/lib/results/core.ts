@@ -1,7 +1,7 @@
 // Mis resultados (SCR-19, P3-13): one list of what the tools made, from each tool's
 // adapter. Pure: the filtering and progress logic the page and tests share.
 
-import type { ClipJob, ClipJobState } from '@/lib/tools/adapters/types';
+import { clipsMade, type ClipJob, type ClipJobState } from '@/lib/tools/adapters/types';
 import type { PropertyCard } from '@/lib/tools/adapters/tools';
 
 export type ResultItem =
@@ -41,7 +41,7 @@ export function clipItem(job: ClipJob): ResultItem {
     id: job.id,
     slug: 'chalybclip',
     state: job.state === 'ready' ? 'ready' : job.state === 'failed' ? 'failed' : 'working',
-    count: job.state === 'ready' ? job.clips.length : job.count,
+    count: job.state === 'ready' ? clipsMade(job) : job.count,
     pct: PCT[job.state],
     source: job.sourceUrl,
     href: `/app/clips/trabajo/${encodeURIComponent(job.id)}`,

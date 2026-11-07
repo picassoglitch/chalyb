@@ -16,9 +16,13 @@ async function Month({ recon, label }: { recon: AnthropicRecon; label: string })
   const t = await getTranslations('admin.money.recon');
   if (!recon.ok) {
     return (
-      <p className="ch-card" style={{ padding: 16 }}>
-        {label}: {t(`error.${recon.error}`)}
-      </p>
+      <div role="alert" className="ch-card" style={{ padding: 16, display: 'grid', gap: 6 }}>
+        <b>
+          {label}: {t(`error.${recon.error}`)}
+        </b>
+        {recon.detail && <small className="ch-muted">{recon.detail}</small>}
+        <span>{t('unverified')}</span>
+      </div>
     );
   }
   const total = recon.billedMicros > 0 ? ((recon.billedMicros - recon.recordedMicros) / recon.billedMicros) * 100 : null;
@@ -27,6 +31,11 @@ async function Month({ recon, label }: { recon: AnthropicRecon; label: string })
       <h3 style={{ margin: 0 }}>
         {label}: {t('billed')} {usd(recon.billedMicros)} · {t('recorded')} {usd(recon.recordedMicros)} · <Gap pct={total} />
       </h3>
+      <p className="ch-muted" style={{ margin: 0 }}>
+        {t('billed')} · {t('measured')}
+        <br />
+        {t('recorded')} · {t('estimated')}
+      </p>
       <div className="ch-table-wrap">
         <table className="ch-table">
           <thead>

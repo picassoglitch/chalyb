@@ -81,6 +81,7 @@ export function PackCheckout({ packId, cents, publicKey, payerEmail, consentText
         installments: card.installments,
         paymentTypeId: card.paymentTypeId,
         identification: card.identification,
+        deviceSessionId: card.deviceSessionId,
       });
       if (!res.ok) {
         if (res.reason === 'price_changed') router.refresh();

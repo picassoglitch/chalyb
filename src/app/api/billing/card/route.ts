@@ -6,7 +6,9 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago } from '@/lib/payments/mercadopago';
+import { getMercadoPago, getMercadoPagoIsolated } from '@/lib/payments/mercadopago';
+import { declineReasonOf, rejectionDetailOf } from '@/lib/payments/card-decline';
+import { meliSessionOptions } from '@/lib/payments/device-session';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 export const dynamic = 'force-dynamic';
@@ -37,13 +39,19 @@ export async function POST(req: Request) {
     // details are cosmetic; the update is what matters
   }
   try {
-    await getMercadoPago().preapproval.update({
+    // Isolated: the SDK keeps a call's requestOptions on its client for good.
+    await getMercadoPagoIsolated().preapproval.update({
       id: preapprovalId,
       body: { card_token_id: token },
+      requestOptions: meliSessionOptions(body.deviceSessionId),
     });
   } catch (err) {
-    console.error('[billing/card] update refused', preapprovalId, err);
-    return NextResponse.json({ ok: false, code: 'DECLINED' }, { status: 402 });
+    const detail = rejectionDetailOf(err);
+    console.error('[billing/card] update refused', preapprovalId, { status_detail: detail }, err);
+    return NextResponse.json(
+      { ok: false, code: 'DECLINED', decline: declineReasonOf(detail) },
+      { status: 402 },
+    );
   }
   await createAdminClient()
     .from('subscriptions')
