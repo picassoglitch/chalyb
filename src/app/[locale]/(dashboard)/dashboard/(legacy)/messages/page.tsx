@@ -3,15 +3,12 @@ import type { Route } from 'next';
 import { Link } from '@/i18n/routing';
 import {
   listAdminThreads,
-  listThreadMessages,
   listPartnerInquiries,
+  type MessageRow,
   type ThreadSummary,
   type PartnerInquiryRow,
 } from '@/lib/messages/messages-data';
-import {
-  markThreadReadAsAdmin,
-  markInquiryReadAsAdmin,
-} from '@/lib/messages/messages-actions';
+import { openAdminSelection } from '@/lib/messages/admin-inbox';
 import { MessageThread } from '@/components/messages/message-thread';
 import { AdminReplyComposer } from '@/components/messages/admin-reply-composer';
 import { InquiryActions } from '@/components/messages/inquiry-actions';
@@ -31,8 +28,8 @@ export const metadata = { title: 'Mensajes — Administración' };
 //     (c) nothing selected → empty-state hint
 //
 // SELECTION via search params so the URL is shareable + the back button works.
-// We auto-mark the selected item as read on render (best-effort, swallowed
-// errors) so the admin doesn't need a separate "mark read" action.
+// Opening an item marks it read (best-effort) once its data loaded; see
+// openAdminSelection. The mark is a pure write: revalidatePath during render throws.
 
 interface InboxItem {
   kind: 'thread' | 'inquiry';
@@ -102,23 +99,12 @@ export default async function AdminMessagesPage({
     listPartnerInquiries(),
   ]);
 
-  // Auto-mark the selected item as read (the act of opening it = reading it).
-  if (threadUserId) {
-    await markThreadReadAsAdmin(threadUserId);
-  } else if (inquiryId) {
-    await markInquiryReadAsAdmin(inquiryId);
-  }
-
+  const selection = await openAdminSelection(
+    { threadUserId, inquiryId },
+    threads,
+    inquiries,
+  );
   const items = buildInboxList(threads, inquiries);
-  const selectedThread = threadUserId
-    ? threads.find((t) => t.threadUserId === threadUserId)
-    : null;
-  const selectedInquiry = inquiryId
-    ? inquiries.find((i) => i.id === inquiryId)
-    : null;
-  const threadMessages = selectedThread
-    ? await listThreadMessages(selectedThread.threadUserId)
-    : [];
 
   return (
     <div
@@ -279,13 +265,15 @@ export default async function AdminMessagesPage({
 
         {/* ── Right pane: detail ────────────────────────────────────── */}
         <div style={{ minWidth: 0 }}>
-          {selectedThread ? (
+          {selection.kind === 'thread' ? (
             <ThreadDetail
-              summary={selectedThread}
-              messages={threadMessages}
+              summary={selection.summary}
+              messages={selection.messages}
             />
-          ) : selectedInquiry ? (
-            <InquiryDetail inquiry={selectedInquiry} />
+          ) : selection.kind === 'thread-error' ? (
+            <ThreadDetail summary={selection.summary} messages={null} />
+          ) : selection.kind === 'inquiry' ? (
+            <InquiryDetail inquiry={selection.inquiry} />
           ) : (
             <EmptyDetail />
           )}
@@ -300,7 +288,7 @@ function ThreadDetail({
   messages,
 }: {
   summary: ThreadSummary;
-  messages: Awaited<ReturnType<typeof listThreadMessages>>;
+  messages: MessageRow[] | null;
 }) {
   return (
     <div>
@@ -327,7 +315,25 @@ function ThreadDetail({
         </div>
       </div>
 
-      <MessageThread messages={messages} viewer="ADMIN" />
+      {messages === null ? (
+        <div
+          role="alert"
+          style={{
+            padding: '24px 20px',
+            textAlign: 'center',
+            color: 'var(--cc-txt-3)',
+            fontSize: 13,
+            border: '1px dashed var(--cc-line)',
+            borderRadius: 'var(--cc-r-l)',
+            background: 'var(--cc-bg-1)',
+          }}
+        >
+          No pudimos cargar esta conversación, así que no la marcamos como leída.
+          Recarga la página para intentarlo de nuevo.
+        </div>
+      ) : (
+        <MessageThread messages={messages} viewer="ADMIN" />
+      )}
 
       <div style={{ marginTop: 14 }}>
         <AdminReplyComposer threadUserId={summary.threadUserId} />

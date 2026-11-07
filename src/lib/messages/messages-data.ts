@@ -44,6 +44,11 @@ export interface PartnerInquiryRow {
 
 /** Load every message in one subscriber's thread, oldest first. */
 export async function listThreadMessages(threadUserId: string): Promise<MessageRow[]> {
+  return (await fetchThreadMessages(threadUserId)) ?? [];
+}
+
+/** Same as listThreadMessages, but null when the read failed (an empty thread is []). */
+export async function fetchThreadMessages(threadUserId: string): Promise<MessageRow[] | null> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from('messages')
@@ -54,7 +59,7 @@ export async function listThreadMessages(threadUserId: string): Promise<MessageR
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[messages] listThreadMessages failed:', error.message);
-    return [];
+    return null;
   }
   return (data ?? []) as MessageRow[];
 }
@@ -158,6 +163,30 @@ export async function markThreadReadForUser(userId: string): Promise<void> {
     .eq('sender_role', 'ADMIN')
     .is('read_at_user', null);
   if (error) console.error('[messages] markThreadReadForUser failed:', error.message);
+}
+
+/** Admin inbox: mark every USER-sent message in a thread as read. Pure write, no
+ *  revalidatePath, so the inbox can call it during render. Logs + swallows. */
+export async function markThreadReadForAdmin(threadUserId: string): Promise<void> {
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('messages')
+    .update({ read_at_admin: new Date().toISOString() })
+    .eq('thread_user_id', threadUserId)
+    .eq('sender_role', 'USER')
+    .is('read_at_admin', null);
+  if (error) console.error('[messages] markThreadReadForAdmin failed:', error.message);
+}
+
+/** Admin inbox: mark one partner inquiry as read. Render-safe like the one above. */
+export async function markInquiryReadForAdmin(inquiryId: string): Promise<void> {
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('partner_inquiries')
+    .update({ read_at_admin: new Date().toISOString() })
+    .eq('id', inquiryId)
+    .is('read_at_admin', null);
+  if (error) console.error('[messages] markInquiryReadForAdmin failed:', error.message);
 }
 
 /** Sidebar badge — quick total of unread messages for the signed-in user. */
