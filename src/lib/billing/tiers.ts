@@ -93,7 +93,7 @@ export interface TierCapabilities {
   clipVodRetentionDays: number;
   /** Live streams ChalyClip allows per month (Infinity = uncapped). */
   clipStreamsPerMonth: number;
-  /** Videos ChalyClip processes a month (chalybclip/tiers.py enforces it);
+  /** Videos ChalyClip processes a month (its admission.py enforces it);
    *  the hub's minutes and credits caps back it up. */
   clipVideosPerMonth: number;
   /** Highest export resolution ChalyClip will render. */

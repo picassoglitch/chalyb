@@ -10,9 +10,11 @@ export interface UploadLimitCopy {
   monthUsed: string | null;
 }
 
-/** The video is longer than the plan takes (unknown length: the engine decides). */
+/** Longer than the plan takes, in minutes rounded to 2 decimals as the hub
+ *  checks them (unknown length: the engine decides). */
 export function overLength(seconds: number | null, maxSeconds: number | null): boolean {
-  return seconds !== null && maxSeconds !== null && seconds > maxSeconds;
+  if (seconds === null || maxSeconds === null) return false;
+  return Math.round((seconds / 60) * 100) / 100 > maxSeconds / 60;
 }
 
 /** One sentence for a failed upload: the plan's own words for its limits. */

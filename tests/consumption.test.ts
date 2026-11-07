@@ -256,16 +256,17 @@ test('reconciliation: cents strings → micros, per model and workspace', async 
 });
 
 test('Gratis credits cover one 5-minute video, and only one (owner 2026-11-07)', () => {
-  // ChalyClip estimate_tokens(source_minutes=5) and the smallest possible run
-  // (its base fee alone: 60,000 µ$ ÷ 4), both before the hub's margin.
+  // ChalyClip estimate_tokens() at 5 min and at 20 s (the shortest QA upload),
+  // before the hub's margin; the base fee alone bills 60,000 µ$ × 2.6 ÷ 4.
   const est5min = 23_602;
+  const est20s = 15_929;
   const baseFeeBilled = Math.ceil((60_000 * 2.6) / 4);
   const free = TIER_CAPS.FREE;
   const hold = reserveWithMargin(est5min, 160, 'clips.pipeline');
   assert.equal(hold, 61_366);
   assert.ok(free.tokensPerMonth >= hold, 'a 5-min video is admitted');
   assert.ok(
-    free.tokensPerMonth - baseFeeBilled < reserveWithMargin(15_000, 160, 'clips.pipeline'),
+    free.tokensPerMonth - baseFeeBilled < reserveWithMargin(est20s, 160, 'clips.pipeline'),
     'after one run no second hold fits',
   );
   assert.equal(checkItemCaps(req({ sourceMinutes: 5 }), free, false), null);

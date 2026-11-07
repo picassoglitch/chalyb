@@ -307,6 +307,10 @@ test('Gratis card states its plan: 1 video a month, up to 5 minutes (owner 2026-
     'Clips de 1 video al mes, de hasta 5 minutos (calidad SD, con marca de agua)',
   );
   assert.equal(line('en', false), 'Clips from 1 video a month, up to 5 minutes long (watermarked)');
+  assert.equal(
+    line('en', true),
+    'Clips from 1 video a month, up to 5 minutes long (SD, watermarked)',
+  );
   assert.equal(TIER_CAPS.FREE.maxSourceMinutes, 5);
   assert.equal(TIER_CAPS.FREE.sourceMinutesPerMonth, 5);
   assert.equal(TIER_CAPS.FREE.clipVideosPerMonth, 1);

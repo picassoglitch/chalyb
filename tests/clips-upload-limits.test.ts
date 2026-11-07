@@ -37,6 +37,8 @@ test('Gratis: 5 minutes and 1 video; paid plans have no per-video cap here; admi
 test('a 6-minute file is over Gratis, a 5-minute one is not, an unknown length goes to the engine', () => {
   assert.equal(overLength(6 * 60, 5 * 60), true);
   assert.equal(overLength(5 * 60, 5 * 60), false);
+  assert.equal(overLength(300.2, 5 * 60), false); // 5.00 min, as the hub rounds it
+  assert.equal(overLength(301, 5 * 60), true);
   assert.equal(overLength(null, 5 * 60), false);
   assert.equal(overLength(6 * 60, null), false);
 });
