@@ -1196,7 +1196,17 @@
       "cta": "Start my 7-day free trial",
       "ctaHint": "Tick the box to continue. You can cancel any time.",
       "consentError": "Tick the box to confirm the automatic charge. You can cancel any time.",
-      "declined": "Your bank didn’t accept this card. Try another one or talk to your bank.",
+      "decline": {
+        "risk": "Mercado Pago couldn’t approve this payment for security reasons. Try another card or try again later; you weren’t charged.",
+        "funds": "Your bank declined the charge for insufficient funds or limit. Try another card.",
+        "authorize": "Your bank wants you to authorize this payment. Call them to authorize it and try again, or use another card.",
+        "card_data": "Some card details don’t match. Check the number, expiry date and security code.",
+        "disabled": "Your card isn’t enabled for online purchases. Turn it on with your bank or use another card.",
+        "max_attempts": "You reached the attempt limit for this card. Use another one or try again later.",
+        "duplicated": "Mercado Pago just received an identical payment. Wait a few minutes before trying again.",
+        "bank": "Your bank didn’t accept this card. Try another one or talk to your bank.",
+        "unknown": "Mercado Pago couldn’t validate this card. Check the details or try another one."
+      },
       "saving": "Saving your card…",
       "cardUsed": "This card already had a free trial. You can pick a plan and start today.",
       "cardUnverified": "We couldn't verify this card for the free trial. Try again with the same card or another one.",
@@ -1959,6 +1969,9 @@
         "note": "What Anthropic billed us against what the engines recorded (and so charged users). A positive gap is usage we paid for and didn't charge.",
         "billed": "Billed by Anthropic",
         "recorded": "Recorded",
+        "measured": "Measured: Anthropic's real billing (Admin API)",
+        "estimated": "Estimated: what the engines computed from their price table",
+        "unverified": "No measured cost: the margin can't be verified until this query works. Don't use the example costs below as evidence.",
         "gap": "Gap",
         "model": "Model",
         "workspaces": "By Anthropic workspace",
@@ -1966,7 +1979,9 @@
         "lastMonth": "Last month",
         "error": {
           "no_key": "ANTHROPIC_ADMIN_KEY is missing in Vercel",
-          "api": "Anthropic didn't answer (check it's an Admin key)",
+          "auth": "Anthropic rejected ANTHROPIC_ADMIN_KEY (invalid, revoked, or not an sk-ant-admin… Admin key)",
+          "timeout": "Anthropic didn't answer in time; reload the page",
+          "api": "Anthropic returned an error",
           "db": "couldn't read recorded usage"
         }
       }

@@ -22,6 +22,8 @@ export function BrandMark({ size = 26 }: { size?: number }) {
       aria-hidden
       width={size}
       height={size}
+      // Static file, not /_next/image: an aborted optimizer request hung this URL for every later page.
+      unoptimized
       // No priority: only the hero laptop has it (LANDING-SPEC §7). Small and
       // sized, so lazy-loading it shifts nothing.
     />

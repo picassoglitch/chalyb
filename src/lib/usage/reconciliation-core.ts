@@ -17,6 +17,103 @@ export interface CostReportPage {
   next_page?: string | null;
 }
 
+const COST_REPORT_URL = 'https://api.anthropic.com/v1/organizations/cost_report';
+
+export type CostReportFailure = 'auth' | 'timeout' | 'api';
+
+export class CostReportError extends Error {
+  constructor(
+    readonly kind: CostReportFailure,
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+    this.name = 'CostReportError';
+  }
+}
+
+/** Every page of the month's cost report. The whole report (all pages) is
+ *  bounded by `timeoutMs` so a stuck Anthropic call can't hang the admin page. */
+export async function fetchCostReport(
+  start: Date,
+  end: Date,
+  key: string,
+  opts: { fetch?: typeof fetch; timeoutMs?: number } = {},
+): Promise<CostReportPage[]> {
+  const doFetch = opts.fetch ?? fetch;
+  const timeoutMs = opts.timeoutMs ?? 10_000;
+  const pages: CostReportPage[] = [];
+  let page: string | null = null;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    for (let i = 0; i < 10; i++) {
+      const qs = new URLSearchParams({
+        starting_at: start.toISOString(),
+        ending_at: end.toISOString(),
+        bucket_width: '1d',
+        limit: '31',
+      });
+      qs.append('group_by[]', 'description');
+      qs.append('group_by[]', 'workspace_id');
+      if (page) qs.set('page', page);
+      let body: CostReportPage;
+      try {
+        const res = await doFetch(`${COST_REPORT_URL}?${qs}`, {
+          headers: {
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'user-agent': 'Chalyb/1.0 (https://www.chalyb.com)',
+          },
+          cache: 'no-store',
+          signal: ctrl.signal,
+        });
+        if (!res.ok) {
+          const detail = anthropicErrorText(await res.text().catch(() => ''), key);
+          const kind = res.status === 401 || res.status === 403 ? 'auth' : 'api';
+          throw new CostReportError(kind, `Anthropic ${res.status}: ${detail}`, res.status);
+        }
+        body = (await res.json()) as CostReportPage;
+      } catch (e) {
+        if (e instanceof CostReportError) throw e;
+        if (ctrl.signal.aborted) {
+          throw new CostReportError('timeout', `Anthropic no respondió en ${timeoutMs / 1000}s`);
+        }
+        if (e instanceof SyntaxError)
+          throw new CostReportError('api', 'Anthropic devolvió una respuesta inválida');
+        throw new CostReportError('api', redactSecrets(`red: ${e instanceof Error ? e.message : String(e)}`, key));
+      }
+      pages.push(body);
+      if (!body.has_more || !body.next_page) break;
+      page = body.next_page;
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+  return pages;
+}
+
+const REDACTED = '[redactado]';
+
+/** Removes the supplied key and anything shaped like an Anthropic key, so an
+ *  upstream error that echoes it never reaches logs or the admin UI. */
+export function redactSecrets(text: string, key?: string): string {
+  const out = key && key.length >= 8 ? text.split(key).join(REDACTED) : text;
+  return out.replace(/sk-ant-[A-Za-z0-9_-]+/g, REDACTED);
+}
+
+/** Anthropic's `{"error":{"message":…}}`, redacted and truncated. A body that
+ *  isn't that shape (proxy page, HTML) is never surfaced raw. */
+export function anthropicErrorText(text: string, key?: string): string {
+  let m: unknown;
+  try {
+    m = (JSON.parse(text) as { error?: { message?: unknown } } | null)?.error?.message;
+  } catch {
+    m = undefined;
+  }
+  return typeof m === 'string' ? redactSecrets(m, key).slice(0, 200) : 'respuesta sin detalle legible';
+}
+
 /** Cents (decimal string) → USD micros. 1 cent = 10,000 micros. */
 export function centsToMicros(amount: string): number {
   const n = Number(amount);

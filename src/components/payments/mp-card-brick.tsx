@@ -41,6 +41,8 @@ export interface CardSubmission {
   payerEmail: string | null;
   identification: { type: string; number: string } | null;
   paymentTypeId: string | null;
+  /** MP_DEVICE_SESSION_ID (security.js) for the X-meli-session-id header. */
+  deviceSessionId: string | null;
 }
 
 export type CardSubmitResult =
@@ -122,6 +124,7 @@ type HostMessage =
       id: number;
       formData: BrickFormData;
       additionalData: { paymentTypeId?: string } | null;
+      deviceSessionId?: string | null;
     }
   | { type: 'chalyb-mp:resize'; height: number };
 
@@ -140,7 +143,11 @@ interface AttemptProps {
   onReady: () => void;
   onFail: (reason: string) => void;
   onExtension: (info: ExtensionInfo) => void;
-  onSubmit: (form: BrickFormData, extra: { paymentTypeId?: string } | null) => Promise<boolean>;
+  onSubmit: (
+    form: BrickFormData,
+    extra: { paymentTypeId?: string } | null,
+    deviceSessionId: string | null,
+  ) => Promise<boolean>;
   submitSignal?: number;
 }
 
@@ -311,7 +318,11 @@ function BrickAttempt({
           break;
         case 'chalyb-mp:submit':
           void callbacks.current
-            .onSubmit(data.formData, data.additionalData)
+            .onSubmit(
+              data.formData,
+              data.additionalData,
+              typeof data.deviceSessionId === 'string' ? data.deviceSessionId : null,
+            )
             .then((ok) => post({ type: 'chalyb-mp:submit-result', id: data.id, ok }))
             .catch(() =>
               post({ type: 'chalyb-mp:submit-result', id: data.id, ok: false, error: 'failed' }),
@@ -457,7 +468,11 @@ export function MpCardBrick({
   );
 
   const handleSubmit = useCallback(
-    async (form: BrickFormData, extra: { paymentTypeId?: string } | null): Promise<boolean> => {
+    async (
+      form: BrickFormData,
+      extra: { paymentTypeId?: string } | null,
+      deviceSessionId: string | null,
+    ): Promise<boolean> => {
       if (busy.current) return false;
       busy.current = true;
       setError(null);
@@ -471,6 +486,7 @@ export function MpCardBrick({
           payerEmail: form.payer?.email ?? settings.payerEmail,
           identification: form.payer?.identification ?? null,
           paymentTypeId: extra?.paymentTypeId ?? null,
+          deviceSessionId,
         });
         if (result.ok && result.outcome === 'approved') {
           setNotice(result.message ?? null);
