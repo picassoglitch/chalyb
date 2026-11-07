@@ -4,7 +4,11 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendEmail } from '@/lib/email/resend';
-import { chalitoResetCodeTemplate } from '@/lib/email/templates';
+import {
+  chalitoResetCodeSubject,
+  chalitoResetCodeTemplate,
+  type EmailLocale,
+} from '@/lib/email/templates';
 import type { ConsumeResult, ResetStore } from './reset';
 
 /** HMAC key for the stored codes (domain-separated inside hashResetCode). */
@@ -32,9 +36,13 @@ export const resetStore: ResetStore = {
     })) as ConsumeResult,
 };
 
-export const sendResetCode = async (to: string, code: string): Promise<boolean> => {
-  const { html, text } = chalitoResetCodeTemplate({ code });
-  const r = await sendEmail({ to, subject: `Tu código de Chalito: ${code}`, html, text });
+export const sendResetCode = async (
+  to: string,
+  code: string,
+  locale: EmailLocale = 'es',
+): Promise<boolean> => {
+  const { html, text } = chalitoResetCodeTemplate({ code, locale });
+  const r = await sendEmail({ to, subject: chalitoResetCodeSubject(code, locale), html, text });
   return r.ok;
 };
 

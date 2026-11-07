@@ -4,6 +4,7 @@ import { redirect } from '@/i18n/routing';
 import { loadSenalesPrefs, requireSenalesReady } from '@/lib/tools/senales-access';
 import { WizardShell } from '@/components/ui/wizard-shell';
 import { CoinPicker } from '@/components/app/tools/coin-picker';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('signals');
@@ -28,7 +29,7 @@ export default async function SenalesStep1({ params }: { params: Promise<{ local
   return (
     <WizardShell
       slug="chalybcrypto"
-      toolName="Señales"
+      toolName={localizedToolName('Señales', locale)}
       step={1}
       stepLabel={tw('step', { n: 1 })}
       backHref="/app/senales"

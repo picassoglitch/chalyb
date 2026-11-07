@@ -67,3 +67,19 @@ export function engineDisplayName(
   return ENGINE_DISPLAY_NAMES[key] ?? fallback ?? (slug || '');
 }
 
+
+/** English names, as messages/en.json already calls the tools ("Signals",
+ *  "Live"). Brand-like names (Clips, Chalito) stay the same in both languages. */
+const ENGLISH_TOOL_NAMES: Record<string, string> = {
+  Señales: 'Signals',
+  'En vivo': 'Live',
+  Asistente: 'Assistant',
+  Pronósticos: 'Forecasts',
+  Inmuebles: 'Properties',
+  Inversiones: 'Investments',
+};
+
+/** A tool's display name in the reader's language. */
+export function localizedToolName(name: string, locale: string | null | undefined): string {
+  return locale === 'en' ? (ENGLISH_TOOL_NAMES[name] ?? name) : name;
+}

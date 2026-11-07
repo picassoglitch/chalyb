@@ -106,7 +106,7 @@ test('contact form stores the lead before deciding the result; confirmation only
   const src = read('src/lib/contact/contact-actions.ts');
   const insert = src.indexOf(".from('partner_inquiries').insert(");
   const fail = src.indexOf("errorKey: 'sendFailed'");
-  const confirm = src.indexOf("subject: 'Recibimos tu mensaje");
+  const confirm = src.indexOf('subject: contactConfirmSubject(');
   assert.ok(insert > 0 && fail > insert, 'insert runs before the sendFailed return');
   assert.ok(confirm > fail, 'confirmation is sent only after the failure return');
   assert.match(src, /if \(!delivered && !stored\)/);

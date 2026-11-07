@@ -59,3 +59,33 @@ export function LanguageSwitcher() {
     </div>
   );
 }
+
+const SHORT: Record<string, string> = { es: 'ES', en: 'EN' };
+
+/** The other language, for the one-tap toggles. */
+function otherLocale(locale: string): string {
+  return routing.locales.find((l) => l !== locale) ?? routing.defaultLocale;
+}
+
+/** Compact public-header toggle: the same page in the other language
+ *  ("EN" on Spanish pages, "ES" on English ones). */
+export function LanguageToggle({ className = 'ch-lang' }: { className?: string }) {
+  const locale = useLocale();
+  const pathname = usePathname();
+  const target = otherLocale(locale);
+  return (
+    <Link
+      href={pathname as Route}
+      locale={target}
+      className={className}
+      hrefLang={target}
+      lang={target}
+      aria-label={LABELS[target]}
+      title={LABELS[target]}
+      data-lang-toggle={target}
+      prefetch={false}
+    >
+      {SHORT[target] ?? target.toUpperCase()}
+    </Link>
+  );
+}

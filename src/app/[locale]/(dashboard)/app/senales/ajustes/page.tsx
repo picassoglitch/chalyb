@@ -12,6 +12,7 @@ import { ToolErrorState } from '@/components/tools/tool-error-state';
 import { SignalsSettingsForm } from '@/components/tools/senales/settings-form';
 import { LegalSheetButton } from '@/components/tools/senales/legal-sheet-button';
 import '@/styles/tools-senales.css';
+import { localizedToolName } from '@/lib/engines/display-names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('signalsTool');
@@ -82,7 +83,7 @@ export default async function SenalesAjustes({ params }: { params: Promise<{ loc
                 <LegalSheetButton
                   label={t('readAgain')}
                   title={td('sheetTitle')}
-                  legal={tc.markup('body', { herramienta: 'Señales', b: (c) => `<b>${c}</b>` })}
+                  legal={tc.markup('body', { herramienta: localizedToolName('Señales', locale), b: (c) => `<b>${c}</b>` })}
                   closeLabel={td('close')}
                 />
               </div>

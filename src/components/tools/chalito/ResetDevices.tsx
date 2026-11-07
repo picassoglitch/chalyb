@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/lib/chalito/navigation";
 import { useChalito } from "@/lib/chalito/provider";
 
@@ -54,6 +54,7 @@ const post = async (path: string, body?: unknown): Promise<{ ok: true } | { ok: 
  */
 export const ResetDevices = ({ onBack }: { onBack: () => void }) => {
   const t = useTranslations("chalito.endorse.reset");
+  const locale = useLocale();
   const { recheck } = useChalito();
   const router = useRouter();
   const [state, setState] = useState<State>({ s: "intro" });
@@ -63,7 +64,7 @@ export const ResetDevices = ({ onBack }: { onBack: () => void }) => {
   const send = async () => {
     setError(null);
     setState({ s: "sending" });
-    const r = await post("/api/tools/chalito/reset/start");
+    const r = await post("/api/tools/chalito/reset/start", { locale });
     if (!r.ok) {
       setError(r.reason);
       return setState(code ? { s: "code" } : { s: "intro" });
