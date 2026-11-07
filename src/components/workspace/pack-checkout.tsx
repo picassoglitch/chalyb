@@ -137,7 +137,7 @@ export function PackCheckout({
         return { ok: false, error: message(res) };
       }
       if (res.status !== 'approved') {
-        return { ok: true, outcome: 'pending', message: t('pendingShort') };
+        return { ok: true, outcome: 'pending', message: t('pendingShortStripe') };
       }
       showToast(`<b>${t('approvedToast')}</b>`);
       setTimeout(() => {
@@ -194,7 +194,7 @@ export function PackCheckout({
             onPhaseChange={setPhase}
             onSubmit={onStripeSubmit}
             success={panel('ok', t('approved'))}
-            pending={panel('wait', t('pending'))}
+            pending={panel('wait', t('pendingStripe'))}
           />
         ) : (
           <MpCardBrick

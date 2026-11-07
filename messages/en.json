@@ -131,6 +131,7 @@
       "momP": "Simple and easy to use: everything clear, in a few steps, with nothing complicated to learn.",
       "strip1": "In English and Spanish, made in Mexico",
       "strip2": "Secure payment with Mercado Pago",
+      "strip2Stripe": "Secure payment with Stripe",
       "strip3": "Cancel in 1 click, no calls",
       "streamersClipsOnlyP": "Get clips from your videos and streams.",
       "streamersLiveOnlyP": "Stream to all your channels at once."
@@ -140,6 +141,7 @@
       "seeAll": "See every plan and what it includes",
       "iva": "Prices in MXN, VAT included.",
       "secure": "Secure payment with Mercado Pago.",
+      "secureStripe": "Secure payment with Stripe.",
       "trialNote": "Free {dias}-day trial on any plan, monthly or yearly: once per account and per card."
     },
     "partner": {
@@ -187,6 +189,7 @@
       "a6": "No. They’re informational alerts, the same for everyone, and they don’t use your balances or investments. They aren’t financial advice: you decide.",
       "q7": "How do I pay?",
       "a7": "With a credit or debit card, securely through Mercado Pago. Chalyb doesn’t store your card number.",
+      "a7Stripe": "With a credit or debit card, securely through Stripe. Chalyb doesn’t store your card number.",
       "q8": "Can I change plans?",
       "a8": "Yes. From My account → My plan you can go from monthly to yearly, move up to VIP or go back to Free anytime.",
       "a8OneInterval": "Yes. From My account → My plan you can move up to VIP or go back to Free anytime."
@@ -225,6 +228,7 @@
       "disclaimer": "Signals, Picks and Investments are informational: not financial or betting advice, and they don’t guarantee results. The decisions and the risks are yours.",
       "copy": "© {year} Chalyb. Prices in MXN, VAT included.",
       "secure": "Secure payment with Mercado Pago",
+      "secureStripe": "Secure payment with Stripe",
       "lang": "Español · English",
       "leadClipsOnly": "Clips for your socials, in English or Spanish, with no tech skills needed.",
       "leadLiveOnly": "Your live stream in one place, in English or Spanish, with no tech skills needed.",
@@ -1340,6 +1344,7 @@
       "notice30": "Email notice 30 and 7 days before",
       "noticeOn": "Email notice on {fecha}",
       "retry": "Mercado Pago will try again in the next few days",
+      "retryStripe": "Stripe will try again in the next few days",
       "afterCancel": "After {fecha} you’ll move to the Free plan. Your results stay saved."
     },
     "method": "Payment method",
@@ -1420,6 +1425,7 @@
     "trialSwitchMoved": "Because you're switching plans, your first charge moves to {fecha} so we can notify you 5 days ahead; your trial stays free until then. That day {monto} MXN will be charged {periodo}. Today we email you the charge notice with the new amount and date.",
     "consent": "I agree that Chalyb will automatically charge <b>{monto} MXN</b> {renovacion_corta} to my card starting <b>{fecha}</b>, and I accept the <terms>Subscription Terms</terms>.",
     "card": "Confirm with your card. For security, Mercado Pago asks for it again on every change.",
+    "cardStripe": "Confirm with your card. For security, Stripe asks for it again on every change.",
     "cta": "Confirm change",
     "toFreeTitle": "Move to Free",
     "toFreeBody": "That means cancelling your plan: you keep it until the end of the paid period and there will be no more charges.",
@@ -2362,6 +2368,7 @@
       "terms": "It’s a <b>one-time payment</b>, not a subscription. Extra credits are used after your plan’s and {vigencia}. Prices in MXN, VAT included.",
       "noExpiry": "don’t expire",
       "card": "You enter your card in the next step. Secure payment with Mercado Pago.",
+      "cardStripe": "You enter your card in the next step. Secure payment with Stripe.",
       "cta": "Continue to payment · {monto} MXN",
       "later": "Not now",
       "unavailable": "Credit packs aren’t available right now. Try again later."
@@ -3871,7 +3878,9 @@
     "approved": "<b>Payment approved.</b> Your credits are already in your balance. Taking you to My credits…",
     "approvedToast": "Extra credits added.",
     "pending": "<b>Payment under review.</b> Mercado Pago hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
-    "pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved."
+    "pendingStripe": "<b>Payment under review.</b> Stripe hasn’t approved it yet. As soon as it does, your credits show up in My credits. You can close this page.",
+    "pendingShort": "Mercado Pago put the payment under review. Your credits arrive as soon as it’s approved.",
+    "pendingShortStripe": "Stripe put the payment under review. Your credits arrive as soon as it’s approved."
   },
   "clipsEngine": {
     "errors": {

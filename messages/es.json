@@ -131,6 +131,7 @@
       "momP": "Simple y fácil de usar: todo claro, en pocos pasos y sin nada complicado que aprender.",
       "strip1": "En español, para México y Latinoamérica",
       "strip2": "Pago seguro con Mercado Pago",
+      "strip2Stripe": "Pago seguro con Stripe",
       "strip3": "Cancela en 1 clic, sin llamadas",
       "streamersClipsOnlyP": "Saca clips de tus videos y transmisiones.",
       "streamersLiveOnlyP": "Transmite a todos tus canales a la vez."
@@ -140,6 +141,7 @@
       "seeAll": "Ver todos los planes y qué incluyen",
       "iva": "Precios en MXN, IVA incluido.",
       "secure": "Pago seguro con Mercado Pago.",
+      "secureStripe": "Pago seguro con Stripe.",
       "trialNote": "Prueba gratis {dias} días en cualquier plan, mensual o anual: una vez por cuenta y por tarjeta."
     },
     "partner": {
@@ -187,6 +189,7 @@
       "a6": "No. Son avisos informativos, iguales para todos, y no usan tus saldos ni tus inversiones. No son asesoría financiera: tú decides.",
       "q7": "¿Cómo pago?",
       "a7": "Con tarjeta de crédito o débito, de forma segura con Mercado Pago. Chalyb no guarda el número de tu tarjeta.",
+      "a7Stripe": "Con tarjeta de crédito o débito, de forma segura con Stripe. Chalyb no guarda el número de tu tarjeta.",
       "q8": "¿Puedo cambiar de plan?",
       "a8": "Sí. Desde Mi cuenta → Mi plan puedes pasar de mensual a anual, subir a VIP o volver a Gratis cuando quieras.",
       "a8OneInterval": "Sí. Desde Mi cuenta → Mi plan puedes subir a VIP o volver a Gratis cuando quieras."
@@ -225,6 +228,7 @@
       "disclaimer": "Señales, Pronósticos e Inversiones son informativos: no son asesoría financiera ni de apuestas, y no garantizan resultados. Las decisiones y los riesgos son tuyos.",
       "copy": "© {year} Chalyb. Precios en MXN, IVA incluido.",
       "secure": "Pago seguro con Mercado Pago",
+      "secureStripe": "Pago seguro con Stripe",
       "lang": "Español · English",
       "leadClipsOnly": "Clips para tus redes, en español y sin saber de tecnología.",
       "leadLiveOnly": "Tu transmisión en vivo en un solo lugar, en español y sin saber de tecnología.",
@@ -1340,6 +1344,7 @@
       "notice30": "Aviso por correo 30 y 7 días antes",
       "noticeOn": "Aviso por correo el {fecha}",
       "retry": "Mercado Pago intentará de nuevo en los próximos días",
+      "retryStripe": "Stripe intentará de nuevo en los próximos días",
       "afterCancel": "Después del {fecha} pasarás al plan Gratis. Tus resultados se quedan guardados."
     },
     "method": "Método de pago",
@@ -1420,6 +1425,7 @@
     "trialSwitchMoved": "Como cambias de plan, tu primer cobro pasa al {fecha} para avisarte con 5 días de anticipación; tu prueba sigue sin costo hasta entonces. Ese día se cobrarán {monto} MXN {periodo}. Hoy mismo te enviamos por correo el aviso de cobro con el nuevo monto y la nueva fecha.",
     "consent": "Acepto que Chalyb cobre automáticamente <b>{monto} MXN</b> {renovacion_corta} a mi tarjeta a partir del <b>{fecha}</b>, y acepto los <terms>Términos de Suscripción</terms>.",
     "card": "Confirma con tu tarjeta. Por seguridad, Mercado Pago la pide de nuevo en cada cambio.",
+    "cardStripe": "Confirma con tu tarjeta. Por seguridad, Stripe la pide de nuevo en cada cambio.",
     "cta": "Confirmar cambio",
     "toFreeTitle": "Pasar a Gratis",
     "toFreeBody": "Eso es cancelar tu plan: sigues con él hasta el final del periodo pagado y no habrá más cobros.",
@@ -2362,6 +2368,7 @@
       "terms": "Es un <b>pago único</b>, no una suscripción. Los créditos extra se usan después de los de tu plan y {vigencia}. Precios en MXN, IVA incluido.",
       "noExpiry": "no vencen",
       "card": "En el siguiente paso pones tu tarjeta. Pago seguro con Mercado Pago.",
+      "cardStripe": "En el siguiente paso pones tu tarjeta. Pago seguro con Stripe.",
       "cta": "Continuar al pago · {monto} MXN",
       "later": "Ahora no",
       "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde."
@@ -3871,7 +3878,9 @@
     "approved": "<b>Pago aprobado.</b> Tus créditos ya están en tu saldo. Te llevamos a Mis créditos…",
     "approvedToast": "Créditos extra acreditados.",
     "pending": "<b>Pago en revisión.</b> Mercado Pago todavía no lo aprueba. En cuanto lo confirme, tus créditos aparecen en Mis créditos. Puedes cerrar esta página.",
-    "pendingShort": "Mercado Pago dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe."
+    "pendingStripe": "<b>Pago en revisión.</b> Stripe todavía no lo aprueba. En cuanto lo confirme, tus créditos aparecen en Mis créditos. Puedes cerrar esta página.",
+    "pendingShort": "Mercado Pago dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe.",
+    "pendingShortStripe": "Stripe dejó el pago en revisión. Tus créditos llegan en cuanto lo apruebe."
   },
   "clipsEngine": {
     "errors": {

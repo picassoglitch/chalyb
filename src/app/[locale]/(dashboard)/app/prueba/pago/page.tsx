@@ -166,7 +166,7 @@ export default async function PagoPage({
                 publicKey={publicKey}
                 stripe={stripe}
                 payerEmail={mpPayerEmail(session.user.email)}
-                askMpEmail={mpPayerEmailEditable()}
+                askMpEmail={!stripe && mpPayerEmailEditable()}
                 planKey={planKey}
                 amountMajor={price.totalCents / 100}
                 consentText={consentText}

@@ -558,3 +558,92 @@ test('webhook: a late paid event for an invoice that is still open writes no cha
   assert.equal(res.status, 200, JSON.stringify(res.body));
   assert.equal(rows('payments').length, 0);
 });
+
+// ── Refunds read the charge as it is now ──────────────────────────────────
+
+test('webhook: a stale partial-refund event for a pack now fully refunded takes its credits back once', { skip }, async () => {
+  backend.tables.app_settings = [
+    { key: PACK_PRICES_SETTING, value: { ivaMode: 'included', ivaRatePercent: 16, prices: PACK_CENTS } },
+  ];
+  backend.tables.token_pack_purchases = [
+    { id: 'tpp-1', user_id: USER, tokens: 100_000, mp_payment_id: 'pi_ref' },
+  ];
+  stripe.on('GET', /^\/v1\/payment_intents\/pi_ref$/, (b) => ({
+    ...b,
+    id: 'pi_ref',
+    status: 'succeeded',
+    amount: PACK_CENTS.tokens_100k,
+    amount_received: PACK_CENTS.tokens_100k,
+    currency: 'mxn',
+    latest_charge: { id: 'ch_ref', object: 'charge', refunded: true, amount_refunded: PACK_CENTS.tokens_100k },
+    metadata: { external_reference: `pack_${USER}_tokens_100k`, user_id: USER, pack_id: 'tokens_100k' },
+  }));
+  // The event still carries the earlier, partial state of the charge.
+  const stale = { id: 'ch_ref', object: 'charge', payment_intent: 'pi_ref', refunded: false, amount_refunded: 100 };
+  const a = await deliver('charge.refunded', stale);
+  const b = await deliver('charge.refunded', stale);
+  await drain();
+  assert.equal(a.status, 200, JSON.stringify(a.body));
+  assert.equal(b.status, 200);
+  assert.equal(a.body.clawback, 'done');
+  assert.equal(b.body.clawback, 'already');
+  assert.ok(rows('token_pack_purchases')[0]!.clawed_back_at);
+  assert.equal(rows('payments')[0]!.status, 'refunded');
+});
+
+// ── Copy names the gateway that charges ───────────────────────────────────
+
+test('payment emails name Stripe for a Stripe charge and stay byte-identical for Mercado Pago', async () => {
+  const { subscriptionActiveTemplate, paymentReversedTemplate } = await import('@/lib/email/templates');
+  for (const locale of ['es', 'en'] as const) {
+    const base = { tier: 'Pro', amountMajor: '1099.00', currency: 'MXN', nextChargeLabel: null, preapprovalId: 'sub_1', appUrl: 'https://www.chalyb.com', locale };
+    const mp = subscriptionActiveTemplate(base);
+    assert.deepEqual(subscriptionActiveTemplate({ ...base, gateway: 'mercadopago' }), mp);
+    assert.match(mp.text, /Mercado Pago/);
+    const st = subscriptionActiveTemplate({ ...base, gateway: 'stripe' });
+    assert.doesNotMatch(st.html + st.text, /Mercado Pago/);
+    assert.match(st.text, /Stripe/);
+    const rev = { reason: 'refunded' as const, what: 'x', amountMajor: '149.00', currency: 'MXN', paymentId: 'pi_1', appUrl: 'https://www.chalyb.com', locale };
+    assert.deepEqual(paymentReversedTemplate({ ...rev, gateway: 'mercadopago' }), paymentReversedTemplate(rev));
+    const rs = paymentReversedTemplate({ ...rev, gateway: 'stripe' });
+    assert.doesNotMatch(rs.html + rs.text, /Mercado Pago/);
+  }
+});
+
+test('every checkout string that names Mercado Pago has a Stripe twin in es and en', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { execFileSync } = await import('node:child_process');
+  const twins = [
+    'landing.who.strip2', 'landing.plans.secure', 'landing.faq.a7', 'landing.publicFooter.secure',
+    'myplan.next.retry', 'change.card', 'credits.sheet.card', 'packCheckout.pending',
+    'packCheckout.pendingShort', 'packCheckout.secure', 'checkout.pay.secure',
+  ];
+  const at = (o: unknown, path: string) => path.split('.').reduce((x, k) => (x as Record<string, unknown>)[k], o) as string;
+  for (const lang of ['es', 'en']) {
+    const now = JSON.parse(readFileSync(new URL(`../messages/${lang}.json`, import.meta.url), 'utf8'));
+    const main = JSON.parse(execFileSync('git', ['show', `origin/main:messages/${lang}.json`], { encoding: 'utf8' }));
+    for (const key of twins) {
+      assert.equal(at(now, key), at(main, key), `${lang} ${key}: the Mercado Pago copy is unchanged`);
+      const stripeKey = key === 'checkout.pay.secure' ? 'checkout.stripe.secure' : key === 'packCheckout.secure' ? 'packCheckout.secureStripe' : `${key}Stripe`;
+      const twin = at(now, stripeKey);
+      assert.ok(twin && /Stripe/.test(twin) && !/Mercado Pago/.test(twin), `${lang} ${stripeKey}`);
+    }
+  }
+});
+
+test('the FAQ names Stripe only when it sells', async () => {
+  const { faqItems } = await import('@/components/landing/faq-items');
+  const t = (k: string) => k;
+  const opts = { tools: [], locale: 'es', trialOffered: false, claimAll: false, intervals: ['month'] as const };
+  assert.equal(faqItems(t, opts).find((f) => f.id === 7)!.a, 'a7');
+  assert.equal(faqItems(t, { ...opts, stripe: true }).find((f) => f.id === 7)!.a, 'a7Stripe');
+});
+
+test('a Stripe pack records its consent with processor stripe; Mercado Pago ones keep theirs', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/lib/payments/token-checkout-actions.ts', import.meta.url), 'utf8');
+  assert.match(src, /acceptPackCharge\(input, session, 'card', 'stripe'\)/);
+  assert.equal(src.match(/acceptPackCharge\(input, session, '(card|hosted)'\)/g)?.length, 2);
+  const consent = readFileSync(new URL('../src/lib/payments/pack-consent.ts', import.meta.url), 'utf8');
+  assert.match(consent, /processor: input\.processor \?\? 'mercadopago'/);
+});

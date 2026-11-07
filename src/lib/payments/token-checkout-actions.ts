@@ -116,6 +116,7 @@ async function acceptPackCharge(
   input: PackConsentInput,
   session: { user: { id: string; email?: string | null } },
   mode: 'card' | 'hosted',
+  processor: 'mercadopago' | 'stripe' = 'mercadopago',
 ) {
   const gate = await gatePackCharge(input, {
     loadTotals: async () => (await loadPricedPacks())?.totals ?? null,
@@ -145,6 +146,7 @@ async function acceptPackCharge(
       locale: input.locale,
       clientTimezone: typeof input.clientTimezone === 'string' ? input.clientTimezone.slice(0, 64) : null,
       mode,
+      processor,
     });
   } catch (err) {
     console.error('[pack-checkout] consent not stored — refusing before any charge', err);
@@ -537,7 +539,7 @@ export async function payTokenPackWithStripe(
         error: 'El formulario no entregó una tarjeta válida. Inténtalo de nuevo.',
       };
     }
-    const accepted = await acceptPackCharge(input, session, 'card');
+    const accepted = await acceptPackCharge(input, session, 'card', 'stripe');
     if (!accepted.ok) return accepted;
     const { pack } = accepted;
     // Stripe has no test-buyer rule (B33 is Mercado Pago's): the customer is the account itself.

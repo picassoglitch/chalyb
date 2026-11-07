@@ -161,7 +161,7 @@ export default async function CambiarPlanPage({
           ))}
           {what && <p>{what}</p>}
           <p className="ch-muted" style={{ marginTop: 8 }}>
-            {t('card')}
+            {t(stripe ? 'cardStripe' : 'card')}
           </p>
         </DisclosureBlock>
         {publicKey !== undefined && (
@@ -169,7 +169,7 @@ export default async function CambiarPlanPage({
             publicKey={publicKey}
             stripe={stripe}
             payerEmail={mpPayerEmail(session.user.email)}
-            askMpEmail={mpPayerEmailEditable()}
+            askMpEmail={!stripe && mpPayerEmailEditable()}
             planKey={to}
             amountMajor={price.totalCents / 100}
             consentText={consentText}

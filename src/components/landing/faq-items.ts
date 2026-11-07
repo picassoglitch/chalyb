@@ -25,6 +25,8 @@ export function faqItems(
     trialOffered: boolean;
     claimAll: boolean;
     intervals: readonly ('month' | 'year')[];
+    /** The card is paid through Stripe (PAYMENTS_PROVIDER=stripe). */
+    stripe?: boolean;
   },
 ): FaqItem[] {
   const { tools, locale, trialOffered, claimAll, intervals } = opts;
@@ -49,7 +51,7 @@ export function faqItems(
       a: t(claimKey('faqA5', claimAll), { lista: toolList(tools, locale) }),
     },
     ...(tools.some((x) => x.slug === 'chalybcrypto') ? [{ id: 6, q: t('q6'), a: t('a6') }] : []),
-    { id: 7, q: t('q7'), a: t('a7') },
+    { id: 7, q: t('q7'), a: t(opts.stripe ? 'a7Stripe' : 'a7') },
     // "pasar de mensual a anual" only when both are on sale.
     { id: 8, q: t('q8'), a: both ? t('a8') : t('a8OneInterval') },
   ];

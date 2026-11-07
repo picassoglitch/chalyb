@@ -4,6 +4,7 @@
 // offer a search engine should advertise. FAQPage carries the same questions
 // the page shows (faq-items.ts).
 
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
   allToolsClaimAllowed,
@@ -36,6 +37,7 @@ export async function JsonLd() {
   ]);
   const offers = paidCheckoutEnabled() && legalPublished();
   const faq = faqItems(t, {
+    stripe: sellsThroughStripe(),
     tools,
     locale,
     trialOffered: trialFlowEnabled(),

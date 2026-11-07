@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { sellsThroughStripe } from '@/lib/payments/stripe-config';
 import {
   Briefcase,
   Clapperboard,
@@ -46,7 +47,7 @@ export async function Audience({ tools }: { tools: PublicTool[] }) {
       : `${key}P`;
   const strip: [LucideIcon, string][] = [
     [Globe, t('strip1')],
-    [ShieldCheck, t('strip2')],
+    [ShieldCheck, t(sellsThroughStripe() ? 'strip2Stripe' : 'strip2')],
     [CircleCheck, t('strip3')],
   ];
   return (

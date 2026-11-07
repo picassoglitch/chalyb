@@ -50,6 +50,7 @@ export async function recordPackConsent(input: {
   locale: string;
   clientTimezone: string | null;
   mode: 'card' | 'hosted';
+  processor?: 'mercadopago' | 'stripe';
 }): Promise<ConsentEventRecord> {
   const locale = input.locale === 'en' ? 'en' : 'es';
   const t = await packCheckoutTranslator(locale);
@@ -83,7 +84,7 @@ export async function recordPackConsent(input: {
     trial_end_utc: null,
     charge_date_utc: new Date().toISOString(),
     reminder_date_utc: null,
-    payment_method: { processor: 'mercadopago', mode: input.mode },
+    payment_method: { processor: input.processor ?? 'mercadopago', mode: input.mode },
     marketing_opt_in: false,
     details: {
       credits: input.pack.tokens,

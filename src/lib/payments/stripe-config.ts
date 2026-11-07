@@ -18,6 +18,11 @@ export function paymentsProvider(env: Env): PaymentsProvider {
   return env[PAYMENTS_PROVIDER_VAR]?.trim().toLowerCase() === 'stripe' ? 'stripe' : 'mercadopago';
 }
 
+/** Server-side read for copy that names the gateway (landing, sheets, emails). */
+export function sellsThroughStripe(env: Env = process.env): boolean {
+  return paymentsProvider(env) === 'stripe';
+}
+
 export interface StripeCredentials {
   secretKey: string | undefined;
   publishableKey: string | undefined;

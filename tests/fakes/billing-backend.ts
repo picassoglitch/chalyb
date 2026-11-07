@@ -98,6 +98,26 @@ function rpc(b: FakeBackend, name: string, args: Row): Response {
     });
     return json(200, { ok: true, already_granted: false, balance: args.p_tokens });
   }
+  if (name === 'clawback_token_pack') {
+    // Same contract as migration 0065: once per payment, only what was granted.
+    const purchase = (b.tables.token_pack_purchases ?? []).find(
+      (p) => p.mp_payment_id === args.p_mp_payment_id,
+    );
+    if (!purchase) return json(200, { ok: false, error: 'no_purchase' });
+    if (purchase.clawed_back_at) return json(200, { ok: true, already_clawed_back: true });
+    purchase.clawed_back_at = new Date().toISOString();
+    purchase.clawback_reason = args.p_reason;
+    const tokens = Number(purchase.tokens ?? 0);
+    return json(200, {
+      ok: true,
+      already_clawed_back: false,
+      user_id: purchase.user_id,
+      tokens_granted: tokens,
+      tokens_removed: tokens,
+      previous_balance: tokens,
+      balance: 0,
+    });
+  }
   return json(200, null);
 }
 

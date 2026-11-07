@@ -219,6 +219,7 @@ export async function settleOneOffCharge(
             currency,
             paymentId: mpId,
             appUrl: getAppUrl(),
+            gateway: charge.source === 'stripe' ? 'stripe' : 'mercadopago',
           });
           void sendEmail({
             to: email,

@@ -208,7 +208,8 @@ test('the form sends mpEmail only when asked, and both locales have the copy', (
     'src/app/[locale]/(dashboard)/app/prueba/pago/page.tsx',
     'src/app/[locale]/(dashboard)/app/billing/cambiar/page.tsx',
   ]) {
-    assert.match(read(page), /askMpEmail=\{mpPayerEmailEditable\(\)\}/, page);
+    // Never under Stripe: that field is about a Mercado Pago account.
+    assert.match(read(page), /askMpEmail=\{!stripe && mpPayerEmailEditable\(\)\}/, page);
   }
   for (const lang of ['es', 'en']) {
     const m = JSON.parse(read(`messages/${lang}.json`)).checkout.pay.mpEmail;

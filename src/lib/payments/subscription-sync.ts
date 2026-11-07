@@ -450,6 +450,7 @@ export async function applySubscriptionSnapshot(
           nextChargeLabel: nextPaymentDate ? formatDateEs(nextPaymentDate) : null,
           preapprovalId,
           appUrl: getAppUrl(),
+          gateway: snapshot.provider,
         });
         void sendEmail({
           to: email,
