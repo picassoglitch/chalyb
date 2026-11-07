@@ -138,6 +138,9 @@ export function jobFromStream(
       durationSec: Math.round(c.duration_s),
       downloadUrl: c.download_url ?? '',
     })),
+    // The list (/streams) sends no clips, only clip_count: without it Inicio
+    // and Mis resultados said "0 clips" for a finished video.
+    clipCount: s.clip_count,
     attempts: 1,
     settled: Boolean(s.settled),
     createdAt: s.created_at,
