@@ -5,6 +5,8 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
+  CostReportError,
+  fetchCostReport,
   reconcileByModel,
   sumCostReport,
   utcMonth,
@@ -12,10 +14,8 @@ import {
   type ReconRow,
 } from './reconciliation-core';
 
-const API = 'https://api.anthropic.com/v1/organizations/cost_report';
-
 export type AnthropicRecon =
-  | { ok: false; error: 'no_key' | 'api' | 'db'; detail?: string }
+  | { ok: false; error: 'no_key' | 'auth' | 'timeout' | 'api' | 'db'; detail?: string }
   | {
       ok: true;
       start: string;
@@ -28,32 +28,6 @@ export type AnthropicRecon =
       byWorkspace: Array<{ workspace: string; micros: number }>;
     };
 
-async function fetchCostReport(start: Date, end: Date, key: string): Promise<CostReportPage[]> {
-  const pages: CostReportPage[] = [];
-  let page: string | null = null;
-  for (let i = 0; i < 10; i++) {
-    const qs = new URLSearchParams({
-      starting_at: start.toISOString(),
-      ending_at: end.toISOString(),
-      bucket_width: '1d',
-      limit: '31',
-    });
-    qs.append('group_by[]', 'description');
-    qs.append('group_by[]', 'workspace_id');
-    if (page) qs.set('page', page);
-    const res = await fetch(`${API}?${qs}`, {
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'user-agent': 'Chalyb/1.0 (https://www.chalyb.com)' },
-      cache: 'no-store',
-    });
-    if (!res.ok) throw new Error(`Anthropic ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const body = (await res.json()) as CostReportPage;
-    pages.push(body);
-    if (!body.has_more || !body.next_page) break;
-    page = body.next_page;
-  }
-  return pages;
-}
-
 export async function reconcileAnthropic(now = new Date(), monthOffset = 0): Promise<AnthropicRecon> {
   const key = process.env.ANTHROPIC_ADMIN_KEY;
   if (!key) return { ok: false, error: 'no_key' };
@@ -65,7 +39,8 @@ export async function reconcileAnthropic(now = new Date(), monthOffset = 0): Pro
     pages = await fetchCostReport(start, end, key);
   } catch (e) {
     console.error('[recon] cost report failed', e instanceof Error ? e.message : e);
-    return { ok: false, error: 'api', detail: e instanceof Error ? e.message : String(e) };
+    const kind = e instanceof CostReportError ? e.kind : 'api';
+    return { ok: false, error: kind, detail: e instanceof Error ? e.message : String(e) };
   }
   const billed = sumCostReport(pages);
 

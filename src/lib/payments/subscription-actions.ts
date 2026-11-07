@@ -36,6 +36,7 @@ import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { paidCheckoutEnabled } from '@/lib/config/flags';
 import {
   getMercadoPago,
+  getMercadoPagoIsolated,
   isCheckoutReady,
   checkoutNotReadyError,
   logMpCreate,
@@ -47,6 +48,8 @@ import {
   sellerMatches,
 } from './mercadopago';
 import { isCardErrorCode } from './mp-config';
+import { declineReasonOf, rejectionDetailOf, type DeclineReason } from './card-decline';
+import { meliSessionOptions } from './device-session';
 import {
   isSubscribableTier,
   normalizePreapprovalStatus,
@@ -76,6 +79,8 @@ export interface AuthorizeSubscriptionResult {
     | 'sales_closed';
   /** Human-readable message for the form. */
   error?: string;
+  /** Kind of card rejection, for the form's per-reason copy. */
+  decline?: DeclineReason;
 }
 
 interface PreparedSubscription {
@@ -247,6 +252,8 @@ async function prepareTierSubscription(targetTier: SubscriptionTier): Promise<Pr
 export async function authorizeTierSubscription(input: {
   tier: SubscriptionTier;
   cardTokenId: string;
+  /** MP_DEVICE_SESSION_ID from the card form, sent as X-meli-session-id. */
+  deviceSessionId?: string | null;
 }): Promise<AuthorizeSubscriptionResult> {
   // One try around everything, pre-flight included: a throw here would come
   // back as a generic server-function 500 and the client would only see
@@ -266,7 +273,8 @@ export async function authorizeTierSubscription(input: {
     if (!prep.ok) return prep.result;
     const { session, pricing, payerEmail, admin, externalReference } = prep.prepared;
 
-    const { preapproval } = getMercadoPago();
+    // Isolated: the SDK keeps a call's requestOptions on its client for good.
+    const { preapproval } = getMercadoPagoIsolated();
     const result = await preapproval.create({
       body: {
         reason: pricing.description,
@@ -282,6 +290,7 @@ export async function authorizeTierSubscription(input: {
         back_url: mpReturnUrl('/app/subscription'),
         status: 'authorized',
       },
+      requestOptions: meliSessionOptions(input.deviceSessionId),
     });
     logMpCreate('preapproval', { id: result.id, externalReference });
 
@@ -373,9 +382,14 @@ export async function authorizeTierSubscription(input: {
     // B36: the code (CC_VAL_433, cc_rejected_*, …) and MP's own words go to
     // the log; the customer gets plain copy, never the raw error.
     const code = mpErrorCodeOf(err);
-    console.error('[mp/subscription] preapproval.create failed', { mp_code: code }, err);
-    return isCardErrorCode(code)
-      ? { ok: false, reason: 'rejected', error: CARD_ERROR }
+    const detail = rejectionDetailOf(err);
+    console.error(
+      '[mp/subscription] preapproval.create failed',
+      { mp_code: code, status_detail: detail },
+      err,
+    );
+    return detail || isCardErrorCode(code)
+      ? { ok: false, reason: 'rejected', error: CARD_ERROR, decline: declineReasonOf(detail) }
       : { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
 }

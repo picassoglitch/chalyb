@@ -1196,7 +1196,17 @@
       "cta": "Empezar mis 7 días gratis",
       "ctaHint": "Marca la casilla para continuar. Puedes cancelar cuando quieras.",
       "consentError": "Marca la casilla para confirmar el cobro automático. Puedes cancelar cuando quieras.",
-      "declined": "Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.",
+      "decline": {
+        "risk": "Mercado Pago no pudo aprobar este pago por seguridad. Intenta con otra tarjeta o más tarde; no se hizo ningún cargo.",
+        "funds": "Tu banco rechazó el cargo por saldo o límite insuficiente. Prueba con otra tarjeta.",
+        "authorize": "Tu banco pide que autorices este pago. Llámale para autorizarlo y vuelve a intentar, o usa otra tarjeta.",
+        "card_data": "Algún dato de la tarjeta no coincide. Revisa el número, la fecha y el código de seguridad.",
+        "disabled": "Tu tarjeta no está habilitada para compras en línea. Actívala con tu banco o usa otra.",
+        "max_attempts": "Llegaste al límite de intentos con esta tarjeta. Usa otra o intenta más tarde.",
+        "duplicated": "Mercado Pago ya recibió un pago igual hace un momento. Espera unos minutos antes de intentar de nuevo.",
+        "bank": "Tu banco no aceptó esta tarjeta. Prueba con otra o habla con tu banco.",
+        "unknown": "Mercado Pago no pudo validar esta tarjeta. Revisa los datos o prueba con otra."
+      },
       "saving": "Guardando tu tarjeta…",
       "cardUsed": "Esta tarjeta ya tuvo una prueba gratis. Puedes elegir un plan y empezar hoy.",
       "cardUnverified": "No pudimos verificar esta tarjeta para la prueba gratis. Inténtalo de nuevo con la misma tarjeta u otra.",
@@ -1959,6 +1969,9 @@
         "note": "Lo que Anthropic nos cobró contra lo que los sistemas registraron (y por lo tanto cobraron a los usuarios). Una diferencia positiva es uso que pagamos y no cobramos.",
         "billed": "Cobrado por Anthropic",
         "recorded": "Registrado",
+        "measured": "Medido: facturación real de Anthropic (Admin API)",
+        "estimated": "Estimado: lo que los motores calcularon con su tabla de precios",
+        "unverified": "Sin costo medido: el margen no se puede verificar hasta que esta consulta funcione. No uses los costos de ejemplo de abajo como evidencia.",
         "gap": "Diferencia",
         "model": "Modelo",
         "workspaces": "Por workspace de Anthropic",
@@ -1966,7 +1979,9 @@
         "lastMonth": "Mes pasado",
         "error": {
           "no_key": "falta ANTHROPIC_ADMIN_KEY en Vercel",
-          "api": "Anthropic no respondió (revisa que la llave sea de Admin)",
+          "auth": "Anthropic rechazó ANTHROPIC_ADMIN_KEY (no es válida, se revocó o no es una llave de Admin sk-ant-admin…)",
+          "timeout": "Anthropic no respondió a tiempo; recarga la página",
+          "api": "Anthropic devolvió un error",
           "db": "no se pudo leer el uso registrado"
         }
       }
@@ -4021,14 +4036,25 @@
       "actionsTitle": "Acciones",
       "cost": {
         "title": "Lo que usó",
-        "used": "{n} créditos",
-        "base": "Procesamiento base",
-        "none": "Todavía no se cobra nada por este video.",
+        "used": "{n} créditos cobrados",
+        "none": "Los cobros de este video no se desglosan aquí.",
         "estimate": "Estimado por corrida: hasta {n} créditos",
         "unlimited": "Tu plan no tiene límite de créditos",
         "runs": "{n, plural, one {# corrida más con tu saldo} other {# corridas más con tu saldo}}",
         "usd": "Costo real (solo administradores): ${n} USD",
-        "runsNone": "Tu saldo no alcanza para otra corrida"
+        "runsNone": "Tu saldo no alcanza para otra corrida",
+        "soFar": "Cobrado hasta ahora: {n} créditos",
+        "reserved": "Reservado: hasta {n} créditos más",
+        "reservedNote": "Lo reservado se aparta de tu saldo mientras corre; al terminar solo se cobra lo que se usó.",
+        "unknown": "No pudimos leer lo que se cobró por este video.",
+        "seeUsage": "Ver en Uso",
+        "kind": {
+          "base": "Procesamiento base",
+          "compute": "Cómputo",
+          "transcription": "Transcripción",
+          "ai": "IA",
+          "boost": "Prioridad"
+        }
       },
       "source": {
         "title": "Video original",

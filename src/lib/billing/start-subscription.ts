@@ -29,6 +29,7 @@ import {
 import { lealtadCalendar, resumeStep } from './lealtad';
 import {
   getMercadoPago,
+  getMercadoPagoIsolated,
   getAppUrl,
   isCheckoutReady,
   logMpCreate,
@@ -85,6 +86,12 @@ import {
   cancelUnchargedWithoutRow,
 } from '@/lib/payments/unrecorded-preapproval';
 import { writeRowWithRetry } from '@/lib/payments/row-retry';
+import {
+  declineReasonOf,
+  rejectionDetailOf,
+  type DeclineReason,
+} from '@/lib/payments/card-decline';
+import { meliSessionOptions } from '@/lib/payments/device-session';
 
 export type StartMode = 'trial' | 'paid' | 'change';
 
@@ -101,6 +108,8 @@ export interface StartInput {
   intent?: 'change';
   /** For a change: when the new plan starts charging (omit = today). */
   effectiveAt?: Date;
+  /** MP_DEVICE_SESSION_ID from the card form, sent as X-meli-session-id. */
+  deviceSessionId?: string | null;
 }
 
 export type StartError =
@@ -121,7 +130,7 @@ export type StartError =
 
 export type StartResult =
   | { ok: true; consentId: string; mode: StartMode; preapprovalId: string }
-  | { ok: false; code: StartError };
+  | { ok: false; code: StartError; decline?: DeclineReason };
 
 interface CardToken {
   first_six_digits?: string;
@@ -372,7 +381,8 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
   let preapprovalId: string;
   let status: string;
   try {
-    const { preapproval } = getMercadoPago();
+    // Isolated: the SDK keeps a call's requestOptions on its client for good.
+    const { preapproval } = getMercadoPagoIsolated();
     const created = await preapproval.create({
       body: {
         reason: `Chalyb ${PLAN_NAMES[input.planKey]}`,
@@ -390,22 +400,26 @@ export async function startSubscription(input: StartInput): Promise<StartResult>
         back_url: backUrl,
         status: 'authorized',
       },
+      requestOptions: meliSessionOptions(input.deviceSessionId),
     });
     logMpCreate('preapproval', { id: created.id, externalReference: reference });
     if (!created.id) return { ok: false, code: 'MP_ERROR' };
     preapprovalId = created.id;
     status = normalizePreapprovalStatus(created.status);
   } catch (err) {
-    // B36: the MP code (e.g. CC_VAL_433) goes to the log; the customer gets
-    // the friendly card error that DECLINED maps to.
+    // B36: the MP codes go to the log; the customer gets the sentence for
+    // the kind of decline (a risk rejection is not the bank's).
+    const detail = rejectionDetailOf(err);
     console.error(
       '[billing/start] preapproval.create failed',
-      { mp_code: mpErrorCodeOf(err) },
+      { mp_code: mpErrorCodeOf(err), status_detail: detail },
       err,
     );
-    return { ok: false, code: 'DECLINED' };
+    return { ok: false, code: 'DECLINED', decline: declineReasonOf(detail) };
   }
-  if (status !== 'authorized' && status !== 'pending') return { ok: false, code: 'DECLINED' };
+  if (status !== 'authorized' && status !== 'pending') {
+    return { ok: false, code: 'DECLINED', decline: 'unknown' };
+  }
 
   // ── Evidence, then our copy ────────────────────────────────────────
   // A subscription without its consent evidence must not survive: if the

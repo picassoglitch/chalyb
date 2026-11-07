@@ -18,6 +18,8 @@ export function FusionMark({ size = 26, className }: { size?: number; className?
       width={size}
       height={size}
       className={className}
+      // Static file, not /_next/image: an aborted optimizer request hung this URL for every later page.
+      unoptimized
       priority
     />
   );

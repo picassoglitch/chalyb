@@ -8,6 +8,7 @@ import { termsAcceptancePending } from '@/lib/legal/reaccept-server';
 import { isAdminRole } from '@/lib/billing/tiers';
 import { changePlan } from '@/lib/billing/billing-actions';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
+import { cleanDeviceSessionId } from '@/lib/payments/device-session';
 import {
   paidCheckoutEnabled,
   vipYearEnabled,
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
     consentChecked: true,
     locale: body.locale === 'en' ? 'en' : 'es',
     clientTimezone: typeof body.timezone === 'string' ? body.timezone : null,
+    deviceSessionId: cleanDeviceSessionId(body.deviceSessionId),
   });
   if (!result.ok) return NextResponse.json(result, { status: statusForStartError(result.code) });
   return NextResponse.json(result);

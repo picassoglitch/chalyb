@@ -18,6 +18,7 @@ import {
 } from '@/components/payments/mp-card-brick';
 import { Markup } from '@/components/ui/markup';
 import type { PlanKey } from '@/config/pricing';
+import { asDeclineReason } from '@/lib/payments/card-decline';
 
 type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
 
@@ -70,11 +71,13 @@ export function PayForm({
             province: province === 'qc' ? 'QC' : null,
             timezone,
             locale,
+            deviceSessionId: card.deviceSessionId,
           }),
         });
         const body = (await res.json().catch(() => ({}))) as {
           ok?: boolean;
           code?: string;
+          decline?: string;
           consentId?: string;
         };
         if (res.ok && body.ok) {
@@ -91,7 +94,7 @@ export function PayForm({
               : body.code === 'CARD_UNVERIFIED'
                 ? t('cardUnverified')
               : body.code === 'DECLINED'
-                ? t('declined')
+                ? t(`decline.${asDeclineReason(body.decline)}`)
                 : body.code === 'QUEBEC'
                   ? tPlans('quebec')
                   : body.code === 'ACCOUNT_CLOSED' || body.code === 'PAID_REFUSED'

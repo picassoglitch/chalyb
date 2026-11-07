@@ -25,7 +25,7 @@
         host → parent   chalyb-mp:error           { errorType, cause, message }
         host → parent   chalyb-mp:poisoned        { count, sample }   an uncaught error while the Brick was coming up
         host → parent   chalyb-mp:extension       { script, extensionId }
-        host → parent   chalyb-mp:submit          { id, formData, additionalData }
+        host → parent   chalyb-mp:submit          { id, formData, additionalData, deviceSessionId }
         host → parent   chalyb-mp:resize          { height }
     -->
     <style>
@@ -145,6 +145,22 @@
           });
         }
 
+        // Device ID: MP's security.js sets MP_DEVICE_SESSION_ID (X-meli-session-id),
+        // loaded after onReady so a failure there can never abandon a working form.
+        function loadDeviceId() {
+          if (document.getElementById('mp-security')) return;
+          var s = document.createElement('script');
+          s.id = 'mp-security';
+          s.src = 'https://www.mercadopago.com/v2/security.js';
+          s.setAttribute('view', 'checkout');
+          s.async = true;
+          document.head.appendChild(s);
+        }
+        function deviceId() {
+          var v = window.MP_DEVICE_SESSION_ID;
+          return typeof v === 'string' && v ? v : null;
+        }
+
         // ── The Brick ───────────────────────────────────────────────────
         var controller = null;
 
@@ -164,7 +180,12 @@
               }
               var id = ++submitId;
               pendingSubmits[id] = { resolve: function () {}, reject: function () {} };
-              send('submit', { id: id, formData: formData, additionalData: null });
+              send('submit', {
+                id: id,
+                formData: formData,
+                additionalData: null,
+                deviceSessionId: deviceId()
+              });
             })
             .catch(function (err) {
               send('error', { errorType: 'non_critical', cause: 'invalid_form', message: err && err.message ? err.message : String(err) });
@@ -199,6 +220,7 @@
             callbacks: {
               onReady: function () {
                 ready = true;
+                loadDeviceId();
                 send('ready');
                 reportHeight();
               },
@@ -209,7 +231,8 @@
                   send('submit', {
                     id: id,
                     formData: formData,
-                    additionalData: additionalData || null
+                    additionalData: additionalData || null,
+                    deviceSessionId: deviceId()
                   });
                 });
               },
