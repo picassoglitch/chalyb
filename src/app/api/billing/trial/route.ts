@@ -18,6 +18,7 @@ import {
 import { startSubscription } from '@/lib/billing/start-subscription';
 import { PLAN_KEYS, planOnSale, statusForStartError } from '@/lib/billing/api';
 import { cleanDeviceSessionId, deviceSessionAudit } from '@/lib/payments/device-session';
+import { cleanPayerEmail } from '@/lib/payments/payer-email';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
     clientTimezone: typeof body.timezone === 'string' ? body.timezone : null,
     locale: body.locale === 'en' ? 'en' : 'es',
     deviceSessionId: cleanDeviceSessionId(body.deviceSessionId),
+    mpPayerEmail: cleanPayerEmail(body.mpEmail),
   });
   if (!result.ok) return NextResponse.json(result, { status: statusForStartError(result.code) });
   return NextResponse.json(result);

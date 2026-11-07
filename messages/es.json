@@ -1225,7 +1225,12 @@
       "periodMonth": "cada mes",
       "accountClosed": "Esta cuenta está cerrada por un contracargo de mala fe sin pagar (Términos de Suscripción §10.6). Siempre puedes descargar tu contenido. Si crees que es un error, escríbenos.",
       "paidRefused": "Por ahora no podemos activar un plan de pago en esta cuenta (Términos de Suscripción §10.8). Siempre puedes usar el plan Gratis.",
-      "chargedNoPlan": "No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar."
+      "chargedNoPlan": "No pudimos activar tu plan. Ya avisamos al equipo; no vuelvas a pagar.",
+      "mpEmail": {
+        "label": "Correo de tu cuenta de Mercado Pago",
+        "hint": "Si tu tarjeta está guardada en una cuenta de Mercado Pago, escribe el correo de esa cuenta; Mercado Pago rechaza el pago si no coincide. Si no tienes cuenta, deja tu correo.",
+        "invalid": "Escribe un correo válido, por ejemplo nombre@gmail.com."
+      }
     },
     "summary": {
       "title": "Resumen",

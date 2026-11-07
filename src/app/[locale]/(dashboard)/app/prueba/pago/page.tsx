@@ -9,6 +9,7 @@ import {
   lealtadOpenToNewCustomers,
   trialFlowEnabled,
   vipYearEnabled,
+  mpPayerEmailEditable,
 } from '@/lib/config/flags';
 import { loadBilling } from '@/lib/billing/subscription-store';
 
@@ -160,6 +161,7 @@ export default async function PagoPage({
               <PayForm
                 publicKey={publicKey}
                 payerEmail={mpPayerEmail(session.user.email)}
+                askMpEmail={mpPayerEmailEditable()}
                 planKey={planKey}
                 amountMajor={price.totalCents / 100}
                 consentText={consentText}

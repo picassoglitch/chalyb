@@ -8,6 +8,7 @@ import {
   lealtadOpenToNewCustomers,
   paidCheckoutEnabled,
   vipYearEnabled,
+  mpPayerEmailEditable,
 } from '@/lib/config/flags';
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
 import { planPrice, type PlanKey } from '@/config/pricing';
@@ -164,6 +165,7 @@ export default async function CambiarPlanPage({
           <PayForm
             publicKey={publicKey}
             payerEmail={mpPayerEmail(session.user.email)}
+            askMpEmail={mpPayerEmailEditable()}
             planKey={to}
             amountMajor={price.totalCents / 100}
             consentText={consentText}

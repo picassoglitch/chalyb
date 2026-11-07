@@ -172,6 +172,12 @@ export function trialFlowRequested(): boolean {
   return readBool('TRIAL_FLOW_ENABLED', false);
 }
 
+/** The card form asks for the buyer's Mercado Pago email and sends it as the
+ *  preapproval payer_email (MP rejects a mismatch). Default off. */
+export function mpPayerEmailEditable(): boolean {
+  return readBool('MP_PAYER_EMAIL_EDITABLE', false);
+}
+
 /** VIP anual is sold wherever annual is (still needs paid checkout). */
 export function vipYearEnabled(): boolean {
   return readBool('VIP_YEAR_ENABLED', true) && paidCheckoutEnabled();

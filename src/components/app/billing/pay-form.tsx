@@ -19,6 +19,7 @@ import {
 import { Markup } from '@/components/ui/markup';
 import type { PlanKey } from '@/config/pricing';
 import { asDeclineReason } from '@/lib/payments/card-decline';
+import { cleanPayerEmail } from '@/lib/payments/payer-email';
 
 type Phase = 'loading' | 'ready' | 'processing' | 'done' | 'pending';
 
@@ -32,6 +33,7 @@ export function PayForm({
   endpoint,
   successHref,
   askWhere,
+  askMpEmail = false,
 }: {
   publicKey: string;
   payerEmail: string | null;
@@ -45,6 +47,8 @@ export function PayForm({
   successHref: string;
   /** Ask where the buyer lives (Quebec, P2-11). */
   askWhere: boolean;
+  /** Ask the email of the buyer's Mercado Pago account (MP_PAYER_EMAIL_EDITABLE). */
+  askMpEmail?: boolean;
 }) {
   const t = useTranslations('checkout.pay');
   const tPlans = useTranslations('plans');
@@ -56,6 +60,8 @@ export function PayForm({
   const [signal, setSignal] = useState(0);
   const [nudge, setNudge] = useState(false);
   const [province, setProvince] = useState('mx');
+  const [mpEmail, setMpEmail] = useState(payerEmail ?? '');
+  const [mpEmailBad, setMpEmailBad] = useState(false);
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   const onSubmit = useCallback(
@@ -72,6 +78,7 @@ export function PayForm({
             timezone,
             locale,
             deviceSessionId: card.deviceSessionId,
+            ...(askMpEmail ? { mpEmail: mpEmail.trim() } : {}),
           }),
         });
         const body = (await res.json().catch(() => ({}))) as {
@@ -109,12 +116,30 @@ export function PayForm({
         return { ok: false, error: t('error') };
       }
     },
-    [endpoint, planKey, checked, province, timezone, locale, router, successHref, t, tPlans],
+    [
+      endpoint,
+      planKey,
+      checked,
+      province,
+      timezone,
+      locale,
+      router,
+      successHref,
+      t,
+      tPlans,
+      askMpEmail,
+      mpEmail,
+    ],
   );
 
   function pay() {
     if (!checked) {
       setNudge(true);
+      return;
+    }
+    // The server would quietly fall back to the account email; say so instead.
+    if (askMpEmail && !cleanPayerEmail(mpEmail)) {
+      setMpEmailBad(true);
       return;
     }
     setSignal((n) => n + 1);
@@ -140,6 +165,33 @@ export function PayForm({
           pending={<p>{t('saving')}</p>}
         />
       </div>
+
+      {askMpEmail && (
+        <label style={{ display: 'grid', gap: 6, fontSize: 17 }}>
+          {t('mpEmail.label')}
+          <input
+            type="email"
+            name="mpEmail"
+            className="ch-input"
+            autoComplete="email"
+            value={mpEmail}
+            onChange={(e) => {
+              setMpEmail(e.target.value);
+              setMpEmailBad(false);
+            }}
+            aria-invalid={mpEmailBad}
+            aria-describedby="mp-email-hint"
+          />
+          <span
+            id="mp-email-hint"
+            role={mpEmailBad ? 'alert' : undefined}
+            className="ch-muted"
+            style={{ fontSize: 15 }}
+          >
+            {mpEmailBad ? t('mpEmail.invalid') : t('mpEmail.hint')}
+          </span>
+        </label>
+      )}
 
       {askWhere && (
         <label
