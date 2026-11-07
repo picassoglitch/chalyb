@@ -54,6 +54,9 @@ import { onLealtadCharge } from '@/lib/billing/lealtad-server';
 import { onChargebackOpened, onRefundReported } from '@/lib/billing/disputes-server';
 import { lealtadFailedVars } from '@/lib/billing/notices';
 import { waitForCheckoutRow } from './row-retry';
+import { isStripeSubscriptionId } from './stripe-config';
+import { cancelStripeSubscription, stripeSubscriptionSnapshot } from './stripe-subscription';
+import type { RecurringChargeReport, SubscriptionSnapshot } from './stripe-mapping';
 
 /** GET /authorized_payments/{id} — one recurring charge of a preapproval.
  *  The SDK has no client for it, hence the hand-rolled type. */
@@ -149,22 +152,51 @@ export async function syncSubscription(
   // with the plan it sold, instead of waiting for it.
   opts: { rowFailed?: { planKey?: PlanKey } } = {},
 ): Promise<SyncOutcome> {
-  const { preapproval } = getMercadoPago();
-  const mp = await preapproval.get({ id: preapprovalId });
+  const snapshot = isStripeSubscriptionId(preapprovalId)
+    ? await stripeSubscriptionSnapshot(preapprovalId)
+    : mpSnapshot(preapprovalId, await getMercadoPago().preapproval.get({ id: preapprovalId }));
+  return applySubscriptionSnapshot(snapshot, opts);
+}
 
-  const ref = parseSubscriptionReference(mp.external_reference);
+type MpPreapproval = Awaited<ReturnType<ReturnType<typeof getMercadoPago>['preapproval']['get']>>;
+
+function mpSnapshot(id: string, mp: MpPreapproval): SubscriptionSnapshot {
+  const charged = (mp.summarized?.charged_quantity ?? 0) > 0;
+  return {
+    id,
+    provider: 'mercadopago',
+    externalReference: mp.external_reference,
+    status: normalizePreapprovalStatus(mp.status),
+    nextPaymentDate: mp.next_payment_date ?? null,
+    amountMajor: mp.auto_recurring?.transaction_amount,
+    currency: mp.auto_recurring?.currency_id,
+    dateCreated: mp.date_created,
+    lastChargedAt: charged ? (mp.summarized?.last_charged_date ?? null) : null,
+    lastChargedAmountMajor: Number(mp.summarized?.last_charged_amount) || null,
+    raw: mp as unknown as Record<string, unknown>,
+  };
+}
+
+/** Our side made to match one gateway snapshot: the row, the tier, the ledger hooks. */
+export async function applySubscriptionSnapshot(
+  snapshot: SubscriptionSnapshot,
+  opts: { rowFailed?: { planKey?: PlanKey } } = {},
+): Promise<SyncOutcome> {
+  const preapprovalId = snapshot.id;
+  const gw = snapshot.provider === 'stripe' ? 'Stripe' : 'MP';
+  const ref = parseSubscriptionReference(snapshot.externalReference);
   if (!ref) {
     console.error('[mp/subscription] preapproval without a reference of ours', {
       preapprovalId,
-      externalReference: mp.external_reference ?? null,
+      externalReference: snapshot.externalReference ?? null,
     });
     return { ok: false, reason: 'not_ours', retry: false };
   }
   const { userId, tier } = ref;
-  const status = normalizePreapprovalStatus(mp.status);
-  const nextPaymentDate = mp.next_payment_date ?? null;
-  const amountMajor = mp.auto_recurring?.transaction_amount;
-  const currency = mp.auto_recurring?.currency_id;
+  const status = snapshot.status;
+  const nextPaymentDate = snapshot.nextPaymentDate;
+  const amountMajor = snapshot.amountMajor;
+  const currency = snapshot.currency;
 
   const admin = createAdminClient();
 
@@ -192,7 +224,7 @@ export async function syncSubscription(
   // build the row from MP and grant as before.
   const wait = waitForCheckoutRow({
     hasRow: !!before,
-    dateCreated: mp.date_created,
+    dateCreated: snapshot.dateCreated,
     rowFailed: !!opts.rowFailed,
     waitMs: ROW_WAIT_MS,
     now: Date.now(),
@@ -210,8 +242,7 @@ export async function syncSubscription(
   // Mercado Pago's own record of the last charge that went through: one
   // whose authorized_payment notification never reached us still counts, so
   // the unpaid-charge deadline below can't take Pro from someone who paid.
-  const chargedByMp =
-    (mp.summarized?.charged_quantity ?? 0) > 0 ? (mp.summarized?.last_charged_date ?? null) : null;
+  const chargedByMp = snapshot.lastChargedAt;
   const knownChargeAt = (before?.last_charge_at as string | null) ?? null;
   const newerCharge =
     !!chargedByMp &&
@@ -248,7 +279,8 @@ export async function syncSubscription(
       user_id: userId,
       tier,
       mp_preapproval_id: preapprovalId,
-      external_reference: mp.external_reference,
+      external_reference: snapshot.externalReference,
+      ...(snapshot.provider === 'stripe' ? { provider: 'stripe' } : {}),
       ...(!before && opts.rowFailed?.planKey ? { plan_key: opts.rowFailed.planKey } : {}),
       status: gate.storedStatus,
       amount_cents: Math.round((amountMajor ?? 0) * 100),
@@ -263,7 +295,7 @@ export async function syncSubscription(
         ? {}
         : { next_charge_at: nextPaymentDate ?? before?.next_charge_at ?? null }),
       ended_at: isLiveStatus(status) ? null : new Date().toISOString(),
-      raw: mp as unknown as Record<string, unknown>,
+      raw: snapshot.raw,
     },
     { onConflict: 'mp_preapproval_id' },
   );
@@ -281,9 +313,7 @@ export async function syncSubscription(
         preapprovalId,
         planKey,
         trial: !!trialEndsAt,
-        amountCents: Math.round(
-          (Number(mp.summarized?.last_charged_amount) || (amountMajor ?? 0)) * 100,
-        ),
+        amountCents: Math.round((snapshot.lastChargedAmountMajor || (amountMajor ?? 0)) * 100),
       });
     }
   }
@@ -315,7 +345,7 @@ export async function syncSubscription(
     await notify({
       severity: 'critical',
       title: 'Suscripción con monto que no corresponde — no se otorgó nada',
-      body: `MP suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
+      body: `${gw} suscripción ${preapprovalId} · cobra $${(amountMajor ?? 0).toFixed(2)} ${currency ?? '?'} por ${tier}`,
       href: '/dashboard/dinero',
       source: 'mp.webhook',
     });
@@ -406,7 +436,7 @@ export async function syncSubscription(
       await notify({
         severity: 'info',
         title: `Suscripción ${tier} activa — $${(amountMajor ?? 0).toFixed(2)} ${currency ?? ''}/mes`,
-        body: `${email ?? userId} · MP suscripción ${preapprovalId}`,
+        body: `${email ?? userId} · ${gw} suscripción ${preapprovalId}`,
         href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
@@ -430,6 +460,11 @@ export async function syncSubscription(
       }
     }
     return { ok: true, status, applied: 'activate' };
+  }
+
+  // An unpaid Stripe checkout that expired never granted anything, so it ends nothing.
+  if (entitlement.kind === 'end' && snapshot.neverActivated) {
+    return { ok: true, status, applied: 'none' };
   }
 
   if (entitlement.kind === 'end') {
@@ -457,7 +492,7 @@ export async function syncSubscription(
         return { ok: false, reason: 'db', retry: true };
       }
       if (previousStatus !== status) {
-        const why = status === 'paused' ? 'pausada por Mercado Pago (cobro fallido)' : 'cancelada';
+        const why = status === 'paused' ? `pausada por ${gw} (cobro fallido)` : 'cancelada';
         await logAudit({
           action: 'tier.downgrade',
           actorId: null,
@@ -471,7 +506,7 @@ export async function syncSubscription(
         await notify({
           severity: status === 'paused' ? 'warning' : 'info',
           title: `Suscripción ${tier} ${why}`,
-          body: `${email ?? userId} · acceso hasta ${formatDateEs(endsAtIso)} · MP ${preapprovalId}`,
+          body: `${email ?? userId} · acceso hasta ${formatDateEs(endsAtIso)} · ${gw} ${preapprovalId}`,
           href: '/dashboard/dinero',
           source: 'mp.webhook',
         });
@@ -494,27 +529,52 @@ export async function recordAuthorizedPayment(
   authorizedPaymentId: string,
 ): Promise<{ ok: boolean; retry?: boolean; synced?: SyncOutcome }> {
   const ap = await mpGet<MpAuthorizedPayment>(`/authorized_payments/${authorizedPaymentId}`);
-  const ref = parseSubscriptionReference(ap.external_reference);
-  const preapprovalId = ap.preapproval_id;
-  if (!ref || !preapprovalId) {
-    console.error('[mp/subscription] authorized payment without a reference of ours', {
+  if (!ap.preapproval_id) {
+    console.error('[mp/subscription] authorized payment without a preapproval', {
       authorizedPaymentId,
       externalReference: ap.external_reference ?? null,
+    });
+    return { ok: false, retry: false };
+  }
+  return applyRecurringCharge({
+    provider: 'mercadopago',
+    paymentId: ap.payment?.id ? String(ap.payment.id) : null,
+    subscriptionId: ap.preapproval_id,
+    externalReference: ap.external_reference,
+    amountMajor: ap.transaction_amount ?? 0,
+    currency: ap.currency_id ?? 'MXN',
+    // ONE status vocabulary in the ledger: `ap.status` (scheduled | processed | …) once made
+    // a settled charge read "processed", invisible to every `status = 'approved'` filter.
+    status: ap.payment?.status
+      ? paymentStatusToChargeStatus(ap.payment.status)
+      : authorizedPaymentStatusToChargeStatus(ap.status),
+    chargedAt: new Date(ap.debit_date ?? ap.date_created ?? new Date().toISOString()).toISOString(),
+    retryAttempt: ap.retry_attempt ?? 0,
+    nextRetryDate: ap.next_retry_date ?? null,
+    raw: ap as unknown as Record<string, unknown>,
+  });
+}
+
+/** One recurring charge, from either gateway: ledger, grace or settle, then re-sync. */
+export async function applyRecurringCharge(
+  report: RecurringChargeReport,
+): Promise<{ ok: boolean; retry?: boolean; synced?: SyncOutcome }> {
+  const ref = parseSubscriptionReference(report.externalReference);
+  const preapprovalId = report.subscriptionId;
+  const gw = report.provider === 'stripe' ? 'Stripe' : 'MP';
+  if (!ref || !preapprovalId) {
+    console.error('[mp/subscription] authorized payment without a reference of ours', {
+      paymentId: report.paymentId,
+      externalReference: report.externalReference ?? null,
       preapprovalId: preapprovalId ?? null,
     });
     return { ok: false, retry: false };
   }
 
   const admin = createAdminClient();
-  const paymentId = ap.payment?.id;
-  // ONE status vocabulary in the ledger. `ap.payment.status` already speaks
-  // it; `ap.status` does not (scheduled | processed | recycling | cancelled),
-  // and writing it raw is what made a settled monthly charge read as
-  // "processed" — invisible to every `status = 'approved'` filter on
-  // /app/billing and in the revenue queries. Normalise before it is stored.
-  const paymentStatus: ChargeStatus = ap.payment?.status
-    ? paymentStatusToChargeStatus(ap.payment.status)
-    : authorizedPaymentStatusToChargeStatus(ap.status);
+  const paymentId = report.paymentId;
+  const paymentStatus: ChargeStatus = report.status;
+  const chargedCents = Math.round(report.amountMajor * 100);
   // 'scheduled' means Mercado Pago has not tried the card yet: there is no
   // payment to record, only a date. Everything else has a payment id.
   if (paymentId) {
@@ -539,11 +599,12 @@ export async function recordAuthorizedPayment(
         kind: 'subscription',
         mp_payment_id: String(paymentId),
         mp_preapproval_id: preapprovalId,
-        amount_cents: Math.round((ap.transaction_amount ?? 0) * 100),
-        iva_cents: ivaPortion(Math.round((ap.transaction_amount ?? 0) * 100)),
-        currency: ap.currency_id ?? 'MXN',
+        ...(report.provider === 'stripe' ? { provider: 'stripe' } : {}),
+        amount_cents: chargedCents,
+        iva_cents: ivaPortion(chargedCents),
+        currency: report.currency,
         status: ledgerStatus(paymentStatus, previousLedgerStatus),
-        raw: ap as unknown as Record<string, unknown>,
+        raw: report.raw,
       },
       { onConflict: 'mp_payment_id' },
     );
@@ -567,9 +628,7 @@ export async function recordAuthorizedPayment(
       // last_charge_at only ever moves forward. Writing an older charge's
       // date would roll it back and could start the unpaid-charge deadline
       // for someone who has paid.
-      const chargeAt = new Date(
-        ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
-      ).toISOString();
+      const chargeAt = report.chargedAt;
       const storedAt = (subRow?.last_charge_at as string | null | undefined) ?? null;
       const olderThanStored = !!storedAt && Date.parse(chargeAt) < Date.parse(storedAt);
       // A charge from an EARLIER cycle (a replay, or a notice that arrived
@@ -607,16 +666,16 @@ export async function recordAuthorizedPayment(
           preapprovalId,
           planKey: (subRow?.plan_key as PlanKey | null | undefined) ?? null,
           trial: !!subRow?.trial_ends_at,
-          amountCents: Math.round((ap.transaction_amount ?? 0) * 100),
+          amountCents: chargedCents,
         });
       }
-      await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), ap);
+      await chargeEmail('charge_ok', ref.userId, preapprovalId, String(paymentId), report);
       if (subRow?.plan_key === 'pro_lealtad') {
         await onLealtadCharge({
           userId: ref.userId,
           preapprovalId,
           paymentId: String(paymentId),
-          chargedCents: Math.round((ap.transaction_amount ?? 0) * 100),
+          chargedCents,
         }).catch((err) => console.error('[mp/subscription] Pro Lealtad step not recorded', err));
       }
     } else if (paymentStatus === 'rejected') {
@@ -638,7 +697,7 @@ export async function recordAuthorizedPayment(
         .update({ tier_ends_at: graceEnds })
         .eq('id', ref.userId)
         .is('tier_ends_at', null);
-      await chargeEmail('charge_failed', ref.userId, preapprovalId, String(paymentId), ap);
+      await chargeEmail('charge_failed', ref.userId, preapprovalId, String(paymentId), report);
       void track('payment_failed', {});
     }
     if (paymentStatus === 'charged_back' || paymentStatus === 'in_mediation') {
@@ -654,13 +713,13 @@ export async function recordAuthorizedPayment(
       await onRefundReported({
         userId: ref.userId,
         mpPaymentId: String(paymentId),
-        amountMajor: ap.transaction_amount ?? null,
+        amountMajor: report.amountMajor,
       });
     } else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
       await notify({
         severity: 'warning',
         title: `Cobro mensual ${paymentStatus === 'rejected' ? 'rechazado' : 'cancelado'} — ${ref.tier}`,
-        body: `MP pago #${String(paymentId)} · suscripción ${preapprovalId} · reintento ${ap.retry_attempt ?? 0}${ap.next_retry_date ? ` · próximo ${formatDateEs(ap.next_retry_date)}` : ''}`,
+        body: `${gw} pago #${String(paymentId)} · suscripción ${preapprovalId} · reintento ${report.retryAttempt}${report.nextRetryDate ? ` · próximo ${formatDateEs(report.nextRetryDate)}` : ''}`,
         href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
@@ -678,6 +737,7 @@ export async function recordAuthorizedPayment(
  * that did not happen.
  */
 export async function cancelPreapproval(preapprovalId: string): Promise<void> {
+  if (isStripeSubscriptionId(preapprovalId)) return cancelStripeSubscription(preapprovalId);
   const { preapproval } = getMercadoPago();
   await preapproval.update({ id: preapprovalId, body: { status: 'cancelled' } });
 }
@@ -722,8 +782,8 @@ async function cancelOtherLiveSubscriptions(
       console.error('[mp/subscription] could not cancel the replaced subscription', id, err);
       await notify({
         severity: 'critical',
-        title: 'Suscripción anterior sigue activa — cancélala en Mercado Pago',
-        body: `usuario ${userId} · MP ${id} fue reemplazada por ${keepPreapprovalId} pero no se pudo cancelar`,
+        title: `Suscripción anterior sigue activa — cancélala en ${isStripeSubscriptionId(id) ? 'Stripe' : 'Mercado Pago'}`,
+        body: `usuario ${userId} · ${id} fue reemplazada por ${keepPreapprovalId} pero no se pudo cancelar`,
         href: '/dashboard/dinero',
         source: 'mp.webhook',
       });
@@ -747,7 +807,7 @@ async function chargeEmail(
   userId: string,
   preapprovalId: string,
   paymentId: string,
-  ap: MpAuthorizedPayment,
+  charge: RecurringChargeReport,
 ): Promise<void> {
   const admin = createAdminClient();
   const [{ data: profile }, { data: sub }] = await Promise.all([
@@ -786,7 +846,7 @@ async function chargeEmail(
       vars: lealtadFailedVars({
         nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
         step: (sub?.loyalty_step as number | null) ?? 0,
-        chargedAt: ap.debit_date ?? ap.date_created ?? new Date().toISOString(),
+        chargedAt: charge.chargedAt,
         graceEndsAt: grace,
         appUrl: getAppUrl(),
       }),
@@ -802,7 +862,7 @@ async function chargeEmail(
     vars: {
       nombre: ((profile?.full_name as string | null) ?? '').split(' ')[0] ?? '',
       plan: PLAN_NAMES[planKey],
-      monto: formatMXN(Math.round((ap.transaction_amount ?? 0) * 100)),
+      monto: formatMXN(Math.round(charge.amountMajor * 100)),
       ultimos4: (sub?.card_last4 as string | null) ?? undefined,
       fecha_renovacion: renew ? formatFechaLarga(renew, 'es') : undefined,
       fecha_gracia: grace ? formatFechaLarga(grace, 'es') : undefined,

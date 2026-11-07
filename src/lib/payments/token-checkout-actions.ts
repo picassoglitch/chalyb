@@ -56,6 +56,15 @@ import {
 } from './mercadopago';
 import { paidCheckoutEnabled } from '@/lib/config/flags';
 import { isCardErrorCode } from './mp-config';
+import type Stripe from 'stripe';
+import {
+  ensureStripeCustomer,
+  getStripe,
+  isStripeReady,
+  stripeReturnUrl,
+  usingStripe,
+} from './stripe';
+import { chargeFromPaymentIntent } from './stripe-mapping';
 
 /** Same rule and words as the plan checkout (subscription-actions.ts). */
 const TERMS_PENDING_ERROR = 'Acepta los nuevos Términos (o revisa tus opciones) antes de comprar.';
@@ -177,7 +186,8 @@ export async function createTokenPackCheckout(input: PackConsentInput): Promise<
 
     // Same rule as the tier checkout: decided before the SDK is touched, so
     // nothing is created on the Mercado Pago side and no charge is attempted.
-    if (!isCheckoutReady()) {
+    // With Stripe selling, Mercado Pago must not take new payments (PAYMENTS_PROVIDER).
+    if (usingStripe() || !isCheckoutReady()) {
       console.error('[mp/token-checkout] refusing to start checkout:', checkoutNotReadyError());
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
@@ -357,7 +367,7 @@ export async function payTokenPackWithCard(input: PackConsentInput & {
     if (await termsAcceptancePending(session.user.id)) {
       return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
     }
-    if (!isCheckoutReady()) {
+    if (usingStripe() || !isCheckoutReady()) {
       console.error('[token-pack-card] refusing to charge:', checkoutNotReadyError());
       return { ok: false, reason: 'not_configured', error: checkoutNotReadyError() };
     }
@@ -482,4 +492,141 @@ export async function payTokenPackWithCard(input: PackConsentInput & {
       ? { ok: false, reason: 'rejected', error: CARD_ERROR }
       : { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
   }
+}
+
+/** A charge may have gone through before the error: never claim "no charge" then. */
+const STRIPE_UNCONFIRMED =
+  'No pudimos confirmar el pago. Si se hizo el cargo, tus tokens se acreditan solos en unos minutos; si no, inténtalo de nuevo.';
+
+export interface PackStripeResult extends PackCardPaymentResult {
+  /** Set when the bank wants 3DS: the page runs it, then calls finishTokenPackStripe. */
+  action?: { clientSecret: string; paymentIntentId: string };
+}
+
+/** A pack charged in-site through Stripe: the gate and the evidence first, then the charge. */
+export async function payTokenPackWithStripe(
+  input: PackConsentInput & { confirmationToken: string },
+): Promise<PackStripeResult> {
+  try {
+    const session = await getSessionUser();
+    if (!session) {
+      return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
+    }
+    if (isAdminRole(session.role)) {
+      return {
+        ok: false,
+        reason: 'admin_skip',
+        error: 'Como admin tienes tokens ilimitados — no necesitas comprar packs.',
+      };
+    }
+    if (!paidCheckoutEnabled()) {
+      return { ok: false, reason: 'sales_closed', error: SALES_CLOSED_ERROR };
+    }
+    if (await termsAcceptancePending(session.user.id)) {
+      return { ok: false, reason: 'terms_pending', error: TERMS_PENDING_ERROR };
+    }
+    if (!usingStripe() || !isStripeReady()) {
+      console.error('[token-pack-stripe] refusing to charge: Stripe is not configured');
+      return { ok: false, reason: 'not_configured', error: MP_GENERIC_ERROR };
+    }
+    const token = typeof input.confirmationToken === 'string' ? input.confirmationToken.trim() : '';
+    if (!token.startsWith('ctoken_') || token.length > 128) {
+      return {
+        ok: false,
+        reason: 'bad_token',
+        error: 'El formulario no entregó una tarjeta válida. Inténtalo de nuevo.',
+      };
+    }
+    const accepted = await acceptPackCharge(input, session, 'card');
+    if (!accepted.ok) return accepted;
+    const { pack } = accepted;
+    // Stripe has no test-buyer rule (B33 is Mercado Pago's): the customer is the account itself.
+    const accountEmail = session.user.email ?? null;
+    const customer = await ensureStripeCustomer({
+      id: session.user.id,
+      email: accountEmail,
+      name: (session.user.user_metadata?.full_name as string | undefined) ?? null,
+    });
+    let pi;
+    try {
+      pi = await getStripe().paymentIntents.create(
+        {
+          amount: accepted.cents,
+          currency: 'mxn',
+          customer,
+          confirm: true,
+          confirmation_token: token,
+          allowed_payment_method_types: ['card'],
+          description: `Chalyb · ${pack.label}`,
+          return_url: stripeReturnUrl('/app/usage'),
+          metadata: {
+            external_reference: packReference(session.user.id, pack.id),
+            user_id: session.user.id,
+            pack_id: pack.id,
+          },
+        },
+        // A retried submit of the same card form reuses the charge instead of a second one.
+        { idempotencyKey: `chalyb-pack-${session.user.id}-${pack.id}-${token}` },
+      );
+    } catch (err) {
+      const e = err as { decline_code?: string; code?: string; type?: string };
+      console.error('[token-pack-stripe] charge refused', { code: e.code, decline_code: e.decline_code });
+      return e.type === 'StripeCardError' || e.decline_code
+        ? { ok: false, reason: 'rejected', error: CARD_ERROR }
+        : { ok: false, reason: 'mp_error', error: STRIPE_UNCONFIRMED };
+    }
+    return await settleStripePack(pi);
+  } catch (err) {
+    console.error('[token-pack-stripe] uncaught', err);
+    return { ok: false, reason: 'mp_error', error: STRIPE_UNCONFIRMED };
+  }
+}
+
+/** After the browser ran 3DS for a pack. Only the buyer's own charge is read. */
+export async function finishTokenPackStripe(paymentIntentId: string): Promise<PackStripeResult> {
+  try {
+    const session = await getSessionUser();
+    if (!session) {
+      return { ok: false, reason: 'unauth', error: 'Inicia sesión para comprar tokens.' };
+    }
+    if (typeof paymentIntentId !== 'string' || !paymentIntentId.startsWith('pi_')) {
+      return { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
+    }
+    const pi = await getStripe().paymentIntents.retrieve(paymentIntentId);
+    if (pi.metadata?.user_id !== session.user.id) {
+      return { ok: false, reason: 'mp_error', error: MP_GENERIC_ERROR };
+    }
+    return await settleStripePack(pi);
+  } catch (err) {
+    console.error('[token-pack-stripe] finish failed', err);
+    return { ok: false, reason: 'mp_error', error: STRIPE_UNCONFIRMED };
+  }
+}
+
+async function settleStripePack(pi: Stripe.PaymentIntent): Promise<PackStripeResult> {
+  if (pi.status === 'requires_action' && pi.client_secret) {
+    return {
+      ok: false,
+      reason: 'rejected',
+      status: 'pending',
+      action: { clientSecret: pi.client_secret, paymentIntentId: pi.id },
+    };
+  }
+  // Same settlement the webhook runs, so the tokens land now; a replay changes nothing.
+  const charge = chargeFromPaymentIntent(pi);
+  const settled = await settleOneOffCharge(charge, pi as unknown as Record<string, unknown>);
+  if (settled.httpStatus !== 200) {
+    return {
+      ok: false,
+      reason: 'mp_error',
+      status: charge.status,
+      error:
+        'El pago se envió pero no pudimos acreditar los tokens todavía. Se acreditan solos en unos minutos; si no, escríbenos.',
+    };
+  }
+  if (charge.status === 'approved') return { ok: true, status: charge.status };
+  if (charge.status === 'pending' || charge.status === 'in_process') {
+    return { ok: true, status: charge.status };
+  }
+  return { ok: false, reason: 'rejected', status: charge.status, error: CARD_ERROR };
 }

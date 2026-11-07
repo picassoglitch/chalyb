@@ -32,6 +32,8 @@ export function statusForStartError(code: StartError): number {
       return 402;
     case 'NOT_CONFIGURED':
       return 503;
+    case 'REQUIRES_ACTION':
+      return 202;
     default:
       return 502;
   }

@@ -8,6 +8,8 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getMercadoPagoIsolated, getAppUrl } from '@/lib/payments/mercadopago';
+import { isStripePaymentId } from '@/lib/payments/stripe-config';
+import { refundStripePayment } from '@/lib/payments/stripe-subscription';
 import { isOrderPaymentId } from '@/lib/payments/order-charge';
 import { chargeWasPriced } from '@/lib/payments/webhook-verify';
 import { getContactInbox } from '@/lib/email/resend';
@@ -171,7 +173,9 @@ export async function issueRefund(input: {
     // An isolated client: the idempotency key must not stick to the shared
     // one (getMercadoPagoIsolated).
     const mp = getMercadoPagoIsolated();
-    if (isOrderPaymentId(input.mpPaymentId)) {
+    if (isStripePaymentId(input.mpPaymentId)) {
+      await refundStripePayment(input.mpPaymentId, cents, idempotencyKey);
+    } else if (isOrderPaymentId(input.mpPaymentId)) {
       // A pack paid through the Orders API: its payment (PAY01…) is refunded
       // through its order, whose id is on our row (raw is the order).
       const { data: row } = await admin
@@ -194,7 +198,7 @@ export async function issueRefund(input: {
       });
     }
   } catch (err) {
-    console.error('[disputes] Mercado Pago refused the refund', input.mpPaymentId, err);
+    console.error('[disputes] the gateway refused the refund', input.mpPaymentId, err);
     if (claim.kind === 'claimed' && !(await releaseRefund(ledger, input.mpPaymentId, cents))) {
       console.error('[disputes] COULD NOT release a refused refund claim', input.mpPaymentId, cents);
     }
@@ -226,7 +230,7 @@ export async function onRefundReported(input: {
 }): Promise<void> {
   await notify({
     severity: 'info',
-    title: 'Reembolso registrado en Mercado Pago',
+    title: `Reembolso registrado en ${isStripePaymentId(input.mpPaymentId) ? 'Stripe' : 'Mercado Pago'}`,
     body: `Pago ${input.mpPaymentId}${input.amountMajor ? ` · ${formatMXN(Math.round(input.amountMajor * 100))} MXN` : ''}. La cuenta no cambia. Si no salió de Chalyb, anota el motivo legal (§7.2).`,
     href: '/dashboard/dinero',
     source: 'mp.webhook',

@@ -4,7 +4,7 @@
 
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getMercadoPago } from '@/lib/payments/mercadopago';
+import { setRecurringAmount } from '@/lib/payments/gateway';
 import { notify } from '@/lib/notifications/notify';
 import { mpPreapprovalAmountPutVerified } from '@/lib/config/flags';
 import { lealtadPriceCents } from '@/config/pricing';
@@ -48,10 +48,7 @@ export async function putNextAmount(preapprovalId: string, step: number): Promis
     return false;
   }
   try {
-    await getMercadoPago().preapproval.update({
-      id: preapprovalId,
-      body: { auto_recurring: { transaction_amount: cents / 100, currency_id: 'MXN' } },
-    } as never);
+    await setRecurringAmount(preapprovalId, cents);
   } catch (err) {
     // An MP-side failure never resets the step; the daily reconcile retries.
     console.error('[lealtad] PUT next amount failed', preapprovalId, err);

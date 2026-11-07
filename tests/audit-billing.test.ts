@@ -51,7 +51,8 @@ test('cancel: missing evidence after MP cancelled still reports the cancellation
 });
 
 test('a failed proration refund reaches the admin list', () => {
-  const s = src('src/lib/billing/billing-actions.ts');
+  const s = src('src/lib/billing/proration-refund.ts');
+  assert.match(src('src/lib/billing/billing-actions.ts'), /await refundProration\(/);
   assert.match(
     s,
     /proration refund failed — refund by hand[\s\S]{0,200}await notify\(\{\s*severity: 'critical'/,
@@ -112,7 +113,7 @@ test('a failed row write never cancels a preapproval that already charged', () =
   // Cancel (and fail the checkout) only when the first charge is later.
   assert.match(
     block,
-    /if \(firstChargeLater\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}/,
+    /if \(firstChargeLater \|\| stripe\) \{\s*await cancelUnchargedWithoutRow\(who\);\s*return \{ ok: false, code: 'MP_ERROR' \};\s*\}/,
   );
   assert.match(start, /const rowErr = await writeRowWithRetry\(\(\) =>/);
   // The old comment promised a refund path that doesn't exist.

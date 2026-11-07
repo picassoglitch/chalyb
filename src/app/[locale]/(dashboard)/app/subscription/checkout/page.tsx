@@ -14,6 +14,7 @@ import {
 } from '@/lib/payments/mercadopago';
 import { isSubscribableTier } from '@/lib/payments/subscription-reference';
 import { paidCheckoutEnabled } from '@/lib/config/flags';
+import { usingStripe } from '@/lib/payments/stripe';
 import { SubscriptionCheckout } from '@/components/workspace/subscription-checkout';
 
 export const metadata = { title: 'Activar plan' };
@@ -38,6 +39,8 @@ export default async function SubscriptionCheckoutPage({
 
   // Sales are closed while paid checkout is off; the action refuses too.
   if (!paidCheckoutEnabled()) redirect('/app/subscription' as Route);
+  // The legacy Mercado Pago form; Stripe sells through /app/prueba/pago and /app/billing/cambiar.
+  if (usingStripe()) redirect('/app/billing' as Route);
 
   const tier = (tierParam ?? '').toUpperCase() as SubscriptionTier;
   if (!isSubscribableTier(tier) || !TIER_PRICING[tier]) redirect('/app/subscription' as Route);

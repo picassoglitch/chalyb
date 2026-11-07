@@ -14,6 +14,8 @@ import {
 import { loadBilling } from '@/lib/billing/subscription-store';
 
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { usingStripe } from '@/lib/payments/stripe';
+import { stripeForm } from '@/lib/payments/checkout-ready';
 import { ivaPortion, planHasTrial, planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { addInterval, trialDates } from '@/lib/billing/trial-dates';
@@ -69,6 +71,7 @@ export default async function PagoPage({
   const trial = trialFlowEnabled() && !billing.trialUsed && planHasTrial(planKey);
 
   const t = await getTranslations('checkout');
+  const tStripe = await getTranslations('checkout.stripe');
   const tPlan = await getTranslations('myplan.planName');
   const tbRaw = await getTranslations('billing');
   const tb: Translate = (key, values) =>
@@ -115,7 +118,8 @@ export default async function PagoPage({
         ? 'vip_year'
         : 'pro_year';
   const otherOnSale = !lealtad && (other !== 'vip_year' || vipYearEnabled());
-  const publicKey = getPublicKey();
+  const stripe = usingStripe() ? stripeForm(trial ? 0 : price.totalCents) : undefined;
+  const publicKey = usingStripe() ? (stripe ? '' : undefined) : getPublicKey();
 
   return (
     <WizardShell
@@ -157,9 +161,10 @@ export default async function PagoPage({
                 <Markup text={p} />
               </p>
             ))}
-            {publicKey ? (
+            {publicKey !== undefined ? (
               <PayForm
                 publicKey={publicKey}
+                stripe={stripe}
                 payerEmail={mpPayerEmail(session.user.email)}
                 askMpEmail={mpPayerEmailEditable()}
                 planKey={planKey}
@@ -192,7 +197,7 @@ export default async function PagoPage({
               }}
             >
               <Lock aria-hidden="true" width={18} height={18} />
-              {t('pay.secure')} <SellerSheet label={t('pay.seller')} />
+              {stripe ? tStripe('secure') : t('pay.secure')} <SellerSheet label={t('pay.seller')} />
             </p>
           </div>
 

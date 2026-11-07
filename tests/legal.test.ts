@@ -676,7 +676,7 @@ test('re-accept: token packs refuse a new charge while a relevant change is unac
     src.match(
       /if \(await termsAcceptancePending\(session\.user\.id\)\) \{\s*return \{ ok: false, reason: 'terms_pending'/g,
     ) ?? [];
-  assert.equal(guards.length, 2, 'hosted and card');
+  assert.equal(guards.length, 3, 'hosted, card and Stripe');
 });
 
 test('seller identity: placeholders, TBD and generic or malformed RFCs are refused', () => {

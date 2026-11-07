@@ -10,6 +10,8 @@ import { getMercadoPago, getMercadoPagoIsolated } from '@/lib/payments/mercadopa
 import { declineReasonOf, rejectionDetailOf } from '@/lib/payments/card-decline';
 import { meliSessionOptions } from '@/lib/payments/device-session';
 import { loadBilling } from '@/lib/billing/subscription-store';
+import { isStripeSubscriptionId } from '@/lib/payments/stripe-config';
+import { updateStripeCard, type CardUpdateResult } from '@/lib/billing/stripe-card';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -27,6 +29,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: 'NOTHING_TO_UPDATE' }, { status: 409 });
   }
   const preapprovalId = row.mp_preapproval_id as string;
+  // The card form follows the subscription's own gateway (tarjeta/page.tsx).
+  if (isStripeSubscriptionId(preapprovalId)) {
+    const result = await updateStripeCard(session.user.id, preapprovalId, token).catch(
+      (err): CardUpdateResult => {
+        console.error('[billing/card] stripe update failed', preapprovalId, err);
+        return { ok: false, code: 'MP_ERROR' };
+      },
+    );
+    if (result.ok) return NextResponse.json({ ok: true, consentId: '' });
+    return NextResponse.json(result, { status: cardStatus(result.code) });
+  }
   let card: {
     last_four_digits?: string;
     expiration_month?: number;
@@ -65,4 +78,12 @@ export async function POST(req: Request) {
     })
     .eq('mp_preapproval_id', preapprovalId);
   return NextResponse.json({ ok: true, consentId: '' });
+}
+
+function cardStatus(code: Exclude<CardUpdateResult, { ok: true }>['code']): number {
+  if (code === 'REQUIRES_ACTION') return 202;
+  if (code === 'DECLINED') return 402;
+  if (code === 'BAD_TOKEN') return 400;
+  if (code === 'NOTHING_TO_UPDATE') return 409;
+  return 502;
 }

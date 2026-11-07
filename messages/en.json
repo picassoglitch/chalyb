@@ -1259,6 +1259,19 @@
       "cta": "Make my first clips",
       "plan": "See my plan",
       "footer": "We sent these details to {correo} · Your acceptance folio: {folio}"
+    },
+    "stripe": {
+      "secure": "Secure payment with Stripe. Chalyb doesn’t store your card number.",
+      "preparing": "Preparing the payment form…",
+      "processing": "Processing the payment…",
+      "loadFailed": "We couldn’t load the payment form. Reload the page or try again later; you weren’t charged.",
+      "actionFailed": "Your bank didn’t confirm the payment. You weren’t charged; try again or use another card.",
+      "error": "We couldn’t complete the payment. Try again in a moment.",
+      "decline": {
+        "risk": "This payment couldn’t be approved for security reasons. Try another card or try later; you weren’t charged.",
+        "duplicated": "We just received an identical payment. Wait a few minutes before trying again.",
+        "unknown": "We couldn’t validate this card. Check the details or try another one."
+      }
     }
   },
   "banner": {
@@ -3849,6 +3862,7 @@
     "hostedCta": "Pay {monto} MXN on Mercado Pago",
     "invoice": "Need an invoice (CFDI)? Email <b>{correo}</b> with your RFC within the same month as your purchase.",
     "secure": "Your card details go straight to Mercado Pago in secure fields; Chalyb never sees or stores them.",
+    "secureStripe": "Your card details go straight to Stripe in secure fields; Chalyb never sees or stores them.",
     "back": "Back to My credits",
     "unavailableTitle": "Payments not available yet",
     "unavailable": "Credit packs aren’t available right now. Try again later or write to us.",

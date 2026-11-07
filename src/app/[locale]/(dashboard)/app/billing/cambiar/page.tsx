@@ -11,6 +11,8 @@ import {
   mpPayerEmailEditable,
 } from '@/lib/config/flags';
 import { getPublicKey, mpPayerEmail } from '@/lib/payments/mercadopago';
+import { usingStripe } from '@/lib/payments/stripe';
+import { stripeForm } from '@/lib/payments/checkout-ready';
 import { planPrice, type PlanKey } from '@/config/pricing';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
 import { quoteChange } from '@/lib/billing/billing-actions';
@@ -142,7 +144,8 @@ export default async function CambiarPlanPage({
             b: (c) => `<b>${c}</b>`,
             terms: (c) => `<terms>${c}</terms>`,
           });
-  const publicKey = getPublicKey();
+  const stripe = usingStripe() ? stripeForm(chargedToday ? price.totalCents : 0) : undefined;
+  const publicKey = usingStripe() ? (stripe ? '' : undefined) : getPublicKey();
 
   return (
     <WizardShell {...chrome}>
@@ -161,9 +164,10 @@ export default async function CambiarPlanPage({
             {t('card')}
           </p>
         </DisclosureBlock>
-        {publicKey && (
+        {publicKey !== undefined && (
           <PayForm
             publicKey={publicKey}
+            stripe={stripe}
             payerEmail={mpPayerEmail(session.user.email)}
             askMpEmail={mpPayerEmailEditable()}
             planKey={to}

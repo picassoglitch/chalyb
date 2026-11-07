@@ -1259,6 +1259,19 @@
       "cta": "Hacer mis primeros clips",
       "plan": "Ver mi plan",
       "footer": "Te enviamos estos datos a {correo} · Folio de tu aceptación: {folio}"
+    },
+    "stripe": {
+      "secure": "Pago seguro con Stripe. Chalyb no guarda el número de tu tarjeta.",
+      "preparing": "Preparando el formulario de pago…",
+      "processing": "Procesando el pago…",
+      "loadFailed": "No pudimos cargar el formulario de pago. Recarga la página o intenta más tarde; no se hizo ningún cargo.",
+      "actionFailed": "Tu banco no confirmó el pago. No se hizo ningún cargo; inténtalo de nuevo o usa otra tarjeta.",
+      "error": "No pudimos completar el pago. Inténtalo de nuevo en un momento.",
+      "decline": {
+        "risk": "No se pudo aprobar este pago por seguridad. Intenta con otra tarjeta o más tarde; no se hizo ningún cargo.",
+        "duplicated": "Ya recibimos un pago igual hace un momento. Espera unos minutos antes de intentar de nuevo.",
+        "unknown": "No pudimos validar esta tarjeta. Revisa los datos o prueba con otra."
+      }
     }
   },
   "banner": {
@@ -3849,6 +3862,7 @@
     "hostedCta": "Pagar {monto} MXN en Mercado Pago",
     "invoice": "¿Necesitas factura (CFDI)? Escríbenos a <b>{correo}</b> con tu RFC dentro del mismo mes de tu compra.",
     "secure": "Los datos de tu tarjeta viajan directo a Mercado Pago en campos seguros; Chalyb nunca los ve ni los guarda.",
+    "secureStripe": "Los datos de tu tarjeta viajan directo a Stripe en campos seguros; Chalyb nunca los ve ni los guarda.",
     "back": "Volver a Mis créditos",
     "unavailableTitle": "Pagos aún no disponibles",
     "unavailable": "Los paquetes no están disponibles por ahora. Intenta más tarde o escríbenos.",

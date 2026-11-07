@@ -37,7 +37,7 @@ import {
 } from '@/lib/config/flags';
 import { Banner, ButtonLink, Group, Row } from '@/components/ui/primitives';
 import { getTokenBalance } from '@/lib/usage/tokens';
-import { missingCheckoutVars } from '@/lib/payments/mercadopago';
+import { checkoutMissingVars } from '@/lib/payments/checkout-ready';
 import { FreePlan } from './free-plan';
 import { CancelSheet } from '@/components/app/billing/cancel-sheet';
 import { Markup } from '@/components/ui/markup';
@@ -83,7 +83,7 @@ export async function MiPlanView({
     );
   }
   const tf = await getTranslations('freeplan');
-  const missingVars = entitlements.isAdmin ? missingCheckoutVars() : [];
+  const missingVars = entitlements.isAdmin ? checkoutMissingVars() : [];
   const renderNow = new Date().getTime();
   const date = (iso: string | null | undefined) => (iso ? formatFechaLarga(iso, locale) : '');
   // Plan changes go through the new checkout only while it is live.
