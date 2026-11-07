@@ -1278,7 +1278,8 @@
       "trial": "Prueba {plan} gratis",
       "free": "Gratis",
       "vip_year": "VIP anual — todo incluido y más créditos",
-      "pro_lealtad": "Pro Lealtad — tu precio baja cada mes"
+      "pro_lealtad": "Pro Lealtad — tu precio baja cada mes",
+      "pro": "Pro — todo incluido"
     },
     "planName": {
       "pro_month": "Pro mensual",
@@ -1354,7 +1355,9 @@
     "cancelSubSub": "1 clic, sin llamadas. Sigues con {plan} hasta el {fecha}.",
     "cancelTrialSub": "1 clic, sin llamadas",
     "loadError": "No pudimos cargar tu plan. Intenta de nuevo en un momento.",
-    "adminNote": "Las cuentas admin tienen VIP sin cobro."
+    "adminNote": "Las cuentas admin tienen VIP sin cobro.",
+    "assignedNote": "Plan asignado por Chalyb, sin cobro.",
+    "assignedUntil": "Activo hasta el {fecha}."
   },
   "cancel": {
     "trial": {

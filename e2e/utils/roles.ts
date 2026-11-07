@@ -11,6 +11,7 @@ export const ROLES = [
   'cancelled',
   'vip',
   'admin',
+  'assigned',
 ] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -23,6 +24,7 @@ const ENV_PREFIX: Record<Role, string> = {
   cancelled: 'E2E_CANCELLED',
   vip: 'E2E_VIP',
   admin: 'E2E_ADMIN',
+  assigned: 'E2E_ASSIGNED',
 };
 
 export function credentials(role: Role): { email: string; password: string } | null {

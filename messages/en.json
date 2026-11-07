@@ -1278,7 +1278,8 @@
       "trial": "Free {plan} trial",
       "free": "Free",
       "vip_year": "VIP yearly — everything included and more credits",
-      "pro_lealtad": "Pro Loyalty — your price drops every month"
+      "pro_lealtad": "Pro Loyalty — your price drops every month",
+      "pro": "Pro — everything included"
     },
     "planName": {
       "pro_month": "Pro monthly",
@@ -1354,7 +1355,9 @@
     "cancelSubSub": "1 click, no calls. You keep {plan} until {fecha}.",
     "cancelTrialSub": "1 click, no calls",
     "loadError": "We couldn’t load your plan. Try again in a moment.",
-    "adminNote": "Admin accounts have VIP with no charge."
+    "adminNote": "Admin accounts have VIP with no charge.",
+    "assignedNote": "Plan assigned by Chalyb, no charge.",
+    "assignedUntil": "Active until {fecha}."
   },
   "cancel": {
     "trial": {

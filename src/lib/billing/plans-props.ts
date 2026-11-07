@@ -17,6 +17,8 @@ import {
 } from '@/lib/config/flags';
 import { billingToggleEnabled } from '@/lib/config/settings';
 import { loadBilling } from './subscription-store';
+import { getEntitlements } from './entitlement';
+import { assignedPlan, type AssignedPlan } from './assigned-plan';
 import { plansCta, type Interval, type PlansCta } from './plans-cta';
 import { planFeatures, type PlanFeature } from './plan-features';
 import { loadPriceDisplay, type PriceDisplay } from './price-display';
@@ -56,8 +58,10 @@ function lealtadProps(input: {
   state: string;
   planKey: string | null;
   paidCheckout: boolean;
+  assigned: AssignedPlan | null;
 }): PlansProps['lealtad'] {
-  const offered = lealtadEnabled() && lealtadOpenToNewCustomers() && input.paidCheckout;
+  const offered =
+    lealtadEnabled() && lealtadOpenToNewCustomers() && input.paidCheckout && !input.assigned;
   if (!offered) return { offered: false, href: null };
   if (input.isAdmin || input.planKey === 'pro_lealtad') return { offered: true, href: null };
   if (!input.signedIn) return { offered: true, href: '/sign-in?mode=signup&plan=lealtad' };
@@ -82,6 +86,14 @@ export async function loadPlansProps(
   const session = user ? await getSessionUser() : null;
   const billing = session ? await loadBilling(session.user.id).catch(() => null) : null;
   const isAdmin = session ? isAdminRole(session.role) : false;
+  // The same effective plan Mi cuenta shows (getEntitlements), not only the subscription.
+  const assigned = session
+    ? assignedPlan({
+        isAdmin,
+        plan: (await getEntitlements(session)).plan,
+        billing: billing?.primary ?? null,
+      })
+    : null;
   const flow = trialFlowEnabled();
   // Annual plans need the new paid checkout (V-1); the trial needs it too.
   const annualOffered = paidCheckoutEnabled();
@@ -97,7 +109,7 @@ export async function loadPlansProps(
   const paid = state !== 'free';
   const onVip = paid && planKey?.startsWith('vip');
   const trialUsed = billing?.trialUsed ?? false;
-  const proBusy = isAdmin || state === 'trialing' || (paid && !onVip);
+  const proBusy = isAdmin || !!assigned || state === 'trialing' || (paid && !onVip);
   const trialOffered = flow && !trialUsed && !proBusy && !quebecBlocked;
 
   const opts = {
@@ -115,6 +127,7 @@ export async function loadPlansProps(
       trialUsed,
       billing: billing?.primary ?? null,
       quebecBlocked,
+      assigned,
     }),
     signedIn: !!session,
     trialOffered,
@@ -126,7 +139,19 @@ export async function loadPlansProps(
       pro: planFeatures('PRO', opts),
       vip: planFeatures('VIP', opts),
     },
-    current: isAdmin ? null : !session ? null : !paid ? 'gratis' : onVip ? 'vip' : 'pro',
+    current: isAdmin
+      ? null
+      : !session
+        ? null
+        : assigned
+          ? assigned === 'VIP'
+            ? 'vip'
+            : 'pro'
+          : !paid
+            ? 'gratis'
+            : onVip
+              ? 'vip'
+              : 'pro',
     togglePct: intervals.includes('year')
       ? togglePct(vipYearOffered ? ['pro', 'vip'] : ['pro'])
       : 0,
@@ -139,6 +164,7 @@ export async function loadPlansProps(
       state,
       planKey,
       paidCheckout: annualOffered,
+      assigned,
     }),
     priceDisplay: await loadPriceDisplay({
       currentAmountCents: (billing?.primaryRow?.amount_cents as number | undefined) ?? null,

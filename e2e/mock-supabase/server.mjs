@@ -27,6 +27,8 @@ const users = {
   pro_annual: { role: 'CLIENT', tier: 'PRO', name: 'Ana Anual' },
   past_due: { role: 'CLIENT', tier: 'PRO', name: 'Pepe Pendiente' },
   cancelled: { role: 'CLIENT', tier: 'PRO', name: 'Carla Cancelada' },
+  // Pro set by the owner from Personas: no subscription row, no payment.
+  assigned: { role: 'CLIENT', tier: 'PRO', name: 'Andrés Asignado' },
 };
 // Screenshot-only accounts (docs/qa/plans, mockups 87 and 89), off unless
 // MOCK_CAPTURE_USERS=1 so the e2e fixtures (counts, totals) stay as they are:

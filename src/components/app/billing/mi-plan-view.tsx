@@ -16,6 +16,7 @@ import { Link } from '@/i18n/routing';
 import type { SessionUser } from '@/lib/auth/session';
 import { getEntitlements } from '@/lib/billing/entitlement';
 import { loadBilling } from '@/lib/billing/subscription-store';
+import { assignedPlan, miPlanMode } from '@/lib/billing/assigned-plan';
 import { loadPayments, paymentKind } from '@/lib/billing/payments-data';
 import { trialDaysLeft } from '@/lib/billing/trial-dates';
 import { formatFechaLarga, formatMXN } from '@/lib/billing/format';
@@ -62,9 +63,14 @@ export async function MiPlanView({
     loadPayments({ userId: session.user.id, limit: 24, logTag: '/app/billing' }),
   ]);
   const s = billing?.primary ?? null;
+  const assigned = assignedPlan({
+    isAdmin: entitlements.isAdmin,
+    plan: entitlements.plan,
+    billing: s,
+  });
 
   // Gratis (mockup 70): its own layout with the one offer.
-  if (!entitlements.isAdmin && (!s || s.state === 'free')) {
+  if (miPlanMode({ isAdmin: entitlements.isAdmin, billing: s, assigned }) === 'free') {
     const balance = await getTokenBalance(session.user.id).catch(() => null);
     return (
       <FreePlan
@@ -126,6 +132,13 @@ export async function MiPlanView({
     status = t('status.active');
     heading = t('heading.vip_month');
     lines.push(t('adminNote'));
+    cta = null;
+  } else if (assigned) {
+    // No subscription behind it: no charge, card, plan change or cancel rows below.
+    status = t('status.active');
+    heading = assigned === 'VIP' ? t('heading.vip_month') : t('heading.pro');
+    lines.push(t('assignedNote'));
+    if (session.tierEndsAt) lines.push(t('assignedUntil', { fecha: date(session.tierEndsAt) }));
     cta = null;
   } else if (s?.state === 'trialing') {
     status = t('status.trial');

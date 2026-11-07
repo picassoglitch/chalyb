@@ -56,7 +56,7 @@ export E2E_BASE_URL="http://localhost:$PORT"
 export E2E_CLIPS_MODE=mock E2E_TOOLS_MODE=mock E2E_MOCK_BACKEND=1
 # Every account the mock serves; a role left out here would have its specs skipped, not failed.
 # Not covered here: E2E_TRIAL_FLOW (paid checkout), screenshot runs and the smoke project.
-for role in free trial pro pro_annual past_due cancelled vip admin; do
+for role in free trial pro pro_annual past_due cancelled vip admin assigned; do
   export "E2E_${role^^}_EMAIL=$role@example.com" "E2E_${role^^}_PASSWORD=mock-pass-123"
 done
 

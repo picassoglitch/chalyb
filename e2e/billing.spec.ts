@@ -132,6 +132,31 @@ test.describe('Mi plan as cancelled', () => {
   });
 });
 
+// QA 2026-11-06 — a plan the owner assigned (no subscription) was shown as Gratis here.
+test.describe('Mi plan and Planes as an owner-assigned Pro', () => {
+  asRole('assigned');
+  test('Mi plan: Pro, no charge, card, trial or cancel', async ({ page }) => {
+    await page.goto('/app/billing');
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Pro — todo incluido' }),
+    ).toBeVisible();
+    await expect(page.getByText('Plan asignado por Chalyb, sin cobro.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Gratis$/ })).toHaveCount(0);
+    await expect(page.getByText('Próximo cobro')).toHaveCount(0);
+    await expect(page.getByText(/Prueba Pro gratis/)).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Cancelar/ })).toHaveCount(0);
+  });
+
+  test('Planes: Pro is the current plan, Gratis is not', async ({ page }) => {
+    await page.goto('/app/planes');
+    const pro = page.locator('[aria-labelledby="pc-pro"]');
+    await expect(pro).toHaveClass(/ch-pc--current/);
+    await expect(pro.getByText('Tu plan actual')).toBeVisible();
+    await expect(page.locator('[aria-labelledby="pc-gratis"]')).not.toHaveClass(/ch-pc--current/);
+    await expect(page.getByText('Empezar mis 7 días gratis')).toHaveCount(0);
+  });
+});
+
 test.describe('banners', () => {
   for (const [role, text] of [
     // The mock trial agreed to the 2026-10-03 yearly price; it is charged that.
