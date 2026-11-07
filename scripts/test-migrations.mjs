@@ -264,10 +264,10 @@ try {
   await db.query(
     `update public.usage_reservations set status = 'failed' where external_job_id = 'j5'`,
   );
-  const a6 = await admit('j6', 10, 0, 10, caps({ jobs_per_month: 2 })); // j1 succeeded + j5 failed
+  const a6 = await admit('j6', 10, 0, 10, caps({ jobs_per_month: 1 })); // j1 succeeded; j5 failed is free
   check(
-    'monthly jobs cap counts failed jobs',
-    a6.allowed === false && a6.reason === 'jobs_cap',
+    'monthly jobs cap counts the succeeded job, not the failed one',
+    a6.allowed === false && a6.reason === 'jobs_cap' && a6.used === 1,
     JSON.stringify(a6),
   );
 
@@ -326,6 +326,106 @@ try {
 
   const un = await admit('j7', 1e9, 0, 1000, caps({ unlimited: true }));
   check('unlimited (admin) is never refused', un.allowed === true, JSON.stringify(un));
+}
+
+// ── Failed runs (20261107000300): the month's first 3 don't count ─────────
+{
+  const check = (label, cond, extra = '') => {
+    if (cond) console.log(`ok: ${label}`);
+    else {
+      console.error(`FAIL: ${label} ${extra}`);
+      process.exitCode = 1;
+    }
+  };
+  const engineId = (await db.query(`select id from public.engines where slug = 'chalybclip'`))
+    .rows[0]?.id;
+  const u = (
+    await db.query(`insert into auth.users (email) values ('fails@example.com') returning id`)
+  ).rows[0].id;
+  await db.query(`insert into public.profiles (id) values ($1) on conflict do nothing`, [u]);
+  const caps = (o = {}) =>
+    JSON.stringify({
+      allocation: 1e9,
+      unlimited: false,
+      jobs_per_month: 100,
+      minutes_per_month: 100,
+      max_concurrent_jobs: 1,
+      active_streams: 1,
+      streams_per_month: 100,
+      ...o,
+    });
+  const admit = async (job, minutes, c = caps(), cls = 'job') =>
+    (
+      await db.query(
+        `select public.admit_usage($1,$2,$3,$4,'clips.pipeline','standard',1,0,$5,0,3600,$6::jsonb) as r`,
+        [u, engineId, job, cls, minutes, c],
+      )
+    ).rows[0].r;
+  const settle = async (res, outcome) =>
+    db.query(`select public.settle_usage_reservation($1,$2,$3)`, [res.reservation_id, engineId, outcome]);
+  // How much of the month counts right now, as admit_usage reports it.
+  const used = async (cls = 'job') => {
+    const r = await admit(`probe-${cls}`, 0, caps({ jobs_per_month: 0, streams_per_month: 0, max_concurrent_jobs: 5, active_streams: 5 }), cls);
+    return r.used;
+  };
+
+  // A real "used" figure first: one succeeded run of 20 minutes.
+  await settle(await admit('ok1', 20), 'succeeded');
+  check('a succeeded job counts', (await used()) === 1, String(await used()));
+
+  // Three failed 25-minute runs: none of them uses the month.
+  for (const n of [1, 2, 3]) {
+    const r = await admit(`f${n}`, 25);
+    check(`failed run ${n} admitted`, r.allowed === true, JSON.stringify(r));
+    await settle(r, 'failed');
+  }
+  check('the first 3 failed runs do not count as jobs', (await used()) === 1, String(await used()));
+  const fits = await admit('m1', 80); // 20 + 80 = 100: fits only if the 75 failed minutes are free
+  check('nor as minutes', fits.allowed === true, JSON.stringify(fits));
+  await settle(fits, 'cancelled');
+
+  // The 4th failure counts, jobs and minutes (anti-abuse).
+  await settle(await admit('f4', 30), 'failed');
+  check('the 4th failed run counts as a job', (await used()) === 2, String(await used()));
+  const over = await admit('m2', 60); // 20 + 30 + 60 = 110 > 100
+  check(
+    'and its minutes count',
+    over.allowed === false && over.reason === 'minutes_cap' && Number(over.used) === 50,
+    JSON.stringify(over),
+  );
+  const under = await admit('m3', 50); // 20 + 30 + 50 = 100
+  check('exactly at the cap still fits', under.allowed === true, JSON.stringify(under));
+  await settle(under, 'cancelled');
+
+  // Which failures are free is fixed by order: the earliest 3.
+  await db.query(
+    `update public.usage_reservations
+        set created_at = (select created_at from public.usage_reservations
+                           where external_job_id = 'f1' and user_id = $1) - interval '1 millisecond'
+      where external_job_id = 'f4' and user_id = $1`,
+    [u],
+  );
+  const moved = await admit('m4', 60); // now f3 (25 min) is the 4th: 20 + 25 + 60 = 105
+  check(
+    'the free three are the earliest three',
+    moved.allowed === false && Number(moved.used) === 45,
+    JSON.stringify(moved),
+  );
+
+  // Last month's failures don't use this month's free retries.
+  await db.query(
+    `update public.usage_reservations set created_at = public.usage_period_start() - interval '1 day'
+      where external_job_id in ('f1','f2','f3','f4') and user_id = $1`,
+    [u],
+  );
+  await settle(await admit('g1', 5), 'failed');
+  check('a new month starts with 3 free retries', (await used()) === 1, String(await used()));
+
+  // Streams are unchanged: a failed stream still counts.
+  const s1 = await admit('s1', 0, caps(), 'stream');
+  check('stream admitted', s1.allowed === true, JSON.stringify(s1));
+  await settle(s1, 'failed');
+  check('a failed stream still counts', (await used('stream')) === 1, String(await used('stream')));
 }
 
 // ── Credit packs (0065): spend once, oldest first; per-pack refund/hold ───

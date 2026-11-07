@@ -22,7 +22,7 @@ export async function getConsumptionUsage(userId: string): Promise<ConsumptionUs
     // select returns in one page for any real month.
     admin
       .from('usage_reservations')
-      .select('id, status, source_minutes')
+      .select('id, status, source_minutes, created_at')
       .eq('user_id', userId)
       .eq('class', 'job')
       .neq('status', 'cancelled')
@@ -30,6 +30,9 @@ export async function getConsumptionUsage(userId: string): Promise<ConsumptionUs
         'created_at',
         new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString(),
       )
+      // Earliest first, like admit_usage: the free failed retries are the first ones.
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true })
       .limit(50_000),
   ]);
   const expired = (rows ?? []).filter((r) => r.status === 'expired').map((r) => r.id as string);
