@@ -7,7 +7,9 @@
 // Pago-hosted authorisation for the same plan (startHostedTierSubscription):
 // the way to pay when the in-app form cannot load in someone's browser.
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
+import { asDeclineReason } from '@/lib/payments/card-decline';
 import { useWorkspace } from '@/lib/workspace/store';
 import {
   authorizeTierSubscription,
@@ -33,6 +35,7 @@ export function SubscriptionCheckout({
   payerEmail,
 }: Props) {
   const router = useRouter();
+  const tPay = useTranslations('checkout.pay');
   const showToast = useWorkspace((s) => s.showToast);
   return (
     <div data-mp-subscriptions-page="without-plan-authorized">
@@ -43,8 +46,15 @@ export function SubscriptionCheckout({
         maxInstallments={1}
         submitLabel={`Activar ${tierLabel} · cobro mensual`}
         onSubmit={async (card) => {
-          const res = await authorizeTierSubscription({ tier, cardTokenId: card.token });
+          const res = await authorizeTierSubscription({
+            tier,
+            cardTokenId: card.token,
+            deviceSessionId: card.deviceSessionId,
+          });
           if (!res.ok) {
+            if (res.decline) {
+              return { ok: false, error: tPay(`decline.${asDeclineReason(res.decline)}`) };
+            }
             return { ok: false, error: res.error ?? 'No pudimos activar la suscripción.' };
           }
           if (res.status !== 'authorized') {
