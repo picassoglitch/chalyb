@@ -57,7 +57,7 @@ test('no trial wording when the trial is not offered', () => {
   }
 });
 
-test('trial offered: the chip in BOTH modes, "Empezar mis 7 días gratis", the dated note', () => {
+test('trial offered: $0 for 7 days then the price, "Empezar mis 7 días gratis", the dated note', () => {
   const year = proCard(input(), 'year');
   const month = proCard(input(), 'month');
   assert.equal(year.chip, true);
@@ -67,9 +67,15 @@ test('trial offered: the chip in BOTH modes, "Empezar mis 7 días gratis", the d
   assert.equal(year.noteKey, 'pro.note');
   assert.equal(month.noteKey, 'pro.noteMonth');
   assert.equal(es.plans.pro.cta, 'Empezar mis 7 días gratis');
-  assert.equal(es.plans.trialChip, '{dias} días gratis');
-  assert.match(es.plans.pro.noteMonth, /\{fecha\} se cobran \{monto\} MXN y después cada mes/);
-  assert.match(es.plans.pro.note, /por el año completo y se renueva cada año/);
+  assert.equal(es.plans.trialUnit, 'por {dias} días');
+  assert.equal(es.plans.after.month, 'Después, {monto} MXN al mes');
+  assert.equal(es.plans.after.year, 'Después, {monto} MXN al año');
+  // LFPC 76 Bis: the charge date and that it charges automatically stay on the card.
+  assert.match(
+    es.plans.pro.noteMonth,
+    /el \{fecha\} se cobra automáticamente y se renueva cada mes/,
+  );
+  assert.match(es.plans.pro.note, /el \{fecha\} se cobra automáticamente y se renueva cada año/);
 });
 
 test('annual mode: the yearly charge leads, Q5 reference line, accent savings pill', () => {
