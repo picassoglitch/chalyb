@@ -66,6 +66,14 @@ test('row order does not change the latest subscription', () => {
   assert.deepEqual(planSplit(profiles, [newer, older], NOW).paying, 1);
 });
 
+test('a row with no created_at never hides a dated one, in either order', () => {
+  const profiles = [{ id: 'u', tier: 'PRO' }];
+  const undated = sub('u', { status: 'cancelled', created_at: null });
+  const dated = sub('u', { created_at: at(-1 * DAY) });
+  assert.equal(planSplit(profiles, [undated, dated], NOW).paying, 1);
+  assert.equal(planSplit(profiles, [dated, undated], NOW).paying, 1);
+});
+
 for (const locale of ['es', 'en']) {
   test(`${locale}: labels tell plans from paid subscriptions`, () => {
     const admin = JSON.parse(

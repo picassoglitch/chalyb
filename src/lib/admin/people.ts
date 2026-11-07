@@ -79,12 +79,15 @@ export function planSplit(
   subs: readonly Sub[],
   now: number,
 ): PlanSplit {
+  // A row without a valid created_at sorts oldest, so it never hides a dated one.
+  const ts = (s: Sub) => {
+    const t = Date.parse(s.created_at ?? '');
+    return Number.isFinite(t) ? t : -Infinity;
+  };
   const latest = new Map<string, Sub>();
   for (const s of subs) {
     const prev = latest.get(s.user_id);
-    if (!prev || Date.parse(s.created_at ?? '') > Date.parse(prev.created_at ?? '')) {
-      latest.set(s.user_id, s);
-    }
+    if (!prev || ts(s) > ts(prev)) latest.set(s.user_id, s);
   }
   const out: PlanSplit = { paying: 0, trial: 0, other: 0 };
   for (const p of profiles) {
